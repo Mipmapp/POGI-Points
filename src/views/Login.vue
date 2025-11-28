@@ -8,21 +8,21 @@
       
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
         <div class="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
-          <img src="/mail.svg" alt="Email" class="w-8 h-8 mb-3" style="filter: brightness(0) invert(1);" />
+          <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
           <p class="font-semibold text-purple-900 text-sm">Email Support</p>
           <p class="text-xs text-gray-600 mt-2">admin@ssaam.edu</p>
           <p class="text-xs text-gray-500 mt-1">For general inquiries</p>
         </div>
 
         <div class="flex flex-col items-center text-center p-4 bg-pink-50 rounded-lg">
-          <img src="/home.svg" alt="Office" class="w-8 h-8 mb-3" style="filter: brightness(0) invert(1);" />
+          <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat;"></div>
           <p class="font-semibold text-purple-900 text-sm">JRMSU CCS Office</p>
           <p class="text-xs text-gray-600 mt-2">College of Computer Studies</p>
           <p class="text-xs text-gray-500 mt-1">Visit during office hours</p>
         </div>
 
         <div class="flex flex-col items-center text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
-          <img src="/register_user.svg" alt="Developers" class="w-8 h-8 mb-3" style="filter: brightness(0) invert(1);" />
+          <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat;"></div>
           <p class="font-semibold text-purple-900 text-sm">Meet Our Developers</p>
           <p class="text-xs text-gray-600 mt-2">CCS - Creatives Committee</p>
           <button @click="showDevelopersPopup = true; showContactModal = false" class="text-xs text-purple-600 hover:text-purple-800 font-medium mt-2 underline">View Team →</button>
