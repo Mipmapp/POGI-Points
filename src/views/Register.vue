@@ -530,6 +530,17 @@ const formData = reactive({
 
 const isUploading = ref(false);
 
+// ImgBB API Keys (randomly selected to distribute traffic)
+const imgbbApiKeys = [
+  "b6a37178abd163036357a7ba35fd0364",
+  "3b523af3b0ffb526efddfb51b8928581"
+];
+
+// Get random ImgBB API key
+const getRandomApiKey = () => {
+  return imgbbApiKeys[Math.floor(Math.random() * imgbbApiKeys.length)];
+};
+
 // Compress image to 1MB or below while maintaining quality
 const compressImage = (file) => {
   return new Promise((resolve, reject) => {
@@ -629,8 +640,8 @@ const handleImageUpload = async (event) => {
     const sizeInMB = (compressedBlob.size / (1024 * 1024)).toFixed(2);
     console.log(`Final compressed image size: ${sizeInMB}MB`);
     
-    // Upload compressed image to imgbb
-    const apiKey = "b6a37178abd163036357a7ba35fd0364";
+    // Upload compressed image to imgbb with random key
+    const apiKey = getRandomApiKey();
     const uploadForm = new FormData();
     uploadForm.append("key", apiKey);
     uploadForm.append("image", compressedBlob, "photo.jpg");
