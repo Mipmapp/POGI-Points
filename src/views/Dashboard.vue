@@ -307,9 +307,11 @@
 
         <!-- Dashboard Page -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin'" class="bg-white rounded-lg shadow-lg p-4 md:p-8 mb-8">
-          <h2 class="text-xl md:text-2xl font-bold text-purple-900 mb-6">My Profile</h2>
-          <div class="flex flex-col gap-8">
-            <div class="flex flex-col items-center">
+          <h2 class="text-xl md:text-2xl font-bold text-purple-900 mb-8">My Profile</h2>
+          
+          <!-- Profile Header Section -->
+          <div class="flex flex-col md:flex-row gap-8 mb-8 pb-8 border-b-2 border-gray-200">
+            <div class="flex flex-col items-center md:items-start">
               <div class="w-32 h-32 rounded-full bg-gray-200 overflow-hidden mb-4 shadow-lg">
                 <div v-if="profileImageLoading" class="w-full h-full flex items-center justify-center bg-purple-100">
                   <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -322,45 +324,66 @@
                   👤
                 </div>
               </div>
-              <p class="text-lg font-semibold text-purple-900">{{ displayName }}</p>
-              <p class="text-sm text-gray-600">{{ currentUser.studentId || currentUser.student_id }}</p>
+              <div class="text-center md:text-left">
+                <p class="text-2xl font-bold text-purple-900">{{ displayName }}</p>
+                <p class="text-sm text-gray-500 mt-1">ID: {{ currentUser.studentId || currentUser.student_id }}</p>
+              </div>
             </div>
-            <div class="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <p class="text-sm text-gray-500 font-medium">First Name</p>
-                <p class="text-base text-gray-900">{{ currentUser.firstName || currentUser.first_name || 'N/A' }}</p>
+          </div>
+
+          <!-- Personal Information Section -->
+          <div class="mb-8">
+            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300">Personal Information</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div class="bg-purple-50 p-4 rounded-lg">
+                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">First Name</p>
+                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.firstName || currentUser.first_name || 'N/A' }}</p>
               </div>
-              <div>
-                <p class="text-sm text-gray-500 font-medium">Middle Name</p>
-                <p class="text-base text-gray-900">{{ currentUser.middleName || currentUser.middle_name || 'N/A' }}</p>
+              <div class="bg-purple-50 p-4 rounded-lg">
+                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Middle Name</p>
+                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.middleName || currentUser.middle_name || 'N/A' }}</p>
               </div>
-              <div>
-                <p class="text-sm text-gray-500 font-medium">Last Name</p>
-                <p class="text-base text-gray-900">{{ currentUser.lastName || currentUser.last_name || 'N/A' }}</p>
+              <div class="bg-purple-50 p-4 rounded-lg">
+                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Last Name</p>
+                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.lastName || currentUser.last_name || 'N/A' }}</p>
               </div>
-              <div>
-                <p class="text-sm text-gray-500 font-medium">Email</p>
-                <p class="text-base text-gray-900">{{ currentUser.email || 'Not provided' }}</p>
+            </div>
+          </div>
+
+          <!-- Contact & ID Section -->
+          <div class="mb-8">
+            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300">Contact & Identification</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div class="bg-pink-50 p-4 rounded-lg">
+                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Email</p>
+                <p class="text-base font-semibold text-gray-900 mt-2 break-words">{{ currentUser.email || 'Not provided' }}</p>
               </div>
-              <div>
-                <p class="text-sm text-gray-500 font-medium">RFID Code</p>
-                <p class="text-base text-gray-900">{{ currentUser.rfidCode || currentUser.rfid_code || 'Not provided' }}</p>
+              <div class="bg-pink-50 p-4 rounded-lg">
+                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">RFID Code</p>
+                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.rfidCode || currentUser.rfid_code || 'Not provided' }}</p>
               </div>
-              <div>
-                <p class="text-sm text-gray-500 font-medium">Program</p>
-                <p class="text-base text-gray-900">{{ currentUser.program || 'Not provided' }}</p>
+            </div>
+          </div>
+
+          <!-- Academic Information Section -->
+          <div>
+            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300">Academic Information</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Program</p>
+                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.program || 'Not provided' }}</p>
               </div>
-              <div>
-                <p class="text-sm text-gray-500 font-medium">Year Level</p>
-                <p class="text-base text-gray-900">{{ currentUser.yearLevel || currentUser.year_level || 'Not provided' }}</p>
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Year Level</p>
+                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.yearLevel || currentUser.year_level || 'Not provided' }}</p>
               </div>
-              <div>
-                <p class="text-sm text-gray-500 font-medium">Semester</p>
-                <p class="text-base text-gray-900">{{ currentUser.semester || 'Not provided' }}</p>
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Semester</p>
+                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.semester || 'Not provided' }}</p>
               </div>
-              <div>
-                <p class="text-sm text-gray-500 font-medium">School Year</p>
-                <p class="text-base text-gray-900">{{ currentUser.schoolYear || currentUser.school_year || 'Not provided' }}</p>
+              <div class="bg-blue-50 p-4 rounded-lg">
+                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">School Year</p>
+                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.schoolYear || currentUser.school_year || 'Not provided' }}</p>
               </div>
             </div>
           </div>
