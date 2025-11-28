@@ -133,7 +133,7 @@
               </svg>
             </div>
             <img v-else-if="currentUser.image || currentUser.photo" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="sidebarImageLoading = false" @error="sidebarImageLoading = false" />
-            <span v-else>👤</span>
+            <img v-else src="/user_admin.svg" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
           </div>
           <div>
             <p class="text-sm">Welcome back,</p>
@@ -181,7 +181,7 @@
                 </svg>
               </div>
               <img v-else-if="currentUser.image || currentUser.photo" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="sidebarImageLoading = false" @error="sidebarImageLoading = false" />
-              <span v-else>👤</span>
+              <img v-else src="/user_admin.svg" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
             </div>
             <div>
               <p class="text-sm">Welcome back,</p>
