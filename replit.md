@@ -42,11 +42,22 @@ The application is configured to run on Replit with:
 
 ## Latest Updates (2025-11-28)
 
-### Admin User Management (NEW)
+### Admin Dashboard Enhancements (LATEST)
+- **Icon Buttons**: Edit and Delete buttons replaced with professional icon buttons (pencil/trash) with hover animations
+- **Help Button Repositioned**: "Need Help" button moved to bottom-right corner with proper spacing from scrollbar
+- **Logout Animation**: Added scale and rotate animation when clicking logout button
+- **Renamed Navigation**: "User Management" renamed to "Manage" throughout the app
+- **Advanced Search Filter**: Dropdown to filter search by specific fields:
+  - All Fields, Student ID, First Name, Middle Name, Last Name
+  - Email, RFID Code, Program, School Level
+- **Dynamic Placeholder**: Search input placeholder updates based on selected filter
+- **Mobile Responsive**: Filter dropdown and search stack vertically on mobile
+
+### Admin User Management
 - **User List**: Admin can view all registered users in a table format
-- **Edit User**: Click "Edit" button to modify user details (name, email, program, year level)
-- **Delete User**: Click "Delete" button with confirmation modal to remove users
-- **Menu Item**: "User Management" appears in sidebar only for admin users
+- **Edit User**: Click edit icon to modify user details (name, email, program, year level)
+- **Delete User**: Click delete icon with confirmation modal to remove users
+- **Menu Item**: "Manage" appears in sidebar only for admin users
 - **Storage**: Changes are saved to localStorage
 - **Desktop & Mobile**: Full responsive design with mobile menu support
 
