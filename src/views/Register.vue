@@ -82,7 +82,7 @@
         <div class="text-center mb-8">
           <div class="flex items-center justify-center gap-4 mb-4">
             <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-400 flex items-center justify-center flex-shrink-0">
-              <img src="/register_user.svg" alt="Register" class="w-7 h-7" style="filter: brightness(0) invert(1);" />
+              <img src="/user_plus.svg" alt="Register" class="w-7 h-7" style="filter: brightness(0) invert(1);" />
             </div>
             <div class="text-left">
               <h2 class="text-2xl font-bold text-purple-900">Let's Create</h2>
