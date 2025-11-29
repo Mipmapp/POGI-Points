@@ -343,7 +343,7 @@ const handleLogin = async () => {
       // Fetch all students from API
       const response = await fetch("https://ssaam-api.vercel.app/apis/students", {
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_API_KEY}`
+          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
         }
       });
       const students = await response.json();
