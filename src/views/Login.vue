@@ -84,9 +84,7 @@
   </div>
 
   <div class="hidden md:flex min-h-screen bg-white w-full">
-    <div class="w-2/5 desktop-bg-panel flex-shrink-0 relative overflow-hidden">
-      <img src="/team/SSAAM_COVER.jpg" alt="SSAAM Cover" class="absolute inset-0 w-full h-full object-cover" />
-      <div class="absolute inset-0 bg-gradient-to-r from-black/50 to-black/30"></div>
+    <div class="w-2/5 desktop-bg-panel flex-shrink-0">
       <div class="relative z-10 text-center">
         <div class="mb-4">
           <div class="w-40 h-40 mx-auto flex items-center justify-center">
