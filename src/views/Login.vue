@@ -84,7 +84,7 @@
   </div>
 
   <div class="hidden md:flex min-h-screen bg-white">
-    <div class="desktop-bg-panel">
+    <div class="w-2/5 desktop-bg-panel">
       <div class="relative z-10 text-center">
         <div class="mb-4">
           <div class="w-40 h-40 mx-auto flex items-center justify-center">
