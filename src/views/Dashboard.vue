@@ -244,26 +244,37 @@
           <div class="flex flex-col gap-4 mb-6">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <h2 class="text-xl md:text-2xl font-bold text-purple-900">Manage Users</h2>
-              <span class="text-sm text-gray-600 whitespace-nowrap">Total: {{ filteredUsers.length }} users</span>
+              <div class="flex items-center gap-2">
+                <button @click="refreshStudents" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2" title="Refresh Student List">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Refresh
+                </button>
+                <span class="text-sm text-gray-600 whitespace-nowrap">Total: {{ filteredUsers.length }} users</span>
+              </div>
             </div>
             <div class="flex flex-col sm:flex-row gap-3">
+              <div class="flex-1 relative">
+                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                <input v-model="searchQuery" type="text" placeholder="Search by Name, Email, Student ID, or RFID Code..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm" />
+              </div>
               <div class="relative">
-                <select v-model="searchFilter" class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm">
-                  <option value="all">All Fields</option>
-                  <option value="student_id">Student ID</option>
-                  <option value="first_name">First Name</option>
-                  <option value="middle_name">Middle Name</option>
-                  <option value="last_name">Last Name</option>
-                  <option value="email">Email</option>
-                  <option value="rfid_code">RFID Code</option>
-                  <option value="program">Program</option>
-                  <option value="school_level">School Level</option>
+                <select v-model="filterProgram" class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm">
+                  <option value="">All Programs</option>
+                  <option value="BSCS">BSCS</option>
+                  <option value="BSIS">BSIS</option>
+                  <option value="BSIT">BSIT</option>
                 </select>
                 <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
-              <div class="flex-1 relative">
-                <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input v-model="searchQuery" type="text" :placeholder="searchPlaceholder" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm" />
+              <div class="relative">
+                <select v-model="filterSchoolLevel" class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm">
+                  <option value="">All Levels</option>
+                  <option value="1st year">1st Year</option>
+                  <option value="2nd year">2nd Year</option>
+                  <option value="3rd year">3rd Year</option>
+                  <option value="4th year">4th Year</option>
+                </select>
+                <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
             </div>
           </div>
@@ -277,12 +288,13 @@
                   <th class="border border-purple-300 px-4 py-3 text-left font-semibold text-purple-900">Email</th>
                   <th class="border border-purple-300 px-4 py-3 text-center font-semibold text-purple-900">RFID Code</th>
                   <th class="border border-purple-300 px-4 py-3 text-center font-semibold text-purple-900">Program</th>
+                  <th class="border border-purple-300 px-4 py-3 text-center font-semibold text-purple-900">School Level</th>
                   <th class="border border-purple-300 px-4 py-3 text-center font-semibold text-purple-900">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="filteredUsers.length === 0" class="hover:bg-gray-50">
-                  <td colspan="6" class="border border-purple-300 px-4 py-8 text-center text-gray-600">No users found matching your search.</td>
+                  <td colspan="7" class="border border-purple-300 px-4 py-8 text-center text-gray-600">No users found matching your search.</td>
                 </tr>
                 <tr v-for="user in filteredUsers" :key="user.studentId || user.student_id" class="hover:bg-gray-50">
                   <td class="border border-purple-300 px-4 py-3 text-gray-700">{{ user.studentId || user.student_id }}</td>
@@ -290,6 +302,7 @@
                   <td class="border border-purple-300 px-4 py-3 text-gray-700">{{ user.email }}</td>
                   <td class="border border-purple-300 px-4 py-3 text-center text-gray-700">{{ user.rfidCode || user.rfid_code || '—' }}</td>
                   <td class="border border-purple-300 px-4 py-3 text-center text-gray-700">{{ user.program }}</td>
+                  <td class="border border-purple-300 px-4 py-3 text-center text-gray-700">{{ user.yearLevel || user.year_level }}</td>
                   <td class="border border-purple-300 px-4 py-3 text-center">
                     <div class="flex items-center justify-center gap-2 flex-nowrap">
                       <button @click="editUser(user)" class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all duration-200 hover:scale-110 active:scale-95 flex-shrink-0" title="Edit User">
@@ -561,7 +574,8 @@ const showDeleteConfirm = ref(false)
 const editingUser = ref(null)
 const userToDelete = ref(null)
 const searchQuery = ref('')
-const searchFilter = ref('all')
+const filterProgram = ref('')
+const filterSchoolLevel = ref('')
 const isLoggingOut = ref(false)
 const showLogoutAnimation = ref(false)
 const editImageUploading = ref(false)
@@ -668,67 +682,70 @@ const totalStudents = computed(() => {
   return stats.value.BSCS.total + stats.value.BSIS.total + stats.value.BSIT.total
 })
 
-const searchPlaceholder = computed(() => {
-  const placeholders = {
-    'all': 'Search all fields...',
-    'student_id': 'Search by Student ID...',
-    'first_name': 'Search by First Name...',
-    'middle_name': 'Search by Middle Name...',
-    'last_name': 'Search by Last Name...',
-    'email': 'Search by Email...',
-    'rfid_code': 'Search by RFID Code...',
-    'program': 'Search by Program...',
-    'school_level': 'Search by School Level...'
-  }
-  return placeholders[searchFilter.value] || 'Search...'
-})
-
 const filteredUsers = computed(() => {
-  if (!searchQuery.value.trim()) {
-    return users.value
-  }
-  const query = searchQuery.value.toLowerCase()
   return users.value.filter(user => {
-    const studentId = (user.studentId || user.student_id || '').toLowerCase()
-    const firstName = (user.firstName || user.first_name || '').toLowerCase()
-    const middleName = (user.middleName || user.middle_name || '').toLowerCase()
-    const lastName = (user.lastName || user.last_name || '').toLowerCase()
-    const email = (user.email || '').toLowerCase()
-    const rfidCode = (user.rfidCode || user.rfid_code || '').toLowerCase()
-    const program = (user.program || '').toLowerCase()
-    const yearLevel = (user.yearLevel || user.year_level || '').toLowerCase()
-    const fullName = `${firstName} ${middleName} ${lastName}`.toLowerCase()
+    // Text search
+    if (searchQuery.value.trim()) {
+      const query = searchQuery.value.toLowerCase()
+      const studentId = (user.studentId || user.student_id || '').toLowerCase()
+      const firstName = (user.firstName || user.first_name || '').toLowerCase()
+      const lastName = (user.lastName || user.last_name || '').toLowerCase()
+      const email = (user.email || '').toLowerCase()
+      const rfidCode = (user.rfidCode || user.rfid_code || '').toLowerCase()
+      const fullName = `${firstName} ${lastName}`.toLowerCase()
 
-    switch (searchFilter.value) {
-      case 'student_id':
-        return studentId.includes(query)
-      case 'first_name':
-        return firstName.includes(query)
-      case 'middle_name':
-        return middleName.includes(query)
-      case 'last_name':
-        return lastName.includes(query)
-      case 'email':
-        return email.includes(query)
-      case 'rfid_code':
-        return rfidCode.includes(query)
-      case 'program':
-        return program.includes(query)
-      case 'school_level':
-        return yearLevel.includes(query)
-      default:
-        return studentId.includes(query) || 
-               firstName.includes(query) || 
-               middleName.includes(query) ||
-               lastName.includes(query) || 
-               email.includes(query) ||
-               rfidCode.includes(query) ||
-               program.includes(query) ||
-               yearLevel.includes(query) ||
-               fullName.includes(query)
+      const textMatch = studentId.includes(query) || 
+                        firstName.includes(query) ||
+                        lastName.includes(query) || 
+                        email.includes(query) ||
+                        rfidCode.includes(query) ||
+                        fullName.includes(query)
+      if (!textMatch) return false
     }
+
+    // Program filter
+    if (filterProgram.value && user.program !== filterProgram.value) {
+      return false
+    }
+
+    // School level filter
+    if (filterSchoolLevel.value && (user.yearLevel || user.year_level) !== filterSchoolLevel.value) {
+      return false
+    }
+
+    return true
   })
 })
+
+const refreshStudents = async () => {
+  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') return
+  
+  try {
+    const response = await fetch('https://ssaam-api.vercel.app/apis/students', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
+      }
+    })
+    const apiStudents = await response.json()
+    
+    if (response.ok && Array.isArray(apiStudents)) {
+      users.value = apiStudents.map(s => ({
+        ...s,
+        studentId: s.student_id,
+        firstName: s.first_name,
+        middleName: s.middle_name || '',
+        lastName: s.last_name,
+        yearLevel: s.year_level,
+        rfidCode: s.rfid_code,
+        schoolYear: s.school_year,
+        image: s.photo || s.image || ''
+      }))
+    }
+  } catch (error) {
+    console.error('Failed to refresh students:', error)
+  }
+}
 
 const handleLogout = () => {
   showLogoutConfirmation.value = true
