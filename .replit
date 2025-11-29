@@ -57,6 +57,10 @@ externalPort = 4200
 localPort = 46231
 externalPort = 3001
 
+[[ports]]
+localPort = 46877
+externalPort = 5000
+
 [deployment]
 deploymentTarget = "static"
 build = ["npm", "run", "build"]
@@ -66,3 +70,4 @@ publicDir = "dist"
 
 [userenv.shared]
 VITE_SSAAM_STUDENTS_API_KEY = "SSAAMStudents"
+VITE_SSAAM_API_KEY = "SSAAMRegJRMSU"
