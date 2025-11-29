@@ -762,12 +762,35 @@ const handleNext = async () => {
       isRegistering.value = false
 
       if (response.ok) {
+        const newUser = await response.json()
+        
+        // Normalize user data for dashboard
+        const normalizedUser = {
+          ...newUser,
+          studentId: newUser.student_id,
+          firstName: newUser.first_name || '',
+          lastName: newUser.last_name || '',
+          middleName: newUser.middle_name || '',
+          email: newUser.email || '',
+          rfidCode: newUser.rfid_code || '',
+          yearLevel: newUser.year_level || '',
+          semester: newUser.semester || '',
+          schoolYear: newUser.school_year || '',
+          program: newUser.program || '',
+          role: 'student',
+          image: newUser.photo || newUser.image || '',
+          isMaster: false
+        }
+        
+        // Save user to localStorage
+        localStorage.setItem("currentUser", JSON.stringify(normalizedUser))
+        
         notificationMessage.value = "Your account has been created successfully!"
         showNotification.value = true
 
         setTimeout(() => {
           showNotification.value = false
-          router.push('/') // redirect after showing notification
+          router.push('/dashboard') // redirect to dashboard
         }, 3000)
       } else {
         const errorData = await response.json()
