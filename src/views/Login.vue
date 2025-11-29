@@ -316,26 +316,40 @@ const handleLogin = async () => {
       return;
     }
 
-    // If ID starts with a letter, use masters API; otherwise use students API
-    const apiUrl = startsWithLetter 
-      ? "https://ssaam-api.vercel.app/apis/masters/login"
-      : "https://ssaam-api.vercel.app/apis/students";
+    let user;
     
-    const response = await fetch(apiUrl, {
-      headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_API_KEY}`
-      }
-    });
-    const data = await response.json();
-
-    console.log(startsWithLetter ? "API MASTERS:" : "API STUDENTS:", data);
-
-    // Find the matching user
-    const user = data.find(
-      (u) =>
-        u.student_id === enteredId &&
-        u.last_name.toLowerCase() === enteredPass
-    );
+    if (startsWithLetter) {
+      // Use masters login API with POST
+      const response = await fetch("https://ssaam-api.vercel.app/apis/masters/login", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_API_KEY}`
+        },
+        body: JSON.stringify({
+          student_id: enteredId,
+          last_name: enteredPass
+        })
+      });
+      user = await response.json();
+      console.log("API MASTERS LOGIN:", user);
+    } else {
+      // Fetch all students from API
+      const response = await fetch("https://ssaam-api.vercel.app/apis/students", {
+        headers: {
+          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_API_KEY}`
+        }
+      });
+      const students = await response.json();
+      console.log("API STUDENTS:", students);
+      
+      // Find the matching student
+      user = students.find(
+        (s) =>
+          s.student_id === enteredId &&
+          s.last_name.toLowerCase() === enteredPass
+      );
+    }
 
     if (user) {
       console.log("LOGIN SUCCESS:", user);
