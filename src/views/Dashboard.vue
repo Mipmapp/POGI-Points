@@ -612,7 +612,7 @@ onMounted(async () => {
       const response = await fetch('https://ssaam-api.vercel.app/apis/students', {
         method: 'GET',
         headers: {
-          'Authorization': `${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
+          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
         }
       })
       console.log('Response status:', response.status, 'OK:', response.ok)
