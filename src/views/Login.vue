@@ -318,7 +318,7 @@ const handleLogin = async () => {
 
     // If ID starts with a letter, use masters API; otherwise use students API
     const apiUrl = startsWithLetter 
-      ? "https://ssaam-api.vercel.app/api/masters/login"
+      ? "https://ssaam-api.vercel.app/apis/masters/login"
       : "https://ssaam-api.vercel.app/apis/students";
     
     const response = await fetch(apiUrl, {
