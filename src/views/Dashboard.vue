@@ -833,25 +833,67 @@ const showNotification = (message, type = 'info') => {
   }, 3000)
 }
 
+const compressImage = (file) => {
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = (e) => {
+      const img = new Image()
+      img.src = e.target.result
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        let width = img.width
+        let height = img.height
+        
+        // Scale down if needed
+        if (width > 1200) {
+          height = (height * 1200) / width
+          width = 1200
+        }
+        
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx.drawImage(img, 0, 0, width, height)
+        
+        // Compress with quality adjustment
+        let quality = 0.9
+        let compressedBlob = null
+        
+        const checkSize = (blob) => {
+          if (blob.size <= 600 * 1024) {
+            resolve(blob)
+          } else if (quality > 0.1) {
+            quality -= 0.1
+            canvas.toBlob(checkSize, 'image/jpeg', quality)
+          } else {
+            resolve(blob)
+          }
+        }
+        
+        canvas.toBlob(checkSize, 'image/jpeg', quality)
+      }
+    }
+  })
+}
+
 const handleEditImageUpload = async (event) => {
   const file = event.target.files[0]
   if (!file) return
 
-  // Check file size limit (600KB)
-  const maxFileSize = 600 * 1024 // 600KB in bytes
-  if (file.size > maxFileSize) {
-    showNotification('Image must be 600KB or smaller', 'error')
-    return
-  }
-
   editImageUploading.value = true
-  showNotification('Uploading image...', 'info')
+  showNotification('Compressing image...', 'info')
 
   try {
+    // Compress the image to 600KB or smaller
+    const compressedBlob = await compressImage(file)
+    
     const formData = new FormData()
     const apiKey = getRandomApiKey()
     formData.append("key", apiKey)
-    formData.append("image", file)
+    formData.append("image", compressedBlob)
+
+    showNotification('Uploading image...', 'info')
 
     const res = await fetch("https://api.imgbb.com/1/upload", {
       method: "POST",
