@@ -588,8 +588,8 @@ const developers = [
 const displayName = computed(() => {
   const firstName = currentUser.value.firstName || currentUser.value.first_name
   const lastName = currentUser.value.lastName || currentUser.value.last_name
-  if (currentUser.value.role === 'admin') {
-    return firstName || 'Administrator'
+  if (currentUser.value.role === 'admin' || currentUser.value.isMaster) {
+    return 'Admin'
   }
   if (firstName && lastName) {
     return `${firstName} ${lastName}`
@@ -610,10 +610,11 @@ onMounted(async () => {
     try {
       const response = await fetch('https://ssaam-api.vercel.app/apis/students', {
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_API_KEY}`
+          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
         }
       })
       const apiStudents = await response.json()
+      console.log('Fetched students:', apiStudents)
       // Normalize API data to match expected field names
       users.value = apiStudents.map(s => ({
         ...s,
