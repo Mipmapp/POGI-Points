@@ -608,7 +608,7 @@ onMounted(async () => {
   // If admin or master, fetch students from API
   if (user.role === 'admin' || user.isMaster) {
     try {
-      const response = await fetch('https://ssaam-api.vercel.app/apis/students', {
+      const response = await fetch('https://ssaam-api.vercel.app/api/students', {
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
         }
