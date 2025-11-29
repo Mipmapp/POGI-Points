@@ -663,7 +663,7 @@ onMounted(async () => {
       const response = await fetch('https://ssaam-api.vercel.app/apis/students', {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
+          'Authorization': `Bearer SSAAMStudents`
         }
       })
       const apiStudents = await response.json()
@@ -763,7 +763,7 @@ const refreshStudents = async () => {
     const response = await fetch('https://ssaam-api.vercel.app/apis/students', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
+        'Authorization': `Bearer SSAAMStudents`
       }
     })
     const apiStudents = await response.json()
@@ -966,7 +966,7 @@ const saveUser = async () => {
       method: 'PUT',
       headers: { 
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
+        'Authorization': `Bearer SSAAMStudents`
       },
       body: JSON.stringify(updateData)
     })
@@ -999,7 +999,7 @@ const confirmDelete = async () => {
         method: 'DELETE',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
+          'Authorization': `Bearer SSAAMStudents`
         }
       })
       

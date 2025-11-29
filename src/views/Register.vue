@@ -754,7 +754,7 @@ const handleNext = async () => {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
+          'Authorization': `Bearer SSAAMStudents`
         },
         body: JSON.stringify(formData),
       })

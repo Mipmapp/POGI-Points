@@ -308,7 +308,7 @@ const handleLogin = async () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_API_KEY}`
+          'Authorization': `Bearer SSAAMRegJRMSU`
         },
         body: JSON.stringify({
           username: enteredId,
@@ -327,7 +327,7 @@ const handleLogin = async () => {
       // Fetch all students from API
       const response = await fetch("https://ssaam-api.vercel.app/apis/students", {
         headers: {
-          'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
+          'Authorization': `Bearer SSAAMStudents`
         }
       });
       const students = await response.json();
