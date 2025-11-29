@@ -334,7 +334,7 @@
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 </div>
-                <img v-else-if="!profileImageFailed && (currentUser.image || currentUser.photo)" :src="currentUser.image || currentUser.photo" alt="Profile Picture" class="w-full h-full object-cover" @load="profileImageLoading = false; profileImageFailed = false" @error="handleProfileImageError" />
+                <img v-else-if="!profileImageFailed && (currentUser.image || currentUser.photo)" :src="currentUser.image || currentUser.photo" alt="Profile Picture" class="w-full h-full object-cover" @load="profileImageLoading = false" @error="handleProfileImageError" />
                 <img v-else src="/user.svg" alt="Profile" class="w-16 h-16" style="filter: brightness(0) invert(1);" />
               </div>
               <div class="text-center md:text-left">
@@ -653,13 +653,9 @@ onMounted(async () => {
   }
   currentUser.value = user
   
-  // Show loading spinner if profile image exists
-  if (user.image || user.photo) {
-    profileImageLoading.value = true
-  }
-  if (user.image || user.photo) {
-    sidebarImageLoading.value = true
-  }
+  // Initialize loading states - let image @load/@error handlers manage them
+  profileImageLoading.value = false
+  sidebarImageLoading.value = false
   
   // If admin or master, fetch students from API
   if (user.role === 'admin' || user.isMaster) {
