@@ -837,6 +837,13 @@ const handleEditImageUpload = async (event) => {
   const file = event.target.files[0]
   if (!file) return
 
+  // Check file size limit (600KB)
+  const maxFileSize = 600 * 1024 // 600KB in bytes
+  if (file.size > maxFileSize) {
+    showNotification('Image must be 600KB or smaller', 'error')
+    return
+  }
+
   editImageUploading.value = true
   showNotification('Uploading image...', 'info')
 
