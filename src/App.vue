@@ -1,9 +1,11 @@
 <template>
   <div id="app">
     <LoadingScreen v-if="isLoading" />
-    <Transition :name="isInitialLoad ? 'slide-in-initial' : 'fade-slide'" mode="out-in" v-if="!isLoading">
-      <router-view :key="isInitialLoad" />
-    </Transition>
+    <router-view v-if="!isLoading" v-slot="{ Component }">
+      <Transition :name="isInitialLoad ? 'slide-in-initial' : 'fade-slide'" mode="out-in">
+        <component :is="Component" :key="isInitialLoad" />
+      </Transition>
+    </router-view>
   </div>
 </template>
 
