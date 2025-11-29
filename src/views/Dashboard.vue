@@ -245,9 +245,10 @@
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <h2 class="text-xl md:text-2xl font-bold text-purple-900">Manage Users</h2>
               <div class="flex items-center gap-2">
-                <button @click="refreshStudents" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2" title="Refresh Student List">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                  Refresh
+                <button @click="refreshStudents" :disabled="isRefreshing" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" title="Refresh Student List">
+                  <svg v-if="isRefreshing" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  {{ isRefreshing ? 'Refreshing...' : 'Refresh' }}
                 </button>
                 <span class="text-sm text-gray-600 whitespace-nowrap">Total: {{ filteredUsers.length }} users</span>
               </div>
@@ -467,8 +468,14 @@
       <div v-if="editingUser" class="space-y-4">
         <div class="flex flex-col items-center mb-6">
           <div class="relative">
-            <div class="w-24 h-24 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 overflow-hidden mb-3 shadow-lg flex items-center justify-center">
-              <img v-if="editingUser.image || editingUser.photo" :src="editingUser.image || editingUser.photo" alt="User Photo" class="w-full h-full object-cover" />
+            <div class="w-24 h-24 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 overflow-hidden mb-3 shadow-lg flex items-center justify-center relative">
+              <div v-if="editImageLoading" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                <svg class="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </div>
+              <img v-if="editingUser.image || editingUser.photo" :src="editingUser.image || editingUser.photo" alt="User Photo" class="w-full h-full object-cover" @load="editImageLoading = false" @error="editImageLoading = false" />
               <img v-else src="/user.svg" alt="Profile" class="w-12 h-12" style="filter: brightness(0) invert(1);" />
             </div>
             <button 
@@ -577,6 +584,8 @@ const filterSchoolLevel = ref('')
 const isLoggingOut = ref(false)
 const showLogoutAnimation = ref(false)
 const editImageUploading = ref(false)
+const editImageLoading = ref(false)
+const isRefreshing = ref(false)
 
 // ImgBB API Keys (randomly selected to distribute traffic)
 const imgbbApiKeys = [
@@ -718,6 +727,7 @@ const filteredUsers = computed(() => {
 const refreshStudents = async () => {
   if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') return
   
+  isRefreshing.value = true
   try {
     const response = await fetch('https://ssaam-api.vercel.app/apis/students', {
       method: 'GET',
@@ -742,6 +752,8 @@ const refreshStudents = async () => {
     }
   } catch (error) {
     console.error('Failed to refresh students:', error)
+  } finally {
+    isRefreshing.value = false
   }
 }
 
@@ -768,6 +780,9 @@ const confirmLogout = () => {
 
 const editUser = (user) => {
   editingUser.value = JSON.parse(JSON.stringify(user))
+  if (editingUser.value.image || editingUser.value.photo) {
+    editImageLoading.value = true
+  }
   showEditModal.value = true
 }
 
