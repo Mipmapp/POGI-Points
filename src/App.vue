@@ -1,8 +1,8 @@
 <template>
   <div id="app">
     <LoadingScreen v-if="isLoading" />
-    <Transition name="fade-slide" mode="out-in" v-if="!isLoading">
-      <router-view />
+    <Transition :name="isInitialLoad ? 'slide-in-initial' : 'fade-slide'" mode="out-in" v-if="!isLoading">
+      <router-view :key="isInitialLoad" />
     </Transition>
   </div>
 </template>
@@ -12,6 +12,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import LoadingScreen from './components/LoadingScreen.vue'
 
 const isLoading = ref(true)
+const isInitialLoad = ref(true)
 
 const preventContextMenu = (e) => {
   e.preventDefault()
@@ -30,6 +31,9 @@ const preventCopy = (e) => {
 onMounted(() => {
   setTimeout(() => {
     isLoading.value = false
+    setTimeout(() => {
+      isInitialLoad.value = false
+    }, 600)
   }, 2000)
   
   document.addEventListener('contextmenu', preventContextMenu)
@@ -46,6 +50,32 @@ onUnmounted(() => {
 #app {
   width: 100%;
   height: 100vh;
+}
+
+/* Initial Slide-In Animation */
+.slide-in-initial-enter-active {
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.6s ease;
+}
+
+/* Desktop: Slide from right to left */
+@media (min-width: 768px) {
+  .slide-in-initial-enter-from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Mobile: Slide from bottom to top */
+@media (max-width: 767px) {
+  .slide-in-initial-enter-from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.slide-in-initial-enter-to {
+  transform: translate(0, 0);
+  opacity: 1;
 }
 
 /* Page Transition Animations */
