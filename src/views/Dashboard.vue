@@ -597,7 +597,7 @@ const showContactModal = ref(false)
 const currentPage = ref('dashboard')
 const currentPageNum = ref(1)
 const itemsPerPage = ref(10)
-const totalStudents = ref(0)
+const paginationTotal = ref(0)
 const totalPages = ref(0)
 const showEditModal = ref(false)
 const showDeleteConfirm = ref(false)
@@ -688,7 +688,7 @@ onMounted(async () => {
         }))
         // Update pagination info if available
         if (result.pagination) {
-          totalStudents.value = result.pagination.total
+          paginationTotal.value = result.pagination.total
           totalPages.value = result.pagination.totalPages
         }
       } else {
@@ -793,7 +793,7 @@ const refreshStudents = async () => {
       }))
       // Update pagination info if available
       if (result.pagination) {
-        totalStudents.value = result.pagination.total
+        paginationTotal.value = result.pagination.total
         totalPages.value = result.pagination.totalPages
       }
     }
