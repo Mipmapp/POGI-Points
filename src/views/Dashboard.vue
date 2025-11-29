@@ -568,15 +568,16 @@
 
   <!-- Image Crop Modal -->
   <div v-if="showCropModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold text-purple-900 mb-6">Crop Image (1:1 Ratio)</h3>
-      <p class="text-sm text-gray-600 mb-4">Drag to reposition • Scroll to zoom • Adjust the square area to crop</p>
-      <div class="mb-6 flex justify-center bg-gray-100 rounded-lg p-4" style="max-height: 400px;">
-        <img v-if="croppedImageData" :src="croppedImageData" alt="Crop Preview" ref="cropImageRef" style="max-width: 100%; max-height: 350px;" />
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold text-purple-900 mb-6">Image Preview (1:1)</h3>
+      <div class="mb-6 flex justify-center">
+        <div class="w-64 h-64 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center">
+          <img v-if="croppedImageData" :src="croppedImageData" alt="Image Preview" ref="cropImageRef" class="w-full h-full object-cover" />
+        </div>
       </div>
       <div class="flex gap-3">
         <button @click="cancelCrop" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-        <button @click="confirmCrop" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">Crop & Use</button>
+        <button @click="confirmCrop" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">Use This Image</button>
       </div>
     </div>
   </div>
@@ -858,66 +859,41 @@ const handleEditImageUpload = async (event) => {
   reader.onload = async (e) => {
     croppedImageData.value = e.target.result
     showCropModal.value = true
-    await nextTick()
-    
-    if (cropImageRef.value) {
-      if (cropperInstance.value) {
-        cropperInstance.value.destroy()
-      }
-      cropperInstance.value = new Cropper(cropImageRef.value, {
-        aspectRatio: 1,
-        autoCropArea: 0.8,
-        responsive: true,
-        restore: true,
-        guides: true,
-        center: true,
-        highlight: true,
-        cropBoxMovable: true,
-        cropBoxResizable: true,
-        toggleDragModeOnDblclick: true,
-        viewMode: 1,
-      })
-    }
   }
   reader.readAsDataURL(file)
 }
 
 const confirmCrop = async () => {
-  if (!cropperInstance.value) return
+  editImageUploading.value = true
+  showNotification('Uploading image...', 'info')
   
-  const canvas = cropperInstance.value.getCroppedCanvas()
-  canvas.toBlob(async (blob) => {
-    editImageUploading.value = true
-    showNotification('Uploading cropped image...', 'info')
-    
-    try {
-      const formData = new FormData()
-      const apiKey = getRandomApiKey()
-      formData.append("key", apiKey)
-      formData.append("image", blob, "photo.jpg")
+  try {
+    const blob = await (await fetch(croppedImageData.value)).blob()
+    const formData = new FormData()
+    const apiKey = getRandomApiKey()
+    formData.append("key", apiKey)
+    formData.append("image", blob, "photo.jpg")
 
-      const res = await fetch("https://api.imgbb.com/1/upload", {
-        method: "POST",
-        body: formData,
-      })
+    const res = await fetch("https://api.imgbb.com/1/upload", {
+      method: "POST",
+      body: formData,
+    })
 
-      const data = await res.json()
+    const data = await res.json()
 
-      if (data.success) {
-        editingUser.value.image = data.data.url
-        editingUser.value.photo = data.data.url
-        showNotification('Image cropped and uploaded!', 'success')
-        showCropModal.value = false
-        if (cropperInstance.value) cropperInstance.value.destroy()
-      } else {
-        showNotification('Upload failed', 'error')
-      }
-    } catch (error) {
-      showNotification('Upload error', 'error')
-      console.error("Upload error:", error)
+    if (data.success) {
+      editingUser.value.image = data.data.url
+      editingUser.value.photo = data.data.url
+      showNotification('Image uploaded!', 'success')
+      showCropModal.value = false
+    } else {
+      showNotification('Upload failed', 'error')
     }
-    editImageUploading.value = false
-  }, 'image/jpeg', 0.9)
+  } catch (error) {
+    showNotification('Upload error', 'error')
+    console.error("Upload error:", error)
+  }
+  editImageUploading.value = false
 }
 
 const cancelCrop = () => {
