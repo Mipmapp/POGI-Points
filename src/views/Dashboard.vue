@@ -495,6 +495,7 @@
           </div>
           <input 
             ref="photoInput" 
+            @change="handleEditImageUpload"
             type="file" 
             accept="image/*" 
             class="hidden" 
@@ -832,7 +833,40 @@ const showNotification = (message, type = 'info') => {
   }, 3000)
 }
 
+const handleEditImageUpload = async (event) => {
+  const file = event.target.files[0]
+  if (!file) return
 
+  editImageUploading.value = true
+  showNotification('Uploading image...', 'info')
+
+  try {
+    const formData = new FormData()
+    const apiKey = getRandomApiKey()
+    formData.append("key", apiKey)
+    formData.append("image", file)
+
+    const res = await fetch("https://api.imgbb.com/1/upload", {
+      method: "POST",
+      body: formData,
+    })
+
+    const data = await res.json()
+
+    if (data.success) {
+      editingUser.value.image = data.data.url
+      editingUser.value.photo = data.data.url
+      showNotification('Image uploaded successfully!', 'success')
+    } else {
+      showNotification('Upload failed', 'error')
+    }
+  } catch (error) {
+    showNotification('Upload error', 'error')
+    console.error("Upload error:", error)
+  } finally {
+    editImageUploading.value = false
+  }
+}
 
 const handleProfileImageError = () => {
   if (profileImageRetries.value < maxRetries) {
