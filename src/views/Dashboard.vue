@@ -68,7 +68,7 @@
       </div>
       <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-6">
         <a v-for="dev in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition">
-          <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-400 flex items-center justify-center text-white text-2xl shadow-lg mb-3 overflow-hidden flex-shrink-0">
+          <div class="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white text-2xl shadow-lg mb-3 overflow-hidden flex-shrink-0">
             <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
             <span v-else>{{ dev.initials }}</span>
           </div>
@@ -126,7 +126,7 @@
 
       <div class="p-6 border-b border-white border-opacity-20">
         <div class="flex items-center space-x-3">
-          <div class="w-12 h-12 rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden">
+          <div class="w-12 h-12 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 flex items-center justify-center text-2xl overflow-hidden">
             <div v-if="sidebarImageLoading" class="w-full h-full flex items-center justify-center">
               <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -134,7 +134,7 @@
               </svg>
             </div>
             <img v-else-if="currentUser.image || currentUser.photo" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="sidebarImageLoading = false" @error="sidebarImageLoading = false" />
-            <img v-else src="/user_admin.svg" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
+            <img v-else src="/user.svg" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
           </div>
           <div>
             <p class="text-sm">Welcome back,</p>
@@ -174,7 +174,7 @@
         
         <div class="p-6 border-b border-white border-opacity-20">
           <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 flex items-center justify-center text-2xl overflow-hidden">
               <div v-if="sidebarImageLoading" class="w-full h-full flex items-center justify-center">
                 <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -182,7 +182,7 @@
                 </svg>
               </div>
               <img v-else-if="currentUser.image || currentUser.photo" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="sidebarImageLoading = false" @error="sidebarImageLoading = false" />
-              <img v-else src="/user_admin.svg" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
+              <img v-else src="/user.svg" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
             </div>
             <div>
               <p class="text-sm">Welcome back,</p>
@@ -326,17 +326,15 @@
           <!-- Profile Header Section -->
           <div class="flex flex-col md:flex-row gap-8 mb-8 pb-8 border-b-2 border-gray-200">
             <div class="flex flex-col items-center md:items-start">
-              <div class="w-32 h-32 rounded-full bg-gray-200 overflow-hidden mb-4 shadow-lg">
-                <div v-if="profileImageLoading" class="w-full h-full flex items-center justify-center bg-purple-100">
-                  <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <div class="w-32 h-32 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 overflow-hidden mb-4 shadow-lg flex items-center justify-center">
+                <div v-if="profileImageLoading" class="w-full h-full flex items-center justify-center">
+                  <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
                 </div>
                 <img v-else-if="currentUser.image || currentUser.photo" :src="currentUser.image || currentUser.photo" alt="Profile Picture" class="w-full h-full object-cover" @load="profileImageLoading = false" @error="profileImageLoading = false" />
-                <div v-else class="w-full h-full flex items-center justify-center text-6xl text-gray-400">
-                  👤
-                </div>
+                <img v-else src="/user.svg" alt="Profile" class="w-16 h-16" style="filter: brightness(0) invert(1);" />
               </div>
               <div class="text-center md:text-left">
                 <p class="text-2xl font-bold text-purple-900">{{ displayName }}</p>
