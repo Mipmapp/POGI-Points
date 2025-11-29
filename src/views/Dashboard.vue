@@ -565,6 +565,20 @@
     </div>
   </div>
 
+  <!-- Image Crop Modal -->
+  <div v-if="showCropModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+      <h3 class="text-2xl font-bold text-purple-900 mb-6">Crop Image (1:1 Ratio)</h3>
+      <div class="mb-6 flex justify-center">
+        <img v-if="croppedImageData" :src="croppedImageData" alt="Crop Preview" class="max-w-full max-h-96" ref="cropImage" />
+      </div>
+      <div class="flex gap-3">
+        <button @click="cancelCrop" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
+        <button @click="confirmCrop" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">Crop & Use</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Notification Toast -->
   <div v-if="notification.show" :class="['fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg text-white font-medium transition-all duration-300 z-40', notification.type === 'success' ? 'bg-green-500' : notification.type === 'error' ? 'bg-red-500' : 'bg-blue-500']">
     <div class="flex items-center gap-2">
@@ -579,6 +593,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import Cropper from 'cropperjs'
 
 const router = useRouter()
 const currentUser = ref({})
@@ -604,6 +619,9 @@ const editImageUploading = ref(false)
 const editImageLoading = ref(false)
 const isRefreshing = ref(false)
 const notification = ref({ show: false, message: '', type: 'info' })
+const showCropModal = ref(false)
+const cropperInstance = ref(null)
+const croppedImageData = ref(null)
 
 // ImgBB API Keys (randomly selected to distribute traffic)
 const imgbbApiKeys = [
@@ -820,45 +838,74 @@ const handleEditImageUpload = async (event) => {
   const file = event.target.files[0]
   if (!file) return
 
-  // Create preview and show immediately
   const reader = new FileReader()
   reader.onload = (e) => {
-    editingUser.value.image = e.target.result
-    editingUser.value.photo = e.target.result
+    croppedImageData.value = e.target.result
+    showCropModal.value = true
+    setTimeout(() => {
+      const cropImg = document.querySelector('[ref="cropImage"]')
+      if (cropImg) {
+        if (cropperInstance.value) cropperInstance.value.destroy()
+        cropperInstance.value = new Cropper(cropImg, {
+          aspectRatio: 1,
+          autoCropArea: 0.8,
+          responsive: true,
+          restore: true,
+          guides: true,
+          center: true,
+          highlight: true,
+          cropBoxMovable: true,
+          cropBoxResizable: true,
+          toggleDragModeOnDblclick: true,
+        })
+      }
+    }, 100)
   }
   reader.readAsDataURL(file)
+}
 
-  editImageUploading.value = true
-  showNotification(`Processing image: ${file.name}...`, 'info')
+const confirmCrop = async () => {
+  if (!cropperInstance.value) return
+  
+  const canvas = cropperInstance.value.getCroppedCanvas()
+  canvas.toBlob(async (blob) => {
+    editImageUploading.value = true
+    showNotification('Uploading cropped image...', 'info')
+    
+    try {
+      const formData = new FormData()
+      const apiKey = getRandomApiKey()
+      formData.append("key", apiKey)
+      formData.append("image", blob, "photo.jpg")
 
-  try {
-    const formData = new FormData()
-    const apiKey = getRandomApiKey()
-    formData.append("key", apiKey)
-    formData.append("image", file, "photo.jpg")
+      const res = await fetch("https://api.imgbb.com/1/upload", {
+        method: "POST",
+        body: formData,
+      })
 
-    const res = await fetch("https://api.imgbb.com/1/upload", {
-      method: "POST",
-      body: formData,
-    })
+      const data = await res.json()
 
-    const data = await res.json()
-
-    if (data.success) {
-      editingUser.value.image = data.data.url
-      editingUser.value.photo = data.data.url
-      showNotification('Image uploaded successfully!', 'success')
-      console.log("Uploaded Image URL:", editingUser.value.image)
-    } else {
-      showNotification('Image upload failed', 'error')
-      console.error("Image upload failed:", data)
+      if (data.success) {
+        editingUser.value.image = data.data.url
+        editingUser.value.photo = data.data.url
+        showNotification('Image cropped and uploaded!', 'success')
+        showCropModal.value = false
+        if (cropperInstance.value) cropperInstance.value.destroy()
+      } else {
+        showNotification('Upload failed', 'error')
+      }
+    } catch (error) {
+      showNotification('Upload error', 'error')
+      console.error("Upload error:", error)
     }
-  } catch (error) {
-    showNotification('Upload error occurred', 'error')
-    console.error("Upload error:", error)
-  }
+    editImageUploading.value = false
+  }, 'image/jpeg', 0.9)
+}
 
-  editImageUploading.value = false
+const cancelCrop = () => {
+  showCropModal.value = false
+  if (cropperInstance.value) cropperInstance.value.destroy()
+  croppedImageData.value = null
 }
 
 const saveUser = async () => {
