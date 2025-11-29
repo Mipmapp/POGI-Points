@@ -148,7 +148,7 @@
           <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>Dashboard</span>
         </button>
-        <button v-if="currentUser.role === 'admin'" @click="currentPage = 'users'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'users' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'users'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'users' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <img src="/user.svg" alt="Users" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>Manage</span>
         </button>
@@ -196,7 +196,7 @@
             <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>Dashboard</span>
           </button>
-          <button v-if="currentUser.role === 'admin'" @click="currentPage = 'users'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'users' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'users'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'users' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
             <img src="/user.svg" alt="Users" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>Manage</span>
           </button>
@@ -240,7 +240,7 @@
         <h1 class="hidden md:block text-2xl md:text-4xl font-bold text-purple-900 mb-8 pb-4 border-b-2 border-purple-900">{{ currentPage === 'users' ? 'Manage' : 'Dashboard' }}</h1>
 
         <!-- User Management Page -->
-        <div v-if="currentPage === 'users' && currentUser.role === 'admin'" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
+        <div v-if="currentPage === 'users' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col gap-4 mb-6">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <h2 class="text-xl md:text-2xl font-bold text-purple-900">Manage Users</h2>
@@ -307,7 +307,7 @@
         </div>
 
         <!-- Dashboard Page -->
-        <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin'" class="bg-white rounded-lg shadow-lg p-4 md:p-8 mb-8">
+        <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-8 mb-8">
           <h2 class="text-xl md:text-2xl font-bold text-purple-900 mb-8">My Profile</h2>
           
           <!-- Profile Header Section -->
@@ -390,7 +390,7 @@
           </div>
         </div>
 
-        <div v-if="currentPage === 'dashboard' && currentUser.role === 'admin'" class="bg-white rounded-lg shadow-lg p-4 md:p-8 mb-8">
+        <div v-if="currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8 mb-8">
           <h2 class="text-xl md:text-2xl font-bold text-purple-900 mb-6">Registered Students</h2>
 
           <div class="overflow-x-auto text-sm md:text-base">
