@@ -610,6 +610,7 @@ onMounted(async () => {
     try {
       console.log('Using token:', import.meta.env.VITE_SSAAM_STUDENTS_API_KEY)
       const response = await fetch('https://ssaam-api.vercel.app/apis/students', {
+        method: 'GET',
         headers: {
           'Authorization': `Bearer ${import.meta.env.VITE_SSAAM_STUDENTS_API_KEY}`
         }
