@@ -1,7 +1,9 @@
 <template>
   <div id="app">
     <LoadingScreen v-if="isLoading" />
-    <router-view v-if="!isLoading" />
+    <Transition name="fade-slide" mode="out-in" v-if="!isLoading">
+      <router-view />
+    </Transition>
   </div>
 </template>
 
@@ -44,5 +46,21 @@ onUnmounted(() => {
 #app {
   width: 100%;
   height: 100vh;
+}
+
+/* Page Transition Animations */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(30px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-30px);
 }
 </style>
