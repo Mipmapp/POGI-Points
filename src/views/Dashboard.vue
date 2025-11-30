@@ -255,10 +255,10 @@
             <div class="flex flex-col sm:flex-row gap-3">
               <div class="flex-1 relative">
                 <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input v-model="searchQuery" type="text" placeholder="Search by Name, Email, Student ID, or RFID Code..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm" />
+                <input v-model="searchQuery" @change="handleSearchChange" type="text" placeholder="Search by Name, Email, Student ID, or RFID Code..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm" />
               </div>
               <div class="relative">
-                <select v-model="filterProgram" class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm">
+                <select v-model="filterProgram" @change="handleSearchChange" class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm">
                   <option value="">All Programs</option>
                   <option value="BSCS">BSCS</option>
                   <option value="BSIS">BSIS</option>
@@ -267,7 +267,7 @@
                 <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
               <div class="relative">
-                <select v-model="filterSchoolLevel" class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm">
+                <select v-model="filterSchoolLevel" @change="handleSearchChange" class="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm">
                   <option value="">All Levels</option>
                   <option value="1st year">1st Year</option>
                   <option value="2nd year">2nd Year</option>
@@ -601,8 +601,8 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const currentUser = ref({})
 const users = ref([])
-const allStudents = ref([])
 const isPageLoading = ref(true)
+const statsLoading = ref(false)
 const profileImageLoading = ref(false)
 const sidebarImageLoading = ref(false)
 const showDevelopersPopup = ref(false)
@@ -626,6 +626,8 @@ const showLogoutAnimation = ref(false)
 const editImageUploading = ref(false)
 const editImageLoading = ref(false)
 const isRefreshing = ref(false)
+const isSearching = ref(false)
+const statsData = ref(null)
 const notification = ref({ show: false, message: '', type: 'info' })
 const profileImageFailed = ref(false)
 const sidebarImageFailed = ref(false)
@@ -672,32 +674,32 @@ onMounted(async () => {
   }
   currentUser.value = user
   
-  // Initialize loading states - let image @load/@error handlers manage them
+  // Initialize loading states
   profileImageLoading.value = false
   sidebarImageLoading.value = false
   
-  // If admin or master, fetch students from API with pagination
+  // If admin or master, fetch students from API with pagination only
   if (user.role === 'admin' || user.isMaster) {
     try {
-      // First, fetch page 1 to get total pages
-      const firstResponse = await fetch(`https://ssaam-api.vercel.app/apis/students?page=1&limit=${itemsPerPage.value}`, {
+      // Fetch only current page (10-20 students)
+      const response = await fetch(`https://ssaam-api.vercel.app/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer SSAAMStudents`
         }
       })
-      const firstResult = await firstResponse.json()
-      const firstPageData = firstResult.data || firstResult
+      const result = await response.json()
+      const pageData = result.data || result
       
-      if (firstResponse.ok && Array.isArray(firstPageData)) {
+      if (response.ok && Array.isArray(pageData)) {
         // Get pagination info
-        if (firstResult.pagination) {
-          paginationTotal.value = firstResult.pagination.total
-          totalPages.value = firstResult.pagination.totalPages
+        if (result.pagination) {
+          paginationTotal.value = result.pagination.total
+          totalPages.value = result.pagination.totalPages
         }
         
-        // Normalize and store first page
-        const normalizedFirst = firstPageData.map(s => ({
+        // Normalize data
+        users.value = pageData.map(s => ({
           ...s,
           studentId: s.student_id,
           firstName: s.first_name,
@@ -708,81 +710,58 @@ onMounted(async () => {
           schoolYear: s.school_year,
           image: s.photo || s.image || ''
         }))
-        
-        users.value = normalizedFirst
-        allStudents.value = [...normalizedFirst]
-        
-        // Auto-fetch remaining pages for statistics
-        if (totalPages.value > 1) {
-          for (let page = 2; page <= totalPages.value; page++) {
-            try {
-              const response = await fetch(`https://ssaam-api.vercel.app/apis/students?page=${page}&limit=${itemsPerPage.value}`, {
-                method: 'GET',
-                headers: {
-                  'Authorization': `Bearer SSAAMStudents`
-                }
-              })
-              const result = await response.json()
-              const pageData = result.data || result
-              
-              if (response.ok && Array.isArray(pageData)) {
-                const normalized = pageData.map(s => ({
-                  ...s,
-                  studentId: s.student_id,
-                  firstName: s.first_name,
-                  middleName: s.middle_name || '',
-                  lastName: s.last_name,
-                  yearLevel: s.year_level,
-                  rfidCode: s.rfid_code || 'N/A',
-                  schoolYear: s.school_year,
-                  image: s.photo || s.image || ''
-                }))
-                allStudents.value.push(...normalized)
-              }
-            } catch (error) {
-              console.error(`Failed to fetch page ${page}:`, error)
-            }
-            // Add 1 second delay between requests
-            await new Promise(resolve => setTimeout(resolve, 1000))
-          }
-        }
       } else {
-        console.error('API returned error or invalid data:', firstPageData)
+        console.error('API returned error or invalid data:', pageData)
         users.value = []
-        allStudents.value = []
       }
     } catch (error) {
       console.error('Failed to fetch students:', error)
       users.value = []
-      allStudents.value = []
     }
+    
+    // Fetch statistics separately
+    fetchStats()
   } else {
     users.value = JSON.parse(localStorage.getItem('users') || '[]')
   }
   
-  // Hide page loading after data is fetched
   isPageLoading.value = false
 })
 
+// Fetch statistics from separate endpoint
+const fetchStats = async () => {
+  statsLoading.value = true
+  try {
+    const response = await fetch('https://ssaam-api.vercel.app/apis/students/stats', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer SSAAMStudents`
+      }
+    })
+    const data = await response.json()
+    if (response.ok && data.stats) {
+      // Store stats to computed property
+      statsData.value = data.stats
+    }
+  } catch (error) {
+    console.error('Failed to fetch statistics:', error)
+  } finally {
+    statsLoading.value = false
+  }
+}
+
 const stats = computed(() => {
+  // Return stats from backend if available
+  if (statsData.value) {
+    return statsData.value
+  }
+  
+  // Fallback: compute from current page (if backend endpoint not available yet)
   const result = {
     BSCS: { '1st year': 0, '2nd year': 0, '3rd year': 0, '4th year': 0, total: 0 },
     BSIS: { '1st year': 0, '2nd year': 0, '3rd year': 0, '4th year': 0, total: 0 },
     BSIT: { '1st year': 0, '2nd year': 0, '3rd year': 0, '4th year': 0, total: 0 }
   }
-  
-  // Use allStudents for complete statistics (all registered students)
-  const studentsToCount = allStudents.value.length > 0 ? allStudents.value : users.value
-  
-  studentsToCount.forEach(user => {
-    const program = user.program
-    const yearLevel = user.yearLevel || user.year_level
-    if (result[program] && result[program][yearLevel] !== undefined) {
-      result[program][yearLevel]++
-      result[program].total++
-    }
-  })
-  
   return result
 })
 
@@ -791,46 +770,35 @@ const totalStudents = computed(() => {
 })
 
 const filteredUsers = computed(() => {
-  return users.value.filter(user => {
-    // Text search
-    if (searchQuery.value.trim()) {
-      const query = searchQuery.value.toLowerCase()
-      const studentId = (user.studentId || user.student_id || '').toLowerCase()
-      const firstName = (user.firstName || user.first_name || '').toLowerCase()
-      const lastName = (user.lastName || user.last_name || '').toLowerCase()
-      const email = (user.email || '').toLowerCase()
-      const rfidCode = (user.rfidCode || user.rfid_code || '').toLowerCase()
-      const fullName = `${firstName} ${lastName}`.toLowerCase()
-
-      const textMatch = studentId.includes(query) || 
-                        firstName.includes(query) ||
-                        lastName.includes(query) || 
-                        email.includes(query) ||
-                        rfidCode.includes(query) ||
-                        fullName.includes(query)
-      if (!textMatch) return false
-    }
-
-    // Program filter
-    if (filterProgram.value && user.program !== filterProgram.value) {
-      return false
-    }
-
-    // School level filter
-    if (filterSchoolLevel.value && (user.yearLevel || user.year_level) !== filterSchoolLevel.value) {
-      return false
-    }
-
-    return true
-  })
+  return users.value
 })
+
+const handleSearchChange = () => {
+  currentPageNum.value = 1
+  refreshStudents()
+}
 
 const refreshStudents = async () => {
   if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') return
   
   isRefreshing.value = true
   try {
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`, {
+    let url = `https://ssaam-api.vercel.app/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`
+    
+    if (searchQuery.value.trim() || filterProgram.value || filterSchoolLevel.value) {
+      url = `https://ssaam-api.vercel.app/apis/students/search?page=${currentPageNum.value}&limit=${itemsPerPage.value}`
+      if (searchQuery.value.trim()) {
+        url += `&search=${encodeURIComponent(searchQuery.value)}`
+      }
+      if (filterProgram.value) {
+        url += `&program=${filterProgram.value}`
+      }
+      if (filterSchoolLevel.value) {
+        url += `&yearLevel=${encodeURIComponent(filterSchoolLevel.value)}`
+      }
+    }
+    
+    const response = await fetch(url, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -851,7 +819,6 @@ const refreshStudents = async () => {
         schoolYear: s.school_year,
         image: s.photo || s.image || ''
       }))
-      // Update pagination info if available
       if (result.pagination) {
         paginationTotal.value = result.pagination.total
         totalPages.value = result.pagination.totalPages
