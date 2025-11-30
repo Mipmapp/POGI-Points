@@ -857,7 +857,7 @@ const handleNext = async () => {
       } else {
         const errorData = await response.json()
         console.error("Error:", errorData)
-        errorMessage.value = "Registration failed. Please try again."
+        errorMessage.value = errorData.message || "Registration failed. Please try again."
         showErrorNotification.value = true
       }
     } catch (error) {

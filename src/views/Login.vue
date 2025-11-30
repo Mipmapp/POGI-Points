@@ -322,6 +322,11 @@ const handleLogin = async () => {
       if (data.master && data.message === "Login successful") {
         user = data.master;
         user.token = data.token;
+      } else if (data.message) {
+        errorMessage.value = data.message;
+        showErrorNotification.value = true;
+        isLoading.value = false;
+        return;
       }
     } else {
       // Use POST login endpoint for students
@@ -341,6 +346,11 @@ const handleLogin = async () => {
       
       if (data.student && data.message === "Login successful") {
         user = data.student;
+      } else if (data.message) {
+        errorMessage.value = data.message;
+        showErrorNotification.value = true;
+        isLoading.value = false;
+        return;
       }
     }
 
@@ -370,7 +380,7 @@ const handleLogin = async () => {
       return;
     }
 
-    errorMessage.value = "Invalid Student ID or Last Name."
+    errorMessage.value = "Invalid Student ID or password. Please check your information and try again."
     showErrorNotification.value = true
   } catch (error) {
     console.error("Login error:", error);
