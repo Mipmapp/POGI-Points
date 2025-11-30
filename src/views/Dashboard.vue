@@ -134,7 +134,7 @@
               </svg>
             </div>
             <img v-else-if="(currentUser.image || currentUser.photo) && !sidebarImageFailed" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
-            <img v-else src="/user.svg" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
+            <img v-else :src="currentUser.role === 'admin' || currentUser.isMaster ? '/user_admin.svg' : '/user.svg'" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
           </div>
           <div>
             <p class="text-sm">Welcome back,</p>
@@ -182,7 +182,7 @@
                 </svg>
               </div>
               <img v-else-if="(currentUser.image || currentUser.photo) && !sidebarImageFailed" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
-              <img v-else src="/user.svg" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
+              <img v-else :src="currentUser.role === 'admin' || currentUser.isMaster ? '/user_admin.svg' : '/user.svg'" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
             </div>
             <div>
               <p class="text-sm">Welcome back,</p>
