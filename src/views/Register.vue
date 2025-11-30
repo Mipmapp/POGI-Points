@@ -857,7 +857,15 @@ const handleNext = async () => {
       } else {
         const errorData = await response.json()
         console.error("Error:", errorData)
-        errorMessage.value = errorData.message || "Registration failed. Please try again."
+        
+        // Check for specific error types
+        const message = errorData.message || "Registration failed. Please try again."
+        if (message.toLowerCase().includes('already exists') || message.toLowerCase().includes('duplicate') || message.toLowerCase().includes('already registered')) {
+          errorMessage.value = "This Student ID is already registered. If you already have an account, please log in instead. Contact support if this is an error."
+        } else {
+          errorMessage.value = message
+        }
+        
         showErrorNotification.value = true
       }
     } catch (error) {
