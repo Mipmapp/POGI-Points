@@ -167,7 +167,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
                 <div class="relative">
                   <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input v-model="formData.student_id" @input="formData.student_id = formData.student_id.replace(/[^0-9A-Z-]/g, '').toUpperCase()" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
+                  <input v-model="formData.student_id" @input="formData.student_id = formData.student_id.toUpperCase().replace(/[^0-9A-Z-]/g, '')" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
                 </div>
               </div>
               <div>
@@ -374,7 +374,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">👤</span>
-                <input v-model="formData.student_id" @input="formData.student_id = formData.student_id.replace(/[^0-9A-Z-]/g, '').toUpperCase()" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
+                <input v-model="formData.student_id" @input="formData.student_id = formData.student_id.toUpperCase().replace(/[^0-9A-Z-]/g, '')" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
               </div>
             </div>
             <div>
