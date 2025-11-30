@@ -112,14 +112,14 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                 <div class="relative">
                   <img src="/user.svg" alt="First Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="JUAN" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+                  <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="JUAN" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
                 </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Middle Name <span class="text-gray-500 text-xs">(optional)</span></label>
                 <div class="relative">
                   <img src="/user.svg" alt="Middle Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="DELA" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" />
+                  <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="DELA" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" />
                 </div>
               </div>
               <div>
@@ -167,7 +167,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
                 <div class="relative">
                   <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input v-model="formData.student_id" @input="formData.student_id = formData.student_id.replace(/[^0-9A-Z-]/g, '').toUpperCase()" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+                  <input v-model="formData.student_id" @input="formData.student_id = formData.student_id.replace(/[^0-9A-Z-]/g, '').toUpperCase()" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
                 </div>
               </div>
               <div>
@@ -319,21 +319,21 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
               <div class="relative">
                 <img src="/user.svg" alt="First Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.first_name" type="text" placeholder="Juan" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+                <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="JUAN" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
               </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Middle Name <span class="text-gray-500 text-xs">(optional)</span></label>
               <div class="relative">
                 <img src="/user.svg" alt="Middle Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.middle_name" type="text" placeholder="Dela" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" />
+                <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="DELA" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" />
               </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
               <div class="relative">
                 <img src="/user.svg" alt="Last Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.last_name" type="text" placeholder="Cruz" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+                <input v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" type="text" placeholder="CRUZ" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
               </div>
             </div>
             <div>
@@ -374,7 +374,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
               <div class="relative">
                 <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">👤</span>
-                <input v-model="formData.student_id" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+                <input v-model="formData.student_id" @input="formData.student_id = formData.student_id.replace(/[^0-9A-Z-]/g, '').toUpperCase()" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
               </div>
             </div>
             <div>
