@@ -297,8 +297,8 @@ const handleLogin = async () => {
   isLoading.value = true
   try {
     const enteredId = studentId.value.trim();
-    // Trim leading/trailing spaces but preserve internal spaces (e.g., "DELA CRUZ")
-    const enteredPass = password.value.split(' ').map(word => word.trim()).filter(word => word).join(' ').toUpperCase();
+    // Trim leading/trailing spaces and collapse internal spaces, preserve multi-word names (e.g., "DELA CRUZ")
+    const enteredPass = password.value.trim().split(' ').map(word => word.trim()).filter(word => word).join(' ').toUpperCase();
     const startsWithLetter = /^[a-zA-Z]/.test(enteredId);
 
     let user;
