@@ -358,7 +358,7 @@
                   class="absolute bottom-1 right-1 w-9 h-9 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 hover:scale-110 border-3 border-white"
                   title="Change Photo"
                 >
-                  <img src="/edit.svg" alt="Change Photo" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
+                  <img src="/change_photo.svg" alt="Change Photo" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
                 </button>
               </div>
               <input 
