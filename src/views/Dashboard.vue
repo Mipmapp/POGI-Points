@@ -341,19 +341,37 @@
           <!-- Profile Header Section -->
           <div class="flex flex-col md:flex-row gap-8 mb-8 pb-8 border-b-2 border-gray-200">
             <div class="flex flex-col items-center md:items-start">
-              <div class="w-32 h-32 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 overflow-hidden mb-4 shadow-lg flex items-center justify-center">
-                <div v-if="profileImageLoading" class="w-full h-full flex items-center justify-center">
-                  <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
+              <div class="relative">
+                <div class="w-32 h-32 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 overflow-hidden mb-4 shadow-lg flex items-center justify-center">
+                  <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
+                    <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                  </div>
+                  <img v-else-if="!profileImageFailed && (currentUser.image || currentUser.photo)" :src="currentUser.image || currentUser.photo" alt="Profile Picture" class="w-full h-full object-cover" @load="() => { profileImageLoading = false; profileImageFailed = false; }" @error="handleProfileImageError" />
+                  <img v-else src="/user.svg" alt="Profile" class="w-16 h-16" style="filter: brightness(0) invert(1);" />
                 </div>
-                <img v-else-if="!profileImageFailed && (currentUser.image || currentUser.photo)" :src="currentUser.image || currentUser.photo" alt="Profile Picture" class="w-full h-full object-cover" @load="profileImageLoading = false" @error="handleProfileImageError" />
-                <img v-else src="/user.svg" alt="Profile" class="w-16 h-16" style="filter: brightness(0) invert(1);" />
+                <button 
+                  v-if="currentUser.role !== 'admin' && !currentUser.isMaster"
+                  @click="$refs.studentPhotoInput.click()" 
+                  class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 hover:scale-110"
+                  title="Change Photo"
+                >
+                  <img src="/change_photo.svg" alt="Change Photo" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
+                </button>
               </div>
+              <input 
+                ref="studentPhotoInput" 
+                @change="handleStudentPhotoUpload"
+                type="file" 
+                accept="image/*" 
+                class="hidden" 
+              />
               <div class="text-center md:text-left">
                 <p class="text-2xl font-bold text-purple-900">{{ displayName }}</p>
                 <p class="text-sm text-gray-500 mt-1">ID: {{ currentUser.studentId || currentUser.student_id }}</p>
+                <p v-if="studentPhotoUploading" class="text-xs text-purple-600 mt-2 font-medium">Uploading photo...</p>
               </div>
             </div>
           </div>
@@ -634,6 +652,7 @@ const sidebarImageFailed = ref(false)
 const profileImageRetries = ref(0)
 const sidebarImageRetries = ref(0)
 const maxRetries = 3
+const studentPhotoUploading = ref(false)
 
 // ImgBB API Keys (randomly selected to distribute traffic)
 const imgbbApiKeys = [
@@ -1005,6 +1024,140 @@ const handleSidebarImageError = () => {
     sidebarImageFailed.value = true
   }
 }
+
+const compressImage = (file) => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const maxWidth = 1920;
+        const maxHeight = 1920;
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, width, height);
+        let quality = 0.9;
+        let attempts = 0;
+        const maxAttempts = 15;
+        const targetSizeKB = 200;
+        const tryCompress = () => {
+          if (attempts >= maxAttempts) {
+            canvas.toBlob(resolve, 'image/jpeg', 0.1);
+            return;
+          }
+          canvas.toBlob((blob) => {
+            const sizeInKB = blob.size / 1024;
+            if (sizeInKB <= targetSizeKB) {
+              resolve(blob);
+            } else {
+              quality -= 0.06;
+              attempts++;
+              if (quality >= 0.05) {
+                tryCompress();
+              } else {
+                resolve(blob);
+              }
+            }
+          }, 'image/jpeg', quality);
+        };
+        tryCompress();
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = event.target.result;
+    };
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
+  });
+};
+
+const handleStudentPhotoUpload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+  studentPhotoUploading.value = true;
+  const maxUploadRetries = 3;
+  let uploadSuccess = false;
+  try {
+    const compressedBlob = await compressImage(file);
+    for (let attempt = 1; attempt <= maxUploadRetries; attempt++) {
+      try {
+        const apiKey = getRandomApiKey();
+        const uploadForm = new FormData();
+        uploadForm.append("key", apiKey);
+        uploadForm.append("image", compressedBlob, "photo.jpg");
+        const res = await fetch("https://api.imgbb.com/1/upload", {
+          method: "POST",
+          body: uploadForm,
+        });
+        const data = await res.json();
+        if (data.success) {
+          const photoUrl = data.data.url;
+          const studentId = currentUser.value.studentId || currentUser.value.student_id;
+          const updateResponse = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}`, {
+            method: 'PUT',
+            headers: { 
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer SSAAMStudents`
+            },
+            body: JSON.stringify({
+              student_id: studentId,
+              first_name: currentUser.value.firstName || currentUser.value.first_name,
+              middle_name: currentUser.value.middleName || currentUser.value.middle_name || '',
+              last_name: currentUser.value.lastName || currentUser.value.last_name,
+              email: currentUser.value.email,
+              rfid_code: currentUser.value.rfidCode || currentUser.value.rfid_code || 'N/A',
+              year_level: currentUser.value.yearLevel || currentUser.value.year_level,
+              program: currentUser.value.program,
+              photo: photoUrl
+            })
+          });
+          if (updateResponse.ok) {
+            currentUser.value.image = photoUrl;
+            currentUser.value.photo = photoUrl;
+            const updatedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+            updatedUser.image = photoUrl;
+            updatedUser.photo = photoUrl;
+            localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            profileImageFailed.value = false;
+            uploadSuccess = true;
+            showNotification('Photo updated successfully!', 'success');
+            break;
+          }
+        } else {
+          if (attempt < maxUploadRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
+      } catch (error) {
+        if (attempt < maxUploadRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
+    }
+    if (!uploadSuccess) {
+      showNotification('Failed to update photo. Please try again.', 'error');
+    }
+  } catch (error) {
+    showNotification('Image processing error. Please try again.', 'error');
+  }
+  studentPhotoUploading.value = false;
+};
 
 const saveUser = async () => {
   if (!editingUser.value) return
