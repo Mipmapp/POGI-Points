@@ -355,10 +355,10 @@
                 <button 
                   v-if="currentUser.role !== 'admin' && !currentUser.isMaster"
                   @click="$refs.studentPhotoInput.click()" 
-                  class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 hover:scale-110"
+                  class="absolute -top-2 right-0 w-9 h-9 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 hover:scale-110 border-3 border-white"
                   title="Change Photo"
                 >
-                  <img src="/change_photo.svg" alt="Change Photo" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
+                  <img src="/edit.svg" alt="Change Photo" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
                 </button>
               </div>
               <input 
