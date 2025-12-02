@@ -325,15 +325,6 @@
             </div>
             <div class="flex flex-wrap gap-2 items-center">
               <div class="flex gap-1">
-                <button @click="goToPage(1)" :disabled="currentPageNum === 1" class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
-                  ← First
-                </button>
-                <button @click="goToPage(totalPages)" :disabled="currentPageNum === totalPages" class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
-                  Last →
-                </button>
-              </div>
-              
-              <div class="flex gap-1">
                 <button @click="goToPreviousPage" :disabled="currentPageNum === 1" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
                   Previous
                 </button>
@@ -345,6 +336,15 @@
               <div class="flex gap-1">
                 <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="['px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200', currentPageNum === page ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300']">
                   {{ page }}
+                </button>
+              </div>
+              
+              <div class="flex gap-1">
+                <button @click="goToPage(1)" :disabled="currentPageNum === 1" class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
+                  ← First
+                </button>
+                <button @click="goToPage(totalPages)" :disabled="currentPageNum === totalPages" class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
+                  Last →
                 </button>
               </div>
             </div>
