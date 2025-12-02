@@ -199,10 +199,15 @@
 
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-            <div class="relative">
-              <img src="/key.svg" alt="Password" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Your Password (Last Name)" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
-              <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
+            <div class="flex gap-2">
+              <div class="relative flex-1">
+                <img src="/key.svg" alt="Password" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input ref="mobilePasswordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Your Password (Last Name)" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
+                <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
+              </div>
+              <button type="button" @click="handleMobilePaste" class="px-4 py-3 bg-purple-100 text-purple-600 rounded-lg font-medium hover:bg-purple-200 transition whitespace-nowrap">
+                Paste
+              </button>
             </div>
           </div>
 
@@ -255,12 +260,23 @@ const errorMessage = ref('')
 const showPassword = ref(false)
 const visibilityAnimating = ref(false)
 
+const mobilePasswordInput = ref(null)
+
 const togglePasswordVisibility = () => {
   visibilityAnimating.value = true
   showPassword.value = !showPassword.value
   setTimeout(() => {
     visibilityAnimating.value = false
   }, 400)
+}
+
+const handleMobilePaste = async () => {
+  try {
+    const clipboardText = await navigator.clipboard.readText()
+    password.value = clipboardText
+  } catch (err) {
+    console.log('Paste not available')
+  }
 }
 
 const developers = [
