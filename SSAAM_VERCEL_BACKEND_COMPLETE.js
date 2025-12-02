@@ -109,6 +109,28 @@ function studentAuth(req, res, next) {
 }
 
 // =============================================================================
+//                           HEALTH CHECK ENDPOINT
+// =============================================================================
+
+// GET - Health check (No auth required - for testing)
+app.get('/', (req, res) => {
+    res.status(200).json({ 
+        message: "SSAAM Backend is running!", 
+        status: "ok",
+        timestamp: new Date().toISOString()
+    });
+});
+
+app.get('/apis/health', (req, res) => {
+    res.status(200).json({ 
+        message: "SSAAM API Health Check",
+        status: "operational",
+        database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
+        timestamp: new Date().toISOString()
+    });
+});
+
+// =============================================================================
 //                                 STUDENT ROUTES (Protected)
 // =============================================================================
 
