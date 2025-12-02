@@ -1025,68 +1025,6 @@ const handleSidebarImageError = () => {
   }
 }
 
-const compressImage = (file) => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-        const maxWidth = 1920;
-        const maxHeight = 1920;
-        if (width > height) {
-          if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
-          }
-        } else {
-          if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
-          }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, width, height);
-        let quality = 0.9;
-        let attempts = 0;
-        const maxAttempts = 15;
-        const targetSizeKB = 200;
-        const tryCompress = () => {
-          if (attempts >= maxAttempts) {
-            canvas.toBlob(resolve, 'image/jpeg', 0.1);
-            return;
-          }
-          canvas.toBlob((blob) => {
-            const sizeInKB = blob.size / 1024;
-            if (sizeInKB <= targetSizeKB) {
-              resolve(blob);
-            } else {
-              quality -= 0.06;
-              attempts++;
-              if (quality >= 0.05) {
-                tryCompress();
-              } else {
-                resolve(blob);
-              }
-            }
-          }, 'image/jpeg', quality);
-        };
-        tryCompress();
-      };
-      img.onerror = () => reject(new Error('Failed to load image'));
-      img.src = event.target.result;
-    };
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsDataURL(file);
-  });
-};
-
 const handleStudentPhotoUpload = async (event) => {
   const file = event.target.files[0];
   if (!file) return;
