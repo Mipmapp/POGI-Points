@@ -319,16 +319,29 @@
           </div>
 
           <!-- Pagination Controls -->
-          <div v-if="paginationTotal > 0" class="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
-            <div class="text-sm text-gray-600">
+          <div v-if="paginationTotal > 0" class="mt-6 pt-6 border-t border-gray-200">
+            <div class="text-sm text-gray-600 mb-4">
               Showing page <span class="font-semibold text-purple-900">{{ currentPageNum }}</span> of <span class="font-semibold text-purple-900">{{ totalPages }}</span> ({{ paginationTotal }} total students)
             </div>
-            <div class="flex gap-3">
-              <button @click="goToPreviousPage" :disabled="currentPageNum === 1" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
-                ← Previous
+            <div class="flex flex-wrap gap-2 items-center">
+              <button @click="goToPage(1)" :disabled="currentPageNum === 1" class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
+                ← First
               </button>
+              <button @click="goToPreviousPage" :disabled="currentPageNum === 1" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
+                Previous
+              </button>
+              
+              <div class="flex gap-1">
+                <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="['px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200', currentPageNum === page ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300']">
+                  {{ page }}
+                </button>
+              </div>
+              
               <button @click="goToNextPage" :disabled="currentPageNum >= totalPages" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
-                Next →
+                Next
+              </button>
+              <button @click="goToPage(totalPages)" :disabled="currentPageNum === totalPages" class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
+                Last →
               </button>
             </div>
           </div>
@@ -1009,6 +1022,29 @@ const goToPreviousPage = () => {
     refreshStudents()
   }
 }
+
+const goToPage = (page) => {
+  if (page >= 1 && page <= totalPages.value && page !== currentPageNum.value) {
+    currentPageNum.value = page
+    refreshStudents()
+  }
+}
+
+const visiblePages = computed(() => {
+  if (totalPages.value <= 5) {
+    return Array.from({ length: totalPages.value }, (_, i) => i + 1)
+  }
+  
+  const pages = []
+  const start = Math.max(1, currentPageNum.value - 2)
+  const end = Math.min(totalPages.value, start + 4)
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  
+  return pages
+})
 
 const handleSidebarImageError = () => {
   sidebarImageLoading.value = false
