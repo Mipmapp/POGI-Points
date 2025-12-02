@@ -297,9 +297,17 @@ const handleLogin = async () => {
   isLoading.value = true
   try {
     const enteredId = studentId.value.trim();
-    // Trim leading/trailing spaces and collapse internal spaces, preserve multi-word names (e.g., "DELA CRUZ")
-    const enteredPass = password.value.trim().split(' ').map(word => word.trim()).filter(word => word).join(' ').toUpperCase();
     const startsWithLetter = /^[a-zA-Z]/.test(enteredId);
+    
+    // Different handling for masters vs students
+    let enteredPass;
+    if (startsWithLetter) {
+      // For masters: keep password as-is (trim only)
+      enteredPass = password.value.trim();
+    } else {
+      // For students: trim leading/trailing spaces and collapse internal spaces, preserve multi-word names (e.g., "DELA CRUZ"), then uppercase
+      enteredPass = password.value.trim().split(' ').map(word => word.trim()).filter(word => word).join(' ').toUpperCase();
+    }
 
     let user;
     
