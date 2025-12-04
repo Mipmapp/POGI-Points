@@ -243,6 +243,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
+import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 
 const router = useRouter()
 const studentId = ref('')
@@ -347,7 +348,8 @@ const handleLogin = async () => {
         },
         body: JSON.stringify({
           student_id: enteredId,
-          last_name: enteredPass
+          last_name: enteredPass,
+          _ssaam_ts: encodeTimestamp()
         })
       });
       const data = await response.json();

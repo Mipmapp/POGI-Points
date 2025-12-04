@@ -503,6 +503,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
+import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 
 const router = useRouter()
 const currentStep = ref(1)
@@ -787,7 +788,13 @@ const handleNext = async () => {
       return
     }
     if (!/^\d{2}-[A-Z]-\d{5}$/.test(formData.student_id)) {
-      errorMessage.value = "Student ID must follow format: 12-A-12345 (2 digits, hyphen, 1 letter, hyphen, 5 digits)."
+      errorMessage.value = "Student ID must follow format: 21-A-12345 (2 digits, hyphen, 1 letter, hyphen, 5 digits)."
+      showErrorNotification.value = true
+      return
+    }
+    const yearPrefix = parseInt(formData.student_id.substring(0, 2), 10);
+    if (yearPrefix < 21 || yearPrefix > 25) {
+      errorMessage.value = "Student ID must start with 21 to 25 (e.g., 21-A-12345 to 25-A-12345)."
       showErrorNotification.value = true
       return
     }
@@ -812,13 +819,18 @@ const handleNext = async () => {
     }
 
     try {
+      const requestPayload = {
+        ...formData,
+        _ssaam_ts: encodeTimestamp()
+      };
+      
       const response = await fetch('https://ssaam-api.vercel.app/apis/students', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer SSAAMStudents`
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(requestPayload),
       })
 
       isRegistering.value = false

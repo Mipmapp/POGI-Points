@@ -632,6 +632,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 
 const router = useRouter()
 const currentUser = ref({})
@@ -1102,7 +1103,8 @@ const handleStudentPhotoUpload = async (event) => {
               rfid_code: currentUser.value.rfidCode || currentUser.value.rfid_code || 'N/A',
               year_level: currentUser.value.yearLevel || currentUser.value.year_level,
               program: currentUser.value.program,
-              photo: photoUrl
+              photo: photoUrl,
+              _ssaam_ts: encodeTimestamp()
             })
           });
           if (updateResponse.ok) {
@@ -1151,7 +1153,8 @@ const saveUser = async () => {
       rfid_code: editingUser.value.rfidCode || editingUser.value.rfid_code || 'N/A',
       year_level: editingUser.value.yearLevel || editingUser.value.year_level,
       program: editingUser.value.program,
-      photo: editingUser.value.image || editingUser.value.photo || ''
+      photo: editingUser.value.image || editingUser.value.photo || '',
+      _ssaam_ts: encodeTimestamp()
     }
     
     const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}`, {
@@ -1191,7 +1194,8 @@ const confirmDelete = async () => {
         method: 'DELETE',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer SSAAMStudents`
+          'Authorization': `Bearer SSAAMStudents`,
+          'X-SSAAM-TS': encodeTimestamp()
         }
       })
       

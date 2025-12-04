@@ -14,6 +14,54 @@ app.use(express.json());
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 const SSAAM_API_KEY = process.env.JWT_SECRET || "SECRET_iKALAT_PALANG_NIMO";
+const SSAAM_CRYPTO_KEY = "SSAAM2025CCS";
+
+function decodeTimestamp(encodedString) {
+    try {
+        const decoded = Buffer.from(encodedString, 'base64').toString('binary');
+        let timestamp = '';
+        for (let i = 0; i < decoded.length; i++) {
+            const charCode = decoded.charCodeAt(i) ^ SSAAM_CRYPTO_KEY.charCodeAt(i % SSAAM_CRYPTO_KEY.length);
+            timestamp += String.fromCharCode(charCode);
+        }
+        return timestamp;
+    } catch (e) {
+        return null;
+    }
+}
+
+function isValidTimestamp(encodedString, maxAgeMinutes = 5) {
+    const timestamp = decodeTimestamp(encodedString);
+    if (!timestamp) return false;
+    
+    try {
+        const requestTime = new Date(timestamp);
+        const now = new Date();
+        const diffMinutes = (now - requestTime) / (1000 * 60);
+        
+        return diffMinutes >= -1 && diffMinutes <= maxAgeMinutes;
+    } catch (e) {
+        return false;
+    }
+}
+
+function timestampAuth(req, res, next) {
+    const ssaamTs = req.body?._ssaam_ts || req.query?._ssaam_ts || req.headers['x-ssaam-ts'];
+    
+    if (!ssaamTs) {
+        return res.status(401).json({ message: "Unauthorized: Missing timestamp" });
+    }
+    
+    if (!isValidTimestamp(ssaamTs)) {
+        return res.status(401).json({ message: "Unauthorized: Invalid or expired timestamp" });
+    }
+    
+    if (req.body?._ssaam_ts) {
+        delete req.body._ssaam_ts;
+    }
+    
+    next();
+}
 
 // ========== MONGO CONNECTION ==========
 mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
@@ -249,12 +297,16 @@ app.get('/apis/students/search', studentAuth, async (req, res) => {
     }
 });
 
-// POST new student (Protected)
-app.post('/apis/students', studentAuth, async (req, res) => {
+// POST new student (Protected with timestamp)
+app.post('/apis/students', studentAuth, timestampAuth, async (req, res) => {
     const data = req.body;
 
     if (!STUDENT_ID_REGEX.test(data.student_id))
-        return res.status(400).json({ message: "Invalid student_id format. Use 12-A-12345" });
+        return res.status(400).json({ message: "Invalid student_id format. Use 21-A-12345" });
+
+    const yearPrefix = parseInt(data.student_id.substring(0, 2), 10);
+    if (yearPrefix < 21 || yearPrefix > 25)
+        return res.status(400).json({ message: "Student ID must start with 21 to 25 (e.g., 21-A-12345 to 25-A-12345)" });
 
     if (!NAME_REGEX.test(data.first_name) || !NAME_REGEX.test(data.last_name))
         return res.status(400).json({ message: "Names must contain letters only" });
@@ -276,8 +328,8 @@ app.post('/apis/students', studentAuth, async (req, res) => {
     }
 });
 
-// UPDATE student (Protected)
-app.put('/apis/students/:student_id', studentAuth, async (req, res) => {
+// UPDATE student (Protected with timestamp)
+app.put('/apis/students/:student_id', studentAuth, timestampAuth, async (req, res) => {
     try {
         const updates = { ...req.body };
         delete updates.student_id;
@@ -314,8 +366,8 @@ app.put('/apis/students/:student_id', studentAuth, async (req, res) => {
     }
 });
 
-// DELETE student (Protected)
-app.delete('/apis/students/:student_id', studentAuth, async (req, res) => {
+// DELETE student (Protected with timestamp)
+app.delete('/apis/students/:student_id', studentAuth, timestampAuth, async (req, res) => {
     try {
         const deleted = await Student.findOneAndDelete({ student_id: req.params.student_id });
 
@@ -333,8 +385,8 @@ app.delete('/apis/students/:student_id', studentAuth, async (req, res) => {
 //                               STUDENT LOGIN ROUTE (NEW - POST INSTEAD OF GET)
 // =============================================================================
 
-// POST Student Login - Returns matching student data (no GET)
-app.post('/apis/students/login', studentAuth, async (req, res) => {
+// POST Student Login - Returns matching student data (with timestamp)
+app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) => {
     try {
         const { student_id, last_name } = req.body;
 
