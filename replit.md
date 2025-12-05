@@ -112,13 +112,19 @@ Frontend SPA with efficient pagination:
 ### Security & Validation Enhancements (LATEST)
 - **Encrypted Timestamp Authentication**: All protected API calls (POST, PUT, DELETE, login) now include an encrypted timestamp
   - Frontend: Uses `src/utils/ssaamCrypto.js` with XOR+Base64 encoding
-  - Backend: Validates timestamp freshness (5-minute window) before processing requests
+  - Backend: Validates timestamp freshness (1-minute window) before processing requests
+  - Clock skew tolerance: -30 seconds to +1 minute to handle minor time differences
   - No secret key needed - uses shared key `SSAAM2025CCS` on both ends
   - Requests with missing/expired timestamps are rejected with 401 Unauthorized
+- **Anti-Bot Protection for Registration**:
+  - User-Agent validation: Blocks requests without valid browser User-Agent
+  - Bot pattern detection: Blocks curl, wget, python-requests, postman, insomnia, httpie, and common bot crawlers
+  - Rate limiting: 1-minute cooldown per IP + student_id combination
+  - Returns 429 (Too Many Requests) with countdown for rate-limited attempts
 - **Student ID Validation**: Registration now only allows student IDs from 21-A-XXXXX to 25-A-XXXXX
   - Frontend validation with user-friendly error messages
   - Backend validation as additional security layer
-- **Updated Backend**: `SSAAM_VERCEL_BACKEND_COMPLETE.js` includes new `timestampAuth` middleware
+- **Updated Backend**: `SSAAM_VERCEL_BACKEND_COMPLETE.js` includes `timestampAuth` and `antiBotProtection` middleware
 
 ## Updates (2025-11-30)
 

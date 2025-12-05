@@ -13,7 +13,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
-const SSAAM_API_KEY = process.env.JWT_SECRET || "SECRET_iKALAT_PALANG_NIMO";
+const SSAAM_API_KEY = process.env.SSAAM_API_KEY || "SECRET_iKALAT_PALANG_NIMO";
 const SSAAM_CRYPTO_KEY = "SSAAM2025CCS";
 
 function decodeTimestamp(encodedString) {
@@ -30,16 +30,16 @@ function decodeTimestamp(encodedString) {
     }
 }
 
-function isValidTimestamp(encodedString, maxAgeMinutes = 5) {
+function isValidTimestamp(encodedString, maxAgeMinutes = 1) {
     const timestamp = decodeTimestamp(encodedString);
     if (!timestamp) return false;
-    
+
     try {
         const requestTime = new Date(timestamp);
         const now = new Date();
         const diffMinutes = (now - requestTime) / (1000 * 60);
-        
-        return diffMinutes >= -1 && diffMinutes <= maxAgeMinutes;
+
+        return diffMinutes >= -0.5 && diffMinutes <= maxAgeMinutes;
     } catch (e) {
         return false;
     }
@@ -47,19 +47,68 @@ function isValidTimestamp(encodedString, maxAgeMinutes = 5) {
 
 function timestampAuth(req, res, next) {
     const ssaamTs = req.body?._ssaam_ts || req.query?._ssaam_ts || req.headers['x-ssaam-ts'];
-    
+
     if (!ssaamTs) {
         return res.status(401).json({ message: "Unauthorized: Missing timestamp" });
     }
-    
+
     if (!isValidTimestamp(ssaamTs)) {
         return res.status(401).json({ message: "Unauthorized: Invalid or expired timestamp" });
     }
-    
+
     if (req.body?._ssaam_ts) {
         delete req.body._ssaam_ts;
     }
+
+    next();
+}
+
+// ========== ANTI-BOT PROTECTION ==========
+const registrationAttempts = new Map();
+const REGISTRATION_COOLDOWN_MS = 60000;
+
+function cleanupOldAttempts() {
+    const now = Date.now();
+    for (const [key, timestamp] of registrationAttempts.entries()) {
+        if (now - timestamp > REGISTRATION_COOLDOWN_MS) {
+            registrationAttempts.delete(key);
+        }
+    }
+}
+
+setInterval(cleanupOldAttempts, 60000);
+
+function antiBotProtection(req, res, next) {
+    const userAgent = req.headers['user-agent'];
+    if (!userAgent || userAgent.length < 10) {
+        return res.status(403).json({ message: "Forbidden: Invalid request source" });
+    }
+
+    const botPatterns = /bot|crawler|spider|scraper|curl|wget|python-requests|postman|insomnia|httpie/i;
+    if (botPatterns.test(userAgent)) {
+        return res.status(403).json({ message: "Forbidden: Automated requests not allowed" });
+    }
+
+    const clientIP = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+                     req.headers['x-real-ip'] || 
+                     req.connection?.remoteAddress || 
+                     'unknown';
     
+    const studentId = req.body?.student_id || 'unknown';
+    const rateLimitKey = `${clientIP}:${studentId}`;
+
+    const lastAttempt = registrationAttempts.get(rateLimitKey);
+    const now = Date.now();
+
+    if (lastAttempt && (now - lastAttempt) < REGISTRATION_COOLDOWN_MS) {
+        const remainingSeconds = Math.ceil((REGISTRATION_COOLDOWN_MS - (now - lastAttempt)) / 1000);
+        return res.status(429).json({ 
+            message: `Too many registration attempts. Please wait ${remainingSeconds} seconds before trying again.` 
+        });
+    }
+
+    registrationAttempts.set(rateLimitKey, now);
+
     next();
 }
 
@@ -227,7 +276,7 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
         allStudents.forEach(student => {
             const program = student.program;
             const yearLevel = student.year_level;
-            
+
             if (stats[program] && stats[program][yearLevel] !== undefined) {
                 stats[program][yearLevel]++;
                 stats[program].total++;
@@ -297,8 +346,8 @@ app.get('/apis/students/search', studentAuth, async (req, res) => {
     }
 });
 
-// POST new student (Protected with timestamp)
-app.post('/apis/students', studentAuth, timestampAuth, async (req, res) => {
+// POST new student (Protected with timestamp + anti-bot)
+app.post('/apis/students', studentAuth, antiBotProtection, timestampAuth, async (req, res) => {
     const data = req.body;
 
     if (!STUDENT_ID_REGEX.test(data.student_id))

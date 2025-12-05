@@ -27,7 +27,7 @@ export function decodeTimestamp(encodedString) {
   }
 }
 
-export function isValidTimestamp(encodedString, maxAgeMinutes = 5) {
+export function isValidTimestamp(encodedString, maxAgeMinutes = 1) {
   const timestamp = decodeTimestamp(encodedString);
   if (!timestamp) return false;
   
@@ -36,7 +36,7 @@ export function isValidTimestamp(encodedString, maxAgeMinutes = 5) {
     const now = new Date();
     const diffMinutes = (now - requestTime) / (1000 * 60);
     
-    return diffMinutes >= 0 && diffMinutes <= maxAgeMinutes;
+    return diffMinutes >= -0.5 && diffMinutes <= maxAgeMinutes;
   } catch (e) {
     return false;
   }
