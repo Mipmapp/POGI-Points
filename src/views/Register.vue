@@ -29,8 +29,8 @@
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
-      <p class="text-xl font-semibold text-purple-900">Registering...</p>
-      <p class="text-sm text-gray-600 mt-2">Please wait while we create your account</p>
+      <p class="text-xl font-semibold text-purple-900">{{ loadingMessage }}</p>
+      <p class="text-sm text-gray-600 mt-2">{{ loadingSubMessage }}</p>
     </div>
   </div>
 
@@ -62,7 +62,6 @@
     </div>
   </div>
 
-  <!-- Registration Disabled Warning -->
   <div v-if="registerDisabled" class="fixed top-0 left-0 right-0 bg-yellow-500 text-yellow-900 py-3 px-4 text-center z-30 shadow-md">
     <div class="flex items-center justify-center gap-2">
       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -101,7 +100,7 @@
           </div>
           <p class="text-gray-600 text-sm italic mb-4">Please provide your basic information.</p>
           <p class="text-sm font-semibold text-purple-900">
-            {{ currentStep === 1 ? 'Step 1 - Personal Information' : currentStep === 2 ? 'Step 2 - School Information' : 'Step 3 - Photo Upload' }}
+            {{ stepTitle }}
           </p>
         </div>
 
@@ -162,9 +161,10 @@
               </div>
               <div class="flex items-center justify-center pt-4">
                 <div class="flex space-x-2">
-                  <div class="w-16 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-16 h-1 bg-gray-300 rounded"></div>
-                  <div class="w-16 h-1 bg-gray-300 rounded"></div>
+                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 </div>
               </div>
               <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
@@ -239,9 +239,10 @@
               </div>
               <div class="flex items-center justify-center pt-4">
                 <div class="flex space-x-2">
-                  <div class="w-16 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-16 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-16 h-1 bg-gray-300 rounded"></div>
+                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 </div>
               </div>
               <div class="flex gap-4">
@@ -273,13 +274,64 @@
               </div>
               <div class="flex items-center justify-center pt-4">
                 <div class="flex space-x-2">
-                  <div class="w-16 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-16 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-16 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 </div>
               </div>
               <div class="flex gap-4">
                 <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+                  <span class="mr-2">←</span>Back
+                </button>
+                <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
+                  Send Code <span class="ml-2">→</span>
+                </button>
+              </div>
+            </div>
+
+            <div v-if="currentStep === 4" class="space-y-4">
+              <div class="text-center mb-4">
+                <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                  <img src="/mail.svg" alt="Email" class="w-8 h-8" />
+                </div>
+                <h3 class="text-lg font-semibold text-purple-900 mb-2">Verify Your Email</h3>
+                <p class="text-sm text-gray-600">We've sent a 6-digit verification code to:</p>
+                <p class="text-sm font-medium text-purple-600 mt-1">{{ formData.email }}</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 text-center">Enter Verification Code</label>
+                <div class="flex justify-center gap-2">
+                  <input 
+                    v-for="(digit, index) in verificationCode" 
+                    :key="index"
+                    v-model="verificationCode[index]"
+                    type="text"
+                    maxlength="1"
+                    @input="handleCodeInput(index, $event)"
+                    @keydown="handleCodeKeydown(index, $event)"
+                    @paste="handleCodePaste($event)"
+                    :ref="el => codeInputs[index] = el"
+                    class="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none"
+                  />
+                </div>
+                <p class="text-xs text-gray-500 mt-3 text-center">Code expires in 10 minutes</p>
+              </div>
+              <div class="flex items-center justify-center pt-2">
+                <button type="button" @click="resendCode" :disabled="resendCooldown > 0" class="text-sm text-purple-600 hover:text-purple-800 disabled:text-gray-400 disabled:cursor-not-allowed">
+                  {{ resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code' }}
+                </button>
+              </div>
+              <div class="flex items-center justify-center pt-4">
+                <div class="flex space-x-2">
+                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                </div>
+              </div>
+              <div class="flex gap-4">
+                <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
                   <span class="mr-2">←</span>Back
                 </button>
                 <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
@@ -300,14 +352,14 @@
   <div class="mobile-bg-panel md:hidden min-h-screen flex flex-col">
 
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
-      <div v-if="currentStep !== 3" class="w-16 h-16 mx-auto mb-4 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+      <div v-if="currentStep !== 3 && currentStep !== 4" class="w-16 h-16 mx-auto mb-4 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
         <img src="/user_plus.svg" alt="Register" class="w-10 h-10" style="filter: brightness(0) invert(1);" />
       </div>
       <h1 class="text-3xl font-bold mb-2">Let's Create</h1>
       <h2 class="text-3xl font-bold mb-4">Your Profile!</h2>
       <p class="text-sm opacity-90 italic mb-4">Please provide your basic information.</p>
       <p class="text-base font-semibold">
-        {{ currentStep === 1 ? 'Step 1 - Personal Information' : currentStep === 2 ? 'Step 2 - School Information' : 'Step 3 - Photo Upload' }}
+        {{ stepTitle }}
       </p>
     </div>
 
@@ -364,15 +416,16 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
               <div class="relative">
-                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">✉️</span>
+                <img src="/mail.svg" alt="Email" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
                 <input v-model="formData.email" type="email" placeholder="juandelacruz@gmail.com" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
               </div>
             </div>
             <div class="flex items-center justify-center pt-4">
               <div class="flex space-x-2">
-                <div class="w-16 h-1 bg-purple-600 rounded"></div>
-                <div class="w-16 h-1 bg-gray-300 rounded"></div>
-                <div class="w-16 h-1 bg-gray-300 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                <div class="w-12 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
             <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
@@ -384,7 +437,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
               <div class="relative">
-                <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">👤</span>
+                <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
                 <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="00-A-00000" maxlength="10" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
               </div>
               <p class="text-xs text-gray-400 mt-1">Format: 00-A-00000</p>
@@ -447,9 +500,10 @@
             </div>
             <div class="flex items-center justify-center pt-4">
               <div class="flex space-x-2">
-                <div class="w-16 h-1 bg-purple-600 rounded"></div>
-                <div class="w-16 h-1 bg-purple-600 rounded"></div>
-                <div class="w-16 h-1 bg-gray-300 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                <div class="w-12 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
             <div class="flex gap-4">
@@ -481,13 +535,64 @@
             </div>
             <div class="flex items-center justify-center pt-4">
               <div class="flex space-x-2">
-                <div class="w-16 h-1 bg-purple-600 rounded"></div>
-                <div class="w-16 h-1 bg-purple-600 rounded"></div>
-                <div class="w-16 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
             <div class="flex gap-4">
               <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+                <span class="mr-2">←</span>Back
+              </button>
+              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
+                Send Code <span class="ml-2">→</span>
+              </button>
+            </div>
+          </div>
+
+          <div v-if="currentStep === 4" class="space-y-4">
+            <div class="text-center mb-4">
+              <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                <img src="/mail.svg" alt="Email" class="w-8 h-8" />
+              </div>
+              <h3 class="text-lg font-semibold text-purple-900 mb-2">Verify Your Email</h3>
+              <p class="text-sm text-gray-600">We've sent a 6-digit verification code to:</p>
+              <p class="text-sm font-medium text-purple-600 mt-1">{{ formData.email }}</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2 text-center">Enter Verification Code</label>
+              <div class="flex justify-center gap-2">
+                <input 
+                  v-for="(digit, index) in verificationCode" 
+                  :key="index"
+                  v-model="verificationCode[index]"
+                  type="text"
+                  maxlength="1"
+                  @input="handleCodeInput(index, $event)"
+                  @keydown="handleCodeKeydown(index, $event)"
+                  @paste="handleCodePaste($event)"
+                  :ref="el => codeInputsMobile[index] = el"
+                  class="w-10 h-12 text-center text-xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none"
+                />
+              </div>
+              <p class="text-xs text-gray-500 mt-3 text-center">Code expires in 10 minutes</p>
+            </div>
+            <div class="flex items-center justify-center pt-2">
+              <button type="button" @click="resendCode" :disabled="resendCooldown > 0" class="text-sm text-purple-600 hover:text-purple-800 disabled:text-gray-400 disabled:cursor-not-allowed">
+                {{ resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code' }}
+              </button>
+            </div>
+            <div class="flex items-center justify-center pt-4">
+              <div class="flex space-x-2">
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
                 <span class="mr-2">←</span>Back
               </button>
               <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
@@ -510,7 +615,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
@@ -522,8 +627,26 @@ const showDevelopersPopup = ref(false)
 const registerDisabled = ref(false)
 const registerDisabledMessage = ref('')
 
+const verificationCode = ref(['', '', '', '', '', ''])
+const codeInputs = ref([])
+const codeInputsMobile = ref([])
+const resendCooldown = ref(0)
+let resendTimer = null
+
+const loadingMessage = ref('Processing...')
+const loadingSubMessage = ref('Please wait')
+
+const stepTitle = computed(() => {
+  switch (currentStep.value) {
+    case 1: return 'Step 1 - Personal Information'
+    case 2: return 'Step 2 - School Information'
+    case 3: return 'Step 3 - Photo Upload'
+    case 4: return 'Step 4 - Email Verification'
+    default: return ''
+  }
+})
+
 onMounted(async () => {
-  // Check registration settings
   try {
     const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
       method: 'GET',
@@ -541,13 +664,13 @@ onMounted(async () => {
   }
 })
 
-  const developers = [
-    { name: 'Jullan Maglinte', initials: 'JM', role: 'Backend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
-    { name: 'Keith Laranjo', initials: 'KL', role: 'Backend Dev', year_level: '2nd year', program: 'CS', facebook: 'https://facebook.com/kei.takun.5070', image: '/team/keith.jpg' },
-    { name: 'Kenzen Miñao', initials: 'KM', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
-    { name: 'Christoph Bagabuyo', initials: 'CB', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/christoph.bagabuyo', image: '/team/christoph.jpg' },
-    { name: 'Mischi Jeda Elumba', initials: 'MJ', role: 'UI/UX Designer', year_level: '2nd year', program: 'IS', facebook: 'https://facebook.com/mischijeda.elumba.1', image: '/team/mischi.jpg' }
-  ]
+const developers = [
+  { name: 'Jullan Maglinte', initials: 'JM', role: 'Backend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
+  { name: 'Keith Laranjo', initials: 'KL', role: 'Backend Dev', year_level: '2nd year', program: 'CS', facebook: 'https://facebook.com/kei.takun.5070', image: '/team/keith.jpg' },
+  { name: 'Kenzen Miñao', initials: 'KM', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
+  { name: 'Christoph Bagabuyo', initials: 'CB', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/christoph.bagabuyo', image: '/team/christoph.jpg' },
+  { name: 'Mischi Jeda Elumba', initials: 'MJ', role: 'UI/UX Designer', year_level: '2nd year', program: 'IS', facebook: 'https://facebook.com/mischijeda.elumba.1', image: '/team/mischi.jpg' }
+]
 
 const formData = reactive({
   student_id: '',
@@ -560,210 +683,261 @@ const formData = reactive({
   program: '',
   photo: '',
   semester: '',
+  school_year: '',
+  email: ''
 })
 
-const isUploading = ref(false);
-const previousStudentIdLength = ref(0);
+const isUploading = ref(false)
+const previousStudentIdLength = ref(0)
 
-// ImgBB API Keys (randomly selected to distribute traffic)
 const imgbbApiKeys = [
   "b6a37178abd163036357a7ba35fd0364",
   "3b523af3b0ffb526efddfb51b8928581"
-];
+]
 
-// Get random ImgBB API key
 const getRandomApiKey = () => {
-  return imgbbApiKeys[Math.floor(Math.random() * imgbbApiKeys.length)];
-};
+  return imgbbApiKeys[Math.floor(Math.random() * imgbbApiKeys.length)]
+}
 
-// Format student ID to XX-A-XXXXX automatically
 const formatStudentId = (value) => {
-  // Convert to uppercase
-  let input = value.toUpperCase();
+  let input = value.toUpperCase()
+  let cleaned = input.replace(/[^0-9A-Z-]/g, '')
+  let noDashes = cleaned.replace(/-/g, '')
+  const isDeleting = noDashes.length < previousStudentIdLength.value
+  previousStudentIdLength.value = noDashes.length
   
-  // Remove all non-alphanumeric and dash characters
-  let cleaned = input.replace(/[^0-9A-Z-]/g, '');
-  
-  // Remove all dashes to get clean input
-  let noDashes = cleaned.replace(/-/g, '');
-  
-  // Check if user is deleting (length decreased) or typing (length increased)
-  const isDeleting = noDashes.length < previousStudentIdLength.value;
-  previousStudentIdLength.value = noDashes.length;
-  
-  // If deleting, just return clean input without auto-formatting dashes
   if (isDeleting) {
-    return noDashes.slice(0, 8); // Max 8 chars without dashes (00000A00000)
+    return noDashes.slice(0, 8)
   }
   
-  // Extract parts based on expected format
-  const digits1 = noDashes.slice(0, 2); // First 2 digits
-  const letter = noDashes.slice(2, 3); // 1 letter
-  const digits2 = noDashes.slice(3, 8); // Next 5 digits
+  const digits1 = noDashes.slice(0, 2)
+  const letter = noDashes.slice(2, 3)
+  const digits2 = noDashes.slice(3, 8)
   
-  // Build formatted string with dashes
-  let formatted = digits1;
-  if (digits1.length === 2) formatted += '-'; // Add dash after 2 digits
-  if (letter) formatted += letter;
-  if (letter) formatted += '-'; // Add dash after letter
-  if (digits2) formatted += digits2;
+  let formatted = digits1
+  if (digits1.length === 2) formatted += '-'
+  if (letter) formatted += letter
+  if (letter) formatted += '-'
+  if (digits2) formatted += digits2
   
-  return formatted.slice(0, 10); // Max length: 00-A-00000 (10 chars)
-};
+  return formatted.slice(0, 10)
+}
 
-// Compress image to 1MB or below while maintaining quality
 const compressImage = (file) => {
   return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+    const reader = new FileReader()
     
     reader.onload = (event) => {
-      const img = new Image();
+      const img = new Image()
       
       img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
+        const canvas = document.createElement('canvas')
+        let width = img.width
+        let height = img.height
         
-        // Calculate dimensions to maintain aspect ratio
-        const maxWidth = 1920;
-        const maxHeight = 1920;
+        const maxWidth = 1920
+        const maxHeight = 1920
         
         if (width > height) {
           if (width > maxWidth) {
-            height = Math.round((height * maxWidth) / width);
-            width = maxWidth;
+            height = Math.round((height * maxWidth) / width)
+            width = maxWidth
           }
         } else {
           if (height > maxHeight) {
-            width = Math.round((width * maxHeight) / height);
-            height = maxHeight;
+            width = Math.round((width * maxHeight) / height)
+            height = maxHeight
           }
         }
         
-        canvas.width = width;
-        canvas.height = height;
+        canvas.width = width
+        canvas.height = height
         
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, 0, 0, width, height);
+        const ctx = canvas.getContext('2d')
+        ctx.fillStyle = 'white'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        ctx.drawImage(img, 0, 0, width, height)
         
-        // Try compression with decreasing quality until under 200KB
-        let quality = 0.9;
-        let compressedBlob;
-        let attempts = 0;
-        const maxAttempts = 15;
-        const targetSizeKB = 200;
+        let quality = 0.9
+        let attempts = 0
+        const maxAttempts = 15
+        const targetSizeKB = 200
         
         const tryCompress = () => {
           if (attempts >= maxAttempts) {
-            canvas.toBlob(resolve, 'image/jpeg', 0.1); // Final fallback
-            return;
+            canvas.toBlob(resolve, 'image/jpeg', 0.1)
+            return
           }
           
           canvas.toBlob((blob) => {
-            const sizeInKB = blob.size / 1024;
-            console.log(`Compression attempt ${attempts + 1}: ${sizeInKB.toFixed(2)}KB at quality ${quality}`);
+            const sizeInKB = blob.size / 1024
             
             if (sizeInKB <= targetSizeKB) {
-              resolve(blob);
+              resolve(blob)
             } else {
-              quality -= 0.06;
-              attempts++;
+              quality -= 0.06
+              attempts++
               if (quality >= 0.05) {
-                tryCompress();
+                tryCompress()
               } else {
-                resolve(blob); // Use best available
+                resolve(blob)
               }
             }
-          }, 'image/jpeg', quality);
-        };
+          }, 'image/jpeg', quality)
+        }
         
-        tryCompress();
-      };
+        tryCompress()
+      }
       
-      img.onerror = () => reject(new Error('Failed to load image'));
-      img.src = event.target.result;
-    };
+      img.onerror = () => reject(new Error('Failed to load image'))
+      img.src = event.target.result
+    }
     
-    reader.onerror = () => reject(new Error('Failed to read file'));
-    reader.readAsDataURL(file);
-  });
-};
+    reader.onerror = () => reject(new Error('Failed to read file'))
+    reader.readAsDataURL(file)
+  })
+}
 
 const handleImageUpload = async (event) => {
-  const file = event.target.files[0];
-  if (!file) return;
+  const file = event.target.files[0]
+  if (!file) return
 
-  // Preview
-  const reader = new FileReader();
+  const reader = new FileReader()
   reader.onload = (e) => {
-    imagePreview.value = e.target.result;
-  };
-  reader.readAsDataURL(file);
+    imagePreview.value = e.target.result
+  }
+  reader.readAsDataURL(file)
 
-  isUploading.value = true;
-  formData.photo = "";
+  isUploading.value = true
+  formData.photo = ""
 
-  const maxRetries = 3;
-  let uploadSuccess = false;
+  const maxRetries = 3
+  let uploadSuccess = false
 
   try {
-    // Compress image to 200KB or below
-    const compressedBlob = await compressImage(file);
-    const sizeInKB = (compressedBlob.size / 1024).toFixed(2);
-    console.log(`Final compressed image size: ${sizeInKB}KB`);
+    const compressedBlob = await compressImage(file)
     
-    // Retry upload logic
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        // Upload compressed image to imgbb with random key
-        const apiKey = getRandomApiKey();
-        const uploadForm = new FormData();
-        uploadForm.append("key", apiKey);
-        uploadForm.append("image", compressedBlob, "photo.jpg");
+        const apiKey = getRandomApiKey()
+        const uploadForm = new FormData()
+        uploadForm.append("key", apiKey)
+        uploadForm.append("image", compressedBlob, "photo.jpg")
 
         const res = await fetch("https://api.imgbb.com/1/upload", {
           method: "POST",
           body: uploadForm,
-        });
+        })
 
-        const data = await res.json();
+        const data = await res.json()
 
         if (data.success) {
-          formData.photo = data.data.url;
-          console.log("Uploaded Image URL:", formData.photo);
-          uploadSuccess = true;
-          break;
+          formData.photo = data.data.url
+          uploadSuccess = true
+          break
         } else {
-          console.error(`Upload attempt ${attempt} failed:`, data);
           if (attempt < maxRetries) {
-            console.log(`Retrying upload (${attempt}/${maxRetries})...`);
-            await new Promise(resolve => setTimeout(resolve, 1000));
+            await new Promise(resolve => setTimeout(resolve, 1000))
           }
         }
       } catch (error) {
-        console.error(`Upload attempt ${attempt} error:`, error);
         if (attempt < maxRetries) {
-          console.log(`Retrying upload (${attempt}/${maxRetries})...`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 1000))
         }
       }
     }
 
     if (!uploadSuccess) {
-      errorMessage.value = "Image upload failed after multiple attempts. Please try again.";
-      showErrorNotification.value = true;
+      errorMessage.value = "Image upload failed after multiple attempts. Please try again."
+      showErrorNotification.value = true
     }
   } catch (error) {
-    console.error("Image compression error:", error);
-    errorMessage.value = "Image processing error. Please try again.";
-    showErrorNotification.value = true;
+    errorMessage.value = "Image processing error. Please try again."
+    showErrorNotification.value = true
   }
 
-  isUploading.value = false;
-};
+  isUploading.value = false
+}
 
+const handleCodeInput = (index, event) => {
+  const value = event.target.value
+  if (value && /^\d$/.test(value)) {
+    verificationCode.value[index] = value
+    if (index < 5) {
+      const nextInput = codeInputs.value[index + 1] || codeInputsMobile.value[index + 1]
+      if (nextInput) nextInput.focus()
+    }
+  } else {
+    verificationCode.value[index] = ''
+  }
+}
+
+const handleCodeKeydown = (index, event) => {
+  if (event.key === 'Backspace' && !verificationCode.value[index] && index > 0) {
+    const prevInput = codeInputs.value[index - 1] || codeInputsMobile.value[index - 1]
+    if (prevInput) prevInput.focus()
+  }
+}
+
+const handleCodePaste = (event) => {
+  event.preventDefault()
+  const pastedData = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+  for (let i = 0; i < pastedData.length; i++) {
+    verificationCode.value[i] = pastedData[i]
+  }
+}
+
+const startResendCooldown = () => {
+  resendCooldown.value = 60
+  if (resendTimer) clearInterval(resendTimer)
+  resendTimer = setInterval(() => {
+    resendCooldown.value--
+    if (resendCooldown.value <= 0) {
+      clearInterval(resendTimer)
+    }
+  }, 1000)
+}
+
+const resendCode = async () => {
+  if (resendCooldown.value > 0) return
+  
+  isRegistering.value = true
+  loadingMessage.value = 'Sending Code...'
+  loadingSubMessage.value = 'Please check your email'
+  
+  try {
+    await sendVerificationCode()
+    startResendCooldown()
+  } catch (error) {
+    errorMessage.value = error.message || 'Failed to resend code'
+    showErrorNotification.value = true
+  }
+  
+  isRegistering.value = false
+}
+
+const sendVerificationCode = async () => {
+  while (isUploading.value) {
+    await new Promise(resolve => setTimeout(resolve, 300))
+  }
+
+  const response = await fetch('https://ssaam-api.vercel.app/apis/students/send-verification', {
+    method: 'POST',
+    headers: { 
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer SSAAMStudents'
+    },
+    body: JSON.stringify(formData)
+  })
+
+  const data = await response.json()
+
+  if (!response.ok) {
+    throw new Error(data.message || 'Failed to send verification code')
+  }
+
+  return data
+}
 
 const showNotification = ref(false)
 const notificationMessage = ref('')
@@ -772,14 +946,12 @@ const showErrorNotification = ref(false)
 const errorMessage = ref('')
 
 const handleNext = async () => {
-  // Check if registration is disabled
   if (registerDisabled.value) {
     errorMessage.value = registerDisabledMessage.value || 'Registration is currently disabled. Please try again later.'
     showErrorNotification.value = true
     return
   }
   
-  // STEP 1 validation
   if (currentStep.value === 1) {
     if (!formData.first_name || !formData.first_name.trim()) {
       errorMessage.value = "Please provide your first name to continue."
@@ -818,7 +990,6 @@ const handleNext = async () => {
     }
   }
 
-  // STEP 2 validation
   if (currentStep.value === 2) {
     if (!formData.student_id || !formData.student_id.trim()) {
       errorMessage.value = "Please enter your Student ID to continue."
@@ -830,7 +1001,7 @@ const handleNext = async () => {
       showErrorNotification.value = true
       return
     }
-    const yearPrefix = parseInt(formData.student_id.substring(0, 2), 10);
+    const yearPrefix = parseInt(formData.student_id.substring(0, 2), 10)
     if (yearPrefix < 21 || yearPrefix > 25) {
       errorMessage.value = "Student ID must start with 21 to 25 (e.g., 21-A-12345 to 25-A-12345)."
       showErrorNotification.value = true
@@ -846,90 +1017,93 @@ const handleNext = async () => {
       showErrorNotification.value = true
       return
     }
+    if (!['BSCS', 'BSIT', 'BSIS'].includes(formData.program)) {
+      errorMessage.value = "Program must be BSCS, BSIT, or BSIS."
+      showErrorNotification.value = true
+      return
+    }
+    if (!formData.semester) {
+      errorMessage.value = "Please select your Semester."
+      showErrorNotification.value = true
+      return
+    }
+    if (!formData.school_year) {
+      errorMessage.value = "Please select your School Year."
+      showErrorNotification.value = true
+      return
+    }
   }
 
-  // STEP 3 — final step: submit form
   if (currentStep.value === 3) {
     isRegistering.value = true
+    loadingMessage.value = 'Sending Verification Code...'
+    loadingSubMessage.value = 'Please check your email'
     
-    while (isUploading.value) {
-      await new Promise(resolve => setTimeout(resolve, 300))
+    try {
+      await sendVerificationCode()
+      verificationCode.value = ['', '', '', '', '', '']
+      startResendCooldown()
+      currentStep.value = 4
+    } catch (error) {
+      errorMessage.value = error.message || 'Failed to send verification code'
+      showErrorNotification.value = true
+    }
+    
+    isRegistering.value = false
+    return
+  }
+
+  if (currentStep.value === 4) {
+    const code = verificationCode.value.join('')
+    if (code.length !== 6) {
+      errorMessage.value = "Please enter the complete 6-digit verification code."
+      showErrorNotification.value = true
+      return
     }
 
+    isRegistering.value = true
+    loadingMessage.value = 'Verifying & Registering...'
+    loadingSubMessage.value = 'Please wait while we create your account'
+    
     try {
-      const requestPayload = {
-        ...formData,
-        _ssaam_access_token: encodeTimestamp()
-      };
-      
-      const response = await fetch('https://ssaam-api.vercel.app/apis/students', {
+      const response = await fetch('https://ssaam-api.vercel.app/apis/students/verify-and-register', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer SSAAMStudents`
+          'Authorization': 'Bearer SSAAMStudents'
         },
-        body: JSON.stringify(requestPayload),
+        body: JSON.stringify({
+          email: formData.email,
+          code: code,
+          _ssaam_access_token: encodeTimestamp()
+        })
       })
 
+      const data = await response.json()
       isRegistering.value = false
 
       if (response.ok) {
-        const newUser = await response.json()
-        
-        // Normalize user data for dashboard
-        const normalizedUser = {
-          ...newUser,
-          studentId: newUser.student_id,
-          firstName: newUser.first_name || '',
-          lastName: newUser.last_name || '',
-          middleName: newUser.middle_name || '',
-          email: newUser.email || '',
-          rfidCode: newUser.rfid_code || 'N/A',
-          yearLevel: newUser.year_level || '',
-          semester: newUser.semester || '',
-          schoolYear: newUser.school_year || '',
-          program: newUser.program || '',
-          role: 'student',
-          image: newUser.photo || newUser.image || '',
-          isMaster: false
-        }
-        
-        // Save user to localStorage
-        localStorage.setItem("currentUser", JSON.stringify(normalizedUser))
-        
-        notificationMessage.value = "Your account has been created successfully!"
+        notificationMessage.value = "Your account has been created! It's pending admin approval. You'll receive an email when approved."
         showNotification.value = true
 
         setTimeout(() => {
           showNotification.value = false
-          router.push('/dashboard') // redirect to dashboard
-        }, 3000)
+          router.push('/')
+        }, 4000)
       } else {
-        const errorData = await response.json()
-        console.error("Error:", errorData)
-        
-        // Check for specific error types
-        const message = errorData.message || "Registration failed. Please try again."
-        if (message.toLowerCase().includes('already exists') || message.toLowerCase().includes('duplicate') || message.toLowerCase().includes('already registered')) {
-          errorMessage.value = "This Student ID is already registered. If you already have an account, please log in instead. Contact support if this is an error."
-        } else {
-          errorMessage.value = message
-        }
-        
+        errorMessage.value = data.message || "Registration failed. Please try again."
         showErrorNotification.value = true
       }
     } catch (error) {
-      console.error("Submit error:", error)
       isRegistering.value = false
       errorMessage.value = "Server error. Please try again later."
       showErrorNotification.value = true
     }
 
-    return // stop further execution
+    return
   }
 
-  // Go to next step if not final
-  if (currentStep.value < 3) {
+  if (currentStep.value < 4) {
     currentStep.value++
   }
 }

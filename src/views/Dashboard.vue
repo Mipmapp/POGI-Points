@@ -152,6 +152,10 @@
           <img src="/user.svg" alt="Users" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>Manage</span>
         </button>
+        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'pending'; fetchPendingStudents()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'pending' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
+        </button>
         <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'settings'; fetchSettings()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'settings' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
           <span>Settings</span>
@@ -204,6 +208,10 @@
             <img src="/user.svg" alt="Users" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>Manage</span>
           </button>
+          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'pending'; showMobileMenu = false; fetchPendingStudents()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'pending' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
+          </button>
           <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'settings'; showMobileMenu = false; fetchSettings()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'settings' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             <span>Settings</span>
@@ -245,7 +253,7 @@
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 class="hidden md:block text-2xl md:text-4xl font-bold text-purple-900 mb-8 pb-4 border-b-2 border-purple-900">{{ currentPage === 'users' ? 'Manage' : currentPage === 'settings' ? 'Settings' : 'Dashboard' }}</h1>
+        <h1 class="hidden md:block text-2xl md:text-4xl font-bold text-purple-900 mb-8 pb-4 border-b-2 border-purple-900">{{ currentPage === 'users' ? 'Manage' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : 'Dashboard' }}</h1>
 
         <!-- Settings Page -->
         <div v-if="currentPage === 'settings' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
@@ -342,6 +350,106 @@
                 <svg v-if="settingsSaving" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                 {{ settingsSaving ? 'Saving...' : 'Save Settings' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pending Approvals Page -->
+        <div v-if="currentPage === 'pending' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <h2 class="text-xl md:text-2xl font-bold text-purple-900">Pending Student Approvals</h2>
+            <button @click="fetchPendingStudents" :disabled="pendingLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+              <svg v-if="pendingLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              {{ pendingLoading ? 'Loading...' : 'Refresh' }}
+            </button>
+          </div>
+
+          <div v-if="pendingLoading" class="flex items-center justify-center py-12">
+            <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+
+          <div v-else-if="pendingStudents.length === 0" class="text-center py-12">
+            <div class="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+              <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">All caught up!</h3>
+            <p class="text-gray-500">No pending student registrations to review.</p>
+          </div>
+
+          <div v-else class="space-y-4">
+            <div v-for="student in pendingStudents" :key="student.student_id" class="border border-gray-200 rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow">
+              <div class="flex flex-col md:flex-row gap-4">
+                <div class="flex-shrink-0">
+                  <div class="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
+                    <img v-if="student.photo" :src="student.photo" alt="Student Photo" class="w-full h-full object-cover" />
+                    <img v-else src="/user.svg" alt="No Photo" class="w-10 h-10 opacity-50" />
+                  </div>
+                </div>
+                <div class="flex-1">
+                  <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
+                    <div>
+                      <h3 class="text-lg font-semibold text-purple-900">{{ student.first_name }} {{ student.middle_name || '' }} {{ student.last_name }} {{ student.suffix || '' }}</h3>
+                      <p class="text-sm text-gray-500">{{ student.student_id }}</p>
+                    </div>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 w-fit">
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
+                      Pending Review
+                    </span>
+                  </div>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-4">
+                    <div>
+                      <p class="text-gray-500">Program</p>
+                      <p class="font-medium text-gray-800">{{ student.program }}</p>
+                    </div>
+                    <div>
+                      <p class="text-gray-500">Year Level</p>
+                      <p class="font-medium text-gray-800">{{ student.year_level }}</p>
+                    </div>
+                    <div>
+                      <p class="text-gray-500">Email</p>
+                      <p class="font-medium text-gray-800 truncate">{{ student.email || 'N/A' }}</p>
+                    </div>
+                    <div>
+                      <p class="text-gray-500">Registered</p>
+                      <p class="font-medium text-gray-800">{{ formatDate(student.created_date) }}</p>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <button @click="approveStudent(student)" :disabled="approvingStudent === student.student_id" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                      <svg v-if="approvingStudent === student.student_id" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                      <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                      {{ approvingStudent === student.student_id ? 'Approving...' : 'Approve' }}
+                    </button>
+                    <button @click="openRejectModal(student)" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200 font-medium text-sm flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reject Modal -->
+        <div v-if="showRejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showRejectModal = false">
+          <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+            <h3 class="text-xl font-bold text-red-600 mb-4">Reject Student Registration</h3>
+            <p class="text-gray-600 mb-4">Are you sure you want to reject <span class="font-semibold">{{ studentToReject?.first_name }} {{ studentToReject?.last_name }}</span>'s registration?</p>
+            <div class="mb-4">
+              <label class="block text-sm font-medium text-gray-700 mb-2">Reason for rejection (optional)</label>
+              <textarea v-model="rejectReason" placeholder="Enter a reason to include in the notification email..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none" rows="3"></textarea>
+            </div>
+            <div class="flex gap-3">
+              <button @click="showRejectModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
+              <button @click="confirmRejectStudent" :disabled="rejectingStudent" class="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-600 transition flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                <svg v-if="rejectingStudent" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                {{ rejectingStudent ? 'Rejecting...' : 'Reject' }}
               </button>
             </div>
           </div>
@@ -788,6 +896,16 @@ const appSettings = ref({
   userLogin: { login: true, message: '' }
 })
 
+// Pending students management
+const pendingStudents = ref([])
+const pendingCount = ref(0)
+const pendingLoading = ref(false)
+const approvingStudent = ref(null)
+const rejectingStudent = ref(false)
+const showRejectModal = ref(false)
+const studentToReject = ref(null)
+const rejectReason = ref('')
+
 // ImgBB API Keys (randomly selected to distribute traffic)
 const imgbbApiKeys = [
   "b6a37178abd163036357a7ba35fd0364",
@@ -872,8 +990,9 @@ onMounted(async () => {
       users.value = []
     }
     
-    // Fetch statistics separately
+    // Fetch statistics and pending count separately
     fetchStats()
+    fetchPendingStudents()
   } else {
     users.value = JSON.parse(localStorage.getItem('users') || '[]')
   }
@@ -893,14 +1012,117 @@ const fetchStats = async () => {
     })
     const data = await response.json()
     if (response.ok && data.stats) {
-      // Store stats to computed property
       statsData.value = data.stats
+      if (data.pendingCount !== undefined) {
+        pendingCount.value = data.pendingCount
+      }
     }
   } catch (error) {
     console.error('Failed to fetch statistics:', error)
   } finally {
     statsLoading.value = false
   }
+}
+
+// Fetch pending students for approval
+const fetchPendingStudents = async () => {
+  pendingLoading.value = true
+  try {
+    const response = await fetch('https://ssaam-api.vercel.app/apis/students/pending', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer SSAAMStudents`
+      }
+    })
+    const result = await response.json()
+    if (response.ok) {
+      pendingStudents.value = result.data || result
+      pendingCount.value = pendingStudents.value.length
+    }
+  } catch (error) {
+    console.error('Failed to fetch pending students:', error)
+  } finally {
+    pendingLoading.value = false
+  }
+}
+
+// Approve a student
+const approveStudent = async (student) => {
+  approvingStudent.value = student.student_id
+  try {
+    const token = localStorage.getItem('adminToken')
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${student.student_id}/approve`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    
+    if (response.ok) {
+      pendingStudents.value = pendingStudents.value.filter(s => s.student_id !== student.student_id)
+      pendingCount.value = pendingStudents.value.length
+      showNotification('Student approved successfully! They will receive an email notification.', 'success')
+      fetchStats()
+    } else {
+      const data = await response.json()
+      showNotification(data.message || 'Failed to approve student', 'error')
+    }
+  } catch (error) {
+    console.error('Failed to approve student:', error)
+    showNotification('Failed to approve student. Please try again.', 'error')
+  } finally {
+    approvingStudent.value = null
+  }
+}
+
+// Open reject modal
+const openRejectModal = (student) => {
+  studentToReject.value = student
+  rejectReason.value = ''
+  showRejectModal.value = true
+}
+
+// Confirm reject student
+const confirmRejectStudent = async () => {
+  if (!studentToReject.value) return
+  
+  rejectingStudent.value = true
+  try {
+    const token = localStorage.getItem('adminToken')
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentToReject.value.student_id}/reject`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ reason: rejectReason.value })
+    })
+    
+    if (response.ok) {
+      pendingStudents.value = pendingStudents.value.filter(s => s.student_id !== studentToReject.value.student_id)
+      pendingCount.value = pendingStudents.value.length
+      showRejectModal.value = false
+      studentToReject.value = null
+      rejectReason.value = ''
+      showNotification('Student registration rejected. They will receive an email notification.', 'success')
+    } else {
+      const data = await response.json()
+      showNotification(data.message || 'Failed to reject student', 'error')
+    }
+  } catch (error) {
+    console.error('Failed to reject student:', error)
+    showNotification('Failed to reject student. Please try again.', 'error')
+  } finally {
+    rejectingStudent.value = false
+  }
+}
+
+// Format date for display
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
 const stats = computed(() => {
