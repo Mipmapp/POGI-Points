@@ -62,6 +62,16 @@
     </div>
   </div>
 
+  <!-- Registration Disabled Warning -->
+  <div v-if="registerDisabled" class="fixed top-0 left-0 right-0 bg-yellow-500 text-yellow-900 py-3 px-4 text-center z-30 shadow-md">
+    <div class="flex items-center justify-center gap-2">
+      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+      <span class="font-medium text-sm">{{ registerDisabledMessage || 'Registration is currently disabled.' }}</span>
+    </div>
+  </div>
+
   <div class="hidden md:flex min-h-screen bg-white">
     <div class="desktop-bg-panel">
       <div class="relative z-10 text-center">
@@ -500,7 +510,7 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
@@ -509,6 +519,27 @@ const router = useRouter()
 const currentStep = ref(1)
 const imagePreview = ref('')
 const showDevelopersPopup = ref(false)
+const registerDisabled = ref(false)
+const registerDisabledMessage = ref('')
+
+onMounted(async () => {
+  // Check registration settings
+  try {
+    const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
+      method: 'GET',
+      headers: {
+        'Authorization': 'Bearer SSAAMStudents'
+      }
+    })
+    const data = await response.json()
+    if (response.ok && data.userRegister) {
+      registerDisabled.value = !data.userRegister.register
+      registerDisabledMessage.value = data.userRegister.message || 'Registration is currently disabled. Please try again later.'
+    }
+  } catch (error) {
+    console.error('Failed to fetch settings:', error)
+  }
+})
 
   const developers = [
     { name: 'Jullan Maglinte', initials: 'JM', role: 'Backend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
@@ -741,6 +772,13 @@ const showErrorNotification = ref(false)
 const errorMessage = ref('')
 
 const handleNext = async () => {
+  // Check if registration is disabled
+  if (registerDisabled.value) {
+    errorMessage.value = registerDisabledMessage.value || 'Registration is currently disabled. Please try again later.'
+    showErrorNotification.value = true
+    return
+  }
+  
   // STEP 1 validation
   if (currentStep.value === 1) {
     if (!formData.first_name || !formData.first_name.trim()) {
@@ -821,7 +859,7 @@ const handleNext = async () => {
     try {
       const requestPayload = {
         ...formData,
-        _ssaam_ts: encodeTimestamp()
+        _ssaam_access_token: encodeTimestamp()
       };
       
       const response = await fetch('https://ssaam-api.vercel.app/apis/students', {

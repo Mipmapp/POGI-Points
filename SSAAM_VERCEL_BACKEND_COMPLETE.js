@@ -14,7 +14,7 @@ app.use(express.json());
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 const SSAAM_API_KEY = process.env.SSAAM_API_KEY || "SECRET_iKALAT_PALANG_NIMO";
-const SSAAM_CRYPTO_KEY = "SSAAM2025CCS";
+const SSAAM_CRYPTO_KEY = process.env.SSAAM_CRYPTO_KEY || "SSAAM2025CCS";
 
 function decodeTimestamp(encodedString) {
     try {
@@ -46,7 +46,7 @@ function isValidTimestamp(encodedString, maxAgeMinutes = 1) {
 }
 
 function timestampAuth(req, res, next) {
-    const ssaamTs = req.body?._ssaam_ts || req.query?._ssaam_ts || req.headers['x-ssaam-ts'];
+    const ssaamTs = req.body?._ssaam_access_token || req.query?._ssaam_access_token || req.headers['x-ssaam-ts'];
 
     if (!ssaamTs) {
         return res.status(401).json({ message: "Unauthorized: Missing timestamp" });
@@ -56,8 +56,8 @@ function timestampAuth(req, res, next) {
         return res.status(401).json({ message: "Unauthorized: Invalid or expired timestamp" });
     }
 
-    if (req.body?._ssaam_ts) {
-        delete req.body._ssaam_ts;
+    if (req.body?._ssaam_access_token) {
+        delete req.body._ssaam_access_token;
     }
 
     next();
@@ -178,6 +178,32 @@ masterSchema.methods.toJSON = function () {
 };
 
 const Master = mongoose.model("Master", masterSchema);
+
+// ========== SETTINGS Schema ==========
+const settingsSchema = new mongoose.Schema({
+    userRegister: {
+        register: { type: Boolean, default: true },
+        message: { type: String, default: "" }
+    },
+    userLogin: {
+        login: { type: Boolean, default: true },
+        message: { type: String, default: "" }
+    }
+});
+
+const Settings = mongoose.model("Settings", settingsSchema, "settings");
+
+// Helper function to get current settings
+async function getSettings() {
+    let settings = await Settings.findOne();
+    if (!settings) {
+        settings = await Settings.create({
+            userRegister: { register: true, message: "" },
+            userLogin: { login: true, message: "" }
+        });
+    }
+    return settings;
+}
 
 // ========== AUTH MIDDLEWARE ==========
 function auth(req, res, next) {
@@ -348,6 +374,19 @@ app.get('/apis/students/search', studentAuth, async (req, res) => {
 
 // POST new student (Protected with timestamp + anti-bot)
 app.post('/apis/students', studentAuth, antiBotProtection, timestampAuth, async (req, res) => {
+    // Check if registration is enabled
+    try {
+        const settings = await getSettings();
+        if (!settings.userRegister.register) {
+            return res.status(403).json({ 
+                message: settings.userRegister.message || "Registration is currently disabled.",
+                registrationDisabled: true
+            });
+        }
+    } catch (settingsErr) {
+        console.error("Error checking settings:", settingsErr);
+    }
+
     const data = req.body;
 
     if (!STUDENT_ID_REGEX.test(data.student_id))
@@ -437,6 +476,15 @@ app.delete('/apis/students/:student_id', studentAuth, timestampAuth, async (req,
 // POST Student Login - Returns matching student data (with timestamp)
 app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) => {
     try {
+        // Check if login is enabled
+        const settings = await getSettings();
+        if (!settings.userLogin.login) {
+            return res.status(403).json({ 
+                message: settings.userLogin.message || "Login is currently disabled.",
+                loginDisabled: true
+            });
+        }
+
         const { student_id, last_name } = req.body;
 
         if (!student_id || !last_name)
@@ -530,6 +578,51 @@ app.get('/apis/masters', auth, async (req, res) => {
     try {
         const masters = await Master.find();
         res.json(masters);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+
+// =============================================================================
+//                               SETTINGS ROUTES
+// =============================================================================
+
+// GET Settings (Public - for login/register pages to check status)
+app.get('/apis/settings', studentAuth, async (req, res) => {
+    try {
+        const settings = await getSettings();
+        res.json(settings);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// PUT Settings (Protected - only admins can update)
+app.put('/apis/settings', auth, async (req, res) => {
+    try {
+        const { userRegister, userLogin } = req.body;
+        
+        let settings = await Settings.findOne();
+        if (!settings) {
+            settings = new Settings({
+                userRegister: userRegister || { register: true, message: "" },
+                userLogin: userLogin || { login: true, message: "" }
+            });
+        } else {
+            if (userRegister !== undefined) {
+                settings.userRegister = userRegister;
+            }
+            if (userLogin !== undefined) {
+                settings.userLogin = userLogin;
+            }
+        }
+        
+        await settings.save();
+        res.json({
+            message: "Settings updated successfully",
+            settings
+        });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

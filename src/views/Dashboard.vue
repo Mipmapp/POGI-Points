@@ -152,6 +152,10 @@
           <img src="/user.svg" alt="Users" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>Manage</span>
         </button>
+        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'settings'; fetchSettings()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'settings' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <span>Settings</span>
+        </button>
         <button 
           @click="handleLogoutWithAnimation"
           :class="['flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 w-full text-left mt-2 transition-all duration-300', isLoggingOut ? 'scale-95 opacity-70' : '']"
@@ -200,6 +204,10 @@
             <img src="/user.svg" alt="Users" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>Manage</span>
           </button>
+          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'settings'; showMobileMenu = false; fetchSettings()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'settings' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <span>Settings</span>
+          </button>
           <button 
             @click="handleLogoutWithAnimation"
             :class="['flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 w-full text-left mt-2 transition-all duration-300', isLoggingOut ? 'scale-95 opacity-70' : '']"
@@ -237,7 +245,107 @@
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 class="hidden md:block text-2xl md:text-4xl font-bold text-purple-900 mb-8 pb-4 border-b-2 border-purple-900">{{ currentPage === 'users' ? 'Manage' : 'Dashboard' }}</h1>
+        <h1 class="hidden md:block text-2xl md:text-4xl font-bold text-purple-900 mb-8 pb-4 border-b-2 border-purple-900">{{ currentPage === 'users' ? 'Manage' : currentPage === 'settings' ? 'Settings' : 'Dashboard' }}</h1>
+
+        <!-- Settings Page -->
+        <div v-if="currentPage === 'settings' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <h2 class="text-xl md:text-2xl font-bold text-purple-900">Access Control Settings</h2>
+            <button @click="fetchSettings" :disabled="settingsLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+              <svg v-if="settingsLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              {{ settingsLoading ? 'Loading...' : 'Refresh' }}
+            </button>
+          </div>
+
+          <div v-if="settingsLoading" class="flex items-center justify-center py-12">
+            <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+          </div>
+
+          <div v-else class="space-y-8">
+            <!-- User Registration Toggle -->
+            <div class="border border-gray-200 rounded-xl p-6">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-purple-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                    User Registration
+                  </h3>
+                  <p class="text-sm text-gray-500 mt-1">Allow new students to create accounts</p>
+                </div>
+                <button 
+                  @click="appSettings.userRegister.register = !appSettings.userRegister.register" 
+                  :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', appSettings.userRegister.register ? 'bg-green-500' : 'bg-gray-300']"
+                >
+                  <span :class="['inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300', appSettings.userRegister.register ? 'translate-x-7' : 'translate-x-1']"></span>
+                </button>
+              </div>
+              <div class="flex items-center gap-2 mb-2">
+                <span :class="['text-sm font-medium px-3 py-1 rounded-full', appSettings.userRegister.register ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                  {{ appSettings.userRegister.register ? 'Enabled' : 'Disabled' }}
+                </span>
+              </div>
+              <div v-if="!appSettings.userRegister.register" class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Message to display when registration is disabled:</label>
+                <textarea 
+                  v-model="appSettings.userRegister.message" 
+                  placeholder="Enter a message to show users when registration is disabled..."
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none resize-none"
+                  rows="3"
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- User Login Toggle -->
+            <div class="border border-gray-200 rounded-xl p-6">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-purple-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                    User Login
+                  </h3>
+                  <p class="text-sm text-gray-500 mt-1">Allow students to log into their accounts</p>
+                </div>
+                <button 
+                  @click="appSettings.userLogin.login = !appSettings.userLogin.login" 
+                  :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', appSettings.userLogin.login ? 'bg-green-500' : 'bg-gray-300']"
+                >
+                  <span :class="['inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300', appSettings.userLogin.login ? 'translate-x-7' : 'translate-x-1']"></span>
+                </button>
+              </div>
+              <div class="flex items-center gap-2 mb-2">
+                <span :class="['text-sm font-medium px-3 py-1 rounded-full', appSettings.userLogin.login ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                  {{ appSettings.userLogin.login ? 'Enabled' : 'Disabled' }}
+                </span>
+              </div>
+              <div v-if="!appSettings.userLogin.login" class="mt-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Message to display when login is disabled:</label>
+                <textarea 
+                  v-model="appSettings.userLogin.message" 
+                  placeholder="Enter a message to show users when login is disabled..."
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none resize-none"
+                  rows="3"
+                ></textarea>
+              </div>
+            </div>
+
+            <!-- Save Button -->
+            <div class="flex justify-end pt-4">
+              <button 
+                @click="saveSettings" 
+                :disabled="settingsSaving"
+                class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-8 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition-all duration-300 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                <svg v-if="settingsSaving" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                {{ settingsSaving ? 'Saving...' : 'Save Settings' }}
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- User Management Page -->
         <div v-if="currentPage === 'users' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
@@ -672,6 +780,14 @@ const sidebarImageRetries = ref(0)
 const maxRetries = 3
 const studentPhotoUploading = ref(false)
 
+// Settings management
+const settingsLoading = ref(false)
+const settingsSaving = ref(false)
+const appSettings = ref({
+  userRegister: { register: true, message: '' },
+  userLogin: { login: true, message: '' }
+})
+
 // ImgBB API Keys (randomly selected to distribute traffic)
 const imgbbApiKeys = [
   "b6a37178abd163036357a7ba35fd0364",
@@ -869,6 +985,66 @@ const refreshStudents = async () => {
     console.error('Failed to refresh students:', error)
   } finally {
     isRefreshing.value = false
+  }
+}
+
+// Fetch settings from API
+const fetchSettings = async () => {
+  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') return
+  
+  settingsLoading.value = true
+  try {
+    const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer SSAAMStudents`
+      }
+    })
+    const data = await response.json()
+    if (response.ok && data) {
+      appSettings.value = {
+        userRegister: data.userRegister || { register: true, message: '' },
+        userLogin: data.userLogin || { login: true, message: '' }
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch settings:', error)
+    showNotification('Failed to load settings', 'error')
+  } finally {
+    settingsLoading.value = false
+  }
+}
+
+// Save settings to API
+const saveSettings = async () => {
+  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') return
+  
+  settingsSaving.value = true
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        userRegister: appSettings.value.userRegister,
+        userLogin: appSettings.value.userLogin
+      })
+    })
+    
+    if (response.ok) {
+      showNotification('Settings saved successfully!', 'success')
+    } else {
+      const error = await response.json()
+      showNotification(error.message || 'Failed to save settings', 'error')
+    }
+  } catch (error) {
+    console.error('Failed to save settings:', error)
+    showNotification('Failed to save settings', 'error')
+  } finally {
+    settingsSaving.value = false
   }
 }
 
@@ -1104,7 +1280,7 @@ const handleStudentPhotoUpload = async (event) => {
               year_level: currentUser.value.yearLevel || currentUser.value.year_level,
               program: currentUser.value.program,
               photo: photoUrl,
-              _ssaam_ts: encodeTimestamp()
+              _ssaam_access_token: encodeTimestamp()
             })
           });
           if (updateResponse.ok) {
@@ -1154,7 +1330,7 @@ const saveUser = async () => {
       year_level: editingUser.value.yearLevel || editingUser.value.year_level,
       program: editingUser.value.program,
       photo: editingUser.value.image || editingUser.value.photo || '',
-      _ssaam_ts: encodeTimestamp()
+      _ssaam_access_token: encodeTimestamp()
     }
     
     const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}`, {
