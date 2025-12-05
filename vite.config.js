@@ -6,6 +6,13 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5000,
-    allowedHosts: true
+    allowedHosts: true,
+    proxy: {
+      '/apis': {
+        target: 'https://ssaam-api.vercel.app',
+        changeOrigin: true,
+        secure: true
+      }
+    }
   }
 })

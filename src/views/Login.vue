@@ -296,7 +296,7 @@ onMounted(async () => {
   
   // Check login settings
   try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
+    const response = await fetch('/apis/settings', {
       method: 'GET',
       headers: {
         'Authorization': 'Bearer SSAAMStudents'
@@ -354,7 +354,7 @@ const handleLogin = async () => {
     
     if (startsWithLetter) {
       // Use masters login API with POST
-      const response = await fetch("https://ssaam-api.vercel.app/apis/masters/login", {
+      const response = await fetch("/apis/masters/login", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -380,7 +380,7 @@ const handleLogin = async () => {
       }
     } else {
       // Use POST login endpoint for students
-      const response = await fetch("https://ssaam-api.vercel.app/apis/students/login", {
+      const response = await fetch("/apis/students/login", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
