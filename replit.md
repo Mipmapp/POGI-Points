@@ -107,9 +107,37 @@ Frontend SPA with efficient pagination:
 - Backend aggregates all student data for statistics
 - No client-side filtering - all search/filter done server-side
 
-## Latest Updates (2025-12-04)
+## Latest Updates (2025-12-05)
 
-### Security & Validation Enhancements (LATEST)
+### Admin Settings Feature (LATEST)
+- **Access Control Settings**: Admin/Master dashboard now includes a Settings page to control user access
+  - **User Registration Toggle**: Enable/disable new student registration
+  - **User Login Toggle**: Enable/disable student login (Masters can still log in)
+  - **Custom Messages**: Display custom messages when features are disabled
+- **Token Parameter Rename**: Changed `_ssaam_ts` to `_ssaam_access_token` for better clarity
+- **MongoDB Settings Storage**: Settings stored in MongoDB with the following structure:
+  ```javascript
+  { 
+    userRegister: { register: boolean, message: string }, 
+    userLogin: { login: boolean, message: string } 
+  }
+  ```
+- **New API Endpoints**:
+  - **GET** `/apis/settings` - Retrieve current settings (public access)
+  - **PUT** `/apis/settings` - Update settings (admin/master only with auth token)
+- **Frontend Integration**:
+  - Login.vue and Register.vue check settings on page load
+  - Warning banners displayed when features are disabled
+  - Form submission blocked with appropriate error messages
+  - Master/Admin users bypass student login restrictions
+- **Backend Integration**:
+  - Student registration endpoint checks `userRegister.register` setting
+  - Student login endpoint checks `userLogin.login` setting
+  - Returns custom message from admin when feature is disabled
+
+## Updates (2025-12-04)
+
+### Security & Validation Enhancements
 - **Encrypted Timestamp Authentication**: All protected API calls (POST, PUT, DELETE, login) now include an encrypted timestamp
   - Frontend: Uses `src/utils/ssaamCrypto.js` with XOR+Base64 encoding
   - Backend: Validates timestamp freshness (1-minute window) before processing requests
