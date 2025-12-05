@@ -109,7 +109,21 @@ Frontend SPA with efficient pagination:
 
 ## Latest Updates (2025-12-05)
 
-### Admin Settings Feature (LATEST)
+### Admin-Only Edit/Delete & Uppercase Names (LATEST)
+- **Uppercase Name Enforcement**: All student names (first, middle, last) are automatically converted to uppercase
+  - Backend: Names are uppercased during registration and editing
+  - Frontend: Names displayed and input as uppercase
+- **Admin-Only Operations**: Edit and Delete student operations now require admin authentication
+  - **PUT** `/apis/students/:student_id` - Now requires admin JWT token (was student token)
+  - **DELETE** `/apis/students/:student_id` - Now requires admin JWT token (was student token)
+  - Dashboard checks for admin role before allowing edit/delete operations
+  - Non-admin users cannot edit or delete student records
+- **Student ID Validation**: Only allows IDs from 21-A-XXXXX to 25-A-XXXXX
+  - Frontend: Validates format and year range during registration
+  - Backend: Additional validation layer for security
+- **Updated Backend Reference**: `SSAAM_VERCEL_BACKEND_COMPLETE.js` includes all security updates
+
+### Admin Settings Feature
 - **Access Control Settings**: Admin/Master dashboard now includes a Settings page to control user access
   - **User Registration Toggle**: Enable/disable new student registration
   - **User Login Toggle**: Enable/disable student login (Masters can still log in)
