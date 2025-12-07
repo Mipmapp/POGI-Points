@@ -375,11 +375,6 @@
         <div v-if="currentPage === 'pending' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h2 class="text-xl md:text-2xl font-bold text-purple-900">Pending Student Approvals</h2>
-            <button @click="fetchPendingStudents" :disabled="pendingLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
-              <svg v-if="pendingLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              {{ pendingLoading ? 'Loading...' : 'Refresh' }}
-            </button>
           </div>
 
           <div v-if="pendingLoading" class="flex items-center justify-center py-12">
@@ -399,9 +394,9 @@
 
           <div v-else class="space-y-4">
             <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
-              <span>Showing {{ pendingShowingStart }} - {{ pendingShowingEnd }} of {{ pendingStudents.length }} pending students</span>
+              <span>{{ pendingStudents.length }} pending student{{ pendingStudents.length === 1 ? '' : 's' }}</span>
             </div>
-            <div v-for="student in paginatedPendingStudents" :key="student.student_id" class="border border-gray-200 rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow">
+            <div v-for="student in pendingStudents" :key="student.student_id" class="border border-gray-200 rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow">
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-shrink-0">
                   <div class="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden" :class="student.photo ? 'bg-purple-100' : 'bg-gradient-to-br from-pink-500 to-purple-600'">
@@ -450,60 +445,6 @@
                     </button>
                   </div>
                 </div>
-              </div>
-            </div>
-            
-            <!-- Pagination Controls for Pending Students -->
-            <div v-if="pendingTotalPages > 1" class="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-4 border-t border-gray-200">
-              <div class="text-sm text-gray-500">
-                Page {{ pendingCurrentPage }} of {{ pendingTotalPages }}
-              </div>
-              <div class="flex items-center gap-2">
-                <button 
-                  @click="goToPendingPage(1)" 
-                  :disabled="pendingCurrentPage === 1"
-                  class="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                  First
-                </button>
-                <button 
-                  @click="goToPendingPage(pendingCurrentPage - 1)" 
-                  :disabled="pendingCurrentPage === 1"
-                  class="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                  Previous
-                </button>
-                <div class="flex items-center gap-1">
-                  <template v-for="page in pendingTotalPages" :key="page">
-                    <button 
-                      v-if="page === 1 || page === pendingTotalPages || (page >= pendingCurrentPage - 1 && page <= pendingCurrentPage + 1)"
-                      @click="goToPendingPage(page)"
-                      :class="[
-                        'px-3 py-1 text-sm rounded-lg transition',
-                        page === pendingCurrentPage 
-                          ? 'bg-purple-600 text-white' 
-                          : 'border border-gray-300 hover:bg-gray-100'
-                      ]"
-                    >
-                      {{ page }}
-                    </button>
-                    <span v-else-if="page === pendingCurrentPage - 2 || page === pendingCurrentPage + 2" class="px-1 text-gray-400">...</span>
-                  </template>
-                </div>
-                <button 
-                  @click="goToPendingPage(pendingCurrentPage + 1)" 
-                  :disabled="pendingCurrentPage === pendingTotalPages"
-                  class="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                  Next
-                </button>
-                <button 
-                  @click="goToPendingPage(pendingTotalPages)" 
-                  :disabled="pendingCurrentPage === pendingTotalPages"
-                  class="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                >
-                  Last
-                </button>
               </div>
             </div>
           </div>
@@ -997,8 +938,6 @@ const rejectingStudent = ref(false)
 const showRejectModal = ref(false)
 const studentToReject = ref(null)
 const rejectReason = ref('')
-const pendingCurrentPage = ref(1)
-const pendingItemsPerPage = 10
 
 // ImgBB API Keys (randomly selected to distribute traffic)
 const imgbbApiKeys = [
@@ -1132,7 +1071,6 @@ const fetchPendingStudents = async () => {
     if (response.ok) {
       pendingStudents.value = result.data || result
       pendingCount.value = pendingStudents.value.length
-      pendingCurrentPage.value = 1
     }
   } catch (error) {
     console.error('Failed to fetch pending students:', error)
@@ -1157,7 +1095,6 @@ const approveStudent = async (student) => {
     if (response.ok) {
       pendingStudents.value = pendingStudents.value.filter(s => s.student_id !== student.student_id)
       pendingCount.value = pendingStudents.value.length
-      clampPendingPage()
       showNotification('Student approved successfully! They will receive an email notification.', 'success')
       fetchStats()
     } else {
@@ -1198,7 +1135,6 @@ const confirmRejectStudent = async () => {
     if (response.ok) {
       pendingStudents.value = pendingStudents.value.filter(s => s.student_id !== studentToReject.value.student_id)
       pendingCount.value = pendingStudents.value.length
-      clampPendingPage()
       showRejectModal.value = false
       studentToReject.value = null
       rejectReason.value = ''
@@ -1240,42 +1176,6 @@ const stats = computed(() => {
 const totalStudents = computed(() => {
   return stats.value.BSCS.total + stats.value.BSIS.total + stats.value.BSIT.total
 })
-
-// Pagination for pending students
-const pendingTotalPages = computed(() => {
-  return Math.max(1, Math.ceil(pendingStudents.value.length / pendingItemsPerPage))
-})
-
-const paginatedPendingStudents = computed(() => {
-  if (pendingCurrentPage.value > pendingTotalPages.value) {
-    pendingCurrentPage.value = pendingTotalPages.value
-  }
-  const start = (pendingCurrentPage.value - 1) * pendingItemsPerPage
-  const end = start + pendingItemsPerPage
-  return pendingStudents.value.slice(start, end)
-})
-
-const pendingShowingStart = computed(() => {
-  if (pendingStudents.value.length === 0) return 0
-  return ((pendingCurrentPage.value - 1) * pendingItemsPerPage) + 1
-})
-
-const pendingShowingEnd = computed(() => {
-  return Math.min(pendingCurrentPage.value * pendingItemsPerPage, pendingStudents.value.length)
-})
-
-const goToPendingPage = (page) => {
-  if (page >= 1 && page <= pendingTotalPages.value) {
-    pendingCurrentPage.value = page
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-  }
-}
-
-const clampPendingPage = () => {
-  if (pendingCurrentPage.value > pendingTotalPages.value) {
-    pendingCurrentPage.value = Math.max(1, pendingTotalPages.value)
-  }
-}
 
 const filteredUsers = computed(() => {
   return users.value
