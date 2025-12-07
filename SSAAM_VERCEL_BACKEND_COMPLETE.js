@@ -552,6 +552,36 @@ app.get('/apis/health', (req, res) => {
     });
 });
 
+// Debug endpoint to test the exact pending query
+app.get('/apis/debug/pending', async (req, res) => {
+    try {
+        // Test the exact same query as the pending endpoint
+        const pendingQuery = await Student.find({ status: 'pending' }).limit(5);
+        const pendingCount = await Student.countDocuments({ status: 'pending' });
+        
+        // Also get all unique status values in the database
+        const allStatuses = await Student.distinct('status');
+        
+        // Get a sample of raw documents to see actual field values
+        const rawSample = await Student.find({}).limit(3).lean();
+        
+        res.json({
+            message: "Debug: Testing pending query",
+            pendingQueryResult: pendingQuery.length,
+            pendingCountResult: pendingCount,
+            allUniqueStatuses: allStatuses,
+            sampleDocuments: rawSample.map(doc => ({
+                student_id: doc.student_id,
+                status: doc.status,
+                statusType: typeof doc.status,
+                rawStatus: JSON.stringify(doc.status)
+            }))
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message, stack: err.stack });
+    }
+});
+
 // Debug endpoint to check all students in database regardless of status
 app.get('/apis/debug/students', async (req, res) => {
     try {
@@ -701,12 +731,19 @@ app.get('/apis/students/pending', studentAuth, async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
+        // Debug: Log the query
+        console.log('Fetching pending students, page:', page, 'limit:', limit);
+
         const students = await Student.find({ status: 'pending' })
             .skip(skip)
             .limit(limit)
             .sort({ created_date: -1 });
 
         const total = await Student.countDocuments({ status: 'pending' });
+        
+        // Debug: Log results
+        console.log('Found pending students:', students.length, 'Total:', total);
+
         const totalPages = Math.ceil(total / limit);
 
         res.json({
@@ -721,6 +758,7 @@ app.get('/apis/students/pending', studentAuth, async (req, res) => {
             }
         });
     } catch (err) {
+        console.error('Error fetching pending students:', err);
         res.status(500).json({ message: err.message });
     }
 });
