@@ -851,6 +851,14 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">RFID Code</label>
           <input v-model="editingUser.rfidCode" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
         </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+          <select v-model="editingUser.role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
+            <option value="student">Student</option>
+            <option value="medpub">MedPub</option>
+          </select>
+          <p v-if="editingUser.role === 'medpub'" class="text-xs text-yellow-600 mt-1">MedPub users can post announcements and notifications.</p>
+        </div>
         <div class="flex gap-3 mt-6">
           <button @click="closeEditModal" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
           <button @click="saveUser" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">Save</button>
