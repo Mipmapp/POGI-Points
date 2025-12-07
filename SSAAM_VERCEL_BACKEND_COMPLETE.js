@@ -552,6 +552,62 @@ app.get('/apis/health', (req, res) => {
     });
 });
 
+// Debug/Fix endpoint to remove users with invalid programs (not BSCS, BSIT, BSIS)
+app.get('/apis/fix/remove-invalid-programs', async (req, res) => {
+    try {
+        // First, find all students with invalid programs
+        const invalidStudents = await Student.find({
+            program: { $nin: ['BSCS', 'BSIT', 'BSIS'] }
+        });
+        
+        // Get list of what will be deleted
+        const toDelete = invalidStudents.map(s => ({
+            student_id: s.student_id,
+            name: s.full_name || `${s.first_name} ${s.last_name}`,
+            program: s.program
+        }));
+        
+        // Delete them
+        const result = await Student.deleteMany({
+            program: { $nin: ['BSCS', 'BSIT', 'BSIS'] }
+        });
+        
+        res.json({
+            message: "Removed students with invalid programs",
+            deletedCount: result.deletedCount,
+            deletedStudents: toDelete
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Debug endpoint to preview users with invalid programs (without deleting)
+app.get('/apis/debug/invalid-programs', async (req, res) => {
+    try {
+        const invalidStudents = await Student.find({
+            program: { $nin: ['BSCS', 'BSIT', 'BSIS'] }
+        });
+        
+        const validCount = await Student.countDocuments({
+            program: { $in: ['BSCS', 'BSIT', 'BSIS'] }
+        });
+        
+        res.json({
+            message: "Students with invalid programs (preview - not deleted)",
+            invalidCount: invalidStudents.length,
+            validCount: validCount,
+            invalidStudents: invalidStudents.map(s => ({
+                student_id: s.student_id,
+                name: s.full_name || `${s.first_name} ${s.last_name}`,
+                program: s.program
+            }))
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Fix endpoint to add missing status field to all students
 app.get('/apis/fix/add-status', async (req, res) => {
     try {
