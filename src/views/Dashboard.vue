@@ -1039,7 +1039,7 @@ onMounted(async () => {
 const fetchStats = async () => {
   statsLoading.value = true
   try {
-    const response = await fetch('ssaam-api.vercel.app/apis/students/stats', {
+    const response = await fetch('https://ssaam-api.vercel.app/apis/students/stats', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -1063,7 +1063,7 @@ const fetchStats = async () => {
 const fetchPendingStudents = async () => {
   pendingLoading.value = true
   try {
-    const response = await fetch('ssaam-api.vercel.app/apis/students/pending', {
+    const response = await fetch('https://ssaam-api.vercel.app/apis/students/pending', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -1251,7 +1251,7 @@ const fetchSettings = async () => {
   
   settingsLoading.value = true
   try {
-    const response = await fetch('ssaam-api.vercel.app/apis/settings', {
+    const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -1279,7 +1279,7 @@ const saveSettings = async () => {
   settingsSaving.value = true
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch('ssaam-api.vercel.app/apis/settings', {
+    const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -1324,7 +1324,7 @@ const confirmLogout = async () => {
   try {
     const token = localStorage.getItem('authToken')
     if (token) {
-      const endpoint = currentUser.value.isMaster ? 'ssaam-api.vercel.app/apis/masters/logout' : '/apis/students/logout'
+      const endpoint = currentUser.value.isMaster ? 'https://ssaam-api.vercel.app/apis/masters/logout' : '/apis/students/logout'
       await fetch(endpoint, {
         method: 'POST',
         headers: {
