@@ -956,3 +956,18 @@ input[type="password"]::-webkit-inner-spin-button {
 input[type="password"]::placeholder {
   pointer-events: none;
 }
+
+/* SSAAM Link Gradient Styling */
+.ssaam-link {
+  background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-decoration: underline;
+  font-weight: 500;
+  transition: opacity 0.2s ease;
+}
+
+.ssaam-link:hover {
+  opacity: 0.8;
+}

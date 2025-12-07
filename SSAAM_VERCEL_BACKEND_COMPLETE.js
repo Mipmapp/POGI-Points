@@ -857,13 +857,45 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
             BSIT: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, '5th Year': 0, total: 0 }
         };
 
+        const yearLevelMap = {
+            '1ST YEAR': '1st Year',
+            '1ST': '1st Year',
+            '1': '1st Year',
+            'FIRST YEAR': '1st Year',
+            'FIRST': '1st Year',
+            '2ND YEAR': '2nd Year',
+            '2ND': '2nd Year',
+            '2': '2nd Year',
+            'SECOND YEAR': '2nd Year',
+            'SECOND': '2nd Year',
+            '3RD YEAR': '3rd Year',
+            '3RD': '3rd Year',
+            '3': '3rd Year',
+            'THIRD YEAR': '3rd Year',
+            'THIRD': '3rd Year',
+            '4TH YEAR': '4th Year',
+            '4TH': '4th Year',
+            '4': '4th Year',
+            'FOURTH YEAR': '4th Year',
+            'FOURTH': '4th Year',
+            '5TH YEAR': '5th Year',
+            '5TH': '5th Year',
+            '5': '5th Year',
+            'FIFTH YEAR': '5th Year',
+            'FIFTH': '5th Year'
+        };
+
         const allStudents = await Student.find({ status: 'approved' });
 
         allStudents.forEach(student => {
-            const program = student.program;
-            const yearLevel = student.year_level;
+            const rawProgram = (student.program || '').trim().toUpperCase();
+            const rawYearLevel = (student.year_level || '').trim().toUpperCase();
+            
+            const program = VALID_PROGRAMS.includes(rawProgram) ? rawProgram : null;
+            const yearLevel = yearLevelMap[rawYearLevel] || 
+                              (VALID_YEAR_LEVELS.includes(student.year_level) ? student.year_level : null);
 
-            if (stats[program] && stats[program][yearLevel] !== undefined) {
+            if (program && stats[program] && yearLevel && stats[program][yearLevel] !== undefined) {
                 stats[program][yearLevel]++;
                 stats[program].total++;
             }
@@ -1904,6 +1936,31 @@ app.post('/apis/password-reset/complete', studentAuth, timestampAuth, async (req
     }
 });
 
+// ==================== IMAGE UPLOAD ENDPOINT ====================
+
+// Upload image to ImgBB (separate endpoint for frontend upload)
+// Uses canPostNotification middleware for consistent authentication
+app.post('/apis/upload-image', canPostNotification, async (req, res) => {
+    try {
+        const { image } = req.body;
+        
+        if (!image) {
+            return res.status(400).json({ message: "Image data is required" });
+        }
+
+        const imageUrl = await uploadToImgBB(image);
+        
+        res.json({ 
+            success: true, 
+            url: imageUrl 
+        });
+
+    } catch (err) {
+        console.error("Image upload error:", err);
+        res.status(500).json({ message: err.message || "Failed to upload image" });
+    }
+});
+
 // ==================== NOTIFICATIONS ENDPOINTS ====================
 
 // Get all notifications (requires authentication - student or admin token)
@@ -2009,7 +2066,7 @@ async function uploadToImgBB(base64Image) {
 // Create notification (admin or medpub only)
 app.post('/apis/notifications', canPostNotification, async (req, res) => {
     try {
-        const { title, message, priority, image } = req.body;
+        const { title, message, priority, image, image_url } = req.body;
 
         if (!title || !message) {
             return res.status(400).json({ message: "Title and message are required" });
@@ -2029,9 +2086,9 @@ app.post('/apis/notifications', canPostNotification, async (req, res) => {
             finalPriority = 'important'; // Downgrade to important for non-admin
         }
 
-        // Upload image to ImgBB if provided (only 1 image allowed)
-        let imageUrl = null;
-        if (image) {
+        // Use provided image_url or upload base64 image to ImgBB
+        let imageUrl = image_url || null;
+        if (!imageUrl && image) {
             try {
                 imageUrl = await uploadToImgBB(image);
             } catch (imgErr) {

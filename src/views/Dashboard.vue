@@ -418,10 +418,10 @@
                 </div>
               </div>
               <div class="flex justify-end">
-                <button @click="postNotification" :disabled="postingNotification || !newNotification.title.trim() || !newNotification.content.trim()" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                  <svg v-if="postingNotification" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <button @click="postNotification" :disabled="postingNotification || uploadingImage || !newNotification.title.trim() || !newNotification.content.trim()" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <svg v-if="postingNotification || uploadingImage" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                   <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                  {{ postingNotification ? 'Posting...' : 'Post Announcement' }}
+                  {{ uploadingImage ? 'Uploading Image...' : postingNotification ? 'Posting...' : 'Post Announcement' }}
                 </button>
               </div>
             </div>
@@ -476,7 +476,7 @@
                       </span>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ notif.title }}</h3>
-                    <p class="text-gray-700 whitespace-pre-wrap mb-3">{{ notif.message || notif.content }}</p>
+                    <p class="text-gray-700 whitespace-pre-wrap mb-3" v-html="formatMessageWithLinks(notif.message || notif.content)"></p>
                     <div v-if="notif.image_url" class="mb-3">
                       <img :src="notif.image_url" alt="Announcement image" class="max-w-full max-h-80 rounded-lg border border-gray-200 object-contain cursor-pointer hover:opacity-90 transition" @click="openImagePreview(notif.image_url)" />
                     </div>
@@ -1145,16 +1145,9 @@ const passwordForm = ref({ currentPassword: '', newPassword: '', confirmPassword
 const changingPassword = ref(false)
 const passwordErrors = ref({})
 
-// ImgBB API Keys (randomly selected to distribute traffic)
-const imgbbApiKeys = [
-  "b6a37178abd163036357a7ba35fd0364",
-  "3b523af3b0ffb526efddfb51b8928581"
-]
-
-// Get random ImgBB API key
-const getRandomApiKey = () => {
-  return imgbbApiKeys[Math.floor(Math.random() * imgbbApiKeys.length)]
-}
+// Image upload state
+const uploadingImage = ref(false)
+const uploadedImageUrl = ref(null)
 
 const developers = [
     { name: 'Jullan Maglinte', initials: 'JM', role: 'Backend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
@@ -1952,6 +1945,7 @@ const handleNotificationImage = async (event) => {
 const clearNotificationImage = () => {
   notificationImage.value = null
   notificationImagePreview.value = null
+  uploadedImageUrl.value = null
 }
 
 const openImagePreview = (url) => {
@@ -1973,6 +1967,20 @@ const formatNotificationDate = (dateStr) => {
   return date.toLocaleDateString('en-US', options)
 }
 
+const formatMessageWithLinks = (text) => {
+  if (!text) return ''
+  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/gi
+  const escapedText = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+  return escapedText.replace(urlRegex, (url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="ssaam-link">${url}</a>`
+  })
+}
+
 const postNotification = async () => {
   if (!newNotification.value.title.trim() || !newNotification.value.content.trim()) return
   
@@ -1986,8 +1994,42 @@ const postNotification = async () => {
       priority: 'normal'
     }
     
-    if (notificationImage.value) {
-      payload.image = notificationImage.value
+    // If we have a pending image to upload, upload it first
+    if (notificationImage.value && !uploadedImageUrl.value) {
+      uploadingImage.value = true
+      try {
+        const uploadResponse = await fetch('https://ssaam-api.vercel.app/apis/upload-image', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ image: notificationImage.value })
+        })
+        
+        if (uploadResponse.ok) {
+          const uploadResult = await uploadResponse.json()
+          uploadedImageUrl.value = uploadResult.url
+        } else {
+          const uploadError = await uploadResponse.json()
+          showNotification(uploadError.message || 'Failed to upload image', 'error')
+          postingNotification.value = false
+          uploadingImage.value = false
+          return
+        }
+      } catch (uploadErr) {
+        console.error('Image upload failed:', uploadErr)
+        showNotification('Failed to upload image', 'error')
+        postingNotification.value = false
+        uploadingImage.value = false
+        return
+      }
+      uploadingImage.value = false
+    }
+    
+    // Use the uploaded image URL if available
+    if (uploadedImageUrl.value) {
+      payload.image_url = uploadedImageUrl.value
     }
     
     const response = await fetch('https://ssaam-api.vercel.app/apis/notifications', {
