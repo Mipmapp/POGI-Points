@@ -501,7 +501,8 @@ input, textarea, select {
 }
 
 .dashboard-nav {
-  @apply flex-1 p-4;
+  @apply flex-1 p-4 overflow-y-auto;
+  min-height: 0;
 }
 
 .dashboard-nav-item {

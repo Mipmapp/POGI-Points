@@ -417,6 +417,72 @@ const settingsSchema = new mongoose.Schema({
 
 const Settings = mongoose.model("Settings", settingsSchema, "settings");
 
+// Password Reset Schema
+const passwordResetSchema = new mongoose.Schema({
+    student_id: { type: String, required: true },
+    email: { type: String, required: true },
+    code: { type: String, required: true }, // Stored hashed
+    expires_at: { type: Date, required: true },
+    used: { type: Boolean, default: false },
+    used_at: { type: Date, default: null },
+    attempts: { type: Number, default: 0 }, // Verification attempts
+    verified: { type: Boolean, default: false },
+    verified_at: { type: Date, default: null },
+    reset_token: { type: String, default: null }, // Stored hashed
+    created_at: { type: Date, default: Date.now }
+});
+
+passwordResetSchema.index({ expires_at: 1 }, { expireAfterSeconds: 0 });
+passwordResetSchema.index({ student_id: 1 });
+
+const PasswordReset = mongoose.model("PasswordReset", passwordResetSchema);
+
+// Notifications Schema
+const notificationSchema = new mongoose.Schema({
+    title: { type: String, required: true, maxlength: 200 },
+    message: { type: String, required: true, maxlength: 2000 },
+    posted_by: { type: String, required: true, enum: ['admin', 'medpub'] },
+    posted_by_name: { type: String, required: true },
+    posted_by_id: { type: mongoose.Schema.Types.ObjectId, required: true },
+    priority: { type: String, enum: ['normal', 'important', 'urgent'], default: 'normal' },
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now }
+});
+
+notificationSchema.index({ created_at: -1 });
+
+const Notification = mongoose.model("Notification", notificationSchema);
+
+// Send Password Reset Email
+async function sendPasswordResetEmail(toEmail, code, studentName) {
+    const mailOptions = {
+        from: "SSAAM <pabbly.bot.2@gmail.com>",
+        to: toEmail,
+        subject: "SSAAM Password Reset Code",
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+                    <h1 style="color: white; margin: 0;">SSAAM</h1>
+                    <p style="color: white; opacity: 0.9; margin: 5px 0 0 0;">Student School Activities Attendance Monitoring</p>
+                </div>
+                <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
+                    <h2 style="color: #1f2937; margin-top: 0;">Hello ${studentName}!</h2>
+                    <p style="color: #4b5563;">You requested a password reset. Your verification code is:</p>
+                    <div style="background: white; border: 2px solid #ef4444; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0;">
+                        <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #ef4444;">${code}</span>
+                    </div>
+                    <p style="color: #4b5563;">This code will expire in <strong>15 minutes</strong>.</p>
+                    <p style="color: #6b7280; font-size: 14px;">If you didn't request this password reset, please ignore this email. Your account remains secure.</p>
+                    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+                    <p style="color: #9ca3af; font-size: 12px; text-align: center;">Powered by CCS - Creatives Committee</p>
+                </div>
+            </div>
+        `
+    };
+    
+    return emailTransporter.sendMail(mailOptions);
+}
+
 async function getSettings() {
     let settings = await Settings.findOne();
     if (!settings) {
@@ -1612,6 +1678,427 @@ app.put('/apis/settings', auth, async (req, res) => {
             settings
         });
     } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ==================== PASSWORD RESET ENDPOINTS ====================
+
+// Rate limiting for password reset requests
+const passwordResetAttempts = new Map();
+const PASSWORD_RESET_COOLDOWN_MS = 60000; // 1 minute between requests
+const MAX_FAILED_ATTEMPTS = 5;
+const FAILED_ATTEMPTS_LOCKOUT_MS = 15 * 60 * 1000; // 15 minutes lockout after 5 failed attempts
+
+function cleanupPasswordResetAttempts() {
+    const now = Date.now();
+    for (const [key, data] of passwordResetAttempts.entries()) {
+        if (now - data.lastAttempt > FAILED_ATTEMPTS_LOCKOUT_MS) {
+            passwordResetAttempts.delete(key);
+        }
+    }
+}
+setInterval(cleanupPasswordResetAttempts, 60000);
+
+// Request Password Reset - Send verification code to email
+app.post('/apis/password-reset/request', studentAuth, timestampAuth, async (req, res) => {
+    try {
+        const { student_id, email } = req.body;
+
+        if (!student_id || !email) {
+            return res.status(400).json({ message: "Student ID and email are required" });
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: "Invalid email format" });
+        }
+
+        // Rate limiting by IP
+        const clientIP = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || 
+                         req.headers['x-real-ip'] || 
+                         req.connection?.remoteAddress || 
+                         'unknown';
+        const rateLimitKey = `reset:${clientIP}:${student_id}`;
+        const attemptData = passwordResetAttempts.get(rateLimitKey) || { count: 0, lastAttempt: 0 };
+        const now = Date.now();
+
+        // Check if locked out
+        if (attemptData.count >= MAX_FAILED_ATTEMPTS && (now - attemptData.lastAttempt) < FAILED_ATTEMPTS_LOCKOUT_MS) {
+            const remainingMs = FAILED_ATTEMPTS_LOCKOUT_MS - (now - attemptData.lastAttempt);
+            const remainingMins = Math.ceil(remainingMs / 60000);
+            return res.status(429).json({ message: `Too many attempts. Please try again in ${remainingMins} minutes.` });
+        }
+
+        // Check cooldown
+        if ((now - attemptData.lastAttempt) < PASSWORD_RESET_COOLDOWN_MS) {
+            const remainingSeconds = Math.ceil((PASSWORD_RESET_COOLDOWN_MS - (now - attemptData.lastAttempt)) / 1000);
+            return res.status(429).json({ message: `Please wait ${remainingSeconds} seconds before requesting again.` });
+        }
+
+        // Find the student - MUST match BOTH student_id AND email exactly
+        const student = await Student.findOne({ 
+            student_id,
+            email: { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
+        });
+
+        // Always return same message to prevent enumeration
+        if (!student || student.status !== 'approved') {
+            passwordResetAttempts.set(rateLimitKey, { count: attemptData.count + 1, lastAttempt: now });
+            return res.status(200).json({ message: "If an account exists with this Student ID and email, a reset code has been sent." });
+        }
+
+        // Delete any existing reset codes for this student
+        await PasswordReset.deleteMany({ student_id });
+
+        // Generate new code and hash it for storage
+        const code = generateVerificationCode();
+        const codeHash = hashToken(code);
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+        await PasswordReset.create({
+            student_id,
+            email: student.email,
+            code: codeHash, // Store hashed code
+            expires_at: expiresAt,
+            attempts: 0 // Track verification attempts
+        });
+
+        // Send email with plain code
+        await sendPasswordResetEmail(student.email, code, student.first_name);
+
+        // Reset attempt counter on success
+        passwordResetAttempts.set(rateLimitKey, { count: 0, lastAttempt: now });
+
+        res.json({ 
+            message: "If an account exists with this Student ID and email, a reset code has been sent."
+        });
+
+    } catch (err) {
+        console.error("Password reset request error:", err);
+        res.status(500).json({ message: "Failed to process request. Please try again." });
+    }
+});
+
+// Verify Password Reset Code
+app.post('/apis/password-reset/verify', studentAuth, timestampAuth, async (req, res) => {
+    try {
+        const { student_id, code } = req.body;
+
+        if (!student_id || !code) {
+            return res.status(400).json({ message: "Student ID and verification code are required" });
+        }
+
+        // Hash the provided code for comparison
+        const codeHash = hashToken(code);
+
+        // Find the reset record - use findOneAndUpdate for atomicity
+        const resetRecord = await PasswordReset.findOneAndUpdate(
+            {
+                student_id,
+                code: codeHash,
+                used: false,
+                expires_at: { $gt: new Date() },
+                attempts: { $lt: 5 } // Max 5 verification attempts
+            },
+            { $inc: { attempts: 1 } },
+            { new: true }
+        );
+
+        if (!resetRecord) {
+            // Check if there's a record with too many attempts
+            const lockedRecord = await PasswordReset.findOne({
+                student_id,
+                used: false,
+                expires_at: { $gt: new Date() },
+                attempts: { $gte: 5 }
+            });
+            
+            if (lockedRecord) {
+                return res.status(429).json({ message: "Too many failed attempts. Please request a new reset code." });
+            }
+            
+            return res.status(400).json({ message: "Invalid or expired verification code" });
+        }
+
+        // Generate a temporary reset token and mark as verified
+        const resetToken = generateSecureToken();
+        resetRecord.reset_token = hashToken(resetToken);
+        resetRecord.verified = true;
+        resetRecord.verified_at = new Date();
+        await resetRecord.save();
+
+        res.json({ 
+            message: "Code verified successfully",
+            reset_token: resetToken
+        });
+
+    } catch (err) {
+        console.error("Password reset verify error:", err);
+        res.status(500).json({ message: "Verification failed. Please try again." });
+    }
+});
+
+// Complete Password Reset - Update the student's last_name (used as password)
+app.post('/apis/password-reset/complete', studentAuth, timestampAuth, async (req, res) => {
+    try {
+        const { student_id, reset_token, new_password } = req.body;
+
+        if (!student_id || !reset_token || !new_password) {
+            return res.status(400).json({ message: "Student ID, reset token, and new password are required" });
+        }
+
+        // Validate new password (last name format)
+        const trimmedPassword = new_password.trim().toUpperCase();
+        if (!trimmedPassword || trimmedPassword.length < 2 || trimmedPassword.length > 64) {
+            return res.status(400).json({ message: "New password must be between 2 and 64 characters" });
+        }
+
+        if (!/^[A-Z\s'-]+$/.test(trimmedPassword)) {
+            return res.status(400).json({ message: "Password must contain only letters, spaces, hyphens, or apostrophes" });
+        }
+
+        // Hash the reset token for comparison
+        const tokenHash = hashToken(reset_token);
+
+        // Atomically find and mark as used
+        const resetRecord = await PasswordReset.findOneAndUpdate(
+            {
+                student_id,
+                reset_token: tokenHash,
+                verified: true,
+                used: false,
+                expires_at: { $gt: new Date() }
+            },
+            { used: true, used_at: new Date() },
+            { new: true }
+        );
+
+        if (!resetRecord) {
+            return res.status(400).json({ message: "Invalid or expired reset session. Please request a new password reset." });
+        }
+
+        // Verify the email still matches
+        const student = await Student.findOne({ student_id, email: resetRecord.email });
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        // Update student's last_name (which is the password)
+        const full_name = `${student.first_name} ${student.middle_name || ''} ${trimmedPassword} ${student.suffix || ''}`
+            .replace(/\s+/g, " ")
+            .trim();
+
+        await Student.updateOne(
+            { student_id },
+            { last_name: trimmedPassword, full_name }
+        );
+
+        res.json({ message: "Password reset successful! You can now login with your new password." });
+
+    } catch (err) {
+        console.error("Password reset complete error:", err);
+        res.status(500).json({ message: "Password reset failed. Please try again." });
+    }
+});
+
+// ==================== NOTIFICATIONS ENDPOINTS ====================
+
+// Get all notifications (requires authentication - student or admin token)
+app.get('/apis/notifications', studentAuth, async (req, res) => {
+    try {
+        const notifications = await Notification.find()
+            .sort({ created_at: -1 })
+            .limit(50);
+        
+        res.json({ data: notifications });
+    } catch (err) {
+        console.error("Fetch notifications error:", err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Middleware to check if user can post notifications (admin or medpub)
+async function canPostNotification(req, res, next) {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).json({ message: "Access denied. No token provided." });
+    }
+
+    try {
+        const decoded = jwt.verify(token, SSAAM_API_KEY);
+        
+        const tokenHash = hashToken(token);
+        const sessionToken = await SessionToken.findOne({ 
+            token_hash: tokenHash,
+            is_revoked: false,
+            expires_at: { $gt: new Date() }
+        });
+
+        if (!sessionToken) {
+            return res.status(401).json({ message: "Session expired or invalid. Please login again." });
+        }
+
+        // Check if master/admin
+        if (decoded.isMaster) {
+            req.poster = {
+                id: decoded.id,
+                name: decoded.username,
+                type: 'admin'
+            };
+            return next();
+        }
+
+        // Check if student with medpub role
+        if (decoded.student_id) {
+            const student = await Student.findOne({ student_id: decoded.student_id });
+            if (student && student.role === 'medpub') {
+                req.poster = {
+                    id: decoded.id,
+                    name: student.first_name + ' ' + student.last_name,
+                    type: 'medpub'
+                };
+                return next();
+            }
+        }
+
+        return res.status(403).json({ message: "Only admins and MedPub users can post notifications" });
+
+    } catch (err) {
+        return res.status(401).json({ message: "Invalid token." });
+    }
+}
+
+// Create notification (admin or medpub only)
+app.post('/apis/notifications', canPostNotification, timestampAuth, async (req, res) => {
+    try {
+        const { title, message, priority } = req.body;
+
+        if (!title || !message) {
+            return res.status(400).json({ message: "Title and message are required" });
+        }
+
+        if (title.length > 200) {
+            return res.status(400).json({ message: "Title must be 200 characters or less" });
+        }
+
+        if (message.length > 2000) {
+            return res.status(400).json({ message: "Message must be 2000 characters or less" });
+        }
+
+        // Only admin can set urgent priority
+        let finalPriority = priority || 'normal';
+        if (finalPriority === 'urgent' && req.poster.type !== 'admin') {
+            finalPriority = 'important'; // Downgrade to important for non-admin
+        }
+
+        // Derive all poster info from authenticated session (not from request body)
+        const notification = await Notification.create({
+            title: title.trim(),
+            message: message.trim(),
+            posted_by: req.poster.type, // From JWT/session
+            posted_by_name: req.poster.name, // From JWT/session
+            posted_by_id: req.poster.id, // From JWT/session
+            priority: finalPriority
+        });
+
+        res.status(201).json({
+            message: "Notification posted successfully",
+            notification
+        });
+
+    } catch (err) {
+        console.error("Create notification error:", err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update notification (only the poster or admin can update)
+app.put('/apis/notifications/:id', canPostNotification, timestampAuth, async (req, res) => {
+    try {
+        const { title, message, priority } = req.body;
+        
+        const notification = await Notification.findById(req.params.id);
+        
+        if (!notification) {
+            return res.status(404).json({ message: "Notification not found" });
+        }
+
+        // Only allow admin or the original poster to update
+        const isAdmin = req.poster.type === 'admin';
+        const isOwner = notification.posted_by_id.toString() === req.poster.id;
+        
+        if (!isAdmin && !isOwner) {
+            return res.status(403).json({ message: "You can only edit your own notifications" });
+        }
+
+        if (title) {
+            if (title.length > 200) {
+                return res.status(400).json({ message: "Title must be 200 characters or less" });
+            }
+            notification.title = title.trim();
+        }
+
+        if (message) {
+            if (message.length > 2000) {
+                return res.status(400).json({ message: "Message must be 2000 characters or less" });
+            }
+            notification.message = message.trim();
+        }
+
+        if (priority) {
+            // Only admin can set urgent priority
+            if (priority === 'urgent' && !isAdmin) {
+                notification.priority = 'important'; // Downgrade
+            } else {
+                notification.priority = priority;
+            }
+        }
+
+        notification.updated_at = new Date();
+        await notification.save();
+
+        res.json({
+            message: "Notification updated successfully",
+            notification
+        });
+
+    } catch (err) {
+        console.error("Update notification error:", err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Delete notification (only the poster or admin can delete)
+app.delete('/apis/notifications/:id', canPostNotification, timestampAuth, async (req, res) => {
+    try {
+        const notification = await Notification.findById(req.params.id);
+        
+        if (!notification) {
+            return res.status(404).json({ message: "Notification not found" });
+        }
+
+        // Only allow admin or the original poster to delete
+        const isAdmin = req.poster.type === 'admin';
+        const isOwner = notification.posted_by_id.toString() === req.poster.id;
+        
+        if (!isAdmin && !isOwner) {
+            return res.status(403).json({ message: "You can only delete your own notifications" });
+        }
+
+        // MedPub cannot delete admin notifications
+        if (!isAdmin && notification.posted_by === 'admin') {
+            return res.status(403).json({ message: "Only admins can delete admin notifications" });
+        }
+
+        await Notification.deleteOne({ _id: req.params.id });
+
+        res.json({ message: "Notification deleted successfully" });
+
+    } catch (err) {
+        console.error("Delete notification error:", err);
         res.status(500).json({ message: err.message });
     }
 });

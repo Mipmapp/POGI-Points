@@ -116,15 +116,15 @@
 
   <div class="flex h-screen flex-col md:flex-row">
     <!-- Sidebar (Hidden on mobile, visible on desktop) -->
-    <div class="hidden md:flex w-64 bg-gradient-to-b from-purple-600 to-pink-400 text-white flex-col order-1 border-r-2 border-white border-opacity-20">
-      <div class="p-6 border-b border-white border-opacity-20">
+    <div class="hidden md:flex w-64 bg-gradient-to-b from-purple-600 to-pink-400 text-white flex-col order-1 border-r-2 border-white border-opacity-20 h-screen">
+      <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex items-center justify-center mb-2">
           <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-32 h-32 object-contain drop-shadow-xl" />
         </div>
         <h1 class="text-xl font-bold text-center">SSAAM</h1>
       </div>
 
-      <div class="p-6 border-b border-white border-opacity-20">
+      <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex items-center space-x-3">
           <div class="w-12 h-12 rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden">
             <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
@@ -151,7 +151,7 @@
         </div>
       </div>
 
-      <nav class="flex-1 p-4">
+      <nav class="flex-1 p-4 overflow-y-auto min-h-0">
         <button @click="currentPage = 'dashboard'" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left', currentPage === 'dashboard' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>Dashboard</span>
@@ -181,7 +181,7 @@
         </button>
       </nav>
 
-      <div class="p-4 text-xs text-white opacity-75">
+      <div class="p-4 text-xs text-white opacity-75 flex-shrink-0">
         <p>Powered by</p>
         <button @click="showDevelopersPopup = true" class="text-yellow-300 hover:text-yellow-400 cursor-pointer">CCS - Creatives Committee</button>
       </div>
@@ -190,9 +190,9 @@
     <!-- Mobile Sidebar (Slide-in menu for mobile) with Animation -->
     <transition name="slide-in">
       <div v-if="showMobileMenu" class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-purple-600 to-pink-400 text-white flex flex-col z-40 md:hidden shadow-2xl">
-        <button @click="showMobileMenu = false" class="p-4 text-right text-2xl hover:text-gray-200">×</button>
+        <button @click="showMobileMenu = false" class="p-4 text-right text-2xl hover:text-gray-200 flex-shrink-0">×</button>
         
-        <div class="p-6 border-b border-white border-opacity-20">
+        <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
           <div class="flex items-center space-x-3">
             <div class="w-12 h-12 rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden">
               <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
@@ -219,7 +219,7 @@
           </div>
         </div>
 
-        <nav class="flex-1 p-4">
+        <nav class="flex-1 p-4 overflow-y-auto min-h-0">
           <button @click="currentPage = 'dashboard'" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left', currentPage === 'dashboard' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
             <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>Dashboard</span>
@@ -249,7 +249,7 @@
           </button>
         </nav>
 
-        <div class="p-4 text-xs text-white opacity-75">
+        <div class="p-4 text-xs text-white opacity-75 flex-shrink-0">
           <p>Powered by</p>
           <button @click="showDevelopersPopup = true" class="text-yellow-300 hover:text-yellow-400 cursor-pointer">CCS - Creatives Committee</button>
         </div>
