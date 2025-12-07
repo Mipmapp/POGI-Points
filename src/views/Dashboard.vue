@@ -401,20 +401,19 @@
                 <textarea v-model="newNotification.content" placeholder="Write your announcement here..." rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none resize-none" maxlength="2000"></textarea>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Image (Optional - 1 image only)</label>
-                <div class="flex items-center gap-4">
-                  <label class="cursor-pointer flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                    <span class="text-sm text-gray-600">{{ notificationImage ? 'Change Image' : 'Choose Image' }}</span>
-                    <input type="file" accept="image/*" @change="handleNotificationImage" class="hidden" />
-                  </label>
-                  <button v-if="notificationImage" @click="clearNotificationImage" class="text-red-500 hover:text-red-700 text-sm flex items-center gap-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">Image (Optional)</label>
+                <div class="space-y-3">
+                  <div>
+                    <label class="block text-xs text-gray-500 mb-1">Paste image URL (ImgBB, Imgur, etc.)</label>
+                    <input v-model="notificationImageUrl" type="url" placeholder="https://i.ibb.co/your-image.jpg" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm" @input="handleImageUrlInput" />
+                  </div>
+                  <div v-if="notificationImageUrl && isValidImageUrl(notificationImageUrl)" class="mt-3">
+                    <img :src="notificationImageUrl" alt="Preview" class="max-h-48 rounded-lg border border-gray-200 object-contain" @error="handleImageUrlError" />
+                  </div>
+                  <button v-if="notificationImageUrl" @click="clearNotificationImage" class="text-red-500 hover:text-red-700 text-sm flex items-center gap-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    Remove
+                    Remove Image
                   </button>
-                </div>
-                <div v-if="notificationImagePreview" class="mt-3">
-                  <img :src="notificationImagePreview" alt="Preview" class="max-h-48 rounded-lg border border-gray-200 object-contain" />
                 </div>
               </div>
               <div class="flex justify-end">
@@ -470,9 +469,9 @@
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         {{ formatNotificationDate(notif.created_at) }}
                       </span>
-                      <span v-if="notif.updated_at && notif.updated_at !== notif.created_at" class="flex items-center gap-1 text-gray-400">
+                      <span v-if="notif.was_edited" class="flex items-center gap-1 text-gray-400">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        Updated: {{ formatNotificationDate(notif.updated_at) }}
+                        Edited: {{ formatNotificationDate(notif.updated_at) }}
                       </span>
                     </div>
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ notif.title }}</h3>
@@ -480,10 +479,12 @@
                     <div v-if="notif.image_url" class="mb-3">
                       <img :src="notif.image_url" alt="Announcement image" class="max-w-full max-h-80 rounded-lg border border-gray-200 object-contain cursor-pointer hover:opacity-90 transition" @click="openImagePreview(notif.image_url)" />
                     </div>
-                    <div v-if="(currentUser.role === 'admin' || currentUser.isMaster) || (currentUser.role === 'medpub' && (notif.posted_by_id === currentUser._id || notif.poster_id === currentUser.student_id))" class="flex gap-2 mt-4">
-                      <button @click="deleteNotification(notif._id)" class="text-red-600 hover:text-red-800 text-sm font-medium flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        Delete
+                    <div v-if="(currentUser.role === 'admin' || currentUser.isMaster) || (currentUser.role === 'medpub' && (notif.posted_by_id === currentUser._id || notif.poster_id === currentUser.student_id))" class="flex gap-3 mt-4">
+                      <button @click="openEditNotification(notif)" class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition" title="Edit">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                      </button>
+                      <button @click="deleteNotification(notif._id)" class="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition" title="Delete">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                       </button>
                     </div>
                   </div>
@@ -1014,6 +1015,33 @@
     </div>
   </div>
 
+  <!-- Edit Notification Modal -->
+  <div v-if="showEditNotificationModal && editNotificationData" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeEditNotificationModal">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-purple-900">Edit Announcement</h3>
+        <button @click="closeEditNotificationModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+          <input v-model="editNotificationData.title" type="text" placeholder="Announcement title..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" maxlength="200" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
+          <textarea v-model="editNotificationData.message" placeholder="Write your announcement here..." rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none resize-none" maxlength="2000"></textarea>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button @click="closeEditNotificationModal" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
+          <button @click="saveEditedNotification" :disabled="savingEditedNotification || !editNotificationData.title.trim() || !editNotificationData.message.trim()" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg v-if="savingEditedNotification" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            {{ savingEditedNotification ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Delete Confirmation Modal -->
   <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4">
@@ -1144,8 +1172,12 @@ const notificationToDelete = ref(null)
 const deletingNotification = ref(false)
 const notificationImage = ref(null)
 const notificationImagePreview = ref(null)
+const notificationImageUrl = ref('')
 const showImagePreviewModal = ref(false)
 const imagePreviewUrl = ref('')
+const showEditNotificationModal = ref(false)
+const editNotificationData = ref(null)
+const savingEditedNotification = ref(false)
 
 // Password change management
 const showPasswordChangeModal = ref(false)
@@ -1953,7 +1985,80 @@ const handleNotificationImage = async (event) => {
 const clearNotificationImage = () => {
   notificationImage.value = null
   notificationImagePreview.value = null
+  notificationImageUrl.value = ''
   uploadedImageUrl.value = null
+}
+
+const isValidImageUrl = (url) => {
+  if (!url) return false
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
+  } catch {
+    return false
+  }
+}
+
+const handleImageUrlInput = () => {
+  // Clear any previously uploaded image when entering URL
+  notificationImage.value = null
+  notificationImagePreview.value = null
+  uploadedImageUrl.value = null
+}
+
+const handleImageUrlError = (e) => {
+  console.error('Failed to load image from URL')
+  showNotification('Unable to load image from URL. Please check the URL is correct.', 'error')
+}
+
+const openEditNotification = (notif) => {
+  editNotificationData.value = {
+    _id: notif._id,
+    title: notif.title,
+    message: notif.message || notif.content,
+    priority: notif.priority || 'normal'
+  }
+  showEditNotificationModal.value = true
+}
+
+const closeEditNotificationModal = () => {
+  showEditNotificationModal.value = false
+  editNotificationData.value = null
+}
+
+const saveEditedNotification = async () => {
+  if (!editNotificationData.value || !editNotificationData.value.title.trim() || !editNotificationData.value.message.trim()) return
+  
+  savingEditedNotification.value = true
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/notifications/${editNotificationData.value._id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        title: editNotificationData.value.title,
+        message: editNotificationData.value.message,
+        priority: editNotificationData.value.priority
+      })
+    })
+    
+    if (response.ok) {
+      showNotification('Announcement updated successfully!', 'success')
+      closeEditNotificationModal()
+      fetchNotifications()
+    } else {
+      const error = await response.json()
+      showNotification(error.message || 'Failed to update announcement', 'error')
+    }
+  } catch (error) {
+    console.error('Failed to update notification:', error)
+    showNotification('Failed to update announcement', 'error')
+  } finally {
+    savingEditedNotification.value = false
+  }
 }
 
 const openImagePreview = (url) => {
@@ -2002,42 +2107,9 @@ const postNotification = async () => {
       priority: 'normal'
     }
     
-    // If we have a pending image to upload, upload it first
-    if (notificationImage.value && !uploadedImageUrl.value) {
-      uploadingImage.value = true
-      try {
-        const uploadResponse = await fetch('https://ssaam-api.vercel.app/apis/upload-image', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ image: notificationImage.value })
-        })
-        
-        if (uploadResponse.ok) {
-          const uploadResult = await uploadResponse.json()
-          uploadedImageUrl.value = uploadResult.url
-        } else {
-          const uploadError = await uploadResponse.json()
-          showNotification(uploadError.message || 'Failed to upload image', 'error')
-          postingNotification.value = false
-          uploadingImage.value = false
-          return
-        }
-      } catch (uploadErr) {
-        console.error('Image upload failed:', uploadErr)
-        showNotification('Failed to upload image', 'error')
-        postingNotification.value = false
-        uploadingImage.value = false
-        return
-      }
-      uploadingImage.value = false
-    }
-    
-    // Use the uploaded image URL if available
-    if (uploadedImageUrl.value) {
-      payload.image_url = uploadedImageUrl.value
+    // Use the image URL directly if provided
+    if (notificationImageUrl.value && isValidImageUrl(notificationImageUrl.value)) {
+      payload.image_url = notificationImageUrl.value
     }
     
     const response = await fetch('https://ssaam-api.vercel.app/apis/notifications', {

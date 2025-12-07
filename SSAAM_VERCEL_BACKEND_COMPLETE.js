@@ -447,7 +447,8 @@ const notificationSchema = new mongoose.Schema({
     posted_by_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     priority: { type: String, enum: ['normal', 'important', 'urgent'], default: 'normal' },
     created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now }
+    updated_at: { type: Date, default: Date.now },
+    was_edited: { type: Boolean, default: false }
 });
 
 notificationSchema.index({ created_at: -1 });
@@ -2162,6 +2163,7 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
         }
 
         notification.updated_at = new Date();
+        notification.was_edited = true;
         await notification.save();
 
         res.json({
