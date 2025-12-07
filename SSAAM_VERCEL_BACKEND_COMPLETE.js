@@ -118,6 +118,40 @@ async function sendApprovalEmail(toEmail, studentName, approved, rejectionReason
     return emailTransporter.sendMail(mailOptions);
 }
 
+async function sendRFIDVerificationEmail(toEmail, studentName, rfidCode, verifiedBy) {
+    const mailOptions = {
+        from: "SSAAM <pabbly.bot.2@gmail.com>",
+        to: toEmail,
+        subject: "SSAAM RFID Verified - Your Attendance Card is Now Active!",
+        html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <div style="background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+                    <h1 style="color: white; margin: 0;">SSAAM</h1>
+                    <p style="color: white; opacity: 0.9; margin: 5px 0 0 0;">Student School Activities Attendance Monitoring</p>
+                </div>
+                <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
+                    <h2 style="color: #1f2937; margin-top: 0;">Hello ${studentName}!</h2>
+                    <div style="background: white; border: 2px solid #10b981; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0;">
+                        <span style="font-size: 24px; font-weight: bold; color: #10b981;">RFID Verified!</span>
+                    </div>
+                    <p style="color: #4b5563;">Great news! Your RFID attendance card has been verified and is now active.</p>
+                    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin: 20px 0;">
+                        <p style="color: #6b7280; margin: 5px 0;"><strong>RFID Code:</strong> ${rfidCode}</p>
+                        <p style="color: #6b7280; margin: 5px 0;"><strong>Verified By:</strong> ${verifiedBy}</p>
+                        <p style="color: #6b7280; margin: 5px 0;"><strong>Date:</strong> ${new Date().toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                    </div>
+                    <p style="color: #4b5563;">You can now use your RFID card to log your attendance at school activities.</p>
+                    <p style="color: #4b5563;">Check your status at: <a href="https://ssaam.vercel.app" style="color: #7c3aed;">ssaam.vercel.app</a></p>
+                    <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
+                    <p style="color: #9ca3af; font-size: 12px; text-align: center;">Powered by CCS - Creatives Committee</p>
+                </div>
+            </div>
+        `
+    };
+    
+    return emailTransporter.sendMail(mailOptions);
+}
+
 function decodeTimestamp(encodedString) {
     try {
         const decoded = Buffer.from(encodedString, 'base64').toString('binary');
@@ -933,9 +967,26 @@ app.put('/apis/students/:student_id/rfid', auth, timestampAuth, async (req, res)
             return res.status(404).json({ message: "Student not found" });
         }
 
+        let emailSent = false;
+        if (updated.email) {
+            try {
+                await sendRFIDVerificationEmail(
+                    updated.email, 
+                    updated.first_name, 
+                    rfid_code.trim(), 
+                    req.master.username
+                );
+                emailSent = true;
+            } catch (emailErr) {
+                console.error("Failed to send RFID verification email:", emailErr);
+                emailSent = false;
+            }
+        }
+
         res.json({
             message: "RFID code assigned and verified successfully",
-            student: updated
+            student: updated,
+            emailSent
         });
     } catch (err) {
         res.status(500).json({ message: err.message });

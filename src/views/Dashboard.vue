@@ -652,9 +652,28 @@
                 <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Email</p>
                 <p class="text-base font-semibold text-gray-900 mt-2 break-words">{{ currentUser.email || 'Not provided' }}</p>
               </div>
-              <div class="bg-pink-50 p-4 rounded-lg">
-                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">RFID Code</p>
-                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.rfidCode || currentUser.rfid_code || 'Not provided' }}</p>
+              <div :class="['p-4 rounded-lg', currentUser.rfid_status === 'verified' ? 'bg-green-50 border-2 border-green-200' : 'bg-yellow-50 border-2 border-yellow-200']">
+                <div class="flex items-center justify-between mb-2">
+                  <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">RFID Status</p>
+                  <span :class="['text-xs px-2 py-1 rounded-full font-semibold', currentUser.rfid_status === 'verified' ? 'bg-green-500 text-white' : 'bg-yellow-500 text-white']">
+                    {{ currentUser.rfid_status === 'verified' ? 'Verified' : 'Pending' }}
+                  </span>
+                </div>
+                <div v-if="currentUser.rfid_status === 'verified'">
+                  <p class="text-base font-semibold text-gray-900">{{ currentUser.rfidCode || currentUser.rfid_code }}</p>
+                  <p v-if="currentUser.rfid_verified_by" class="text-xs text-gray-500 mt-2">
+                    Verified by: {{ currentUser.rfid_verified_by }}
+                  </p>
+                  <p v-if="currentUser.rfid_verified_at" class="text-xs text-gray-500">
+                    Date: {{ new Date(currentUser.rfid_verified_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) }}
+                  </p>
+                  <p class="text-xs text-green-600 mt-2 font-medium">Your RFID card is active and ready for attendance logging.</p>
+                </div>
+                <div v-else>
+                  <p class="text-base font-semibold text-gray-900">Not Yet Assigned</p>
+                  <p class="text-xs text-yellow-700 mt-2">Your RFID card has not been verified yet. Please visit the CCS office to have your attendance card assigned and verified by an admin.</p>
+                  <p class="text-xs text-gray-500 mt-2">You will receive an email notification once your RFID is verified.</p>
+                </div>
               </div>
             </div>
           </div>

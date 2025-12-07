@@ -107,9 +107,24 @@ Frontend SPA with efficient pagination:
 - Backend aggregates all student data for statistics
 - No client-side filtering - all search/filter done server-side
 
-## Latest Updates (2025-12-05)
+## Latest Updates (2025-12-07)
 
-### Admin-Only Edit/Delete & Uppercase Names (LATEST)
+### RFID Email Notification Feature (LATEST)
+- **Email Notification**: When an admin verifies a student's RFID code, the student receives an email notification
+  - Email includes: RFID code, who verified it, and the verification date
+  - Uses Gmail SMTP via nodemailer with `pabbly.bot.2@gmail.com`
+  - Requires `GMAIL_APP_PASSWORD` environment variable in Vercel
+- **Enhanced Student Dashboard**: Students can now see detailed RFID verification status
+  - Shows "Verified" (green) or "Pending" (yellow) status badge
+  - When verified: Shows RFID code, verifier name, and date
+  - When unverified: Shows instructions to visit CCS office
+  - Notifies students they will receive email when verified
+- **Backend Function**: `sendRFIDVerificationEmail(toEmail, studentName, rfidCode, verifiedBy)`
+- **API Response Update**: PUT `/apis/students/:student_id/rfid` now includes `emailSent: boolean`
+
+## Updates (2025-12-05)
+
+### Admin-Only Edit/Delete & Uppercase Names
 - **Uppercase Name Enforcement**: All student names (first, middle, last) are automatically converted to uppercase
   - Backend: Names are uppercased during registration and editing
   - Frontend: Names displayed and input as uppercase
