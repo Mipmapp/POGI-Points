@@ -991,13 +991,13 @@ const handleNext = async () => {
       return
     }
     if (!/^\d{2}-[A-Z]-\d{5}$/.test(formData.student_id)) {
-      errorMessage.value = "Student ID must follow format: 21-A-12345 (2 digits, hyphen, 1 letter, hyphen, 5 digits)."
+      errorMessage.value = "Student ID must follow format: 18-A-12345 (2 digits, hyphen, 1 letter, hyphen, 5 digits)."
       showErrorNotification.value = true
       return
     }
     const yearPrefix = parseInt(formData.student_id.substring(0, 2), 10)
-    if (yearPrefix < 21 || yearPrefix > 25) {
-      errorMessage.value = "Student ID must start with 21 to 25 (e.g., 21-A-12345 to 25-A-12345)."
+    if (yearPrefix < 18 || yearPrefix > 25) {
+      errorMessage.value = "Student ID must start with 18 to 25 (e.g., 18-A-12345 to 25-A-12345)."
       showErrorNotification.value = true
       return
     }

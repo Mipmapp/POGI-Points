@@ -1267,6 +1267,7 @@ const pendingShowingEnd = computed(() => {
 const goToPendingPage = (page) => {
   if (page >= 1 && page <= pendingTotalPages.value) {
     pendingCurrentPage.value = page
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 }
 
