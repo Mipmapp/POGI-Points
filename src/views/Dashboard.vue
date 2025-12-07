@@ -375,6 +375,10 @@
         <div v-if="currentPage === 'pending' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h2 class="text-xl md:text-2xl font-bold text-purple-900">Pending Student Approvals</h2>
+            <button @click="fetchPendingStudents" :disabled="pendingLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" title="Refresh Pending List">
+              <svg :class="{'animate-spin': pendingLoading}" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              Refresh
+            </button>
           </div>
 
           <div v-if="pendingLoading" class="flex items-center justify-center py-12">
@@ -896,7 +900,7 @@ const showMobileMenu = ref(false)
 const showContactModal = ref(false)
 const currentPage = ref('dashboard')
 const currentPageNum = ref(1)
-const itemsPerPage = ref(10)
+const itemsPerPage = ref(20)
 const paginationTotal = ref(0)
 const totalPages = ref(0)
 const showEditModal = ref(false)
@@ -1388,7 +1392,7 @@ const compressImage = (file) => {
         let compressedBlob = null
         
         const checkSize = (blob) => {
-          if (blob.size <= 600 * 1024) {
+          if (blob.size <= 80 * 1024) {
             resolve(blob)
           } else if (quality > 0.1) {
             quality -= 0.1

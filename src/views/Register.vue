@@ -755,7 +755,7 @@ const compressImage = (file) => {
         let quality = 0.9
         let attempts = 0
         const maxAttempts = 15
-        const targetSizeKB = 200
+        const targetSizeKB = 80
         
         const tryCompress = () => {
           if (attempts >= maxAttempts) {
