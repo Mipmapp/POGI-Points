@@ -625,10 +625,11 @@
               <div class="relative min-w-[120px]">
                 <select v-model="filterSchoolLevel" @change="handleSearchChange" class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm">
                   <option value="">All Levels</option>
-                  <option value="1st year">1st Year</option>
-                  <option value="2nd year">2nd Year</option>
-                  <option value="3rd year">3rd Year</option>
-                  <option value="4th year">4th Year</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                  <option value="5th Year">5th Year</option>
                 </select>
                 <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
@@ -866,33 +867,39 @@
               <tbody>
                 <tr class="hover:bg-gray-50">
                   <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">1st years</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['1st year'] }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['1st year'] }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['1st year'] }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['1st Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['1st Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['1st Year'] || 0 }}</td>
                 </tr>
                 <tr class="hover:bg-gray-50">
                   <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">2nd years</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['2nd year'] }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['2nd year'] }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['2nd year'] }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['2nd Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['2nd Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['2nd Year'] || 0 }}</td>
                 </tr>
                 <tr class="hover:bg-gray-50">
                   <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">3rd years</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['3rd year'] }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['3rd year'] }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['3rd year'] }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['3rd Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['3rd Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['3rd Year'] || 0 }}</td>
                 </tr>
                 <tr class="hover:bg-gray-50">
                   <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">4th years</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['4th year'] }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['4th year'] }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['4th year'] }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['4th Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['4th Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['4th Year'] || 0 }}</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">5th years</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['5th Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['5th Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['5th Year'] || 0 }}</td>
                 </tr>
                 <tr class="bg-purple-50 font-bold">
                   <td class="border border-purple-300 px-6 py-4 font-bold text-gray-900">All year levels</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS.total }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS.total }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT.total }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS.total || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS.total || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT.total || 0 }}</td>
                 </tr>
               </tbody>
             </table>
@@ -980,10 +987,11 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
           <select v-model="editingUser.yearLevel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
             <option value="">Select Year</option>
-            <option value="1st year">1st year</option>
-            <option value="2nd year">2nd year</option>
-            <option value="3rd year">3rd year</option>
-            <option value="4th year">4th year</option>
+            <option value="1st Year">1st Year</option>
+            <option value="2nd Year">2nd Year</option>
+            <option value="3rd Year">3rd Year</option>
+            <option value="4th Year">4th Year</option>
+            <option value="5th Year">5th Year</option>
           </select>
         </div>
         <div>
@@ -1365,9 +1373,9 @@ const stats = computed(() => {
   
   // Fallback: compute from current page (if backend endpoint not available yet)
   const result = {
-    BSCS: { '1st year': 0, '2nd year': 0, '3rd year': 0, '4th year': 0, total: 0 },
-    BSIS: { '1st year': 0, '2nd year': 0, '3rd year': 0, '4th year': 0, total: 0 },
-    BSIT: { '1st year': 0, '2nd year': 0, '3rd year': 0, '4th year': 0, total: 0 }
+    BSCS: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, '5th Year': 0, total: 0 },
+    BSIS: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, '5th Year': 0, total: 0 },
+    BSIT: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, '5th Year': 0, total: 0 }
   }
   return result
 })
