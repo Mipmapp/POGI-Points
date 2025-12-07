@@ -552,6 +552,34 @@ app.get('/apis/health', (req, res) => {
     });
 });
 
+// Debug endpoint to check all students in database regardless of status
+app.get('/apis/debug/students', async (req, res) => {
+    try {
+        const allStudents = await Student.find({});
+        const statusCounts = {
+            total: allStudents.length,
+            approved: allStudents.filter(s => s.status === 'approved').length,
+            pending: allStudents.filter(s => s.status === 'pending').length,
+            rejected: allStudents.filter(s => s.status === 'rejected').length,
+            other: allStudents.filter(s => !['approved', 'pending', 'rejected'].includes(s.status)).length
+        };
+        
+        res.json({
+            message: "Debug: All students in database",
+            counts: statusCounts,
+            students: allStudents.map(s => ({
+                student_id: s.student_id,
+                name: s.full_name || `${s.first_name} ${s.last_name}`,
+                status: s.status,
+                program: s.program,
+                created_date: s.created_date
+            }))
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 app.get('/apis/students', studentAuth, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
