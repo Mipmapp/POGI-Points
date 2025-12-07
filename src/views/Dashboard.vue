@@ -401,9 +401,9 @@
             <div v-for="student in pendingStudents" :key="student.student_id" class="border border-gray-200 rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow">
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-shrink-0">
-                  <div class="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
+                  <div class="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden" :class="student.photo ? 'bg-purple-100' : 'bg-gradient-to-br from-pink-500 to-purple-600'">
                     <img v-if="student.photo" :src="student.photo" alt="Student Photo" class="w-full h-full object-cover" />
-                    <img v-else src="/user.svg" alt="No Photo" class="w-10 h-10 opacity-50" />
+                    <img v-else src="/user.svg" alt="No Photo" class="w-10 h-10 brightness-0 invert" />
                   </div>
                 </div>
                 <div class="flex-1">
