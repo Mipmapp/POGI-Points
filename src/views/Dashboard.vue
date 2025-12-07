@@ -988,7 +988,7 @@ onMounted(async () => {
   if (user.role === 'admin' || user.isMaster) {
     try {
       // Fetch only current page (10-20 students)
-      const response = await fetch(`ssaam-api.vercel.app/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`, {
+      const response = await fetch(`https://ssaam-api.vercel.app/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer SSAAMStudents`
@@ -1086,7 +1086,7 @@ const approveStudent = async (student) => {
   approvingStudent.value = student.student_id
   try {
     const token = localStorage.getItem('adminToken')
-    const response = await fetch(`ssaam-api.vercel.app/apis/students/${student.student_id}/approve`, {
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${student.student_id}/approve`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -1125,7 +1125,7 @@ const confirmRejectStudent = async () => {
   rejectingStudent.value = true
   try {
     const token = localStorage.getItem('adminToken')
-    const response = await fetch(`ssaam-api.vercel.app/apis/students/${studentToReject.value.student_id}/reject`, {
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentToReject.value.student_id}/reject`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -1197,10 +1197,10 @@ const refreshStudents = async () => {
     const limit = hasFilters ? 100 : itemsPerPage.value
     const page = hasFilters ? 1 : currentPageNum.value
     
-    let url = `ssaam-api.vercel.app/apis/students?page=${page}&limit=${limit}`
+    let url = `https://ssaam-api.vercel.app/apis/students?page=${page}&limit=${limit}`
     
     if (hasFilters) {
-      url = `ssaam-api.vercel.app/apis/students/search?page=${page}&limit=${limit}`
+      url = `https://ssaam-api.vercel.app/apis/students/search?page=${page}&limit=${limit}`
       if (searchQuery.value.trim()) {
         url += `&search=${encodeURIComponent(searchQuery.value)}`
       }
@@ -1324,7 +1324,7 @@ const confirmLogout = async () => {
   try {
     const token = localStorage.getItem('authToken')
     if (token) {
-      const endpoint = currentUser.value.isMaster ? 'https://ssaam-api.vercel.app/apis/masters/logout' : '/apis/students/logout'
+      const endpoint = currentUser.value.isMaster ? 'https://ssaam-api.vercel.app/apis/masters/logout' : 'https://ssaam-api.vercel.app/apis/students/logout'
       await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -1539,7 +1539,7 @@ const handleStudentPhotoUpload = async (event) => {
         if (data.success) {
           const photoUrl = data.data.url;
           const studentId = currentUser.value.studentId || currentUser.value.student_id;
-          const updateResponse = await fetch(`ssaam-api.vercel.app/apis/students/${studentId}`, {
+          const updateResponse = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
@@ -1623,7 +1623,7 @@ const saveUser = async () => {
       _ssaam_access_token: encodeTimestamp()
     }
     
-    const response = await fetch(`ssaam-api.vercel.app/apis/students/${studentId}`, {
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}`, {
       method: 'PUT',
       headers: { 
         'Content-Type': 'application/json',
@@ -1676,7 +1676,7 @@ const confirmDelete = async () => {
   
   if (userToDelete.value) {
     try {
-      const response = await fetch(`ssaam-api.vercel.app/apis/students/${userToDelete.value}`, {
+      const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${userToDelete.value}`, {
         method: 'DELETE',
         headers: { 
           'Content-Type': 'application/json',
