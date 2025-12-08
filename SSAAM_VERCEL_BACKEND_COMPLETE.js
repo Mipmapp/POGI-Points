@@ -41,6 +41,64 @@ const VALID_YEAR_LEVELS = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th 
 const VALID_ROLES = ['student', 'medpub'];
 const VALID_RFID_STATUS = ['verified', 'unverified'];
 
+// Rate limiting for likes (in-memory, resets on serverless cold start)
+const likeRateLimiter = {
+    notificationCooldowns: new Map(),
+    userAttempts: new Map(),
+    COOLDOWN_MS: 2000,
+    MAX_ATTEMPTS_PER_MINUTE: 15,
+    WINDOW_MS: 60000,
+    
+    checkAndRecordAttempt(userId, notificationId) {
+        const now = Date.now();
+        const notifKey = `${userId}:${notificationId}`;
+        
+        // Periodic cleanup (runs on all requests, ~1% chance)
+        if (Math.random() < 0.01) this.cleanup(now);
+        
+        // First, clean and get the user's attempt history (sliding window)
+        let attempts = this.userAttempts.get(userId) || [];
+        // Remove attempts older than 60 seconds
+        attempts = attempts.filter(ts => now - ts < this.WINDOW_MS);
+        
+        // Record this attempt NOW (before any checks) to count ALL attempts
+        attempts.push(now);
+        this.userAttempts.set(userId, attempts);
+        
+        // Check per-user rate limit (too many attempts in window)
+        if (attempts.length > this.MAX_ATTEMPTS_PER_MINUTE) {
+            const oldestInWindow = attempts[0];
+            const retryAfter = Math.ceil((this.WINDOW_MS - (now - oldestInWindow)) / 1000);
+            return { allowed: false, retryAfter: Math.max(1, retryAfter) };
+        }
+        
+        // Check per-notification cooldown
+        const lastNotifAction = this.notificationCooldowns.get(notifKey);
+        if (lastNotifAction && now - lastNotifAction < this.COOLDOWN_MS) {
+            return { allowed: false, retryAfter: Math.ceil((this.COOLDOWN_MS - (now - lastNotifAction)) / 1000) };
+        }
+        
+        // Allowed - update notification cooldown
+        this.notificationCooldowns.set(notifKey, now);
+        
+        return { allowed: true };
+    },
+    
+    cleanup(now) {
+        for (const [k, ts] of this.notificationCooldowns.entries()) {
+            if (now - ts > 120000) this.notificationCooldowns.delete(k);
+        }
+        for (const [k, attempts] of this.userAttempts.entries()) {
+            const filtered = attempts.filter(ts => now - ts < this.WINDOW_MS);
+            if (filtered.length === 0) {
+                this.userAttempts.delete(k);
+            } else {
+                this.userAttempts.set(k, filtered);
+            }
+        }
+    }
+};
+
 const emailTransporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -2308,6 +2366,16 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
             }
         } catch (jwtError) {
             return res.status(401).json({ message: "Invalid or expired token" });
+        }
+
+        // Check rate limit before processing (also records the attempt)
+        const rateLimitResult = likeRateLimiter.checkAndRecordAttempt(userId, req.params.id);
+        if (!rateLimitResult.allowed) {
+            res.set('Retry-After', rateLimitResult.retryAfter.toString());
+            return res.status(429).json({ 
+                message: "Too many requests. Please wait before trying again.",
+                retryAfter: rateLimitResult.retryAfter
+            });
         }
 
         const notification = await Notification.findById(req.params.id);

@@ -492,8 +492,8 @@
                       <img :src="notif.image_url" alt="Announcement image" class="max-w-full max-h-80 rounded-lg border border-gray-200 object-contain cursor-pointer hover:opacity-90 transition" @click="openImagePreview(notif.image_url)" />
                     </div>
                     <div class="flex items-center justify-between mt-4">
-                      <button @click="toggleLike(notif)" class="flex items-center gap-2 text-gray-500 hover:text-pink-500 transition group" :title="isLikedByCurrentUser(notif) ? 'Unlike' : 'Like'">
-                        <svg :class="['w-6 h-6 transition-all', isLikedByCurrentUser(notif) ? 'text-pink-500 fill-pink-500 scale-110' : 'group-hover:scale-110']" :fill="isLikedByCurrentUser(notif) ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                      <button @click="toggleLike(notif)" :disabled="isLikeDisabled(notif._id)" :class="['flex items-center gap-2 transition group', isLikeDisabled(notif._id) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-pink-500']" :title="isLikeDisabled(notif._id) ? 'Please wait...' : (isLikedByCurrentUser(notif) ? 'Unlike' : 'Like')">
+                        <svg :class="['w-6 h-6 transition-all', isLikedByCurrentUser(notif) ? 'text-pink-500 fill-pink-500 scale-110' : (isLikeDisabled(notif._id) ? '' : 'group-hover:scale-110')]" :fill="isLikedByCurrentUser(notif) ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
                         <span class="text-sm font-medium">{{ (notif.liked_by || []).length }}</span>
                       </button>
                       <div v-if="(currentUser.role === 'admin' || currentUser.isMaster) || (currentUser.role === 'medpub' && (notif.posted_by_id === currentUser._id || notif.poster_id === currentUser.student_id))" class="flex gap-2">
@@ -1181,6 +1181,9 @@ const rejectReason = ref('')
 // Notifications management
 const notifications = ref([])
 const notificationsLoading = ref(false)
+const likeCooldowns = ref({})
+const likeInProgress = ref({})
+const LIKE_COOLDOWN_MS = 2000
 const showNotificationModal = ref(false)
 const newNotification = ref({ title: '', content: '', type: 'announcement' })
 const postingNotification = ref(false)
@@ -2309,7 +2312,19 @@ const isLikedByCurrentUser = (notif) => {
   return notif.liked_by.includes(userId)
 }
 
+const isLikeDisabled = (notifId) => {
+  return likeInProgress.value[notifId] || (likeCooldowns.value[notifId] && Date.now() < likeCooldowns.value[notifId])
+}
+
 const toggleLike = async (notif) => {
+  const notifId = notif._id
+  
+  if (isLikeDisabled(notifId)) {
+    return
+  }
+  
+  likeInProgress.value[notifId] = true
+  
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
     const userId = currentUser.value._id || currentUser.value.studentId || currentUser.value.student_id
@@ -2322,6 +2337,14 @@ const toggleLike = async (notif) => {
       },
       body: JSON.stringify({ user_id: userId })
     })
+    
+    if (response.status === 429) {
+      const data = await response.json().catch(() => ({}))
+      const retryAfter = (data.retryAfter || 5) * 1000
+      showNotification('Too many requests. Please wait a moment.', 'error')
+      likeCooldowns.value[notifId] = Date.now() + retryAfter
+      return
+    }
     
     if (response.ok) {
       const data = await response.json()
@@ -2338,9 +2361,12 @@ const toggleLike = async (notif) => {
           notifications.value[notifIndex].liked_by = notifications.value[notifIndex].liked_by.filter(id => id !== userId)
         }
       }
+      likeCooldowns.value[notifId] = Date.now() + LIKE_COOLDOWN_MS
     }
   } catch (error) {
     console.error('Failed to toggle like:', error)
+  } finally {
+    likeInProgress.value[notifId] = false
   }
 }
 
