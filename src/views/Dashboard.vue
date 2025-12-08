@@ -1991,7 +1991,70 @@ const clearNotificationImage = () => {
   }
 }
 
-const handleImageFileSelect = (event) => {
+const compressNotificationImage = (dataUrl, maxSizeKB = 100) => {
+  return new Promise((resolve, reject) => {
+    const img = new Image()
+    img.onload = () => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      
+      let width = img.width
+      let height = img.height
+      const targetBytes = maxSizeKB * 1024 * 1.37
+      
+      const compress = (w, h, q) => {
+        canvas.width = w
+        canvas.height = h
+        ctx.drawImage(img, 0, 0, w, h)
+        return canvas.toDataURL('image/jpeg', q)
+      }
+      
+      let maxDim = 1200
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = (height / width) * maxDim
+          width = maxDim
+        } else {
+          width = (width / height) * maxDim
+          height = maxDim
+        }
+      }
+      
+      let quality = 0.9
+      let result = compress(width, height, quality)
+      
+      while (result.length > targetBytes && quality > 0.1) {
+        quality -= 0.1
+        result = compress(width, height, quality)
+      }
+      
+      while (result.length > targetBytes && (width > 400 || height > 400)) {
+        width = Math.floor(width * 0.7)
+        height = Math.floor(height * 0.7)
+        quality = 0.7
+        result = compress(width, height, quality)
+        
+        let q = quality
+        while (result.length > targetBytes && q > 0.2) {
+          q -= 0.1
+          result = compress(width, height, q)
+        }
+      }
+      
+      if (result.length > targetBytes) {
+        width = Math.floor(width * 0.5)
+        height = Math.floor(height * 0.5)
+        result = compress(width, height, 0.5)
+      }
+      
+      resolve(result)
+    }
+    img.onerror = () => reject(new Error('Failed to load image for compression'))
+    img.src = dataUrl
+  })
+}
+
+const handleImageFileSelect = async (event) => {
   const file = event.target.files[0]
   if (!file) return
   
@@ -2005,16 +2068,39 @@ const handleImageFileSelect = (event) => {
     return
   }
   
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    notificationImagePreview.value = e.target.result
-    notificationImageBase64.value = e.target.result
-    notificationImageUrl.value = ''
+  uploadingImage.value = true
+  
+  try {
+    const reader = new FileReader()
+    reader.onload = async (e) => {
+      try {
+        const originalData = e.target.result
+        notificationImagePreview.value = originalData
+        
+        const compressed = await compressNotificationImage(originalData, 100)
+        notificationImageBase64.value = compressed
+        notificationImageUrl.value = ''
+        
+        const compressedSizeKB = Math.round(compressed.length * 0.73 / 1024)
+        showNotification(`Image compressed to ~${compressedSizeKB}KB`, 'success')
+      } catch (err) {
+        console.error('Compression failed:', err)
+        notificationImageBase64.value = e.target.result
+        showNotification('Using original image (compression failed)', 'warning')
+      } finally {
+        uploadingImage.value = false
+      }
+    }
+    reader.onerror = () => {
+      showNotification('Failed to read image file', 'error')
+      uploadingImage.value = false
+    }
+    reader.readAsDataURL(file)
+  } catch (error) {
+    console.error('Image selection error:', error)
+    showNotification('Failed to process image', 'error')
+    uploadingImage.value = false
   }
-  reader.onerror = () => {
-    showNotification('Failed to read image file', 'error')
-  }
-  reader.readAsDataURL(file)
 }
 
 const isValidImageUrl = (url) => {

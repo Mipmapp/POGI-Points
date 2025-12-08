@@ -449,7 +449,9 @@ const notificationSchema = new mongoose.Schema({
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
     was_edited: { type: Boolean, default: false },
-    liked_by: [{ type: String }]
+    liked_by: [{ type: String }],
+    edit_count: { type: Number, default: 0 },
+    last_edit_date: { type: Date, default: null }
 });
 
 notificationSchema.index({ created_at: -1 });
@@ -2082,6 +2084,36 @@ app.post('/apis/notifications', canPostNotification, async (req, res) => {
             return res.status(400).json({ message: "Message must be 2000 characters or less" });
         }
 
+        // MedPub rate limiting: 1 post per day
+        if (req.poster.type === 'medpub') {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            // Convert poster id to ObjectId for proper comparison
+            let posterId;
+            try {
+                posterId = new mongoose.Types.ObjectId(req.poster.id);
+            } catch (e) {
+                posterId = req.poster.id;
+            }
+
+            const todayPostCount = await Notification.countDocuments({
+                posted_by_id: posterId,
+                posted_by: 'medpub',
+                created_at: { $gte: today, $lt: tomorrow }
+            });
+
+            if (todayPostCount >= 1) {
+                return res.status(429).json({ 
+                    message: "MedPub users can only post once per day. Please try again tomorrow.",
+                    limit_type: "post",
+                    remaining: 0
+                });
+            }
+        }
+
         // Only admin can set urgent priority
         let finalPriority = priority || 'normal';
         if (finalPriority === 'urgent' && req.poster.type !== 'admin') {
@@ -2140,6 +2172,36 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
             return res.status(403).json({ message: "You can only edit your own notifications" });
         }
 
+        // MedPub rate limiting: 3 edits per day per post
+        if (req.poster.type === 'medpub' && isOwner) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            
+            // Check if the last edit was today (within today's date range)
+            const lastEditDate = notification.last_edit_date ? new Date(notification.last_edit_date) : null;
+            const lastEditWasToday = lastEditDate && lastEditDate >= today && lastEditDate < tomorrow;
+            
+            // If last edit was not today, reset the counter
+            if (!lastEditWasToday) {
+                notification.edit_count = 0;
+            }
+            
+            // Check if we've reached the limit
+            if (notification.edit_count >= 3) {
+                return res.status(429).json({ 
+                    message: "MedPub users can only edit each post 3 times per day. Please try again tomorrow.",
+                    limit_type: "edit",
+                    remaining: 0
+                });
+            }
+            
+            // Increment edit count and update last edit date
+            notification.edit_count = (notification.edit_count || 0) + 1;
+            notification.last_edit_date = new Date();
+        }
+
         if (title) {
             if (title.length > 200) {
                 return res.status(400).json({ message: "Title must be 200 characters or less" });
@@ -2167,9 +2229,12 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
         notification.was_edited = true;
         await notification.save();
 
+        const remainingEdits = req.poster.type === 'medpub' ? Math.max(0, 3 - notification.edit_count) : null;
+
         res.json({
             message: "Notification updated successfully",
-            notification
+            notification,
+            remaining_edits: remainingEdits
         });
 
     } catch (err) {
