@@ -10,8 +10,23 @@ import crypto from 'crypto';
 const app = express();
 dotenv.config();
 
+const ALLOWED_ORIGINS = [
+  'https://ssaam.vercel.app',
+  'https://ssaam-api.vercel.app',
+  process.env.FRONTEND_URL,
+  process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : null,
+  process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : null
+].filter(Boolean);
+
 const corsOptions = {
-  origin: '*',
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-SSAAM-TS'],
   credentials: true
@@ -20,8 +35,13 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
-// Disable caching for all API responses to prevent 304 issues
+// Security headers middleware
 app.use((req, res, next) => {
+  res.set('X-Content-Type-Options', 'nosniff');
+  res.set('X-Frame-Options', 'DENY');
+  res.set('X-XSS-Protection', '1; mode=block');
+  res.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.set('Content-Security-Policy', "default-src 'self'");
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
   res.set('Pragma', 'no-cache');
   res.set('Expires', '0');
@@ -30,9 +50,17 @@ app.use((req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
-const SSAAM_API_KEY = process.env.SSAAM_API_KEY || "SECRET_iKALAT_PALANG_NIMO";
-const SSAAM_CRYPTO_KEY = process.env.SSAAM_CRYPTO_KEY || "SSAAM2025CCS";
-const ADMIN_VERIFICATION_SECRET = process.env.ADMIN_VERIFICATION_SECRET || "SSAAM_ADMIN_VERIFY_2025";
+
+if (!process.env.SSAAM_API_KEY || !process.env.SSAAM_CRYPTO_KEY || !process.env.ADMIN_VERIFICATION_SECRET) {
+    console.error('CRITICAL: Required security secrets (SSAAM_API_KEY, SSAAM_CRYPTO_KEY, ADMIN_VERIFICATION_SECRET) are not set!');
+    if (process.env.NODE_ENV === 'production') {
+        process.exit(1);
+    }
+}
+
+const SSAAM_API_KEY = process.env.SSAAM_API_KEY;
+const SSAAM_CRYPTO_KEY = process.env.SSAAM_CRYPTO_KEY;
+const ADMIN_VERIFICATION_SECRET = process.env.ADMIN_VERIFICATION_SECRET;
 
 const VALID_PROGRAMS = ['BSCS', 'BSIT', 'BSIS'];
 const VALID_SUFFIXES = ['', 'Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
@@ -117,6 +145,21 @@ function generateSecureToken() {
 
 function hashToken(token) {
     return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+function escapeRegex(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function sanitizeHtml(str) {
+    if (!str) return str;
+    return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#x27;')
+        .replace(/\//g, '&#x2F;');
 }
 
 async function sendVerificationEmail(toEmail, code, studentName) {
@@ -988,12 +1031,13 @@ app.get('/apis/students/search', studentAuth, async (req, res) => {
         const filter = { status: 'approved' };
 
         if (search.trim()) {
+            const escapedSearch = escapeRegex(search.trim());
             filter.$or = [
-                { student_id: { $regex: search, $options: 'i' } },
-                { first_name: { $regex: search, $options: 'i' } },
-                { last_name: { $regex: search, $options: 'i' } },
-                { email: { $regex: search, $options: 'i' } },
-                { rfid_code: { $regex: search, $options: 'i' } }
+                { student_id: { $regex: escapedSearch, $options: 'i' } },
+                { first_name: { $regex: escapedSearch, $options: 'i' } },
+                { last_name: { $regex: escapedSearch, $options: 'i' } },
+                { email: { $regex: escapedSearch, $options: 'i' } },
+                { rfid_code: { $regex: escapedSearch, $options: 'i' } }
             ];
         }
 
@@ -1605,12 +1649,33 @@ app.post('/apis/students/logout', studentAuthWithToken, async (req, res) => {
     }
 });
 
-app.post('/apis/masters', async (req, res) => {
+app.post('/apis/masters', auth, timestampAuth, async (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, password, admin_creation_secret } = req.body;
+
+        const MASTER_CREATION_SECRET = process.env.MASTER_CREATION_SECRET;
+        if (!MASTER_CREATION_SECRET) {
+            return res.status(500).json({ message: "Admin creation is not configured on this server" });
+        }
+
+        if (!admin_creation_secret || admin_creation_secret !== MASTER_CREATION_SECRET) {
+            return res.status(403).json({ message: "Invalid admin creation secret" });
+        }
 
         if (!username || !password)
             return res.status(400).json({ message: "Username and password required" });
+
+        if (username.length < 4 || username.length > 32) {
+            return res.status(400).json({ message: "Username must be 4-32 characters" });
+        }
+
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
+        }
+
+        if (password.length < 12) {
+            return res.status(400).json({ message: "Password must be at least 12 characters" });
+        }
 
         const existing = await Master.findOne({ username });
         if (existing)
@@ -2191,9 +2256,10 @@ app.post('/apis/notifications', canPostNotification, async (req, res) => {
         }
 
         // Derive all poster info from authenticated session (not from request body)
+        // Sanitize title and message to prevent XSS
         const notification = await Notification.create({
-            title: title.trim(),
-            message: message.trim(),
+            title: sanitizeHtml(title.trim()),
+            message: sanitizeHtml(message.trim()),
             image_url: imageUrl,
             posted_by: req.poster.type, // From JWT/session
             posted_by_name: req.poster.name, // From JWT/session
@@ -2265,14 +2331,14 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
             if (title.length > 200) {
                 return res.status(400).json({ message: "Title must be 200 characters or less" });
             }
-            notification.title = title.trim();
+            notification.title = sanitizeHtml(title.trim());
         }
 
         if (message) {
             if (message.length > 2000) {
                 return res.status(400).json({ message: "Message must be 2000 characters or less" });
             }
-            notification.message = message.trim();
+            notification.message = sanitizeHtml(message.trim());
         }
 
         if (priority) {
