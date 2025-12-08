@@ -359,15 +359,16 @@ const requestResetCode = async () => {
   resetLoading.value = true
   resetMessage.value = ''
   try {
+    const token = encodeTimestamp()
     const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/request', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'X-SSAAM-TS': encodeTimestamp()
+        'X-SSAAM-TS': token
       },
       body: JSON.stringify({ 
         student_id: resetStudentId.value.trim(),
-        _ssaam_access_token: encodeTimestamp()
+        _ssaam_access_token: token
       })
     })
     const data = await response.json()
@@ -391,16 +392,17 @@ const verifyResetCode = async () => {
   resetLoading.value = true
   resetMessage.value = ''
   try {
+    const token = encodeTimestamp()
     const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/verify', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'X-SSAAM-TS': encodeTimestamp()
+        'X-SSAAM-TS': token
       },
       body: JSON.stringify({ 
         student_id: resetStudentId.value.trim(), 
         code: resetCode.value.trim(),
-        _ssaam_access_token: encodeTimestamp()
+        _ssaam_access_token: token
       })
     })
     const data = await response.json()
@@ -430,17 +432,18 @@ const completePasswordReset = async () => {
   resetLoading.value = true
   resetMessage.value = ''
   try {
+    const token = encodeTimestamp()
     const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/complete', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
-        'X-SSAAM-TS': encodeTimestamp()
+        'X-SSAAM-TS': token
       },
       body: JSON.stringify({ 
         student_id: resetStudentId.value.trim(), 
         reset_token: resetToken.value,
         new_password: newPassword.value,
-        _ssaam_access_token: encodeTimestamp()
+        _ssaam_access_token: token
       })
     })
     const data = await response.json()
