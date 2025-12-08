@@ -362,7 +362,10 @@ const requestResetCode = async () => {
     const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/request', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ student_id: resetStudentId.value.trim() })
+      body: JSON.stringify({ 
+        student_id: resetStudentId.value.trim(),
+        _ssaam_access_token: encodeTimestamp()
+      })
     })
     const data = await response.json()
     if (response.ok) {
@@ -388,7 +391,11 @@ const verifyResetCode = async () => {
     const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ student_id: resetStudentId.value.trim(), code: resetCode.value.trim() })
+      body: JSON.stringify({ 
+        student_id: resetStudentId.value.trim(), 
+        code: resetCode.value.trim(),
+        _ssaam_access_token: encodeTimestamp()
+      })
     })
     const data = await response.json()
     if (response.ok) {
@@ -423,7 +430,8 @@ const completePasswordReset = async () => {
       body: JSON.stringify({ 
         student_id: resetStudentId.value.trim(), 
         reset_token: resetToken.value,
-        new_password: newPassword.value
+        new_password: newPassword.value,
+        _ssaam_access_token: encodeTimestamp()
       })
     })
     const data = await response.json()

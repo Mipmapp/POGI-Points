@@ -1624,7 +1624,16 @@ const confirmLogout = async () => {
 }
 
 const editUser = (user) => {
-  editingUser.value = JSON.parse(JSON.stringify(user))
+  const userCopy = JSON.parse(JSON.stringify(user))
+  // Map snake_case fields to camelCase for the form
+  userCopy.studentId = userCopy.studentId || userCopy.student_id
+  userCopy.firstName = userCopy.firstName || userCopy.first_name || ''
+  userCopy.middleName = userCopy.middleName || userCopy.middle_name || ''
+  userCopy.lastName = userCopy.lastName || userCopy.last_name || ''
+  userCopy.yearLevel = userCopy.yearLevel || userCopy.year_level || ''
+  userCopy.rfidCode = userCopy.rfidCode || userCopy.rfid_code || ''
+  userCopy.image = userCopy.image || userCopy.photo || ''
+  editingUser.value = userCopy
   editImageLoading.value = false
   showEditModal.value = true
 }
@@ -1880,7 +1889,7 @@ const saveUser = async () => {
   }
   
   const studentId = editingUser.value.studentId || editingUser.value.student_id
-  const token = localStorage.getItem('adminToken')
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   
   if (!token) {
     showNotification('Admin authentication required', 'error')
@@ -1944,7 +1953,7 @@ const confirmDelete = async () => {
     return
   }
   
-  const token = localStorage.getItem('adminToken')
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   
   if (!token) {
     showNotification('Admin authentication required', 'error')
@@ -2324,6 +2333,9 @@ const toggleLike = async (notif) => {
   }
   
   likeInProgress.value[notifId] = true
+  
+  // Add 2-second delay to prevent spam before making API call
+  await new Promise(resolve => setTimeout(resolve, 2000))
   
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
