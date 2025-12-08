@@ -262,8 +262,9 @@ mongoose.connect(MONGO_URI, { serverSelectionTimeoutMS: 5000 })
 .catch(err => console.error('MongoDB error:', err));
 
 const STUDENT_ID_REGEX = /^[0-9]{2}-[A-Z]-[0-9]{5}$/;
-const NAME_REGEX = /^[A-Z\s'-]+$/;
-const UPPERCASE_ONLY_REGEX = /^[A-Z\s'-]+$/;
+// Updated regex to allow enye (Ñ) and other common special letters in names
+const NAME_REGEX = /^[A-ZÑ\s'-]+$/;
+const UPPERCASE_ONLY_REGEX = /^[A-ZÑ\s'-]+$/;
 
 const sessionTokenSchema = new mongoose.Schema({
     token_hash: { type: String, required: true, unique: true },
@@ -1892,8 +1893,8 @@ app.post('/apis/password-reset/complete', studentAuth, timestampAuth, async (req
             return res.status(400).json({ message: "New password must be between 2 and 64 characters" });
         }
 
-        if (!/^[A-Z\s'-]+$/.test(trimmedPassword)) {
-            return res.status(400).json({ message: "Password must contain only letters, spaces, hyphens, or apostrophes" });
+        if (!/^[A-ZÑ\s'-]+$/.test(trimmedPassword)) {
+            return res.status(400).json({ message: "Password must contain only letters (including Ñ), spaces, hyphens, or apostrophes" });
         }
 
         // Hash the reset token for comparison
@@ -2275,7 +2276,7 @@ app.delete('/apis/notifications/:id', canPostNotification, async (req, res) => {
     }
 });
 
-// Toggle like on notification (requires valid JWT authentication)
+// Toggle like on notification (requires valid JWT authentication with session validation)
 app.post('/apis/notifications/:id/like', async (req, res) => {
     try {
         const token = req.headers.authorization?.replace('Bearer ', '');
@@ -2287,6 +2288,19 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
         let userId;
         try {
             const decoded = jwt.verify(token, SSAAM_API_KEY);
+            
+            // Validate session token in database
+            const tokenHash = hashToken(token);
+            const sessionToken = await SessionToken.findOne({ 
+                token_hash: tokenHash,
+                is_revoked: false,
+                expires_at: { $gt: new Date() }
+            });
+
+            if (!sessionToken) {
+                return res.status(401).json({ message: "Session expired or invalid. Please login again." });
+            }
+            
             // Get user ID from decoded token - support both student and admin/master tokens
             userId = decoded.student_id || decoded.id || decoded.username;
             if (!userId) {
