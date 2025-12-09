@@ -2321,8 +2321,8 @@ const deleteNotification = async (notifId) => {
 
 const isLikedByCurrentUser = (notif) => {
   if (!notif.liked_by || !Array.isArray(notif.liked_by)) return false
-  const userId = currentUser.value._id || currentUser.value.studentId || currentUser.value.student_id
-  return notif.liked_by.includes(userId)
+  const visitorId = currentUser.value.studentId || currentUser.value.student_id || currentUser.value._id
+  return notif.liked_by.includes(visitorId)
 }
 
 const isLikeDisabled = (notifId) => {
@@ -2343,7 +2343,7 @@ const toggleLike = async (notif) => {
   
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    const userId = currentUser.value._id || currentUser.value.studentId || currentUser.value.student_id
+    const visitorId = currentUser.value.studentId || currentUser.value.student_id || currentUser.value._id
     
     const response = await fetch(`https://ssaam-api.vercel.app/apis/notifications/${notif._id}/like`, {
       method: 'POST',
@@ -2370,11 +2370,11 @@ const toggleLike = async (notif) => {
           notifications.value[notifIndex].liked_by = []
         }
         if (data.liked) {
-          if (!notifications.value[notifIndex].liked_by.includes(userId)) {
-            notifications.value[notifIndex].liked_by.push(userId)
+          if (!notifications.value[notifIndex].liked_by.includes(visitorId)) {
+            notifications.value[notifIndex].liked_by.push(visitorId)
           }
         } else {
-          notifications.value[notifIndex].liked_by = notifications.value[notifIndex].liked_by.filter(id => id !== userId)
+          notifications.value[notifIndex].liked_by = notifications.value[notifIndex].liked_by.filter(id => id !== visitorId)
         }
       }
       likeCooldowns.value[notifId] = Date.now() + LIKE_COOLDOWN_MS
