@@ -1,8 +1,12 @@
 <template>
   <!-- Image Preview Modal -->
-  <div v-if="showImagePreviewModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50" @click="showImagePreviewModal = false">
-    <button @click="showImagePreviewModal = false" class="absolute top-4 right-4 text-white text-4xl hover:text-gray-300">&times;</button>
-    <img :src="imagePreviewUrl" alt="Preview" class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" />
+  <div v-if="showImagePreviewModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50" @click.self="showImagePreviewModal = false">
+    <button @click="showImagePreviewModal = false" class="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 z-10">&times;</button>
+    <a :href="imagePreviewUrl" :download="getImageFileName(imagePreviewUrl)" class="absolute top-4 left-4 bg-white bg-opacity-20 hover:bg-opacity-40 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition z-10" @click.stop>
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+      Download
+    </a>
+    <img :src="imagePreviewUrl" alt="Preview" class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" @click.stop />
   </div>
 
   <div v-if="showLogoutConfirmation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showLogoutConfirmation = false">
@@ -489,10 +493,20 @@
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ notif.title }}</h3>
                     <p class="text-gray-700 whitespace-pre-wrap mb-3" v-html="formatMessageWithLinks(notif.message || notif.content)"></p>
                     <div v-if="notif.image_url" class="mb-3">
-                      <img :src="notif.image_url" alt="Announcement image" class="max-w-full max-h-80 rounded-lg border border-gray-200 object-contain cursor-pointer hover:opacity-90 transition" @click="openImagePreview(notif.image_url)" />
+                      <div class="relative group inline-block max-w-full">
+                        <img :src="notif.image_url" alt="Announcement image" class="max-w-full w-auto h-auto max-h-[500px] rounded-lg border border-gray-200 object-contain cursor-pointer hover:opacity-90 transition shadow-sm" @click="openImagePreview(notif.image_url)" />
+                        <div class="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button @click.stop="openImagePreview(notif.image_url)" class="bg-black bg-opacity-60 hover:bg-opacity-80 text-white p-2 rounded-lg transition" title="View full size">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                          </button>
+                          <a :href="notif.image_url" :download="getImageFileName(notif.image_url)" @click.stop class="bg-black bg-opacity-60 hover:bg-opacity-80 text-white p-2 rounded-lg transition" title="Download image">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                          </a>
+                        </div>
+                      </div>
                     </div>
-                    <div class="flex items-center justify-between mt-4">
-                      <button @click="toggleLike(notif)" :disabled="isLikeDisabled(notif._id)" :class="['flex items-center gap-2 transition group', isLikeDisabled(notif._id) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-pink-500']" :title="isLikeDisabled(notif._id) ? 'Please wait...' : (isLikedByCurrentUser(notif) ? 'Unlike' : 'Like')">
+                    <div class="flex items-center justify-between mt-4 relative z-10">
+                      <button @click.stop="toggleLike(notif)" :disabled="isLikeDisabled(notif._id)" :class="['flex items-center gap-2 transition group px-3 py-2 -ml-3 rounded-lg', isLikeDisabled(notif._id) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-pink-500 hover:bg-pink-50 active:scale-95']" :title="isLikeDisabled(notif._id) ? 'Please wait...' : (isLikedByCurrentUser(notif) ? 'Unlike' : 'Like')">
                         <svg v-if="likeInProgress[notif._id]" class="w-6 h-6 animate-spin text-pink-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -2230,6 +2244,21 @@ const saveEditedNotification = async () => {
 const openImagePreview = (url) => {
   imagePreviewUrl.value = url
   showImagePreviewModal.value = true
+}
+
+const getImageFileName = (url) => {
+  if (!url) return 'image.jpg'
+  try {
+    const urlObj = new URL(url)
+    const pathname = urlObj.pathname
+    const fileName = pathname.split('/').pop()
+    if (fileName && fileName.includes('.')) {
+      return fileName
+    }
+    return 'announcement-image.jpg'
+  } catch {
+    return 'announcement-image.jpg'
+  }
 }
 
 const formatNotificationDate = (dateStr) => {
