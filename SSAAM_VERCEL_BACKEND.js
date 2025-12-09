@@ -590,6 +590,66 @@ notificationSchema.index({ created_at: -1 });
 
 const Notification = mongoose.model("Notification", notificationSchema);
 
+// ==================== ATTENDANCE SCHEMAS ====================
+
+// Attendance Event Schema - Events created by admin for attendance tracking
+const attendanceEventSchema = new mongoose.Schema({
+    title: { type: String, required: true, maxlength: 200 },
+    description: { type: String, maxlength: 2000, default: "" },
+    location: { type: String, maxlength: 200, default: "" },
+    event_date: { type: Date, required: true },
+    start_time: { type: String, required: true }, // e.g., "08:00"
+    end_time: { type: String, required: true }, // e.g., "17:00"
+    status: { 
+        type: String, 
+        enum: ['draft', 'active', 'closed'],
+        default: 'draft'
+    },
+    created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'Master', required: true },
+    created_by_name: { type: String, required: true },
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now },
+    activated_at: { type: Date, default: null },
+    closed_at: { type: Date, default: null }
+});
+
+attendanceEventSchema.index({ status: 1, event_date: -1 });
+attendanceEventSchema.index({ created_at: -1 });
+
+const AttendanceEvent = mongoose.model("AttendanceEvent", attendanceEventSchema);
+
+// Attendance Log Schema - Individual student attendance records
+const attendanceLogSchema = new mongoose.Schema({
+    event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'AttendanceEvent', required: true },
+    student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+    student_id_number: { type: String, required: true }, // e.g., "21-A-12345"
+    rfid_code: { type: String, default: null },
+    student_name: { type: String, required: true },
+    program: { type: String },
+    year_level: { type: String },
+    check_in_at: { type: Date, default: null },
+    check_out_at: { type: Date, default: null },
+    source: { type: String, enum: ['rfid', 'manual'], default: 'rfid' },
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now }
+});
+
+attendanceLogSchema.index({ event_id: 1, student_id: 1 }, { unique: true });
+attendanceLogSchema.index({ event_id: 1, rfid_code: 1 });
+attendanceLogSchema.index({ event_id: 1, check_in_at: -1 });
+
+// Virtual for attendance status
+attendanceLogSchema.virtual('attendance_status').get(function() {
+    if (this.check_in_at && this.check_out_at) return 'present';
+    if (this.check_in_at && !this.check_out_at) return 'incomplete';
+    return 'absent';
+});
+
+attendanceLogSchema.set('toJSON', { virtuals: true });
+attendanceLogSchema.set('toObject', { virtuals: true });
+
+const AttendanceLog = mongoose.model("AttendanceLog", attendanceLogSchema);
+
 // Send Password Reset Email
 async function sendPasswordResetEmail(toEmail, code, studentName) {
     const mailOptions = {
@@ -2860,6 +2920,330 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
 
     } catch (err) {
         console.error("Toggle like error:", err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ==================== ATTENDANCE API ENDPOINTS ====================
+
+// Get all attendance events (admin only)
+app.get('/apis/attendance/events', auth, async (req, res) => {
+    try {
+        const { status, page = 1, limit = 20 } = req.query;
+        const filter = {};
+        if (status) filter.status = status;
+        
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const events = await AttendanceEvent.find(filter)
+            .sort({ event_date: -1, created_at: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+        
+        const total = await AttendanceEvent.countDocuments(filter);
+        
+        res.json({
+            data: events,
+            pagination: {
+                currentPage: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get active attendance events (for students)
+app.get('/apis/attendance/events/active', studentAuth, async (req, res) => {
+    try {
+        const events = await AttendanceEvent.find({ status: 'active' })
+            .sort({ event_date: -1 });
+        res.json({ data: events });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get single attendance event
+app.get('/apis/attendance/events/:id', studentAuth, async (req, res) => {
+    try {
+        const event = await AttendanceEvent.findById(req.params.id);
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+        res.json(event);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Create attendance event (admin only)
+app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
+    try {
+        const { title, description, location, event_date, start_time, end_time, status } = req.body;
+        
+        if (!title || !event_date || !start_time || !end_time) {
+            return res.status(400).json({ message: "Title, event date, start time, and end time are required" });
+        }
+        
+        const event = new AttendanceEvent({
+            title,
+            description: description || "",
+            location: location || "",
+            event_date: new Date(event_date),
+            start_time,
+            end_time,
+            status: status || 'draft',
+            created_by: req.master.id,
+            created_by_name: req.master.username,
+            activated_at: status === 'active' ? new Date() : null
+        });
+        
+        const saved = await event.save();
+        res.status(201).json({ message: "Event created successfully", event: saved });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update attendance event (admin only)
+app.put('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) => {
+    try {
+        const { title, description, location, event_date, start_time, end_time, status } = req.body;
+        
+        const event = await AttendanceEvent.findById(req.params.id);
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+        
+        if (title) event.title = title;
+        if (description !== undefined) event.description = description;
+        if (location !== undefined) event.location = location;
+        if (event_date) event.event_date = new Date(event_date);
+        if (start_time) event.start_time = start_time;
+        if (end_time) event.end_time = end_time;
+        
+        if (status && status !== event.status) {
+            event.status = status;
+            if (status === 'active' && !event.activated_at) {
+                event.activated_at = new Date();
+            } else if (status === 'closed') {
+                event.closed_at = new Date();
+            }
+        }
+        
+        event.updated_at = new Date();
+        const updated = await event.save();
+        
+        res.json({ message: "Event updated successfully", event: updated });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Delete attendance event (admin only)
+app.delete('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) => {
+    try {
+        const event = await AttendanceEvent.findById(req.params.id);
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+        
+        await AttendanceLog.deleteMany({ event_id: req.params.id });
+        await AttendanceEvent.deleteOne({ _id: req.params.id });
+        
+        res.json({ message: "Event and all related attendance logs deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get attendance logs for an event (admin only)
+app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
+    try {
+        const { search, yearLevel, program, page = 1, limit = 50 } = req.query;
+        const filter = { event_id: req.params.id };
+        
+        if (yearLevel) filter.year_level = yearLevel;
+        if (program) filter.program = program;
+        
+        if (search) {
+            const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            filter.$or = [
+                { student_name: { $regex: escapedSearch, $options: 'i' } },
+                { student_id_number: { $regex: escapedSearch, $options: 'i' } },
+                { rfid_code: { $regex: escapedSearch, $options: 'i' } }
+            ];
+        }
+        
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const logs = await AttendanceLog.find(filter)
+            .sort({ check_in_at: -1, created_at: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+        
+        const total = await AttendanceLog.countDocuments(filter);
+        
+        const stats = await AttendanceLog.aggregate([
+            { $match: { event_id: new mongoose.Types.ObjectId(req.params.id) } },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: 1 },
+                    present: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }] }, 1, 0] } },
+                    incomplete: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $eq: ["$check_out_at", null] }] }, 1, 0] } }
+                }
+            }
+        ]);
+        
+        res.json({
+            data: logs,
+            stats: stats[0] || { total: 0, present: 0, incomplete: 0 },
+            pagination: {
+                currentPage: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// RFID Check-in/Check-out endpoint
+app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
+    try {
+        const { rfid_code, source = 'rfid' } = req.body;
+        
+        if (!rfid_code) {
+            return res.status(400).json({ message: "RFID code is required" });
+        }
+        
+        const event = await AttendanceEvent.findById(req.params.id);
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+        
+        if (event.status !== 'active') {
+            return res.status(400).json({ message: "Event is not active" });
+        }
+        
+        const student = await Student.findOne({ 
+            rfid_code: rfid_code.trim(),
+            rfid_status: 'verified',
+            status: 'approved'
+        });
+        
+        if (!student) {
+            return res.status(404).json({ message: "No verified student found with this RFID code" });
+        }
+        
+        let log = await AttendanceLog.findOne({
+            event_id: req.params.id,
+            student_id: student._id
+        });
+        
+        const now = new Date();
+        let action = '';
+        
+        if (!log) {
+            log = new AttendanceLog({
+                event_id: req.params.id,
+                student_id: student._id,
+                student_id_number: student.student_id,
+                rfid_code: student.rfid_code,
+                student_name: `${student.first_name} ${student.middle_name || ''} ${student.last_name}`.replace(/\s+/g, ' ').trim(),
+                program: student.program,
+                year_level: student.year_level,
+                check_in_at: now,
+                source
+            });
+            action = 'check_in';
+        } else if (!log.check_out_at) {
+            log.check_out_at = now;
+            log.updated_at = now;
+            action = 'check_out';
+        } else {
+            return res.status(400).json({ 
+                message: "Student already checked in and out for this event",
+                student_name: log.student_name,
+                check_in_at: log.check_in_at,
+                check_out_at: log.check_out_at
+            });
+        }
+        
+        await log.save();
+        
+        res.json({
+            message: action === 'check_in' ? 'Check-in successful' : 'Check-out successful',
+            action,
+            log: log.toJSON(),
+            student_name: log.student_name,
+            student_photo: student.photo
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get student's own attendance records
+app.get('/apis/attendance/my-records', studentAuth, async (req, res) => {
+    try {
+        const token = req.headers.authorization?.split(" ")[1];
+        const decoded = jwt.verify(token, SSAAM_API_KEY);
+        
+        if (!decoded.student_id) {
+            return res.status(403).json({ message: "Only students can view their attendance records" });
+        }
+        
+        const student = await Student.findOne({ student_id: decoded.student_id });
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+        
+        const events = await AttendanceEvent.find({ status: { $in: ['active', 'closed'] } })
+            .sort({ event_date: -1 });
+        
+        const records = await Promise.all(events.map(async (event) => {
+            const log = await AttendanceLog.findOne({
+                event_id: event._id,
+                student_id: student._id
+            });
+            
+            let status = 'absent';
+            if (log) {
+                if (log.check_in_at && log.check_out_at) status = 'present';
+                else if (log.check_in_at) status = 'incomplete';
+            }
+            
+            return {
+                event: {
+                    _id: event._id,
+                    title: event.title,
+                    description: event.description,
+                    location: event.location,
+                    event_date: event.event_date,
+                    start_time: event.start_time,
+                    end_time: event.end_time,
+                    status: event.status
+                },
+                attendance: log ? {
+                    check_in_at: log.check_in_at,
+                    check_out_at: log.check_out_at,
+                    status
+                } : {
+                    check_in_at: null,
+                    check_out_at: null,
+                    status: 'absent'
+                }
+            };
+        }));
+        
+        res.json({ data: records });
+    } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
