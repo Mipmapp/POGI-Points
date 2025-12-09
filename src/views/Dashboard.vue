@@ -1671,6 +1671,10 @@ const confirmLogout = async () => {
   setTimeout(() => {
     localStorage.removeItem('currentUser')
     localStorage.removeItem('authToken')
+    localStorage.removeItem('userLikeId')
+    localStorage.removeItem('likeActionTimestamps')
+    localStorage.removeItem('likeBanUntil')
+    localStorage.removeItem('likeWarningShown')
     router.push('/')
   }, 1500)
 }
@@ -2443,12 +2447,6 @@ const isLikedByCurrentUser = (notif) => {
   
   // Check if user's ID is in the liked_by array
   if (userId && notif.liked_by.includes(userId)) {
-    return true
-  }
-  
-  // Also check stored like ID as fallback (for session continuity)
-  const storedLikeId = localStorage.getItem('userLikeId')
-  if (storedLikeId && notif.liked_by.includes(storedLikeId)) {
     return true
   }
   

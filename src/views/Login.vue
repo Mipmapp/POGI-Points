@@ -635,6 +635,10 @@ const handleLogin = async () => {
         isMaster: startsWithLetter,
         token: user.token || ''
       };
+      localStorage.removeItem('userLikeId')
+      localStorage.removeItem('likeActionTimestamps')
+      localStorage.removeItem('likeBanUntil')
+      localStorage.removeItem('likeWarningShown')
       localStorage.setItem("currentUser", JSON.stringify(normalizedUser));
       localStorage.setItem("authToken", normalizedUser.token);
       console.log("Navigating to dashboard...");
