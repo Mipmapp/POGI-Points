@@ -60,8 +60,8 @@
         <ul class="text-xs text-blue-800 space-y-2">
           <li>• First time login? Your default password is your Last Name (uppercase)</li>
           <li>• Changed your password and forgot it? Use the Forgot Password option on the login page</li>
-          <li>• RFID not working? Contact the CCS office</li>
-          <li>• Profile problems? Check your information is complete</li>
+          <li>• Looking for your RFID? Register it to the CCS office</li>
+          <li>• Profile problems? Contact Developers or Proceed to the CCS office</li>
         </ul>
       </div>
 
