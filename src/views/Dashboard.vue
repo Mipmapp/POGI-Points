@@ -494,8 +494,22 @@
                     <p class="text-gray-700 whitespace-pre-wrap mb-3" v-html="formatMessageWithLinks(notif.message || notif.content)"></p>
                     <div v-if="notif.image_url" class="mb-3">
                       <div class="relative group inline-block max-w-full">
-                        <img :src="notif.image_url" alt="Announcement image" class="max-w-full w-auto h-auto max-h-[500px] rounded-lg border border-gray-200 object-contain cursor-pointer hover:opacity-90 transition shadow-sm" @click="openImagePreview(notif.image_url)" />
-                        <div class="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div v-if="notifImageRetries[notif._id] > 0 && !notifImageFailed[notif._id]" class="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg z-10">
+                          <div class="text-center">
+                            <svg class="animate-spin h-8 w-8 text-purple-500 mx-auto mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span class="text-xs text-gray-500">Retrying... ({{ notifImageRetries[notif._id] }}/{{ MAX_NOTIF_IMAGE_RETRIES }})</span>
+                          </div>
+                        </div>
+                        <div v-if="notifImageFailed[notif._id]" class="bg-gray-100 rounded-lg p-8 text-center border border-gray-200">
+                          <svg class="w-12 h-12 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                          <p class="text-sm text-gray-500 mb-2">Failed to load image</p>
+                          <button @click.stop="retryNotifImage(notif._id, notif.image_url)" class="text-xs text-purple-600 hover:text-purple-800 font-medium">Try again</button>
+                        </div>
+                        <img v-show="!notifImageFailed[notif._id]" :src="notif.image_url" alt="Announcement image" class="max-w-full w-auto h-auto max-h-[500px] rounded-lg border border-gray-200 object-contain cursor-pointer hover:opacity-90 transition shadow-sm" @click="openImagePreview(notif.image_url)" @error="handleNotifImageError(notif._id, notif.image_url, $event)" />
+                        <div v-if="!notifImageFailed[notif._id]" class="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button @click.stop="openImagePreview(notif.image_url)" class="bg-black bg-opacity-60 hover:bg-opacity-80 text-white p-2 rounded-lg transition" title="View full size">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
                           </button>
@@ -1231,6 +1245,9 @@ const notificationImagePreview = ref(null)
 const notificationImageUrl = ref('')
 const showImagePreviewModal = ref(false)
 const imagePreviewUrl = ref('')
+const notifImageRetries = ref({})
+const notifImageFailed = ref({})
+const MAX_NOTIF_IMAGE_RETRIES = 3
 const showEditNotificationModal = ref(false)
 const editNotificationData = ref(null)
 const savingEditedNotification = ref(false)
@@ -2261,6 +2278,27 @@ const getImageFileName = (url) => {
   }
 }
 
+const handleNotifImageError = (notifId, imageUrl, event) => {
+  const currentRetries = notifImageRetries.value[notifId] || 0
+  if (currentRetries < MAX_NOTIF_IMAGE_RETRIES) {
+    notifImageRetries.value[notifId] = currentRetries + 1
+    setTimeout(() => {
+      const imgElement = event.target
+      if (imgElement) {
+        const separator = imageUrl.includes('?') ? '&' : '?'
+        imgElement.src = `${imageUrl}${separator}retry=${Date.now()}`
+      }
+    }, 1000 * (currentRetries + 1))
+  } else {
+    notifImageFailed.value[notifId] = true
+  }
+}
+
+const retryNotifImage = (notifId, imageUrl) => {
+  notifImageRetries.value[notifId] = 0
+  notifImageFailed.value[notifId] = false
+}
+
 const formatNotificationDate = (dateStr) => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
@@ -2399,8 +2437,9 @@ const deleteNotification = async (notifId) => {
 
 const isLikedByCurrentUser = (notif) => {
   if (!notif.liked_by || !Array.isArray(notif.liked_by)) return false
+  const storedLikeId = localStorage.getItem('userLikeId')
   const visitorId = currentUser.value.studentId || currentUser.value.student_id || currentUser.value._id
-  return notif.liked_by.includes(visitorId)
+  return notif.liked_by.includes(visitorId) || (storedLikeId && notif.liked_by.includes(storedLikeId))
 }
 
 const isLikeBanned = () => {
@@ -2492,17 +2531,22 @@ const toggleLike = async (notif) => {
     
     if (response.ok) {
       const data = await response.json()
+      const serverUserId = data.user_id
+      if (serverUserId) {
+        localStorage.setItem('userLikeId', serverUserId)
+      }
       const notifIndex = notifications.value.findIndex(n => n._id === notif._id)
       if (notifIndex > -1) {
         if (!notifications.value[notifIndex].liked_by) {
           notifications.value[notifIndex].liked_by = []
         }
+        const likeId = serverUserId || visitorId
         if (data.liked) {
-          if (!notifications.value[notifIndex].liked_by.includes(visitorId)) {
-            notifications.value[notifIndex].liked_by.push(visitorId)
+          if (!notifications.value[notifIndex].liked_by.includes(likeId)) {
+            notifications.value[notifIndex].liked_by.push(likeId)
           }
         } else {
-          notifications.value[notifIndex].liked_by = notifications.value[notifIndex].liked_by.filter(id => id !== visitorId)
+          notifications.value[notifIndex].liked_by = notifications.value[notifIndex].liked_by.filter(id => id !== likeId && id !== visitorId)
         }
       }
       likeCooldowns.value[notifId] = Date.now() + LIKE_COOLDOWN_MS
