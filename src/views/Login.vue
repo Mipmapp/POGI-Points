@@ -32,7 +32,8 @@
       <div class="bg-blue-50 rounded-lg p-4 mb-6">
         <p class="text-sm text-blue-900 font-medium mb-3">Quick Help</p>
         <ul class="text-xs text-blue-800 space-y-2">
-          <li>• Login issues? Use your Student ID and password</li>
+          <li>• First time login? Your default password is your Last Name (uppercase)</li>
+          <li>• Changed your password and forgot it? Use the Forgot Password option</li>
           <li>• RFID not working? Contact the CCS office</li>
           <li>• Profile problems? Check your information is complete</li>
         </ul>
@@ -140,7 +141,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div class="relative">
                 <img src="/key.svg" alt="Password" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Your Password (Last Name)" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
+                <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
                 <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
               </div>
             </div>
@@ -214,7 +215,7 @@
             <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
             <div class="relative">
               <img src="/key.svg" alt="Password" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Your Password (Last Name)" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+              <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
               <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
             </div>
           </div>

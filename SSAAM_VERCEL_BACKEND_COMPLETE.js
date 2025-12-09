@@ -201,7 +201,7 @@ async function sendApprovalEmail(toEmail, studentName, approved, rejectionReason
     const statusColor = approved ? "#10b981" : "#ef4444";
     const statusText = approved ? "Approved" : "Not Approved";
     const message = approved 
-        ? "Congratulations! Your SSAAM account has been approved. You can now login to your account."
+        ? "Congratulations! Your SSAAM account has been approved. You can now login to your account using your Student ID and your Last Name as the temporary password. You may change your password anytime in the Dashboard settings."
         : `Unfortunately, your account registration was not approved.${rejectionReason ? ` Reason: ${rejectionReason}` : ''}`;
     
     const mailOptions = {
@@ -220,7 +220,12 @@ async function sendApprovalEmail(toEmail, studentName, approved, rejectionReason
                         <span style="font-size: 24px; font-weight: bold; color: ${statusColor};">Account ${statusText}</span>
                     </div>
                     <p style="color: #4b5563;">${message}</p>
-                    ${approved ? '<p style="color: #4b5563;">Login at: <a href="https://ssaam.vercel.app" style="color: #7c3aed;">ssaam.vercel.app</a></p>' : ''}
+                    ${approved ? `
+                    <div style="background: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin: 15px 0;">
+                        <p style="color: #92400e; margin: 0; font-weight: bold;">Important:</p>
+                        <p style="color: #92400e; margin: 5px 0 0 0;">Your temporary password is your <strong>Last Name</strong> (in uppercase). You can change it anytime from your Dashboard settings.</p>
+                    </div>
+                    <p style="color: #4b5563;">Login at: <a href="https://ssaam.vercel.app" style="color: #7c3aed;">ssaam.vercel.app</a></p>` : ''}
                     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
                     <p style="color: #9ca3af; font-size: 12px; text-align: center;">Powered by CCS - Creatives Committee</p>
                 </div>
@@ -480,7 +485,9 @@ const studentSchema = new mongoose.Schema({
         default: "pending" 
     },
     rejection_reason: { type: String, default: "" },
-    created_date: { type: Date, default: Date.now }
+    created_date: { type: Date, default: Date.now },
+    // Custom password field (optional) - if set, user uses this instead of last_name for login
+    custom_password: { type: String, default: null }
 });
 
 const Student = mongoose.model("Student", studentSchema);
@@ -1611,15 +1618,26 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
         const { student_id, last_name } = req.body;
 
         if (!student_id || !last_name)
-            return res.status(400).json({ message: "Student ID and Last Name required" });
+            return res.status(400).json({ message: "Student ID and Password required" });
 
-        const student = await Student.findOne({ 
-            student_id,
-            last_name: { $regex: `^${last_name}$`, $options: 'i' }
-        });
-
+        // First find student by ID
+        const student = await Student.findOne({ student_id });
+        
         if (!student)
-            return res.status(400).json({ message: "Invalid Student ID or Last Name" });
+            return res.status(400).json({ message: "Invalid Student ID or Password" });
+
+        // Check password: if custom_password is set, use bcrypt compare; otherwise check last_name
+        let passwordValid = false;
+        if (student.custom_password) {
+            // User has set a custom password - compare with bcrypt
+            passwordValid = await bcrypt.compare(last_name, student.custom_password);
+        } else {
+            // Default: compare with last_name (case-insensitive)
+            passwordValid = student.last_name.toUpperCase() === last_name.trim().toUpperCase();
+        }
+
+        if (!passwordValid)
+            return res.status(400).json({ message: "Invalid Student ID or Password" });
 
         if (student.status === 'pending') {
             return res.status(403).json({ 
@@ -1674,6 +1692,79 @@ app.post('/apis/students/logout', studentAuthWithToken, async (req, res) => {
         res.json({ message: "Logged out successfully" });
     } catch (err) {
         res.status(500).json({ message: err.message });
+    }
+});
+
+// Change password endpoint - allows setting custom password with symbols/numbers
+app.post('/apis/students/change-password', async (req, res) => {
+    try {
+        const token = req.headers.authorization?.replace('Bearer ', '');
+        if (!token) {
+            return res.status(401).json({ message: "No token provided" });
+        }
+
+        // Verify JWT token and session
+        let decoded;
+        try {
+            decoded = jwt.verify(token, SSAAM_API_KEY);
+            const tokenHash = hashToken(token);
+            const sessionToken = await SessionToken.findOne({ 
+                token_hash: tokenHash,
+                is_revoked: false,
+                expires_at: { $gt: new Date() }
+            });
+            if (!sessionToken) {
+                return res.status(401).json({ message: "Session expired. Please login again." });
+            }
+        } catch (jwtError) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+
+        const { student_id, current_password, new_password } = req.body;
+
+        if (!student_id || !current_password || !new_password) {
+            return res.status(400).json({ message: "Student ID, current password, and new password are required" });
+        }
+
+        // Validate new password - allow letters, numbers, and symbols, min 6 chars
+        if (new_password.length < 6) {
+            return res.status(400).json({ message: "New password must be at least 6 characters" });
+        }
+
+        if (new_password.length > 128) {
+            return res.status(400).json({ message: "Password is too long (max 128 characters)" });
+        }
+
+        // Find the student
+        const student = await Student.findOne({ student_id });
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        // Verify current password
+        let currentPasswordValid = false;
+        if (student.custom_password) {
+            currentPasswordValid = await bcrypt.compare(current_password, student.custom_password);
+        } else {
+            currentPasswordValid = student.last_name.toUpperCase() === current_password.trim().toUpperCase();
+        }
+
+        if (!currentPasswordValid) {
+            return res.status(400).json({ message: "Current password is incorrect" });
+        }
+
+        // Hash and save the new password
+        const hashedPassword = await bcrypt.hash(new_password, 12);
+        await Student.updateOne(
+            { student_id },
+            { custom_password: hashedPassword }
+        );
+
+        res.json({ message: "Password changed successfully!" });
+
+    } catch (err) {
+        console.error("Change password error:", err);
+        res.status(500).json({ message: "Failed to change password. Please try again." });
     }
 });
 
@@ -2029,7 +2120,7 @@ app.post('/apis/password-reset/verify', studentAuth, timestampAuth, async (req, 
     }
 });
 
-// Complete Password Reset - Update the student's last_name (used as password)
+// Complete Password Reset - Set custom_password (allows symbols/numbers)
 app.post('/apis/password-reset/complete', studentAuth, timestampAuth, async (req, res) => {
     try {
         const { student_id, reset_token, new_password } = req.body;
@@ -2038,14 +2129,13 @@ app.post('/apis/password-reset/complete', studentAuth, timestampAuth, async (req
             return res.status(400).json({ message: "Student ID, reset token, and new password are required" });
         }
 
-        // Validate new password (last name format)
-        const trimmedPassword = new_password.trim().toUpperCase();
-        if (!trimmedPassword || trimmedPassword.length < 2 || trimmedPassword.length > 64) {
-            return res.status(400).json({ message: "New password must be between 2 and 64 characters" });
+        // Validate new password - allow letters, numbers, and symbols, min 6 chars
+        if (new_password.length < 6) {
+            return res.status(400).json({ message: "New password must be at least 6 characters" });
         }
 
-        if (!/^[A-ZÑ\s'-]+$/.test(trimmedPassword)) {
-            return res.status(400).json({ message: "Password must contain only letters (including Ñ), spaces, hyphens, or apostrophes" });
+        if (new_password.length > 128) {
+            return res.status(400).json({ message: "Password is too long (max 128 characters)" });
         }
 
         // Hash the reset token for comparison
@@ -2074,14 +2164,11 @@ app.post('/apis/password-reset/complete', studentAuth, timestampAuth, async (req
             return res.status(404).json({ message: "Student not found" });
         }
 
-        // Update student's last_name (which is the password)
-        const full_name = `${student.first_name} ${student.middle_name || ''} ${trimmedPassword} ${student.suffix || ''}`
-            .replace(/\s+/g, " ")
-            .trim();
-
+        // Hash and save the new password as custom_password (doesn't change last_name)
+        const hashedPassword = await bcrypt.hash(new_password, 12);
         await Student.updateOne(
             { student_id },
-            { last_name: trimmedPassword, full_name }
+            { custom_password: hashedPassword }
         );
 
         res.json({ message: "Password reset successful! You can now login with your new password." });
