@@ -494,9 +494,9 @@
                   <div v-if="notif.posted_by === 'admin'" class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500">
                     <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU" class="w-10 h-10 object-contain" />
                   </div>
-                  <!-- MedPub: Media and Publication Logo (white) -->
-                  <div v-else class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-yellow-500 to-amber-600">
-                    <img src="/media_pub_logo.jpg" alt="Media and Publication" class="w-10 h-10 object-contain" style="filter: brightness(0) invert(1);" />
+                  <!-- MedPub: Media and Publication Logo -->
+                  <div v-else class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden">
+                    <img src="/media_pub_logo.jpg" alt="Media and Publication" class="w-full h-full object-cover" />
                   </div>
                   <div class="flex-1 min-w-0">
                     <!-- Admin Header -->
