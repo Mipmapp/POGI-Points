@@ -2217,7 +2217,27 @@ app.get('/apis/notifications', studentAuth, async (req, res) => {
             .sort({ created_at: -1 })
             .limit(50);
         
-        res.json({ data: notifications });
+        // Enrich medpub notifications with poster photo
+        const enrichedNotifications = await Promise.all(notifications.map(async (notif) => {
+            const notifObj = notif.toObject();
+            
+            // For medpub posts, fetch the poster's photo from Student collection
+            if (notifObj.posted_by === 'medpub' && notifObj.posted_by_id) {
+                try {
+                    const poster = await Student.findById(notifObj.posted_by_id);
+                    if (poster) {
+                        notifObj.poster_photo = poster.photo || null;
+                        notifObj.poster_image_url = poster.photo || null;
+                    }
+                } catch (e) {
+                    // If lookup fails, continue without photo
+                }
+            }
+            
+            return notifObj;
+        }));
+        
+        res.json({ data: enrichedNotifications });
     } catch (err) {
         console.error("Fetch notifications error:", err);
         res.status(500).json({ message: err.message });

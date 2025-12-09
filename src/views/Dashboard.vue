@@ -488,19 +488,53 @@
             </div>
 
             <div v-else class="space-y-4">
-              <div v-for="notif in notifications" :key="notif._id" :class="['rounded-xl p-4 md:p-6 border-l-4', notif.posted_by === 'admin' ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-500' : 'bg-yellow-50 border-yellow-400']">
+              <div v-for="notif in notifications" :key="notif._id" :class="['rounded-xl p-4 md:p-6 border-l-4', notif.posted_by === 'admin' ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-500' : 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-500']">
                 <div class="flex items-start gap-4">
-                  <div :class="['w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden', notif.posted_by === 'admin' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-yellow-400']">
-                    <img v-if="notif.posted_by === 'admin'" src="/src/assets/jrmsu-logo.webp" alt="JRMSU" class="w-10 h-10 object-contain" />
-                    <img v-else-if="notif.poster_photo" :src="notif.poster_photo" alt="Poster" class="w-full h-full object-cover" />
-                    <svg v-else class="w-6 h-6 text-yellow-900" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" /></svg>
+                  <!-- Admin: JRMSU Logo -->
+                  <div v-if="notif.posted_by === 'admin'" class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500">
+                    <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU" class="w-10 h-10 object-contain" />
+                  </div>
+                  <!-- MedPub: Media and Publication Logo (white) -->
+                  <div v-else class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-yellow-500 to-amber-600">
+                    <img src="/media_pub_logo.jpg" alt="Media and Publication" class="w-10 h-10 object-contain" style="filter: brightness(0) invert(1);" />
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2 mb-2">
+                    <!-- Admin Header -->
+                    <div v-if="notif.posted_by === 'admin'" class="flex flex-wrap items-center gap-2 mb-2">
                       <span class="font-bold text-purple-900">{{ notif.posted_by_name || notif.poster_name || 'Admin' }}</span>
-                      <span :class="['text-xs px-2 py-0.5 rounded-full font-medium', notif.posted_by === 'admin' ? 'bg-purple-200 text-purple-800' : 'bg-yellow-200 text-yellow-800']">
-                        {{ notif.posted_by === 'admin' ? 'Admin' : 'MedPub' }}
-                      </span>
+                      <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-200 text-purple-800">Admin</span>
+                    </div>
+                    <!-- MedPub Header: Organization name with label, then posted by user -->
+                    <div v-else class="mb-2">
+                      <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <span class="font-bold text-yellow-900">Media and Publication</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-200 text-amber-800">Organization</span>
+                      </div>
+                      <div class="flex items-center gap-2 text-xs text-gray-600">
+                        <span>posted by</span>
+                        <div class="flex items-center gap-1.5">
+                          <!-- Poster's small profile photo with retry logic -->
+                          <div class="w-5 h-5 rounded-full overflow-hidden flex-shrink-0" :style="getPosterPhotoFallbackStyle(notif)">
+                            <img 
+                              v-if="notif.poster_photo && !posterImageFailed[notif._id]" 
+                              :src="notif.poster_photo" 
+                              :alt="notif.posted_by_name" 
+                              class="w-full h-full object-cover"
+                              @error="handlePosterImageError(notif._id, notif.poster_photo)"
+                              @load="posterImageFailed[notif._id] = false"
+                            />
+                            <img 
+                              v-else 
+                              src="/user.svg" 
+                              alt="User" 
+                              class="w-3 h-3 m-1" 
+                              style="filter: brightness(0) invert(1);"
+                            />
+                          </div>
+                          <span class="font-medium text-gray-800">{{ notif.posted_by_name || 'Unknown' }}</span>
+                          <span class="text-xs px-1.5 py-0.5 rounded-full font-medium bg-yellow-200 text-yellow-800">MedPub</span>
+                        </div>
+                      </div>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2">
                       <span class="flex items-center gap-1">
@@ -1324,23 +1358,113 @@ const notifImageRetries = ref({})
 const notifImageFailed = ref({})
 const MAX_NOTIF_IMAGE_RETRIES = 3
 const showEditNotificationModal = ref(false)
+
+// Poster image handling for MedPub posts
+const posterImageFailed = ref({})
+const posterImageRetries = ref({})
+const MAX_POSTER_IMAGE_RETRIES = 2
+const posterFallbackColors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#14b8a6', '#3b82f6', '#8b5cf6', '#ec4899']
+
+const getRandomFallbackColor = (id) => {
+  const hash = id ? id.split('').reduce((a, b) => { a = ((a << 5) - a) + b.charCodeAt(0); return a & a; }, 0) : Math.random() * 1000
+  return posterFallbackColors[Math.abs(hash) % posterFallbackColors.length]
+}
+
+const getPosterPhotoFallbackStyle = (notif) => {
+  if (notif.poster_photo && !posterImageFailed.value[notif._id]) {
+    return {}
+  }
+  return { backgroundColor: getRandomFallbackColor(notif._id) }
+}
+
+const handlePosterImageError = async (notifId, imageUrl) => {
+  const retries = posterImageRetries.value[notifId] || 0
+  if (retries < MAX_POSTER_IMAGE_RETRIES && imageUrl) {
+    posterImageRetries.value[notifId] = retries + 1
+    await new Promise(resolve => setTimeout(resolve, 500))
+    const imgElements = document.querySelectorAll(`img[src="${imageUrl}"]`)
+    imgElements.forEach(img => {
+      img.src = imageUrl + '?retry=' + Date.now()
+    })
+  } else {
+    posterImageFailed.value[notifId] = true
+  }
+}
 const editNotificationData = ref(null)
 const savingEditedNotification = ref(false)
 
-// Notification seen tracking for badge counter
-const seenNotificationIds = ref(new Set(JSON.parse(localStorage.getItem('seenNotificationIds') || '[]')))
+// Notification seen tracking for badge counter - using user-specific keys with both IDs and timestamp for reliability
+// These refs are for reactivity only - actual data is loaded from user-specific localStorage keys
+const seenNotificationIds = ref(new Set())
+const lastSeenNotificationTimestamp = ref(null)
 
 const unreadNotificationCount = computed(() => {
   if (!notifications.value || notifications.value.length === 0) return 0
-  return notifications.value.filter(n => !seenNotificationIds.value.has(n._id)).length
+  const userId = currentUser.value?._id || currentUser.value?.student_id || 'guest'
+  const userSeenKey = `seenNotificationIds_${userId}`
+  const userTimestampKey = `lastSeenNotificationTimestamp_${userId}`
+  
+  // Load user-specific seen IDs if available
+  let userSeenIds = seenNotificationIds.value
+  try {
+    const stored = localStorage.getItem(userSeenKey)
+    if (stored) {
+      userSeenIds = new Set(JSON.parse(stored))
+    }
+  } catch {}
+  
+  // Get last seen timestamp for this user
+  const lastTimestamp = localStorage.getItem(userTimestampKey)
+  
+  return notifications.value.filter(n => {
+    // Check if notification is in seen IDs
+    if (userSeenIds.has(n._id)) return false
+    // If we have a last seen timestamp, only count notifications newer than that
+    if (lastTimestamp && n.created_at) {
+      const notifTime = new Date(n.created_at).getTime()
+      const lastSeenTime = parseInt(lastTimestamp) || 0
+      if (notifTime <= lastSeenTime) return false
+    }
+    return true
+  }).length
 })
 
 const markNotificationsAsSeen = () => {
   if (!notifications.value || notifications.value.length === 0) return
-  const newSeenIds = new Set(seenNotificationIds.value)
-  notifications.value.forEach(n => newSeenIds.add(n._id))
-  seenNotificationIds.value = newSeenIds
-  localStorage.setItem('seenNotificationIds', JSON.stringify([...newSeenIds]))
+  const userId = currentUser.value?._id || currentUser.value?.student_id || 'guest'
+  const userSeenKey = `seenNotificationIds_${userId}`
+  const userTimestampKey = `lastSeenNotificationTimestamp_${userId}`
+  
+  // Load existing user-specific seen IDs
+  let userSeenIds
+  try {
+    const stored = localStorage.getItem(userSeenKey)
+    userSeenIds = stored ? new Set(JSON.parse(stored)) : new Set()
+  } catch {
+    userSeenIds = new Set()
+  }
+  
+  // Add all current notification IDs
+  notifications.value.forEach(n => userSeenIds.add(n._id))
+  
+  // Find the latest notification timestamp
+  let maxTimestamp = 0
+  notifications.value.forEach(n => {
+    if (n.created_at) {
+      const ts = new Date(n.created_at).getTime()
+      if (ts > maxTimestamp) maxTimestamp = ts
+    }
+  })
+  
+  // Store user-specific data
+  localStorage.setItem(userSeenKey, JSON.stringify([...userSeenIds]))
+  if (maxTimestamp > 0) {
+    localStorage.setItem(userTimestampKey, maxTimestamp.toString())
+  }
+  
+  // Also update the ref for reactivity
+  seenNotificationIds.value = userSeenIds
+  lastSeenNotificationTimestamp.value = maxTimestamp.toString()
 }
 
 // Password change management with email verification
