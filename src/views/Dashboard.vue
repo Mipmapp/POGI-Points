@@ -511,7 +511,10 @@
                     <div class="flex-1">
                       <div class="flex items-center gap-3 mb-2">
                         <h3 class="font-semibold text-lg text-purple-900">{{ event.title }}</h3>
-                        <span :class="['px-2 py-1 rounded-full text-xs font-medium', getStatusBadgeClass(event.status)]">{{ event.status }}</span>
+                        <span :class="['px-2 py-1 rounded-full text-xs font-medium', getStatusBadgeClass(event.status)]">{{ event.status === 'active' ? 'Active' : event.status === 'draft' ? 'Draft' : event.status === 'closed' ? 'Closed' : event.status }}</span>
+                        <span v-if="event.status === 'active' && getEventTimeRemaining(event._id)" :class="['px-2 py-1 rounded-full text-xs font-medium', getEventTimeRemaining(event._id) === 'Ended' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800']">
+                          {{ getEventTimeRemaining(event._id) }}
+                        </span>
                       </div>
                       <p v-if="event.description" class="text-gray-600 text-sm mb-2">{{ event.description }}</p>
                       <div class="flex flex-wrap gap-4 text-sm text-gray-500">
@@ -769,7 +772,10 @@
                         <div class="flex items-center gap-3 mb-2">
                           <h3 class="font-semibold text-lg text-purple-900">{{ event.title }}</h3>
                           <span :class="['px-2 py-1 rounded-full text-xs font-medium', getStatusBadgeClass(getAttendanceStatus(event._id || event.event_id))]">
-                            {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'active' ? 'Active' : 'Absent' }}
+                            {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'active' ? 'Pending Check-in' : (event.status === 'active' ? 'Pending Check-in' : 'Absent') }}
+                          </span>
+                          <span v-if="event.status === 'active' && getEventTimeRemaining(event._id || event.event_id)" :class="['px-2 py-1 rounded-full text-xs font-medium', getEventTimeRemaining(event._id || event.event_id) === 'Ended' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800']">
+                            {{ getEventTimeRemaining(event._id || event.event_id) }}
                           </span>
                         </div>
                         <p v-if="event.description" class="text-gray-600 text-sm mb-2">{{ event.description }}</p>
@@ -2026,7 +2032,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 
@@ -2172,6 +2178,10 @@ const attendanceEvents = ref([])
 const attendanceLogs = ref([])
 const myAttendanceRecords = ref([])
 const attendanceLoading = ref(false)
+const attendanceRefreshInterval = ref(null)
+const eventTimeInterval = ref(null)
+const eventTimeRemaining = ref({})
+const eventEndedNotifications = ref(new Set())
 const showCreateEventModal = ref(false)
 const showEditEventModal = ref(false)
 const showEventLogsModal = ref(false)
@@ -2644,6 +2654,9 @@ onMounted(async () => {
   if (!user.isMaster && user.role !== 'admin') {
     fetchAttendanceData()
   }
+  
+  // Start auto-refresh for attendance and event timers
+  startAttendanceAutoRefresh()
   
   isPageLoading.value = false
 })
@@ -3689,6 +3702,12 @@ const updateAttendanceEvent = async () => {
   if (!selectedEvent.value) return
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
+    // Prepare payload with proper field mapping (date -> event_date for API)
+    const eventPayload = {
+      ...selectedEvent.value,
+      event_date: selectedEvent.value.date || selectedEvent.value.event_date
+    }
+    
     const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${selectedEvent.value._id}`, {
       method: 'PUT',
       headers: {
@@ -3697,7 +3716,7 @@ const updateAttendanceEvent = async () => {
         'X-SSAAM-TS': encodeTimestamp(),
         ...getAdminActionHeaders()
       },
-      body: JSON.stringify(selectedEvent.value)
+      body: JSON.stringify(eventPayload)
     })
     
     if (response.ok) {
@@ -3867,7 +3886,10 @@ const openEventLogs = (event) => {
 }
 
 const openEditEvent = (event) => {
-  selectedEvent.value = { ...event }
+  selectedEvent.value = { 
+    ...event,
+    date: event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : event.date
+  }
   showEditEventModal.value = true
 }
 
@@ -4623,4 +4645,77 @@ const completePasswordChange = async () => {
     changingPassword.value = false
   }
 }
+
+// Calculate time remaining for each active event
+const updateEventTimeRemaining = () => {
+  const now = new Date()
+  const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster
+  
+  attendanceEvents.value.forEach(event => {
+    if (event.status === 'active' && event.end_time) {
+      const eventDate = new Date(event.event_date || event.date)
+      const [hours, minutes] = event.end_time.split(':').map(Number)
+      eventDate.setHours(hours, minutes, 0, 0)
+      
+      const diff = eventDate - now
+      
+      if (diff <= 0) {
+        // Event has ended
+        if (!eventEndedNotifications.value.has(event._id)) {
+          eventEndedNotifications.value.add(event._id)
+          showNotification(`Event "${event.title}" has ended!`, 'info')
+        }
+        eventTimeRemaining.value[event._id] = 'Ended'
+      } else {
+        const hoursLeft = Math.floor(diff / (1000 * 60 * 60))
+        const minutesLeft = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+        const secondsLeft = Math.floor((diff % (1000 * 60)) / 1000)
+        
+        if (hoursLeft > 0) {
+          eventTimeRemaining.value[event._id] = `${hoursLeft}h ${minutesLeft}m remaining`
+        } else if (minutesLeft > 0) {
+          eventTimeRemaining.value[event._id] = `${minutesLeft}m ${secondsLeft}s remaining`
+        } else {
+          eventTimeRemaining.value[event._id] = `${secondsLeft}s remaining`
+        }
+        
+        // Warn admin when 5 minutes or less remaining
+        if (isAdmin && diff <= 5 * 60 * 1000 && diff > 4 * 60 * 1000) {
+          showNotification(`Event "${event.title}" ends in 5 minutes!`, 'warning')
+        }
+      }
+    }
+  })
+}
+
+// Get time remaining for a specific event
+const getEventTimeRemaining = (eventId) => {
+  return eventTimeRemaining.value[eventId] || ''
+}
+
+// Start auto-refresh for attendance data (for students)
+const startAttendanceAutoRefresh = () => {
+  const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster
+  
+  // Auto-refresh attendance data every 30 seconds for students to catch RFID check-ins
+  if (!isAdmin) {
+    attendanceRefreshInterval.value = setInterval(() => {
+      fetchAttendanceData()
+    }, 30000) // 30 seconds
+  }
+  
+  // Update event time remaining every second
+  eventTimeInterval.value = setInterval(() => {
+    updateEventTimeRemaining()
+  }, 1000)
+}
+
+onUnmounted(() => {
+  if (attendanceRefreshInterval.value) {
+    clearInterval(attendanceRefreshInterval.value)
+  }
+  if (eventTimeInterval.value) {
+    clearInterval(eventTimeInterval.value)
+  }
+})
 </script>
