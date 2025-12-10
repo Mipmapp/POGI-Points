@@ -79,6 +79,24 @@ The following security hardening measures were implemented to prevent website de
    - `Strict-Transport-Security: max-age=31536000; includeSubDomains`
    - `Content-Security-Policy: default-src 'self'`
 
+## Recent UI/UX Improvements (December 2024)
+The following UI/UX enhancements were implemented to match the SSAAM aesthetic:
+
+1. **Enhanced Time Picker (0-59 Minutes):** Redesigned time picker with clock-face visual design, purple-to-pink gradient theme, and ability to select any minute from 0-59 (previously limited to 5-minute increments). Includes quick-select grid for all 60 minutes.
+
+2. **Clear All Session Tokens:** New admin feature in Settings page that allows force-logout of all users (except current admin session). Includes confirmation modal with warning message.
+
+3. **RFID Scanner Fullscreen Mode:** New fullscreen button that launches an immersive RFID scanning interface with:
+   - Full-screen purple gradient background
+   - Large centered RFID input field
+   - User photo display on successful scan (with fallback to initials)
+   - ESC key or X button to exit
+   - Smooth animations and transitions
+
+4. **Purple-to-Pink Gradient Theme:** Updated check-in highlighter and scan result displays to use the SSAAM purple-to-pink gradient instead of green.
+
+5. **User Photo in RFID Scanner:** RFID scan results now display the student's photo when available, with elegant fallback to initials.
+
 ## External Dependencies
 - **Backend API:** `https://ssaam-api.vercel.app` (Vercel deployment)
 - **Image Hosting:** ImgBB (for image uploads and storage)

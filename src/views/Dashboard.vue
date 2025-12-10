@@ -95,6 +95,110 @@
     </div>
   </div>
 
+  <!-- Clear Sessions Confirmation Modal -->
+  <div v-if="showClearSessionsConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showClearSessionsConfirm = false">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-red-900">Clear All Sessions</h3>
+        <button @click="showClearSessionsConfirm = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      
+      <div class="mb-6">
+        <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mb-4">
+          <div class="flex items-start gap-3">
+            <svg class="w-6 h-6 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <div>
+              <p class="text-sm text-red-800 font-medium">Are you sure you want to clear all session tokens?</p>
+              <p class="text-xs text-red-700 mt-1">This will force logout ALL users from the system immediately. They will need to log in again.</p>
+            </div>
+          </div>
+        </div>
+        <p class="text-sm text-gray-600">Your current session will remain active.</p>
+      </div>
+      
+      <div class="flex gap-3">
+        <button 
+          @click="showClearSessionsConfirm = false" 
+          class="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition"
+        >
+          Cancel
+        </button>
+        <button 
+          @click="clearAllSessionTokens" 
+          class="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700 transition flex items-center justify-center gap-2"
+          :disabled="clearingSessionTokens"
+        >
+          <svg v-if="clearingSessionTokens" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span>{{ clearingSessionTokens ? 'Clearing...' : 'Yes, Clear All' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RFID Scanner Fullscreen Modal -->
+  <div v-if="rfidFullscreenMode" class="fixed inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 flex flex-col items-center justify-center z-[70]">
+    <button @click="rfidFullscreenMode = false" class="absolute top-6 right-6 text-white hover:text-pink-300 transition">
+      <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+    </button>
+    
+    <div class="text-center mb-8">
+      <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU" class="w-24 h-24 mx-auto mb-4 drop-shadow-2xl" />
+      <h1 class="text-4xl md:text-5xl font-bold text-white mb-2">SSAAM</h1>
+      <p class="text-white text-opacity-80 text-lg">{{ selectedEvent?.title || 'Select an Event' }}</p>
+      <p v-if="selectedEvent" class="text-white text-opacity-60 text-sm mt-1">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
+    </div>
+    
+    <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-3xl p-8 md:p-12 max-w-2xl w-full mx-4 border border-white border-opacity-20">
+      <div class="text-center mb-8">
+        <svg class="w-24 h-24 mx-auto mb-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
+        <p class="text-2xl font-semibold text-white mb-2">Ready for RFID Scan</p>
+        <p class="text-white text-opacity-70">Scan your RFID card to check in/out</p>
+      </div>
+      
+      <input 
+        ref="rfidFullscreenInputRef"
+        v-model="rfidInput"
+        @keydown="handleRfidKeydown"
+        type="text"
+        placeholder="Waiting for RFID scan..."
+        class="w-full px-6 py-4 text-center text-xl bg-white bg-opacity-20 border-2 border-white border-opacity-30 rounded-2xl focus:border-pink-400 focus:ring-4 focus:ring-pink-300 focus:ring-opacity-50 outline-none text-white placeholder-white placeholder-opacity-50"
+        :disabled="rfidProcessing"
+        autofocus
+      />
+      
+      <div v-if="rfidProcessing" class="mt-6 flex items-center justify-center gap-3 text-white">
+        <svg class="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+        <span class="text-xl">Processing...</span>
+      </div>
+      
+      <!-- RFID Result Display with Photo -->
+      <transition name="fade">
+        <div v-if="rfidResult" :class="['mt-6 p-6 rounded-2xl text-center', rfidResult.success ? 'bg-gradient-to-r from-purple-500 to-pink-500' : 'bg-red-500 bg-opacity-80']">
+          <div v-if="rfidResult.success && rfidResult.student" class="flex flex-col items-center">
+            <div class="w-24 h-24 rounded-full bg-white bg-opacity-20 flex items-center justify-center overflow-hidden mb-4 ring-4 ring-white ring-opacity-50">
+              <img v-if="rfidResult.student.photo" :src="rfidResult.student.photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+              <span v-else class="text-4xl font-bold text-white">{{ rfidResult.student.full_name?.charAt(0) || '?' }}</span>
+            </div>
+            <p class="text-2xl font-bold text-white mb-1">{{ rfidResult.action === 'check_in' ? 'Check-in Successful!' : 'Check-out Successful!' }}</p>
+            <p class="text-xl text-white text-opacity-90">{{ rfidResult.student.full_name }}</p>
+            <p class="text-sm text-white text-opacity-70 mt-1">{{ rfidResult.student.program }} | {{ rfidResult.student.year_level }}</p>
+          </div>
+          <div v-else>
+            <p class="text-2xl font-bold text-white mb-2">Scan Failed</p>
+            <p class="text-lg text-white text-opacity-90">{{ rfidResult.message }}</p>
+          </div>
+        </div>
+      </transition>
+    </div>
+    
+    <p class="text-white text-opacity-50 text-sm mt-8">Press ESC or click X to exit fullscreen</p>
+  </div>
+
   <!-- Admin Key Modal -->
   <div v-if="showAdminKeyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="cancelAdminKeyModal">
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
@@ -454,6 +558,31 @@
               </div>
             </div>
 
+            <!-- Clear Session Tokens Section -->
+            <div class="border border-red-200 rounded-xl p-6 bg-red-50">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-red-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    Clear All Session Tokens
+                  </h3>
+                  <p class="text-sm text-red-700 mt-1">Force logout all users from the system (except your current session)</p>
+                </div>
+                <button 
+                  @click="showClearSessionsConfirm = true" 
+                  :disabled="clearingSessionTokens"
+                  class="bg-red-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-red-700 transition-all duration-200 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed whitespace-nowrap"
+                >
+                  <svg v-if="clearingSessionTokens" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  {{ clearingSessionTokens ? 'Clearing...' : 'Clear All Sessions' }}
+                </button>
+              </div>
+              <div class="bg-white rounded-lg p-3 border border-red-200">
+                <p class="text-xs text-red-600"><strong>Warning:</strong> This action will log out all users from the system immediately. They will need to log in again. Your current session will remain active.</p>
+              </div>
+            </div>
+
             <!-- Save Button -->
             <div class="flex justify-end pt-4">
               <button 
@@ -654,21 +783,27 @@
                 </select>
               </div>
               <div v-else class="space-y-4">
-                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
                   <div class="flex items-center justify-between">
                     <div>
                       <h3 class="font-semibold text-purple-900">{{ selectedEvent.title }}</h3>
                       <p class="text-sm text-purple-600">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }} | {{ formatEventTime(selectedEvent.startTime || selectedEvent.start_time) }} - {{ formatEventTime(selectedEvent.endTime || selectedEvent.end_time) }}</p>
                     </div>
-                    <button @click="selectedEvent = null" class="text-purple-600 hover:text-purple-800">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    </button>
+                    <div class="flex items-center gap-2">
+                      <button @click="enterFullscreenMode" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-600 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                        Fullscreen
+                      </button>
+                      <button @click="selectedEvent = null" class="text-purple-600 hover:text-purple-800 p-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
-                <div class="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                  <svg class="w-20 h-20 mx-auto mb-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
-                  <p class="text-lg font-medium text-gray-700 mb-2">Ready for RFID Scan</p>
+                <div class="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-dashed border-purple-300 rounded-lg p-8 text-center">
+                  <svg class="w-20 h-20 mx-auto mb-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
+                  <p class="text-lg font-medium bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent mb-2">Ready for RFID Scan</p>
                   <p class="text-sm text-gray-500 mb-4">Click below and scan an RFID card. Scanner input will be auto-detected.</p>
                   <input 
                     ref="rfidInputRef"
@@ -676,16 +811,28 @@
                     @keydown="handleRfidKeydown"
                     type="text"
                     placeholder="Scan RFID card or type manually..."
-                    class="w-full max-w-md mx-auto px-4 py-3 text-center text-lg border-2 border-purple-300 rounded-lg focus:border-purple-600 focus:ring-2 focus:ring-purple-200 outline-none"
+                    class="w-full max-w-md mx-auto px-4 py-3 text-center text-lg border-2 border-purple-300 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none"
                     :disabled="rfidProcessing"
                   />
                   <div v-if="rfidProcessing" class="mt-4 flex items-center justify-center gap-2 text-purple-600">
                     <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                     Processing...
                   </div>
-                  <div v-if="rfidResult" :class="['mt-4 p-3 rounded-lg', rfidResult.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800']">
-                    <p class="font-medium">{{ rfidResult.success ? (rfidResult.action === 'check_in' ? 'Check-in Successful!' : 'Check-out Successful!') : 'Scan Failed' }}</p>
-                    <p class="text-sm">{{ rfidResult.success ? rfidResult.student?.full_name : rfidResult.message }}</p>
+                  <!-- Result display with photo -->
+                  <div v-if="rfidResult" :class="['mt-4 p-4 rounded-lg', rfidResult.success ? 'bg-gradient-to-r from-purple-100 to-pink-100 border border-purple-200' : 'bg-red-100 text-red-800 border border-red-200']">
+                    <div v-if="rfidResult.success && rfidResult.student" class="flex flex-col items-center">
+                      <div class="w-16 h-16 rounded-full bg-gradient-to-r from-purple-400 to-pink-500 flex items-center justify-center overflow-hidden mb-3 ring-2 ring-white shadow-lg">
+                        <img v-if="rfidResult.student.photo" :src="rfidResult.student.photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+                        <span v-else class="text-2xl font-bold text-white">{{ rfidResult.student.full_name?.charAt(0) || '?' }}</span>
+                      </div>
+                      <p class="font-bold text-lg bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">{{ rfidResult.action === 'check_in' ? 'Check-in Successful!' : 'Check-out Successful!' }}</p>
+                      <p class="text-purple-800 font-medium">{{ rfidResult.student.full_name }}</p>
+                      <p class="text-sm text-gray-600">{{ rfidResult.student.program }} | {{ rfidResult.student.year_level }}</p>
+                    </div>
+                    <div v-else>
+                      <p class="font-medium">Scan Failed</p>
+                      <p class="text-sm">{{ rfidResult.message }}</p>
+                    </div>
                   </div>
                 </div>
 
@@ -711,7 +858,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['border-b transition-all duration-300', index === 0 && isRecentCheckIn(log) ? 'bg-green-50 ring-2 ring-green-300 ring-inset animate-pulse' : 'hover:bg-gray-50']">
+                        <tr v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['border-b transition-all duration-300', index === 0 && isRecentCheckIn(log) ? 'bg-gradient-to-r from-purple-50 to-pink-50 ring-2 ring-purple-300 ring-inset animate-pulse' : 'hover:bg-gray-50']">
                           <td class="px-4 py-2">
                             <div class="flex items-center gap-3">
                               <div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 flex items-center justify-center text-white text-xs overflow-hidden flex-shrink-0">
@@ -1708,65 +1855,87 @@
     </div>
   </div>
 
-  <!-- Time Picker Modal -->
+  <!-- Time Picker Modal - Clock Design -->
   <div v-if="showTimePicker" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]" @click.self="showTimePicker = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
       <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-bold text-purple-900">Select Time</h3>
+        <h3 class="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Select Time</h3>
         <button @click="showTimePicker = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
       </div>
       
-      <div class="flex items-center justify-center gap-2 mb-6">
+      <!-- Clock Face Design -->
+      <div class="relative w-48 h-48 mx-auto mb-6">
+        <div class="absolute inset-0 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 shadow-inner"></div>
+        <div class="absolute inset-2 rounded-full bg-white shadow-lg flex items-center justify-center">
+          <div class="text-center">
+            <div class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+              {{ timePickerHour }}:{{ timePickerMinute.toString().padStart(2, '0') }}
+            </div>
+            <div class="text-lg font-semibold text-purple-600 mt-1">{{ timePickerPeriod }}</div>
+          </div>
+        </div>
+        <!-- Clock hour markers -->
+        <div v-for="i in 12" :key="i" class="absolute w-1 h-1 bg-purple-300 rounded-full" :style="{ top: `${50 - 42 * Math.cos((i * 30 - 90) * Math.PI / 180)}%`, left: `${50 + 42 * Math.sin((i * 30 - 90) * Math.PI / 180)}%` }"></div>
+      </div>
+      
+      <div class="flex items-center justify-center gap-4 mb-6">
+        <!-- Hour Control -->
         <div class="flex flex-col items-center">
-          <label class="text-xs text-gray-500 mb-1">Hour</label>
+          <label class="text-xs text-gray-500 mb-1 font-medium">Hour</label>
           <div class="flex flex-col items-center">
-            <button @click="timePickerHour = timePickerHour < 12 ? timePickerHour + 1 : 1" class="text-purple-600 hover:text-purple-800 p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+            <button @click="timePickerHour = timePickerHour < 12 ? timePickerHour + 1 : 1" class="text-purple-600 hover:text-pink-500 p-1 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
             </button>
-            <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center text-3xl font-bold text-purple-900">
+            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-3xl font-bold text-white shadow-lg">
               {{ timePickerHour }}
             </div>
-            <button @click="timePickerHour = timePickerHour > 1 ? timePickerHour - 1 : 12" class="text-purple-600 hover:text-purple-800 p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            <button @click="timePickerHour = timePickerHour > 1 ? timePickerHour - 1 : 12" class="text-purple-600 hover:text-pink-500 p-1 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
           </div>
         </div>
         
-        <span class="text-3xl font-bold text-gray-400 mt-5">:</span>
+        <span class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent mt-5">:</span>
         
+        <!-- Minute Control -->
         <div class="flex flex-col items-center">
-          <label class="text-xs text-gray-500 mb-1">Minute</label>
+          <label class="text-xs text-gray-500 mb-1 font-medium">Minute</label>
           <div class="flex flex-col items-center">
-            <button @click="timePickerMinute = timePickerMinute < 55 ? timePickerMinute + 5 : 0" class="text-purple-600 hover:text-purple-800 p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
+            <button @click="timePickerMinute = timePickerMinute < 59 ? timePickerMinute + 1 : 0" class="text-purple-600 hover:text-pink-500 p-1 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
             </button>
-            <div class="w-16 h-16 bg-purple-100 rounded-lg flex items-center justify-center text-3xl font-bold text-purple-900">
+            <div class="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-3xl font-bold text-white shadow-lg">
               {{ timePickerMinute.toString().padStart(2, '0') }}
             </div>
-            <button @click="timePickerMinute = timePickerMinute > 0 ? timePickerMinute - 5 : 55" class="text-purple-600 hover:text-purple-800 p-1">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            <button @click="timePickerMinute = timePickerMinute > 0 ? timePickerMinute - 1 : 59" class="text-purple-600 hover:text-pink-500 p-1 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
           </div>
         </div>
         
+        <!-- Period Control -->
         <div class="flex flex-col items-center ml-2">
-          <label class="text-xs text-gray-500 mb-1">Period</label>
+          <label class="text-xs text-gray-500 mb-1 font-medium">Period</label>
           <div class="flex flex-col gap-1 mt-1">
-            <button @click="timePickerPeriod = 'AM'" :class="['px-3 py-2 rounded-lg text-sm font-medium transition', timePickerPeriod === 'AM' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">AM</button>
-            <button @click="timePickerPeriod = 'PM'" :class="['px-3 py-2 rounded-lg text-sm font-medium transition', timePickerPeriod === 'PM' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">PM</button>
+            <button @click="timePickerPeriod = 'AM'" :class="['px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm', timePickerPeriod === 'AM' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">AM</button>
+            <button @click="timePickerPeriod = 'PM'" :class="['px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm', timePickerPeriod === 'PM' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">PM</button>
           </div>
         </div>
       </div>
       
-      <div class="grid grid-cols-6 gap-1 mb-6">
-        <button v-for="min in [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]" :key="min" @click="timePickerMinute = min" :class="['py-2 rounded text-sm font-medium transition', timePickerMinute === min ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">
-          :{{ min.toString().padStart(2, '0') }}
-        </button>
+      <!-- Quick Minute Selection - Full 0-59 -->
+      <div class="mb-4">
+        <p class="text-xs text-gray-500 mb-2 text-center">Quick select minutes</p>
+        <div class="grid grid-cols-10 gap-1">
+          <button v-for="min in 60" :key="min - 1" @click="timePickerMinute = min - 1" :class="['py-1.5 rounded text-xs font-medium transition', timePickerMinute === min - 1 ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-purple-100']">
+            {{ (min - 1).toString().padStart(2, '0') }}
+          </button>
+        </div>
       </div>
       
       <div class="flex gap-3">
-        <button @click="showTimePicker = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-        <button @click="confirmTimePicker" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">Confirm</button>
+        <button @click="showTimePicker = false" class="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
+        <button @click="confirmTimePicker" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition shadow-lg">Confirm</button>
       </div>
     </div>
   </div>
@@ -2094,6 +2263,14 @@ const appSettings = ref({
 const rfidScannerSaving = ref(false)
 const checkInTimerMinutes = ref(30)
 const checkOutTimerMinutes = ref(30)
+
+// Clear sessions management
+const showClearSessionsConfirm = ref(false)
+const clearingSessionTokens = ref(false)
+
+// RFID Fullscreen mode
+const rfidFullscreenMode = ref(false)
+const rfidFullscreenInputRef = ref(null)
 
 // Pending students management
 const pendingStudents = ref([])
@@ -2529,6 +2706,9 @@ const displayName = computed(() => {
 })
 
 onMounted(async () => {
+  // Add ESC key listener for fullscreen mode
+  document.addEventListener('keydown', handleEscKey)
+  
   const user = JSON.parse(localStorage.getItem('currentUser') || '{}')
   if (!user.studentId && !user.student_id) {
     router.push('/')
@@ -3063,6 +3243,65 @@ const setCheckOutTimer = async () => {
   appSettings.value.rfidScanner.checkOutDisableAt = disableAt.toISOString()
   await saveRfidScannerSettings()
   showNotification(`Check-out will be disabled at ${disableAt.toLocaleTimeString()}`, 'info')
+}
+
+// Clear all session tokens (except current admin session)
+const clearAllSessionTokens = async () => {
+  showClearSessionsConfirm.value = false
+  clearingSessionTokens.value = true
+  
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch('https://ssaam-api.vercel.app/apis/admin/clear-sessions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp(),
+        ...getAdminActionHeaders()
+      }
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      showNotification(`Successfully cleared ${data.cleared_count || 'all'} session tokens!`, 'success')
+    } else {
+      if (response.status === 403) {
+        const handled = await handleAdminActionError(response)
+        if (!handled) {
+          pendingAdminAction.value = clearAllSessionTokens
+          showAdminKeyModal.value = true
+        }
+        return
+      }
+      const error = await response.json()
+      showNotification(error.message || 'Failed to clear session tokens', 'error')
+    }
+  } catch (error) {
+    console.error('Failed to clear session tokens:', error)
+    showNotification('Failed to clear session tokens', 'error')
+  } finally {
+    clearingSessionTokens.value = false
+  }
+}
+
+// RFID Fullscreen mode functions
+const enterFullscreenMode = () => {
+  if (!selectedEvent.value) {
+    showNotification('Please select an event first', 'error')
+    return
+  }
+  rfidFullscreenMode.value = true
+  setTimeout(() => {
+    rfidFullscreenInputRef.value?.focus()
+  }, 100)
+}
+
+// Handle ESC key for fullscreen mode
+const handleEscKey = (event) => {
+  if (event.key === 'Escape' && rfidFullscreenMode.value) {
+    rfidFullscreenMode.value = false
+  }
 }
 
 const handleLogout = () => {
@@ -4776,6 +5015,9 @@ const startAttendanceAutoRefresh = () => {
 }
 
 onUnmounted(() => {
+  // Remove ESC key listener
+  document.removeEventListener('keydown', handleEscKey)
+  
   if (attendanceRefreshInterval.value) {
     clearInterval(attendanceRefreshInterval.value)
   }
