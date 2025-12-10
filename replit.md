@@ -30,6 +30,7 @@ The application is a Vue 3 SPA utilizing the Composition API and Vite 5 for a mo
     - Student ID validation restricts IDs to `21-A-XXXXX` through `25-A-XXXXX`.
     - Admin-only access for edit/delete student operations.
 - **Attendance:** RFID code support for attendance. Students receive email notifications upon RFID verification.
+- **Global RFID Scanner Controls:** Admins can enable/disable check-in and check-out globally from the RFID Scanner tab. Includes auto-disable timer functionality that automatically locks check-in or check-out after a specified number of minutes. The timer is enforced server-side during RFID scans.
 - **Dashboard Statistics:** Displays aggregate student statistics by program and year level, fetched from a dedicated, non-paginated endpoint for complete data.
 - **Image Management:** Integrates with ImgBB for image uploads. For notifications, users can upload images directly (click-to-upload interface) which are **compressed to under 100KB** before being sent to ImgBB via the backend API. The backend handles the ImgBB upload and returns the hosted URL.
 - **Form Validation:** Advanced validation with custom error messages (e.g., Student ID format `12-A-12345`, Unicode support for names including Ñ/enye).
