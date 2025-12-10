@@ -1249,7 +1249,7 @@
                 <div v-if="currentUser.rfid_status === 'verified'">
                   <p class="text-base font-semibold text-gray-900">{{ currentUser.rfidCode || currentUser.rfid_code }}</p>
                   <p v-if="currentUser.rfid_verified_by" class="text-xs text-gray-500 mt-2">
-                    Verified by: {{ currentUser.rfid_verified_by }}
+                    Verified by the Administrator
                   </p>
                   <p v-if="currentUser.rfid_verified_at" class="text-xs text-gray-500">
                     Date: {{ new Date(currentUser.rfid_verified_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) }}

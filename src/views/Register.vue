@@ -285,7 +285,7 @@
                   <span class="mr-2">←</span>Back
                 </button>
                 <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
-                  Send Code <span class="ml-2">→</span>
+                  Next <span class="ml-2">→</span>
                 </button>
               </div>
             </div>
@@ -539,7 +539,7 @@
                 <span class="mr-2">←</span>Back
               </button>
               <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
-                Send Code <span class="ml-2">→</span>
+                Next <span class="ml-2">→</span>
               </button>
             </div>
           </div>
