@@ -3077,7 +3077,10 @@ const markNotificationsAsSeen = async () => {
     })
     
     if (response.ok) {
-      unseenIds.forEach(id => seenNotificationIds.value.add(id))
+      // Create a new Set to trigger Vue reactivity (in-place mutations don't trigger computed re-evaluation)
+      const updatedSet = new Set(seenNotificationIds.value)
+      unseenIds.forEach(id => updatedSet.add(id))
+      seenNotificationIds.value = updatedSet
     }
   } catch (error) {
     console.error('Failed to mark notifications as seen:', error)
@@ -3248,7 +3251,8 @@ onMounted(async () => {
   }
   
   // Fetch notifications for badge counter and load seen status from database
-  fetchNotifications()
+  // Must await fetchNotifications first to ensure notification IDs are available before checking seen status
+  await fetchNotifications()
   await loadSeenNotifications()
   
   // Fetch attendance data for students to show notification banner
@@ -5539,20 +5543,18 @@ const completePasswordChange = async () => {
   }
 }
 
-// Get dismissed event ended notifications from localStorage
+// Track dismissed event ended notifications per session (in-memory) since user doesn't want localStorage
+// Once the user closes the modal or the event is ended/closed, don't show again this session
+const dismissedEndedEventsThisSession = ref(new Set())
+
+// Get dismissed event ended notifications (session-based only)
 const getDismissedEndedEvents = () => {
-  try {
-    return new Set(JSON.parse(localStorage.getItem('dismissedEndedEvents') || '[]'))
-  } catch {
-    return new Set()
-  }
+  return dismissedEndedEventsThisSession.value
 }
 
-// Save dismissed event ended notification to localStorage
+// Save dismissed event ended notification (session-based only)
 const dismissEndedEventNotification = (eventId) => {
-  const dismissed = getDismissedEndedEvents()
-  dismissed.add(eventId)
-  localStorage.setItem('dismissedEndedEvents', JSON.stringify([...dismissed]))
+  dismissedEndedEventsThisSession.value.add(eventId)
 }
 
 // Track if we've shown the ended notification this session (to avoid duplicates)
