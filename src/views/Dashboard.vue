@@ -2401,7 +2401,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 
@@ -2473,6 +2473,27 @@ const duplicateSearchQuery = ref('')
 const duplicateSearchLoading = ref(false)
 const duplicateSearchResults = ref([])
 const duplicateSearchPerformed = ref(false)
+const duplicateSearchDebounceTimer = ref(null)
+
+// Auto-search for duplicates as user types (with 500ms debounce)
+watch(duplicateSearchQuery, (newValue) => {
+  // Clear previous timer
+  if (duplicateSearchDebounceTimer.value) {
+    clearTimeout(duplicateSearchDebounceTimer.value)
+  }
+  
+  // Clear results if empty
+  if (!newValue.trim()) {
+    duplicateSearchResults.value = []
+    duplicateSearchPerformed.value = false
+    return
+  }
+  
+  // Debounce: wait 500ms after user stops typing before searching
+  duplicateSearchDebounceTimer.value = setTimeout(() => {
+    searchForDuplicates()
+  }, 500)
+})
 
 // RFID Fullscreen mode
 const rfidFullscreenMode = ref(false)
