@@ -1530,12 +1530,12 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
         }
 
         if (!STUDENT_ID_REGEX.test(data.student_id)) {
-            return res.status(400).json({ message: "Invalid student_id format. Use 21-A-12345" });
+            return res.status(400).json({ message: "Invalid student_id format. Use 19-A-12345" });
         }
 
         const yearPrefix = parseInt(data.student_id.substring(0, 2), 10);
-        if (yearPrefix < 21 || yearPrefix > 25) {
-            return res.status(400).json({ message: "Student ID must start with 21 to 25" });
+        if (yearPrefix < 19 || yearPrefix > 25) {
+            return res.status(400).json({ message: "Student ID must start with 19 to 25" });
         }
 
         const firstNameValidation = validateName(data.first_name, "First name");
