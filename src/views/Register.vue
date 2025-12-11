@@ -301,6 +301,7 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2 text-center">Enter Verification Code</label>
+                <p class="text-xs text-purple-600 mb-3 text-center font-medium">You can copy the code from your email and paste it here</p>
                 <div class="flex justify-center gap-2">
                   <input 
                     v-for="(digit, index) in verificationCode" 
@@ -317,6 +318,20 @@
                 </div>
                 <p class="text-xs text-gray-500 mt-3 text-center">Code expires in 10 minutes</p>
               </div>
+              
+              <!-- Important Password Notice -->
+              <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-4 mt-4">
+                <div class="flex items-start gap-3">
+                  <div class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-yellow-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  </div>
+                  <div>
+                    <p class="font-bold text-yellow-900 text-sm">Important: Your Temporary Password</p>
+                    <p class="text-yellow-800 text-xs mt-1">After your account is approved, your temporary password will be your <span class="font-bold bg-yellow-200 px-1 rounded">LAST NAME</span> (in uppercase). You can change it anytime from your Dashboard settings.</p>
+                  </div>
+                </div>
+              </div>
+              
               <div class="flex items-center justify-center pt-2">
                 <button type="button" @click="resendCode" :disabled="resendCooldown > 0" class="text-sm text-purple-600 hover:text-purple-800 disabled:text-gray-400 disabled:cursor-not-allowed">
                   {{ resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code' }}
@@ -555,6 +570,7 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2 text-center">Enter Verification Code</label>
+              <p class="text-xs text-purple-600 mb-3 text-center font-medium">You can copy the code from your email and paste it here</p>
               <div class="flex justify-center gap-2">
                 <input 
                   v-for="(digit, index) in verificationCode" 
@@ -571,6 +587,20 @@
               </div>
               <p class="text-xs text-gray-500 mt-3 text-center">Code expires in 10 minutes</p>
             </div>
+            
+            <!-- Important Password Notice -->
+            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-4 mt-4">
+              <div class="flex items-start gap-3">
+                <div class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-yellow-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                  <p class="font-bold text-yellow-900 text-sm">Important: Your Temporary Password</p>
+                  <p class="text-yellow-800 text-xs mt-1">After your account is approved, your temporary password will be your <span class="font-bold bg-yellow-200 px-1 rounded">LAST NAME</span> (in uppercase). You can change it anytime from your Dashboard settings.</p>
+                </div>
+              </div>
+            </div>
+            
             <div class="flex items-center justify-center pt-2">
               <button type="button" @click="resendCode" :disabled="resendCooldown > 0" class="text-sm text-purple-600 hover:text-purple-800 disabled:text-gray-400 disabled:cursor-not-allowed">
                 {{ resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code' }}
@@ -876,6 +906,13 @@ const handleCodePaste = (event) => {
   const pastedData = event.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
   for (let i = 0; i < pastedData.length; i++) {
     verificationCode.value[i] = pastedData[i]
+  }
+  if (pastedData.length > 0) {
+    const lastFilledIndex = Math.min(pastedData.length - 1, 5)
+    setTimeout(() => {
+      const lastInput = codeInputs.value[lastFilledIndex] || codeInputsMobile.value[lastFilledIndex]
+      if (lastInput) lastInput.focus()
+    }, 50)
   }
 }
 

@@ -1179,11 +1179,28 @@
             </button>
           </div>
 
+          <!-- Search Input for Pending Students -->
+          <div class="mb-4">
+            <div class="relative">
+              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <input v-model="pendingSearchQuery" @input="filterPendingStudents" type="text" placeholder="Search by name, email, student ID, or RFID..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" />
+            </div>
+            <p class="text-xs text-gray-500 mt-1">Search across name, email, student ID, and RFID code</p>
+          </div>
+
           <div v-if="pendingLoading" class="flex items-center justify-center py-12">
             <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
+          </div>
+
+          <div v-else-if="filteredPendingStudents.length === 0 && pendingSearchQuery" class="text-center py-12">
+            <div class="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-700 mb-2">No results found</h3>
+            <p class="text-gray-500">No pending students match "{{ pendingSearchQuery }}"</p>
           </div>
 
           <div v-else-if="pendingStudents.length === 0" class="text-center py-12">
@@ -1196,9 +1213,9 @@
 
           <div v-else class="space-y-4">
             <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
-              <span>{{ pendingStudents.length }} pending student{{ pendingStudents.length === 1 ? '' : 's' }}</span>
+              <span>Showing {{ paginatedPendingStudents.length }} of {{ filteredPendingStudents.length }} pending student{{ filteredPendingStudents.length === 1 ? '' : 's' }}</span>
             </div>
-            <div v-for="student in pendingStudents" :key="student.student_id" class="border border-gray-200 rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow">
+            <div v-for="student in paginatedPendingStudents" :key="student.student_id" class="border border-gray-200 rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow">
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-shrink-0">
                   <div class="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden" :class="student.photo ? 'bg-purple-100' : 'bg-gradient-to-br from-pink-500 to-purple-600'">
@@ -1248,6 +1265,25 @@
                   </div>
                 </div>
               </div>
+            </div>
+            
+            <!-- Pagination Controls for Pending Students -->
+            <div v-if="pendingTotalPages > 1" class="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-gray-200">
+              <button @click="pendingCurrentPage = 1" :disabled="pendingCurrentPage === 1" class="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                First
+              </button>
+              <button @click="pendingCurrentPage--" :disabled="pendingCurrentPage === 1" class="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+              </button>
+              <span class="px-4 py-2 text-sm font-medium text-gray-700">
+                Page {{ pendingCurrentPage }} of {{ pendingTotalPages }}
+              </span>
+              <button @click="pendingCurrentPage++" :disabled="pendingCurrentPage === pendingTotalPages" class="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+              </button>
+              <button @click="pendingCurrentPage = pendingTotalPages" :disabled="pendingCurrentPage === pendingTotalPages" class="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                Last
+              </button>
             </div>
           </div>
         </div>
@@ -1878,6 +1914,36 @@
         <div v-for="i in 12" :key="i" class="absolute w-1 h-1 bg-purple-300 rounded-full" :style="{ top: `${50 - 42 * Math.cos((i * 30 - 90) * Math.PI / 180)}%`, left: `${50 + 42 * Math.sin((i * 30 - 90) * Math.PI / 180)}%` }"></div>
       </div>
       
+      <!-- Direct Time Input -->
+      <div class="mb-6">
+        <p class="text-xs text-gray-500 mb-2 text-center font-medium">Type time directly or use controls below</p>
+        <div class="flex items-center justify-center gap-2">
+          <input 
+            type="number" 
+            v-model.number="timePickerHour" 
+            @input="timePickerHour = Math.max(1, Math.min(12, timePickerHour || 1))"
+            min="1" 
+            max="12" 
+            class="w-16 h-12 text-center text-xl font-bold border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none"
+            placeholder="HH"
+          />
+          <span class="text-2xl font-bold text-purple-600">:</span>
+          <input 
+            type="number" 
+            v-model.number="timePickerMinute" 
+            @input="timePickerMinute = Math.max(0, Math.min(59, timePickerMinute || 0))"
+            min="0" 
+            max="59" 
+            class="w-16 h-12 text-center text-xl font-bold border-2 border-purple-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none"
+            placeholder="MM"
+          />
+          <div class="flex flex-col gap-1 ml-2">
+            <button @click="timePickerPeriod = 'AM'" :class="['px-3 py-1.5 rounded-lg text-sm font-medium transition shadow-sm', timePickerPeriod === 'AM' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">AM</button>
+            <button @click="timePickerPeriod = 'PM'" :class="['px-3 py-1.5 rounded-lg text-sm font-medium transition shadow-sm', timePickerPeriod === 'PM' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">PM</button>
+          </div>
+        </div>
+      </div>
+
       <div class="flex items-center justify-center gap-4 mb-6">
         <!-- Hour Control -->
         <div class="flex flex-col items-center">
@@ -1920,16 +1986,6 @@
             <button @click="timePickerPeriod = 'AM'" :class="['px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm', timePickerPeriod === 'AM' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">AM</button>
             <button @click="timePickerPeriod = 'PM'" :class="['px-4 py-2 rounded-lg text-sm font-medium transition shadow-sm', timePickerPeriod === 'PM' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">PM</button>
           </div>
-        </div>
-      </div>
-      
-      <!-- Quick Minute Selection - Full 0-59 -->
-      <div class="mb-4">
-        <p class="text-xs text-gray-500 mb-2 text-center">Quick select minutes</p>
-        <div class="grid grid-cols-10 gap-1">
-          <button v-for="min in 60" :key="min - 1" @click="timePickerMinute = min - 1" :class="['py-1.5 rounded text-xs font-medium transition', timePickerMinute === min - 1 ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-purple-100']">
-            {{ (min - 1).toString().padStart(2, '0') }}
-          </button>
         </div>
       </div>
       
@@ -2281,6 +2337,37 @@ const rejectingStudent = ref(false)
 const showRejectModal = ref(false)
 const studentToReject = ref(null)
 const rejectReason = ref('')
+const pendingSearchQuery = ref('')
+const pendingCurrentPage = ref(1)
+const pendingPerPage = 10
+
+const filteredPendingStudents = computed(() => {
+  if (!pendingSearchQuery.value.trim()) {
+    return pendingStudents.value
+  }
+  const query = pendingSearchQuery.value.toLowerCase().trim()
+  return pendingStudents.value.filter(student => {
+    const fullName = `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''} ${student.suffix || ''}`.toLowerCase()
+    const studentId = (student.student_id || '').toLowerCase()
+    const email = (student.email || '').toLowerCase()
+    const rfid = (student.rfid_code || '').toLowerCase()
+    return fullName.includes(query) || studentId.includes(query) || email.includes(query) || rfid.includes(query)
+  })
+})
+
+const pendingTotalPages = computed(() => {
+  return Math.ceil(filteredPendingStudents.value.length / pendingPerPage)
+})
+
+const paginatedPendingStudents = computed(() => {
+  const start = (pendingCurrentPage.value - 1) * pendingPerPage
+  const end = start + pendingPerPage
+  return filteredPendingStudents.value.slice(start, end)
+})
+
+const filterPendingStudents = () => {
+  pendingCurrentPage.value = 1
+}
 
 // Notifications management
 const notifications = ref([])
@@ -3252,19 +3339,18 @@ const clearAllSessionTokens = async () => {
   
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch('https://ssaam-api.vercel.app/apis/admin/clear-sessions', {
-      method: 'POST',
+    const response = await fetch('https://ssaam-api.vercel.app/apis/debug/session-tokens/clear?type=all', {
+      method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp(),
-        ...getAdminActionHeaders()
+        'X-Admin-Action-Token': adminActionToken.value || ''
       }
     })
     
     if (response.ok) {
       const data = await response.json()
-      showNotification(`Successfully cleared ${data.cleared_count || 'all'} session tokens!`, 'success')
+      showNotification(`Successfully cleared ${data.deletedCount || 'all'} session tokens!`, 'success')
     } else {
       if (response.status === 403) {
         const handled = await handleAdminActionError(response)
