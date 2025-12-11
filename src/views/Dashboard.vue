@@ -1204,65 +1204,69 @@
 
             <div v-else class="space-y-4">
               <div v-for="notif in notifications" :key="notif._id" :class="['rounded-xl p-4 md:p-5 border-l-4', notif.posted_by === 'admin' ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-500' : 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-500']">
-                <div class="flex items-start gap-3">
-                  <!-- Admin: JRMSU Logo -->
-                  <div v-if="notif.posted_by === 'admin'" class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500">
-                    <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU" class="w-10 h-10 object-contain" />
-                  </div>
-                  <!-- MedPub: Media and Publication Logo -->
-                  <div v-else class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-yellow-500 to-amber-600">
-                    <img src="/media_pub_logo.png" alt="Media and Publication" class="w-8 h-8 object-contain" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <!-- Admin Header -->
-                    <div v-if="notif.posted_by === 'admin'" class="flex flex-wrap items-center gap-2 mb-2">
-                      <span class="font-bold text-purple-900">{{ notif.posted_by_name || notif.poster_name || 'Admin' }}</span>
-                      <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-200 text-purple-800">Admin</span>
+                <div class="flex flex-col">
+                  <div class="flex items-start gap-3 mb-3">
+                    <!-- Admin: JRMSU Logo -->
+                    <div v-if="notif.posted_by === 'admin'" class="w-10 h-10 md:w-12 md:h-12 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-purple-500 to-pink-500">
+                      <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU" class="w-8 h-8 md:w-10 md:h-10 object-contain" />
                     </div>
-                    <!-- MedPub Header: Organization name with label, then posted by user -->
-                    <div v-else class="mb-2">
-                      <div class="flex flex-wrap items-center gap-2 mb-1">
-                        <span class="font-bold text-yellow-900">Media and Publication</span>
-                        <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-200 text-amber-800">Organization</span>
+                    <!-- MedPub: Media and Publication Logo -->
+                    <div v-else class="w-10 h-10 md:w-12 md:h-12 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-yellow-500 to-amber-600">
+                      <img src="/media_pub_logo.png" alt="Media and Publication" class="w-6 h-6 md:w-8 md:h-8 object-contain" />
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <!-- Admin Header -->
+                      <div v-if="notif.posted_by === 'admin'" class="flex flex-wrap items-center gap-2">
+                        <span class="font-bold text-purple-900 text-sm md:text-base">{{ notif.posted_by_name || notif.poster_name || 'Admin' }}</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-purple-200 text-purple-800">Admin</span>
                       </div>
-                      <div class="flex items-center gap-2 text-xs text-gray-600">
-                        <span>posted by</span>
-                        <div class="flex items-center gap-1.5">
-                          <!-- Poster's small profile photo with retry logic -->
-                          <div class="w-5 h-5 rounded-full overflow-hidden flex-shrink-0" :style="getPosterPhotoFallbackStyle(notif)">
-                            <img 
-                              v-if="notif.poster_photo && !posterImageFailed[notif._id]" 
-                              :src="notif.poster_photo" 
-                              :alt="notif.posted_by_name" 
-                              class="w-full h-full object-cover"
-                              @error="handlePosterImageError(notif._id, notif.poster_photo)"
-                              @load="posterImageFailed[notif._id] = false"
-                            />
-                            <img 
-                              v-else 
-                              src="/user.svg" 
-                              alt="User" 
-                              class="w-3 h-3 m-1" 
-                              style="filter: brightness(0) invert(1);"
-                            />
+                      <!-- MedPub Header: Organization name with label, then posted by user -->
+                      <div v-else>
+                        <div class="flex flex-wrap items-center gap-2 mb-1">
+                          <span class="font-bold text-yellow-900 text-sm md:text-base">Media and Publication</span>
+                          <span class="text-xs px-2 py-0.5 rounded-full font-medium bg-amber-200 text-amber-800">Organization</span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-600">
+                          <span>posted by</span>
+                          <div class="flex items-center gap-1.5">
+                            <div class="w-5 h-5 rounded-full overflow-hidden flex-shrink-0" :style="getPosterPhotoFallbackStyle(notif)">
+                              <img 
+                                v-if="notif.poster_photo && !posterImageFailed[notif._id]" 
+                                :src="notif.poster_photo" 
+                                :alt="notif.posted_by_name" 
+                                class="w-full h-full object-cover"
+                                @error="handlePosterImageError(notif._id, notif.poster_photo)"
+                                @load="posterImageFailed[notif._id] = false"
+                              />
+                              <img 
+                                v-else 
+                                src="/user.svg" 
+                                alt="User" 
+                                class="w-3 h-3 m-1" 
+                                style="filter: brightness(0) invert(1);"
+                              />
+                            </div>
+                            <span class="font-medium text-gray-800">{{ notif.posted_by_name || 'Unknown' }}</span>
+                            <span class="text-xs px-1.5 py-0.5 rounded-full font-medium bg-yellow-200 text-yellow-800">Medpub</span>
                           </div>
-                          <span class="font-medium text-gray-800">{{ notif.posted_by_name || 'Unknown' }}</span>
-                          <span class="text-xs px-1.5 py-0.5 rounded-full font-medium bg-yellow-200 text-yellow-800">Medpub</span>
                         </div>
                       </div>
+                      <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mt-1">
+                        <span class="flex items-center gap-1">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                          {{ formatNotificationDate(notif.created_at) }}
+                        </span>
+                        <span v-if="notif.was_edited" class="flex items-center gap-1 text-gray-400">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                          Edited: {{ formatNotificationDate(notif.updated_at) }}
+                        </span>
+                      </div>
                     </div>
-                    <div class="flex flex-wrap items-center gap-2 text-xs text-gray-500 mb-2">
-                      <span class="flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        {{ formatNotificationDate(notif.created_at) }}
-                      </span>
-                      <span v-if="notif.was_edited" class="flex items-center gap-1 text-gray-400">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        Edited: {{ formatNotificationDate(notif.updated_at) }}
-                      </span>
-                    </div>
-                    <h3 class="text-base md:text-lg font-semibold text-gray-900 mb-1.5">{{ notif.title }}</h3>
-                    <p class="text-gray-700 whitespace-pre-wrap break-words leading-relaxed text-sm md:text-base flex-1" v-html="formatMessageWithLinks(notif.message || notif.content)"></p>
+                  </div>
+                  
+                  <div class="w-full">
+                    <h3 class="text-sm md:text-base lg:text-lg font-semibold text-gray-900 mb-1.5">{{ notif.title }}</h3>
+                    <p class="text-gray-700 whitespace-pre-wrap break-words leading-relaxed text-xs md:text-sm lg:text-base" v-html="formatMessageWithLinks(notif.message || notif.content)"></p>
                     <div v-if="notif.image_url" class="mt-3">
                       <div class="relative group inline-block max-w-full">
                         <div v-if="notifImageRetries[notif._id] > 0 && !notifImageFailed[notif._id]" class="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg z-10">
@@ -1279,7 +1283,7 @@
                           <p class="text-sm text-gray-500 mb-2">Failed to load image</p>
                           <button @click.stop="retryNotifImage(notif._id, notif.image_url)" class="text-xs text-purple-600 hover:text-purple-800 font-medium">Try again</button>
                         </div>
-                        <img v-show="!notifImageFailed[notif._id]" :src="notif.image_url" alt="Announcement image" class="max-w-full w-auto h-auto max-h-[500px] rounded-lg border border-gray-200 object-contain cursor-pointer hover:opacity-90 transition shadow-sm" @click="openImagePreview(notif.image_url)" @error="handleNotifImageError(notif._id, notif.image_url, $event)" />
+                        <img v-show="!notifImageFailed[notif._id]" :src="notif.image_url" alt="Announcement image" class="max-w-full w-full h-auto max-h-[500px] rounded-lg border border-gray-200 object-contain cursor-pointer hover:opacity-90 transition shadow-sm" @click="openImagePreview(notif.image_url)" @error="handleNotifImageError(notif._id, notif.image_url, $event)" />
                         <div v-if="!notifImageFailed[notif._id]" class="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button @click.stop="openImagePreview(notif.image_url)" class="bg-black bg-opacity-60 hover:bg-opacity-80 text-white p-2 rounded-lg transition" title="View full size">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
@@ -1292,19 +1296,19 @@
                     </div>
                     <div class="flex items-center justify-between mt-3 pt-2 border-t border-gray-200 border-opacity-50 relative z-10">
                       <button @click.stop="toggleLike(notif)" :disabled="isLikeDisabled(notif._id)" :class="['flex items-center gap-2 transition group px-3 py-2 -ml-3 rounded-lg', isLikeDisabled(notif._id) ? 'text-gray-300 cursor-not-allowed' : 'text-gray-500 hover:text-pink-500 hover:bg-pink-50 active:scale-95']" :title="isLikeDisabled(notif._id) ? 'Please wait...' : (isLikedByCurrentUser(notif) ? 'Unlike' : 'Like')">
-                        <svg v-if="likeInProgress[notif._id]" class="w-6 h-6 animate-spin text-pink-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <svg v-if="likeInProgress[notif._id]" class="w-5 h-5 md:w-6 md:h-6 animate-spin text-pink-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>
-                        <svg v-else :class="['w-6 h-6 transition-all', isLikedByCurrentUser(notif) ? 'text-pink-500 fill-pink-500 scale-110' : (isLikeDisabled(notif._id) ? '' : 'group-hover:scale-110')]" :fill="isLikedByCurrentUser(notif) ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
-                        <span class="text-sm font-medium">{{ (notif.liked_by || []).length }}</span>
+                        <svg v-else :class="['w-5 h-5 md:w-6 md:h-6 transition-all', isLikedByCurrentUser(notif) ? 'text-pink-500 fill-pink-500 scale-110' : (isLikeDisabled(notif._id) ? '' : 'group-hover:scale-110')]" :fill="isLikedByCurrentUser(notif) ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                        <span class="text-xs md:text-sm font-medium">{{ (notif.liked_by || []).length }}</span>
                       </button>
                       <div v-if="(currentUser.role === 'admin' || currentUser.isMaster) || (currentUser.role === 'medpub' && (notif.posted_by_id === currentUser._id || notif.poster_id === currentUser.student_id))" class="flex gap-2">
-                        <button @click="openEditNotification(notif)" class="text-blue-600 hover:text-blue-800 p-2 rounded-lg hover:bg-blue-50 transition" title="Edit">
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        <button @click="openEditNotification(notif)" class="text-blue-600 hover:text-blue-800 p-1.5 md:p-2 rounded-lg hover:bg-blue-50 transition" title="Edit">
+                          <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         </button>
-                        <button @click="deleteNotification(notif._id)" class="text-red-600 hover:text-red-800 p-2 rounded-lg hover:bg-red-50 transition" title="Delete">
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        <button @click="deleteNotification(notif._id)" class="text-red-600 hover:text-red-800 p-1.5 md:p-2 rounded-lg hover:bg-red-50 transition" title="Delete">
+                          <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                       </div>
                     </div>

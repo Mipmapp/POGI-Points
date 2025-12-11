@@ -290,6 +290,79 @@
               </div>
             </div>
 
+            <div v-if="currentStep === 3.5" class="space-y-4">
+              <div class="text-center mb-4">
+                <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                  <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <h3 class="text-lg font-semibold text-purple-900 mb-2">Review Your Information</h3>
+                <p class="text-sm text-gray-600">Please verify all details are correct before proceeding.</p>
+              </div>
+              
+              <div class="bg-gray-50 rounded-xl p-4 space-y-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-16 h-16 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                    <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
+                    <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="font-bold text-purple-900">{{ formData.first_name }} {{ formData.middle_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
+                    <p class="text-sm text-gray-600">{{ formData.student_id }}</p>
+                  </div>
+                </div>
+                
+                <div class="border-t border-gray-200 pt-3 grid grid-cols-2 gap-2 text-sm">
+                  <div>
+                    <p class="text-gray-500 text-xs">Email</p>
+                    <p class="font-medium text-gray-800 break-all text-xs">{{ formData.email }}</p>
+                  </div>
+                  <div>
+                    <p class="text-gray-500 text-xs">Program</p>
+                    <p class="font-medium text-gray-800">{{ formData.program }}</p>
+                  </div>
+                  <div>
+                    <p class="text-gray-500 text-xs">Year Level</p>
+                    <p class="font-medium text-gray-800">{{ formData.year_level }}</p>
+                  </div>
+                  <div>
+                    <p class="text-gray-500 text-xs">Semester</p>
+                    <p class="font-medium text-gray-800">{{ formData.semester }}</p>
+                  </div>
+                  <div class="col-span-2">
+                    <p class="text-gray-500 text-xs">School Year</p>
+                    <p class="font-medium text-gray-800">{{ formData.school_year }}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div v-if="reviewCountdown > 0" class="text-center">
+                <div class="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full">
+                  <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <span class="font-medium text-sm">Please review... {{ reviewCountdown }}s</span>
+                </div>
+              </div>
+              
+              <div class="flex items-center justify-center pt-4">
+                <div class="flex space-x-2">
+                  <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-10 h-1 bg-gray-300 rounded"></div>
+                </div>
+              </div>
+              <div class="flex gap-4">
+                <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+                  <span class="mr-2">←</span>Back
+                </button>
+                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600']">
+                  {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm & Continue' }} <span v-if="reviewCountdown <= 0" class="ml-2">→</span>
+                </button>
+              </div>
+            </div>
+
             <div v-if="currentStep === 4" class="space-y-4">
               <div class="text-center mb-4">
                 <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
@@ -319,7 +392,6 @@
                 <p class="text-xs text-gray-500 mt-3 text-center">Code expires in 30 minutes</p>
               </div>
               
-              <!-- Important Password Notice -->
               <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-4 mt-4">
                 <div class="flex items-start gap-3">
                   <div class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0">
@@ -339,14 +411,15 @@
               </div>
               <div class="flex items-center justify-center pt-4">
                 <div class="flex space-x-2">
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-10 h-1 bg-purple-600 rounded"></div>
                 </div>
               </div>
               <div class="flex gap-4">
-                <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+                <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
                   <span class="mr-2">←</span>Back
                 </button>
                 <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
@@ -367,13 +440,13 @@
   <div class="mobile-bg-panel md:hidden min-h-screen flex flex-col">
 
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
-      <div v-if="currentStep !== 3 && currentStep !== 4" class="w-16 h-16 mx-auto mb-4 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+      <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="w-16 h-16 mx-auto mb-4 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
         <img src="/user_plus.svg" alt="Register" class="w-10 h-10" style="filter: brightness(0) invert(1);" />
       </div>
-      <h1 class="text-3xl font-bold mb-2">Let's Create</h1>
-      <h2 class="text-3xl font-bold mb-4">Your Profile!</h2>
-      <p class="text-sm opacity-90 italic mb-4">Please provide your basic information.</p>
-      <p class="text-base font-semibold">
+      <h1 class="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Let's Create</h1>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Your Profile!</h2>
+      <p class="text-xs sm:text-sm opacity-90 italic mb-3 sm:mb-4">Please provide your basic information.</p>
+      <p class="text-sm sm:text-base font-semibold">
         {{ stepTitle }}
       </p>
     </div>
@@ -526,52 +599,126 @@
 
           <div v-if="currentStep === 3" class="space-y-4">
             <div class="text-center">
-              <div class="w-48 h-48 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+              <div class="w-40 h-40 sm:w-48 sm:h-48 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                 <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
                 <div v-else class="flex flex-col items-center justify-center">
-                  <div class="w-24 h-24 rounded-full bg-gray-400 mb-4"></div>
-                  <div class="w-32 h-20 bg-gray-500 rounded-t-full"></div>
+                  <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-400 mb-3 sm:mb-4"></div>
+                  <div class="w-28 h-16 sm:w-32 sm:h-20 bg-gray-500 rounded-t-full"></div>
                 </div>
               </div>
               <label class="block text-sm font-medium text-gray-700 mb-4">Upload Image</label>
               <div class="relative">
                 <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload-mobile" />
-                <label for="file-upload-mobile" class="cursor-pointer inline-flex items-center justify-center px-8 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-300">
+                <label for="file-upload-mobile" class="cursor-pointer inline-flex items-center justify-center px-6 sm:px-8 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-300">
                   <span class="mr-2">📷</span>{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
                 </label>
               </div>
             </div>
             <div class="flex items-center justify-center pt-4">
               <div class="flex space-x-2">
-                <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-10 h-1 bg-gray-300 rounded"></div>
+                <div class="w-10 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
             <div class="flex gap-4">
-              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-4 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm sm:text-base">
                 <span class="mr-2">←</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
+              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 sm:px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center text-sm sm:text-base">
                 Next <span class="ml-2">→</span>
               </button>
             </div>
           </div>
 
-          <div v-if="currentStep === 4" class="space-y-4">
-            <div class="text-center mb-4">
-              <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-                <img src="/mail-gradient.svg" alt="Email" class="w-8 h-8" />
+          <div v-if="currentStep === 3.5" class="space-y-4">
+            <div class="text-center mb-3">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg class="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
-              <h3 class="text-lg font-semibold text-purple-900 mb-2">Verify Your Email</h3>
-              <p class="text-sm text-gray-600">We've sent a 6-digit verification code to:</p>
-              <p class="text-sm font-medium text-purple-600 mt-1">{{ formData.email }}</p>
+              <h3 class="text-base sm:text-lg font-semibold text-purple-900 mb-1 sm:mb-2">Review Your Information</h3>
+              <p class="text-xs sm:text-sm text-gray-600">Please verify all details are correct.</p>
+            </div>
+            
+            <div class="bg-gray-50 rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3">
+              <div class="flex items-center gap-2 sm:gap-3">
+                <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                  <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
+                  <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                  </div>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="font-bold text-purple-900 text-sm sm:text-base truncate">{{ formData.first_name }} {{ formData.middle_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
+                  <p class="text-xs sm:text-sm text-gray-600">{{ formData.student_id }}</p>
+                </div>
+              </div>
+              
+              <div class="border-t border-gray-200 pt-2 sm:pt-3 grid grid-cols-2 gap-2 text-xs sm:text-sm">
+                <div>
+                  <p class="text-gray-500 text-[10px] sm:text-xs">Email</p>
+                  <p class="font-medium text-gray-800 break-all text-[10px] sm:text-xs leading-tight">{{ formData.email }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-500 text-[10px] sm:text-xs">Program</p>
+                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.program }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-500 text-[10px] sm:text-xs">Year Level</p>
+                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.year_level }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-500 text-[10px] sm:text-xs">Semester</p>
+                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.semester }}</p>
+                </div>
+                <div class="col-span-2">
+                  <p class="text-gray-500 text-[10px] sm:text-xs">School Year</p>
+                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.school_year }}</p>
+                </div>
+              </div>
+            </div>
+            
+            <div v-if="reviewCountdown > 0" class="text-center">
+              <div class="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-3 sm:px-4 py-2 rounded-full">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <span class="font-medium text-xs sm:text-sm">Please review... {{ reviewCountdown }}s</span>
+              </div>
+            </div>
+            
+            <div class="flex items-center justify-center pt-3 sm:pt-4">
+              <div class="flex space-x-2">
+                <div class="w-8 sm:w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-8 sm:w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-8 sm:w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-8 sm:w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-8 sm:w-10 h-1 bg-gray-300 rounded"></div>
+              </div>
+            </div>
+            <div class="flex gap-3 sm:gap-4">
+              <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
+                <span class="mr-1 sm:mr-2">←</span>Back
+              </button>
+              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center text-sm', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600']">
+                {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1 sm:ml-2">→</span>
+              </button>
+            </div>
+          </div>
+
+          <div v-if="currentStep === 4" class="space-y-4">
+            <div class="text-center mb-3 sm:mb-4">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                <img src="/mail-gradient.svg" alt="Email" class="w-7 h-7 sm:w-8 sm:h-8" />
+              </div>
+              <h3 class="text-base sm:text-lg font-semibold text-purple-900 mb-1 sm:mb-2">Verify Your Email</h3>
+              <p class="text-xs sm:text-sm text-gray-600">We've sent a 6-digit verification code to:</p>
+              <p class="text-xs sm:text-sm font-medium text-purple-600 mt-1 break-all px-2">{{ formData.email }}</p>
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2 text-center">Enter Verification Code</label>
-              <p class="text-xs text-purple-600 mb-3 text-center font-medium">You can copy the code from your email and paste it here</p>
-              <div class="flex justify-center gap-2">
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2 text-center">Enter Verification Code</label>
+              <p class="text-[10px] sm:text-xs text-purple-600 mb-2 sm:mb-3 text-center font-medium">Copy the code from your email and paste it here</p>
+              <div class="flex justify-center gap-1.5 sm:gap-2">
                 <input 
                   v-for="(digit, index) in verificationCode" 
                   :key="index"
@@ -582,44 +729,44 @@
                   @keydown="handleCodeKeydown(index, $event)"
                   @paste="handleCodePaste($event)"
                   :ref="el => codeInputsMobile[index] = el"
-                  class="w-10 h-12 text-center text-xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none"
+                  class="w-9 h-11 sm:w-10 sm:h-12 text-center text-lg sm:text-xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none"
                 />
               </div>
-              <p class="text-xs text-gray-500 mt-3 text-center">Code expires in 30 minutes</p>
+              <p class="text-[10px] sm:text-xs text-gray-500 mt-2 sm:mt-3 text-center">Code expires in 30 minutes</p>
             </div>
             
-            <!-- Important Password Notice -->
-            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-4 mt-4">
-              <div class="flex items-start gap-3">
-                <div class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5 text-yellow-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-3 sm:p-4 mt-3 sm:mt-4">
+              <div class="flex items-start gap-2 sm:gap-3">
+                <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div>
-                  <p class="font-bold text-yellow-900 text-sm">Important: Your Temporary Password</p>
-                  <p class="text-yellow-800 text-xs mt-1">After your account is approved, your temporary password will be your <span class="font-bold bg-yellow-200 px-1 rounded">LAST NAME</span> (in uppercase). You can change it anytime from your Dashboard settings.</p>
+                  <p class="font-bold text-yellow-900 text-xs sm:text-sm">Your Temporary Password</p>
+                  <p class="text-yellow-800 text-[10px] sm:text-xs mt-1 leading-relaxed">After approval, your password will be your <span class="font-bold bg-yellow-200 px-1 rounded">LAST NAME</span> (uppercase).</p>
                 </div>
               </div>
             </div>
             
-            <div class="flex items-center justify-center pt-2">
-              <button type="button" @click="resendCode" :disabled="resendCooldown > 0" class="text-sm text-purple-600 hover:text-purple-800 disabled:text-gray-400 disabled:cursor-not-allowed">
+            <div class="flex items-center justify-center pt-1 sm:pt-2">
+              <button type="button" @click="resendCode" :disabled="resendCooldown > 0" class="text-xs sm:text-sm text-purple-600 hover:text-purple-800 disabled:text-gray-400 disabled:cursor-not-allowed">
                 {{ resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code' }}
               </button>
             </div>
-            <div class="flex items-center justify-center pt-4">
+            <div class="flex items-center justify-center pt-3 sm:pt-4">
               <div class="flex space-x-2">
-                <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-8 sm:w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-8 sm:w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-8 sm:w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-8 sm:w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-8 sm:w-10 h-1 bg-purple-600 rounded"></div>
               </div>
             </div>
-            <div class="flex gap-4">
-              <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                <span class="mr-2">←</span>Back
+            <div class="flex gap-3 sm:gap-4">
+              <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
+                <span class="mr-1 sm:mr-2">←</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
-                Register <span class="ml-2">→</span>
+              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center text-sm">
+                Register <span class="ml-1 sm:ml-2">→</span>
               </button>
             </div>
           </div>
@@ -659,12 +806,27 @@ let resendTimer = null
 const loadingMessage = ref('Processing...')
 const loadingSubMessage = ref('Please wait')
 
+const reviewCountdown = ref(0)
+let reviewCountdownTimer = null
+
+const startReviewCountdown = () => {
+  reviewCountdown.value = 5
+  if (reviewCountdownTimer) clearInterval(reviewCountdownTimer)
+  reviewCountdownTimer = setInterval(() => {
+    reviewCountdown.value--
+    if (reviewCountdown.value <= 0) {
+      clearInterval(reviewCountdownTimer)
+    }
+  }, 1000)
+}
+
 const stepTitle = computed(() => {
   switch (currentStep.value) {
     case 1: return 'Step 1 - Personal Information'
     case 2: return 'Step 2 - School Information'
     case 3: return 'Step 3 - Photo Upload'
-    case 4: return 'Step 4 - Email Verification'
+    case 3.5: return 'Step 4 - Review Your Information'
+    case 4: return 'Step 5 - Email Verification'
     default: return ''
   }
 })
@@ -1071,6 +1233,15 @@ const handleNext = async () => {
   }
 
   if (currentStep.value === 3) {
+    currentStep.value = 3.5
+    startReviewCountdown()
+    return
+  }
+
+  if (currentStep.value === 3.5) {
+    if (reviewCountdown.value > 0) {
+      return
+    }
     isRegistering.value = true
     loadingMessage.value = 'Sending Verification Code...'
     loadingSubMessage.value = 'Please check your email'
