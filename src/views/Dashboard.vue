@@ -3912,14 +3912,12 @@ const scanAllForDuplicates = async () => {
   autoScanResults.value = []
   
   try {
-    const token = localStorage.getItem('authToken')
-    
-    // Fetch all students
+    // Fetch all students using the student API key
     const response = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': 'Bearer SSAAMStudents'
       }
     })
     
