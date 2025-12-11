@@ -599,6 +599,57 @@
                 <p class="text-sm text-blue-700 mt-1">Find students with duplicate RFID codes, Student IDs, or Gmail addresses</p>
               </div>
               <div class="bg-white rounded-lg p-4 border border-blue-200 space-y-4">
+                <!-- Auto Scan Button -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                  <button 
+                    @click="scanAllForDuplicates" 
+                    :disabled="autoScanLoading"
+                    class="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <svg v-if="autoScanLoading" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                    {{ autoScanLoading ? 'Scanning All Records...' : 'Auto Scan All for Duplicates' }}
+                  </button>
+                </div>
+                
+                <!-- Auto Scan Results -->
+                <div v-if="autoScanResults.length > 0" class="mt-4">
+                  <div class="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                    <h4 class="text-sm font-bold text-red-800 flex items-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                      Found {{ autoScanResults.length }} duplicate issue(s)!
+                    </h4>
+                  </div>
+                  <div class="space-y-2 max-h-80 overflow-y-auto">
+                    <div v-for="(group, index) in autoScanResults" :key="index" class="bg-red-50 p-3 rounded-lg border border-red-200">
+                      <p class="text-xs font-bold text-red-700 mb-2">{{ group.type }} Duplicate: "{{ group.value }}"</p>
+                      <div class="space-y-2">
+                        <div v-for="student in group.students" :key="student.student_id" class="bg-white p-2 rounded border border-gray-200 flex items-center gap-3">
+                          <div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
+                            <img v-if="student.photo" :src="student.photo" class="w-full h-full object-cover" />
+                            <span v-else>{{ (student.first_name || '?').charAt(0) }}</span>
+                          </div>
+                          <div class="flex-1 min-w-0">
+                            <p class="font-medium text-gray-900 text-sm truncate">{{ student.first_name }} {{ student.last_name }}</p>
+                            <p class="text-xs text-gray-500">ID: {{ student.student_id }} | {{ student.email }}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div v-else-if="autoScanPerformed && autoScanResults.length === 0" class="mt-4 text-center py-4 bg-green-50 rounded-lg border border-green-200">
+                  <svg class="w-12 h-12 mx-auto text-green-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <p class="text-green-700 font-medium">No duplicates found!</p>
+                  <p class="text-sm text-gray-500">All records are unique. Your database is clean!</p>
+                </div>
+
+                <!-- Divider -->
+                <div class="border-t border-gray-200 pt-4 mt-4">
+                  <p class="text-xs text-gray-500 mb-3">Or search for a specific value:</p>
+                </div>
+
                 <div class="flex flex-col md:flex-row gap-3">
                   <input 
                     v-model="duplicateSearchQuery" 
@@ -2475,6 +2526,11 @@ const duplicateSearchResults = ref([])
 const duplicateSearchPerformed = ref(false)
 const duplicateSearchDebounceTimer = ref(null)
 
+// Auto scan for all duplicates
+const autoScanLoading = ref(false)
+const autoScanResults = ref([])
+const autoScanPerformed = ref(false)
+
 // Auto-search for duplicates as user types (with 500ms debounce)
 watch(duplicateSearchQuery, (newValue) => {
   // Clear previous timer
@@ -3829,6 +3885,92 @@ const searchForDuplicates = async () => {
     showNotification('Failed to search for duplicates', 'error')
   } finally {
     duplicateSearchLoading.value = false
+  }
+}
+
+// Auto scan ALL records for duplicates (RFID, Student ID, Email)
+const scanAllForDuplicates = async () => {
+  autoScanLoading.value = true
+  autoScanPerformed.value = false
+  autoScanResults.value = []
+  
+  try {
+    const token = localStorage.getItem('authToken')
+    
+    // Fetch all students
+    const response = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      const students = result.data || result || []
+      
+      // Track duplicates by field
+      const rfidMap = {}
+      const emailMap = {}
+      const idMap = {}
+      
+      // Group students by their RFID, Email, and Student ID
+      students.forEach(student => {
+        if (student.rfid_code && student.rfid_code.trim()) {
+          const key = student.rfid_code.toLowerCase().trim()
+          if (!rfidMap[key]) rfidMap[key] = []
+          rfidMap[key].push(student)
+        }
+        if (student.email && student.email.trim()) {
+          const key = student.email.toLowerCase().trim()
+          if (!emailMap[key]) emailMap[key] = []
+          emailMap[key].push(student)
+        }
+        if (student.student_id && student.student_id.trim()) {
+          const key = student.student_id.toLowerCase().trim()
+          if (!idMap[key]) idMap[key] = []
+          idMap[key].push(student)
+        }
+      })
+      
+      // Find duplicates (entries with more than 1 student)
+      const duplicates = []
+      
+      Object.entries(rfidMap).forEach(([value, studentList]) => {
+        if (studentList.length > 1) {
+          duplicates.push({ type: 'RFID', value: value.toUpperCase(), students: studentList })
+        }
+      })
+      
+      Object.entries(emailMap).forEach(([value, studentList]) => {
+        if (studentList.length > 1) {
+          duplicates.push({ type: 'Email', value, students: studentList })
+        }
+      })
+      
+      Object.entries(idMap).forEach(([value, studentList]) => {
+        if (studentList.length > 1) {
+          duplicates.push({ type: 'Student ID', value: value.toUpperCase(), students: studentList })
+        }
+      })
+      
+      autoScanResults.value = duplicates
+      autoScanPerformed.value = true
+      
+      if (duplicates.length > 0) {
+        showNotification(`Found ${duplicates.length} duplicate issue(s) in the database!`, 'warning')
+      } else {
+        showNotification('No duplicates found! Database is clean.', 'success')
+      }
+    } else {
+      showNotification('Failed to scan for duplicates', 'error')
+    }
+  } catch (error) {
+    console.error('Auto scan error:', error)
+    showNotification('Failed to scan for duplicates', 'error')
+  } finally {
+    autoScanLoading.value = false
   }
 }
 
