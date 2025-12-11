@@ -2011,21 +2011,20 @@
         
         <span class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent mt-5">:</span>
         
-        <!-- Minute Control (30-minute intervals only) -->
+        <!-- Minute Control (any minute 0-59) -->
         <div class="flex flex-col items-center">
           <label class="text-xs text-gray-500 mb-1 font-medium">Minute</label>
           <div class="flex flex-col items-center">
-            <button @click="timePickerMinute = timePickerMinute === 0 ? 30 : 0" class="text-purple-600 hover:text-pink-500 p-1 transition">
+            <button @click="timePickerMinute = timePickerMinute < 59 ? timePickerMinute + 1 : 0" class="text-purple-600 hover:text-pink-500 p-1 transition">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
             </button>
             <div class="w-16 h-16 flex items-center justify-center text-2xl font-bold bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-xl shadow-lg">
               {{ timePickerMinute.toString().padStart(2, '0') }}
             </div>
-            <button @click="timePickerMinute = timePickerMinute === 30 ? 0 : 30" class="text-purple-600 hover:text-pink-500 p-1 transition">
+            <button @click="timePickerMinute = timePickerMinute > 0 ? timePickerMinute - 1 : 59" class="text-purple-600 hover:text-pink-500 p-1 transition">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
           </div>
-          <span class="text-xs text-gray-400 mt-1">30 min intervals</span>
         </div>
         
         <!-- Period Control -->
@@ -2088,13 +2087,15 @@
             </button>
           </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-          <select v-model="newEvent.status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
-            <option value="upcoming">Upcoming</option>
-            <option value="active">Active (Accepting Check-ins)</option>
-            <option value="completed">Completed</option>
-          </select>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <p class="text-sm text-blue-800">
+            <span class="font-medium">Note:</span> Status will be set automatically based on the event date and time:
+          </p>
+          <ul class="text-xs text-blue-700 mt-1 list-disc list-inside">
+            <li><span class="font-medium">Upcoming</span> - Before the event starts</li>
+            <li><span class="font-medium">Active</span> - During the event (accepting check-ins)</li>
+            <li><span class="font-medium">Completed</span> - After the event ends</li>
+          </ul>
         </div>
         <div class="flex gap-3 mt-6">
           <button @click="showCreateEventModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
@@ -2147,13 +2148,17 @@
             </button>
           </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-          <select v-model="selectedEvent.status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
-            <option value="upcoming">Upcoming</option>
-            <option value="active">Active (Accepting Check-ins)</option>
-            <option value="completed">Completed</option>
-          </select>
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-sm font-medium text-blue-800">Current Status:</span>
+            <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', 
+              selectedEvent.status === 'active' ? 'bg-green-100 text-green-800' : 
+              selectedEvent.status === 'upcoming' ? 'bg-yellow-100 text-yellow-800' : 
+              'bg-gray-100 text-gray-800']">
+              {{ selectedEvent.status === 'active' ? 'Active' : selectedEvent.status === 'upcoming' ? 'Upcoming' : 'Completed' }}
+            </span>
+          </div>
+          <p class="text-xs text-blue-700">Status is updated automatically based on the event date and time.</p>
         </div>
         <div class="border-t pt-4 mt-4">
           <label class="block text-sm font-medium text-gray-700 mb-3">Attendance Lock Controls</label>
@@ -2533,8 +2538,7 @@ const newEvent = ref({
   location: '',
   date: '',
   startTime: '',
-  endTime: '',
-  status: 'draft'
+  endTime: ''
 })
 const eventLogsFilter = ref({
   yearLevel: '',
@@ -2685,13 +2689,39 @@ const formatCalendarDisplayDate = (date) => {
 
 const calculateEndTime = (startTimeStr) => {
   const [h, m] = startTimeStr.split(':').map(Number)
-  let endHour = h + 1
-  let endMinute = m
+  let endMinute = m + 30
+  let endHour = h
+  if (endMinute >= 60) {
+    endMinute = endMinute - 60
+    endHour = endHour + 1
+  }
   if (endHour >= 24) {
     endHour = 23
-    endMinute = 30
+    endMinute = 59
   }
   return `${endHour.toString().padStart(2, '0')}:${endMinute.toString().padStart(2, '0')}`
+}
+
+const calculateEventStatus = (eventDate, startTime, endTime) => {
+  if (!eventDate || !startTime || !endTime) return 'upcoming'
+  
+  const now = new Date()
+  const [startH, startM] = startTime.split(':').map(Number)
+  const [endH, endM] = endTime.split(':').map(Number)
+  
+  const eventStart = new Date(eventDate + 'T00:00:00')
+  eventStart.setHours(startH, startM, 0, 0)
+  
+  const eventEnd = new Date(eventDate + 'T00:00:00')
+  eventEnd.setHours(endH, endM, 0, 0)
+  
+  if (now < eventStart) {
+    return 'upcoming'
+  } else if (now >= eventStart && now <= eventEnd) {
+    return 'active'
+  } else {
+    return 'completed'
+  }
 }
 
 const openTimePicker = (target) => {
@@ -2707,7 +2737,7 @@ const openTimePicker = (target) => {
   if (currentTime) {
     const [h, m] = currentTime.split(':').map(Number)
     timePickerHour.value = h > 12 ? h - 12 : (h === 0 ? 12 : h)
-    timePickerMinute.value = m >= 30 ? 30 : 0
+    timePickerMinute.value = m
     timePickerPeriod.value = h >= 12 ? 'PM' : 'AM'
   } else {
     timePickerHour.value = 8
@@ -4228,6 +4258,7 @@ const fetchAttendanceData = async () => {
 const createAttendanceEvent = async () => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
+    const autoStatus = calculateEventStatus(newEvent.value.date, newEvent.value.startTime, newEvent.value.endTime)
     const eventPayload = {
       title: newEvent.value.title,
       description: newEvent.value.description || '',
@@ -4235,7 +4266,7 @@ const createAttendanceEvent = async () => {
       event_date: newEvent.value.date,
       start_time: newEvent.value.startTime,
       end_time: newEvent.value.endTime,
-      status: newEvent.value.status || 'draft'
+      status: autoStatus
     }
     const response = await fetch('https://ssaam-api.vercel.app/apis/attendance/events', {
       method: 'POST',
@@ -4251,7 +4282,7 @@ const createAttendanceEvent = async () => {
     if (response.ok) {
       showNotification('Event created successfully', 'success')
       showCreateEventModal.value = false
-      newEvent.value = { title: '', description: '', location: '', date: '', startTime: '', endTime: '', status: 'draft' }
+      newEvent.value = { title: '', description: '', location: '', date: '', startTime: '', endTime: '' }
       fetchAttendanceData()
     } else {
       if (response.status === 403) {
@@ -4275,10 +4306,13 @@ const updateAttendanceEvent = async () => {
   if (!selectedEvent.value) return
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
+    const eventDate = selectedEvent.value.date || selectedEvent.value.event_date
+    const autoStatus = calculateEventStatus(eventDate, selectedEvent.value.start_time, selectedEvent.value.end_time)
     // Prepare payload with proper field mapping (date -> event_date for API)
     const eventPayload = {
       ...selectedEvent.value,
-      event_date: selectedEvent.value.date || selectedEvent.value.event_date
+      event_date: eventDate,
+      status: autoStatus
     }
     
     const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${selectedEvent.value._id}`, {
