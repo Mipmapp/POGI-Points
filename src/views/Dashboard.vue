@@ -3101,74 +3101,57 @@ const submitAdminKey = async () => {
 const editNotificationData = ref(null)
 const savingEditedNotification = ref(false)
 
-// Notification seen tracking for badge counter - using MongoDB for persistent read status
-const seenNotificationIds = ref(new Set())
-const loadingSeenNotifications = ref(false)
+// Notification seen tracking - TIME-BASED approach
+// Stores the timestamp when user last viewed notifications
+// Any notification created AFTER this timestamp is considered "new/unread"
+const lastViewedNotificationsAt = ref(null)
+
+const getLastViewedKey = () => {
+  const userId = currentUser.value?._id || currentUser.value?.id || 'guest'
+  return `ssaam_last_viewed_notifications_${userId}`
+}
+
+const loadLastViewedTimestamp = () => {
+  try {
+    const stored = localStorage.getItem(getLastViewedKey())
+    if (stored) {
+      lastViewedNotificationsAt.value = new Date(stored)
+    }
+  } catch (error) {
+    console.error('Failed to load last viewed timestamp:', error)
+  }
+}
+
+const saveLastViewedTimestamp = () => {
+  try {
+    const now = new Date().toISOString()
+    localStorage.setItem(getLastViewedKey(), now)
+    lastViewedNotificationsAt.value = new Date(now)
+  } catch (error) {
+    console.error('Failed to save last viewed timestamp:', error)
+  }
+}
 
 const unreadNotificationCount = computed(() => {
   if (!notifications.value || notifications.value.length === 0) return 0
-  return notifications.value.filter(n => !seenNotificationIds.value.has(String(n._id))).length
+  if (!lastViewedNotificationsAt.value) {
+    // Never viewed notifications before - all are new
+    return notifications.value.length
+  }
+  
+  // Count notifications created after the last viewed timestamp
+  return notifications.value.filter(n => {
+    const createdAt = new Date(n.created_at)
+    return createdAt > lastViewedNotificationsAt.value
+  }).length
 })
-
-const loadSeenNotifications = async () => {
-  const token = localStorage.getItem('ssaamToken')
-  if (!token) return
-  
-  try {
-    loadingSeenNotifications.value = true
-    const response = await fetch('https://ssaam-api.vercel.app/apis/notifications/seen', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    
-    if (response.ok) {
-      const result = await response.json()
-      seenNotificationIds.value = new Set(result.seen_notification_ids || [])
-    }
-  } catch (error) {
-    console.error('Failed to load seen notifications:', error)
-  } finally {
-    loadingSeenNotifications.value = false
-  }
-}
-
-const markNotificationsAsSeen = async () => {
-  if (!notifications.value || notifications.value.length === 0) return
-  
-  const token = localStorage.getItem('ssaamToken')
-  if (!token) return
-  
-  const unseenIds = notifications.value
-    .filter(n => !seenNotificationIds.value.has(String(n._id)))
-    .map(n => String(n._id))
-  
-  if (unseenIds.length === 0) return
-  
-  try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/notifications/mark-seen', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ notification_ids: unseenIds })
-    })
-    
-    if (response.ok) {
-      // Create a new Set to trigger Vue reactivity (in-place mutations don't trigger computed re-evaluation)
-      const updatedSet = new Set(seenNotificationIds.value)
-      unseenIds.forEach(id => updatedSet.add(id))
-      seenNotificationIds.value = updatedSet
-    }
-  } catch (error) {
-    console.error('Failed to mark notifications as seen:', error)
-  }
-}
 
 const goToNotifications = async () => {
   currentPage.value = 'notifications'
   showMobileMenu.value = false
   await fetchNotifications()
-  await markNotificationsAsSeen()
+  // Mark all as seen by saving current timestamp
+  saveLastViewedTimestamp()
 }
 
 // Password change management with email verification
@@ -3334,10 +3317,9 @@ onMounted(async () => {
     users.value = JSON.parse(localStorage.getItem('users') || '[]')
   }
   
-  // Fetch notifications for badge counter and load seen status from database
-  // Must await fetchNotifications first to ensure notification IDs are available before checking seen status
+  // Fetch notifications for badge counter and load last viewed timestamp
   await fetchNotifications()
-  await loadSeenNotifications()
+  loadLastViewedTimestamp()
   
   // Fetch attendance data for students to show notification banner
   if (!user.isMaster && user.role !== 'admin') {
