@@ -608,7 +608,9 @@ const handleLogin = async () => {
         user.token = data.token; // Token is returned at top level, not inside student object
         user.requiresPasswordUpdate = data.requiresPasswordUpdate || false;
       } else if (data.message) {
-        errorMessage.value = data.message;
+        errorMessage.value = data.accountPending 
+          ? "Your account is pending approval. Please wait for an admin to approve your registration. You will receive an email notification once approved."
+          : data.message;
         showErrorNotification.value = true;
         isLoading.value = false;
         return;

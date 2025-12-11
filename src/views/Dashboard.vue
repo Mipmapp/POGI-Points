@@ -188,9 +188,20 @@
             <p class="text-xl text-white text-opacity-90">{{ rfidResult.student.full_name }}</p>
             <p class="text-sm text-white text-opacity-70 mt-1">{{ rfidResult.student.program }} | {{ rfidResult.student.year_level }}</p>
           </div>
-          <div v-else>
+          <div v-else-if="rfidResult.success && rfidResult.student_name" class="flex flex-col items-center">
+            <div class="w-24 h-24 rounded-full bg-white bg-opacity-20 flex items-center justify-center overflow-hidden mb-4 ring-4 ring-white ring-opacity-50">
+              <span class="text-4xl font-bold text-white">{{ rfidResult.student_name?.charAt(0) || '?' }}</span>
+            </div>
+            <p class="text-2xl font-bold text-white mb-1">{{ rfidResult.action === 'check_in' ? 'Check-in Successful!' : rfidResult.action === 'check_out' ? 'Check-out Successful!' : rfidResult.action === 'already_checked_in' ? 'Already Checked In' : 'Success' }}</p>
+            <p class="text-xl text-white text-opacity-90">{{ rfidResult.student_name }}</p>
+            <p v-if="rfidResult.message" class="text-sm text-white text-opacity-70 mt-1">{{ rfidResult.message }}</p>
+          </div>
+          <div v-else-if="!rfidResult.success">
             <p class="text-2xl font-bold text-white mb-2">Scan Failed</p>
             <p class="text-lg text-white text-opacity-90">{{ rfidResult.message }}</p>
+          </div>
+          <div v-else>
+            <p class="text-2xl font-bold text-white mb-1">{{ rfidResult.message || 'Success' }}</p>
           </div>
         </div>
       </transition>
@@ -610,7 +621,11 @@
                   <button @click="switchToScannerTab" :class="['px-4 py-2 rounded-lg text-sm font-medium transition', attendanceTab === 'scanner' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">RFID Scanner</button>
                 </div>
               </div>
-              <div class="flex gap-2">
+              <div class="flex gap-2 flex-wrap">
+                <button @click="launchFullscreenScanner" class="bg-gradient-to-r from-green-600 to-emerald-500 text-white px-4 py-2 rounded-lg hover:from-green-700 hover:to-emerald-600 transition flex items-center gap-2 shadow-md">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
+                  Scan Now
+                </button>
                 <button @click="fetchAttendanceData" :disabled="attendanceLoading" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition flex items-center gap-2">
                   <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                   Refresh
@@ -2257,7 +2272,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 
@@ -4161,6 +4176,33 @@ const switchToScannerTab = () => {
   }
 }
 
+const launchFullscreenScanner = () => {
+  if (!selectedEvent.value) {
+    showNotification('Please select an event from the list before scanning.', 'error')
+    return
+  }
+  
+  if (rfidScannerVerified.value) {
+    rfidFullscreenMode.value = true
+    nextTick(() => {
+      if (rfidFullscreenInputRef.value) {
+        rfidFullscreenInputRef.value.focus()
+      }
+    })
+  } else {
+    pendingAdminAction.value = () => {
+      rfidScannerVerified.value = true
+      rfidFullscreenMode.value = true
+      nextTick(() => {
+        if (rfidFullscreenInputRef.value) {
+          rfidFullscreenInputRef.value.focus()
+        }
+      })
+    }
+    showAdminKeyModal.value = true
+  }
+}
+
 const processRfidScan = async (rfidCode) => {
   if (!selectedEvent.value || rfidProcessing.value) return
   
@@ -4180,9 +4222,10 @@ const processRfidScan = async (rfidCode) => {
     })
     
     const result = await response.json()
-    if (response.ok) {
+    if (response.ok && result.success !== false) {
       rfidResult.value = { success: true, ...result }
-      showNotification(`${result.action === 'check_in' ? 'Check-in' : 'Check-out'}: ${result.student?.full_name || 'Student'}`, 'success')
+      const actionLabel = result.action === 'check_in' ? 'Check-in' : result.action === 'check_out' ? 'Check-out' : result.action === 'already_checked_in' ? 'Already checked in' : 'Success'
+      showNotification(`${actionLabel}: ${result.student?.full_name || result.student_name || 'Student'}`, 'success')
       fetchEventLogs(selectedEvent.value._id)
     } else {
       rfidResult.value = { success: false, message: result.message }
