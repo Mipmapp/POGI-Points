@@ -82,20 +82,33 @@ The following security hardening measures were implemented to prevent website de
 ## Recent UI/UX Improvements (December 2024)
 The following UI/UX enhancements were implemented to match the SSAAM aesthetic:
 
-1. **Enhanced Time Picker (0-59 Minutes):** Redesigned time picker with clock-face visual design, purple-to-pink gradient theme, and ability to select any minute from 0-59 (previously limited to 5-minute increments). Includes quick-select grid for all 60 minutes.
+1. **Enhanced Custom Calendar Picker:** Replaced native date input with a modern custom calendar picker featuring:
+   - Purple-to-pink gradient theme matching SSAAM aesthetic
+   - Month/year navigation with smooth transitions
+   - Today highlighting with ring accent
+   - Selected date with gradient background and scale animation
+   - "Today" and "Clear" quick action buttons
+   - Selected date preview display
+   - Proper timezone handling
 
-2. **Clear All Session Tokens:** New admin feature in Settings page that allows force-logout of all users (except current admin session). Includes confirmation modal with warning message.
+2. **Enhanced Time Picker (30-Minute Intervals):** Redesigned time picker with:
+   - Clock-face visual design with gradient theme
+   - 2-digit format display for both hours and minutes (e.g., "08:00" instead of "8:0")
+   - Minute selection restricted to 30-minute intervals only (00 or 30)
+   - Auto-set end time feature: when setting start time, end time is automatically set to +1 hour if empty
 
-3. **RFID Scanner Fullscreen Mode:** New fullscreen button that launches an immersive RFID scanning interface with:
+3. **Clear All Session Tokens:** New admin feature in Settings page that allows force-logout of all users (except current admin session). Includes confirmation modal with warning message.
+
+4. **RFID Scanner Fullscreen Mode:** New fullscreen button that launches an immersive RFID scanning interface with:
    - Full-screen purple gradient background
    - Large centered RFID input field
    - User photo display on successful scan (with fallback to initials)
    - ESC key or X button to exit
    - Smooth animations and transitions
 
-4. **Purple-to-Pink Gradient Theme:** Updated check-in highlighter and scan result displays to use the SSAAM purple-to-pink gradient instead of green.
+5. **Purple-to-Pink Gradient Theme:** Updated check-in highlighter and scan result displays to use the SSAAM purple-to-pink gradient instead of green.
 
-5. **User Photo in RFID Scanner:** RFID scan results now display the student's photo when available, with elegant fallback to initials.
+6. **User Photo in RFID Scanner:** RFID scan results now display the student's photo when available, with elegant fallback to initials.
 
 ## External Dependencies
 - **Backend API:** `https://ssaam-api.vercel.app` (Vercel deployment)
