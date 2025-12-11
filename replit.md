@@ -34,7 +34,7 @@ The application is a Vue 3 SPA utilizing the Composition API and Vite 5 for a mo
 - **Dashboard Statistics:** Displays aggregate student statistics by program and year level, fetched from a dedicated, non-paginated endpoint for complete data.
 - **Image Management:** Integrates with ImgBB for image uploads. For notifications, users can upload images directly (click-to-upload interface) which are **compressed to under 100KB** before being sent to ImgBB via the backend API. The backend handles the ImgBB upload and returns the hosted URL.
 - **Form Validation:** Advanced validation with custom error messages (e.g., Student ID format `12-A-12345`, Unicode support for names including Ñ/enye).
-- **Notifications System:** Role-based notifications (Admin/MedPub) with fields for title, message, priority, and tracking `posted_by`, `posted_by_name`, `created_at`, `updated_at`, and `was_edited` status. Users can "heart" (like) announcements - liked state persists and shows like count. **Unread notification badge** displays count of unseen announcements in sidebar, cleared when user visits notifications page (tracked via localStorage). **Spam prevention** for likes: frontend 2s cooldown per notification with disabled button state; backend rate limiting (15 attempts/minute per user across all notifications, 2s per-notification cooldown) with HTTP 429 responses.
+- **Notifications System:** Role-based notifications (Admin/MedPub) with fields for title, message, priority, and tracking `posted_by`, `posted_by_name`, `created_at`, `updated_at`, and `was_edited` status. Users can "heart" (like) announcements - liked state persists and shows like count. **Unread notification badge** displays count of unseen announcements in sidebar, cleared when user visits notifications page (tracked via MongoDB using `NotificationSeen` collection for persistent cross-device read status). **Spam prevention** for likes: frontend 2s cooldown per notification with disabled button state; backend rate limiting (15 attempts/minute per user across all notifications, 2s per-notification cooldown) with HTTP 429 responses.
 - **Password Reset:** Three-step email-based password reset with rate limiting, hashed codes, enumeration prevention, and atomic operations. Frontend includes "Forgot Password?" link on login page with full reset flow UI.
 - **Admin Settings:** A settings page allows Admins/Masters to toggle user registration and student login, displaying custom messages when features are disabled. Settings are stored in MongoDB.
 
@@ -115,6 +115,16 @@ The following UI/UX enhancements were implemented to match the SSAAM aesthetic:
 6. **Purple-to-Pink Gradient Theme:** Updated check-in highlighter and scan result displays to use the SSAAM purple-to-pink gradient instead of green.
 
 7. **User Photo in RFID Scanner:** RFID scan results now display the student's photo when available, with elegant fallback to initials.
+
+## Recent Updates (December 2024)
+
+1. **Improved Attendance Status Display:** The user dashboard attendance history now displays proper status labels:
+   - **Present** - When both check-in AND check-out are recorded
+   - **Incomplete** - When only check-in OR only check-out is recorded
+   - **Absent** - When the event has ended and neither check-in nor check-out was recorded
+   - **Pending** - When the event is still active and attendance hasn't been recorded yet
+
+2. **MongoDB-Based Notification Read Tracking:** Replaced localStorage-based notification read status with MongoDB storage using the `NotificationSeen` collection. This ensures read status persists across devices and browser sessions.
 
 ## External Dependencies
 - **Backend API:** `https://ssaam-api.vercel.app` (Vercel deployment)
