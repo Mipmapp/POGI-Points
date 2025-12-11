@@ -137,7 +137,7 @@ const likeRateLimiter = {
 const emailTransporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-        user: "pabbly.bot.2@gmail.com",
+        user: "ssaamjrmsu@gmail.com",
         pass: process.env.GMAIL_APP_PASSWORD
     }
 });
@@ -171,7 +171,7 @@ function sanitizeHtml(str) {
 
 async function sendVerificationEmail(toEmail, code, studentName) {
     const mailOptions = {
-        from: "SSAAM <pabbly.bot.2@gmail.com>",
+        from: "SSAAM <ssaamjrmsu@gmail.com>",
         to: toEmail,
         subject: "SSAAM Email Verification Code",
         html: `
@@ -207,7 +207,7 @@ async function sendApprovalEmail(toEmail, studentName, approved, rejectionReason
         : `Unfortunately, your account registration was not approved.${rejectionReason ? ` Reason: ${rejectionReason}` : ''}`;
     
     const mailOptions = {
-        from: "SSAAM <pabbly.bot.2@gmail.com>",
+        from: "SSAAM <ssaamjrmsu@gmail.com>",
         to: toEmail,
         subject: subject,
         html: `
@@ -240,7 +240,7 @@ async function sendApprovalEmail(toEmail, studentName, approved, rejectionReason
 
 async function sendRFIDVerificationEmail(toEmail, studentName, rfidCode, verifiedBy) {
     const mailOptions = {
-        from: "SSAAM <pabbly.bot.2@gmail.com>",
+        from: "SSAAM <ssaamjrmsu@gmail.com>",
         to: toEmail,
         subject: "SSAAM RFID Verified - Your Attendance Card is Now Active!",
         html: `
@@ -722,7 +722,7 @@ const AttendanceLog = mongoose.model("AttendanceLog", attendanceLogSchema);
 // Send Password Reset Email
 async function sendPasswordResetEmail(toEmail, code, studentName) {
     const mailOptions = {
-        from: "SSAAM <pabbly.bot.2@gmail.com>",
+        from: "SSAAM <ssaamjrmsu@gmail.com>",
         to: toEmail,
         subject: "SSAAM Password Reset Code",
         html: `
