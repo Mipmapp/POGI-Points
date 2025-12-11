@@ -293,7 +293,7 @@
             <div v-if="currentStep === 4" class="space-y-4">
               <div class="text-center mb-4">
                 <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-                  <img src="/mail.svg" alt="Email" class="w-8 h-8" />
+                  <img src="/mail-gradient.svg" alt="Email" class="w-8 h-8" />
                 </div>
                 <h3 class="text-lg font-semibold text-purple-900 mb-2">Verify Your Email</h3>
                 <p class="text-sm text-gray-600">We've sent a 6-digit verification code to:</p>
@@ -562,7 +562,7 @@
           <div v-if="currentStep === 4" class="space-y-4">
             <div class="text-center mb-4">
               <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-                <img src="/mail.svg" alt="Email" class="w-8 h-8" />
+                <img src="/mail-gradient.svg" alt="Email" class="w-8 h-8" />
               </div>
               <h3 class="text-lg font-semibold text-purple-900 mb-2">Verify Your Email</h3>
               <p class="text-sm text-gray-600">We've sent a 6-digit verification code to:</p>
