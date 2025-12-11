@@ -83,42 +83,42 @@ const likeRateLimiter = {
     COOLDOWN_MS: 2000,
     MAX_ATTEMPTS_PER_MINUTE: 15,
     WINDOW_MS: 60000,
-    
+
     checkAndRecordAttempt(userId, notificationId) {
         const now = Date.now();
         const notifKey = `${userId}:${notificationId}`;
-        
+
         // Periodic cleanup (runs on all requests, ~1% chance)
         if (Math.random() < 0.01) this.cleanup(now);
-        
+
         // First, clean and get the user's attempt history (sliding window)
         let attempts = this.userAttempts.get(userId) || [];
         // Remove attempts older than 60 seconds
         attempts = attempts.filter(ts => now - ts < this.WINDOW_MS);
-        
+
         // Record this attempt NOW (before any checks) to count ALL attempts
         attempts.push(now);
         this.userAttempts.set(userId, attempts);
-        
+
         // Check per-user rate limit (too many attempts in window)
         if (attempts.length > this.MAX_ATTEMPTS_PER_MINUTE) {
             const oldestInWindow = attempts[0];
             const retryAfter = Math.ceil((this.WINDOW_MS - (now - oldestInWindow)) / 1000);
             return { allowed: false, retryAfter: Math.max(1, retryAfter) };
         }
-        
+
         // Check per-notification cooldown
         const lastNotifAction = this.notificationCooldowns.get(notifKey);
         if (lastNotifAction && now - lastNotifAction < this.COOLDOWN_MS) {
             return { allowed: false, retryAfter: Math.ceil((this.COOLDOWN_MS - (now - lastNotifAction)) / 1000) };
         }
-        
+
         // Allowed - update notification cooldown
         this.notificationCooldowns.set(notifKey, now);
-        
+
         return { allowed: true };
     },
-    
+
     cleanup(now) {
         for (const [k, ts] of this.notificationCooldowns.entries()) {
             if (now - ts > 120000) this.notificationCooldowns.delete(k);
@@ -134,13 +134,201 @@ const likeRateLimiter = {
     }
 };
 
-const emailTransporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-        user: "ssaamjrmsu@gmail.com",
-        pass: process.env.GMAIL_APP_PASSWORD
+// Gmail accounts array with fallback support (server-side only, never exposed to clients)
+const GMAIL_ACCOUNTS = [
+    { user: "pabbly.bot.1@gmail.com", pass: "ofmuqxxtxktmflpe" },
+    { user: "acchelp283@gmail.com", pass: "lpnkmuszdpstqfkj" },
+    { user: "holdacc31@gmail.com", pass: "akirzhsqplridphz" },
+    { user: "ssaamjrmsu@gmail.com", pass: "cwkqguvsgyrzrnba" },
+    { user: "keny46514@gmail.com", pass: "lcketsitjhuxekqd" },
+    { user: "pabbly.bot.2@gmail.com", pass: "yjmglrbnftmvxkov" },
+    { user: "kencath0@gmail.com", pass: "rflwxmdmopcsskks" },
+    { user: "kencath139@gmail.com", pass: "uxoxmbddqvlsatim" }
+];
+
+// Email service with automatic fallback/rotation
+const emailService = {
+    currentIndex: 0,
+    failedAccounts: new Set(),
+    lastResetTime: Date.now(),
+    RESET_INTERVAL_MS: 30 * 60 * 1000, // Reset failed accounts after 30 minutes
+
+    getTransporter(accountIndex) {
+        const account = GMAIL_ACCOUNTS[accountIndex];
+        return nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: account.user,
+                pass: account.pass
+            }
+        });
+    },
+
+    getCurrentAccount() {
+        return GMAIL_ACCOUNTS[this.currentIndex];
+    },
+
+    resetFailedAccountsIfNeeded() {
+        const now = Date.now();
+        if (now - this.lastResetTime > this.RESET_INTERVAL_MS) {
+            this.failedAccounts.clear();
+            this.lastResetTime = now;
+            console.log('[EmailService] Reset failed accounts list');
+        }
+    },
+
+    findNextAvailableAccount(startIndex = 0) {
+        this.resetFailedAccountsIfNeeded();
+
+        for (let i = 0; i < GMAIL_ACCOUNTS.length; i++) {
+            const index = (startIndex + i) % GMAIL_ACCOUNTS.length;
+            if (!this.failedAccounts.has(index)) {
+                return index;
+            }
+        }
+        return -1; // All accounts failed
+    },
+
+    markAccountFailed(index) {
+        this.failedAccounts.add(index);
+        console.log(`[EmailService] Marked account ${GMAIL_ACCOUNTS[index].user} as failed. Failed accounts: ${this.failedAccounts.size}/${GMAIL_ACCOUNTS.length}`);
+    },
+
+    async sendMail(mailOptions) {
+        this.resetFailedAccountsIfNeeded();
+
+        let attempts = 0;
+        let lastError = null;
+        const startIndex = this.findNextAvailableAccount(this.currentIndex);
+
+        if (startIndex === -1) {
+            // All accounts have failed recently, reset and try again
+            console.log('[EmailService] All accounts failed, resetting and retrying...');
+            this.failedAccounts.clear();
+            this.lastResetTime = Date.now();
+        }
+
+        for (let i = 0; i < GMAIL_ACCOUNTS.length; i++) {
+            const accountIndex = (startIndex === -1 ? i : (startIndex + i) % GMAIL_ACCOUNTS.length);
+
+            if (this.failedAccounts.has(accountIndex) && startIndex !== -1) {
+                continue; // Skip already failed accounts unless we reset
+            }
+
+            const account = GMAIL_ACCOUNTS[accountIndex];
+            attempts++;
+
+            try {
+                const transporter = this.getTransporter(accountIndex);
+
+                // Update the "from" field to use current account
+                const updatedMailOptions = {
+                    ...mailOptions,
+                    from: mailOptions.from ? mailOptions.from.replace(/<[^>]+>/, `<${account.user}>`) : `SSAAM <${account.user}>`
+                };
+
+                console.log(`[EmailService] Attempting to send email via ${account.user} (attempt ${attempts})`);
+
+                const result = await transporter.sendMail(updatedMailOptions);
+
+                // Success! Update current index to this working account
+                this.currentIndex = accountIndex;
+                console.log(`[EmailService] Email sent successfully via ${account.user}`);
+
+                return result;
+            } catch (error) {
+                lastError = error;
+                console.error(`[EmailService] Failed to send via ${account.user}: ${error.message}`);
+                this.markAccountFailed(accountIndex);
+            }
+        }
+
+        // All accounts failed
+        console.error(`[EmailService] All ${GMAIL_ACCOUNTS.length} accounts failed to send email`);
+        throw new Error(`Email sending failed after trying all ${GMAIL_ACCOUNTS.length} accounts. Last error: ${lastError?.message}`);
+    },
+
+    getStatus() {
+        return {
+            totalAccounts: GMAIL_ACCOUNTS.length,
+            currentAccount: GMAIL_ACCOUNTS[this.currentIndex]?.user,
+            failedCount: this.failedAccounts.size,
+            availableCount: GMAIL_ACCOUNTS.length - this.failedAccounts.size
+        };
     }
-});
+};
+
+// Rate limiter for verification code resends (prevents email abuse)
+const verificationCodeRateLimiter = {
+    attempts: new Map(), // email -> { count, firstAttemptTime, lastAttemptTime }
+    MAX_ATTEMPTS: 4, // Maximum 4 resend attempts (original + 3 resends)
+    WINDOW_MS: 15 * 60 * 1000, // 15 minute window
+    MIN_INTERVAL_MS: 60 * 1000, // Minimum 60 seconds between attempts
+
+    checkAndRecord(email) {
+        const now = Date.now();
+        const normalizedEmail = email.toLowerCase().trim();
+        let data = this.attempts.get(normalizedEmail);
+
+        // Cleanup old entries periodically
+        if (Math.random() < 0.05) this.cleanup(now);
+
+        // No previous attempts or window expired - allow and start fresh
+        if (!data || (now - data.firstAttemptTime > this.WINDOW_MS)) {
+            this.attempts.set(normalizedEmail, {
+                count: 1,
+                firstAttemptTime: now,
+                lastAttemptTime: now
+            });
+            return { allowed: true, attemptsRemaining: this.MAX_ATTEMPTS - 1 };
+        }
+
+        // Check minimum interval between attempts
+        const timeSinceLastAttempt = now - data.lastAttemptTime;
+        if (timeSinceLastAttempt < this.MIN_INTERVAL_MS) {
+            const waitSeconds = Math.ceil((this.MIN_INTERVAL_MS - timeSinceLastAttempt) / 1000);
+            return { 
+                allowed: false, 
+                waitSeconds,
+                message: `Please wait ${waitSeconds} seconds before requesting another code.`
+            };
+        }
+
+        // Check if max attempts reached within window
+        if (data.count >= this.MAX_ATTEMPTS) {
+            const windowRemainingMs = this.WINDOW_MS - (now - data.firstAttemptTime);
+            const waitMinutes = Math.ceil(windowRemainingMs / 60000);
+            return { 
+                allowed: false, 
+                waitMinutes,
+                message: `Maximum resend attempts reached. Please wait ${waitMinutes} minutes before trying again.`
+            };
+        }
+
+        // Allow and increment
+        data.count++;
+        data.lastAttemptTime = now;
+        this.attempts.set(normalizedEmail, data);
+
+        return { 
+            allowed: true, 
+            attemptsRemaining: this.MAX_ATTEMPTS - data.count 
+        };
+    },
+
+    // Reset attempts for an email (call after successful verification)
+    reset(email) {
+        this.attempts.delete(email.toLowerCase().trim());
+    },
+
+    cleanup(now) {
+        for (const [email, data] of this.attempts.entries()) {
+            if (now - data.firstAttemptTime > this.WINDOW_MS) {
+                this.attempts.delete(email);
+            }
+        }
+    }
+};
 
 function generateVerificationCode() {
     return Math.floor(100000 + Math.random() * 900000).toString();
@@ -194,8 +382,8 @@ async function sendVerificationEmail(toEmail, code, studentName) {
             </div>
         `
     };
-    
-    return emailTransporter.sendMail(mailOptions);
+
+    return emailService.sendMail(mailOptions);
 }
 
 async function sendApprovalEmail(toEmail, studentName, approved, rejectionReason = '') {
@@ -205,7 +393,7 @@ async function sendApprovalEmail(toEmail, studentName, approved, rejectionReason
     const message = approved 
         ? "Congratulations! Your SSAAM account has been approved. You can now login to your account using your Student ID and your Last Name as the temporary password. You may change your password anytime in the Dashboard settings."
         : `Unfortunately, your account registration was not approved.${rejectionReason ? ` Reason: ${rejectionReason}` : ''}`;
-    
+
     const mailOptions = {
         from: "SSAAM <ssaamjrmsu@gmail.com>",
         to: toEmail,
@@ -234,8 +422,8 @@ async function sendApprovalEmail(toEmail, studentName, approved, rejectionReason
             </div>
         `
     };
-    
-    return emailTransporter.sendMail(mailOptions);
+
+    return emailService.sendMail(mailOptions);
 }
 
 async function sendRFIDVerificationEmail(toEmail, studentName, rfidCode, verifiedBy) {
@@ -268,8 +456,8 @@ async function sendRFIDVerificationEmail(toEmail, studentName, rfidCode, verifie
             </div>
         `
     };
-    
-    return emailTransporter.sendMail(mailOptions);
+
+    return emailService.sendMail(mailOptions);
 }
 
 function decodeTimestamp(encodedString) {
@@ -348,7 +536,7 @@ function antiBotProtection(req, res, next) {
                      req.headers['x-real-ip'] || 
                      req.connection?.remoteAddress || 
                      'unknown';
-    
+
     const studentId = req.body?.student_id || 'unknown';
     const rateLimitKey = `${clientIP}:${studentId}`;
 
@@ -745,8 +933,8 @@ async function sendPasswordResetEmail(toEmail, code, studentName) {
             </div>
         `
     };
-    
-    return emailTransporter.sendMail(mailOptions);
+
+    return emailService.sendMail(mailOptions);
 }
 
 async function getSettings() {
@@ -775,11 +963,11 @@ async function getSettings() {
         };
         await settings.save();
     }
-    
+
     // Check auto-disable timers and update if needed
     const now = new Date();
     let needsSave = false;
-    
+
     if (settings.rfidScanner.autoDisableCheckIn && settings.rfidScanner.checkInDisableAt) {
         if (new Date(settings.rfidScanner.checkInDisableAt) <= now) {
             settings.rfidScanner.checkInEnabled = false;
@@ -788,7 +976,7 @@ async function getSettings() {
             needsSave = true;
         }
     }
-    
+
     if (settings.rfidScanner.autoDisableCheckOut && settings.rfidScanner.checkOutDisableAt) {
         if (new Date(settings.rfidScanner.checkOutDisableAt) <= now) {
             settings.rfidScanner.checkOutEnabled = false;
@@ -797,11 +985,11 @@ async function getSettings() {
             needsSave = true;
         }
     }
-    
+
     if (needsSave) {
         await settings.save();
     }
-    
+
     return settings;
 }
 
@@ -813,7 +1001,7 @@ async function auth(req, res, next) {
 
     try {
         const decoded = jwt.verify(token, SSAAM_API_KEY);
-        
+
         const tokenHash = hashToken(token);
         const sessionToken = await SessionToken.findOneAndUpdate(
             { 
@@ -846,7 +1034,7 @@ async function studentAuthWithToken(req, res, next) {
 
     try {
         const decoded = jwt.verify(token, SSAAM_API_KEY);
-        
+
         const tokenHash = hashToken(token);
         const sessionToken = await SessionToken.findOneAndUpdate(
             { 
@@ -944,7 +1132,7 @@ async function adminActionAuth(req, res, next) {
     }
 
     const actionToken = req.headers['x-admin-action-token'];
-    
+
     if (!actionToken) {
         return res.status(403).json({ 
             message: "Admin action token required. Please verify your admin key first.",
@@ -994,17 +1182,17 @@ function validateName(name, fieldName) {
     if (!name || name.trim() === "") {
         return { valid: false, message: `${fieldName} is required` };
     }
-    
+
     const trimmedName = name.trim().toUpperCase();
-    
+
     if (trimmedName.length > 64) {
         return { valid: false, message: `${fieldName} must be 64 characters or less` };
     }
-    
+
     if (!UPPERCASE_ONLY_REGEX.test(trimmedName)) {
         return { valid: false, message: `${fieldName} must contain uppercase letters only` };
     }
-    
+
     return { valid: true, value: trimmedName };
 }
 
@@ -1053,13 +1241,13 @@ app.get('/apis/debug/non-uppercase-names', async (req, res) => {
         const allStudents = await Student.find({});
         // Allow A-Z, accented uppercase (Ñ, É, etc.), spaces, hyphens, apostrophes
         const uppercaseRegex = /^[A-ZÑÉÍÓÚÀÈÌÒÙÄËÏÖÜ\s'-]+$/;
-        
+
         const invalidStudents = allStudents.filter(s => {
             const firstName = s.first_name || '';
             const lastName = s.last_name || '';
             return !uppercaseRegex.test(firstName) || !uppercaseRegex.test(lastName);
         });
-        
+
         res.json({
             message: "Students with non-uppercase first/last names (preview - not deleted)",
             invalidCount: invalidStudents.length,
@@ -1082,17 +1270,17 @@ app.get('/apis/fix/remove-non-uppercase-names', async (req, res) => {
         const allStudents = await Student.find({});
         // Allow A-Z, accented uppercase (Ñ, É, etc.), spaces, hyphens, apostrophes
         const uppercaseRegex = /^[A-ZÑÉÍÓÚÀÈÌÒÙÄËÏÖÜ\s'-]+$/;
-        
+
         const invalidStudents = allStudents.filter(s => {
             const firstName = s.first_name || '';
             const lastName = s.last_name || '';
             return !uppercaseRegex.test(firstName) || !uppercaseRegex.test(lastName);
         });
-        
+
         const idsToDelete = invalidStudents.map(s => s._id);
-        
+
         const result = await Student.deleteMany({ _id: { $in: idsToDelete } });
-        
+
         res.json({
             message: "Removed students with non-uppercase names",
             deletedCount: result.deletedCount,
@@ -1114,19 +1302,19 @@ app.get('/apis/fix/remove-invalid-programs', async (req, res) => {
         const invalidStudents = await Student.find({
             program: { $nin: ['BSCS', 'BSIT', 'BSIS'] }
         });
-        
+
         // Get list of what will be deleted
         const toDelete = invalidStudents.map(s => ({
             student_id: s.student_id,
             name: s.full_name || `${s.first_name} ${s.last_name}`,
             program: s.program
         }));
-        
+
         // Delete them
         const result = await Student.deleteMany({
             program: { $nin: ['BSCS', 'BSIT', 'BSIS'] }
         });
-        
+
         res.json({
             message: "Removed students with invalid programs",
             deletedCount: result.deletedCount,
@@ -1143,11 +1331,11 @@ app.get('/apis/debug/invalid-programs', async (req, res) => {
         const invalidStudents = await Student.find({
             program: { $nin: ['BSCS', 'BSIT', 'BSIS'] }
         });
-        
+
         const validCount = await Student.countDocuments({
             program: { $in: ['BSCS', 'BSIT', 'BSIS'] }
         });
-        
+
         res.json({
             message: "Students with invalid programs (preview - not deleted)",
             invalidCount: invalidStudents.length,
@@ -1171,13 +1359,13 @@ app.get('/apis/fix/add-status', async (req, res) => {
             { status: { $exists: false } },
             { $set: { status: 'pending' } }
         );
-        
+
         // Also fix any null/undefined status values
         const result2 = await Student.updateMany(
             { status: null },
             { $set: { status: 'pending' } }
         );
-        
+
         res.json({
             message: "Fix applied: Added status field to students",
             studentsWithMissingStatus: result.modifiedCount,
@@ -1195,13 +1383,13 @@ app.get('/apis/debug/pending', async (req, res) => {
         // Test the exact same query as the pending endpoint
         const pendingQuery = await Student.find({ status: 'pending' }).limit(5);
         const pendingCount = await Student.countDocuments({ status: 'pending' });
-        
+
         // Also get all unique status values in the database
         const allStatuses = await Student.distinct('status');
-        
+
         // Get a sample of raw documents to see actual field values
         const rawSample = await Student.find({}).limit(3).lean();
-        
+
         res.json({
             message: "Debug: Testing pending query",
             pendingQueryResult: pendingQuery.length,
@@ -1225,7 +1413,7 @@ app.get('/apis/debug/session-tokens', auth, async (req, res) => {
         if (!req.master.isMaster) {
             return res.status(403).json({ message: "Admin access required" });
         }
-        
+
         const totalTokens = await SessionToken.countDocuments({});
         const activeTokens = await SessionToken.countDocuments({ 
             is_revoked: false, 
@@ -1237,7 +1425,7 @@ app.get('/apis/debug/session-tokens', auth, async (req, res) => {
                 { is_revoked: true }
             ]
         });
-        
+
         const cutoffTime = new Date(Date.now() - SESSION_INACTIVITY_MS);
         const inactiveTokens = await SessionToken.countDocuments({
             $or: [
@@ -1245,7 +1433,7 @@ app.get('/apis/debug/session-tokens', auth, async (req, res) => {
                 { last_used_at: null, created_at: { $lt: cutoffTime } }
             ]
         });
-        
+
         res.json({
             message: "Session token statistics",
             stats: {
@@ -1264,7 +1452,7 @@ app.delete('/apis/debug/session-tokens/clear', auth, adminActionAuth, async (req
     try {
         const { type } = req.query;
         let result;
-        
+
         if (type === 'all') {
             result = await SessionToken.deleteMany({});
         } else if (type === 'inactive') {
@@ -1287,7 +1475,7 @@ app.delete('/apis/debug/session-tokens/clear', auth, adminActionAuth, async (req
                 message: "Invalid type. Use: 'all', 'inactive', or 'expired'" 
             });
         }
-        
+
         res.json({
             message: `Cleared ${result.deletedCount} session tokens`,
             type,
@@ -1309,7 +1497,7 @@ app.get('/apis/debug/students', async (req, res) => {
             rejected: allStudents.filter(s => s.status === 'rejected').length,
             other: allStudents.filter(s => !['approved', 'pending', 'rejected'].includes(s.status)).length
         };
-        
+
         res.json({
             message: "Debug: All students in database",
             counts: statusCounts,
@@ -1394,7 +1582,7 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
         allStudents.forEach(student => {
             const rawProgram = (student.program || '').trim().toUpperCase();
             const rawYearLevel = (student.year_level || '').trim().toUpperCase();
-            
+
             const program = VALID_PROGRAMS.includes(rawProgram) ? rawProgram : null;
             const yearLevel = yearLevelMap[rawYearLevel] || 
                               (VALID_YEAR_LEVELS.includes(student.year_level) ? student.year_level : null);
@@ -1490,7 +1678,7 @@ app.get('/apis/students/pending', studentAuth, async (req, res) => {
             .sort({ created_date: -1 });
 
         const total = await Student.countDocuments({ status: 'pending' });
-        
+
         // Debug: Log results
         console.log('Found pending students:', students.length, 'Total:', total);
 
@@ -1579,6 +1767,16 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
             return res.status(400).json({ message: "Student ID already registered" });
         }
 
+        // Check rate limit for verification code requests
+        const rateLimitCheck = verificationCodeRateLimiter.checkAndRecord(data.email);
+        if (!rateLimitCheck.allowed) {
+            return res.status(429).json({ 
+                message: rateLimitCheck.message,
+                waitSeconds: rateLimitCheck.waitSeconds,
+                waitMinutes: rateLimitCheck.waitMinutes
+            });
+        }
+
         await VerificationCode.deleteMany({ email: data.email });
 
         const code = generateVerificationCode();
@@ -1587,7 +1785,7 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
         const firstName = firstNameValidation.value;
         const middleName = data.middle_name ? data.middle_name.toUpperCase().trim() : "";
         const lastName = lastNameValidation.value;
-        
+
         const full_name = `${firstName} ${middleName} ${lastName} ${data.suffix || ""}`
             .replace(/\s+/g, " ")
             .trim();
@@ -1622,7 +1820,8 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
 
         res.json({ 
             message: "Verification code sent to your email",
-            email: data.email
+            email: data.email,
+            attemptsRemaining: rateLimitCheck.attemptsRemaining
         });
 
     } catch (err) {
@@ -1675,6 +1874,9 @@ app.post('/apis/students/verify-and-register', studentAuth, timestampAuth, async
         const saved = await student.save();
 
         await VerificationCode.deleteOne({ _id: verification._id });
+
+        // Reset the rate limiter for this email after successful registration
+        verificationCodeRateLimiter.reset(email);
 
         res.status(201).json({
             message: "Registration successful! Your account is pending admin approval. You will receive an email when approved.",
@@ -1731,7 +1933,7 @@ app.put('/apis/students/:student_id/approve', auth, adminActionAuth, async (req,
 app.put('/apis/students/:student_id/reject', auth, adminActionAuth, async (req, res) => {
     try {
         const { reason } = req.body;
-        
+
         const student = await Student.findOne({ student_id: req.params.student_id, status: 'pending' });
 
         if (!student) {
@@ -2030,7 +2232,7 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
 
         // First find student by ID
         const student = await Student.findOne({ student_id });
-        
+
         if (!student)
             return res.status(400).json({ message: "Invalid Student ID or Password" });
 
@@ -2393,13 +2595,13 @@ app.get('/apis/masters', auth, requireMaster, async (req, res) => {
 app.post('/apis/validate-token', async (req, res) => {
     try {
         const token = req.headers.authorization?.split(" ")[1];
-        
+
         if (!token) {
             return res.status(401).json({ valid: false, message: "No token provided" });
         }
 
         const decoded = jwt.verify(token, SSAAM_API_KEY);
-        
+
         const tokenHash = hashToken(token);
         const sessionToken = await SessionToken.findOne({ 
             token_hash: tokenHash,
@@ -2483,7 +2685,7 @@ app.get('/apis/settings', studentAuth, async (req, res) => {
 app.put('/apis/settings', auth, adminActionAuth, async (req, res) => {
     try {
         const { userRegister, userLogin, rfidScanner } = req.body;
-        
+
         let settings = await Settings.findOne();
         if (!settings) {
             settings = new Settings({
@@ -2512,7 +2714,7 @@ app.put('/apis/settings', auth, adminActionAuth, async (req, res) => {
                 };
             }
         }
-        
+
         await settings.save();
         res.json({
             message: "Settings updated successfully",
@@ -2655,11 +2857,11 @@ app.post('/apis/password-reset/verify', studentAuth, timestampAuth, async (req, 
                 expires_at: { $gt: new Date() },
                 attempts: { $gte: 5 }
             });
-            
+
             if (lockedRecord) {
                 return res.status(429).json({ message: "Too many failed attempts. Please request a new reset code." });
             }
-            
+
             return res.status(400).json({ message: "Invalid or expired verification code" });
         }
 
@@ -2747,13 +2949,13 @@ app.post('/apis/password-reset/complete', studentAuth, timestampAuth, async (req
 app.post('/apis/upload-image', canPostNotification, async (req, res) => {
     try {
         const { image } = req.body;
-        
+
         if (!image) {
             return res.status(400).json({ message: "Image data is required" });
         }
 
         const imageUrl = await uploadToImgBB(image);
-        
+
         res.json({ 
             success: true, 
             url: imageUrl 
@@ -2775,11 +2977,11 @@ app.get('/apis/notifications', studentAuth, async (req, res) => {
             .sort({ created_at: -1 })
             .limit(50)
             .lean();
-        
+
         const medpubPosterIds = notifications
             .filter(n => n.posted_by === 'medpub' && n.posted_by_id)
             .map(n => n.posted_by_id);
-        
+
         let posterPhotos = {};
         if (medpubPosterIds.length > 0) {
             const posters = await Student.find({ _id: { $in: medpubPosterIds } })
@@ -2790,7 +2992,7 @@ app.get('/apis/notifications', studentAuth, async (req, res) => {
                 return acc;
             }, {});
         }
-        
+
         const cleanNotifications = notifications.map(notif => ({
             _id: notif._id,
             title: notif.title,
@@ -2808,7 +3010,7 @@ app.get('/apis/notifications', studentAuth, async (req, res) => {
             created_at: notif.created_at,
             updated_at: notif.updated_at
         }));
-        
+
         res.json({ data: cleanNotifications });
     } catch (err) {
         console.error("Fetch notifications error:", err);
@@ -2826,7 +3028,7 @@ async function canPostNotification(req, res, next) {
 
     try {
         const decoded = jwt.verify(token, SSAAM_API_KEY);
-        
+
         const tokenHash = hashToken(token);
         const sessionToken = await SessionToken.findOneAndUpdate(
             { 
@@ -2860,7 +3062,7 @@ async function canPostNotification(req, res, next) {
                     code: 'STUDENT_NOT_FOUND'
                 });
             }
-            
+
             if (student.role !== 'medpub') {
                 await SessionToken.updateOne({ _id: sessionToken._id }, { is_revoked: true });
                 return res.status(403).json({ 
@@ -2868,7 +3070,7 @@ async function canPostNotification(req, res, next) {
                     code: 'MEDPUB_ACCESS_REVOKED'
                 });
             }
-            
+
             req.poster = {
                 id: decoded.id,
                 studentId: student._id,
@@ -2890,32 +3092,32 @@ async function uploadToImgBB(base64Image) {
     // Get API keys from environment variable (comma-separated)
     const apiKeysStr = process.env.IMGBB_API_KEYS || '';
     const apiKeys = apiKeysStr.split(',').map(k => k.trim()).filter(k => k);
-    
+
     if (apiKeys.length === 0) {
         throw new Error('ImgBB API keys not configured');
     }
-    
+
     // Use random API key for load distribution
     const apiKey = apiKeys[Math.floor(Math.random() * apiKeys.length)];
-    
+
     // Remove data URL prefix if present
     const imageData = base64Image.replace(/^data:image\/\w+;base64,/, '');
-    
+
     const formData = new URLSearchParams();
     formData.append('key', apiKey);
     formData.append('image', imageData);
-    
+
     const response = await fetch('https://api.imgbb.com/1/upload', {
         method: 'POST',
         body: formData
     });
-    
+
     const result = await response.json();
-    
+
     if (!result.success) {
         throw new Error(result.error?.message || 'Failed to upload image');
     }
-    
+
     return result.data.url;
 }
 
@@ -3010,9 +3212,9 @@ app.post('/apis/notifications', canPostNotification, async (req, res) => {
 app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
     try {
         const { title, message, priority } = req.body;
-        
+
         const notification = await Notification.findById(req.params.id);
-        
+
         if (!notification) {
             return res.status(404).json({ message: "Notification not found" });
         }
@@ -3020,7 +3222,7 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
         // Only allow admin or the original poster to update
         const isAdmin = req.poster.type === 'admin';
         const isOwner = notification.posted_by_id.toString() === req.poster.id;
-        
+
         if (!isAdmin && !isOwner) {
             return res.status(403).json({ message: "You can only edit your own notifications" });
         }
@@ -3031,16 +3233,16 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
             today.setHours(0, 0, 0, 0);
             const tomorrow = new Date(today);
             tomorrow.setDate(tomorrow.getDate() + 1);
-            
+
             // Check if the last edit was today (within today's date range)
             const lastEditDate = notification.last_edit_date ? new Date(notification.last_edit_date) : null;
             const lastEditWasToday = lastEditDate && lastEditDate >= today && lastEditDate < tomorrow;
-            
+
             // If last edit was not today, reset the counter
             if (!lastEditWasToday) {
                 notification.edit_count = 0;
             }
-            
+
             // Check if we've reached the limit
             if (notification.edit_count >= 3) {
                 return res.status(429).json({ 
@@ -3049,7 +3251,7 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
                     remaining: 0
                 });
             }
-            
+
             // Increment edit count and update last edit date
             notification.edit_count = (notification.edit_count || 0) + 1;
             notification.last_edit_date = new Date();
@@ -3100,7 +3302,7 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
 app.delete('/apis/notifications/:id', canPostNotification, async (req, res) => {
     try {
         const notification = await Notification.findById(req.params.id);
-        
+
         if (!notification) {
             return res.status(404).json({ message: "Notification not found" });
         }
@@ -3108,7 +3310,7 @@ app.delete('/apis/notifications/:id', canPostNotification, async (req, res) => {
         // Only allow admin or the original poster to delete
         const isAdmin = req.poster.type === 'admin';
         const isOwner = notification.posted_by_id.toString() === req.poster.id;
-        
+
         if (!isAdmin && !isOwner) {
             return res.status(403).json({ message: "You can only delete your own notifications" });
         }
@@ -3132,18 +3334,18 @@ app.delete('/apis/notifications/:id', canPostNotification, async (req, res) => {
 app.post('/apis/notifications/mark-seen', studentAuthWithToken, async (req, res) => {
     try {
         const { notification_ids } = req.body;
-        
+
         if (!notification_ids || !Array.isArray(notification_ids) || notification_ids.length === 0) {
             return res.status(400).json({ message: "notification_ids array is required" });
         }
-        
+
         const userId = req.user.id || req.user._id;
         const seenRecords = notification_ids.map(notifId => ({
             user_id: userId,
             notification_id: notifId,
             seen_at: new Date()
         }));
-        
+
         await NotificationSeen.bulkWrite(
             seenRecords.map(record => ({
                 updateOne: {
@@ -3153,7 +3355,7 @@ app.post('/apis/notifications/mark-seen', studentAuthWithToken, async (req, res)
                 }
             }))
         );
-        
+
         res.json({ 
             message: "Notifications marked as seen",
             marked_count: notification_ids.length
@@ -3171,7 +3373,7 @@ app.get('/apis/notifications/seen', studentAuthWithToken, async (req, res) => {
         const seenRecords = await NotificationSeen.find({ user_id: userId })
             .select('notification_id seen_at')
             .lean();
-        
+
         res.json({
             seen_notification_ids: seenRecords.map(r => r.notification_id.toString()),
             seen_records: seenRecords
@@ -3193,7 +3395,7 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
         let userId;
         try {
             const decoded = jwt.verify(token, SSAAM_API_KEY);
-            
+
             // Validate session token in database
             const tokenHash = hashToken(token);
             const sessionToken = await SessionToken.findOne({ 
@@ -3205,7 +3407,7 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
             if (!sessionToken) {
                 return res.status(401).json({ message: "Session expired or invalid. Please login again." });
             }
-            
+
             // Get user ID from decoded token - support both student and admin/master tokens
             userId = decoded.student_id || decoded.id || decoded.username;
             if (!userId) {
@@ -3238,7 +3440,7 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
         // Toggle like using the verified user ID from token
         const userIndex = notification.liked_by.indexOf(userId);
         let liked = false;
-        
+
         if (userIndex > -1) {
             // User already liked, remove like
             notification.liked_by.splice(userIndex, 1);
@@ -3272,7 +3474,7 @@ async function autoUpdateEventStatuses() {
         const now = new Date();
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-        
+
         const completedResult = await AttendanceEvent.updateMany(
             { 
                 status: 'active',
@@ -3285,7 +3487,7 @@ async function autoUpdateEventStatuses() {
                 }
             }
         );
-        
+
         if (completedResult.modifiedCount > 0) {
             console.log(`Auto-closed ${completedResult.modifiedCount} past events`);
         }
@@ -3301,7 +3503,7 @@ function getEventAutoStatus(eventDate) {
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
     const eventDay = new Date(eventDate);
-    
+
     if (eventDay >= todayStart && eventDay <= todayEnd) {
         return 'active';
     } else if (eventDay > todayEnd) {
@@ -3317,15 +3519,15 @@ app.get('/apis/attendance/events', auth, async (req, res) => {
         const { status, page = 1, limit = 20 } = req.query;
         const filter = {};
         if (status) filter.status = status;
-        
+
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const events = await AttendanceEvent.find(filter)
             .sort({ event_date: -1, created_at: -1 })
             .skip(skip)
             .limit(parseInt(limit));
-        
+
         const total = await AttendanceEvent.countDocuments(filter);
-        
+
         res.json({
             data: events,
             pagination: {
@@ -3368,11 +3570,11 @@ app.get('/apis/attendance/events/:id', studentAuth, async (req, res) => {
 app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
     try {
         const { title, description, location, event_date, start_time, end_time, status } = req.body;
-        
+
         if (!title || !event_date || !start_time || !end_time) {
             return res.status(400).json({ message: "Title, event date, start time, and end time are required" });
         }
-        
+
         const event = new AttendanceEvent({
             title,
             description: description || "",
@@ -3385,7 +3587,7 @@ app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
             created_by_name: req.master.username,
             activated_at: status === 'active' ? new Date() : null
         });
-        
+
         const saved = await event.save();
         res.status(201).json({ message: "Event created successfully", event: saved });
     } catch (err) {
@@ -3397,12 +3599,12 @@ app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
 app.put('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) => {
     try {
         const { title, description, location, event_date, start_time, end_time, status, check_in_locked, check_out_locked } = req.body;
-        
+
         const event = await AttendanceEvent.findById(req.params.id);
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
-        
+
         if (title) event.title = title;
         if (description !== undefined) event.description = description;
         if (location !== undefined) event.location = location;
@@ -3411,7 +3613,7 @@ app.put('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) =
         if (end_time) event.end_time = end_time;
         if (check_in_locked !== undefined) event.check_in_locked = check_in_locked;
         if (check_out_locked !== undefined) event.check_out_locked = check_out_locked;
-        
+
         if (status && status !== event.status) {
             event.status = status;
             if (status === 'active' && !event.activated_at) {
@@ -3420,10 +3622,10 @@ app.put('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) =
                 event.closed_at = new Date();
             }
         }
-        
+
         event.updated_at = new Date();
         const updated = await event.save();
-        
+
         res.json({ message: "Event updated successfully", event: updated });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -3437,10 +3639,10 @@ app.delete('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
-        
+
         await AttendanceLog.deleteMany({ event_id: req.params.id });
         await AttendanceEvent.deleteOne({ _id: req.params.id });
-        
+
         res.json({ message: "Event and all related attendance logs deleted successfully" });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -3452,10 +3654,10 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
     try {
         const { search, yearLevel, program, page = 1, limit = 50 } = req.query;
         const filter = { event_id: req.params.id };
-        
+
         if (yearLevel) filter.year_level = yearLevel;
         if (program) filter.program = program;
-        
+
         if (search) {
             const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             filter.$or = [
@@ -3464,15 +3666,15 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
                 { rfid_code: { $regex: escapedSearch, $options: 'i' } }
             ];
         }
-        
+
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const logs = await AttendanceLog.find(filter)
             .sort({ check_in_at: -1, created_at: -1 })
             .skip(skip)
             .limit(parseInt(limit));
-        
+
         const total = await AttendanceLog.countDocuments(filter);
-        
+
         const stats = await AttendanceLog.aggregate([
             { $match: { event_id: new mongoose.Types.ObjectId(req.params.id) } },
             {
@@ -3484,7 +3686,7 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
                 }
             }
         ]);
-        
+
         res.json({
             data: logs,
             stats: stats[0] || { total: 0, present: 0, incomplete: 0 },
@@ -3506,11 +3708,11 @@ const DUPLICATE_PREVENTION_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
 app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
     try {
         const { rfid_code, source = 'rfid' } = req.body;
-        
+
         if (!rfid_code) {
             return res.status(400).json({ message: "RFID code is required" });
         }
-        
+
         // Get global RFID scanner settings
         let settings = await Settings.findOne();
         if (!settings) {
@@ -3518,11 +3720,11 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
             await settings.save();
         }
         const rfidSettings = settings.rfidScanner || { checkInEnabled: true, checkOutEnabled: true };
-        
+
         // Check if auto-disable timers have expired
         const now = new Date();
         let settingsChanged = false;
-        
+
         if (rfidSettings.autoDisableCheckIn && rfidSettings.checkInDisableAt) {
             const disableAt = new Date(rfidSettings.checkInDisableAt);
             if (now >= disableAt) {
@@ -3532,7 +3734,7 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
                 settingsChanged = true;
             }
         }
-        
+
         if (rfidSettings.autoDisableCheckOut && rfidSettings.checkOutDisableAt) {
             const disableAt = new Date(rfidSettings.checkOutDisableAt);
             if (now >= disableAt) {
@@ -3542,40 +3744,40 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
                 settingsChanged = true;
             }
         }
-        
+
         // Save settings if timers expired
         if (settingsChanged) {
             settings.rfidScanner = rfidSettings;
             await settings.save();
         }
-        
+
         const event = await AttendanceEvent.findById(req.params.id);
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
-        
+
         if (event.status !== 'active') {
             return res.status(400).json({ message: "Event is not active" });
         }
-        
+
         const student = await Student.findOne({ 
             rfid_code: rfid_code.trim(),
             rfid_status: 'verified',
             status: 'approved'
         });
-        
+
         if (!student) {
             return res.status(404).json({ message: "No verified student found with this RFID code" });
         }
-        
+
         // Check if student was registered before or on the event activation date
         // Only apply this check if the event has an activated_at timestamp
         if (event.activated_at) {
             const eventActivatedDate = new Date(event.activated_at);
             eventActivatedDate.setHours(23, 59, 59, 999); // End of the activation day
-            
+
             const studentCreatedDate = new Date(student.created_date);
-            
+
             if (studentCreatedDate > eventActivatedDate) {
                 return res.status(403).json({ 
                     message: "Student was registered after this attendance event was activated. Only students registered before or on the event activation day can check in.",
@@ -3585,15 +3787,14 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
                 });
             }
         }
-        
+
         let log = await AttendanceLog.findOne({
             event_id: req.params.id,
             student_id: student._id
         });
-        
-        const now = new Date();
+
         let action = '';
-        
+
         if (!log) {
             // Check if check-in is enabled globally
             if (!rfidSettings.checkInEnabled) {
@@ -3665,9 +3866,9 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
                 check_out_at: log.check_out_at
             });
         }
-        
+
         await log.save();
-        
+
         res.json({
             message: action === 'check_in' ? 'Check-in successful' : 'Check-out successful',
             action,
@@ -3688,9 +3889,9 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
         if (!student) {
             return res.status(404).json({ message: "Student not found" });
         }
-        
+
         const studentCreatedDate = new Date(student.created_date);
-        
+
         const events = await AttendanceEvent.find({ 
             status: { $in: ['active', 'closed'] },
             $or: [
@@ -3704,34 +3905,34 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                 }
             ]
         }).sort({ event_date: -1 });
-        
+
         const records = await Promise.all(events.map(async (event) => {
             const eventActivatedDate = event.activated_at ? new Date(event.activated_at) : null;
-            
+
             if (event.status === 'closed' && eventActivatedDate) {
                 const eventEndOfDay = new Date(eventActivatedDate);
                 eventEndOfDay.setHours(23, 59, 59, 999);
-                
+
                 if (studentCreatedDate > eventEndOfDay) {
                     return null;
                 }
             }
-            
+
             const log = await AttendanceLog.findOne({
                 event_id: event._id,
                 student_id: student._id
             });
-            
+
             let status = 'absent';
             if (log) {
                 if (log.check_in_at && log.check_out_at) status = 'present';
                 else if (log.check_in_at) status = 'incomplete';
             }
-            
+
             if (event.status === 'closed' && !log) {
                 return null;
             }
-            
+
             return {
                 event: {
                     _id: event._id,
@@ -3754,9 +3955,9 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                 }
             };
         }));
-        
+
         const filteredRecords = records.filter(r => r !== null);
-        
+
         res.json({ data: filteredRecords });
     } catch (err) {
         res.status(500).json({ message: err.message });
