@@ -118,7 +118,13 @@ The following UI/UX enhancements were implemented to match the SSAAM aesthetic:
 
 ## Recent Updates (December 2024)
 
-1. **RFID Verification Stats in Admin Dashboard:** The admin statistics section now displays verified and unverified RFID user counts. The implementation handles multiple API response formats (camelCase and snake_case) and includes a fallback calculation.
+1. **Enhanced RFID Verification Stats with Expandable Lists:** The admin statistics section now displays three RFID status categories with accurate counts:
+   - **Verified** - Users with rfid_status set to 'verified'
+   - **Unverified** - Users with rfid_status set to 'unverified' or null/empty
+   - **Unreadable** - Users with any other rfid_status value (neither verified nor unverified)
+   - Each stat card is clickable and expands to show a full list of users in that category
+   - Lists display Student ID, Name, Program, RFID Code, and Status
+   - Backend stats endpoint now returns all three counts directly for accurate display
 
 2. **RFID Status Filter:** Added a new filter dropdown in the admin user management section that allows filtering students by RFID verification status (All, Verified, Unverified). The filter is sent as `rfid_status` query parameter to the backend.
 
