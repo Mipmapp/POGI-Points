@@ -1238,8 +1238,8 @@
                       <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU" class="w-8 h-8 md:w-10 md:h-10 object-contain" />
                     </div>
                     <!-- MedPub: Media and Publication Logo -->
-                    <div v-else class="w-10 h-10 md:w-12 md:h-12 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-yellow-500 to-amber-600">
-                      <img src="/media_pub_logo.png" alt="Media and Publication" class="w-6 h-6 md:w-8 md:h-8 object-contain" />
+                    <div v-else class="w-8 h-8 md:w-10 md:h-10 rounded-full flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-yellow-500 to-amber-600">
+                      <img src="/media_pub_logo.png" alt="Media and Publication" class="w-5 h-5 md:w-6 md:h-6 object-contain" />
                     </div>
                     <div class="flex-1 min-w-0">
                       <!-- Admin Header -->
@@ -1248,14 +1248,14 @@
                         <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full font-medium bg-purple-200 text-purple-800">Admin</span>
                       </div>
                       <!-- MedPub Header: Social media style layout -->
-                      <div v-else>
-                        <div class="flex items-center gap-1 md:gap-2">
+                      <div v-else class="text-left">
+                        <div class="flex flex-wrap items-center gap-1 md:gap-2">
                           <span class="font-bold text-yellow-900 text-xs md:text-base">Media and Publication</span>
                           <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full font-medium bg-amber-200 text-amber-800">Organization</span>
                         </div>
-                        <div class="flex items-center gap-1 text-[10px] md:text-xs text-gray-600 mt-0.5">
+                        <div class="flex flex-wrap items-center gap-1 text-[10px] md:text-xs text-gray-600 mt-0.5">
                           <span>posted by</span>
-                          <div class="w-4 h-4 md:w-5 md:h-5 rounded-full overflow-hidden flex-shrink-0" :style="getPosterPhotoFallbackStyle(notif)">
+                          <div class="w-3.5 h-3.5 md:w-4 md:h-4 rounded-full overflow-hidden flex-shrink-0" :style="getPosterPhotoFallbackStyle(notif)">
                             <img 
                               v-if="notif.poster_photo && !posterImageFailed[notif._id]" 
                               :src="notif.poster_photo" 
@@ -1268,7 +1268,7 @@
                               v-else 
                               src="/user.svg" 
                               alt="User" 
-                              class="w-2.5 h-2.5 md:w-3 md:h-3 m-0.5 md:m-1" 
+                              class="w-2 h-2 md:w-2.5 md:h-2.5 m-0.5" 
                               style="filter: brightness(0) invert(1);"
                             />
                           </div>
@@ -1290,9 +1290,9 @@
                     </div>
                   </div>
                   
-                  <div class="w-full">
-                    <h3 class="text-sm md:text-base lg:text-lg font-semibold text-gray-900 mb-1.5">{{ notif.title }}</h3>
-                    <p class="text-gray-700 whitespace-pre-wrap break-words leading-relaxed text-xs md:text-sm lg:text-base" v-html="formatMessageWithLinks(notif.message || notif.content)"></p>
+                  <div class="w-full text-left">
+                    <h3 class="text-sm md:text-base lg:text-lg font-semibold text-gray-900 mb-1.5 text-left">{{ notif.title }}</h3>
+                    <p class="text-gray-700 whitespace-pre-wrap break-words leading-relaxed text-xs md:text-sm lg:text-base text-left" v-html="formatMessageWithLinks(notif.message || notif.content)"></p>
                     <div v-if="notif.image_url" class="mt-3">
                       <div class="relative group inline-block max-w-full">
                         <div v-if="notifImageRetries[notif._id] > 0 && !notifImageFailed[notif._id]" class="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg z-10">
