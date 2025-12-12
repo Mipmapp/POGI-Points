@@ -659,6 +659,23 @@
                           <div class="flex-1 min-w-0">
                             <p class="font-medium text-gray-900 text-sm truncate">{{ student.first_name }} {{ student.last_name }}</p>
                             <p class="text-xs text-gray-500">ID: {{ student.student_id }} | {{ student.email }}</p>
+                            <p v-if="student.rfid_code" class="text-xs text-blue-600">RFID: {{ student.rfid_code }}</p>
+                          </div>
+                          <div class="flex gap-1 flex-shrink-0">
+                            <button 
+                              @click="openEditDuplicateStudent(student)" 
+                              class="p-1.5 bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 transition"
+                              title="Edit Student"
+                            >
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                            </button>
+                            <button 
+                              @click="deleteDuplicateStudent(student)" 
+                              class="p-1.5 bg-red-100 text-red-700 rounded hover:bg-red-200 transition"
+                              title="Delete Student"
+                            >
+                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
                           </div>
                         </div>
                       </div>
@@ -975,16 +992,46 @@
                 </div>
 
                 <div class="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-dashed border-purple-300 rounded-lg p-8 text-center">
-                  <svg class="w-20 h-20 mx-auto mb-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
-                  <p class="text-lg font-medium bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent mb-2">Ready for RFID Scan</p>
-                  <p class="text-sm text-gray-500 mb-4">Click below and scan an RFID card. Scanner input will be auto-detected.</p>
+                  <!-- Scan Mode Toggle -->
+                  <div class="flex justify-center mb-4">
+                    <div class="inline-flex bg-gray-100 rounded-lg p-1">
+                      <button 
+                        @click="scanMode = 'rfid'" 
+                        :class="['px-4 py-2 rounded-lg text-sm font-medium transition', scanMode === 'rfid' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md' : 'text-gray-600 hover:text-purple-600']"
+                      >
+                        <span class="flex items-center gap-2">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
+                          RFID Scan
+                        </span>
+                      </button>
+                      <button 
+                        @click="scanMode = 'student_id'" 
+                        :class="['px-4 py-2 rounded-lg text-sm font-medium transition', scanMode === 'student_id' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md' : 'text-gray-600 hover:text-purple-600']"
+                      >
+                        <span class="flex items-center gap-2">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"></path></svg>
+                          Student ID
+                        </span>
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <svg v-if="scanMode === 'rfid'" class="w-20 h-20 mx-auto mb-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
+                  <svg v-else class="w-20 h-20 mx-auto mb-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"></path></svg>
+                  
+                  <p class="text-lg font-medium bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent mb-2">
+                    {{ scanMode === 'rfid' ? 'Ready for RFID Scan' : 'Enter Student ID' }}
+                  </p>
+                  <p class="text-sm text-gray-500 mb-4">
+                    {{ scanMode === 'rfid' ? 'Scan an RFID card or type the RFID code manually.' : 'Type the Student ID manually to record attendance.' }}
+                  </p>
                   <input 
                     ref="rfidInputRef"
                     v-model="rfidInput"
                     @keydown="handleRfidKeydown"
                     type="text"
-                    placeholder="Scan RFID card or type manually..."
-                    class="w-full max-w-md mx-auto px-4 py-3 text-center text-lg border-2 border-purple-300 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none"
+                    :placeholder="scanMode === 'rfid' ? 'Scan RFID card or type RFID code...' : 'Enter Student ID (e.g., 2023-0001)...'"
+                    class="w-full max-w-md mx-auto px-4 py-3 text-center text-lg border-2 border-purple-300 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none uppercase"
                     :disabled="rfidProcessing"
                   />
                   <div v-if="rfidProcessing" class="mt-4 flex items-center justify-center gap-2 text-purple-600">
@@ -2075,41 +2122,41 @@
   </div>
 
   <!-- Custom Calendar Picker Modal -->
-  <div v-if="showCalendarPicker" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]" @click.self="showCalendarPicker = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4">
+  <div v-if="showCalendarPicker" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-2 sm:p-4 overflow-y-auto" @click.self="showCalendarPicker = false">
+    <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 w-full max-w-[calc(100vw-1rem)] sm:max-w-sm mx-auto my-auto">
       <div class="flex justify-between items-center mb-4">
         <h3 class="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Select Date</h3>
         <button @click="showCalendarPicker = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
       </div>
       
       <!-- Calendar Header -->
-      <div class="flex items-center justify-between mb-4">
-        <button @click="changeCalendarMonth(-1)" class="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700 transition">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+      <div class="flex items-center justify-between mb-3 sm:mb-4 gap-2">
+        <button @click="changeCalendarMonth(-1)" class="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700 transition">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         </button>
-        <div class="text-center">
-          <span class="text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">{{ calendarMonthName }} {{ calendarYear }}</span>
+        <div class="text-center flex-1 min-w-0">
+          <span class="text-sm sm:text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">{{ calendarMonthName }} {{ calendarYear }}</span>
         </div>
-        <button @click="changeCalendarMonth(1)" class="w-10 h-10 flex items-center justify-center rounded-full bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700 transition">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        <button @click="changeCalendarMonth(1)" class="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700 transition">
+          <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
         </button>
       </div>
       
       <!-- Day Headers -->
-      <div class="grid grid-cols-7 gap-1 mb-2">
-        <div v-for="day in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="day" class="text-center text-xs font-semibold text-purple-600 py-2">{{ day }}</div>
+      <div class="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1 sm:mb-2">
+        <div v-for="day in ['S', 'M', 'T', 'W', 'T', 'F', 'S']" :key="day" class="text-center text-[10px] sm:text-xs font-semibold text-purple-600 py-1 sm:py-2">{{ day }}</div>
       </div>
       
       <!-- Calendar Grid -->
-      <div class="grid grid-cols-7 gap-1">
+      <div class="grid grid-cols-7 gap-0.5 sm:gap-1">
         <div v-for="(day, index) in calendarDays" :key="index" class="aspect-square">
           <button 
             v-if="day.date"
             @click="selectCalendarDate(day.date)"
             :class="[
-              'w-full h-full rounded-xl text-sm font-medium transition-all duration-200 flex items-center justify-center',
-              day.isToday && !day.isSelected ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 ring-2 ring-purple-400' : '',
-              day.isSelected ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg scale-110' : '',
+              'w-full h-full rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-center',
+              day.isToday && !day.isSelected ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 ring-1 sm:ring-2 ring-purple-400' : '',
+              day.isSelected ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg scale-105 sm:scale-110' : '',
               !day.isToday && !day.isSelected && day.isCurrentMonth ? 'text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:text-purple-700' : '',
               !day.isCurrentMonth ? 'text-gray-300' : ''
             ]"
@@ -2120,22 +2167,22 @@
       </div>
       
       <!-- Quick Actions -->
-      <div class="flex gap-2 mt-4 pt-4 border-t border-gray-100">
-        <button @click="selectToday" class="flex-1 px-3 py-2 text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition">Today</button>
-        <button @click="clearCalendarDate" class="flex-1 px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition">Clear</button>
+      <div class="flex gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
+        <button @click="selectToday" class="flex-1 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition">Today</button>
+        <button @click="clearCalendarDate" class="flex-1 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition">Clear</button>
       </div>
       
       <!-- Selected Date Display -->
-      <div class="mt-4 p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
-        <p class="text-sm text-center">
+      <div class="mt-3 sm:mt-4 p-2 sm:p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg sm:rounded-xl">
+        <p class="text-xs sm:text-sm text-center">
           <span class="text-gray-500">Selected: </span>
           <span class="font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">{{ selectedCalendarDateDisplay || 'No date selected' }}</span>
         </p>
       </div>
       
-      <div class="flex gap-3 mt-4">
-        <button @click="showCalendarPicker = false" class="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-        <button @click="confirmCalendarDate" :disabled="!calendarSelectedDate" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Confirm</button>
+      <div class="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
+        <button @click="showCalendarPicker = false" class="flex-1 bg-gray-200 text-gray-800 py-2 sm:py-3 px-3 sm:px-4 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-300 transition">Cancel</button>
+        <button @click="confirmCalendarDate" :disabled="!calendarSelectedDate" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 sm:py-3 px-3 sm:px-4 rounded-lg text-sm sm:text-base font-medium hover:from-purple-700 hover:to-pink-600 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Confirm</button>
       </div>
     </div>
   </div>
@@ -2765,6 +2812,7 @@ const rfidResult = ref(null)
 const attendanceTab = ref('events')
 const rfidScannerVerified = ref(false)
 const rfidCopied = ref(false)
+const scanMode = ref('rfid') // 'rfid' or 'student_id'
 
 const copyRfidToClipboard = async (rfidCode) => {
   if (!rfidCode) return
@@ -4017,6 +4065,83 @@ const scanAllForDuplicates = async () => {
   }
 }
 
+// Open edit modal for a duplicate student
+const openEditDuplicateStudent = (student) => {
+  // Reuse the existing edit user flow
+  const userCopy = JSON.parse(JSON.stringify(student))
+  userCopy.studentId = userCopy.student_id || userCopy.studentId
+  userCopy.firstName = userCopy.first_name || userCopy.firstName || ''
+  userCopy.middleName = userCopy.middle_name || userCopy.middleName || ''
+  userCopy.lastName = userCopy.last_name || userCopy.lastName || ''
+  userCopy.yearLevel = userCopy.year_level || userCopy.yearLevel || ''
+  userCopy.rfidCode = userCopy.rfid_code || userCopy.rfidCode || ''
+  userCopy.image = userCopy.photo || userCopy.image || ''
+  
+  if (isPrimaryAdmin.value && !isAdminActionTokenValid()) {
+    pendingAdminAction.value = () => {
+      editingUser.value = userCopy
+      editImageLoading.value = false
+      showEditModal.value = true
+    }
+    showAdminKeyModal.value = true
+    return
+  }
+  
+  editingUser.value = userCopy
+  editImageLoading.value = false
+  showEditModal.value = true
+}
+
+// Delete a duplicate student with fresh token
+const deleteDuplicateStudent = async (student) => {
+  const studentId = student.student_id || student.studentId
+  const studentName = `${student.first_name || student.firstName} ${student.last_name || student.lastName}`.trim()
+  
+  if (!confirm(`Are you sure you want to delete ${studentName} (${studentId})?\n\nThis action cannot be undone.`)) {
+    return
+  }
+  
+  if (isPrimaryAdmin.value && !isAdminActionTokenValid()) {
+    pendingAdminAction.value = async () => {
+      await performDeleteDuplicateStudent(studentId, studentName)
+    }
+    showAdminKeyModal.value = true
+    return
+  }
+  
+  await performDeleteDuplicateStudent(studentId, studentName)
+}
+
+// Perform the actual delete operation
+const performDeleteDuplicateStudent = async (studentId, studentName) => {
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp(),
+        'X-Admin-Action-Token': adminActionToken.value || ''
+      }
+    })
+    
+    if (response.ok) {
+      showNotification(`${studentName} has been deleted successfully`, 'success')
+      // Refresh the duplicate scan to update the list
+      await scanAllForDuplicates()
+      // Also refresh the users list if needed
+      await fetchAllUsers()
+    } else {
+      const result = await response.json()
+      showNotification(result.message || 'Failed to delete student', 'error')
+    }
+  } catch (error) {
+    console.error('Delete student error:', error)
+    showNotification('Failed to delete student. Please try again.', 'error')
+  }
+}
+
 // RFID Fullscreen mode functions
 const enterFullscreenMode = () => {
   if (!selectedEvent.value) {
@@ -4843,7 +4968,7 @@ const launchFullscreenScanner = () => {
   }
 }
 
-const processRfidScan = async (rfidCode) => {
+const processRfidScan = async (inputCode) => {
   if (!selectedEvent.value || rfidProcessing.value) return
   
   rfidProcessing.value = true
@@ -4851,6 +4976,11 @@ const processRfidScan = async (rfidCode) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   
   try {
+    // Determine the request body based on scan mode
+    const requestBody = scanMode.value === 'student_id' 
+      ? { student_id: inputCode, identifier_type: 'student_id', source: 'manual' }
+      : { rfid_code: inputCode, identifier_type: 'rfid', source: 'rfid' }
+    
     const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${selectedEvent.value._id}/check`, {
       method: 'POST',
       headers: {
@@ -4858,7 +4988,7 @@ const processRfidScan = async (rfidCode) => {
         'Authorization': `Bearer ${token}`,
         'X-SSAAM-TS': encodeTimestamp()
       },
-      body: JSON.stringify({ rfid_code: rfidCode })
+      body: JSON.stringify(requestBody)
     })
     
     const result = await response.json()
@@ -4869,16 +4999,16 @@ const processRfidScan = async (rfidCode) => {
       fetchEventLogs(selectedEvent.value._id)
     } else {
       rfidResult.value = { success: false, message: result.message }
-      showNotification(result.message || 'RFID scan failed', 'error')
+      showNotification(result.message || (scanMode.value === 'student_id' ? 'Student ID not found' : 'RFID scan failed'), 'error')
     }
   } catch (error) {
-    console.error('RFID scan error:', error)
-    rfidResult.value = { success: false, message: 'Error processing RFID' }
-    showNotification('Error processing RFID scan', 'error')
+    console.error('Attendance scan error:', error)
+    rfidResult.value = { success: false, message: scanMode.value === 'student_id' ? 'Error processing Student ID' : 'Error processing RFID' }
+    showNotification(scanMode.value === 'student_id' ? 'Error processing Student ID' : 'Error processing RFID scan', 'error')
   } finally {
     rfidProcessing.value = false
     setTimeout(() => { rfidResult.value = null }, 3000)
-    // Keep RFID input focused for continuous scanning
+    // Keep input focused for continuous scanning
     setTimeout(() => {
       if (rfidInputRef.value) {
         rfidInputRef.value.focus()

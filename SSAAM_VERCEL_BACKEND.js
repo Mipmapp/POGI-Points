@@ -3722,10 +3722,14 @@ const DUPLICATE_PREVENTION_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
     try {
-        const { rfid_code, source = 'rfid' } = req.body;
+        const { rfid_code, student_id, identifier_type = 'rfid', source = 'rfid' } = req.body;
 
-        if (!rfid_code) {
-            return res.status(400).json({ message: "RFID code is required" });
+        // Support both RFID and Student ID for manual entry
+        const identifier = rfid_code || student_id;
+        const isManualStudentId = identifier_type === 'student_id' || (!rfid_code && student_id);
+
+        if (!identifier) {
+            return res.status(400).json({ message: isManualStudentId ? "Student ID is required" : "RFID code is required" });
         }
 
         // Get global RFID scanner settings
@@ -3775,14 +3779,27 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
             return res.status(400).json({ message: "Event is not active" });
         }
 
-        const student = await Student.findOne({ 
-            rfid_code: rfid_code.trim(),
-            rfid_status: 'verified',
-            status: 'approved'
-        });
-
-        if (!student) {
-            return res.status(404).json({ message: "No verified student found with this RFID code" });
+        // Find student by either RFID code or Student ID
+        let student;
+        if (isManualStudentId) {
+            // Manual entry by Student ID - allow students without RFID
+            student = await Student.findOne({ 
+                student_id: identifier.trim().toUpperCase(),
+                status: 'approved'
+            });
+            if (!student) {
+                return res.status(404).json({ message: "No approved student found with this Student ID" });
+            }
+        } else {
+            // RFID scan - require verified RFID
+            student = await Student.findOne({ 
+                rfid_code: identifier.trim(),
+                rfid_status: 'verified',
+                status: 'approved'
+            });
+            if (!student) {
+                return res.status(404).json({ message: "No verified student found with this RFID code" });
+            }
         }
 
         // Check if student was registered before or on the event activation date
@@ -3823,12 +3840,13 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
                 event_id: req.params.id,
                 student_id: student._id,
                 student_id_number: student.student_id,
-                rfid_code: student.rfid_code,
+                rfid_code: student.rfid_code || '',
                 student_name: `${student.first_name} ${student.middle_name || ''} ${student.last_name}`.replace(/\s+/g, ' ').trim(),
                 program: student.program,
                 year_level: student.year_level,
                 check_in_at: now,
-                source
+                source,
+                input_method: isManualStudentId ? 'manual_student_id' : 'rfid'
             });
             action = 'check_in';
         } else if (!log.check_out_at) {
