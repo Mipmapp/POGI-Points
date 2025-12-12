@@ -373,8 +373,8 @@
     </div>
   </div>
 
-  <!-- Admin Key Modal -->
-  <div v-if="showAdminKeyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="cancelAdminKeyModal">
+  <!-- Admin Key Modal - Always on top -->
+  <div v-if="showAdminKeyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200]" @click.self="cancelAdminKeyModal">
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
       <div class="flex justify-between items-center mb-6">
         <h3 class="text-2xl font-bold text-purple-900">Admin Verification Required</h3>
@@ -971,6 +971,11 @@
                       <button @click="openEventLogs(event)" class="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition text-sm flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                         Logs
+                      </button>
+                      <button @click="exportEventAttendanceToExcel(event)" :disabled="exportingExcel" class="bg-green-100 text-green-700 px-3 py-2 rounded-lg hover:bg-green-200 transition text-sm flex items-center gap-1">
+                        <svg v-if="exportingExcel" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Excel
                       </button>
                       <button @click="openEditEvent(event)" class="bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg hover:bg-yellow-200 transition text-sm flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -1941,6 +1946,46 @@
             </div>
           </div>
 
+          <!-- My Attendance Logs Section -->
+          <div class="mt-8">
+            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300">My Recent Attendance</h3>
+            <div v-if="userAttendanceLogsLoading" class="flex justify-center py-8">
+              <svg class="animate-spin h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            </div>
+            <div v-else-if="userAttendanceLogs.length === 0" class="text-center py-8 text-gray-500">
+              <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+              <p>No attendance records found yet.</p>
+              <p class="text-sm mt-1">Your attendance logs will appear here after you check in to events.</p>
+            </div>
+            <div v-else class="space-y-3">
+              <div v-for="log in userAttendanceLogs.slice(0, 5)" :key="log.id" class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div>
+                    <p class="font-semibold text-gray-900">{{ log.event_name || log.eventName || 'Event' }}</p>
+                    <p class="text-sm text-gray-500">{{ formatAttendanceDate(log.created_at || log.check_in_time) }}</p>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span :class="['px-3 py-1 rounded-full text-xs font-medium', getUserLogStatusClass(log)]">
+                      {{ getUserLogStatus(log) }}
+                    </span>
+                    <span v-if="log.check_in_time" class="text-xs text-gray-500">
+                      In: {{ formatAttendanceTime(log.check_in_time) }}
+                    </span>
+                    <span v-if="log.check_out_time" class="text-xs text-gray-500">
+                      Out: {{ formatAttendanceTime(log.check_out_time) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button v-if="userAttendanceLogs.length > 5" @click="currentPage = 'attendance'" class="w-full py-2 text-purple-600 hover:text-purple-800 text-sm font-medium">
+                View all {{ userAttendanceLogs.length }} records →
+              </button>
+            </div>
+          </div>
+
           <!-- Account Security Section -->
           <div class="mt-8">
             <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300">Account Security</h3>
@@ -2025,6 +2070,9 @@
               <div class="flex items-center justify-center gap-2 mb-2">
                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span class="text-sm font-medium text-green-700">RFID Verified</span>
+                <button @click.stop="fetchStats" class="ml-1 p-1 rounded-full hover:bg-green-200 transition" title="Refresh">
+                  <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
               </div>
               <p class="text-3xl font-bold text-green-600">{{ verifiedCount }}</p>
               <p class="text-xs text-green-600 mt-1">Click to view list</p>
@@ -2033,6 +2081,9 @@
               <div class="flex items-center justify-center gap-2 mb-2">
                 <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span class="text-sm font-medium text-yellow-700">RFID Unverified</span>
+                <button @click.stop="fetchStats" class="ml-1 p-1 rounded-full hover:bg-yellow-200 transition" title="Refresh">
+                  <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
               </div>
               <p class="text-3xl font-bold text-yellow-600">{{ unverifiedCount }}</p>
               <p class="text-xs text-yellow-600 mt-1">Click to view list</p>
@@ -2041,6 +2092,9 @@
               <div class="flex items-center justify-center gap-2 mb-2">
                 <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span class="text-sm font-medium text-gray-700">RFID Unreadable</span>
+                <button @click.stop="fetchStats" class="ml-1 p-1 rounded-full hover:bg-gray-200 transition" title="Refresh">
+                  <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
               </div>
               <p class="text-3xl font-bold text-gray-600">{{ unreadableCount }}</p>
               <p class="text-xs text-gray-600 mt-1">Click to view list</p>
@@ -2051,18 +2105,38 @@
             <div class="flex items-center justify-between mb-4">
               <h4 class="text-lg font-semibold text-purple-900">
                 {{ rfidListType === 'verified' ? 'Verified Users' : rfidListType === 'unverified' ? 'Unverified Users' : 'Unreadable Status Users' }}
+                <span class="text-sm font-normal text-gray-500 ml-2">({{ rfidListDisplayUsers.length }} of {{ rfidListFilteredUsers.length }})</span>
               </h4>
               <button @click="showRfidList = false" class="text-gray-500 hover:text-gray-700">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
+            
+            <!-- Filters -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <input v-model="rfidListSearch" type="text" placeholder="Search by name..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-600 outline-none" />
+              <select v-model="rfidListFilterProgram" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-600 outline-none">
+                <option value="">All Programs</option>
+                <option value="BSCS">BSCS</option>
+                <option value="BSIS">BSIS</option>
+                <option value="BSIT">BSIT</option>
+              </select>
+              <select v-model="rfidListFilterYear" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-600 outline-none">
+                <option value="">All Year Levels</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+            </div>
+            
             <div v-if="rfidListLoading" class="flex items-center justify-center py-8">
               <svg class="animate-spin h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
             </div>
-            <div v-else-if="rfidListUsers.length === 0" class="text-center text-gray-500 py-8">
+            <div v-else-if="rfidListFilteredUsers.length === 0" class="text-center text-gray-500 py-8">
               No users found in this category.
             </div>
             <div v-else class="max-h-96 overflow-y-auto">
@@ -2070,17 +2144,23 @@
                 <thead class="bg-purple-50 sticky top-0">
                   <tr>
                     <th class="text-left px-3 py-2 font-medium text-purple-900">Student ID</th>
-                    <th class="text-left px-3 py-2 font-medium text-purple-900">Name</th>
+                    <th class="text-left px-3 py-2 font-medium text-purple-900 cursor-pointer hover:text-purple-700" @click="toggleRfidListSort">
+                      Name
+                      <span v-if="rfidListSortAsc">↑</span>
+                      <span v-else>↓</span>
+                    </th>
                     <th class="text-left px-3 py-2 font-medium text-purple-900">Program</th>
+                    <th class="text-left px-3 py-2 font-medium text-purple-900">Year</th>
                     <th class="text-left px-3 py-2 font-medium text-purple-900">RFID Code</th>
                     <th class="text-left px-3 py-2 font-medium text-purple-900">Status</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                  <tr v-for="user in rfidListUsers" :key="user.student_id" class="hover:bg-gray-50">
+                  <tr v-for="user in rfidListDisplayUsers" :key="user.student_id" class="hover:bg-gray-50">
                     <td class="px-3 py-2 text-gray-700">{{ user.student_id }}</td>
                     <td class="px-3 py-2 text-gray-700">{{ user.full_name || `${user.first_name} ${user.last_name}` }}</td>
                     <td class="px-3 py-2 text-gray-700">{{ user.program }}</td>
+                    <td class="px-3 py-2 text-gray-700">{{ user.year_level }}</td>
                     <td class="px-3 py-2 text-gray-700">{{ user.rfid_code || 'N/A' }}</td>
                     <td class="px-3 py-2">
                       <span :class="['px-2 py-1 rounded-full text-xs font-medium', 
@@ -2093,6 +2173,13 @@
                   </tr>
                 </tbody>
               </table>
+              
+              <!-- Load More Button -->
+              <div v-if="rfidListDisplayUsers.length < rfidListFilteredUsers.length" class="mt-4 text-center">
+                <button @click="loadMoreRfidUsers" class="px-6 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition font-medium text-sm">
+                  Load More ({{ rfidListFilteredUsers.length - rfidListDisplayUsers.length }} remaining)
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -2180,7 +2267,18 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">RFID Code</label>
-          <input v-model="editingUser.rfidCode" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+          <input v-model="editingUser.rfidCode" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" :disabled="editingUser.rfidUnreadable" :class="{'bg-gray-100': editingUser.rfidUnreadable}" />
+          <div class="flex items-center gap-2 mt-2">
+            <input 
+              type="checkbox" 
+              id="rfidUnreadable" 
+              v-model="editingUser.rfidUnreadable"
+              @change="handleRfidUnreadableChange"
+              class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+            />
+            <label for="rfidUnreadable" class="text-sm text-gray-600">Mark RFID as unreadable</label>
+          </div>
+          <p v-if="editingUser.rfidUnreadable" class="text-xs text-orange-600 mt-1">This RFID card cannot be read by the scanner and will be marked accordingly.</p>
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
@@ -2748,6 +2846,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
+import * as XLSX from 'xlsx'
 
 const router = useRouter()
 const currentUser = ref({})
@@ -2786,6 +2885,11 @@ const showRfidList = ref(false)
 const rfidListType = ref('')
 const rfidListUsers = ref([])
 const rfidListLoading = ref(false)
+const rfidListSearch = ref('')
+const rfidListFilterProgram = ref('')
+const rfidListFilterYear = ref('')
+const rfidListSortAsc = ref(true)
+const rfidListDisplayLimit = ref(20)
 const notification = ref({ show: false, message: '', type: 'info' })
 const profileImageFailed = ref(false)
 const sidebarImageFailed = ref(false)
@@ -2794,6 +2898,16 @@ const sidebarImageRetries = ref(0)
 const maxRetries = 3
 const studentPhotoUploading = ref(false)
 const refreshingUserData = ref(false)
+
+// User attendance logs
+const userAttendanceLogs = ref([])
+const userAttendanceLogsLoading = ref(false)
+
+// Auto-refresh interval for stats
+const statsRefreshInterval = ref(null)
+
+// Excel export state
+const exportingExcel = ref(false)
 
 // Settings management
 const settingsLoading = ref(false)
@@ -3655,7 +3769,21 @@ onMounted(async () => {
   // Start auto-refresh for attendance and event timers
   startAttendanceAutoRefresh()
   
+  // Start auto-refresh for stats (admin only)
+  if (user.role === 'admin' || user.isMaster) {
+    startStatsAutoRefresh()
+  }
+  
+  // Fetch user attendance logs (students only)
+  if (!user.isMaster && user.role !== 'admin') {
+    fetchUserAttendanceLogs()
+  }
+  
   isPageLoading.value = false
+})
+
+onUnmounted(() => {
+  stopStatsAutoRefresh()
 })
 
 // Handle stats refresh button click
@@ -3772,6 +3900,12 @@ const toggleRfidList = async (type) => {
   rfidListLoading.value = true
   rfidListUsers.value = []
   
+  // Reset filters and pagination when switching types
+  rfidListSearch.value = ''
+  rfidListFilterProgram.value = ''
+  rfidListFilterYear.value = ''
+  rfidListDisplayLimit.value = 20
+  
   try {
     const response = await fetch('https://ssaam-api.vercel.app/apis/students?limit=1000', {
       method: 'GET',
@@ -3784,12 +3918,26 @@ const toggleRfidList = async (type) => {
       const result = await response.json()
       const allStudents = result.data || result
       
+      // Normalize data to ensure consistent field access
+      const normalizedStudents = allStudents.map(s => ({
+        ...s,
+        student_id: s.student_id || '',
+        first_name: s.first_name || '',
+        last_name: s.last_name || '',
+        full_name: s.full_name || `${s.first_name || ''} ${s.last_name || ''}`.trim(),
+        program: s.program || '',
+        year_level: s.year_level || '',
+        rfid_code: s.rfid_code || 'N/A',
+        rfid_status: s.rfid_status || 'unverified'
+      }))
+      
       if (type === 'verified') {
-        rfidListUsers.value = allStudents.filter(s => s.rfid_status === 'verified')
+        rfidListUsers.value = normalizedStudents.filter(s => s.rfid_status === 'verified')
       } else if (type === 'unverified') {
-        rfidListUsers.value = allStudents.filter(s => s.rfid_status === 'unverified' || !s.rfid_status || s.rfid_status === '')
+        rfidListUsers.value = normalizedStudents.filter(s => s.rfid_status === 'unverified' || !s.rfid_status || s.rfid_status === '')
       } else {
-        rfidListUsers.value = allStudents.filter(s => s.rfid_status && s.rfid_status !== '' && s.rfid_status !== 'verified' && s.rfid_status !== 'unverified')
+        // Unreadable: check if rfid_code indicates unreadable (e.g., marked with 'UNREADABLE' prefix or special value)
+        rfidListUsers.value = normalizedStudents.filter(s => s.rfid_code && s.rfid_code.startsWith('UNREADABLE'))
       }
     }
   } catch (error) {
@@ -3954,6 +4102,52 @@ const unverifiedCount = computed(() => {
 const unreadableCount = computed(() => {
   return statsData.value?.unreadableCount ?? 0
 })
+
+// RFID List computed properties with filtering, sorting, and pagination
+const rfidListFilteredUsers = computed(() => {
+  let filtered = [...rfidListUsers.value]
+  
+  // Apply search filter
+  if (rfidListSearch.value.trim()) {
+    const searchLower = rfidListSearch.value.toLowerCase().trim()
+    filtered = filtered.filter(user => {
+      const fullName = (user.full_name || `${user.first_name} ${user.last_name}`).toLowerCase()
+      const studentId = (user.student_id || '').toLowerCase()
+      return fullName.includes(searchLower) || studentId.includes(searchLower)
+    })
+  }
+  
+  // Apply program filter
+  if (rfidListFilterProgram.value) {
+    filtered = filtered.filter(user => user.program === rfidListFilterProgram.value)
+  }
+  
+  // Apply year level filter
+  if (rfidListFilterYear.value) {
+    filtered = filtered.filter(user => user.year_level === rfidListFilterYear.value)
+  }
+  
+  // Sort alphabetically by name
+  filtered.sort((a, b) => {
+    const nameA = (a.full_name || `${a.first_name} ${a.last_name}`).toLowerCase()
+    const nameB = (b.full_name || `${b.first_name} ${b.last_name}`).toLowerCase()
+    return rfidListSortAsc.value ? nameA.localeCompare(nameB) : nameB.localeCompare(nameA)
+  })
+  
+  return filtered
+})
+
+const rfidListDisplayUsers = computed(() => {
+  return rfidListFilteredUsers.value.slice(0, rfidListDisplayLimit.value)
+})
+
+const toggleRfidListSort = () => {
+  rfidListSortAsc.value = !rfidListSortAsc.value
+}
+
+const loadMoreRfidUsers = () => {
+  rfidListDisplayLimit.value += 20
+}
 
 const filteredUsers = computed(() => {
   return users.value
@@ -4569,9 +4763,26 @@ const openEditModalWithUser = (user) => {
   userCopy.yearLevel = userCopy.yearLevel || userCopy.year_level || ''
   userCopy.rfidCode = userCopy.rfidCode || userCopy.rfid_code || ''
   userCopy.image = userCopy.image || userCopy.photo || ''
+  userCopy.rfidUnreadable = (userCopy.rfidCode || userCopy.rfid_code || '').startsWith('UNREADABLE:')
   editingUser.value = userCopy
   editImageLoading.value = false
   showEditModal.value = true
+}
+
+const handleRfidUnreadableChange = () => {
+  if (editingUser.value.rfidUnreadable) {
+    // Mark RFID as unreadable by prefixing the code
+    const currentCode = editingUser.value.rfidCode || ''
+    if (!currentCode.startsWith('UNREADABLE:')) {
+      editingUser.value.rfidCode = `UNREADABLE:${currentCode || 'CARD'}`
+    }
+  } else {
+    // Remove the UNREADABLE prefix if present
+    const currentCode = editingUser.value.rfidCode || ''
+    if (currentCode.startsWith('UNREADABLE:')) {
+      editingUser.value.rfidCode = currentCode.replace('UNREADABLE:', '')
+    }
+  }
 }
 
 const editUser = (user) => {
@@ -4866,6 +5077,7 @@ const saveUserImpl = async () => {
       last_name: (editingUser.value.lastName || editingUser.value.last_name || '').toUpperCase(),
       email: editingUser.value.email,
       rfid_code: editingUser.value.rfidCode || editingUser.value.rfid_code || 'N/A',
+      rfid_status: editingUser.value.rfid_status || 'unverified',
       year_level: editingUser.value.yearLevel || editingUser.value.year_level,
       program: editingUser.value.program,
       photo: editingUser.value.image || editingUser.value.photo || '',
@@ -5263,6 +5475,139 @@ const fetchEventLogs = async (eventId) => {
   }
 }
 
+// Export event attendance to Excel organized by year level
+const exportEventAttendanceToExcel = async (event) => {
+  exportingExcel.value = true
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    
+    // Fetch all logs for this event
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${event._id}/logs?limit=1000`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      }
+    })
+    
+    if (!response.ok) {
+      showNotification('Failed to fetch attendance data for export', 'error')
+      return
+    }
+    
+    const result = await response.json()
+    const logs = result.data || []
+    
+    if (logs.length === 0) {
+      showNotification('No attendance records to export', 'warning')
+      return
+    }
+    
+    // Create workbook
+    const workbook = XLSX.utils.book_new()
+    
+    // Year level order for organization
+    const yearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
+    
+    // Process data by year level
+    yearLevels.forEach(yearLevel => {
+      const yearLogs = logs.filter(log => {
+        const studentYearLevel = log.student?.year_level || log.year_level || ''
+        return studentYearLevel === yearLevel
+      })
+      
+      if (yearLogs.length === 0) return
+      
+      // Sort by name alphabetically
+      yearLogs.sort((a, b) => {
+        const nameA = (a.student?.full_name || a.full_name || `${a.student?.first_name || ''} ${a.student?.last_name || ''}`).toLowerCase()
+        const nameB = (b.student?.full_name || b.full_name || `${b.student?.first_name || ''} ${b.student?.last_name || ''}`).toLowerCase()
+        return nameA.localeCompare(nameB)
+      })
+      
+      // Prepare data for worksheet
+      const worksheetData = yearLogs.map((log, index) => {
+        const checkIn = log.check_in_at || log.check_in_time
+        const checkOut = log.check_out_at || log.check_out_time
+        const studentName = log.student?.full_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim()
+        const studentId = log.student?.student_id || log.student_id || ''
+        const program = log.student?.program || log.program || ''
+        
+        // Determine attendance status
+        let status = 'Absent'
+        if (checkIn && checkOut) status = 'Present'
+        else if (checkIn && !checkOut) status = 'Incomplete'
+        
+        return {
+          '#': index + 1,
+          'Student ID': studentId,
+          'Name': studentName,
+          'Program': program,
+          'Year Level': yearLevel,
+          'Check-In': checkIn ? new Date(checkIn).toLocaleString('en-PH') : '-',
+          'Check-Out': checkOut ? new Date(checkOut).toLocaleString('en-PH') : '-',
+          'Status': status
+        }
+      })
+      
+      // Create worksheet
+      const worksheet = XLSX.utils.json_to_sheet(worksheetData)
+      
+      // Set column widths
+      const columnWidths = [
+        { wch: 5 },   // #
+        { wch: 15 },  // Student ID
+        { wch: 30 },  // Name
+        { wch: 10 },  // Program
+        { wch: 12 },  // Year Level
+        { wch: 20 },  // Check-In
+        { wch: 20 },  // Check-Out
+        { wch: 12 }   // Status
+      ]
+      worksheet['!cols'] = columnWidths
+      
+      // Add worksheet to workbook with year level as sheet name
+      XLSX.utils.book_append_sheet(workbook, worksheet, yearLevel.replace(' ', '_'))
+    })
+    
+    // Create summary sheet
+    const summaryData = yearLevels.map(yearLevel => {
+      const yearLogs = logs.filter(log => {
+        const studentYearLevel = log.student?.year_level || log.year_level || ''
+        return studentYearLevel === yearLevel
+      })
+      const presentCount = yearLogs.filter(log => (log.check_in_at || log.check_in_time) && (log.check_out_at || log.check_out_time)).length
+      const incompleteCount = yearLogs.filter(log => (log.check_in_at || log.check_in_time) && !(log.check_out_at || log.check_out_time)).length
+      
+      return {
+        'Year Level': yearLevel,
+        'Total Attendees': yearLogs.length,
+        'Present (Complete)': presentCount,
+        'Incomplete': incompleteCount
+      }
+    })
+    
+    const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData)
+    summaryWorksheet['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 18 }, { wch: 12 }]
+    XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary')
+    
+    // Generate filename with event title and date
+    const eventDate = formatEventDate(event.date || event.event_date).replace(/[^a-zA-Z0-9]/g, '_')
+    const eventTitle = (event.title || 'Event').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)
+    const filename = `Attendance_${eventTitle}_${eventDate}.xlsx`
+    
+    // Download the file
+    XLSX.writeFile(workbook, filename)
+    
+    showNotification('Excel file exported successfully!', 'success')
+  } catch (error) {
+    console.error('Error exporting to Excel:', error)
+    showNotification('Failed to export Excel file', 'error')
+  } finally {
+    exportingExcel.value = false
+  }
+}
+
 const handleRfidKeydown = (event) => {
   const now = Date.now()
   const timeDiff = now - rfidLastKeyTime.value
@@ -5406,6 +5751,105 @@ const formatEventTime = (timeStr) => {
   const ampm = hour >= 12 ? 'PM' : 'AM'
   const displayHour = hour % 12 || 12
   return `${displayHour}:${minutes} ${ampm}`
+}
+
+// Format attendance date for user logs
+const formatAttendanceDate = (dateStr) => {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  return date.toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+}
+
+// Format attendance time for user logs
+const formatAttendanceTime = (timeStr) => {
+  if (!timeStr) return ''
+  const date = new Date(timeStr)
+  return date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true })
+}
+
+// Get user log attendance status based on check-in time vs event start time
+const getUserLogStatus = (log) => {
+  if (!log.check_in_time && !log.check_in_at) return 'Absent'
+  
+  const checkInTime = new Date(log.check_in_time || log.check_in_at)
+  const eventStartTime = log.event_start_time || log.event?.start_time
+  
+  if (!eventStartTime) return 'Present'
+  
+  // Parse event start time (HH:MM format)
+  const [startHours, startMinutes] = eventStartTime.split(':').map(Number)
+  const eventDate = new Date(log.event_date || log.event?.event_date || checkInTime)
+  eventDate.setHours(startHours, startMinutes, 0, 0)
+  
+  // Grace period of 15 minutes
+  const graceMs = 15 * 60 * 1000
+  
+  if (checkInTime <= new Date(eventDate.getTime() + graceMs)) {
+    return 'Present'
+  }
+  return 'Late'
+}
+
+// Get user log attendance status CSS class
+const getUserLogStatusClass = (log) => {
+  const status = getUserLogStatus(log)
+  switch (status) {
+    case 'Present':
+      return 'bg-green-100 text-green-800'
+    case 'Late':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'Absent':
+      return 'bg-red-100 text-red-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+// Fetch user attendance logs
+const fetchUserAttendanceLogs = async () => {
+  if (currentUser.value.role === 'admin' || currentUser.value.isMaster) return
+  
+  userAttendanceLogsLoading.value = true
+  try {
+    const studentId = currentUser.value.studentId || currentUser.value.student_id
+    const token = localStorage.getItem('authToken')
+    
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/student/${studentId}?limit=20`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token || 'SSAAMStudents'}`
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      userAttendanceLogs.value = result.data || result || []
+    }
+  } catch (error) {
+    console.error('Failed to fetch user attendance logs:', error)
+  } finally {
+    userAttendanceLogsLoading.value = false
+  }
+}
+
+// Start auto-refresh for stats (every 30 seconds)
+const startStatsAutoRefresh = () => {
+  if (statsRefreshInterval.value) {
+    clearInterval(statsRefreshInterval.value)
+  }
+  statsRefreshInterval.value = setInterval(() => {
+    if (currentUser.value.role === 'admin' || currentUser.value.isMaster) {
+      fetchStats()
+    }
+  }, 30000)
+}
+
+// Stop auto-refresh
+const stopStatsAutoRefresh = () => {
+  if (statsRefreshInterval.value) {
+    clearInterval(statsRefreshInterval.value)
+    statsRefreshInterval.value = null
+  }
 }
 
 // Helper function to get current Philippine time (UTC+8)
