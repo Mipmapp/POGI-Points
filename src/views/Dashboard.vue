@@ -1247,38 +1247,20 @@
                         <span class="font-bold text-purple-900 text-xs md:text-base">{{ notif.posted_by_name || notif.poster_name || 'Admin' }}</span>
                         <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full font-medium bg-purple-200 text-purple-800">Admin</span>
                       </div>
-                      <!-- MedPub Header: Organization name with label, then posted by user -->
+                      <!-- MedPub Header: Social media style layout -->
                       <div v-else>
-                        <div class="flex flex-wrap items-center gap-1 md:gap-2 mb-0.5 md:mb-1">
+                        <div class="flex items-center gap-1 md:gap-2">
                           <span class="font-bold text-yellow-900 text-xs md:text-base">Media and Publication</span>
                           <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full font-medium bg-amber-200 text-amber-800">Organization</span>
                         </div>
-                        <div class="flex items-center gap-1 md:gap-2 text-[10px] md:text-xs text-gray-600">
-                          <span>posted by</span>
-                          <div class="flex items-center gap-1 md:gap-1.5">
-                            <div class="w-4 h-4 md:w-5 md:h-5 rounded-full overflow-hidden flex-shrink-0" :style="getPosterPhotoFallbackStyle(notif)">
-                              <img 
-                                v-if="notif.poster_photo && !posterImageFailed[notif._id]" 
-                                :src="notif.poster_photo" 
-                                :alt="notif.posted_by_name" 
-                                class="w-full h-full object-cover"
-                                @error="handlePosterImageError(notif._id, notif.poster_photo)"
-                                @load="posterImageFailed[notif._id] = false"
-                              />
-                              <img 
-                                v-else 
-                                src="/user.svg" 
-                                alt="User" 
-                                class="w-2.5 h-2.5 md:w-3 md:h-3 m-0.5 md:m-1" 
-                                style="filter: brightness(0) invert(1);"
-                              />
-                            </div>
-                            <span class="font-medium text-gray-800 text-[10px] md:text-xs">{{ notif.posted_by_name || 'Unknown' }}</span>
-                            <span class="text-[10px] md:text-xs px-1 md:px-1.5 py-0.5 rounded-full font-medium bg-yellow-200 text-yellow-800">Medpub</span>
-                          </div>
+                        <div class="text-[10px] md:text-xs text-gray-600 mt-0.5">
+                          <span>posted by </span>
+                          <span class="font-semibold text-gray-800">{{ notif.posted_by_name || 'Unknown' }}</span>
+                          <span class="mx-1">·</span>
+                          <span class="text-[10px] md:text-xs px-1 md:px-1.5 py-0.5 rounded-full font-medium bg-yellow-200 text-yellow-800">Medpub</span>
                         </div>
                       </div>
-                      <div class="flex flex-wrap items-center gap-1 md:gap-2 text-[10px] md:text-xs text-gray-500 mt-0.5 md:mt-1">
+                      <div class="flex items-center gap-1 md:gap-2 text-[10px] md:text-xs text-gray-500 mt-0.5 md:mt-1">
                         <span class="flex items-center gap-1">
                           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                           {{ formatNotificationDate(notif.created_at) }}
