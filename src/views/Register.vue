@@ -357,7 +357,7 @@
                   <span class="mr-2">←</span>Back
                 </button>
                 <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600']">
-                  {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm & Continue' }} <span v-if="reviewCountdown <= 0" class="ml-2">→</span>
+                  {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-2">→</span>
                 </button>
               </div>
             </div>

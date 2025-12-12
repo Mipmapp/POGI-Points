@@ -142,6 +142,34 @@
     </div>
   </div>
 
+  <!-- Delete Duplicate Student Confirmation Modal -->
+  <div v-if="showDeleteDuplicateConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="cancelDeleteDuplicateStudent">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-sm w-full mx-4">
+      <div class="text-center mb-6">
+        <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+          <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+          </svg>
+        </div>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">Delete Student</h3>
+        <p class="text-gray-600 text-sm">Are you sure you want to delete <span class="font-semibold">{{ duplicateStudentToDelete?.name }}</span> ({{ duplicateStudentToDelete?.id }})?</p>
+        <p class="text-red-600 text-xs mt-2 font-medium">This action cannot be undone.</p>
+      </div>
+      <div class="flex gap-3">
+        <button @click="cancelDeleteDuplicateStudent" class="flex-1 bg-gray-200 text-gray-800 py-2.5 px-4 rounded-lg font-medium hover:bg-gray-300 transition" :disabled="deletingDuplicateStudent">
+          Cancel
+        </button>
+        <button @click="confirmDeleteDuplicateStudent" class="flex-1 bg-red-600 text-white py-2.5 px-4 rounded-lg font-medium hover:bg-red-700 transition flex items-center justify-center gap-2" :disabled="deletingDuplicateStudent">
+          <svg v-if="deletingDuplicateStudent" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          <span>{{ deletingDuplicateStudent ? 'Deleting...' : 'Delete' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Clear Sessions Confirmation Modal -->
   <div v-if="showClearSessionsConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showClearSessionsConfirm = false">
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
@@ -2728,6 +2756,11 @@ const notifImageLoaded = ref({})
 const MAX_NOTIF_IMAGE_RETRIES = 3
 const showEditNotificationModal = ref(false)
 
+// Delete duplicate student confirmation
+const showDeleteDuplicateConfirm = ref(false)
+const duplicateStudentToDelete = ref(null)
+const deletingDuplicateStudent = ref(false)
+
 // Admin action token management with 10-minute localStorage persistence
 const ADMIN_ACTION_TOKEN_KEY = 'ssaam_admin_action_token'
 const ADMIN_ACTION_TOKEN_EXPIRY_KEY = 'ssaam_admin_action_token_expiry'
@@ -4081,7 +4114,7 @@ const openEditDuplicateStudent = (student) => {
   userCopy.middleName = userCopy.middle_name || userCopy.middleName || ''
   userCopy.lastName = userCopy.last_name || userCopy.lastName || ''
   userCopy.yearLevel = userCopy.year_level || userCopy.yearLevel || ''
-  userCopy.rfidCode = userCopy.rfid_code || userCopy.rfidCode || ''
+  userCopy.rfidCode = userCopy.rfid_code || userCopy.rfidCode || 'N/A'
   userCopy.image = userCopy.photo || userCopy.image || ''
   
   if (isPrimaryAdmin.value && !isAdminActionTokenValid()) {
@@ -4099,24 +4132,40 @@ const openEditDuplicateStudent = (student) => {
   showEditModal.value = true
 }
 
-// Delete a duplicate student with fresh token
-const deleteDuplicateStudent = async (student) => {
+// Delete a duplicate student with modal confirmation and admin action key
+const deleteDuplicateStudent = (student) => {
   const studentId = student.student_id || student.studentId
   const studentName = `${student.first_name || student.firstName} ${student.last_name || student.lastName}`.trim()
   
-  if (!confirm(`Are you sure you want to delete ${studentName} (${studentId})?\n\nThis action cannot be undone.`)) {
-    return
-  }
-  
+  // First check admin action token before showing modal
   if (isPrimaryAdmin.value && !isAdminActionTokenValid()) {
-    pendingAdminAction.value = async () => {
-      await performDeleteDuplicateStudent(studentId, studentName)
+    pendingAdminAction.value = () => {
+      duplicateStudentToDelete.value = { id: studentId, name: studentName }
+      showDeleteDuplicateConfirm.value = true
     }
     showAdminKeyModal.value = true
     return
   }
   
-  await performDeleteDuplicateStudent(studentId, studentName)
+  // Show confirmation modal
+  duplicateStudentToDelete.value = { id: studentId, name: studentName }
+  showDeleteDuplicateConfirm.value = true
+}
+
+const cancelDeleteDuplicateStudent = () => {
+  showDeleteDuplicateConfirm.value = false
+  duplicateStudentToDelete.value = null
+  deletingDuplicateStudent.value = false
+}
+
+const confirmDeleteDuplicateStudent = async () => {
+  if (!duplicateStudentToDelete.value) return
+  
+  deletingDuplicateStudent.value = true
+  await performDeleteDuplicateStudent(duplicateStudentToDelete.value.id, duplicateStudentToDelete.value.name)
+  showDeleteDuplicateConfirm.value = false
+  duplicateStudentToDelete.value = null
+  deletingDuplicateStudent.value = false
 }
 
 // Perform the actual delete operation
