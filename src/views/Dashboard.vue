@@ -485,8 +485,8 @@
               <span :class="['text-xs px-2 py-0.5 rounded-full', currentUser.role === 'medpub' ? 'bg-yellow-400 text-yellow-900' : 'bg-white bg-opacity-30']">
                 {{ currentUser.role === 'medpub' ? 'Medpub' : 'Student' }}
               </span>
-              <span :class="['text-xs px-2 py-0.5 rounded-full', currentUser.rfid_status === 'verified' ? 'bg-green-400 text-green-900' : 'bg-red-400 text-red-900']">
-                {{ currentUser.rfid_status === 'verified' ? 'Verified' : 'Unverified' }}
+              <span :class="['text-xs px-2 py-0.5 rounded-full', currentUser.rfid_status === 'verified' ? 'bg-green-400 text-green-900' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-400 text-gray-900' : 'bg-yellow-400 text-yellow-900']">
+                {{ currentUser.rfid_status === 'verified' ? 'Verified' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'Unreadable' : 'Unverified' }}
               </span>
             </div>
           </div>
@@ -557,8 +557,8 @@
                 <span :class="['text-xs px-2 py-0.5 rounded-full', currentUser.role === 'medpub' ? 'bg-yellow-400 text-yellow-900' : 'bg-white bg-opacity-30']">
                   {{ currentUser.role === 'medpub' ? 'Medpub' : 'Student' }}
                 </span>
-                <span :class="['text-xs px-2 py-0.5 rounded-full', currentUser.rfid_status === 'verified' ? 'bg-green-400 text-green-900' : 'bg-red-400 text-red-900']">
-                  {{ currentUser.rfid_status === 'verified' ? 'Verified' : 'Unverified' }}
+                <span :class="['text-xs px-2 py-0.5 rounded-full', currentUser.rfid_status === 'verified' ? 'bg-green-400 text-green-900' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-400 text-gray-900' : 'bg-yellow-400 text-yellow-900']">
+                  {{ currentUser.rfid_status === 'verified' ? 'Verified' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'Unreadable' : 'Unverified' }}
                 </span>
               </div>
             </div>
@@ -1795,6 +1795,7 @@
                   <option value="">All RFID Status</option>
                   <option value="verified">Verified</option>
                   <option value="unverified">Unverified</option>
+                  <option value="Unreadable">Unreadable</option>
                 </select>
                 <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
@@ -1825,8 +1826,8 @@
                   <td class="border border-purple-300 px-4 py-3 text-gray-700">{{ user.email }}</td>
                   <td class="border border-purple-300 px-4 py-3 text-center text-gray-700">{{ user.rfidCode || user.rfid_code || '—' }}</td>
                   <td class="border border-purple-300 px-4 py-3 text-center">
-                    <span :class="['px-2 py-1 rounded-full text-xs font-medium', (user.rfid_status === 'verified') ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800']">
-                      {{ (user.rfid_status === 'verified') ? 'Verified' : 'Unverified' }}
+                    <span :class="['px-2 py-1 rounded-full text-xs font-medium', (user.rfid_status === 'verified') ? 'bg-green-100 text-green-800' : (user.rfid_status === 'Unreadable') ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800']">
+                      {{ (user.rfid_status === 'verified') ? 'Verified' : (user.rfid_status === 'Unreadable') ? 'Unreadable' : 'Unverified' }}
                     </span>
                   </td>
                   <td class="border border-purple-300 px-4 py-3 text-center text-gray-700">{{ user.program }}</td>
@@ -1999,10 +2000,10 @@
                 <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Email</p>
                 <p class="text-base font-semibold text-gray-900 mt-2 break-words">{{ currentUser.email || 'Not provided' }}</p>
               </div>
-              <div :class="['p-4 rounded-lg', currentUser.rfid_status === 'verified' ? 'bg-green-50 border-2 border-green-200' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-red-50 border-2 border-red-200' : 'bg-yellow-50 border-2 border-yellow-200']">
+              <div :class="['p-4 rounded-lg', currentUser.rfid_status === 'verified' ? 'bg-green-50 border-2 border-green-200' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-50 border-2 border-gray-200' : 'bg-yellow-50 border-2 border-yellow-200']">
                 <div class="flex items-center justify-between mb-2">
                   <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">RFID Status</p>
-                  <span :class="['text-xs px-2 py-1 rounded-full font-semibold', currentUser.rfid_status === 'verified' ? 'bg-green-500 text-white' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-red-500 text-white' : 'bg-yellow-500 text-white']">
+                  <span :class="['text-xs px-2 py-1 rounded-full font-semibold', currentUser.rfid_status === 'verified' ? 'bg-green-500 text-white' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-500 text-white' : 'bg-yellow-500 text-white']">
                     {{ currentUser.rfid_status === 'verified' ? 'Verified' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'Unreadable' : 'Pending' }}
                   </span>
                 </div>
@@ -2032,12 +2033,12 @@
                 </div>
                 <div v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))">
                   <div class="flex items-center gap-2 mb-2">
-                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
-                    <p class="text-base font-semibold text-red-700">Card Damaged</p>
+                    <p class="text-base font-semibold text-gray-700">Card Damaged</p>
                   </div>
-                  <p class="text-xs text-red-700 mt-2">Your student ID card appears to be damaged, resulting in an unreadable RFID code. The card's chip may have been corrupted or physically damaged.</p>
+                  <p class="text-xs text-gray-700 mt-2">Your student ID card appears to be damaged, resulting in an unreadable RFID code. The card's chip may have been corrupted or physically damaged.</p>
                   <p class="text-xs text-gray-600 mt-2">Please visit the CCS office to request a replacement card or to have your RFID re-assigned.</p>
                 </div>
                 <div v-else>
