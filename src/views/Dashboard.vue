@@ -2020,20 +2020,79 @@
             </p>
           </div>
           
-          <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
+          <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center cursor-pointer hover:bg-green-100 transition" @click="toggleRfidList('verified')">
               <div class="flex items-center justify-center gap-2 mb-2">
                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span class="text-sm font-medium text-green-700">RFID Verified</span>
               </div>
               <p class="text-3xl font-bold text-green-600">{{ verifiedCount }}</p>
+              <p class="text-xs text-green-600 mt-1">Click to view list</p>
             </div>
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center cursor-pointer hover:bg-yellow-100 transition" @click="toggleRfidList('unverified')">
               <div class="flex items-center justify-center gap-2 mb-2">
                 <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span class="text-sm font-medium text-yellow-700">RFID Unverified</span>
               </div>
               <p class="text-3xl font-bold text-yellow-600">{{ unverifiedCount }}</p>
+              <p class="text-xs text-yellow-600 mt-1">Click to view list</p>
+            </div>
+            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center cursor-pointer hover:bg-gray-100 transition" @click="toggleRfidList('unreadable')">
+              <div class="flex items-center justify-center gap-2 mb-2">
+                <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-sm font-medium text-gray-700">RFID Unreadable</span>
+              </div>
+              <p class="text-3xl font-bold text-gray-600">{{ unreadableCount }}</p>
+              <p class="text-xs text-gray-600 mt-1">Click to view list</p>
+            </div>
+          </div>
+          
+          <div v-if="showRfidList" class="mt-6 bg-white border border-purple-200 rounded-lg p-4">
+            <div class="flex items-center justify-between mb-4">
+              <h4 class="text-lg font-semibold text-purple-900">
+                {{ rfidListType === 'verified' ? 'Verified Users' : rfidListType === 'unverified' ? 'Unverified Users' : 'Unreadable Status Users' }}
+              </h4>
+              <button @click="showRfidList = false" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+            <div v-if="rfidListLoading" class="flex items-center justify-center py-8">
+              <svg class="animate-spin h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            </div>
+            <div v-else-if="rfidListUsers.length === 0" class="text-center text-gray-500 py-8">
+              No users found in this category.
+            </div>
+            <div v-else class="max-h-96 overflow-y-auto">
+              <table class="w-full text-sm">
+                <thead class="bg-purple-50 sticky top-0">
+                  <tr>
+                    <th class="text-left px-3 py-2 font-medium text-purple-900">Student ID</th>
+                    <th class="text-left px-3 py-2 font-medium text-purple-900">Name</th>
+                    <th class="text-left px-3 py-2 font-medium text-purple-900">Program</th>
+                    <th class="text-left px-3 py-2 font-medium text-purple-900">RFID Code</th>
+                    <th class="text-left px-3 py-2 font-medium text-purple-900">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                  <tr v-for="user in rfidListUsers" :key="user.student_id" class="hover:bg-gray-50">
+                    <td class="px-3 py-2 text-gray-700">{{ user.student_id }}</td>
+                    <td class="px-3 py-2 text-gray-700">{{ user.full_name || `${user.first_name} ${user.last_name}` }}</td>
+                    <td class="px-3 py-2 text-gray-700">{{ user.program }}</td>
+                    <td class="px-3 py-2 text-gray-700">{{ user.rfid_code || 'N/A' }}</td>
+                    <td class="px-3 py-2">
+                      <span :class="['px-2 py-1 rounded-full text-xs font-medium', 
+                        user.rfid_status === 'verified' ? 'bg-green-100 text-green-800' : 
+                        user.rfid_status === 'unverified' ? 'bg-yellow-100 text-yellow-800' : 
+                        'bg-gray-100 text-gray-800']">
+                        {{ user.rfid_status === 'verified' ? 'Verified' : user.rfid_status === 'unverified' ? 'Unverified' : 'Unreadable' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -2723,6 +2782,10 @@ const pendingEditUser = ref(null)
 const isRefreshing = ref(false)
 const isSearching = ref(false)
 const statsData = ref(null)
+const showRfidList = ref(false)
+const rfidListType = ref('')
+const rfidListUsers = ref([])
+const rfidListLoading = ref(false)
 const notification = ref({ show: false, message: '', type: 'info' })
 const profileImageFailed = ref(false)
 const sidebarImageFailed = ref(false)
@@ -3678,7 +3741,12 @@ const fetchStats = async () => {
     }
     const data = await response.json()
     if (data.stats) {
-      statsData.value = data.stats
+      statsData.value = {
+        ...data.stats,
+        verifiedCount: data.verifiedCount || 0,
+        unverifiedCount: data.unverifiedCount || 0,
+        unreadableCount: data.unreadableCount || 0
+      }
       if (data.pendingCount !== undefined) {
         pendingCount.value = data.pendingCount
       }
@@ -3690,6 +3758,44 @@ const fetchStats = async () => {
     }
   } finally {
     statsLoading.value = false
+  }
+}
+
+const toggleRfidList = async (type) => {
+  if (showRfidList.value && rfidListType.value === type) {
+    showRfidList.value = false
+    return
+  }
+  
+  rfidListType.value = type
+  showRfidList.value = true
+  rfidListLoading.value = true
+  rfidListUsers.value = []
+  
+  try {
+    const response = await fetch('https://ssaam-api.vercel.app/apis/students?limit=1000', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer SSAAMStudents`
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      const allStudents = result.data || result
+      
+      if (type === 'verified') {
+        rfidListUsers.value = allStudents.filter(s => s.rfid_status === 'verified')
+      } else if (type === 'unverified') {
+        rfidListUsers.value = allStudents.filter(s => s.rfid_status === 'unverified' || !s.rfid_status || s.rfid_status === '')
+      } else {
+        rfidListUsers.value = allStudents.filter(s => s.rfid_status && s.rfid_status !== '' && s.rfid_status !== 'verified' && s.rfid_status !== 'unverified')
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch RFID list:', error)
+  } finally {
+    rfidListLoading.value = false
   }
 }
 
@@ -3838,20 +3944,15 @@ const totalStudents = computed(() => {
 })
 
 const verifiedCount = computed(() => {
-  if (statsData.value?.verifiedCount !== undefined) {
-    return statsData.value.verifiedCount
-  }
-  return statsData.value?.verified_count || 0
+  return statsData.value?.verifiedCount ?? statsData.value?.verified_count ?? 0
 })
 
 const unverifiedCount = computed(() => {
-  if (statsData.value?.unverifiedCount !== undefined) {
-    return statsData.value.unverifiedCount
-  }
-  if (statsData.value?.unverified_count !== undefined) {
-    return statsData.value.unverified_count
-  }
-  return totalStudents.value - verifiedCount.value
+  return statsData.value?.unverifiedCount ?? statsData.value?.unverified_count ?? 0
+})
+
+const unreadableCount = computed(() => {
+  return statsData.value?.unreadableCount ?? 0
 })
 
 const filteredUsers = computed(() => {

@@ -1579,6 +1579,10 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
 
         const allStudents = await Student.find({ status: 'approved' });
 
+        let verifiedCount = 0;
+        let unverifiedCount = 0;
+        let unreadableCount = 0;
+
         allStudents.forEach(student => {
             const rawProgram = (student.program || '').trim().toUpperCase();
             const rawYearLevel = (student.year_level || '').trim().toUpperCase();
@@ -1591,6 +1595,17 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
                 stats[program][yearLevel]++;
                 stats[program].total++;
             }
+
+            const rfidStatus = student.rfid_status;
+            if (rfidStatus === 'verified') {
+                verifiedCount++;
+            } else if (rfidStatus === 'unverified') {
+                unverifiedCount++;
+            } else if (rfidStatus && rfidStatus !== '' && rfidStatus !== null && rfidStatus !== undefined) {
+                unreadableCount++;
+            } else {
+                unverifiedCount++;
+            }
         });
 
         const pendingCount = await Student.countDocuments({ status: 'pending' });
@@ -1598,7 +1613,10 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
         res.json({
             stats,
             totalStudents: allStudents.length,
-            pendingCount
+            pendingCount,
+            verifiedCount,
+            unverifiedCount,
+            unreadableCount
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
