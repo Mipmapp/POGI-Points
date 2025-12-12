@@ -1253,10 +1253,27 @@
                           <span class="font-bold text-yellow-900 text-xs md:text-base">Media and Publication</span>
                           <span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full font-medium bg-amber-200 text-amber-800">Organization</span>
                         </div>
-                        <div class="text-[10px] md:text-xs text-gray-600 mt-0.5">
-                          <span>posted by </span>
+                        <div class="flex items-center gap-1 text-[10px] md:text-xs text-gray-600 mt-0.5">
+                          <span>posted by</span>
+                          <div class="w-4 h-4 md:w-5 md:h-5 rounded-full overflow-hidden flex-shrink-0" :style="getPosterPhotoFallbackStyle(notif)">
+                            <img 
+                              v-if="notif.poster_photo && !posterImageFailed[notif._id]" 
+                              :src="notif.poster_photo" 
+                              :alt="notif.posted_by_name" 
+                              class="w-full h-full object-cover"
+                              @error="handlePosterImageError(notif._id, notif.poster_photo)"
+                              @load="posterImageFailed[notif._id] = false"
+                            />
+                            <img 
+                              v-else 
+                              src="/user.svg" 
+                              alt="User" 
+                              class="w-2.5 h-2.5 md:w-3 md:h-3 m-0.5 md:m-1" 
+                              style="filter: brightness(0) invert(1);"
+                            />
+                          </div>
                           <span class="font-semibold text-gray-800">{{ notif.posted_by_name || 'Unknown' }}</span>
-                          <span class="mx-1">·</span>
+                          <span class="mx-0.5">·</span>
                           <span class="text-[10px] md:text-xs px-1 md:px-1.5 py-0.5 rounded-full font-medium bg-yellow-200 text-yellow-800">Medpub</span>
                         </div>
                       </div>
