@@ -361,8 +361,11 @@
                 
                 <!-- Status -->
                 <div class="flex-shrink-0">
-                  <span :class="['px-2 py-1 rounded-full text-xs font-medium', (log.check_out_at || log.check_out_time) ? 'bg-green-500 bg-opacity-30 text-green-300' : 'bg-yellow-500 bg-opacity-30 text-yellow-300']">
-                    {{ (log.check_out_at || log.check_out_time) ? 'Present' : 'In' }}
+                  <span :class="['px-2 py-1 rounded-full text-xs font-medium', 
+                    log.is_late ? 'bg-orange-500 bg-opacity-30 text-orange-300' : 
+                    (log.check_out_at || log.check_out_time) ? 'bg-green-500 bg-opacity-30 text-green-300' : 
+                    'bg-yellow-500 bg-opacity-30 text-yellow-300']">
+                    {{ log.is_late ? ((log.check_out_at || log.check_out_time) ? 'Late' : 'Late (In)') : ((log.check_out_at || log.check_out_time) ? 'Present' : 'In') }}
                   </span>
                 </div>
               </div>
@@ -1207,8 +1210,8 @@
                           <td class="px-4 py-2">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString() : '-' }}</td>
                           <td class="px-4 py-2">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</td>
                           <td class="px-4 py-2">
-                            <span :class="['px-2 py-1 rounded-full text-xs font-medium', (log.check_out_at || log.check_out_time) ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800']">
-                              {{ (log.check_out_at || log.check_out_time) ? 'Present' : 'Incomplete' }}
+                            <span :class="['px-2 py-1 rounded-full text-xs font-medium', getAttendanceLogStatusClass(log)]">
+                              {{ getAttendanceLogStatusLabel(log) }}
                             </span>
                           </td>
                         </tr>
@@ -5939,6 +5942,7 @@ const getAttendanceStatus = (eventId) => {
 const getStatusBadgeClass = (status) => {
   switch (status) {
     case 'present': return 'bg-green-100 text-green-800'
+    case 'late': return 'bg-orange-100 text-orange-800'
     case 'incomplete': return 'bg-yellow-100 text-yellow-800'
     case 'absent': return 'bg-red-100 text-red-800'
     case 'active': return 'bg-blue-100 text-blue-800'
@@ -5946,6 +5950,34 @@ const getStatusBadgeClass = (status) => {
     case 'closed': return 'bg-red-100 text-red-800'
     default: return 'bg-gray-100 text-gray-800'
   }
+}
+
+const getAttendanceLogStatusLabel = (log) => {
+  const hasCheckIn = log.check_in_at || log.check_in_time
+  const hasCheckOut = log.check_out_at || log.check_out_time
+  const isLate = log.is_late
+  
+  if (hasCheckIn && hasCheckOut) {
+    return isLate ? 'Late' : 'Present'
+  }
+  if (hasCheckIn && !hasCheckOut) {
+    return isLate ? 'Late (Incomplete)' : 'Incomplete'
+  }
+  return 'Absent'
+}
+
+const getAttendanceLogStatusClass = (log) => {
+  const hasCheckIn = log.check_in_at || log.check_in_time
+  const hasCheckOut = log.check_out_at || log.check_out_time
+  const isLate = log.is_late
+  
+  if (hasCheckIn && hasCheckOut) {
+    return isLate ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
+  }
+  if (hasCheckIn && !hasCheckOut) {
+    return isLate ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'
+  }
+  return 'bg-red-100 text-red-800'
 }
 
 const getRecordStatusLabel = (record) => {

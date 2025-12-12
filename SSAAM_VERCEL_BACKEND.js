@@ -886,6 +886,7 @@ const attendanceLogSchema = new mongoose.Schema({
     year_level: { type: String },
     check_in_at: { type: Date, default: null },
     check_out_at: { type: Date, default: null },
+    is_late: { type: Boolean, default: false },
     source: { type: String, enum: ['rfid', 'manual'], default: 'rfid' },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
@@ -895,9 +896,11 @@ attendanceLogSchema.index({ event_id: 1, student_id: 1 }, { unique: true });
 attendanceLogSchema.index({ event_id: 1, rfid_code: 1 });
 attendanceLogSchema.index({ event_id: 1, check_in_at: -1 });
 
-// Virtual for attendance status
+// Virtual for attendance status (present, late, incomplete, absent)
 attendanceLogSchema.virtual('attendance_status').get(function() {
-    if (this.check_in_at && this.check_out_at) return 'present';
+    if (this.check_in_at && this.check_out_at) {
+        return this.is_late ? 'late' : 'present';
+    }
     if (this.check_in_at && !this.check_out_at) return 'incomplete';
     return 'absent';
 });
@@ -3714,7 +3717,8 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
                 $group: {
                     _id: null,
                     total: { $sum: 1 },
-                    present: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }] }, 1, 0] } },
+                    present: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", false] }] }, 1, 0] } },
+                    late: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", true] }] }, 1, 0] } },
                     incomplete: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $eq: ["$check_out_at", null] }] }, 1, 0] } }
                 }
             }
@@ -3722,7 +3726,7 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
 
         res.json({
             data: logs,
-            stats: stats[0] || { total: 0, present: 0, incomplete: 0 },
+            stats: stats[0] || { total: 0, present: 0, late: 0, incomplete: 0 },
             pagination: {
                 currentPage: parseInt(page),
                 limit: parseInt(limit),
@@ -3854,6 +3858,38 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
                     locked: 'check_in'
                 });
             }
+            
+            // Determine if student is late based on event start_time (Philippine timezone UTC+8)
+            let isLate = false;
+            if (event.start_time && event.event_date) {
+                const [startHour, startMinute] = event.start_time.split(':').map(Number);
+                
+                // Parse event date (stored as UTC)
+                const eventDate = new Date(event.event_date);
+                
+                // The start_time is in Philippine time (UTC+8)
+                // We need to convert it to UTC for comparison with the server's 'now' (which is in UTC)
+                // If event starts at 09:00 Philippine time, that's 01:00 UTC (subtract 8 hours)
+                
+                // Create event start in UTC by:
+                // 1. Using the event date's UTC components
+                // 2. Setting the start time hours/minutes
+                // 3. Subtracting 8 hours to convert from Philippine to UTC
+                const eventStartUTC = new Date(Date.UTC(
+                    eventDate.getUTCFullYear(),
+                    eventDate.getUTCMonth(),
+                    eventDate.getUTCDate(),
+                    startHour - 8, // Convert from Philippine time (UTC+8) to UTC
+                    startMinute,
+                    0,
+                    0
+                ));
+                
+                // Compare both times in UTC
+                // Student is late if their check-in time (now, in UTC) is after the event start time (in UTC)
+                isLate = now > eventStartUTC;
+            }
+            
             log = new AttendanceLog({
                 event_id: req.params.id,
                 student_id: student._id,
@@ -3863,6 +3899,7 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
                 program: student.program,
                 year_level: student.year_level,
                 check_in_at: now,
+                is_late: isLate,
                 source,
                 input_method: isManualStudentId ? 'manual_student_id' : 'rfid'
             });
@@ -3921,8 +3958,9 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
         await log.save();
 
         res.json({
-            message: action === 'check_in' ? 'Check-in successful' : 'Check-out successful',
+            message: action === 'check_in' ? (log.is_late ? 'Check-in successful (Late)' : 'Check-in successful') : 'Check-out successful',
             action,
+            is_late: log.is_late || false,
             log: log.toJSON(),
             student_name: log.student_name,
             student_photo: student.photo
