@@ -2113,6 +2113,46 @@
             </div>
           </div>
 
+          <!-- Active Events Section for Student Dashboard -->
+          <div v-if="activeNonEndedEvents.length > 0" class="mt-8">
+            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300 flex items-center gap-2">
+              <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+              Active Events
+            </h3>
+            <div class="space-y-4">
+              <div v-for="event in activeNonEndedEvents" :key="event._id || event.event_id" class="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-sm border border-purple-100 overflow-hidden">
+                <div class="px-4 pt-4 pb-2">
+                  <div class="flex flex-wrap items-center gap-2 mb-3">
+                    <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getStatusBadgeClass(getAttendanceStatus(event._id || event.event_id))]">
+                      {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : 'Pending Check-in' }}
+                    </span>
+                    <span v-if="getEventTimeRemaining(event._id || event.event_id)" class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
+                      {{ getEventTimeRemaining(event._id || event.event_id) }}
+                    </span>
+                  </div>
+                  <h3 class="font-bold text-base md:text-lg text-purple-900 leading-tight mb-2">{{ event.title }}</h3>
+                  <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3">{{ event.description }}</p>
+                </div>
+                <div class="bg-white bg-opacity-60 px-4 py-3 border-t border-purple-100">
+                  <div class="flex flex-col gap-2 text-xs text-gray-600">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                      <span class="font-medium">{{ formatEventDate(event.date || event.event_date) }}</span>
+                    </div>
+                    <div v-if="event.startTime || event.start_time" class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      <span class="font-medium">{{ formatEventTime(event.startTime || event.start_time) }} - {{ formatEventTime(event.endTime || event.end_time) }}</span>
+                    </div>
+                    <div v-if="event.location" class="flex items-center gap-2">
+                      <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                      <span class="font-medium">{{ event.location }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Upcoming Events Section for Student Dashboard -->
           <div v-if="upcomingEvents.length > 0" class="mt-8">
             <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300 flex items-center gap-2">
