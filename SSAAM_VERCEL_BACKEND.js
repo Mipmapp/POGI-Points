@@ -1678,6 +1678,7 @@ app.get('/apis/students/search', studentAuth, async (req, res) => {
         const search = req.query.search || '';
         const program = req.query.program || '';
         const yearLevel = req.query.yearLevel || '';
+        const rfidStatus = req.query.rfid_status || '';
 
         const filter = { status: 'approved' };
 
@@ -1698,6 +1699,30 @@ app.get('/apis/students/search', studentAuth, async (req, res) => {
 
         if (yearLevel) {
             filter.year_level = yearLevel;
+        }
+
+        if (rfidStatus) {
+            if (rfidStatus === 'verified') {
+                filter.rfid_status = 'verified';
+            } else if (rfidStatus === 'unverified') {
+                filter.$and = filter.$and || [];
+                filter.$and.push({
+                    $or: [
+                        { rfid_status: 'unverified' },
+                        { rfid_status: { $exists: false } },
+                        { rfid_status: null },
+                        { rfid_status: '' }
+                    ]
+                });
+            } else if (rfidStatus === 'Unreadable') {
+                filter.$and = filter.$and || [];
+                filter.$and.push({
+                    $or: [
+                        { rfid_status: 'Unreadable' },
+                        { rfid_code: { $regex: '^UNREADABLE', $options: 'i' } }
+                    ]
+                });
+            }
         }
 
         // Select only necessary fields to reduce payload size
