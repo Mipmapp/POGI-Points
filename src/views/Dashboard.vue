@@ -1267,8 +1267,6 @@
                             />
                           </div>
                           <span class="font-semibold text-gray-800">{{ notif.posted_by_name || 'Unknown' }}</span>
-                          <span class="mx-0.5">·</span>
-                          <span class="text-[10px] md:text-xs px-1 md:px-1.5 py-0.5 rounded-full font-medium bg-yellow-200 text-yellow-800">Medpub</span>
                         </div>
                       </div>
                       <div class="flex items-center gap-1 md:gap-2 text-[10px] md:text-xs text-gray-500 mt-0.5 md:mt-1">
