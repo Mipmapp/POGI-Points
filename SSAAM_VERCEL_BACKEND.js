@@ -783,11 +783,12 @@ const settingsSchema = new mongoose.Schema({
     },
     rfidScanner: {
         checkInEnabled: { type: Boolean, default: true },
-        checkOutEnabled: { type: Boolean, default: true },
+        checkOutEnabled: { type: Boolean, default: false },
         autoDisableCheckIn: { type: Boolean, default: false },
         autoDisableCheckOut: { type: Boolean, default: false },
         checkInDisableAt: { type: Date, default: null },
-        checkOutDisableAt: { type: Date, default: null }
+        checkOutDisableAt: { type: Date, default: null },
+        lateThresholdMinutes: { type: Number, default: 30 }
     }
 });
 
@@ -2805,11 +2806,12 @@ app.put('/apis/settings', auth, adminActionAuth, async (req, res) => {
                 userLogin: userLogin || { login: true, message: "" },
                 rfidScanner: rfidScanner || { 
                     checkInEnabled: true, 
-                    checkOutEnabled: true,
+                    checkOutEnabled: false,
                     autoDisableCheckIn: false,
                     autoDisableCheckOut: false,
                     checkInDisableAt: null,
-                    checkOutDisableAt: null
+                    checkOutDisableAt: null,
+                    lateThresholdMinutes: 30
                 }
             });
         } else {
@@ -4002,7 +4004,12 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
             return currentHour > afternoonHour || (currentHour === afternoonHour && currentMinute >= afternoonMinute);
         };
         
-        // Helper function to calculate if late
+        // Helper function to calculate if late (uses configurable late threshold)
+        // lateThresholdMinutes: minutes after start time before marking as late (default 30)
+        // Uses nullish coalescing to allow 0 as a valid value (no grace period)
+        const lateThreshold = rfidSettings.lateThresholdMinutes !== undefined && rfidSettings.lateThresholdMinutes !== null 
+            ? rfidSettings.lateThresholdMinutes 
+            : 30;
         const calculateIsLate = (startTime) => {
             if (!startTime || !event.event_date) return false;
             const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -4016,7 +4023,9 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
                 0,
                 0
             ));
-            return now > eventStartUTC;
+            // Add late threshold (grace period) to the start time
+            const lateThresholdUTC = new Date(eventStartUTC.getTime() + (lateThreshold * 60 * 1000));
+            return now > lateThresholdUTC;
         };
 
         // Dual session mode (4-in-a-day: morning check-in/out, afternoon check-in/out)

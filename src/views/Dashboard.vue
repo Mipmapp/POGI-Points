@@ -1000,13 +1000,48 @@
               <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 mb-4">
                 <h3 class="font-semibold text-purple-900 mb-4 flex items-center gap-2">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                  Check-In/Out Controls
+                  Attendance Mode (Select One)
                 </h3>
+                
+                <!-- Active Mode Indicator -->
+                <div class="mb-4 p-3 rounded-lg" :class="[
+                  appSettings.rfidScanner.checkInEnabled ? 'bg-green-100 border border-green-300' :
+                  appSettings.rfidScanner.checkOutEnabled ? 'bg-blue-100 border border-blue-300' :
+                  'bg-gray-100 border border-gray-300'
+                ]">
+                  <div class="flex items-center gap-2">
+                    <svg v-if="appSettings.rfidScanner.checkInEnabled" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                    <svg v-else-if="appSettings.rfidScanner.checkOutEnabled" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <svg v-else class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
+                    <span class="font-semibold" :class="[
+                      appSettings.rfidScanner.checkInEnabled ? 'text-green-700' :
+                      appSettings.rfidScanner.checkOutEnabled ? 'text-blue-700' :
+                      'text-gray-600'
+                    ]">
+                      {{ appSettings.rfidScanner.checkInEnabled ? 'CHECK-IN MODE ACTIVE' : 
+                         appSettings.rfidScanner.checkOutEnabled ? 'CHECK-OUT MODE ACTIVE' : 
+                         'NO MODE SELECTED - SCANNING DISABLED' }}
+                    </span>
+                  </div>
+                  <p class="text-xs mt-1" :class="[
+                    appSettings.rfidScanner.checkInEnabled ? 'text-green-600' :
+                    appSettings.rfidScanner.checkOutEnabled ? 'text-blue-600' :
+                    'text-gray-500'
+                  ]">
+                    {{ appSettings.rfidScanner.checkInEnabled ? 'Students will be marked as checked in when scanning. Late threshold applies.' : 
+                       appSettings.rfidScanner.checkOutEnabled ? 'Students will be marked as checked out when scanning.' : 
+                       'Select a mode below to enable RFID scanning.' }}
+                  </p>
+                </div>
+                
                 <div class="grid md:grid-cols-2 gap-6">
                   <!-- Check-In Control -->
-                  <div class="bg-white rounded-lg p-4 shadow-sm">
+                  <div :class="['rounded-lg p-4 shadow-sm transition-all', appSettings.rfidScanner.checkInEnabled ? 'bg-green-50 ring-2 ring-green-400' : 'bg-white']">
                     <div class="flex items-center justify-between mb-3">
-                      <span class="font-medium text-gray-700">Check-In</span>
+                      <span class="font-medium text-gray-700 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                        Check-In
+                      </span>
                       <button 
                         @click="toggleCheckIn" 
                         :disabled="rfidScannerSaving"
@@ -1016,12 +1051,12 @@
                       </button>
                     </div>
                     <span :class="['text-sm font-medium px-3 py-1 rounded-full', appSettings.rfidScanner.checkInEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
-                      {{ appSettings.rfidScanner.checkInEnabled ? 'Enabled' : 'Disabled' }}
+                      {{ appSettings.rfidScanner.checkInEnabled ? 'Active' : 'Inactive' }}
                     </span>
                     <!-- Timer controls -->
-                    <div v-if="appSettings.rfidScanner.checkInEnabled" class="mt-3 pt-3 border-t border-gray-100">
+                    <div v-if="appSettings.rfidScanner.checkInEnabled" class="mt-3 pt-3 border-t border-green-200">
                       <p class="text-xs text-gray-500 mb-2">Auto-disable after:</p>
-                      <div class="flex items-center gap-2">
+                      <div class="flex items-center gap-2 flex-wrap">
                         <input 
                           v-model.number="checkInTimerMinutes" 
                           type="number" 
@@ -1045,24 +1080,27 @@
                   </div>
                   
                   <!-- Check-Out Control -->
-                  <div class="bg-white rounded-lg p-4 shadow-sm">
+                  <div :class="['rounded-lg p-4 shadow-sm transition-all', appSettings.rfidScanner.checkOutEnabled ? 'bg-blue-50 ring-2 ring-blue-400' : 'bg-white']">
                     <div class="flex items-center justify-between mb-3">
-                      <span class="font-medium text-gray-700">Check-Out</span>
+                      <span class="font-medium text-gray-700 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                        Check-Out
+                      </span>
                       <button 
                         @click="toggleCheckOut" 
                         :disabled="rfidScannerSaving"
-                        :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', appSettings.rfidScanner.checkOutEnabled ? 'bg-green-500' : 'bg-gray-300']"
+                        :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', appSettings.rfidScanner.checkOutEnabled ? 'bg-blue-500' : 'bg-gray-300']"
                       >
                         <span :class="['inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300', appSettings.rfidScanner.checkOutEnabled ? 'translate-x-7' : 'translate-x-1']"></span>
                       </button>
                     </div>
-                    <span :class="['text-sm font-medium px-3 py-1 rounded-full', appSettings.rfidScanner.checkOutEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
-                      {{ appSettings.rfidScanner.checkOutEnabled ? 'Enabled' : 'Disabled' }}
+                    <span :class="['text-sm font-medium px-3 py-1 rounded-full', appSettings.rfidScanner.checkOutEnabled ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700']">
+                      {{ appSettings.rfidScanner.checkOutEnabled ? 'Active' : 'Inactive' }}
                     </span>
                     <!-- Timer controls -->
-                    <div v-if="appSettings.rfidScanner.checkOutEnabled" class="mt-3 pt-3 border-t border-gray-100">
+                    <div v-if="appSettings.rfidScanner.checkOutEnabled" class="mt-3 pt-3 border-t border-blue-200">
                       <p class="text-xs text-gray-500 mb-2">Auto-disable after:</p>
-                      <div class="flex items-center gap-2">
+                      <div class="flex items-center gap-2 flex-wrap">
                         <input 
                           v-model.number="checkOutTimerMinutes" 
                           type="number" 
@@ -1085,7 +1123,36 @@
                     </div>
                   </div>
                 </div>
-                <p class="text-xs text-gray-500 mt-3 text-center">These settings control whether students can check-in or check-out using the RFID scanner globally for all events.</p>
+                
+                <!-- Late Threshold Setting -->
+                <div v-if="appSettings.rfidScanner.checkInEnabled" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="font-medium text-yellow-800">Late Threshold</span>
+                  </div>
+                  <p class="text-xs text-yellow-700 mb-2">Students checking in after this time from the event start will be marked as late.</p>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-sm text-yellow-800">Mark as late after:</span>
+                    <input 
+                      v-model.number="lateThresholdMinutes" 
+                      type="number" 
+                      min="0" 
+                      max="120"
+                      class="w-20 px-2 py-1 text-sm border border-yellow-300 rounded focus:ring-1 focus:ring-yellow-500 outline-none bg-white"
+                    />
+                    <span class="text-sm text-yellow-800">minutes after event start time</span>
+                    <button 
+                      @click="saveLateThreshold" 
+                      :disabled="rfidScannerSaving"
+                      class="px-3 py-1 text-xs bg-yellow-200 text-yellow-800 rounded hover:bg-yellow-300 transition"
+                    >
+                      Save
+                    </button>
+                  </div>
+                  <p class="text-xs text-yellow-600 mt-2">Example: If event starts at 7:00 AM and threshold is 30 minutes, students checking in after 7:30 AM will be marked as late.</p>
+                </div>
+                
+                <p class="text-xs text-gray-500 mt-3 text-center">Only one mode can be active at a time. Enable check-in when attendance starts, then switch to check-out mode for dismissal.</p>
               </div>
 
               <div v-if="!selectedEvent" class="text-center py-8">
@@ -2920,16 +2987,18 @@ const appSettings = ref({
   userLogin: { login: true, message: '' },
   rfidScanner: { 
     checkInEnabled: true, 
-    checkOutEnabled: true,
+    checkOutEnabled: false,
     autoDisableCheckIn: false,
     autoDisableCheckOut: false,
     checkInDisableAt: null,
-    checkOutDisableAt: null
+    checkOutDisableAt: null,
+    lateThresholdMinutes: 30
   }
 })
 const rfidScannerSaving = ref(false)
 const checkInTimerMinutes = ref(30)
 const checkOutTimerMinutes = ref(30)
+const lateThresholdMinutes = ref(30)
 
 // Clear sessions management
 const showClearSessionsConfirm = ref(false)
@@ -4243,12 +4312,17 @@ const fetchSettings = async () => {
         userLogin: data.userLogin || { login: true, message: '' },
         rfidScanner: data.rfidScanner || { 
           checkInEnabled: true, 
-          checkOutEnabled: true,
+          checkOutEnabled: false,
           autoDisableCheckIn: false,
           autoDisableCheckOut: false,
           checkInDisableAt: null,
-          checkOutDisableAt: null
+          checkOutDisableAt: null,
+          lateThresholdMinutes: 30
         }
+      }
+      // Sync lateThresholdMinutes ref with settings
+      if (appSettings.value.rfidScanner.lateThresholdMinutes) {
+        lateThresholdMinutes.value = appSettings.value.rfidScanner.lateThresholdMinutes
       }
     }
   } catch (error) {
@@ -4349,9 +4423,18 @@ const saveRfidScannerSettings = async () => {
 }
 
 const toggleCheckIn = async () => {
-  appSettings.value.rfidScanner.checkInEnabled = !appSettings.value.rfidScanner.checkInEnabled
+  const newValue = !appSettings.value.rfidScanner.checkInEnabled
+  appSettings.value.rfidScanner.checkInEnabled = newValue
+  
+  // Mutually exclusive: disable check-out when enabling check-in
+  if (newValue) {
+    appSettings.value.rfidScanner.checkOutEnabled = false
+    appSettings.value.rfidScanner.autoDisableCheckOut = false
+    appSettings.value.rfidScanner.checkOutDisableAt = null
+  }
+  
   // Clear timer when disabling
-  if (!appSettings.value.rfidScanner.checkInEnabled) {
+  if (!newValue) {
     appSettings.value.rfidScanner.autoDisableCheckIn = false
     appSettings.value.rfidScanner.checkInDisableAt = null
   }
@@ -4359,9 +4442,18 @@ const toggleCheckIn = async () => {
 }
 
 const toggleCheckOut = async () => {
-  appSettings.value.rfidScanner.checkOutEnabled = !appSettings.value.rfidScanner.checkOutEnabled
+  const newValue = !appSettings.value.rfidScanner.checkOutEnabled
+  appSettings.value.rfidScanner.checkOutEnabled = newValue
+  
+  // Mutually exclusive: disable check-in when enabling check-out
+  if (newValue) {
+    appSettings.value.rfidScanner.checkInEnabled = false
+    appSettings.value.rfidScanner.autoDisableCheckIn = false
+    appSettings.value.rfidScanner.checkInDisableAt = null
+  }
+  
   // Clear timer when disabling
-  if (!appSettings.value.rfidScanner.checkOutEnabled) {
+  if (!newValue) {
     appSettings.value.rfidScanner.autoDisableCheckOut = false
     appSettings.value.rfidScanner.checkOutDisableAt = null
   }
@@ -4390,6 +4482,19 @@ const setCheckOutTimer = async () => {
   appSettings.value.rfidScanner.checkOutDisableAt = disableAt.toISOString()
   await saveRfidScannerSettings()
   showNotification(`Check-out will be disabled at ${disableAt.toLocaleTimeString()}`, 'info')
+}
+
+const saveLateThreshold = async () => {
+  if (lateThresholdMinutes.value < 0 || lateThresholdMinutes.value > 120) {
+    showNotification('Late threshold must be between 0 and 120 minutes', 'error')
+    return
+  }
+  appSettings.value.rfidScanner.lateThresholdMinutes = lateThresholdMinutes.value
+  await saveRfidScannerSettings()
+  const message = lateThresholdMinutes.value === 0 
+    ? 'Late threshold disabled - anyone after exact start time will be marked late'
+    : `Late threshold set to ${lateThresholdMinutes.value} minutes after event start`
+  showNotification(message, 'success')
 }
 
 // Clear all session tokens (except current admin session)
