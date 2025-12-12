@@ -1312,13 +1312,13 @@
             </div>
             <div v-else class="space-y-6">
               <!-- Active Events Section - Social Media Style -->
-              <div v-if="attendanceEvents.length > 0">
+              <div v-if="activeNonEndedEvents.length > 0">
                 <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2 text-sm">
                   <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                   Active Events
                 </h3>
                 <div class="space-y-4">
-                  <div v-for="event in attendanceEvents" :key="event._id || event.event_id" class="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-sm border border-purple-100 overflow-hidden">
+                  <div v-for="event in activeNonEndedEvents" :key="event._id || event.event_id" class="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-sm border border-purple-100 overflow-hidden">
                     <!-- Header with status badges -->
                     <div class="px-4 pt-4 pb-2">
                       <div class="flex flex-wrap items-center gap-2 mb-3">
@@ -3223,6 +3223,16 @@ const attendanceTab = ref('events')
 const rfidScannerVerified = ref(false)
 const rfidCopied = ref(false)
 const scanMode = ref('rfid') // 'rfid' or 'student_id'
+
+// Computed property to filter out ended events for student view
+const activeNonEndedEvents = computed(() => {
+  return attendanceEvents.value.filter(event => {
+    const eventId = event._id || event.event_id
+    const timeRemaining = eventTimeRemaining.value[eventId]
+    // Filter out events that have ended
+    return timeRemaining !== 'Ended'
+  })
+})
 
 const copyRfidToClipboard = async (rfidCode) => {
   if (!rfidCode) return
