@@ -5899,19 +5899,28 @@ const fetchUserAttendanceLogs = async () => {
   
   userAttendanceLogsLoading.value = true
   try {
-    const studentId = currentUser.value.studentId || currentUser.value.student_id
     const token = localStorage.getItem('authToken')
     
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/student/${studentId}?limit=20`, {
+    const response = await fetch('https://ssaam-api.vercel.app/apis/attendance/my-records', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${token || 'SSAAMStudents'}`
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
       }
     })
     
     if (response.ok) {
       const result = await response.json()
-      userAttendanceLogs.value = result.data || result || []
+      const records = result.data || []
+      userAttendanceLogs.value = records.map(r => ({
+        id: r.event?._id || r._id,
+        event_name: r.event?.title || 'Event',
+        eventName: r.event?.title || 'Event',
+        event_date: r.event?.event_date,
+        check_in_at: r.attendance?.check_in_at,
+        check_out_at: r.attendance?.check_out_at,
+        status: r.attendance?.status || 'absent'
+      }))
     }
   } catch (error) {
     console.error('Failed to fetch user attendance logs:', error)
