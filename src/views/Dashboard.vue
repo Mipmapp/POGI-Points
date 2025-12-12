@@ -2679,9 +2679,9 @@
             <span class="text-sm font-medium text-blue-800">Current Status:</span>
             <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', 
               selectedEvent.status === 'active' ? 'bg-green-100 text-green-800' : 
-              selectedEvent.status === 'upcoming' ? 'bg-yellow-100 text-yellow-800' : 
+              selectedEvent.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 
               'bg-gray-100 text-gray-800']">
-              {{ selectedEvent.status === 'active' ? 'Active' : selectedEvent.status === 'upcoming' ? 'Upcoming' : 'Completed' }}
+              {{ selectedEvent.status === 'active' ? 'Active' : selectedEvent.status === 'draft' ? 'Upcoming' : 'Closed' }}
             </span>
           </div>
           <p class="text-xs text-blue-700">Status is updated automatically based on the event date and time.</p>
@@ -3313,7 +3313,7 @@ const calculateEndTime = (startTimeStr) => {
 }
 
 const calculateEventStatus = (eventDate, startTime, endTime) => {
-  if (!eventDate || !startTime || !endTime) return 'upcoming'
+  if (!eventDate || !startTime || !endTime) return 'draft'
   
   const now = new Date()
   const [startH, startM] = startTime.split(':').map(Number)
@@ -3326,11 +3326,11 @@ const calculateEventStatus = (eventDate, startTime, endTime) => {
   eventEnd.setHours(endH, endM, 0, 0)
   
   if (now < eventStart) {
-    return 'upcoming'
+    return 'draft'
   } else if (now >= eventStart && now <= eventEnd) {
     return 'active'
   } else {
-    return 'completed'
+    return 'closed'
   }
 }
 
