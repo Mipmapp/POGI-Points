@@ -21,7 +21,7 @@ The application is a Vue 3 SPA utilizing the Composition API and Vite 5. Styling
 - Custom scrollbar styling (purple/pink gradient).
 - Notifications display links with a purple-to-pink gradient.
 - Enhanced custom calendar and time pickers with SSAAM aesthetic.
-- Fullscreen RFID scanner mode with purple gradient background and user photo display.
+- Fullscreen RFID scanner mode with purple gradient background, two-column layout (scanner left, results right), and student photo display in Recent Logs with smart photo caching across multiple student identifiers.
 
 **Technical Implementations & Feature Specifications:**
 - **Authentication:** Dual-role (Students by numeric ID, Masters/Teachers by letter-starting ID) with API-based Bearer token. Encrypted timestamp authentication with XOR+Base64 encoding for all protected API calls. Includes anti-bot protection (User-Agent validation, bot pattern detection, rate limiting) for registration.

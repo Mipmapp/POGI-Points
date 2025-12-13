@@ -3359,6 +3359,34 @@ const getPosterPhotoFallbackStyle = (notif) => {
 const attendanceEvents = ref([])
 const upcomingEventsData = ref([])
 const attendanceLogs = ref([])
+const studentPhotoCache = ref({})
+
+// Helper to derive a stable student key from log or student object
+const deriveStudentKey = (obj) => {
+  if (!obj) return null
+  return obj.student_id || obj.student?.student_id || obj.student_ref || obj.student_id_hash || obj._id || null
+}
+
+// Helper to get all possible student keys for caching under multiple identifiers
+const getAllStudentKeys = (obj) => {
+  if (!obj) return []
+  const keys = []
+  if (obj.student_id) keys.push(obj.student_id)
+  if (obj.student?.student_id) keys.push(obj.student.student_id)
+  if (obj.student_ref) keys.push(obj.student_ref)
+  if (obj.student_id_hash) keys.push(obj.student_id_hash)
+  if (obj._id) keys.push(obj._id)
+  return [...new Set(keys)] // Remove duplicates
+}
+
+// Cache a photo under all available student identifiers
+const cacheStudentPhoto = (obj, photo) => {
+  if (!photo) return
+  const keys = getAllStudentKeys(obj)
+  keys.forEach(key => {
+    studentPhotoCache.value[key] = photo
+  })
+}
 const myAttendanceRecords = ref([])
 const attendanceLoading = ref(false)
 const attendanceRefreshInterval = ref(null)
@@ -5830,7 +5858,22 @@ const fetchEventLogs = async (eventId) => {
     
     if (response.ok) {
       const result = await response.json()
-      attendanceLogs.value = result.data || []
+      // Enrich logs with cached photos and backfill cache from logs with photos
+      attendanceLogs.value = (result.data || []).map(log => {
+        const key = deriveStudentKey(log)
+        const cachedPhoto = key ? studentPhotoCache.value[key] : null
+        const existingPhoto = log.student_image || log.student?.photo
+        
+        // Backfill cache if log has a photo we haven't cached yet
+        if (existingPhoto && !cachedPhoto) {
+          cacheStudentPhoto(log, existingPhoto)
+        }
+        
+        return {
+          ...log,
+          student_image: log.student_image || cachedPhoto || log.student?.photo
+        }
+      })
     }
   } catch (error) {
     console.error('Error fetching event logs:', error)
@@ -6141,6 +6184,14 @@ const processRfidScan = async (inputCode) => {
       rfidResult.value = { success: true, ...result }
       const actionLabel = result.action === 'check_in' ? 'Check-in' : result.action === 'check_out' ? 'Check-out' : result.action === 'already_checked_in' ? 'Already checked in' : 'Success'
       showNotification(`${actionLabel}: ${result.student?.full_name || result.student_name || 'Student'}`, 'success')
+      
+      // Cache student photo for Recent Logs display under all available identifiers
+      const studentPhoto = result.student_photo || result.student?.photo
+      if (studentPhoto) {
+        cacheStudentPhoto(result.log, studentPhoto)
+        cacheStudentPhoto(result.student, studentPhoto)
+      }
+      
       fetchEventLogs(selectedEvent.value._id)
     } else {
       rfidResult.value = { success: false, message: result.message }
