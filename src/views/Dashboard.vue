@@ -3590,9 +3590,19 @@ const getLatestAnnouncementsForPopup = () => {
   return notifications.value.slice(0, 10)
 }
 
+const hasRecentAnnouncement = () => {
+  if (!notifications.value || notifications.value.length === 0) return false
+  const now = new Date()
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  const latestDate = new Date(notifications.value[0]?.created_at)
+  return latestDate > oneDayAgo
+}
+
 const checkAndShowAnnouncementPopup = () => {
   const user = currentUser.value
   if (user.isMaster || user.role === 'admin') return
+  
+  if (!hasRecentAnnouncement()) return
   
   const recentAnnouncements = getLatestAnnouncementsForPopup()
   if (recentAnnouncements.length === 0) return
