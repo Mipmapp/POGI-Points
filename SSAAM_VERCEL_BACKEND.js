@@ -4259,7 +4259,14 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
             session_type: event.session_type,
             log: log.toJSON(),
             student_name: log.student_name,
-            student_photo: student.photo
+            student_photo: student.photo,
+            student: {
+                full_name: studentFullName,
+                photo: student.photo,
+                student_id: student.student_id,
+                program: student.program,
+                year_level: student.year_level
+            }
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
