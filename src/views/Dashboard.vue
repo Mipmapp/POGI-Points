@@ -3033,6 +3033,58 @@
         </div>
       </div>
 
+      <!-- Quick Download by Year Level -->
+      <div class="mb-6">
+        <p class="text-sm font-medium text-gray-700 mb-3">Download Excel by Year Level:</p>
+        <div class="flex flex-wrap gap-2">
+          <button 
+            @click="exportToExcelByYear(selectedEvent, '1st Year')" 
+            :disabled="exportingExcelByYear === '1st Year' || getLogCountByYear('1st Year') === 0"
+            class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg v-if="exportingExcelByYear === '1st Year'" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            1st Year ({{ getLogCountByYear('1st Year') }})
+          </button>
+          <button 
+            @click="exportToExcelByYear(selectedEvent, '2nd Year')" 
+            :disabled="exportingExcelByYear === '2nd Year' || getLogCountByYear('2nd Year') === 0"
+            class="px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg v-if="exportingExcelByYear === '2nd Year'" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            2nd Year ({{ getLogCountByYear('2nd Year') }})
+          </button>
+          <button 
+            @click="exportToExcelByYear(selectedEvent, '3rd Year')" 
+            :disabled="exportingExcelByYear === '3rd Year' || getLogCountByYear('3rd Year') === 0"
+            class="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg v-if="exportingExcelByYear === '3rd Year'" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            3rd Year ({{ getLogCountByYear('3rd Year') }})
+          </button>
+          <button 
+            @click="exportToExcelByYear(selectedEvent, '4th Year')" 
+            :disabled="exportingExcelByYear === '4th Year' || getLogCountByYear('4th Year') === 0"
+            class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg v-if="exportingExcelByYear === '4th Year'" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            4th Year ({{ getLogCountByYear('4th Year') }})
+          </button>
+          <button 
+            @click="exportToExcel(selectedEvent)" 
+            :disabled="exportingExcel || attendanceLogs.length === 0"
+            class="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:from-purple-700 hover:to-pink-600 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg v-if="exportingExcel" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            All Years ({{ attendanceLogs.length }})
+          </button>
+        </div>
+      </div>
+
       <!-- Logs Table -->
       <div class="overflow-x-auto">
         <table class="w-full border-collapse">
@@ -3166,6 +3218,119 @@ const statsRefreshInterval = ref(null)
 
 // Excel export state
 const exportingExcel = ref(false)
+const exportingExcelByYear = ref(null)
+
+const getLogCountByYear = (yearLevel) => {
+  return attendanceLogs.value.filter(log => {
+    const logYear = log.student?.year_level || log.year_level || ''
+    return logYear === yearLevel
+  }).length
+}
+
+const exportToExcelByYear = async (event, yearLevel) => {
+  if (!event || exportingExcelByYear.value) return
+  
+  exportingExcelByYear.value = yearLevel
+  
+  try {
+    const logs = attendanceLogs.value.filter(log => {
+      const logYear = log.student?.year_level || log.year_level || ''
+      return logYear === yearLevel
+    })
+    
+    if (logs.length === 0) {
+      showNotification(`No attendance records found for ${yearLevel}`, 'warning')
+      return
+    }
+    
+    logs.sort((a, b) => {
+      const nameA = (a.student?.full_name || a.full_name || `${a.student?.first_name || ''} ${a.student?.last_name || ''}`).toLowerCase()
+      const nameB = (b.student?.full_name || b.full_name || `${b.student?.first_name || ''} ${b.student?.last_name || ''}`).toLowerCase()
+      return nameA.localeCompare(nameB)
+    })
+    
+    const workbook = XLSX.utils.book_new()
+    
+    const worksheetData = logs.map((log, index) => {
+      const checkIn = log.check_in_at || log.check_in_time
+      const checkOut = log.check_out_at || log.check_out_time
+      const morningCheckIn = log.morning_check_in_at
+      const morningCheckOut = log.morning_check_out_at
+      const afternoonCheckIn = log.afternoon_check_in_at
+      const afternoonCheckOut = log.afternoon_check_out_at
+      
+      const studentName = log.student?.full_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim()
+      const studentId = log.student?.student_id || log.student_id || ''
+      const program = log.student?.program || log.program || ''
+      
+      const isDualSession = morningCheckIn || morningCheckOut || afternoonCheckIn || afternoonCheckOut
+      
+      if (isDualSession) {
+        const morningComplete = morningCheckIn && morningCheckOut
+        const afternoonComplete = afternoonCheckIn && afternoonCheckOut
+        let status = 'Absent'
+        if (morningComplete && afternoonComplete) status = 'Present'
+        else if (morningComplete || afternoonComplete) status = 'Partial'
+        else if (morningCheckIn || afternoonCheckIn) status = 'Incomplete'
+        
+        return {
+          '#': index + 1,
+          'Student ID': studentId,
+          'Name': studentName,
+          'Program': program,
+          'Year Level': yearLevel,
+          'AM In': morningCheckIn ? new Date(morningCheckIn).toLocaleString('en-PH') : '-',
+          'AM Out': morningCheckOut ? new Date(morningCheckOut).toLocaleString('en-PH') : '-',
+          'PM In': afternoonCheckIn ? new Date(afternoonCheckIn).toLocaleString('en-PH') : '-',
+          'PM Out': afternoonCheckOut ? new Date(afternoonCheckOut).toLocaleString('en-PH') : '-',
+          'Status': status
+        }
+      } else {
+        let status = 'Absent'
+        if (checkIn && checkOut) status = 'Present'
+        else if (checkIn && !checkOut) status = 'Incomplete'
+        
+        return {
+          '#': index + 1,
+          'Student ID': studentId,
+          'Name': studentName,
+          'Program': program,
+          'Year Level': yearLevel,
+          'Check-In': checkIn ? new Date(checkIn).toLocaleString('en-PH') : '-',
+          'Check-Out': checkOut ? new Date(checkOut).toLocaleString('en-PH') : '-',
+          'Status': status
+        }
+      }
+    })
+    
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData)
+    const isDualSession = worksheetData.length > 0 && worksheetData[0]['AM In'] !== undefined
+    const columnWidths = isDualSession ? [
+      { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
+      { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 12 }
+    ] : [
+      { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
+      { wch: 20 }, { wch: 20 }, { wch: 12 }
+    ]
+    worksheet['!cols'] = columnWidths
+    
+    XLSX.utils.book_append_sheet(workbook, worksheet, yearLevel.replace(' ', '_'))
+    
+    const eventDate = formatEventDate(event.date || event.event_date).replace(/[^a-zA-Z0-9]/g, '_')
+    const eventTitle = (event.title || 'Event').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)
+    const yearLabel = yearLevel.replace(' ', '_')
+    const filename = `Attendance_${eventTitle}_${yearLabel}_${eventDate}.xlsx`
+    
+    XLSX.writeFile(workbook, filename)
+    
+    showNotification(`${yearLevel} attendance exported successfully!`, 'success')
+  } catch (error) {
+    console.error('Error exporting to Excel:', error)
+    showNotification('Failed to export Excel file', 'error')
+  } finally {
+    exportingExcelByYear.value = null
+  }
+}
 
 // Settings management
 const settingsLoading = ref(false)
