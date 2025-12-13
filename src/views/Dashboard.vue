@@ -301,7 +301,7 @@
       <!-- Right Panel - Check-in Result & Recent Logs -->
       <div class="lg:w-1/2 h-1/2 lg:h-full flex flex-col p-4 lg:p-6 overflow-hidden">
         <!-- Prominent Check-in Result Card with Student Profile -->
-        <transition name="fade">
+        <transition name="slide-down">
           <div v-if="rfidResult && rfidResult.success && (rfidResult.student || rfidResult.student_name)" class="mb-4 lg:mb-6">
             <div class="bg-white bg-opacity-15 backdrop-blur-lg rounded-2xl p-6 lg:p-8 border-2 border-green-400 border-opacity-50 shadow-2xl">
               <div class="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
@@ -348,7 +348,7 @@
         </transition>
         
         <!-- Failed Scan Result -->
-        <transition name="fade">
+        <transition name="slide-down">
           <div v-if="rfidResult && !rfidResult.success" class="mb-4 lg:mb-6">
             <div class="bg-red-500 bg-opacity-30 backdrop-blur-lg rounded-2xl p-6 border-2 border-red-400 border-opacity-50">
               <div class="flex items-center justify-center gap-3">
