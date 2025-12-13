@@ -510,7 +510,7 @@
     <div class="hidden md:flex w-64 bg-gradient-to-b from-purple-600 to-pink-400 text-white flex-col order-1 border-r-2 border-white border-opacity-20 h-screen">
       <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex items-center justify-center mb-2">
-          <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-32 h-32 object-contain drop-shadow-xl" />
+          <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-32 h-32 object-contain drop-shadow-xl" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
         </div>
         <h1 class="text-xl font-bold text-center">SSAAM</h1>
       </div>
@@ -3457,6 +3457,30 @@ const logoFlipping = ref(false)
 const logoFlipInterval = ref(null)
 const rfidFocusTimeout = ref(null)
 
+// Sidebar logo flip animation (for admin sidebar)
+const sidebarLogoFlipping = ref(false)
+const sidebarLogoFlipInterval = ref(null)
+
+const startSidebarLogoFlipAnimation = () => {
+  if (sidebarLogoFlipInterval.value) {
+    clearInterval(sidebarLogoFlipInterval.value)
+  }
+  sidebarLogoFlipInterval.value = setInterval(() => {
+    sidebarLogoFlipping.value = true
+    setTimeout(() => {
+      sidebarLogoFlipping.value = false
+    }, 1000)
+  }, 5000)
+}
+
+const stopSidebarLogoFlipAnimation = () => {
+  if (sidebarLogoFlipInterval.value) {
+    clearInterval(sidebarLogoFlipInterval.value)
+    sidebarLogoFlipInterval.value = null
+  }
+  sidebarLogoFlipping.value = false
+}
+
 const startLogoFlipAnimation = () => {
   if (logoFlipInterval.value) {
     clearInterval(logoFlipInterval.value)
@@ -4367,6 +4391,8 @@ onMounted(async () => {
   // Start auto-refresh for stats (admin only)
   if (user.role === 'admin' || user.isMaster) {
     startStatsAutoRefresh()
+    // Start sidebar logo flip animation for admin users
+    startSidebarLogoFlipAnimation()
   }
   
   // Fetch user attendance logs (students only)
@@ -4380,6 +4406,7 @@ onMounted(async () => {
 onUnmounted(() => {
   stopStatsAutoRefresh()
   stopLogoFlipAnimation()
+  stopSidebarLogoFlipAnimation()
 })
 
 // Handle stats refresh button click
