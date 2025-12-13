@@ -235,6 +235,11 @@
           <h1 class="text-xl lg:text-3xl font-bold text-white mb-0.5">SSAAM</h1>
           <p class="text-white text-opacity-80 text-xs lg:text-base">{{ selectedEvent?.title || 'Select an Event' }}</p>
           <p v-if="selectedEvent" class="text-white text-opacity-60 text-xs">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
+          <div v-if="selectedEvent && (selectedEvent.session_type === 'dual' || selectedEvent.session_type === 'half_day')" class="mt-2">
+            <span :class="['px-3 py-1 rounded-full text-xs font-medium', getCurrentSessionPeriod(selectedEvent) === 'morning' ? 'bg-yellow-400 text-yellow-900' : 'bg-indigo-400 text-indigo-900']">
+              {{ getCurrentSessionPeriod(selectedEvent) === 'morning' ? 'Morning Session' : 'Afternoon Session' }}
+            </span>
+          </div>
         </div>
         
         <!-- Scan Mode Toggle -->
@@ -3901,6 +3906,10 @@ const openTimePicker = (target) => {
   } else if (target === 'edit_start_time' || target === 'edit_end_time') {
     const field = target.replace('edit_', '')
     currentTime = selectedEvent.value?.[field] || ''
+  } else if (target === 'afternoon_start') {
+    currentTime = newEvent.value.afternoon_start_time || '13:00'
+  } else if (target === 'edit_afternoon_start') {
+    currentTime = selectedEvent.value?.afternoon_start_time || '13:00'
   }
   
   if (currentTime) {
@@ -3937,6 +3946,10 @@ const confirmTimePicker = () => {
     }
   } else if (timePickerTarget.value === 'edit_end_time') {
     selectedEvent.value.end_time = timeStr
+  } else if (timePickerTarget.value === 'afternoon_start') {
+    newEvent.value.afternoon_start_time = timeStr
+  } else if (timePickerTarget.value === 'edit_afternoon_start') {
+    selectedEvent.value.afternoon_start_time = timeStr
   }
   showTimePicker.value = false
 }
@@ -5989,7 +6002,9 @@ const createAttendanceEvent = async () => {
       event_date: newEvent.value.date,
       start_time: newEvent.value.startTime,
       end_time: newEvent.value.endTime,
-      status: autoStatus
+      status: autoStatus,
+      session_type: newEvent.value.session_type || 'single',
+      afternoon_start_time: newEvent.value.afternoon_start_time || '13:00'
     }
     const response = await fetch('https://ssaam-api.vercel.app/apis/attendance/events', {
       method: 'POST',
@@ -6005,7 +6020,7 @@ const createAttendanceEvent = async () => {
     if (response.ok) {
       showNotification('Event created successfully', 'success')
       showCreateEventModal.value = false
-      newEvent.value = { title: '', description: '', location: '', date: '', startTime: '', endTime: '' }
+      newEvent.value = { title: '', description: '', location: '', date: '', startTime: '', endTime: '', session_type: 'single', afternoon_start_time: '13:00' }
       fetchAttendanceData()
     } else {
       if (response.status === 403) {
@@ -6035,7 +6050,9 @@ const updateAttendanceEvent = async () => {
     const eventPayload = {
       ...selectedEvent.value,
       event_date: eventDate,
-      status: autoStatus
+      status: autoStatus,
+      session_type: selectedEvent.value.session_type || 'single',
+      afternoon_start_time: selectedEvent.value.afternoon_start_time || '13:00'
     }
     
     const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${selectedEvent.value._id}`, {
@@ -6487,7 +6504,9 @@ const openEventLogs = (event) => {
 const openEditEvent = (event) => {
   selectedEvent.value = { 
     ...event,
-    date: event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : event.date
+    date: event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : event.date,
+    session_type: event.session_type || 'single',
+    afternoon_start_time: event.afternoon_start_time || '13:00'
   }
   showEditEventModal.value = true
 }
@@ -6496,6 +6515,20 @@ const formatEventDate = (dateStr) => {
   if (!dateStr) return ''
   const date = new Date(dateStr)
   return date.toLocaleDateString('en-PH', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+const getCurrentSessionPeriod = (event) => {
+  if (!event) return 'morning'
+  const now = new Date()
+  const afternoonStartTime = event.afternoon_start_time || '13:00'
+  const [afternoonHour, afternoonMin] = afternoonStartTime.split(':').map(Number)
+  const currentHour = now.getHours()
+  const currentMin = now.getMinutes()
+  
+  if (currentHour < afternoonHour || (currentHour === afternoonHour && currentMin < afternoonMin)) {
+    return 'morning'
+  }
+  return 'afternoon'
 }
 
 const formatEventTime = (timeStr) => {
