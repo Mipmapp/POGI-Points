@@ -39,8 +39,7 @@
             >
               <div class="flex items-start gap-3 mb-4">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
-                  <img v-if="announcement.poster_photo" :src="announcement.poster_photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
-                  <span v-else>{{ getInitials(announcement.posted_by_name) }}</span>
+                  <span>{{ getInitials(announcement.posted_by_name) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 flex-wrap">
