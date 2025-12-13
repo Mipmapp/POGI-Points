@@ -3587,11 +3587,7 @@ const ANNOUNCEMENT_POPUP_STORAGE_KEY = 'ssaam_last_popup_announcement_id'
 
 const getLatestAnnouncementsForPopup = () => {
   if (!notifications.value || notifications.value.length === 0) return []
-  const now = new Date()
-  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-  return notifications.value
-    .filter(n => new Date(n.created_at) > oneDayAgo)
-    .slice(0, 5)
+  return notifications.value.slice(0, 10)
 }
 
 const checkAndShowAnnouncementPopup = () => {
