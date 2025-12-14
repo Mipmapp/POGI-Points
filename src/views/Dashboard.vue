@@ -3603,12 +3603,12 @@ const exportToExcelByYear = async (event, yearLevel) => {
     const sessionsLabel = uniqueSessions.length > 0 ? uniqueSessions.join(', ') : 'All Sessions'
     
     const headerRows = [
-      { 'Event Title': event.title || 'Attendance Event' },
-      { 'Event Title': `Date: ${eventDateFormatted}` },
-      { 'Event Title': `Sessions: ${sessionsLabel}` },
-      ...(eventLocation ? [{ 'Event Title': `Location: ${eventLocation}` }] : []),
-      { 'Event Title': `Year Level: ${yearLevel}` },
-      { 'Event Title': '' }
+      { 'Event': event.title || 'Attendance Event' },
+      { 'Event': `Date: ${eventDateFormatted}` },
+      { 'Event': `Session: ${sessionsLabel}` },
+      ...(eventLocation ? [{ 'Event': `Location: ${eventLocation}` }] : []),
+      { 'Event': `Year Level: ${yearLevel}` },
+      { 'Event': '' }
     ]
     
     const worksheetData = logs.map((log, index) => {
@@ -3618,7 +3618,6 @@ const exportToExcelByYear = async (event, yearLevel) => {
       const studentName = log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim() || '-'
       const studentId = log.student?.student_id || log.student_id || ''
       const program = log.student?.program || log.program || ''
-      const sessionLabel = log.session?.label || log.session_label || '-'
       
       let status = 'Absent'
       if (checkIn && checkOut) status = 'Present'
@@ -3630,7 +3629,6 @@ const exportToExcelByYear = async (event, yearLevel) => {
         'Name': studentName,
         'Program': program,
         'Year Level': yearLevel,
-        'Session': sessionLabel,
         'Check-In': checkIn ? new Date(checkIn).toLocaleString('en-PH') : '-',
         'Check-Out': checkOut ? new Date(checkOut).toLocaleString('en-PH') : '-',
         'Status': status
@@ -3643,7 +3641,7 @@ const exportToExcelByYear = async (event, yearLevel) => {
     
     const columnWidths = [
       { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
-      { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 12 }
+      { wch: 20 }, { wch: 20 }, { wch: 12 }
     ]
     headerSheet['!cols'] = columnWidths
     
@@ -7034,15 +7032,15 @@ const exportEventAttendanceToExcel = async (event) => {
       
       // Create header rows with event information
       const headerRows = [
-        { 'Event Title': event.title || 'Attendance Event' },
-        { 'Event Title': `Date: ${eventDateFormatted}` },
-        { 'Event Title': `Sessions: ${sessionsLabel}` },
-        ...(eventLocation ? [{ 'Event Title': `Location: ${eventLocation}` }] : []),
-        { 'Event Title': `Year Level: ${yearLevel}` },
-        { 'Event Title': '' }
+        { 'Event': event.title || 'Attendance Event' },
+        { 'Event': `Date: ${eventDateFormatted}` },
+        { 'Event': `Session: ${sessionsLabel}` },
+        ...(eventLocation ? [{ 'Event': `Location: ${eventLocation}` }] : []),
+        { 'Event': `Year Level: ${yearLevel}` },
+        { 'Event': '' }
       ]
       
-      // Prepare data for worksheet with session labels
+      // Prepare data for worksheet without session column (session is in header)
       const worksheetData = yearLogs.map((log, index) => {
         const checkIn = log.check_in_at || log.check_in_time
         const checkOut = log.check_out_at || log.check_out_time
@@ -7050,7 +7048,6 @@ const exportEventAttendanceToExcel = async (event) => {
         const studentName = log.student?.full_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim()
         const studentId = log.student?.student_id || log.student_id || ''
         const program = log.student?.program || log.program || ''
-        const sessionLabel = log.session?.label || log.session_label || '-'
         
         let status = 'Absent'
         if (checkIn && checkOut) status = 'Present'
@@ -7062,7 +7059,6 @@ const exportEventAttendanceToExcel = async (event) => {
           'Name': studentName,
           'Program': program,
           'Year Level': yearLevel,
-          'Session': sessionLabel,
           'Check-In': checkIn ? new Date(checkIn).toLocaleString('en-PH') : '-',
           'Check-Out': checkOut ? new Date(checkOut).toLocaleString('en-PH') : '-',
           'Status': status
@@ -7080,7 +7076,6 @@ const exportEventAttendanceToExcel = async (event) => {
         { wch: 30 },  // Name
         { wch: 10 },  // Program
         { wch: 12 },  // Year Level
-        { wch: 12 },  // Session
         { wch: 20 },  // Check-In
         { wch: 20 },  // Check-Out
         { wch: 12 }   // Status
@@ -7113,7 +7108,7 @@ const exportEventAttendanceToExcel = async (event) => {
     const summaryHeaderRows = [
       { 'Year Level': event.title || 'Attendance Event' },
       { 'Year Level': `Date: ${eventDateFormatted}` },
-      { 'Year Level': `Sessions: ${sessionsLabel}` },
+      { 'Year Level': `Session: ${sessionsLabel}` },
       ...(eventLocation ? [{ 'Year Level': `Location: ${eventLocation}` }] : []),
       { 'Year Level': '' },
       { 'Year Level': 'ATTENDANCE SUMMARY' },
