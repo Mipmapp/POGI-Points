@@ -1553,34 +1553,124 @@
                 </div>
               </div>
 
-              <!-- My Attendance Records Section -->
+              <!-- My Attendance Records Section - Enhanced with Expandable Event Folders -->
               <div v-if="myAttendanceRecords.length > 0">
-                <h3 class="font-semibold text-gray-700 mb-3">My Attendance History</h3>
-                <div class="overflow-x-auto">
-                  <table class="w-full text-sm">
-                    <thead class="bg-gray-50">
-                      <tr>
-                        <th class="px-4 py-3 text-left font-medium text-gray-600">Event</th>
-                        <th class="px-4 py-3 text-left font-medium text-gray-600">Date</th>
-                        <th class="px-4 py-3 text-left font-medium text-gray-600">Check-in</th>
-                        <th class="px-4 py-3 text-left font-medium text-gray-600">Check-out</th>
-                        <th class="px-4 py-3 text-left font-medium text-gray-600">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                      <tr v-for="record in myAttendanceRecords" :key="record._id || record.event_id" class="hover:bg-gray-50">
-                        <td class="px-4 py-3 font-medium text-purple-900">{{ record.event?.title || record.event_title || 'Event' }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ (record.event?.date || record.event?.event_date) ? formatEventDate(record.event.date || record.event.event_date) : ((record.check_in_at || record.check_in_time) ? new Date(record.check_in_at || record.check_in_time).toLocaleDateString() : '-') }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ (record.check_in_at || record.check_in_time) ? new Date(record.check_in_at || record.check_in_time).toLocaleTimeString() : '-' }}</td>
-                        <td class="px-4 py-3 text-gray-600">{{ (record.check_out_at || record.check_out_time) ? new Date(record.check_out_at || record.check_out_time).toLocaleTimeString() : '-' }}</td>
-                        <td class="px-4 py-3">
-                          <span :class="['px-2 py-1 rounded-full text-xs font-medium', getRecordStatusClass(record)]">
-                            {{ getRecordStatusLabel(record) }}
-                          </span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                  My Attendance History
+                </h3>
+                <div class="space-y-3">
+                  <div 
+                    v-for="record in myAttendanceRecords" 
+                    :key="record._id || record.event_id" 
+                    class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm"
+                  >
+                    <!-- Event Folder Header - Clickable with press animation -->
+                    <div 
+                      @click="expandedAttendanceRecords[record.event_id] = !expandedAttendanceRecords[record.event_id]"
+                      class="attendance-event-card px-4 py-3 cursor-pointer flex items-center justify-between gap-3 hover:bg-gray-50 transition-all duration-200"
+                      :class="{ 'bg-gray-50': expandedAttendanceRecords[record.event_id] }"
+                    >
+                      <div class="flex items-center gap-3 flex-1 min-w-0">
+                        <!-- Folder Icon with expand indicator -->
+                        <div class="flex-shrink-0 relative">
+                          <svg :class="['w-8 h-8 transition-all duration-200', expandedAttendanceRecords[record.event_id] ? 'text-purple-600' : 'text-gray-400']" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+                          </svg>
+                          <svg :class="['w-3 h-3 absolute -right-0.5 -bottom-0.5 transition-transform duration-200', expandedAttendanceRecords[record.event_id] ? 'rotate-90 text-purple-600' : 'text-gray-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
+                          </svg>
+                        </div>
+                        <!-- Event Info -->
+                        <div class="flex-1 min-w-0">
+                          <h4 class="font-semibold text-gray-900 truncate">{{ record.event?.title || record.event_title || 'Event' }}</h4>
+                          <div class="flex flex-wrap items-center gap-2 mt-1 text-xs text-gray-500">
+                            <span class="flex items-center gap-1">
+                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                              {{ record.event?.event_date ? formatEventDate(record.event.event_date) : '-' }}
+                            </span>
+                            <span v-if="record.sessions && record.sessions.length > 0" class="text-gray-400">|</span>
+                            <span v-if="record.sessions && record.sessions.length > 0" class="text-gray-500">
+                              {{ record.sessions.length }} session{{ record.sessions.length > 1 ? 's' : '' }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <!-- Overall Status Badge -->
+                      <div class="flex-shrink-0">
+                        <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getOverallStatusClass(record.overall_status || record.status)]">
+                          {{ getOverallStatusLabel(record.overall_status || record.status) }}
+                        </span>
+                      </div>
+                    </div>
+                    
+                    <!-- Expanded Sessions Panel -->
+                    <transition name="slide-fade">
+                      <div v-if="expandedAttendanceRecords[record.event_id]" class="border-t border-gray-100 bg-gradient-to-b from-purple-50 to-white">
+                        <!-- Event Description if available -->
+                        <div v-if="record.event?.description" class="px-4 py-2 text-sm text-gray-600 border-b border-gray-100">
+                          {{ record.event.description }}
+                        </div>
+                        
+                        <!-- Sessions List -->
+                        <div v-if="record.sessions && record.sessions.length > 0" class="p-4 space-y-2">
+                          <div 
+                            v-for="(sessionData, idx) in record.sessions" 
+                            :key="sessionData.session_id || idx"
+                            class="bg-white rounded-lg border border-gray-200 p-3 shadow-sm"
+                          >
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <!-- Session Label and Time -->
+                              <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                                  {{ (sessionData.session?.label || 'S').charAt(0) }}
+                                </div>
+                                <div>
+                                  <h5 class="font-medium text-gray-900">{{ sessionData.session?.label || 'Session' }}</h5>
+                                  <p class="text-xs text-gray-500">
+                                    {{ formatEventTime(sessionData.session?.start_time) }} - {{ formatEventTime(sessionData.session?.end_time) }}
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <!-- Session Status Badge -->
+                              <span :class="['px-2.5 py-1 rounded-full text-xs font-medium', getSessionAttendanceClass(sessionData.attendance)]">
+                                {{ getSessionAttendanceLabel(sessionData.attendance) }}
+                              </span>
+                            </div>
+                            
+                            <!-- Check-in/Check-out Times -->
+                            <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
+                              <div class="bg-green-50 rounded-lg p-2">
+                                <div class="flex items-center gap-2 text-green-700">
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                                  <span class="font-medium text-xs">Check-in</span>
+                                </div>
+                                <p class="mt-1 font-semibold text-green-800">
+                                  {{ sessionData.attendance?.check_in_at ? new Date(sessionData.attendance.check_in_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
+                                </p>
+                              </div>
+                              <div class="bg-blue-50 rounded-lg p-2">
+                                <div class="flex items-center gap-2 text-blue-700">
+                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                  <span class="font-medium text-xs">Check-out</span>
+                                </div>
+                                <p class="mt-1 font-semibold text-blue-800">
+                                  {{ sessionData.attendance?.check_out_at ? new Date(sessionData.attendance.check_out_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- No Sessions Message -->
+                        <div v-else class="p-4 text-center text-sm text-gray-500">
+                          <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                          No session data available for this event.
+                        </div>
+                      </div>
+                    </transition>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3861,6 +3951,7 @@ const cacheStudentPhoto = (obj, photo) => {
   })
 }
 const myAttendanceRecords = ref([])
+const expandedAttendanceRecords = ref({})
 const attendanceLoading = ref(false)
 const attendanceRefreshInterval = ref(null)
 const eventTimeInterval = ref(null)
@@ -6296,19 +6387,30 @@ const fetchAttendanceData = async () => {
       if (myRecordsRes.ok) {
         const recordsResult = await myRecordsRes.json()
         const records = recordsResult.data || []
-        myAttendanceRecords.value = records.map(r => ({
-          ...r,
-          event_id: r.event?._id,
-          event_title: r.event?.title,
-          check_in_at: r.attendance?.check_in_at,
-          check_out_at: r.attendance?.check_out_at,
-          morning_check_in_at: r.attendance?.morning_check_in_at,
-          morning_check_out_at: r.attendance?.morning_check_out_at,
-          afternoon_check_in_at: r.attendance?.afternoon_check_in_at,
-          afternoon_check_out_at: r.attendance?.afternoon_check_out_at,
-          is_late: r.attendance?.is_late,
-          status: r.attendance?.status || 'absent'
-        }))
+        myAttendanceRecords.value = records.map((r, idx) => {
+          const eventId = r.event?._id || r.event_id || `record-${idx}`
+          return {
+            ...r,
+            _id: eventId,
+            event_id: eventId,
+            event_title: r.event?.title,
+            sessions: (r.sessions || []).map((s, sIdx) => ({
+              ...s,
+              session: s.session || {},
+              session_id: s.session?._id || `session-${sIdx}`,
+              attendance: s.attendance || { check_in_at: null, check_out_at: null, status: 'absent' }
+            })),
+            overall_status: r.overall_status || 'absent',
+            check_in_at: r.attendance?.check_in_at,
+            check_out_at: r.attendance?.check_out_at,
+            morning_check_in_at: r.attendance?.morning_check_in_at,
+            morning_check_out_at: r.attendance?.morning_check_out_at,
+            afternoon_check_in_at: r.attendance?.afternoon_check_in_at,
+            afternoon_check_out_at: r.attendance?.afternoon_check_out_at,
+            is_late: r.attendance?.is_late,
+            status: r.attendance?.status || r.overall_status || 'absent'
+          }
+        })
       }
     }
   } catch (error) {
@@ -7288,6 +7390,58 @@ const getRecordStatusClass = (record) => {
     case 'Pending': return 'bg-blue-100 text-blue-800'
     default: return 'bg-gray-100 text-gray-800'
   }
+}
+
+const getOverallStatusLabel = (status) => {
+  switch (status) {
+    case 'present': return 'Present'
+    case 'late': return 'Late'
+    case 'incomplete': return 'Incomplete'
+    case 'absent': return 'Absent'
+    default: return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'
+  }
+}
+
+const getOverallStatusClass = (status) => {
+  switch (status) {
+    case 'present': return 'bg-green-100 text-green-800'
+    case 'late': return 'bg-orange-100 text-orange-800'
+    case 'incomplete': return 'bg-yellow-100 text-yellow-800'
+    case 'absent': return 'bg-red-100 text-red-800'
+    default: return 'bg-gray-100 text-gray-800'
+  }
+}
+
+const getSessionAttendanceLabel = (attendance) => {
+  if (!attendance) return 'Absent'
+  const status = attendance.status
+  if (status === 'present') return 'Present'
+  if (status === 'late') return 'Late'
+  if (status === 'incomplete') return 'Incomplete'
+  if (status === 'absent') return 'Absent'
+  if (attendance.check_in_at && attendance.check_out_at) {
+    return attendance.is_late ? 'Late' : 'Present'
+  }
+  if (attendance.check_in_at && !attendance.check_out_at) {
+    return attendance.is_late ? 'Late (Incomplete)' : 'Incomplete'
+  }
+  return 'Absent'
+}
+
+const getSessionAttendanceClass = (attendance) => {
+  if (!attendance) return 'bg-red-100 text-red-800'
+  const status = attendance.status
+  if (status === 'present') return 'bg-green-100 text-green-800'
+  if (status === 'late') return 'bg-orange-100 text-orange-800'
+  if (status === 'incomplete') return 'bg-yellow-100 text-yellow-800'
+  if (status === 'absent') return 'bg-red-100 text-red-800'
+  if (attendance.check_in_at && attendance.check_out_at) {
+    return attendance.is_late ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
+  }
+  if (attendance.check_in_at && !attendance.check_out_at) {
+    return 'bg-yellow-100 text-yellow-800'
+  }
+  return 'bg-red-100 text-red-800'
 }
 
 const getInitials = (name) => {
