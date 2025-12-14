@@ -880,7 +880,7 @@ const attendanceSessionSchema = new mongoose.Schema({
     event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'AttendanceEvent', required: true },
     label: { 
         type: String, 
-        enum: ['Morning', 'Afternoon', 'Noon', 'Night', 'Dawn'],
+        enum: ['Whole Day', 'Morning', 'Afternoon', 'Noon', 'Night', 'Dawn'],
         required: true 
     },
     start_time: { type: String, required: true }, // e.g., "08:00"
