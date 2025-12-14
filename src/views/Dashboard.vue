@@ -1246,7 +1246,7 @@
                 <p class="text-gray-500 mb-4">Select an event to start scanning RFID cards</p>
                 <select v-model="selectedEvent" @change="onEventSelectForScanner" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
                   <option :value="null">-- Select Event --</option>
-                  <option v-for="event in attendanceEvents.filter(e => e.status === 'active')" :key="event._id" :value="event">{{ event.title }} ({{ formatEventDate(event.date || event.event_date) }})</option>
+                  <option v-for="event in attendanceEvents.filter(e => getEventDisplayStatus(e).status === 'active')" :key="event._id" :value="event">{{ event.title }} ({{ formatEventDate(event.date || event.event_date) }})</option>
                 </select>
               </div>
               <div v-else-if="!selectedSession" class="text-center py-8">
@@ -1259,11 +1259,11 @@
                   <button @click="selectedEvent = null; selectedSession = null" class="mt-3 text-purple-600 hover:text-purple-800 text-sm underline">Select different event</button>
                 </div>
                 <div v-else class="space-y-2 max-w-md mx-auto">
-                  <button v-for="session in eventSessions.filter(s => s.status === 'active')" :key="session._id" @click="selectedSession = session" class="w-full p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg hover:from-purple-100 hover:to-pink-100 transition text-left">
+                  <button v-for="session in eventSessions.filter(s => getSessionDisplayStatus(s, selectedEvent) === 'active')" :key="session._id" @click="selectedSession = session" class="w-full p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg hover:from-purple-100 hover:to-pink-100 transition text-left">
                     <div class="flex items-center justify-between">
                       <div>
                         <span class="font-medium text-purple-800">{{ session.label }}</span>
-                        <span :class="['ml-2 px-2 py-0.5 rounded-full text-xs', session.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600']">{{ session.status === 'active' ? 'Active' : 'Not Active' }}</span>
+                        <span :class="['ml-2 px-2 py-0.5 rounded-full text-xs', getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600']">{{ getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'Active' : 'Not Active' }}</span>
                       </div>
                       <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </div>
@@ -4297,31 +4297,27 @@ const getSessionDisplayStatus = (session, event) => {
   const eventDate = event?.date || event?.event_date
   if (!eventDate) return session.status || 'draft'
   
-  const now = new Date()
   const [startH, startM] = session.start_time.split(':').map(Number)
   const [endH, endM] = session.end_time.split(':').map(Number)
   
-  // Parse event date properly - handle both string and Date objects
-  let eventDateObj
+  let eventDateStr
   if (typeof eventDate === 'string') {
-    // If it's an ISO string, parse it; if just date, append time
-    eventDateObj = eventDate.includes('T') ? new Date(eventDate) : new Date(eventDate + 'T12:00:00')
+    eventDateStr = eventDate.includes('T') ? eventDate.split('T')[0] : eventDate
   } else {
-    eventDateObj = new Date(eventDate)
+    const d = new Date(eventDate)
+    eventDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   }
   
-  // Get year, month, day in LOCAL timezone from the event date
-  const year = eventDateObj.getFullYear()
-  const month = eventDateObj.getMonth()
-  const day = eventDateObj.getDate()
+  const sessionStartPH = new Date(`${eventDateStr}T${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}:00+08:00`)
+  const sessionEndPH = new Date(`${eventDateStr}T${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}:00+08:00`)
   
-  // Create session start and end times using the event's local date
-  const sessionStart = new Date(year, month, day, startH, startM, 0, 0)
-  const sessionEnd = new Date(year, month, day, endH, endM, 0, 0)
+  const nowUTC = Date.now()
+  const sessionStartUTC = sessionStartPH.getTime()
+  const sessionEndUTC = sessionEndPH.getTime()
   
-  if (now < sessionStart) {
+  if (nowUTC < sessionStartUTC) {
     return 'draft'
-  } else if (now >= sessionStart && now <= sessionEnd) {
+  } else if (nowUTC >= sessionStartUTC && nowUTC <= sessionEndUTC) {
     return 'active'
   } else {
     return 'closed'
