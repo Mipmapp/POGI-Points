@@ -166,8 +166,20 @@ const props = defineProps({
 const emit = defineEmits(['close', 'preview-image', 'toggle-like'])
 
 const isLiked = (announcement) => {
-  if (!props.currentUserId || !announcement.liked_by) return false
-  return announcement.liked_by.includes(props.currentUserId)
+  if (!announcement.liked_by || !Array.isArray(announcement.liked_by)) return false
+  
+  // Check current user ID passed as prop
+  if (props.currentUserId && announcement.liked_by.includes(props.currentUserId)) {
+    return true
+  }
+  
+  // Also check the server-provided userLikeId from localStorage (for consistency)
+  const userLikeId = localStorage.getItem('userLikeId')
+  if (userLikeId && announcement.liked_by.includes(userLikeId)) {
+    return true
+  }
+  
+  return false
 }
 
 const currentIndex = ref(0)

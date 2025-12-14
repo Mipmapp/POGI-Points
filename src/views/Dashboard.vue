@@ -2892,9 +2892,25 @@
             </select>
           </div>
         </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Event Start Time *</label>
+            <button @click="openTimePicker('event_start_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
+              <span :class="newEvent.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.start_time) || 'Select time' }}</span>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </button>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Event End Time *</label>
+            <button @click="openTimePicker('event_end_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
+              <span :class="newEvent.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.end_time) || 'Select time' }}</span>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </button>
+          </div>
+        </div>
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p class="text-sm text-blue-800">
-            <span class="font-medium">Note:</span> After creating the event, you can add sessions (Morning, Afternoon, Noon, Night, Dawn) with their own time windows for check-in/check-out.
+            <span class="font-medium">Note:</span> Session times must fall within the event time range ({{ formatDisplayTime(newEvent.start_time) }} - {{ formatDisplayTime(newEvent.end_time) }}).
           </p>
         </div>
         <div class="flex gap-3 mt-6">
@@ -3052,9 +3068,18 @@
             </button>
           </div>
         </div>
+        <div v-if="sessionTimeError" class="bg-red-50 border border-red-200 rounded-lg p-3">
+          <p class="text-sm text-red-700">{{ sessionTimeError }}</p>
+        </div>
         <div class="flex gap-3 mt-6">
-          <button @click="showSessionModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-          <button @click="saveSession" :disabled="!newSession.label || !newSession.start_time || !newSession.end_time" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed">{{ editingSession ? 'Update' : 'Add' }} Session</button>
+          <button @click="showSessionModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition" :disabled="savingSession">Cancel</button>
+          <button @click="saveSession" :disabled="!newSession.label || !newSession.start_time || !newSession.end_time || savingSession || !!sessionTimeError" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <svg v-if="savingSession" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+            </svg>
+            <span>{{ savingSession ? 'Saving...' : (editingSession ? 'Update' : 'Add') + ' Session' }}</span>
+          </button>
         </div>
       </div>
     </div>
@@ -3780,14 +3805,72 @@ const selectedSession = ref(null)
 const eventSessions = ref([])
 const showSessionModal = ref(false)
 const newSession = ref({ label: 'Morning', start_time: '', end_time: '' })
+const savingSession = ref(false)
 const editingSession = ref(null)
 const sessionLabels = ['Morning', 'Afternoon', 'Noon', 'Night', 'Dawn']
+
+const sessionTimeError = computed(() => {
+  if (!newSession.value.start_time || !newSession.value.end_time) return ''
+  if (!selectedEvent.value) return ''
+  
+  const eventStart = selectedEvent.value.start_time || '07:00'
+  const eventEnd = selectedEvent.value.end_time || '17:00'
+  const sessionStart = newSession.value.start_time
+  const sessionEnd = newSession.value.end_time
+  
+  const toMinutes = (t) => {
+    const [h, m] = t.split(':').map(Number)
+    return h * 60 + m
+  }
+  
+  const eventStartMins = toMinutes(eventStart)
+  const eventEndMins = toMinutes(eventEnd)
+  const sessionStartMins = toMinutes(sessionStart)
+  const sessionEndMins = toMinutes(sessionEnd)
+  
+  if (sessionStartMins < eventStartMins) {
+    return `Session start time cannot be earlier than event start time (${formatDisplayTime(eventStart)})`
+  }
+  if (sessionEndMins > eventEndMins) {
+    return `Session end time cannot be later than event end time (${formatDisplayTime(eventEnd)})`
+  }
+  if (sessionStartMins >= sessionEndMins) {
+    return 'Session start time must be before end time'
+  }
+  return ''
+})
+
+watch(() => newSession.value.label, (label) => {
+  if (editingSession.value) return
+  
+  const eventStart = selectedEvent.value?.start_time || '07:00'
+  const eventEnd = selectedEvent.value?.end_time || '17:00'
+  
+  if (label === 'Morning') {
+    newSession.value.start_time = eventStart
+    newSession.value.end_time = '11:00'
+  } else if (label === 'Afternoon') {
+    newSession.value.start_time = '13:00'
+    newSession.value.end_time = eventEnd
+  } else if (label === 'Noon') {
+    newSession.value.start_time = '11:00'
+    newSession.value.end_time = '13:00'
+  } else if (label === 'Night') {
+    newSession.value.start_time = '18:00'
+    newSession.value.end_time = '21:00'
+  } else if (label === 'Dawn') {
+    newSession.value.start_time = '05:00'
+    newSession.value.end_time = '07:00'
+  }
+})
 const newEvent = ref({
   title: '',
   description: '',
   location: '',
   date: '',
-  year_level: ''
+  year_level: '',
+  start_time: '07:00',
+  end_time: '17:00'
 })
 const eventLogsFilter = ref({
   yearLevel: '',
@@ -4033,6 +4116,10 @@ const openTimePicker = (target) => {
     currentTime = newSession.value.start_time || '08:00'
   } else if (target === 'session_end_time') {
     currentTime = newSession.value.end_time || '17:00'
+  } else if (target === 'event_start_time') {
+    currentTime = newEvent.value.start_time || '07:00'
+  } else if (target === 'event_end_time') {
+    currentTime = newEvent.value.end_time || '17:00'
   }
   
   if (currentTime) {
@@ -4101,6 +4188,10 @@ const confirmTimePicker = () => {
     newSession.value.start_time = timeStr
   } else if (timePickerTarget.value === 'session_end_time') {
     newSession.value.end_time = timeStr
+  } else if (timePickerTarget.value === 'event_start_time') {
+    newEvent.value.start_time = timeStr
+  } else if (timePickerTarget.value === 'event_end_time') {
+    newEvent.value.end_time = timeStr
   }
   showTimePicker.value = false
 }
@@ -6163,7 +6254,9 @@ const createAttendanceEvent = async () => {
       description: newEvent.value.description || '',
       location: newEvent.value.location || '',
       event_date: newEvent.value.date,
-      year_level: newEvent.value.year_level || ''
+      year_level: newEvent.value.year_level || '',
+      start_time: newEvent.value.start_time || '07:00',
+      end_time: newEvent.value.end_time || '17:00'
     }
     const response = await fetch('https://ssaam-api.vercel.app/apis/attendance/events', {
       method: 'POST',
@@ -6179,7 +6272,7 @@ const createAttendanceEvent = async () => {
     if (response.ok) {
       showNotification('Event created successfully. Add sessions to enable check-in.', 'success')
       showCreateEventModal.value = false
-      newEvent.value = { title: '', description: '', location: '', date: '', year_level: '' }
+      newEvent.value = { title: '', description: '', location: '', date: '', year_level: '', start_time: '07:00', end_time: '17:00' }
       fetchAttendanceData()
     } else {
       if (response.status === 403) {
@@ -6310,6 +6403,11 @@ const openEditSessionModal = (session) => {
 }
 
 const saveSession = async () => {
+  if (sessionTimeError.value) {
+    showNotification(sessionTimeError.value, 'error')
+    return
+  }
+  savingSession.value = true
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
     if (editingSession.value) {
@@ -6360,6 +6458,8 @@ const saveSession = async () => {
   } catch (error) {
     console.error('Error saving session:', error)
     showNotification('Error saving session', 'error')
+  } finally {
+    savingSession.value = false
   }
 }
 
