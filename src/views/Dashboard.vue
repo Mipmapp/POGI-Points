@@ -243,10 +243,11 @@
           <h1 class="text-xl lg:text-3xl font-bold text-white mb-0.5">SSAAM</h1>
           <p class="text-white text-opacity-80 text-xs lg:text-base">{{ selectedEvent?.title || 'Select an Event' }}</p>
           <p v-if="selectedEvent" class="text-white text-opacity-60 text-xs">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
-          <div v-if="selectedEvent && (selectedEvent.session_type === 'dual' || selectedEvent.session_type === 'half_day')" class="mt-2">
-            <span :class="['px-3 py-1 rounded-full text-xs font-medium', getCurrentSessionPeriod(selectedEvent) === 'morning' ? 'bg-yellow-400 text-yellow-900' : 'bg-indigo-400 text-indigo-900']">
-              {{ getCurrentSessionPeriod(selectedEvent) === 'morning' ? 'Morning Session' : 'Afternoon Session' }}
+          <div v-if="selectedSession" class="mt-2">
+            <span class="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-400 to-pink-400 text-white">
+              {{ selectedSession.label }} Session
             </span>
+            <p class="text-white text-opacity-60 text-xs mt-1">{{ formatDisplayTime(selectedSession.start_time) }} - {{ formatDisplayTime(selectedSession.end_time) }}</p>
           </div>
         </div>
         
@@ -1210,24 +1211,51 @@
               <div v-if="!selectedEvent" class="text-center py-8">
                 <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
                 <p class="text-gray-500 mb-4">Select an event to start scanning RFID cards</p>
-                <select v-model="selectedEvent" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
+                <select v-model="selectedEvent" @change="onEventSelectForScanner" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
                   <option :value="null">-- Select Event --</option>
                   <option v-for="event in attendanceEvents.filter(e => e.status === 'active')" :key="event._id" :value="event">{{ event.title }} ({{ formatEventDate(event.date || event.event_date) }})</option>
                 </select>
+              </div>
+              <div v-else-if="!selectedSession" class="text-center py-8">
+                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p class="text-gray-500 mb-2">Selected: <span class="font-semibold text-purple-700">{{ selectedEvent.title }}</span></p>
+                <p class="text-gray-500 mb-4">Now select a session for attendance</p>
+                <div v-if="eventSessions.length === 0" class="text-center py-4">
+                  <p class="text-sm text-orange-600 mb-2">No sessions found for this event.</p>
+                  <p class="text-xs text-gray-500">Please add sessions in the event settings first.</p>
+                  <button @click="selectedEvent = null; selectedSession = null" class="mt-3 text-purple-600 hover:text-purple-800 text-sm underline">Select different event</button>
+                </div>
+                <div v-else class="space-y-2 max-w-md mx-auto">
+                  <button v-for="session in eventSessions.filter(s => s.status === 'active')" :key="session._id" @click="selectedSession = session" class="w-full p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg hover:from-purple-100 hover:to-pink-100 transition text-left">
+                    <div class="flex items-center justify-between">
+                      <div>
+                        <span class="font-medium text-purple-800">{{ session.label }}</span>
+                        <span :class="['ml-2 px-2 py-0.5 rounded-full text-xs', session.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600']">{{ session.status === 'active' ? 'Active' : 'Not Active' }}</span>
+                      </div>
+                      <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
+                  </button>
+                  <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" class="mt-3 text-purple-600 hover:text-purple-800 text-sm underline">Select different event</button>
+                </div>
               </div>
               <div v-else class="space-y-4">
                 <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
                   <div class="flex items-center justify-between">
                     <div>
                       <h3 class="font-semibold text-purple-900">{{ selectedEvent.title }}</h3>
-                      <p class="text-sm text-purple-600">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }} | {{ formatEventTime(selectedEvent.startTime || selectedEvent.start_time) }} - {{ formatEventTime(selectedEvent.endTime || selectedEvent.end_time) }}</p>
+                      <p class="text-sm text-purple-600">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
+                      <div class="flex items-center gap-2 mt-1">
+                        <span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">{{ selectedSession.label }}</span>
+                        <span class="text-xs text-gray-500">{{ formatDisplayTime(selectedSession.start_time) }} - {{ formatDisplayTime(selectedSession.end_time) }}</span>
+                      </div>
                     </div>
                     <div class="flex items-center gap-2">
                       <button @click="enterFullscreenMode" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-600 transition flex items-center gap-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
                         Fullscreen
                       </button>
-                      <button @click="selectedEvent = null" class="text-purple-600 hover:text-purple-800 p-2">
+                      <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" class="text-purple-600 hover:text-purple-800 p-2">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                       </button>
                     </div>
@@ -2843,69 +2871,33 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
           <input v-model="newEvent.location" type="text" placeholder="e.g., CCS AVR" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-          <button @click="openCalendarPicker('newEvent')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-            <span :class="newEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(newEvent.date) }}</span>
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-          </button>
-        </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
-            <button @click="openTimePicker('startTime')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-              <span :class="newEvent.startTime ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.startTime) }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+            <button @click="openCalendarPicker('newEvent')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
+              <span :class="newEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(newEvent.date) }}</span>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </button>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">End Time *</label>
-            <button @click="openTimePicker('endTime')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-              <span :class="newEvent.endTime ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.endTime) }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </button>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
+            <select v-model="newEvent.year_level" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
+              <option value="">All Year Levels</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
           </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Session Type</label>
-          <div class="grid grid-cols-3 gap-2">
-            <button type="button" @click="newEvent.session_type = 'single'" :class="['px-3 py-2 rounded-lg text-xs font-medium border-2 transition', newEvent.session_type === 'single' ? 'border-purple-600 bg-purple-50 text-purple-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300']">
-              Single (2 scans)
-            </button>
-            <button type="button" @click="newEvent.session_type = 'dual'" :class="['px-3 py-2 rounded-lg text-xs font-medium border-2 transition', newEvent.session_type === 'dual' ? 'border-purple-600 bg-purple-50 text-purple-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300']">
-              Dual (4 scans)
-            </button>
-            <button type="button" @click="newEvent.session_type = 'half_day'" :class="['px-3 py-2 rounded-lg text-xs font-medium border-2 transition', newEvent.session_type === 'half_day' ? 'border-purple-600 bg-purple-50 text-purple-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300']">
-              Half-Day (2 scans)
-            </button>
-          </div>
-          <div class="mt-2 text-xs text-gray-500">
-            <p v-if="newEvent.session_type === 'single'">Check-in once, check-out once</p>
-            <p v-else-if="newEvent.session_type === 'dual'">Morning check-in/out + Afternoon check-in/out</p>
-            <p v-else-if="newEvent.session_type === 'half_day'">Morning check-in only + Afternoon check-out only</p>
-          </div>
-        </div>
-        <div v-if="newEvent.session_type === 'dual' || newEvent.session_type === 'half_day'">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Afternoon Start Time</label>
-          <button @click="openTimePicker('afternoon_start')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-            <span :class="newEvent.afternoon_start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.afternoon_start_time) || '1:00 PM' }}</span>
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          </button>
-          <p class="text-xs text-gray-500 mt-1">When afternoon session begins (morning ends)</p>
         </div>
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <p class="text-sm text-blue-800">
-            <span class="font-medium">Note:</span> Status will be set automatically based on the event date and time:
+            <span class="font-medium">Note:</span> After creating the event, you can add sessions (Morning, Afternoon, Noon, Night, Dawn) with their own time windows for check-in/check-out.
           </p>
-          <ul class="text-xs text-blue-700 mt-1 list-disc list-inside">
-            <li><span class="font-medium">Upcoming</span> - Before the event starts</li>
-            <li><span class="font-medium">Active</span> - During the event (accepting check-ins)</li>
-            <li><span class="font-medium">Completed</span> - After the event ends</li>
-          </ul>
         </div>
         <div class="flex gap-3 mt-6">
           <button @click="showCreateEventModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-          <button @click="createAttendanceEvent" :disabled="!newEvent.title || !newEvent.date || !newEvent.startTime || !newEvent.endTime" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Create Event</button>
+          <button @click="createAttendanceEvent" :disabled="!newEvent.title || !newEvent.date" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Create Event</button>
         </div>
       </div>
     </div>
@@ -2931,55 +2923,24 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
           <input v-model="selectedEvent.location" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-          <button @click="openCalendarPicker('editEvent')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-            <span :class="selectedEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(selectedEvent.date) }}</span>
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-          </button>
-        </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
-            <button @click="openTimePicker('edit_start_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-              <span :class="selectedEvent.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.start_time) }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+            <button @click="openCalendarPicker('editEvent')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
+              <span :class="selectedEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(selectedEvent.date) }}</span>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </button>
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">End Time *</label>
-            <button @click="openTimePicker('edit_end_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-              <span :class="selectedEvent.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.end_time) }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </button>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
+            <select v-model="selectedEvent.year_level" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
+              <option value="">All Year Levels</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+            </select>
           </div>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Session Type</label>
-          <div class="grid grid-cols-3 gap-2">
-            <button type="button" @click="selectedEvent.session_type = 'single'" :class="['px-3 py-2 rounded-lg text-xs font-medium border-2 transition', selectedEvent.session_type === 'single' ? 'border-purple-600 bg-purple-50 text-purple-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300']">
-              Single (2 scans)
-            </button>
-            <button type="button" @click="selectedEvent.session_type = 'dual'" :class="['px-3 py-2 rounded-lg text-xs font-medium border-2 transition', selectedEvent.session_type === 'dual' ? 'border-purple-600 bg-purple-50 text-purple-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300']">
-              Dual (4 scans)
-            </button>
-            <button type="button" @click="selectedEvent.session_type = 'half_day'" :class="['px-3 py-2 rounded-lg text-xs font-medium border-2 transition', selectedEvent.session_type === 'half_day' ? 'border-purple-600 bg-purple-50 text-purple-700' : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300']">
-              Half-Day (2 scans)
-            </button>
-          </div>
-          <div class="mt-2 text-xs text-gray-500">
-            <p v-if="selectedEvent.session_type === 'single' || !selectedEvent.session_type">Check-in once, check-out once</p>
-            <p v-else-if="selectedEvent.session_type === 'dual'">Morning check-in/out + Afternoon check-in/out</p>
-            <p v-else-if="selectedEvent.session_type === 'half_day'">Morning check-in only + Afternoon check-out only</p>
-          </div>
-        </div>
-        <div v-if="selectedEvent.session_type === 'dual' || selectedEvent.session_type === 'half_day'">
-          <label class="block text-sm font-medium text-gray-700 mb-2">Afternoon Start Time</label>
-          <button @click="openTimePicker('edit_afternoon_start')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-            <span :class="selectedEvent.afternoon_start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.afternoon_start_time) || '1:00 PM' }}</span>
-            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          </button>
-          <p class="text-xs text-gray-500 mt-1">When afternoon session begins (morning ends)</p>
         </div>
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <div class="flex items-center gap-2 mb-1">
@@ -2991,40 +2952,107 @@
               {{ selectedEvent.status === 'active' ? 'Active' : selectedEvent.status === 'draft' ? 'Upcoming' : 'Closed' }}
             </span>
           </div>
-          <p class="text-xs text-blue-700">Status is updated automatically based on the event date and time.</p>
+          <p class="text-xs text-blue-700">Status is updated automatically based on the event date and session times.</p>
         </div>
+        
+        <!-- Sessions Management Section -->
         <div class="border-t pt-4 mt-4">
-          <label class="block text-sm font-medium text-gray-700 mb-3">Attendance Lock Controls</label>
-          <div class="space-y-3">
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div>
-                <p class="font-medium text-gray-800">Lock Check-In</p>
-                <p class="text-xs text-gray-500">Prevent new students from checking in</p>
+          <div class="flex items-center justify-between mb-3">
+            <label class="block text-sm font-medium text-gray-700">Sessions</label>
+            <button @click="openAddSessionModal" type="button" class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-lg hover:bg-purple-200 transition flex items-center gap-1">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+              Add Session
+            </button>
+          </div>
+          <div v-if="eventSessions.length === 0" class="text-center py-4 bg-gray-50 rounded-lg">
+            <p class="text-sm text-gray-500">No sessions added yet. Add sessions to enable check-in/check-out.</p>
+          </div>
+          <div v-else class="space-y-2">
+            <div v-for="session in eventSessions" :key="session._id" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <span class="font-medium text-gray-800">{{ session.label }}</span>
+                  <span :class="['px-2 py-0.5 rounded-full text-xs', session.status === 'active' ? 'bg-green-100 text-green-700' : session.status === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
+                    {{ session.status === 'active' ? 'Active' : session.status === 'draft' ? 'Draft' : 'Closed' }}
+                  </span>
+                </div>
+                <p class="text-xs text-gray-500">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
+                <div class="flex gap-2 mt-1">
+                  <span v-if="session.check_in_locked" class="text-xs text-red-600">Check-in locked</span>
+                  <span v-if="session.check_out_locked" class="text-xs text-red-600">Check-out locked</span>
+                </div>
               </div>
-              <button 
-                @click="selectedEvent.check_in_locked = !selectedEvent.check_in_locked" 
-                :class="['relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300', selectedEvent.check_in_locked ? 'bg-red-500' : 'bg-gray-300']"
-              >
-                <span :class="['inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300', selectedEvent.check_in_locked ? 'translate-x-6' : 'translate-x-1']"></span>
-              </button>
-            </div>
-            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div>
-                <p class="font-medium text-gray-800">Lock Check-Out</p>
-                <p class="text-xs text-gray-500">Prevent students from checking out</p>
+              <div class="flex items-center gap-2">
+                <button @click="openEditSessionModal(session)" type="button" class="text-purple-600 hover:text-purple-800 p-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                </button>
+                <button @click="deleteSession(session._id)" type="button" class="text-red-500 hover:text-red-700 p-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                </button>
               </div>
-              <button 
-                @click="selectedEvent.check_out_locked = !selectedEvent.check_out_locked" 
-                :class="['relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300', selectedEvent.check_out_locked ? 'bg-red-500' : 'bg-gray-300']"
-              >
-                <span :class="['inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300', selectedEvent.check_out_locked ? 'translate-x-6' : 'translate-x-1']"></span>
-              </button>
             </div>
           </div>
         </div>
+        
         <div class="flex gap-3 mt-6">
           <button @click="showEditEventModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-          <button @click="updateAttendanceEvent" :disabled="!selectedEvent.title || !selectedEvent.date || !selectedEvent.start_time || !selectedEvent.end_time" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Save Changes</button>
+          <button @click="updateAttendanceEvent" :disabled="!selectedEvent.title || !selectedEvent.date" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Session Modal -->
+  <div v-if="showSessionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]" @click.self="showSessionModal = false">
+    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold text-purple-900">{{ editingSession ? 'Edit Session' : 'Add Session' }}</h3>
+        <button @click="showSessionModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Session Label *</label>
+          <select v-model="newSession.label" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
+            <option v-for="label in sessionLabels" :key="label" :value="label">{{ label }}</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
+            <button @click="openTimePicker('session_start_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
+              <span :class="newSession.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newSession.start_time) || 'Select time' }}</span>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </button>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">End Time *</label>
+            <button @click="openTimePicker('session_end_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
+              <span :class="newSession.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newSession.end_time) || 'Select time' }}</span>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </button>
+          </div>
+        </div>
+        <div v-if="editingSession" class="space-y-3">
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div>
+              <p class="font-medium text-gray-800 text-sm">Lock Check-In</p>
+            </div>
+            <button @click="newSession.check_in_locked = !newSession.check_in_locked" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300', newSession.check_in_locked ? 'bg-red-500' : 'bg-gray-300']">
+              <span :class="['inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300', newSession.check_in_locked ? 'translate-x-6' : 'translate-x-1']"></span>
+            </button>
+          </div>
+          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+            <div>
+              <p class="font-medium text-gray-800 text-sm">Lock Check-Out</p>
+            </div>
+            <button @click="newSession.check_out_locked = !newSession.check_out_locked" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300', newSession.check_out_locked ? 'bg-red-500' : 'bg-gray-300']">
+              <span :class="['inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300', newSession.check_out_locked ? 'translate-x-6' : 'translate-x-1']"></span>
+            </button>
+          </div>
+        </div>
+        <div class="flex gap-3 mt-6">
+          <button @click="showSessionModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
+          <button @click="saveSession" :disabled="!newSession.label || !newSession.start_time || !newSession.end_time" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed">{{ editingSession ? 'Update' : 'Add' }} Session</button>
         </div>
       </div>
     </div>
@@ -3772,15 +3800,18 @@ const openCreateEventModalImpl = async () => {
 const openCreateEventModal = () => withAdminAction(openCreateEventModalImpl)()
 const showEventLogsModal = ref(false)
 const selectedEvent = ref(null)
+const selectedSession = ref(null)
+const eventSessions = ref([])
+const showSessionModal = ref(false)
+const newSession = ref({ label: 'Morning', start_time: '', end_time: '' })
+const editingSession = ref(null)
+const sessionLabels = ['Morning', 'Afternoon', 'Noon', 'Night', 'Dawn']
 const newEvent = ref({
   title: '',
   description: '',
   location: '',
   date: '',
-  startTime: '',
-  endTime: '',
-  session_type: 'single',
-  afternoon_start_time: '13:00'
+  year_level: ''
 })
 const eventLogsFilter = ref({
   yearLevel: '',
@@ -4022,6 +4053,10 @@ const openTimePicker = (target) => {
     currentTime = newEvent.value.afternoon_start_time || '13:00'
   } else if (target === 'edit_afternoon_start') {
     currentTime = selectedEvent.value?.afternoon_start_time || '13:00'
+  } else if (target === 'session_start_time') {
+    currentTime = newSession.value.start_time || '08:00'
+  } else if (target === 'session_end_time') {
+    currentTime = newSession.value.end_time || '17:00'
   }
   
   if (currentTime) {
@@ -4130,6 +4165,10 @@ const confirmTimePicker = () => {
     newEvent.value.afternoon_start_time = timeStr
   } else if (timePickerTarget.value === 'edit_afternoon_start') {
     selectedEvent.value.afternoon_start_time = timeStr
+  } else if (timePickerTarget.value === 'session_start_time') {
+    newSession.value.start_time = timeStr
+  } else if (timePickerTarget.value === 'session_end_time') {
+    newSession.value.end_time = timeStr
   }
   showTimePicker.value = false
 }
@@ -5510,9 +5549,16 @@ const performDeleteDuplicateStudent = async (studentId, studentName) => {
 }
 
 // RFID Fullscreen mode functions
+const onEventSelectForScanner = () => {
+  if (selectedEvent.value) {
+    selectedSession.value = null
+    fetchEventSessions(selectedEvent.value._id)
+  }
+}
+
 const enterFullscreenMode = () => {
-  if (!selectedEvent.value) {
-    showNotification('Please select an event first', 'error')
+  if (!selectedSession.value) {
+    showNotification('Please select a session first', 'error')
     return
   }
   rfidFullscreenMode.value = true
@@ -6180,34 +6226,12 @@ const fetchAttendanceData = async () => {
 const createAttendanceEvent = async () => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
-    let startTime = newEvent.value.startTime
-    let endTime = newEvent.value.endTime
-    
-    if (newEvent.value.session_type === 'dual' || newEvent.value.session_type === 'half_day') {
-      const validation = validateDualEventTimes(startTime, endTime)
-      if (!validation.valid) {
-        if (isAmPm(startTime) === 'PM') {
-          startTime = '07:00'
-          showNotification('Start time adjusted to 7:00 AM for dual session.', 'warning')
-        }
-        if (isAmPm(endTime) === 'AM') {
-          endTime = '17:00'
-          showNotification('End time adjusted to 5:00 PM for dual session.', 'warning')
-        }
-      }
-    }
-    
-    const autoStatus = calculateEventStatus(newEvent.value.date, startTime, endTime)
     const eventPayload = {
       title: newEvent.value.title,
       description: newEvent.value.description || '',
       location: newEvent.value.location || '',
       event_date: newEvent.value.date,
-      start_time: startTime,
-      end_time: endTime,
-      status: autoStatus,
-      session_type: newEvent.value.session_type || 'single',
-      afternoon_start_time: newEvent.value.afternoon_start_time || '13:00'
+      year_level: newEvent.value.year_level || ''
     }
     const response = await fetch('https://ssaam-api.vercel.app/apis/attendance/events', {
       method: 'POST',
@@ -6221,9 +6245,9 @@ const createAttendanceEvent = async () => {
     })
     
     if (response.ok) {
-      showNotification('Event created successfully', 'success')
+      showNotification('Event created successfully. Add sessions to enable check-in.', 'success')
       showCreateEventModal.value = false
-      newEvent.value = { title: '', description: '', location: '', date: '', startTime: '', endTime: '', session_type: 'single', afternoon_start_time: '13:00' }
+      newEvent.value = { title: '', description: '', location: '', date: '', year_level: '' }
       fetchAttendanceData()
     } else {
       if (response.status === 403) {
@@ -6248,14 +6272,12 @@ const updateAttendanceEvent = async () => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
     const eventDate = selectedEvent.value.date || selectedEvent.value.event_date
-    const autoStatus = calculateEventStatus(eventDate, selectedEvent.value.start_time, selectedEvent.value.end_time)
-    // Prepare payload with proper field mapping (date -> event_date for API)
     const eventPayload = {
-      ...selectedEvent.value,
+      title: selectedEvent.value.title,
+      description: selectedEvent.value.description || '',
+      location: selectedEvent.value.location || '',
       event_date: eventDate,
-      status: autoStatus,
-      session_type: selectedEvent.value.session_type || 'single',
-      afternoon_start_time: selectedEvent.value.afternoon_start_time || '13:00'
+      year_level: selectedEvent.value.year_level || ''
     }
     
     const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${selectedEvent.value._id}`, {
@@ -6321,6 +6343,115 @@ const deleteAttendanceEvent = async (eventId) => {
   } catch (error) {
     console.error('Error deleting event:', error)
     showNotification('Error deleting event', 'error')
+  }
+}
+
+const fetchEventSessions = async (eventId) => {
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  try {
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${eventId}/sessions`, {
+      headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
+    })
+    if (response.ok) {
+      const result = await response.json()
+      eventSessions.value = result.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching sessions:', error)
+  }
+}
+
+const openAddSessionModal = () => {
+  editingSession.value = null
+  newSession.value = { label: 'Morning', start_time: '', end_time: '', check_in_locked: false, check_out_locked: false }
+  showSessionModal.value = true
+}
+
+const openEditSessionModal = (session) => {
+  editingSession.value = session
+  newSession.value = { ...session }
+  showSessionModal.value = true
+}
+
+const saveSession = async () => {
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  try {
+    if (editingSession.value) {
+      const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${editingSession.value._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() },
+        body: JSON.stringify(newSession.value)
+      })
+      if (response.ok) {
+        showNotification('Session updated successfully', 'success')
+        showSessionModal.value = false
+        fetchEventSessions(selectedEvent.value._id)
+      } else {
+        if (response.status === 403) {
+          const handled = await handleAdminActionError(response)
+          if (!handled) {
+            pendingAdminAction.value = () => saveSession()
+            showAdminKeyModal.value = true
+          }
+          return
+        }
+        const errorData = await response.json()
+        showNotification(errorData.message || 'Failed to update session', 'error')
+      }
+    } else {
+      const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${selectedEvent.value._id}/sessions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() },
+        body: JSON.stringify(newSession.value)
+      })
+      if (response.ok) {
+        showNotification('Session added successfully', 'success')
+        showSessionModal.value = false
+        fetchEventSessions(selectedEvent.value._id)
+      } else {
+        if (response.status === 403) {
+          const handled = await handleAdminActionError(response)
+          if (!handled) {
+            pendingAdminAction.value = () => saveSession()
+            showAdminKeyModal.value = true
+          }
+          return
+        }
+        const errorData = await response.json()
+        showNotification(errorData.message || 'Failed to add session', 'error')
+      }
+    }
+  } catch (error) {
+    console.error('Error saving session:', error)
+    showNotification('Error saving session', 'error')
+  }
+}
+
+const deleteSession = async (sessionId) => {
+  if (!confirm('Delete this session?')) return
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  try {
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${sessionId}`, {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() }
+    })
+    if (response.ok) {
+      showNotification('Session deleted', 'success')
+      fetchEventSessions(selectedEvent.value._id)
+    } else {
+      if (response.status === 403) {
+        const handled = await handleAdminActionError(response)
+        if (!handled) {
+          pendingAdminAction.value = () => deleteSession(sessionId)
+          showAdminKeyModal.value = true
+        }
+        return
+      }
+      const errorData = await response.json()
+      showNotification(errorData.message || 'Failed to delete session', 'error')
+    }
+  } catch (error) {
+    console.error('Error deleting session:', error)
   }
 }
 
@@ -6673,7 +6804,7 @@ const manualRfidSubmit = () => {
 }
 
 const processRfidScan = async (inputCode) => {
-  if (!selectedEvent.value || rfidProcessing.value) return
+  if (!selectedSession.value || rfidProcessing.value) return
   
   rfidProcessing.value = true
   rfidResult.value = null
@@ -6685,7 +6816,7 @@ const processRfidScan = async (inputCode) => {
       ? { student_id: inputCode, identifier_type: 'student_id', source: 'manual' }
       : { rfid_code: inputCode, identifier_type: 'rfid', source: 'rfid' }
     
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${selectedEvent.value._id}/check`, {
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${selectedSession.value._id}/check`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -6738,10 +6869,10 @@ const openEventLogs = (event) => {
 const openEditEvent = (event) => {
   selectedEvent.value = { 
     ...event,
-    date: event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : event.date,
-    session_type: event.session_type || 'single',
-    afternoon_start_time: event.afternoon_start_time || '13:00'
+    date: event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : event.date
   }
+  eventSessions.value = []
+  fetchEventSessions(event._id)
   showEditEventModal.value = true
 }
 
