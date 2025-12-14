@@ -3348,15 +3348,15 @@ const exportToExcelByYear = async (event, yearLevel) => {
     
     const workbook = XLSX.utils.book_new()
     
-    const hasDualSessionData = logs.some(log => log.morning_check_in_at || log.afternoon_check_in_at)
-    const sessionTypeLabel = hasDualSessionData ? 'Dual Session (Morning & Afternoon)' : 'Single Session'
     const eventDateFormatted = formatEventDate(event.date || event.event_date)
     const eventLocation = event.location || ''
+    const uniqueSessions = [...new Set(logs.map(log => log.session?.label || log.session_label || 'Session').filter(Boolean))]
+    const sessionsLabel = uniqueSessions.length > 0 ? uniqueSessions.join(', ') : 'All Sessions'
     
     const headerRows = [
       { 'Event Title': event.title || 'Attendance Event' },
       { 'Event Title': `Date: ${eventDateFormatted}` },
-      { 'Event Title': `Session Type: ${sessionTypeLabel}` },
+      { 'Event Title': `Sessions: ${sessionsLabel}` },
       ...(eventLocation ? [{ 'Event Title': `Location: ${eventLocation}` }] : []),
       { 'Event Title': `Year Level: ${yearLevel}` },
       { 'Event Title': '' }
@@ -3365,52 +3365,26 @@ const exportToExcelByYear = async (event, yearLevel) => {
     const worksheetData = logs.map((log, index) => {
       const checkIn = log.check_in_at || log.check_in_time
       const checkOut = log.check_out_at || log.check_out_time
-      const morningCheckIn = log.morning_check_in_at
-      const morningCheckOut = log.morning_check_out_at
-      const afternoonCheckIn = log.afternoon_check_in_at
-      const afternoonCheckOut = log.afternoon_check_out_at
       
       const studentName = log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim() || '-'
       const studentId = log.student?.student_id || log.student_id || ''
       const program = log.student?.program || log.program || ''
+      const sessionLabel = log.session?.label || log.session_label || '-'
       
-      const isDualSession = morningCheckIn || morningCheckOut || afternoonCheckIn || afternoonCheckOut
+      let status = 'Absent'
+      if (checkIn && checkOut) status = 'Present'
+      else if (checkIn && !checkOut) status = 'Incomplete'
       
-      if (isDualSession) {
-        const morningComplete = morningCheckIn && morningCheckOut
-        const afternoonComplete = afternoonCheckIn && afternoonCheckOut
-        let status = 'Absent'
-        if (morningComplete && afternoonComplete) status = 'Present'
-        else if (morningComplete || afternoonComplete) status = 'Partial'
-        else if (morningCheckIn || afternoonCheckIn) status = 'Incomplete'
-        
-        return {
-          '#': index + 1,
-          'Student ID': studentId,
-          'Name': studentName,
-          'Program': program,
-          'Year Level': yearLevel,
-          'Morning In': morningCheckIn ? new Date(morningCheckIn).toLocaleString('en-PH') : '-',
-          'Morning Out': morningCheckOut ? new Date(morningCheckOut).toLocaleString('en-PH') : '-',
-          'Afternoon In': afternoonCheckIn ? new Date(afternoonCheckIn).toLocaleString('en-PH') : '-',
-          'Afternoon Out': afternoonCheckOut ? new Date(afternoonCheckOut).toLocaleString('en-PH') : '-',
-          'Status': status
-        }
-      } else {
-        let status = 'Absent'
-        if (checkIn && checkOut) status = 'Present'
-        else if (checkIn && !checkOut) status = 'Incomplete'
-        
-        return {
-          '#': index + 1,
-          'Student ID': studentId,
-          'Name': studentName,
-          'Program': program,
-          'Year Level': yearLevel,
-          'Check-In': checkIn ? new Date(checkIn).toLocaleString('en-PH') : '-',
-          'Check-Out': checkOut ? new Date(checkOut).toLocaleString('en-PH') : '-',
-          'Status': status
-        }
+      return {
+        '#': index + 1,
+        'Student ID': studentId,
+        'Name': studentName,
+        'Program': program,
+        'Year Level': yearLevel,
+        'Session': sessionLabel,
+        'Check-In': checkIn ? new Date(checkIn).toLocaleString('en-PH') : '-',
+        'Check-Out': checkOut ? new Date(checkOut).toLocaleString('en-PH') : '-',
+        'Status': status
       }
     })
     
@@ -3418,13 +3392,9 @@ const exportToExcelByYear = async (event, yearLevel) => {
     const dataStartRow = headerRows.length + 1
     XLSX.utils.sheet_add_json(headerSheet, worksheetData, { origin: `A${dataStartRow}` })
     
-    const isDualSession = worksheetData.length > 0 && worksheetData[0]['Morning In'] !== undefined
-    const columnWidths = isDualSession ? [
+    const columnWidths = [
       { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
-      { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 12 }
-    ] : [
-      { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
-      { wch: 20 }, { wch: 20 }, { wch: 12 }
+      { wch: 12 }, { wch: 20 }, { wch: 20 }, { wch: 12 }
     ]
     headerSheet['!cols'] = columnWidths
     
@@ -4112,59 +4082,15 @@ const confirmTimePicker = () => {
     if (!newEvent.value.endTime) {
       newEvent.value.endTime = calculateEndTime(timeStr)
     }
-    if (newEvent.value.session_type === 'dual' || newEvent.value.session_type === 'half_day') {
-      if (currentPeriod === 'PM') {
-        showNotification('Dual events must start in the morning (AM). Please select a time before 12:00 PM.', 'error')
-        newEvent.value.startTime = '07:00'
-      }
-      const validation = validateDualEventTimes(newEvent.value.startTime, newEvent.value.endTime)
-      if (!validation.valid) {
-        newEvent.value.endTime = '17:00'
-        showNotification('End time set to 5:00 PM for dual session.', 'warning')
-      }
-    }
   } else if (timePickerTarget.value === 'endTime') {
-    if ((newEvent.value.session_type === 'dual' || newEvent.value.session_type === 'half_day')) {
-      if (currentPeriod === 'AM') {
-        showNotification('Dual events must end in the afternoon (PM). End time auto-adjusted to 5:00 PM.', 'warning')
-        newEvent.value.endTime = '17:00'
-      } else {
-        newEvent.value.endTime = timeStr
-      }
-    } else {
-      newEvent.value.endTime = timeStr
-    }
+    newEvent.value.endTime = timeStr
   } else if (timePickerTarget.value === 'edit_start_time') {
     selectedEvent.value.start_time = timeStr
     if (!selectedEvent.value.end_time) {
       selectedEvent.value.end_time = calculateEndTime(timeStr)
     }
-    if (selectedEvent.value.session_type === 'dual' || selectedEvent.value.session_type === 'half_day') {
-      if (currentPeriod === 'PM') {
-        showNotification('Dual events must start in the morning (AM). Please select a time before 12:00 PM.', 'error')
-        selectedEvent.value.start_time = '07:00'
-      }
-      const validation = validateDualEventTimes(selectedEvent.value.start_time, selectedEvent.value.end_time)
-      if (!validation.valid) {
-        selectedEvent.value.end_time = '17:00'
-        showNotification('End time set to 5:00 PM for dual session.', 'warning')
-      }
-    }
   } else if (timePickerTarget.value === 'edit_end_time') {
-    if ((selectedEvent.value.session_type === 'dual' || selectedEvent.value.session_type === 'half_day')) {
-      if (currentPeriod === 'AM') {
-        showNotification('Dual events must end in the afternoon (PM). End time auto-adjusted to 5:00 PM.', 'warning')
-        selectedEvent.value.end_time = '17:00'
-      } else {
-        selectedEvent.value.end_time = timeStr
-      }
-    } else {
-      selectedEvent.value.end_time = timeStr
-    }
-  } else if (timePickerTarget.value === 'afternoon_start') {
-    newEvent.value.afternoon_start_time = timeStr
-  } else if (timePickerTarget.value === 'edit_afternoon_start') {
-    selectedEvent.value.afternoon_start_time = timeStr
+    selectedEvent.value.end_time = timeStr
   } else if (timePickerTarget.value === 'session_start_time') {
     newSession.value.start_time = timeStr
   } else if (timePickerTarget.value === 'session_end_time') {
@@ -6529,11 +6455,10 @@ const exportEventAttendanceToExcel = async (event) => {
     // Create workbook
     const workbook = XLSX.utils.book_new()
     
-    // Determine session type and prepare event info
-    const hasDualSessionData = logs.some(log => log.morning_check_in_at || log.afternoon_check_in_at)
-    const sessionTypeLabel = hasDualSessionData ? 'Dual Session (Morning & Afternoon)' : 'Single Session'
     const eventDateFormatted = formatEventDate(event.date || event.event_date)
     const eventLocation = event.location || ''
+    const uniqueSessions = [...new Set(logs.map(log => log.session?.label || log.session_label || 'Session').filter(Boolean))]
+    const sessionsLabel = uniqueSessions.length > 0 ? uniqueSessions.join(', ') : 'All Sessions'
     
     // Year level order for organization
     const yearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
@@ -6558,67 +6483,36 @@ const exportEventAttendanceToExcel = async (event) => {
       const headerRows = [
         { 'Event Title': event.title || 'Attendance Event' },
         { 'Event Title': `Date: ${eventDateFormatted}` },
-        { 'Event Title': `Session Type: ${sessionTypeLabel}` },
+        { 'Event Title': `Sessions: ${sessionsLabel}` },
         ...(eventLocation ? [{ 'Event Title': `Location: ${eventLocation}` }] : []),
         { 'Event Title': `Year Level: ${yearLevel}` },
         { 'Event Title': '' }
       ]
       
-      // Prepare data for worksheet - handles both single and dual session modes
+      // Prepare data for worksheet with session labels
       const worksheetData = yearLogs.map((log, index) => {
-        // Single session (2-in-a-day)
         const checkIn = log.check_in_at || log.check_in_time
         const checkOut = log.check_out_at || log.check_out_time
-        // Dual session (4-in-a-day)
-        const morningCheckIn = log.morning_check_in_at
-        const morningCheckOut = log.morning_check_out_at
-        const afternoonCheckIn = log.afternoon_check_in_at
-        const afternoonCheckOut = log.afternoon_check_out_at
         
         const studentName = log.student?.full_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim()
         const studentId = log.student?.student_id || log.student_id || ''
         const program = log.student?.program || log.program || ''
+        const sessionLabel = log.session?.label || log.session_label || '-'
         
-        // Check if dual session mode
-        const isDualSession = morningCheckIn || morningCheckOut || afternoonCheckIn || afternoonCheckOut
+        let status = 'Absent'
+        if (checkIn && checkOut) status = 'Present'
+        else if (checkIn && !checkOut) status = 'Incomplete'
         
-        if (isDualSession) {
-          // Determine attendance status for dual session
-          const morningComplete = morningCheckIn && morningCheckOut
-          const afternoonComplete = afternoonCheckIn && afternoonCheckOut
-          let status = 'Absent'
-          if (morningComplete && afternoonComplete) status = 'Present'
-          else if (morningComplete || afternoonComplete) status = 'Partial'
-          else if (morningCheckIn || afternoonCheckIn) status = 'Incomplete'
-          
-          return {
-            '#': index + 1,
-            'Student ID': studentId,
-            'Name': studentName,
-            'Program': program,
-            'Year Level': yearLevel,
-            'Morning In': morningCheckIn ? new Date(morningCheckIn).toLocaleString('en-PH') : '-',
-            'Morning Out': morningCheckOut ? new Date(morningCheckOut).toLocaleString('en-PH') : '-',
-            'Afternoon In': afternoonCheckIn ? new Date(afternoonCheckIn).toLocaleString('en-PH') : '-',
-            'Afternoon Out': afternoonCheckOut ? new Date(afternoonCheckOut).toLocaleString('en-PH') : '-',
-            'Status': status
-          }
-        } else {
-          // Single session mode
-          let status = 'Absent'
-          if (checkIn && checkOut) status = 'Present'
-          else if (checkIn && !checkOut) status = 'Incomplete'
-          
-          return {
-            '#': index + 1,
-            'Student ID': studentId,
-            'Name': studentName,
-            'Program': program,
-            'Year Level': yearLevel,
-            'Check-In': checkIn ? new Date(checkIn).toLocaleString('en-PH') : '-',
-            'Check-Out': checkOut ? new Date(checkOut).toLocaleString('en-PH') : '-',
-            'Status': status
-          }
+        return {
+          '#': index + 1,
+          'Student ID': studentId,
+          'Name': studentName,
+          'Program': program,
+          'Year Level': yearLevel,
+          'Session': sessionLabel,
+          'Check-In': checkIn ? new Date(checkIn).toLocaleString('en-PH') : '-',
+          'Check-Out': checkOut ? new Date(checkOut).toLocaleString('en-PH') : '-',
+          'Status': status
         }
       })
       
@@ -6627,25 +6521,13 @@ const exportEventAttendanceToExcel = async (event) => {
       const dataStartRow = headerRows.length + 1
       XLSX.utils.sheet_add_json(headerSheet, worksheetData, { origin: `A${dataStartRow}` })
       
-      // Set column widths - check if dual session based on first record
-      const isDualSession = worksheetData.length > 0 && worksheetData[0]['Morning In'] !== undefined
-      const columnWidths = isDualSession ? [
+      const columnWidths = [
         { wch: 5 },   // #
         { wch: 15 },  // Student ID
         { wch: 30 },  // Name
         { wch: 10 },  // Program
         { wch: 12 },  // Year Level
-        { wch: 22 },  // Morning In
-        { wch: 22 },  // Morning Out
-        { wch: 22 },  // Afternoon In
-        { wch: 22 },  // Afternoon Out
-        { wch: 12 }   // Status
-      ] : [
-        { wch: 5 },   // #
-        { wch: 15 },  // Student ID
-        { wch: 30 },  // Name
-        { wch: 10 },  // Program
-        { wch: 12 },  // Year Level
+        { wch: 12 },  // Session
         { wch: 20 },  // Check-In
         { wch: 20 },  // Check-Out
         { wch: 12 }   // Status
@@ -6656,47 +6538,21 @@ const exportEventAttendanceToExcel = async (event) => {
       XLSX.utils.book_append_sheet(workbook, headerSheet, yearLevel.replace(' ', '_'))
     })
     
-    // Create summary sheet - handles both single and dual session modes
+    // Create summary sheet
     const summaryData = yearLevels.map(yearLevel => {
       const yearLogs = logs.filter(log => {
         const studentYearLevel = log.student?.year_level || log.year_level || ''
         return studentYearLevel === yearLevel
       })
       
-      // Check if dual session mode based on presence of morning/afternoon fields
-      const hasDualSession = yearLogs.some(log => log.morning_check_in_at || log.afternoon_check_in_at)
+      const presentCount = yearLogs.filter(log => (log.check_in_at || log.check_in_time) && (log.check_out_at || log.check_out_time)).length
+      const incompleteCount = yearLogs.filter(log => (log.check_in_at || log.check_in_time) && !(log.check_out_at || log.check_out_time)).length
       
-      if (hasDualSession) {
-        const fullPresentCount = yearLogs.filter(log => 
-          log.morning_check_in_at && log.morning_check_out_at && 
-          log.afternoon_check_in_at && log.afternoon_check_out_at
-        ).length
-        const partialCount = yearLogs.filter(log => 
-          (log.morning_check_in_at && log.morning_check_out_at && (!log.afternoon_check_in_at || !log.afternoon_check_out_at)) ||
-          ((!log.morning_check_in_at || !log.morning_check_out_at) && log.afternoon_check_in_at && log.afternoon_check_out_at)
-        ).length
-        const incompleteCount = yearLogs.filter(log => 
-          (log.morning_check_in_at && !log.morning_check_out_at) || 
-          (log.afternoon_check_in_at && !log.afternoon_check_out_at)
-        ).length
-        
-        return {
-          'Year Level': yearLevel,
-          'Total Attendees': yearLogs.length,
-          'Present (Full Day)': fullPresentCount,
-          'Partial (Half Day)': partialCount,
-          'Incomplete': incompleteCount
-        }
-      } else {
-        const presentCount = yearLogs.filter(log => (log.check_in_at || log.check_in_time) && (log.check_out_at || log.check_out_time)).length
-        const incompleteCount = yearLogs.filter(log => (log.check_in_at || log.check_in_time) && !(log.check_out_at || log.check_out_time)).length
-        
-        return {
-          'Year Level': yearLevel,
-          'Total Attendees': yearLogs.length,
-          'Present (Complete)': presentCount,
-          'Incomplete': incompleteCount
-        }
+      return {
+        'Year Level': yearLevel,
+        'Total Attendees': yearLogs.length,
+        'Present (Complete)': presentCount,
+        'Incomplete': incompleteCount
       }
     })
     
@@ -6704,7 +6560,7 @@ const exportEventAttendanceToExcel = async (event) => {
     const summaryHeaderRows = [
       { 'Year Level': event.title || 'Attendance Event' },
       { 'Year Level': `Date: ${eventDateFormatted}` },
-      { 'Year Level': `Session Type: ${sessionTypeLabel}` },
+      { 'Year Level': `Sessions: ${sessionsLabel}` },
       ...(eventLocation ? [{ 'Year Level': `Location: ${eventLocation}` }] : []),
       { 'Year Level': '' },
       { 'Year Level': 'ATTENDANCE SUMMARY' },
