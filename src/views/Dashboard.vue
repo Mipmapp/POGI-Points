@@ -6821,7 +6821,7 @@ const fetchEventLogs = async (eventId) => {
     if (response.ok) {
       const result = await response.json()
       // Enrich logs with cached photos and backfill cache from logs with photos
-      attendanceLogs.value = (result.data || []).map(log => {
+      let logs = (result.data || []).map(log => {
         const key = deriveStudentKey(log)
         const cachedPhoto = key ? studentPhotoCache.value[key] : null
         const existingPhoto = log.student_image || log.student?.photo
@@ -6836,6 +6836,85 @@ const fetchEventLogs = async (eventId) => {
           student_image: log.student_image || cachedPhoto || log.student?.photo
         }
       })
+      
+      // Check if event has ended - if so, fetch students matching event's target audience and add absent entries
+      const event = selectedEvent.value || attendanceEvents.value.find(e => e._id === eventId)
+      const eventEnded = event ? hasEventEndedPH(event) : false
+      
+      if (eventEnded) {
+        try {
+          // Fetch approved students
+          const studentsResponse = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000&status=approved', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'X-SSAAM-TS': encodeTimestamp()
+            }
+          })
+          
+          if (studentsResponse.ok) {
+            const studentsResult = await studentsResponse.json()
+            const allStudents = studentsResult.students || studentsResult.data || []
+            
+            // Get set of student IDs who have attendance logs
+            const attendedStudentIds = new Set(logs.map(log => log.student_id || log.student?.student_id))
+            
+            // Check if event targets a specific year level
+            const eventYearLevel = event?.year_level || ''
+            const validYearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
+            const hasSpecificYearLevel = validYearLevels.includes(eventYearLevel)
+            
+            // Filter students based on event's target audience
+            let absentStudents = allStudents.filter(student => {
+              // Skip students who already have attendance logs
+              if (attendedStudentIds.has(student.student_id)) return false
+              
+              // If event targets a specific year level, only include those students
+              if (hasSpecificYearLevel && student.year_level !== eventYearLevel) return false
+              
+              // Apply UI year level filter if set
+              if (eventLogsFilter.value.yearLevel && student.year_level !== eventLogsFilter.value.yearLevel) return false
+              
+              // Apply program filter if set
+              if (eventLogsFilter.value.program && student.program !== eventLogsFilter.value.program) return false
+              
+              // Apply search filter if set
+              if (eventLogsFilter.value.search) {
+                const searchLower = eventLogsFilter.value.search.toLowerCase()
+                const nameMatch = (student.full_name || '').toLowerCase().includes(searchLower)
+                const idMatch = (student.student_id || '').toLowerCase().includes(searchLower)
+                if (!nameMatch && !idMatch) return false
+              }
+              
+              return true
+            })
+            
+            // Create absent log entries for students without attendance
+            const absentLogs = absentStudents.map(student => ({
+              id: `absent_${student.student_id}`,
+              student_id: student.student_id,
+              student_name: student.full_name,
+              student_image: student.photo,
+              program: student.program,
+              year_level: student.year_level,
+              check_in_at: null,
+              check_in_time: null,
+              check_out_at: null,
+              check_out_time: null,
+              is_late: false,
+              is_absent: true,
+              student: student
+            }))
+            
+            // Combine attendance logs with absent entries
+            logs = [...logs, ...absentLogs]
+          }
+        } catch (studentsError) {
+          console.error('Error fetching students for absent list:', studentsError)
+        }
+      }
+      
+      attendanceLogs.value = logs
     }
   } catch (error) {
     console.error('Error fetching event logs:', error)
