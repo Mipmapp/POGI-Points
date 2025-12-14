@@ -566,7 +566,13 @@ const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 50
             w: 'majority'
         });
         console.log('Connected to MongoDB Atlas');
-        app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+        app.listen(PORT, () => {
+            console.log(`Server running on ${PORT}`);
+            // Run auto-update after server starts and DB is connected
+            if (typeof autoUpdateEventStatuses === 'function') {
+                autoUpdateEventStatuses();
+            }
+        });
     } catch (err) {
         console.error(`MongoDB connection attempt ${retryCount + 1} failed:`, err.message);
         if (retryCount < maxRetries) {
@@ -3577,6 +3583,31 @@ async function autoUpdateEventStatuses() {
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
+        // AUTO-ACTIVATE: Activate draft events whose date is today
+        const draftEventsToActivate = await AttendanceEvent.find({
+            status: 'draft',
+            event_date: { $gte: todayStart, $lte: todayEnd }
+        });
+
+        let activatedCount = 0;
+        for (const event of draftEventsToActivate) {
+            event.status = 'active';
+            event.activated_at = now;
+            event.updated_at = now;
+            await event.save();
+
+            // Also activate all draft sessions within this event
+            await AttendanceSession.updateMany(
+                { event_id: event._id, status: 'draft' },
+                { $set: { status: 'active', updated_at: now } }
+            );
+            activatedCount++;
+        }
+
+        if (activatedCount > 0) {
+            console.log(`Auto-activated ${activatedCount} events for today`);
+        }
+
         // Close active events whose date has passed
         const activeClosedResult = await AttendanceEvent.updateMany(
             { 
@@ -3591,7 +3622,26 @@ async function autoUpdateEventStatuses() {
             }
         );
 
+        // Close sessions of closed events
+        if (activeClosedResult.modifiedCount > 0) {
+            const closedEventIds = await AttendanceEvent.find({ 
+                status: 'closed', 
+                closed_at: now 
+            }).distinct('_id');
+            
+            await AttendanceSession.updateMany(
+                { event_id: { $in: closedEventIds }, status: 'active' },
+                { $set: { status: 'closed', updated_at: now } }
+            );
+        }
+
         // Also close draft events whose date has passed (they were never activated)
+        // First find the draft events to close so we can close their sessions too
+        const draftEventsToClose = await AttendanceEvent.find({
+            status: 'draft',
+            event_date: { $lt: todayStart }
+        }).distinct('_id');
+
         const draftClosedResult = await AttendanceEvent.updateMany(
             { 
                 status: 'draft',
@@ -3605,6 +3655,14 @@ async function autoUpdateEventStatuses() {
             }
         );
 
+        // Close all sessions of draft events that were just closed
+        if (draftEventsToClose.length > 0) {
+            await AttendanceSession.updateMany(
+                { event_id: { $in: draftEventsToClose } },
+                { $set: { status: 'closed', updated_at: now } }
+            );
+        }
+
         const totalClosed = activeClosedResult.modifiedCount + draftClosedResult.modifiedCount;
         if (totalClosed > 0) {
             console.log(`Auto-closed ${totalClosed} past events (${activeClosedResult.modifiedCount} active, ${draftClosedResult.modifiedCount} draft)`);
@@ -3614,7 +3672,8 @@ async function autoUpdateEventStatuses() {
     }
 }
 
-setInterval(autoUpdateEventStatuses, 60 * 60 * 1000);
+// Run every 15 minutes for responsive status updates (initial run is triggered after DB connection in connectWithRetry)
+setInterval(autoUpdateEventStatuses, 15 * 60 * 1000);
 
 function getEventAutoStatus(eventDate) {
     const now = new Date();
