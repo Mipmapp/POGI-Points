@@ -7380,12 +7380,27 @@ const getEventDisplayStatus = (event) => {
   
   if (event.status === 'draft') {
     const nowPH = getPhilippineTime()
-    const eventDate = new Date(event.event_date || event.date)
-    const todayStart = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate())
+    const eventDateRaw = event.event_date || event.date
     
-    if (eventDate < todayStart) {
+    let eventDateObj
+    if (typeof eventDateRaw === 'string') {
+      eventDateObj = eventDateRaw.includes('T') ? new Date(eventDateRaw) : new Date(eventDateRaw + 'T12:00:00')
+    } else {
+      eventDateObj = new Date(eventDateRaw)
+    }
+    
+    const todayStart = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate())
+    const tomorrowStart = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate() + 1)
+    const eventDateOnly = new Date(eventDateObj.getFullYear(), eventDateObj.getMonth(), eventDateObj.getDate())
+    
+    if (eventDateOnly < todayStart) {
       return { status: 'closed', label: 'Closed' }
     }
+    
+    if (eventDateOnly >= todayStart && eventDateOnly < tomorrowStart) {
+      return { status: 'active', label: 'Active' }
+    }
+    
     return { status: 'draft', label: 'Upcoming' }
   }
   
