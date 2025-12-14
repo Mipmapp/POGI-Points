@@ -3696,10 +3696,16 @@ app.get('/apis/attendance/events/:id', auth, async (req, res) => {
 // Create attendance event (admin only)
 app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
     try {
-        const { title, description, location, event_date, year_level, status } = req.body;
+        const { title, description, location, event_date, year_level, status, start_time, end_time } = req.body;
 
         if (!title || !event_date) {
             return res.status(400).json({ message: "Title and event date are required" });
+        }
+
+        // Auto-determine status based on event date if not provided
+        let eventStatus = status;
+        if (!eventStatus) {
+            eventStatus = getEventAutoStatus(new Date(event_date));
         }
 
         const event = new AttendanceEvent({
@@ -3708,10 +3714,12 @@ app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
             location: location || "",
             event_date: new Date(event_date),
             year_level: year_level || "",
-            status: status || 'draft',
+            start_time: start_time || null,
+            end_time: end_time || null,
+            status: eventStatus,
             created_by: req.master.id,
             created_by_name: req.master.username,
-            activated_at: status === 'active' ? new Date() : null
+            activated_at: eventStatus === 'active' ? new Date() : null
         });
 
         const saved = await event.save();
@@ -3724,7 +3732,7 @@ app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
 // Update attendance event (admin only)
 app.put('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) => {
     try {
-        const { title, description, location, event_date, year_level, status } = req.body;
+        const { title, description, location, event_date, year_level, status, start_time, end_time } = req.body;
 
         const event = await AttendanceEvent.findById(req.params.id);
         if (!event) {
@@ -3736,6 +3744,8 @@ app.put('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) =
         if (location !== undefined) event.location = location;
         if (event_date) event.event_date = new Date(event_date);
         if (year_level !== undefined) event.year_level = year_level;
+        if (start_time !== undefined) event.start_time = start_time;
+        if (end_time !== undefined) event.end_time = end_time;
 
         if (status && status !== event.status) {
             event.status = status;
