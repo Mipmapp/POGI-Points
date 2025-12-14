@@ -1009,8 +1009,8 @@
                     <div class="flex-1">
                       <div class="flex items-center gap-3 mb-2">
                         <h3 class="font-semibold text-lg text-purple-900">{{ event.title }}</h3>
-                        <span :class="['px-2 py-1 rounded-full text-xs font-medium', getStatusBadgeClass(event.status)]">{{ event.status === 'active' ? 'Active' : event.status === 'draft' ? 'Upcoming' : event.status === 'closed' ? 'Closed' : event.status }}</span>
-                        <span v-if="event.status === 'active' && getEventTimeRemaining(event._id)" :class="['px-2 py-1 rounded-full text-xs font-medium', getEventTimeRemaining(event._id) === 'Ended' ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800']">
+                        <span :class="['px-2 py-1 rounded-full text-xs font-medium', getStatusBadgeClass(getEventDisplayStatus(event).status)]">{{ getEventDisplayStatus(event).label }}</span>
+                        <span v-if="event.status === 'active' && getEventTimeRemaining(event._id) && getEventTimeRemaining(event._id) !== 'Ended'" :class="['px-2 py-1 rounded-full text-xs font-medium', 'bg-orange-100 text-orange-800']">
                           {{ getEventTimeRemaining(event._id) }}
                         </span>
                       </div>
@@ -7072,8 +7072,41 @@ const getStatusBadgeClass = (status) => {
     case 'active': return 'bg-blue-100 text-blue-800'
     case 'draft': return 'bg-gray-100 text-gray-800'
     case 'closed': return 'bg-red-100 text-red-800'
+    case 'ended': return 'bg-red-100 text-red-800'
     default: return 'bg-gray-100 text-gray-800'
   }
+}
+
+const getEventDisplayStatus = (event) => {
+  if (!event) return { status: 'draft', label: 'Upcoming' }
+  
+  const eventId = event._id || event.event_id
+  const timeRemaining = eventTimeRemaining.value[eventId]
+  
+  if (timeRemaining === 'Ended') {
+    return { status: 'ended', label: 'Ended' }
+  }
+  
+  if (event.status === 'active') {
+    return { status: 'active', label: 'Active' }
+  }
+  
+  if (event.status === 'draft') {
+    const nowPH = getPhilippineTime()
+    const eventDate = new Date(event.event_date || event.date)
+    const todayStart = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate())
+    
+    if (eventDate < todayStart) {
+      return { status: 'closed', label: 'Closed' }
+    }
+    return { status: 'draft', label: 'Upcoming' }
+  }
+  
+  if (event.status === 'closed') {
+    return { status: 'closed', label: 'Closed' }
+  }
+  
+  return { status: event.status, label: event.status }
 }
 
 const getAttendanceLogStatusLabel = (log) => {

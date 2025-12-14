@@ -3575,7 +3575,8 @@ async function autoUpdateEventStatuses() {
         const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
         const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
 
-        const completedResult = await AttendanceEvent.updateMany(
+        // Close active events whose date has passed
+        const activeClosedResult = await AttendanceEvent.updateMany(
             { 
                 status: 'active',
                 event_date: { $lt: todayStart }
@@ -3588,8 +3589,23 @@ async function autoUpdateEventStatuses() {
             }
         );
 
-        if (completedResult.modifiedCount > 0) {
-            console.log(`Auto-closed ${completedResult.modifiedCount} past events`);
+        // Also close draft events whose date has passed (they were never activated)
+        const draftClosedResult = await AttendanceEvent.updateMany(
+            { 
+                status: 'draft',
+                event_date: { $lt: todayStart }
+            },
+            { 
+                $set: { 
+                    status: 'closed',
+                    closed_at: now
+                }
+            }
+        );
+
+        const totalClosed = activeClosedResult.modifiedCount + draftClosedResult.modifiedCount;
+        if (totalClosed > 0) {
+            console.log(`Auto-closed ${totalClosed} past events (${activeClosedResult.modifiedCount} active, ${draftClosedResult.modifiedCount} draft)`);
         }
     } catch (err) {
         console.error('Auto-update event status error:', err.message);
@@ -3664,8 +3680,8 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
     }
 });
 
-// Get single attendance event
-app.get('/apis/attendance/events/:id', studentAuth, async (req, res) => {
+// Get single attendance event (admin or student with JWT)
+app.get('/apis/attendance/events/:id', auth, async (req, res) => {
     try {
         const event = await AttendanceEvent.findById(req.params.id);
         if (!event) {
@@ -3808,8 +3824,8 @@ app.post('/apis/attendance/events/:eventId/sessions', auth, adminActionAuth, asy
     }
 });
 
-// Get all sessions for an event
-app.get('/apis/attendance/events/:eventId/sessions', studentAuth, async (req, res) => {
+// Get all sessions for an event (admin with JWT)
+app.get('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
     try {
         const sessions = await AttendanceSession.find({ event_id: req.params.eventId })
             .sort({ start_time: 1 });
