@@ -1064,8 +1064,8 @@
                           <div class="flex items-center gap-3">
                             <span class="font-medium text-gray-800">{{ session.label }}</span>
                             <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
-                            <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', session.status === 'active' ? 'bg-green-100 text-green-700' : session.status === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
-                              {{ session.status === 'active' ? 'Active' : session.status === 'draft' ? 'Draft' : 'Closed' }}
+                            <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', getSessionDisplayStatus(session, event) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, event) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
+                              {{ getSessionDisplayStatus(session, event) === 'active' ? 'Active' : getSessionDisplayStatus(session, event) === 'draft' ? 'Upcoming' : 'Closed' }}
                             </span>
                           </div>
                           <div class="flex items-center gap-1 text-xs text-gray-400">
@@ -1480,8 +1480,8 @@
                             <span class="font-medium text-gray-800">{{ session.label }}</span>
                             <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
                           </div>
-                          <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', session.status === 'active' ? 'bg-green-100 text-green-700' : session.status === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
-                            {{ session.status === 'active' ? 'Active' : session.status === 'draft' ? 'Upcoming' : 'Closed' }}
+                          <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', getSessionDisplayStatus(session, event) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, event) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
+                            {{ getSessionDisplayStatus(session, event) === 'active' ? 'Active' : getSessionDisplayStatus(session, event) === 'draft' ? 'Upcoming' : 'Closed' }}
                           </span>
                         </div>
                       </div>
@@ -3175,8 +3175,8 @@
               <div class="flex-1">
                 <div class="flex items-center gap-2">
                   <span class="font-medium text-gray-800">{{ session.label }}</span>
-                  <span :class="['px-2 py-0.5 rounded-full text-xs', session.status === 'active' ? 'bg-green-100 text-green-700' : session.status === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
-                    {{ session.status === 'active' ? 'Active' : session.status === 'draft' ? 'Draft' : 'Closed' }}
+                  <span :class="['px-2 py-0.5 rounded-full text-xs', getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, selectedEvent) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
+                    {{ getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'Active' : getSessionDisplayStatus(session, selectedEvent) === 'draft' ? 'Upcoming' : 'Closed' }}
                   </span>
                 </div>
                 <p class="text-xs text-gray-500">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
@@ -4285,6 +4285,33 @@ const calculateEventStatus = (eventDate, startTime, endTime) => {
   if (now < eventStart) {
     return 'draft'
   } else if (now >= eventStart && now <= eventEnd) {
+    return 'active'
+  } else {
+    return 'closed'
+  }
+}
+
+const getSessionDisplayStatus = (session, event) => {
+  if (!session || !session.start_time || !session.end_time) return session?.status || 'draft'
+  
+  const eventDate = event?.date || event?.event_date
+  if (!eventDate) return session.status || 'draft'
+  
+  const now = new Date()
+  const [startH, startM] = session.start_time.split(':').map(Number)
+  const [endH, endM] = session.end_time.split(':').map(Number)
+  
+  const dateStr = typeof eventDate === 'string' ? eventDate.split('T')[0] : new Date(eventDate).toISOString().split('T')[0]
+  
+  const sessionStart = new Date(dateStr + 'T00:00:00')
+  sessionStart.setHours(startH, startM, 0, 0)
+  
+  const sessionEnd = new Date(dateStr + 'T00:00:00')
+  sessionEnd.setHours(endH, endM, 0, 0)
+  
+  if (now < sessionStart) {
+    return 'draft'
+  } else if (now >= sessionStart && now <= sessionEnd) {
     return 'active'
   } else {
     return 'closed'
