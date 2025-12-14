@@ -7225,15 +7225,33 @@ const fetchUserAttendanceLogs = async () => {
     if (response.ok) {
       const result = await response.json()
       const records = result.data || []
-      userAttendanceLogs.value = records.map(r => ({
-        id: r.event?._id || r._id,
-        event_name: r.event?.title || 'Event',
-        eventName: r.event?.title || 'Event',
-        event_date: r.event?.event_date,
-        check_in_at: r.attendance?.check_in_at,
-        check_out_at: r.attendance?.check_out_at,
-        status: r.attendance?.status || 'absent'
-      }))
+      const flattenedLogs = []
+      
+      records.forEach(r => {
+        if (r.sessions && r.sessions.length > 0) {
+          r.sessions.forEach(sessionData => {
+            if (sessionData.attendance && (sessionData.attendance.check_in_at || sessionData.attendance.check_out_at)) {
+              flattenedLogs.push({
+                id: `${r.event?._id}_${sessionData.session?._id}`,
+                event_name: r.event?.title || 'Event',
+                eventName: r.event?.title || 'Event',
+                event_date: r.event?.event_date,
+                session_label: sessionData.session?.label || 'Session',
+                check_in_time: sessionData.attendance?.check_in_at,
+                check_out_time: sessionData.attendance?.check_out_at,
+                check_in_at: sessionData.attendance?.check_in_at,
+                check_out_at: sessionData.attendance?.check_out_at,
+                is_late: sessionData.attendance?.is_late || false,
+                status: sessionData.attendance?.status || 'absent',
+                created_at: sessionData.attendance?.check_in_at || r.event?.event_date
+              })
+            }
+          })
+        }
+      })
+      
+      flattenedLogs.sort((a, b) => new Date(b.check_in_at || 0) - new Date(a.check_in_at || 0))
+      userAttendanceLogs.value = flattenedLogs
     }
   } catch (error) {
     console.error('Failed to fetch user attendance logs:', error)

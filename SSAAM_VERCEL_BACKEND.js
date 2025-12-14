@@ -4117,10 +4117,6 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
             return res.status(404).json({ message: "Session not found" });
         }
 
-        if (session.status !== 'active') {
-            return res.status(400).json({ message: "Session is not active" });
-        }
-
         const event = await AttendanceEvent.findById(session.event_id);
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
@@ -4128,6 +4124,45 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
 
         if (event.status !== 'active') {
             return res.status(400).json({ message: "Event is not active" });
+        }
+
+        // Helper function to calculate if session is currently active based on time
+        // This matches the frontend's getSessionDisplayStatus logic
+        const isSessionActiveByTime = () => {
+            if (!session.start_time || !session.end_time || !event.event_date) {
+                return session.status === 'active';
+            }
+            
+            const [startH, startM] = session.start_time.split(':').map(Number);
+            const [endH, endM] = session.end_time.split(':').map(Number);
+            
+            // Extract date string from event_date (handles both ISO string and Date object)
+            let eventDateStr;
+            const eventDateValue = event.event_date;
+            if (typeof eventDateValue === 'string') {
+                eventDateStr = eventDateValue.includes('T') ? eventDateValue.split('T')[0] : eventDateValue;
+            } else {
+                const d = new Date(eventDateValue);
+                eventDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+            }
+            
+            // Create session start and end times in Philippine timezone (UTC+8)
+            const sessionStartPH = new Date(`${eventDateStr}T${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}:00+08:00`);
+            const sessionEndPH = new Date(`${eventDateStr}T${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}:00+08:00`);
+            
+            const nowUTC = now.getTime();
+            const sessionStartUTC = sessionStartPH.getTime();
+            const sessionEndUTC = sessionEndPH.getTime();
+            
+            return nowUTC >= sessionStartUTC && nowUTC <= sessionEndUTC;
+        };
+
+        // Check if session is active - either by stored status OR by current time within session window
+        // This allows scanning when the event is active and current time is within the session's time window
+        const sessionIsActive = session.status === 'active' || (event.status === 'active' && isSessionActiveByTime());
+        
+        if (!sessionIsActive) {
+            return res.status(400).json({ message: "Session is not active" });
         }
 
         // Find student
