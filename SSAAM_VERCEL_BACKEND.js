@@ -848,43 +848,19 @@ const NotificationSeen = mongoose.model("NotificationSeen", notificationSeenSche
 
 // ==================== ATTENDANCE SCHEMAS ====================
 
-// Attendance Event Schema - Events created by admin for attendance tracking
+// Attendance Event Schema - Container/Folder for attendance sessions
+// An event can contain multiple sessions (Morning, Afternoon, Noon, Night, Dawn)
 const attendanceEventSchema = new mongoose.Schema({
     title: { type: String, required: true, maxlength: 200 },
     description: { type: String, maxlength: 2000, default: "" },
     location: { type: String, maxlength: 200, default: "" },
     event_date: { type: Date, required: true },
-    start_time: { type: String, required: true }, // e.g., "08:00"
-    end_time: { type: String, required: true }, // e.g., "17:00"
-    // Session type: 'single' for 2-in-a-day (check-in/out), 'dual' for 4-in-a-day (morning/afternoon), 'half_day' for morning check-in + afternoon check-out only
-    session_type: {
-        type: String,
-        enum: ['single', 'dual', 'half_day'],
-        default: 'single'
-    },
-    // For dual/half_day session: afternoon start time (morning ends at this time)
-    afternoon_start_time: { type: String, default: '13:00' }, // e.g., "13:00"
-    // Time window settings for check-in/out periods
-    morning_check_in_start: { type: String, default: null }, // e.g., "07:00" - when morning check-in opens
-    morning_check_in_end: { type: String, default: null }, // e.g., "08:00" - when morning check-in closes (late after this)
-    morning_check_out_start: { type: String, default: null }, // e.g., "10:00" - when morning check-out opens
-    morning_check_out_end: { type: String, default: null }, // e.g., "11:30" - when morning check-out closes
-    afternoon_check_in_start: { type: String, default: null }, // e.g., "13:00" - when afternoon check-in opens
-    afternoon_check_in_end: { type: String, default: null }, // e.g., "14:00" - when afternoon check-in closes (late after this)
-    afternoon_check_out_start: { type: String, default: null }, // e.g., "16:00" - when afternoon check-out opens
-    afternoon_check_out_end: { type: String, default: null }, // e.g., "17:00" - when afternoon check-out closes
+    year_level: { type: String, default: "" }, // Target year level for the event
     status: { 
         type: String, 
         enum: ['draft', 'active', 'closed'],
         default: 'draft'
     },
-    check_in_locked: { type: Boolean, default: false },
-    check_out_locked: { type: Boolean, default: false },
-    // For dual session: separate locks for each session
-    morning_check_in_locked: { type: Boolean, default: false },
-    morning_check_out_locked: { type: Boolean, default: false },
-    afternoon_check_in_locked: { type: Boolean, default: false },
-    afternoon_check_out_locked: { type: Boolean, default: false },
     created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'Master', required: true },
     created_by_name: { type: String, required: true },
     created_at: { type: Date, default: Date.now },
@@ -898,60 +874,61 @@ attendanceEventSchema.index({ created_at: -1 });
 
 const AttendanceEvent = mongoose.model("AttendanceEvent", attendanceEventSchema);
 
-// Attendance Log Schema - Individual student attendance records
-// Supports 4-in-a-day attendance (morning check-in/out, afternoon check-in/out)
-// Or 2-in-a-day attendance (single check-in/out)
+// Attendance Session Schema - Individual check-in/out periods within an event
+// Each session has a label (Morning, Afternoon, Noon, Night, Dawn) and its own time window
+const attendanceSessionSchema = new mongoose.Schema({
+    event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'AttendanceEvent', required: true },
+    label: { 
+        type: String, 
+        enum: ['Morning', 'Afternoon', 'Noon', 'Night', 'Dawn'],
+        required: true 
+    },
+    start_time: { type: String, required: true }, // e.g., "08:00"
+    end_time: { type: String, required: true }, // e.g., "12:00"
+    status: { 
+        type: String, 
+        enum: ['draft', 'active', 'closed'],
+        default: 'draft'
+    },
+    check_in_locked: { type: Boolean, default: false },
+    check_out_locked: { type: Boolean, default: false },
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now }
+});
+
+attendanceSessionSchema.index({ event_id: 1, label: 1 });
+attendanceSessionSchema.index({ event_id: 1, status: 1 });
+attendanceSessionSchema.index({ status: 1 });
+
+const AttendanceSession = mongoose.model("AttendanceSession", attendanceSessionSchema);
+
+// Attendance Log Schema - Individual student attendance records per session
+// Each log represents one student's check-in/out for a specific session
 const attendanceLogSchema = new mongoose.Schema({
     event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'AttendanceEvent', required: true },
+    session_id: { type: mongoose.Schema.Types.ObjectId, ref: 'AttendanceSession', required: true },
     student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
     student_id_number: { type: String, required: true }, // e.g., "21-A-12345"
     rfid_code: { type: String, default: null },
     student_name: { type: String, required: true },
     program: { type: String },
     year_level: { type: String },
-    // Morning session (AM)
-    morning_check_in_at: { type: Date, default: null },
-    morning_check_out_at: { type: Date, default: null },
-    // Afternoon session (PM)
-    afternoon_check_in_at: { type: Date, default: null },
-    afternoon_check_out_at: { type: Date, default: null },
-    // Legacy single session fields (for backward compatibility)
     check_in_at: { type: Date, default: null },
     check_out_at: { type: Date, default: null },
     is_late: { type: Boolean, default: false },
-    is_morning_late: { type: Boolean, default: false },
-    is_afternoon_late: { type: Boolean, default: false },
     source: { type: String, enum: ['rfid', 'manual'], default: 'rfid' },
+    input_method: { type: String, enum: ['rfid', 'manual_student_id'], default: 'rfid' },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
 });
 
-attendanceLogSchema.index({ event_id: 1, student_id: 1 }, { unique: true });
-attendanceLogSchema.index({ event_id: 1, rfid_code: 1 });
-attendanceLogSchema.index({ event_id: 1, check_in_at: -1 });
-attendanceLogSchema.index({ event_id: 1, morning_check_in_at: -1 });
+attendanceLogSchema.index({ session_id: 1, student_id: 1 }, { unique: true });
+attendanceLogSchema.index({ event_id: 1, student_id: 1 });
+attendanceLogSchema.index({ session_id: 1, rfid_code: 1 });
+attendanceLogSchema.index({ session_id: 1, check_in_at: -1 });
 
 // Virtual for attendance status (present, late, incomplete, absent)
 attendanceLogSchema.virtual('attendance_status').get(function() {
-    // Check if using morning/afternoon sessions
-    const hasMorningSession = this.morning_check_in_at || this.morning_check_out_at;
-    const hasAfternoonSession = this.afternoon_check_in_at || this.afternoon_check_out_at;
-    
-    if (hasMorningSession || hasAfternoonSession) {
-        // 4-in-a-day mode
-        const morningComplete = this.morning_check_in_at && this.morning_check_out_at;
-        const afternoonComplete = this.afternoon_check_in_at && this.afternoon_check_out_at;
-        
-        if (morningComplete && afternoonComplete) {
-            return (this.is_morning_late || this.is_afternoon_late) ? 'late' : 'present';
-        }
-        if (morningComplete || afternoonComplete || this.morning_check_in_at || this.afternoon_check_in_at) {
-            return 'incomplete';
-        }
-        return 'absent';
-    }
-    
-    // Legacy 2-in-a-day mode
     if (this.check_in_at && this.check_out_at) {
         return this.is_late ? 'late' : 'present';
     }
@@ -3703,10 +3680,10 @@ app.get('/apis/attendance/events/:id', studentAuth, async (req, res) => {
 // Create attendance event (admin only)
 app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
     try {
-        const { title, description, location, event_date, start_time, end_time, status } = req.body;
+        const { title, description, location, event_date, year_level, status } = req.body;
 
-        if (!title || !event_date || !start_time || !end_time) {
-            return res.status(400).json({ message: "Title, event date, start time, and end time are required" });
+        if (!title || !event_date) {
+            return res.status(400).json({ message: "Title and event date are required" });
         }
 
         const event = new AttendanceEvent({
@@ -3714,8 +3691,7 @@ app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
             description: description || "",
             location: location || "",
             event_date: new Date(event_date),
-            start_time,
-            end_time,
+            year_level: year_level || "",
             status: status || 'draft',
             created_by: req.master.id,
             created_by_name: req.master.username,
@@ -3732,7 +3708,7 @@ app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
 // Update attendance event (admin only)
 app.put('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) => {
     try {
-        const { title, description, location, event_date, start_time, end_time, status, check_in_locked, check_out_locked } = req.body;
+        const { title, description, location, event_date, year_level, status } = req.body;
 
         const event = await AttendanceEvent.findById(req.params.id);
         if (!event) {
@@ -3743,17 +3719,24 @@ app.put('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) =
         if (description !== undefined) event.description = description;
         if (location !== undefined) event.location = location;
         if (event_date) event.event_date = new Date(event_date);
-        if (start_time) event.start_time = start_time;
-        if (end_time) event.end_time = end_time;
-        if (check_in_locked !== undefined) event.check_in_locked = check_in_locked;
-        if (check_out_locked !== undefined) event.check_out_locked = check_out_locked;
+        if (year_level !== undefined) event.year_level = year_level;
 
         if (status && status !== event.status) {
             event.status = status;
             if (status === 'active' && !event.activated_at) {
                 event.activated_at = new Date();
+                // Also activate all draft sessions within this event
+                await AttendanceSession.updateMany(
+                    { event_id: req.params.id, status: 'draft' },
+                    { $set: { status: 'active', updated_at: new Date() } }
+                );
             } else if (status === 'closed') {
                 event.closed_at = new Date();
+                // Also close all active sessions within this event
+                await AttendanceSession.updateMany(
+                    { event_id: req.params.id, status: 'active' },
+                    { $set: { status: 'closed', updated_at: new Date() } }
+                );
             }
         }
 
@@ -3774,24 +3757,128 @@ app.delete('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res
             return res.status(404).json({ message: "Event not found" });
         }
 
+        // Delete all sessions and logs associated with this event
         await AttendanceLog.deleteMany({ event_id: req.params.id });
+        await AttendanceSession.deleteMany({ event_id: req.params.id });
         await AttendanceEvent.deleteOne({ _id: req.params.id });
 
-        res.json({ message: "Event and all related attendance logs deleted successfully" });
+        res.json({ message: "Event, sessions, and all related attendance logs deleted successfully" });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
-// Get attendance logs for an event (admin only)
-app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
+// ==================== SESSION CRUD ENDPOINTS ====================
+
+// Create session for an event (admin only)
+app.post('/apis/attendance/events/:eventId/sessions', auth, adminActionAuth, async (req, res) => {
+    try {
+        const { label, start_time, end_time, status } = req.body;
+
+        if (!label || !start_time || !end_time) {
+            return res.status(400).json({ message: "Label, start time, and end time are required" });
+        }
+
+        const event = await AttendanceEvent.findById(req.params.eventId);
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+
+        // Check if session with same label already exists for this event
+        const existingSession = await AttendanceSession.findOne({
+            event_id: req.params.eventId,
+            label
+        });
+        if (existingSession) {
+            return res.status(400).json({ message: `A ${label} session already exists for this event` });
+        }
+
+        const session = new AttendanceSession({
+            event_id: req.params.eventId,
+            label,
+            start_time,
+            end_time,
+            status: status || (event.status === 'active' ? 'active' : 'draft')
+        });
+
+        const saved = await session.save();
+        res.status(201).json({ message: "Session created successfully", session: saved });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get all sessions for an event
+app.get('/apis/attendance/events/:eventId/sessions', studentAuth, async (req, res) => {
+    try {
+        const sessions = await AttendanceSession.find({ event_id: req.params.eventId })
+            .sort({ start_time: 1 });
+        res.json({ data: sessions });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update session (admin only)
+app.put('/apis/attendance/sessions/:id', auth, adminActionAuth, async (req, res) => {
+    try {
+        const { label, start_time, end_time, status, check_in_locked, check_out_locked } = req.body;
+
+        const session = await AttendanceSession.findById(req.params.id);
+        if (!session) {
+            return res.status(404).json({ message: "Session not found" });
+        }
+
+        if (label) {
+            // Check if another session with this label exists for the same event
+            const existingSession = await AttendanceSession.findOne({
+                event_id: session.event_id,
+                label,
+                _id: { $ne: req.params.id }
+            });
+            if (existingSession) {
+                return res.status(400).json({ message: `A ${label} session already exists for this event` });
+            }
+            session.label = label;
+        }
+        if (start_time) session.start_time = start_time;
+        if (end_time) session.end_time = end_time;
+        if (status) session.status = status;
+        if (check_in_locked !== undefined) session.check_in_locked = check_in_locked;
+        if (check_out_locked !== undefined) session.check_out_locked = check_out_locked;
+
+        session.updated_at = new Date();
+        const updated = await session.save();
+
+        res.json({ message: "Session updated successfully", session: updated });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Delete session (admin only)
+app.delete('/apis/attendance/sessions/:id', auth, adminActionAuth, async (req, res) => {
+    try {
+        const session = await AttendanceSession.findById(req.params.id);
+        if (!session) {
+            return res.status(404).json({ message: "Session not found" });
+        }
+
+        // Delete all logs for this session
+        await AttendanceLog.deleteMany({ session_id: req.params.id });
+        await AttendanceSession.deleteOne({ _id: req.params.id });
+
+        res.json({ message: "Session and related attendance logs deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get logs for a specific session
+app.get('/apis/attendance/sessions/:id/logs', auth, async (req, res) => {
     try {
         const { search, yearLevel, program, page = 1, limit = 50 } = req.query;
-        const filter = { event_id: req.params.id };
-        
-        // Get the event to check session type
-        const event = await AttendanceEvent.findById(req.params.id);
-        const isDualSession = event && event.session_type === 'dual';
+        const filter = { session_id: req.params.id };
 
         if (yearLevel) filter.year_level = yearLevel;
         if (program) filter.program = program;
@@ -3806,87 +3893,100 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
         }
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
-        
-        // Sort based on session type
-        const sortField = isDualSession 
-            ? { morning_check_in_at: -1, afternoon_check_in_at: -1, created_at: -1 }
-            : { check_in_at: -1, created_at: -1 };
-            
+
         const logs = await AttendanceLog.find(filter)
-            .sort(sortField)
+            .sort({ check_in_at: -1, created_at: -1 })
             .skip(skip)
             .limit(parseInt(limit));
 
         const total = await AttendanceLog.countDocuments(filter);
 
-        // Stats aggregation based on session type
-        let stats;
-        if (isDualSession) {
-            // Dual session (4-in-a-day) stats
-            stats = await AttendanceLog.aggregate([
-                { $match: { event_id: new mongoose.Types.ObjectId(req.params.id) } },
-                {
-                    $group: {
-                        _id: null,
-                        total: { $sum: 1 },
-                        // Present: both morning and afternoon complete (with or without late)
-                        present: { $sum: { $cond: [{ $and: [
-                            { $ne: ["$morning_check_in_at", null] }, 
-                            { $ne: ["$morning_check_out_at", null] },
-                            { $ne: ["$afternoon_check_in_at", null] }, 
-                            { $ne: ["$afternoon_check_out_at", null] },
-                            { $eq: ["$is_morning_late", false] },
-                            { $eq: ["$is_afternoon_late", false] }
-                        ] }, 1, 0] } },
-                        // Late: both sessions complete but at least one late
-                        late: { $sum: { $cond: [{ $and: [
-                            { $ne: ["$morning_check_in_at", null] }, 
-                            { $ne: ["$morning_check_out_at", null] },
-                            { $ne: ["$afternoon_check_in_at", null] }, 
-                            { $ne: ["$afternoon_check_out_at", null] },
-                            { $or: [{ $eq: ["$is_morning_late", true] }, { $eq: ["$is_afternoon_late", true] }] }
-                        ] }, 1, 0] } },
-                        // Partial: one session complete, other not
-                        partial: { $sum: { $cond: [{ $or: [
-                            { $and: [
-                                { $ne: ["$morning_check_in_at", null] }, 
-                                { $ne: ["$morning_check_out_at", null] },
-                                { $or: [{ $eq: ["$afternoon_check_in_at", null] }, { $eq: ["$afternoon_check_out_at", null] }] }
-                            ] },
-                            { $and: [
-                                { $ne: ["$afternoon_check_in_at", null] }, 
-                                { $ne: ["$afternoon_check_out_at", null] },
-                                { $or: [{ $eq: ["$morning_check_in_at", null] }, { $eq: ["$morning_check_out_at", null] }] }
-                            ] }
-                        ] }, 1, 0] } },
-                        // Incomplete: checked in but not out in any session
-                        incomplete: { $sum: { $cond: [{ $or: [
-                            { $and: [{ $ne: ["$morning_check_in_at", null] }, { $eq: ["$morning_check_out_at", null] }] },
-                            { $and: [{ $ne: ["$afternoon_check_in_at", null] }, { $eq: ["$afternoon_check_out_at", null] }] }
-                        ] }, 1, 0] } }
-                    }
+        // Stats for this session
+        const stats = await AttendanceLog.aggregate([
+            { $match: { session_id: new mongoose.Types.ObjectId(req.params.id) } },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: 1 },
+                    present: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", false] }] }, 1, 0] } },
+                    late: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", true] }] }, 1, 0] } },
+                    incomplete: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $eq: ["$check_out_at", null] }] }, 1, 0] } }
                 }
-            ]);
-        } else {
-            // Single session (2-in-a-day) stats
-            stats = await AttendanceLog.aggregate([
-                { $match: { event_id: new mongoose.Types.ObjectId(req.params.id) } },
-                {
-                    $group: {
-                        _id: null,
-                        total: { $sum: 1 },
-                        present: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", false] }] }, 1, 0] } },
-                        late: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", true] }] }, 1, 0] } },
-                        incomplete: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $eq: ["$check_out_at", null] }] }, 1, 0] } }
-                    }
-                }
-            ]);
-        }
+            }
+        ]);
 
         res.json({
             data: logs,
-            stats: stats[0] || { total: 0, present: 0, late: 0, incomplete: 0, partial: 0 },
-            session_type: isDualSession ? 'dual' : 'single',
+            stats: stats[0] || { total: 0, present: 0, late: 0, incomplete: 0 },
+            pagination: {
+                currentPage: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get attendance logs for an event (admin only) - aggregated across all sessions
+app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
+    try {
+        const { search, yearLevel, program, session_id, page = 1, limit = 50 } = req.query;
+        const filter = { event_id: req.params.id };
+        
+        // If session_id is provided, filter by specific session
+        if (session_id) {
+            filter.session_id = session_id;
+        }
+
+        if (yearLevel) filter.year_level = yearLevel;
+        if (program) filter.program = program;
+
+        if (search) {
+            const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            filter.$or = [
+                { student_name: { $regex: escapedSearch, $options: 'i' } },
+                { student_id_number: { $regex: escapedSearch, $options: 'i' } },
+                { rfid_code: { $regex: escapedSearch, $options: 'i' } }
+            ];
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+            
+        const logs = await AttendanceLog.find(filter)
+            .sort({ check_in_at: -1, created_at: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        const total = await AttendanceLog.countDocuments(filter);
+
+        // Get all sessions for this event
+        const sessions = await AttendanceSession.find({ event_id: req.params.id })
+            .sort({ start_time: 1 });
+
+        // Stats for this event (across all sessions or filtered by session_id)
+        const stats = await AttendanceLog.aggregate([
+            { $match: filter.session_id 
+                ? { session_id: new mongoose.Types.ObjectId(filter.session_id) }
+                : { event_id: new mongoose.Types.ObjectId(req.params.id) } 
+            },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: 1 },
+                    present: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", false] }] }, 1, 0] } },
+                    late: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", true] }] }, 1, 0] } },
+                    incomplete: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $eq: ["$check_out_at", null] }] }, 1, 0] } }
+                }
+            }
+        ]);
+
+        res.json({
+            data: logs,
+            sessions,
+            stats: stats[0] || { total: 0, present: 0, late: 0, incomplete: 0 },
             pagination: {
                 currentPage: parseInt(page),
                 limit: parseInt(limit),
@@ -3902,11 +4002,11 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
 // RFID Check-in/Check-out endpoint with 5-minute duplicate prevention
 const DUPLICATE_PREVENTION_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
 
-app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
+// Session-based RFID Check-in/Check-out endpoint
+app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) => {
     try {
         const { rfid_code, student_id, identifier_type = 'rfid', source = 'rfid' } = req.body;
 
-        // Support both RFID and Student ID for manual entry
         const identifier = rfid_code || student_id;
         const isManualStudentId = identifier_type === 'student_id' || (!rfid_code && student_id);
 
@@ -3922,37 +4022,19 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
         }
         const rfidSettings = settings.rfidScanner || { checkInEnabled: true, checkOutEnabled: true };
 
-        // Check if auto-disable timers have expired
         const now = new Date();
-        let settingsChanged = false;
 
-        if (rfidSettings.autoDisableCheckIn && rfidSettings.checkInDisableAt) {
-            const disableAt = new Date(rfidSettings.checkInDisableAt);
-            if (now >= disableAt) {
-                rfidSettings.checkInEnabled = false;
-                rfidSettings.autoDisableCheckIn = false;
-                rfidSettings.checkInDisableAt = null;
-                settingsChanged = true;
-            }
+        // Get session and its parent event
+        const session = await AttendanceSession.findById(req.params.sessionId);
+        if (!session) {
+            return res.status(404).json({ message: "Session not found" });
         }
 
-        if (rfidSettings.autoDisableCheckOut && rfidSettings.checkOutDisableAt) {
-            const disableAt = new Date(rfidSettings.checkOutDisableAt);
-            if (now >= disableAt) {
-                rfidSettings.checkOutEnabled = false;
-                rfidSettings.autoDisableCheckOut = false;
-                rfidSettings.checkOutDisableAt = null;
-                settingsChanged = true;
-            }
+        if (session.status !== 'active') {
+            return res.status(400).json({ message: "Session is not active" });
         }
 
-        // Save settings if timers expired
-        if (settingsChanged) {
-            settings.rfidScanner = rfidSettings;
-            await settings.save();
-        }
-
-        const event = await AttendanceEvent.findById(req.params.id);
+        const event = await AttendanceEvent.findById(session.event_id);
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
@@ -3961,10 +4043,9 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
             return res.status(400).json({ message: "Event is not active" });
         }
 
-        // Find student by either RFID code or Student ID
+        // Find student
         let student;
         if (isManualStudentId) {
-            // Manual entry by Student ID - allow students without RFID
             student = await Student.findOne({ 
                 student_id: identifier.trim().toUpperCase(),
                 status: 'approved'
@@ -3973,7 +4054,6 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
                 return res.status(404).json({ message: "No approved student found with this Student ID" });
             }
         } else {
-            // RFID scan - require verified RFID
             student = await Student.findOne({ 
                 rfid_code: identifier.trim(),
                 rfid_status: 'verified',
@@ -3984,52 +4064,27 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
             }
         }
 
-        // Check if student was registered before or on the event activation date
-        // Only apply this check if the event has an activated_at timestamp
+        // Check if student was registered before the event was activated
         if (event.activated_at) {
             const eventActivatedDate = new Date(event.activated_at);
-            eventActivatedDate.setHours(23, 59, 59, 999); // End of the activation day
-
+            eventActivatedDate.setHours(23, 59, 59, 999);
             const studentCreatedDate = new Date(student.created_date);
 
             if (studentCreatedDate > eventActivatedDate) {
                 return res.status(403).json({ 
-                    message: "Student was registered after this attendance event was activated. Only students registered before or on the event activation day can check in.",
-                    student_name: `${student.first_name} ${student.last_name}`,
-                    student_registered: student.created_date,
-                    event_activated: event.activated_at
+                    message: "Student was registered after this event was activated.",
+                    student_name: `${student.first_name} ${student.last_name}`
                 });
             }
         }
 
-        let log = await AttendanceLog.findOne({
-            event_id: req.params.id,
-            student_id: student._id
-        });
-
-        let action = '';
         const studentFullName = `${student.first_name} ${student.middle_name || ''} ${student.last_name}`.replace(/\s+/g, ' ').trim();
-        
-        // Helper function to check if we're in afternoon based on event settings
-        const isAfternoonSession = () => {
-            if (event.session_type !== 'dual' && event.session_type !== 'half_day') return false;
-            const afternoonTime = event.afternoon_start_time || '13:00';
-            const [afternoonHour, afternoonMinute] = afternoonTime.split(':').map(Number);
-            
-            // Get current time in Philippine timezone (UTC+8)
-            const nowPH = new Date(now.getTime() + (8 * 60 * 60 * 1000));
-            const currentHour = nowPH.getUTCHours();
-            const currentMinute = nowPH.getUTCMinutes();
-            
-            return currentHour > afternoonHour || (currentHour === afternoonHour && currentMinute >= afternoonMinute);
-        };
-        
-        // Helper function to calculate if late (uses configurable late threshold)
-        // lateThresholdMinutes: minutes after start time before marking as late (default 30)
-        // Uses nullish coalescing to allow 0 as a valid value (no grace period)
+
+        // Calculate late threshold
         const lateThreshold = rfidSettings.lateThresholdMinutes !== undefined && rfidSettings.lateThresholdMinutes !== null 
             ? rfidSettings.lateThresholdMinutes 
             : 30;
+
         const calculateIsLate = (startTime) => {
             if (!startTime || !event.event_date) return false;
             const [startHour, startMinute] = startTime.split(':').map(Number);
@@ -4043,329 +4098,100 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
                 0,
                 0
             ));
-            // Add late threshold (grace period) to the start time
             const lateThresholdUTC = new Date(eventStartUTC.getTime() + (lateThreshold * 60 * 1000));
             return now > lateThresholdUTC;
         };
 
-        // Dual session mode (4-in-a-day: morning check-in/out, afternoon check-in/out)
-        if (event.session_type === 'dual') {
-            const isAfternoon = isAfternoonSession();
-            
-            if (!log) {
-                // First scan - create new log
-                const checkInField = isAfternoon ? 'afternoon_check_in_at' : 'morning_check_in_at';
-                const lateField = isAfternoon ? 'is_afternoon_late' : 'is_morning_late';
-                const lockCheck = isAfternoon ? event.afternoon_check_in_locked : event.morning_check_in_locked;
-                
-                if (lockCheck || !rfidSettings.checkInEnabled) {
-                    return res.status(403).json({ 
-                        message: `${isAfternoon ? 'Afternoon' : 'Morning'} check-in is currently disabled.`,
-                        student_name: studentFullName,
-                        locked: 'check_in'
-                    });
-                }
-                
-                const startTime = isAfternoon ? event.afternoon_start_time : event.start_time;
-                const isLate = calculateIsLate(startTime);
-                
-                log = new AttendanceLog({
-                    event_id: req.params.id,
-                    student_id: student._id,
-                    student_id_number: student.student_id,
-                    rfid_code: student.rfid_code || '',
+        // Find or create log for this session
+        let log = await AttendanceLog.findOne({
+            session_id: req.params.sessionId,
+            student_id: student._id
+        });
+
+        let action = '';
+
+        if (!log) {
+            // New check-in
+            if (session.check_in_locked || !rfidSettings.checkInEnabled) {
+                return res.status(403).json({ 
+                    message: `${session.label} check-in is currently disabled.`,
                     student_name: studentFullName,
-                    program: student.program,
-                    year_level: student.year_level,
-                    [checkInField]: now,
-                    [lateField]: isLate,
-                    source,
-                    input_method: isManualStudentId ? 'manual_student_id' : 'rfid'
+                    locked: 'check_in'
                 });
-                action = isAfternoon ? 'afternoon_check_in' : 'morning_check_in';
-            } else {
-                // Existing log - determine next action
-                if (isAfternoon) {
-                    // Afternoon session logic
-                    if (!log.afternoon_check_in_at) {
-                        // Afternoon check-in
-                        if (event.afternoon_check_in_locked || !rfidSettings.checkInEnabled) {
-                            return res.status(403).json({ 
-                                message: "Afternoon check-in is currently disabled.",
-                                student_name: log.student_name,
-                                locked: 'check_in'
-                            });
-                        }
-                        log.afternoon_check_in_at = now;
-                        log.is_afternoon_late = calculateIsLate(event.afternoon_start_time);
-                        action = 'afternoon_check_in';
-                    } else if (!log.afternoon_check_out_at) {
-                        // Afternoon check-out
-                        if (event.afternoon_check_out_locked || !rfidSettings.checkOutEnabled) {
-                            return res.status(403).json({ 
-                                message: "Afternoon check-out is currently disabled.",
-                                student_name: log.student_name,
-                                locked: 'check_out'
-                            });
-                        }
-                        const timeSinceCheckIn = now - new Date(log.afternoon_check_in_at);
-                        if (timeSinceCheckIn < DUPLICATE_PREVENTION_MS) {
-                            const remainingSeconds = Math.ceil((DUPLICATE_PREVENTION_MS - timeSinceCheckIn) / 1000);
-                            return res.status(200).json({ 
-                                message: `Already checked in! Wait ${Math.floor(remainingSeconds / 60)}m ${remainingSeconds % 60}s before checking out.`,
-                                action: 'already_checked_in',
-                                success: true,
-                                student_name: log.student_name,
-                                cooldown_remaining: remainingSeconds
-                            });
-                        }
-                        log.afternoon_check_out_at = now;
-                        action = 'afternoon_check_out';
-                    } else {
-                        return res.status(400).json({ 
-                            message: "Student already completed afternoon attendance",
-                            student_name: log.student_name
-                        });
-                    }
-                } else {
-                    // Morning session logic
-                    if (!log.morning_check_in_at) {
-                        // Morning check-in
-                        if (event.morning_check_in_locked || !rfidSettings.checkInEnabled) {
-                            return res.status(403).json({ 
-                                message: "Morning check-in is currently disabled.",
-                                student_name: log.student_name,
-                                locked: 'check_in'
-                            });
-                        }
-                        log.morning_check_in_at = now;
-                        log.is_morning_late = calculateIsLate(event.start_time);
-                        action = 'morning_check_in';
-                    } else if (!log.morning_check_out_at) {
-                        // Morning check-out
-                        if (event.morning_check_out_locked || !rfidSettings.checkOutEnabled) {
-                            return res.status(403).json({ 
-                                message: "Morning check-out is currently disabled.",
-                                student_name: log.student_name,
-                                locked: 'check_out'
-                            });
-                        }
-                        const timeSinceCheckIn = now - new Date(log.morning_check_in_at);
-                        if (timeSinceCheckIn < DUPLICATE_PREVENTION_MS) {
-                            const remainingSeconds = Math.ceil((DUPLICATE_PREVENTION_MS - timeSinceCheckIn) / 1000);
-                            return res.status(200).json({ 
-                                message: `Already checked in! Wait ${Math.floor(remainingSeconds / 60)}m ${remainingSeconds % 60}s before checking out.`,
-                                action: 'already_checked_in',
-                                success: true,
-                                student_name: log.student_name,
-                                cooldown_remaining: remainingSeconds
-                            });
-                        }
-                        log.morning_check_out_at = now;
-                        action = 'morning_check_out';
-                    } else {
-                        return res.status(400).json({ 
-                            message: "Morning session complete. Afternoon session starts at " + (event.afternoon_start_time || '13:00'),
-                            student_name: log.student_name
-                        });
-                    }
-                }
-                log.updated_at = now;
             }
-        } else if (event.session_type === 'half_day') {
-            // Half-day mode: Morning check-in only, Afternoon check-out only
-            const isAfternoon = isAfternoonSession();
-            
-            if (!log) {
-                // First scan - must be morning check-in
-                if (isAfternoon) {
-                    return res.status(400).json({ 
-                        message: "Half-day mode: Morning check-in required first. Cannot check-out without checking in.",
-                        student_name: studentFullName
-                    });
-                }
-                
-                if (event.morning_check_in_locked || !rfidSettings.checkInEnabled) {
-                    return res.status(403).json({ 
-                        message: "Morning check-in is currently disabled.",
-                        student_name: studentFullName,
-                        locked: 'check_in'
-                    });
-                }
-                
-                const isLate = calculateIsLate(event.start_time);
-                
-                log = new AttendanceLog({
-                    event_id: req.params.id,
-                    student_id: student._id,
-                    student_id_number: student.student_id,
-                    rfid_code: student.rfid_code || '',
-                    student_name: studentFullName,
-                    program: student.program,
-                    year_level: student.year_level,
-                    morning_check_in_at: now,
-                    is_morning_late: isLate,
-                    source,
-                    input_method: isManualStudentId ? 'manual_student_id' : 'rfid'
-                });
-                action = 'morning_check_in';
-            } else {
-                // Existing log
-                if (!log.morning_check_in_at) {
-                    // Morning check-in not done yet
-                    if (isAfternoon) {
-                        return res.status(400).json({ 
-                            message: "Half-day mode: Morning check-in required first.",
-                            student_name: log.student_name
-                        });
-                    }
-                    
-                    if (event.morning_check_in_locked || !rfidSettings.checkInEnabled) {
-                        return res.status(403).json({ 
-                            message: "Morning check-in is currently disabled.",
-                            student_name: log.student_name,
-                            locked: 'check_in'
-                        });
-                    }
-                    
-                    log.morning_check_in_at = now;
-                    log.is_morning_late = calculateIsLate(event.start_time);
-                    action = 'morning_check_in';
-                } else if (!log.afternoon_check_out_at) {
-                    // Morning done, waiting for afternoon check-out
-                    if (!isAfternoon) {
-                        const timeSinceCheckIn = now - new Date(log.morning_check_in_at);
-                        if (timeSinceCheckIn < DUPLICATE_PREVENTION_MS) {
-                            const remainingSeconds = Math.ceil((DUPLICATE_PREVENTION_MS - timeSinceCheckIn) / 1000);
-                            return res.status(200).json({ 
-                                message: `Already checked in! Afternoon check-out starts at ${event.afternoon_start_time || '13:00'}.`,
-                                action: 'already_checked_in',
-                                success: true,
-                                student_name: log.student_name,
-                                cooldown_remaining: remainingSeconds
-                            });
-                        }
-                        return res.status(400).json({ 
-                            message: `Half-day mode: Checked in. Afternoon check-out starts at ${event.afternoon_start_time || '13:00'}.`,
-                            student_name: log.student_name,
-                            morning_check_in_at: log.morning_check_in_at
-                        });
-                    }
-                    
-                    if (event.afternoon_check_out_locked || !rfidSettings.checkOutEnabled) {
-                        return res.status(403).json({ 
-                            message: "Afternoon check-out is currently disabled.",
-                            student_name: log.student_name,
-                            locked: 'check_out'
-                        });
-                    }
-                    
-                    log.afternoon_check_out_at = now;
-                    action = 'afternoon_check_out';
-                } else {
-                    return res.status(400).json({ 
-                        message: "Student already completed half-day attendance (morning check-in + afternoon check-out)",
-                        student_name: log.student_name,
-                        morning_check_in_at: log.morning_check_in_at,
-                        afternoon_check_out_at: log.afternoon_check_out_at
-                    });
-                }
-                log.updated_at = now;
-            }
-        } else {
-            // Single session mode (2-in-a-day: check-in/out)
-            if (!log) {
-                // Check if check-in is enabled globally
-                if (!rfidSettings.checkInEnabled) {
-                    return res.status(403).json({ 
-                        message: "Check-in is currently disabled. Please wait for the admin to enable it.",
-                        student_name: studentFullName,
-                        locked: 'check_in'
-                    });
-                }
-                
-                const isLate = calculateIsLate(event.start_time);
-                
-                log = new AttendanceLog({
-                    event_id: req.params.id,
-                    student_id: student._id,
-                    student_id_number: student.student_id,
-                    rfid_code: student.rfid_code || '',
-                    student_name: studentFullName,
-                    program: student.program,
-                    year_level: student.year_level,
-                    check_in_at: now,
-                    is_late: isLate,
-                    source,
-                    input_method: isManualStudentId ? 'manual_student_id' : 'rfid'
-                });
-                action = 'check_in';
-            } else if (!log.check_out_at) {
-                // Check if check-out is enabled globally
-                if (!rfidSettings.checkOutEnabled) {
-                    return res.status(403).json({ 
-                        message: "Check-out is currently disabled. Student is already checked in.",
-                        student_name: log.student_name,
-                        check_in_at: log.check_in_at,
-                        locked: 'check_out'
-                    });
-                }
-                const timeSinceCheckIn = now - new Date(log.check_in_at);
-                if (timeSinceCheckIn < DUPLICATE_PREVENTION_MS) {
-                    const remainingSeconds = Math.ceil((DUPLICATE_PREVENTION_MS - timeSinceCheckIn) / 1000);
-                    const remainingMinutes = Math.floor(remainingSeconds / 60);
-                    const remainingSecs = remainingSeconds % 60;
-                    return res.status(200).json({ 
-                        message: `Already checked in! Wait ${remainingMinutes}m ${remainingSecs}s before checking out.`,
-                        action: 'already_checked_in',
-                        success: true,
-                        student_name: log.student_name,
-                        check_in_at: log.check_in_at,
-                        cooldown_remaining: remainingSeconds,
-                        note: 'This prevents accidental immediate check-outs. Student is already marked as checked in.'
-                    });
-                }
-                log.check_out_at = now;
-                log.updated_at = now;
-                action = 'check_out';
-            } else {
-                // Prevent duplicate scan after already checked in and out
-                const timeSinceCheckOut = now - new Date(log.check_out_at);
-                if (timeSinceCheckOut < DUPLICATE_PREVENTION_MS) {
-                    const remainingSeconds = Math.ceil((DUPLICATE_PREVENTION_MS - timeSinceCheckOut) / 1000);
-                    return res.status(429).json({ 
-                        message: `Already checked in and out. Please wait before scanning again.`,
-                        student_name: log.student_name,
-                        check_in_at: log.check_in_at,
-                        check_out_at: log.check_out_at,
-                        cooldown_remaining: remainingSeconds
-                    });
-                }
-                return res.status(400).json({ 
-                    message: "Student already checked in and out for this event",
+
+            const isLate = calculateIsLate(session.start_time);
+
+            log = new AttendanceLog({
+                event_id: event._id,
+                session_id: session._id,
+                student_id: student._id,
+                student_id_number: student.student_id,
+                rfid_code: student.rfid_code || '',
+                student_name: studentFullName,
+                program: student.program,
+                year_level: student.year_level,
+                check_in_at: now,
+                is_late: isLate,
+                source,
+                input_method: isManualStudentId ? 'manual_student_id' : 'rfid'
+            });
+            action = 'check_in';
+        } else if (!log.check_out_at) {
+            // Check-out
+            if (session.check_out_locked || !rfidSettings.checkOutEnabled) {
+                return res.status(403).json({ 
+                    message: `${session.label} check-out is currently disabled.`,
                     student_name: log.student_name,
-                    check_in_at: log.check_in_at,
-                    check_out_at: log.check_out_at
+                    locked: 'check_out'
                 });
             }
+
+            const timeSinceCheckIn = now - new Date(log.check_in_at);
+            if (timeSinceCheckIn < DUPLICATE_PREVENTION_MS) {
+                const remainingSeconds = Math.ceil((DUPLICATE_PREVENTION_MS - timeSinceCheckIn) / 1000);
+                return res.status(200).json({ 
+                    message: `Already checked in! Wait ${Math.floor(remainingSeconds / 60)}m ${remainingSeconds % 60}s before checking out.`,
+                    action: 'already_checked_in',
+                    success: true,
+                    student_name: log.student_name,
+                    cooldown_remaining: remainingSeconds
+                });
+            }
+
+            log.check_out_at = now;
+            log.updated_at = now;
+            action = 'check_out';
+        } else {
+            // Already complete
+            const timeSinceCheckOut = now - new Date(log.check_out_at);
+            if (timeSinceCheckOut < DUPLICATE_PREVENTION_MS) {
+                const remainingSeconds = Math.ceil((DUPLICATE_PREVENTION_MS - timeSinceCheckOut) / 1000);
+                return res.status(429).json({ 
+                    message: `Already completed for this session.`,
+                    student_name: log.student_name,
+                    cooldown_remaining: remainingSeconds
+                });
+            }
+            return res.status(400).json({ 
+                message: `Student already completed ${session.label} session attendance`,
+                student_name: log.student_name,
+                check_in_at: log.check_in_at,
+                check_out_at: log.check_out_at
+            });
         }
 
         await log.save();
-        
-        // Determine message based on action
-        let message = '';
-        const lateStatus = log.is_late || log.is_morning_late || log.is_afternoon_late;
-        if (action.includes('check_in')) {
-            message = lateStatus ? `${action.replace('_', ' ').replace('check in', 'Check-in')} successful (Late)` : `${action.replace('_', ' ').replace('check in', 'Check-in')} successful`;
-        } else {
-            message = `${action.replace('_', ' ').replace('check out', 'Check-out')} successful`;
-        }
+
+        const message = action === 'check_in' 
+            ? (log.is_late ? `${session.label} Check-in successful (Late)` : `${session.label} Check-in successful`)
+            : `${session.label} Check-out successful`;
 
         res.json({
             message,
             action,
-            is_late: lateStatus,
-            session_type: event.session_type,
+            is_late: log.is_late,
+            session_label: session.label,
             log: log.toJSON(),
             student_name: log.student_name,
             student_photo: student.photo,
@@ -4382,10 +4208,9 @@ app.post('/apis/attendance/events/:id/check', auth, async (req, res) => {
     }
 });
 
-// Get student's own attendance records
+// Get student's own attendance records - now session-based
 app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) => {
     try {
-        // Use the hydrated student object from studentAuthWithToken middleware
         const student = req.student;
         if (!student) {
             return res.status(404).json({ message: "Student not found" });
@@ -4419,47 +4244,65 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                 }
             }
 
-            const log = await AttendanceLog.findOne({
+            // Get all sessions for this event
+            const sessions = await AttendanceSession.find({ event_id: event._id })
+                .sort({ start_time: 1 });
+
+            // Get all logs for this student in this event
+            const logs = await AttendanceLog.find({
                 event_id: event._id,
                 student_id: student._id
             });
 
-            let status = 'absent';
-            let checkInTime = null;
-            let checkOutTime = null;
-            
-            if (log) {
-                // Check for session-specific fields first, then legacy fields
-                const hasMorningSession = log.morning_check_in_at || log.morning_check_out_at;
-                const hasAfternoonSession = log.afternoon_check_in_at || log.afternoon_check_out_at;
+            // Map sessions with their attendance status
+            const sessionRecords = sessions.map(session => {
+                const log = logs.find(l => l.session_id?.toString() === session._id.toString());
                 
-                if (hasMorningSession || hasAfternoonSession) {
-                    // Dual session mode - get earliest check-in and latest check-out
-                    checkInTime = log.morning_check_in_at || log.afternoon_check_in_at;
-                    checkOutTime = log.afternoon_check_out_at || log.morning_check_out_at;
-                    
-                    const morningComplete = log.morning_check_in_at && log.morning_check_out_at;
-                    const afternoonComplete = log.afternoon_check_in_at && log.afternoon_check_out_at;
-                    
-                    if (morningComplete && afternoonComplete) {
-                        status = (log.is_morning_late || log.is_afternoon_late) ? 'late' : 'present';
-                    } else if (morningComplete || afternoonComplete || log.morning_check_in_at || log.afternoon_check_in_at) {
-                        status = 'incomplete';
-                    }
-                } else {
-                    // Legacy single session mode
-                    checkInTime = log.check_in_at;
-                    checkOutTime = log.check_out_at;
-                    
+                let status = 'absent';
+                if (log) {
                     if (log.check_in_at && log.check_out_at) {
                         status = log.is_late ? 'late' : 'present';
                     } else if (log.check_in_at) {
                         status = 'incomplete';
                     }
                 }
+
+                return {
+                    session: {
+                        _id: session._id,
+                        label: session.label,
+                        start_time: session.start_time,
+                        end_time: session.end_time,
+                        status: session.status
+                    },
+                    attendance: log ? {
+                        check_in_at: log.check_in_at,
+                        check_out_at: log.check_out_at,
+                        is_late: log.is_late,
+                        status
+                    } : {
+                        check_in_at: null,
+                        check_out_at: null,
+                        status: 'absent'
+                    }
+                };
+            });
+
+            // Calculate overall event attendance status
+            let overallStatus = 'absent';
+            const completedSessions = sessionRecords.filter(s => s.attendance.status === 'present' || s.attendance.status === 'late');
+            const lateSessions = sessionRecords.filter(s => s.attendance.status === 'late');
+            const incompleteSessions = sessionRecords.filter(s => s.attendance.status === 'incomplete');
+
+            if (sessions.length > 0) {
+                if (completedSessions.length === sessions.length) {
+                    overallStatus = lateSessions.length > 0 ? 'late' : 'present';
+                } else if (completedSessions.length > 0 || incompleteSessions.length > 0) {
+                    overallStatus = 'incomplete';
+                }
             }
 
-            if (event.status === 'closed' && !log) {
+            if (event.status === 'closed' && logs.length === 0) {
                 return null;
             }
 
@@ -4470,24 +4313,11 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                     description: event.description,
                     location: event.location,
                     event_date: event.event_date,
-                    start_time: event.start_time,
-                    end_time: event.end_time,
+                    year_level: event.year_level,
                     status: event.status
                 },
-                attendance: log ? {
-                    check_in_at: checkInTime,
-                    check_out_at: checkOutTime,
-                    morning_check_in_at: log.morning_check_in_at,
-                    morning_check_out_at: log.morning_check_out_at,
-                    afternoon_check_in_at: log.afternoon_check_in_at,
-                    afternoon_check_out_at: log.afternoon_check_out_at,
-                    is_late: log.is_late || log.is_morning_late || log.is_afternoon_late,
-                    status
-                } : {
-                    check_in_at: null,
-                    check_out_at: null,
-                    status: 'absent'
-                }
+                sessions: sessionRecords,
+                overall_status: overallStatus
             };
         }));
 
