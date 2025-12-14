@@ -1437,7 +1437,7 @@
                       <div class="flex flex-wrap items-center gap-2 mb-3">
                         <svg :class="['w-4 h-4 text-purple-600 transition-transform', expandedEvents[event._id || event.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getStatusBadgeClass(getAttendanceStatus(event._id || event.event_id))]">
-                          {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'active' ? 'Pending Check-in' : (event.status === 'active' ? 'Pending Check-in' : 'Absent') }}
+                          {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'ongoing' ? 'Ongoing' : getAttendanceStatus(event._id || event.event_id) === 'absent' ? 'Absent' : 'Ongoing' }}
                         </span>
                         <span v-if="event.status === 'active' && getEventTimeRemaining(event._id || event.event_id)" :class="['px-3 py-1 rounded-full text-xs font-semibold', getEventTimeRemaining(event._id || event.event_id) === 'Ended' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700']">
                           {{ getEventTimeRemaining(event._id || event.event_id) }}
@@ -2146,6 +2146,10 @@
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                       You checked in but haven't checked out yet
                     </span>
+                    <span v-else-if="getAttendanceStatus(event._id || event.event_id) === 'ongoing'" class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      Event is ongoing - check in to mark attendance
+                    </span>
                     <span v-else class="flex items-center gap-1">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                       Active attendance event - Please check in with your RFID
@@ -2375,7 +2379,7 @@
                 <div class="px-4 pt-4 pb-2">
                   <div class="flex flex-wrap items-center gap-2 mb-3">
                     <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getStatusBadgeClass(getAttendanceStatus(event._id || event.event_id))]">
-                      {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : 'Pending Check-in' }}
+                      {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'absent' ? 'Absent' : 'Ongoing' }}
                     </span>
                     <span v-if="getEventTimeRemaining(event._id || event.event_id)" class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
                       {{ getEventTimeRemaining(event._id || event.event_id) }}
@@ -7347,21 +7351,24 @@ const getAttendanceStatus = (eventId) => {
   if (!record) {
     // No attendance record - check if event is still active using Philippine time
     if (event && event.status === 'active' && !eventEnded) {
-      return 'active'  // Event is still active, pending check-in
+      return 'ongoing'  // Event is still ongoing, not yet checked in
     }
     // Only mark absent if event has actually ended
     if (eventEnded || (event && event.status !== 'active')) {
       return 'absent'
     }
-    return 'active'  // Default to active if event status unclear
+    return 'ongoing'  // Default to ongoing if event status unclear
   }
   
   // Has a record - check attendance status
-  if (record.check_out_at || record.check_out_time) return 'present'  // Complete attendance
-  if (record.check_in_at || record.check_in_time) return 'incomplete'  // Checked in but not out
+  if (record.check_out_at || record.check_out_time) return 'present'  // Complete attendance (both check-in and check-out)
+  if (record.check_in_at || record.check_in_time) {
+    // Checked in but not checked out
+    return eventEnded ? 'incomplete' : 'incomplete'
+  }
   
   // Has record but no check-in/out (shouldn't happen normally)
-  return eventEnded ? 'absent' : 'active'
+  return eventEnded ? 'absent' : 'ongoing'
 }
 
 const getStatusBadgeClass = (status) => {
@@ -7370,7 +7377,8 @@ const getStatusBadgeClass = (status) => {
     case 'late': return 'bg-orange-100 text-orange-800'
     case 'incomplete': return 'bg-yellow-100 text-yellow-800'
     case 'absent': return 'bg-red-100 text-red-800'
-    case 'active': return 'bg-green-100 text-green-800'
+    case 'ongoing': return 'bg-blue-100 text-blue-800'
+    case 'active': return 'bg-blue-100 text-blue-800'
     case 'draft': return 'bg-yellow-100 text-yellow-800'
     case 'closed': return 'bg-gray-100 text-gray-600'
     case 'ended': return 'bg-gray-100 text-gray-600'
