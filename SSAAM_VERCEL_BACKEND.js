@@ -566,6 +566,7 @@ const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 50
             w: 'majority'
         });
         console.log('Connected to MongoDB Atlas');
+        
         app.listen(PORT, () => {
             console.log(`Server running on ${PORT}`);
             // Run auto-update after server starts and DB is connected
@@ -591,6 +592,30 @@ mongoose.connection.on('disconnected', () => {
 
 mongoose.connection.on('error', (err) => {
     console.error('MongoDB connection error:', err.message);
+});
+
+// Drop old problematic unique index on event_id + student_id when connection is fully open
+// This allows students to attend multiple sessions of the same event
+mongoose.connection.once('open', async () => {
+    try {
+        const db = mongoose.connection.db;
+        if (db) {
+            const collection = db.collection('attendancelogs');
+            const indexes = await collection.indexes();
+            const problematicIndex = indexes.find(idx => 
+                idx.name === 'event_id_1_student_id_1' && idx.unique === true
+            );
+            if (problematicIndex) {
+                await collection.dropIndex('event_id_1_student_id_1');
+                console.log('Dropped old unique index event_id_1_student_id_1 to allow multi-session attendance');
+            }
+        }
+    } catch (indexErr) {
+        // Index might not exist or already dropped, which is fine
+        if (indexErr.code !== 27) { // 27 = IndexNotFound
+            console.log('Note: Index cleanup status:', indexErr.message);
+        }
+    }
 });
 
 connectWithRetry();
@@ -4329,6 +4354,13 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
             }
         });
     } catch (err) {
+        // Handle duplicate key error gracefully - this can happen if there's still an old unique index
+        if (err.code === 11000 && err.message.includes('event_id')) {
+            return res.status(409).json({ 
+                message: "Database index conflict. Please try again - the system is updating. If this persists, contact support.",
+                error_type: 'index_conflict'
+            });
+        }
         res.status(500).json({ message: err.message });
     }
 });
