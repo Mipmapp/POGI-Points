@@ -6697,7 +6697,6 @@ const saveSession = async () => {
 }
 
 const deleteSession = async (sessionId) => {
-  if (!confirm('Delete this session?')) return
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
     const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${sessionId}`, {
