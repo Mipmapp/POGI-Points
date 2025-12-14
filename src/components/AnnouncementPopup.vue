@@ -39,21 +39,29 @@
             >
               <div class="flex items-start gap-3 mb-4">
                 <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
-                  <img src="/assets/ssaam_logo.jpg" alt="SSAAM" class="w-full h-full object-cover" />
+                  <img v-if="announcement.posted_by === 'admin'" src="/assets/ssaam_logo.jpg" alt="SSAAM" class="w-full h-full object-cover" />
+                  <img v-else-if="announcement.poster_photo" :src="announcement.poster_photo" :alt="announcement.posted_by_name" class="w-full h-full object-cover" />
+                  <span v-else>{{ getInitials(announcement.posted_by_name) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span :class="['font-semibold text-purple-900', announcement.posted_by === 'admin' ? 'text-sm' : 'text-xs']">
-                      {{ announcement.posted_by === 'admin' ? (announcement.posted_by_name || 'Admin') : 'CCS Organization' }}
+                    <span class="font-semibold text-purple-900 text-sm">
+                      {{ announcement.posted_by === 'admin' ? (announcement.posted_by_name || 'Admin') : 'Media and Publication' }}
                     </span>
                     <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', announcement.posted_by === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-yellow-100 text-yellow-700']">
-                      {{ announcement.posted_by === 'admin' ? 'Admin' : 'MedPub' }}
+                      {{ announcement.posted_by === 'admin' ? 'Admin' : 'Org' }}
                     </span>
                     <span v-if="announcement.priority === 'urgent'" class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
                       Urgent
                     </span>
                   </div>
-                  <p v-if="announcement.posted_by === 'medpub'" class="text-xs text-gray-400 mt-0.5">Posted by: {{ announcement.posted_by_name }}</p>
+                  <div v-if="announcement.posted_by === 'medpub'" class="flex items-center gap-1.5 mt-1">
+                    <div class="w-4 h-4 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
+                      <img v-if="announcement.poster_photo" :src="announcement.poster_photo" :alt="announcement.posted_by_name" class="w-full h-full object-cover" />
+                      <span v-else class="text-[8px] text-gray-500 flex items-center justify-center w-full h-full">{{ getInitials(announcement.posted_by_name) }}</span>
+                    </div>
+                    <p class="text-xs text-gray-500">Posted by {{ announcement.posted_by_name }}</p>
+                  </div>
                   <p class="text-xs text-gray-500 mt-0.5">{{ formatDate(announcement.created_at) }}</p>
                 </div>
               </div>
