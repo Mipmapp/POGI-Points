@@ -3,8 +3,10 @@
   <AnnouncementPopup 
     :visible="showAnnouncementPopup" 
     :announcements="announcementPopupData"
+    :currentUserId="currentUser?._id || currentUser?.student_id || ''"
     @close="closeAnnouncementPopup"
     @preview-image="(url) => { imagePreviewUrl = url; showImagePreviewModal = true; }"
+    @toggle-like="handlePopupLike"
   />
 
   <!-- Event Ended Modal -->
@@ -3631,6 +3633,10 @@ const closeAnnouncementPopup = () => {
     localStorage.setItem(ANNOUNCEMENT_POPUP_STORAGE_KEY, announcementPopupData.value[0]._id)
   }
   showAnnouncementPopup.value = false
+}
+
+const handlePopupLike = (announcement) => {
+  toggleLike(announcement)
 }
 
 // ImgBB API keys for image uploads

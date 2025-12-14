@@ -80,12 +80,20 @@
               </div>
 
               <div class="flex items-center gap-4 mt-4 pt-4 border-t border-gray-100">
-                <div class="flex items-center gap-1 text-gray-500 text-sm">
-                  <svg class="w-5 h-5 text-pink-500" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                <button 
+                  @click.stop="$emit('toggle-like', announcement)"
+                  class="flex items-center gap-1.5 text-gray-500 text-sm hover:text-pink-500 transition group px-2 py-1 -ml-2 rounded-lg hover:bg-pink-50 active:scale-95"
+                >
+                  <svg 
+                    :class="['w-5 h-5 transition-all', isLiked(announcement) ? 'text-pink-500 scale-110' : 'group-hover:scale-110']" 
+                    :fill="isLiked(announcement) ? 'currentColor' : 'none'" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                   </svg>
-                  <span>{{ announcement.liked_by?.length || 0 }}</span>
-                </div>
+                  <span :class="isLiked(announcement) ? 'text-pink-500 font-medium' : ''">{{ announcement.liked_by?.length || 0 }}</span>
+                </button>
               </div>
             </div>
           </div>
@@ -148,10 +156,19 @@ const props = defineProps({
   announcements: {
     type: Array,
     default: () => []
+  },
+  currentUserId: {
+    type: String,
+    default: ''
   }
 })
 
-const emit = defineEmits(['close', 'preview-image'])
+const emit = defineEmits(['close', 'preview-image', 'toggle-like'])
+
+const isLiked = (announcement) => {
+  if (!props.currentUserId || !announcement.liked_by) return false
+  return announcement.liked_by.includes(props.currentUserId)
+}
 
 const currentIndex = ref(0)
 const swipeOffset = ref(0)
