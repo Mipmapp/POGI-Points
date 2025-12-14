@@ -10,7 +10,7 @@
         <div class="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
           <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
           <p class="font-semibold text-purple-900 text-sm">Email Support</p>
-          <p class="text-xs text-gray-600 mt-2">admin@ssaam.edu</p>
+          <p class="text-xs text-gray-600 mt-2">ssaamjrmsu@gmail.com</p>
           <p class="text-xs text-gray-500 mt-1">For general inquiries</p>
         </div>
 

@@ -66,7 +66,7 @@
         <div class="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
           <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
           <p class="font-semibold text-purple-900 text-sm">Email Support</p>
-          <p class="text-xs text-gray-600 mt-2">admin@ssaam.edu</p>
+          <p class="text-xs text-gray-600 mt-2">ssaamjrmsu@gmail.com</p>
           <p class="text-xs text-gray-500 mt-1">For general inquiries</p>
         </div>
 
@@ -6286,7 +6286,11 @@ const fetchEventSessions = async (eventId) => {
     })
     if (response.ok) {
       const result = await response.json()
-      eventSessions.value = result.data || []
+      console.log('Fetched sessions for event:', eventId, 'Response:', result)
+      eventSessions.value = result.data || result.sessions || []
+      console.log('eventSessions.value set to:', eventSessions.value)
+    } else {
+      console.error('Failed to fetch sessions, status:', response.status)
     }
   } catch (error) {
     console.error('Error fetching sessions:', error)
