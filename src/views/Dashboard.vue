@@ -1600,8 +1600,8 @@
                       </div>
                       <!-- Overall Status Badge -->
                       <div class="flex-shrink-0">
-                        <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getOverallStatusClass(record.overall_status || record.status)]">
-                          {{ getOverallStatusLabel(record.overall_status || record.status) }}
+                        <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getOverallStatusClass(getSmartRecordStatus(record))]">
+                          {{ getOverallStatusLabel(getSmartRecordStatus(record)) }}
                         </span>
                       </div>
                     </div>
@@ -1640,8 +1640,8 @@
                               </div>
                               
                               <!-- Session Status Badge -->
-                              <span :class="['px-2.5 py-1 rounded-full text-xs font-medium', getSessionAttendanceClass(sessionData.attendance)]">
-                                {{ getSessionAttendanceLabel(sessionData.attendance) }}
+                              <span :class="['px-2.5 py-1 rounded-full text-xs font-medium', getSessionAttendanceClass(sessionData.attendance, sessionData.session, record.event)]">
+                                {{ getSessionAttendanceLabel(sessionData.attendance, sessionData.session, record.event) }}
                               </span>
                             </div>
                             
@@ -7667,6 +7667,8 @@ const getOverallStatusLabel = (status) => {
     case 'late': return 'Late'
     case 'incomplete': return 'Incomplete'
     case 'absent': return 'Absent'
+    case 'upcoming': return 'Upcoming'
+    case 'ongoing': return 'Ongoing'
     default: return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown'
   }
 }
@@ -7677,17 +7679,69 @@ const getOverallStatusClass = (status) => {
     case 'late': return 'bg-orange-100 text-orange-800'
     case 'incomplete': return 'bg-yellow-100 text-yellow-800'
     case 'absent': return 'bg-red-100 text-red-800'
+    case 'upcoming': return 'bg-purple-100 text-purple-800'
+    case 'ongoing': return 'bg-blue-100 text-blue-800'
     default: return 'bg-gray-100 text-gray-800'
   }
 }
 
-const getSessionAttendanceLabel = (attendance) => {
-  if (!attendance) return 'Absent'
+// Smart status that considers event timing - for attendance history records
+const getSmartRecordStatus = (record) => {
+  const event = record.event || attendanceEvents.value.find(e => e._id === record.event_id)
+  const originalStatus = record.overall_status || record.status
+  
+  // If event exists, check if it has started yet
+  if (event) {
+    const eventStarted = hasEventStartedPH(event)
+    const eventEnded = hasEventEndedPH(event)
+    
+    // If event hasn't started yet, show "upcoming" instead of "absent"
+    if (!eventStarted && (originalStatus === 'absent' || !originalStatus)) {
+      return 'upcoming'
+    }
+    
+    // If event is ongoing (started but not ended) and no attendance, show "ongoing"
+    if (eventStarted && !eventEnded && (originalStatus === 'absent' || !originalStatus)) {
+      return 'ongoing'
+    }
+  }
+  
+  // Otherwise return the original status
+  return originalStatus || 'absent'
+}
+
+const getSessionAttendanceLabel = (attendance, session = null, event = null) => {
+  // Check if the session/event hasn't started yet
+  if (event && !hasEventStartedPH(event)) {
+    return 'Upcoming'
+  }
+  
+  // Check if event is ongoing (started but not ended)
+  if (event && hasEventStartedPH(event) && !hasEventEndedPH(event)) {
+    if (!attendance || (!attendance.check_in_at && !attendance.check_in_time)) {
+      return 'Ongoing'
+    }
+  }
+  
+  if (!attendance) {
+    // Only show Absent if event has ended
+    if (event && hasEventEndedPH(event)) {
+      return 'Absent'
+    }
+    return 'Upcoming'
+  }
+  
   const status = attendance.status
   if (status === 'present') return 'Present'
   if (status === 'late') return 'Present (Late)'
   if (status === 'incomplete') return attendance.is_late ? 'Incomplete (Late)' : 'Incomplete'
-  if (status === 'absent') return 'Absent'
+  if (status === 'absent') {
+    // Double-check if event has actually ended
+    if (event && !hasEventEndedPH(event)) {
+      return hasEventStartedPH(event) ? 'Ongoing' : 'Upcoming'
+    }
+    return 'Absent'
+  }
   if (attendance.check_in_at && attendance.check_out_at) {
     return attendance.is_late ? 'Present (Late)' : 'Present'
   }
@@ -7708,20 +7762,19 @@ const calculateLateThreshold = (startTime, thresholdMinutes = 30) => {
   return `${displayHours}:${lateMinutes.toString().padStart(2, '0')} ${period}`
 }
 
-const getSessionAttendanceClass = (attendance) => {
-  if (!attendance) return 'bg-red-100 text-red-800'
-  const status = attendance.status
-  if (status === 'present') return 'bg-green-100 text-green-800'
-  if (status === 'late') return 'bg-orange-100 text-orange-800'
-  if (status === 'incomplete') return 'bg-yellow-100 text-yellow-800'
-  if (status === 'absent') return 'bg-red-100 text-red-800'
-  if (attendance.check_in_at && attendance.check_out_at) {
-    return attendance.is_late ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
+const getSessionAttendanceClass = (attendance, session = null, event = null) => {
+  // Get the label first for consistent styling
+  const label = getSessionAttendanceLabel(attendance, session, event)
+  
+  if (label === 'Upcoming') return 'bg-purple-100 text-purple-800'
+  if (label === 'Ongoing') return 'bg-blue-100 text-blue-800'
+  if (label === 'Present' || label === 'Present (Late)') {
+    return label.includes('Late') ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
   }
-  if (attendance.check_in_at && !attendance.check_out_at) {
-    return 'bg-yellow-100 text-yellow-800'
-  }
-  return 'bg-red-100 text-red-800'
+  if (label.includes('Incomplete')) return 'bg-yellow-100 text-yellow-800'
+  if (label === 'Absent') return 'bg-red-100 text-red-800'
+  
+  return 'bg-gray-100 text-gray-800'
 }
 
 const getInitials = (name) => {
