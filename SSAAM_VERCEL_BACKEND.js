@@ -4234,7 +4234,9 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
 
         if (!log) {
             // New check-in
-            if (session.check_in_locked || !rfidSettings.checkInEnabled) {
+            // Global checkInEnabled must be true for check-in to work
+            // Session check_in_locked only applies when global setting is off
+            if (!rfidSettings.checkInEnabled) {
                 return res.status(403).json({ 
                     message: `${session.label} check-in is currently disabled.`,
                     student_name: studentFullName,
@@ -4261,7 +4263,8 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
             action = 'check_in';
         } else if (!log.check_out_at) {
             // Check-out
-            if (session.check_out_locked || !rfidSettings.checkOutEnabled) {
+            // Global checkOutEnabled must be true for check-out to work
+            if (!rfidSettings.checkOutEnabled) {
                 return res.status(403).json({ 
                     message: `${session.label} check-out is currently disabled.`,
                     student_name: log.student_name,
