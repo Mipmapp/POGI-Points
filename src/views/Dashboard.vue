@@ -3129,6 +3129,22 @@
             </select>
           </div>
         </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Event Start Time *</label>
+            <button @click="openTimePicker('edit_start_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
+              <span :class="selectedEvent.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.start_time || selectedEvent.startTime) || 'Select time' }}</span>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </button>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Event End Time *</label>
+            <button @click="openTimePicker('edit_end_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
+              <span :class="selectedEvent.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.end_time || selectedEvent.endTime) || 'Select time' }}</span>
+              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </button>
+          </div>
+        </div>
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
           <div class="flex items-center gap-2 mb-1">
             <span class="text-sm font-medium text-blue-800">Current Status:</span>
