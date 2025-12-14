@@ -856,6 +856,8 @@ const attendanceEventSchema = new mongoose.Schema({
     location: { type: String, maxlength: 200, default: "" },
     event_date: { type: Date, required: true },
     year_level: { type: String, default: "" }, // Target year level for the event
+    start_time: { type: String, default: "07:00" }, // Event start time e.g., "07:00"
+    end_time: { type: String, default: "17:00" }, // Event end time e.g., "17:00"
     status: { 
         type: String, 
         enum: ['draft', 'active', 'closed'],
