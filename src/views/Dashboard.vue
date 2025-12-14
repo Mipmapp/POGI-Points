@@ -4020,27 +4020,95 @@ const openTimePicker = (target) => {
   showTimePicker.value = true
 }
 
+const isAmPm = (timeStr) => {
+  if (!timeStr) return null
+  const [h] = timeStr.split(':').map(Number)
+  return h < 12 ? 'AM' : 'PM'
+}
+
+const autoAdjustEndTime = (startTime) => {
+  const [h, m] = startTime.split(':').map(Number)
+  return '17:00'
+}
+
+const validateDualEventTimes = (startTime, endTime) => {
+  if (!startTime || !endTime) return { valid: true }
+  const startPeriod = isAmPm(startTime)
+  const endPeriod = isAmPm(endTime)
+  if (startPeriod === 'PM') {
+    return { valid: false, message: 'Dual events must start in the morning (AM). Start time should be before 12:00 PM.' }
+  }
+  if (endPeriod === 'AM') {
+    return { valid: false, message: 'Dual events must end in the afternoon (PM). End time should be 12:00 PM or later.' }
+  }
+  if (startPeriod === endPeriod) {
+    return { valid: false, message: 'Dual events require AM start and PM end time to span morning and afternoon sessions.' }
+  }
+  return { valid: true }
+}
+
 const confirmTimePicker = () => {
   let hour24 = timePickerHour.value
   if (timePickerPeriod.value === 'PM' && hour24 !== 12) hour24 += 12
   if (timePickerPeriod.value === 'AM' && hour24 === 12) hour24 = 0
   
   const timeStr = `${hour24.toString().padStart(2, '0')}:${timePickerMinute.value.toString().padStart(2, '0')}`
+  const currentPeriod = hour24 >= 12 ? 'PM' : 'AM'
   
   if (timePickerTarget.value === 'startTime') {
     newEvent.value.startTime = timeStr
     if (!newEvent.value.endTime) {
       newEvent.value.endTime = calculateEndTime(timeStr)
     }
+    if (newEvent.value.session_type === 'dual' || newEvent.value.session_type === 'half_day') {
+      if (currentPeriod === 'PM') {
+        showNotification('Dual events must start in the morning (AM). Please select a time before 12:00 PM.', 'error')
+        newEvent.value.startTime = '07:00'
+      }
+      const validation = validateDualEventTimes(newEvent.value.startTime, newEvent.value.endTime)
+      if (!validation.valid) {
+        newEvent.value.endTime = '17:00'
+        showNotification('End time set to 5:00 PM for dual session.', 'warning')
+      }
+    }
   } else if (timePickerTarget.value === 'endTime') {
-    newEvent.value.endTime = timeStr
+    if ((newEvent.value.session_type === 'dual' || newEvent.value.session_type === 'half_day')) {
+      if (currentPeriod === 'AM') {
+        showNotification('Dual events must end in the afternoon (PM). End time auto-adjusted to 5:00 PM.', 'warning')
+        newEvent.value.endTime = '17:00'
+      } else {
+        newEvent.value.endTime = timeStr
+      }
+    } else {
+      newEvent.value.endTime = timeStr
+    }
   } else if (timePickerTarget.value === 'edit_start_time') {
     selectedEvent.value.start_time = timeStr
     if (!selectedEvent.value.end_time) {
       selectedEvent.value.end_time = calculateEndTime(timeStr)
     }
+    if (selectedEvent.value.session_type === 'dual' || selectedEvent.value.session_type === 'half_day') {
+      if (currentPeriod === 'PM') {
+        showNotification('Dual events must start in the morning (AM). Please select a time before 12:00 PM.', 'error')
+        selectedEvent.value.start_time = '07:00'
+      }
+      const validation = validateDualEventTimes(selectedEvent.value.start_time, selectedEvent.value.end_time)
+      if (!validation.valid) {
+        selectedEvent.value.end_time = '17:00'
+        showNotification('End time set to 5:00 PM for dual session.', 'warning')
+      }
+    }
   } else if (timePickerTarget.value === 'edit_end_time') {
-    selectedEvent.value.end_time = timeStr
+    if ((selectedEvent.value.session_type === 'dual' || selectedEvent.value.session_type === 'half_day')) {
+      if (currentPeriod === 'AM') {
+        showNotification('Dual events must end in the afternoon (PM). End time auto-adjusted to 5:00 PM.', 'warning')
+        selectedEvent.value.end_time = '17:00'
+      } else {
+        selectedEvent.value.end_time = timeStr
+      }
+    } else {
+      selectedEvent.value.end_time = timeStr
+    }
   } else if (timePickerTarget.value === 'afternoon_start') {
     newEvent.value.afternoon_start_time = timeStr
   } else if (timePickerTarget.value === 'edit_afternoon_start') {
@@ -6095,14 +6163,31 @@ const fetchAttendanceData = async () => {
 const createAttendanceEvent = async () => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
-    const autoStatus = calculateEventStatus(newEvent.value.date, newEvent.value.startTime, newEvent.value.endTime)
+    let startTime = newEvent.value.startTime
+    let endTime = newEvent.value.endTime
+    
+    if (newEvent.value.session_type === 'dual' || newEvent.value.session_type === 'half_day') {
+      const validation = validateDualEventTimes(startTime, endTime)
+      if (!validation.valid) {
+        if (isAmPm(startTime) === 'PM') {
+          startTime = '07:00'
+          showNotification('Start time adjusted to 7:00 AM for dual session.', 'warning')
+        }
+        if (isAmPm(endTime) === 'AM') {
+          endTime = '17:00'
+          showNotification('End time adjusted to 5:00 PM for dual session.', 'warning')
+        }
+      }
+    }
+    
+    const autoStatus = calculateEventStatus(newEvent.value.date, startTime, endTime)
     const eventPayload = {
       title: newEvent.value.title,
       description: newEvent.value.description || '',
       location: newEvent.value.location || '',
       event_date: newEvent.value.date,
-      start_time: newEvent.value.startTime,
-      end_time: newEvent.value.endTime,
+      start_time: startTime,
+      end_time: endTime,
       status: autoStatus,
       session_type: newEvent.value.session_type || 'single',
       afternoon_start_time: newEvent.value.afternoon_start_time || '13:00'

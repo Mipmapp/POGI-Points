@@ -43,7 +43,9 @@
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="font-semibold text-purple-900 text-sm">{{ announcement.posted_by_name || 'Admin' }}</span>
+                    <span :class="['font-semibold text-purple-900', announcement.posted_by === 'admin' ? 'text-sm' : 'text-xs']">
+                      {{ announcement.posted_by === 'admin' ? (announcement.posted_by_name || 'Admin') : 'CCS Organization' }}
+                    </span>
                     <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', announcement.posted_by === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-yellow-100 text-yellow-700']">
                       {{ announcement.posted_by === 'admin' ? 'Admin' : 'MedPub' }}
                     </span>
@@ -51,6 +53,7 @@
                       Urgent
                     </span>
                   </div>
+                  <p v-if="announcement.posted_by === 'medpub'" class="text-xs text-gray-400 mt-0.5">Posted by: {{ announcement.posted_by_name }}</p>
                   <p class="text-xs text-gray-500 mt-0.5">{{ formatDate(announcement.created_at) }}</p>
                 </div>
               </div>
@@ -244,28 +247,31 @@ const formatDate = (dateString) => {
 </script>
 
 <style scoped>
-.popup-slide-up-enter-active,
+.popup-slide-up-enter-active {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .popup-slide-up-leave-active {
-  transition: all 0.3s ease-out;
+  transition: all 0.2s ease-in;
 }
 
 .popup-slide-up-enter-from {
   opacity: 0;
-  transform: translateY(100%);
+  transform: scale(0.8);
 }
 
 .popup-slide-up-enter-to {
   opacity: 1;
-  transform: translateY(0);
+  transform: scale(1);
 }
 
 .popup-slide-up-leave-from {
   opacity: 1;
-  transform: translateY(0);
+  transform: scale(1);
 }
 
 .popup-slide-up-leave-to {
   opacity: 0;
-  transform: translateY(100%);
+  transform: scale(0.8);
 }
 </style>
