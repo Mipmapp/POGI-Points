@@ -1034,10 +1034,6 @@
                         </div>
                       </div>
                       <div class="flex items-center gap-2" @click.stop>
-                        <button @click="openEventLogs(event)" class="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition text-sm flex items-center gap-1">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                          Logs
-                        </button>
                         <button @click="openEditEvent(event)" class="bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg hover:bg-yellow-200 transition text-sm flex items-center gap-1">
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                           Edit
@@ -1068,9 +1064,15 @@
                               {{ getSessionDisplayStatus(session, event) === 'active' ? 'Active' : getSessionDisplayStatus(session, event) === 'draft' ? 'Upcoming' : 'Closed' }}
                             </span>
                           </div>
-                          <div class="flex items-center gap-1 text-xs text-gray-400">
-                            <span v-if="session.check_in_locked" class="text-red-500">Check-in locked</span>
-                            <span v-if="session.check_out_locked" class="text-red-500">Check-out locked</span>
+                          <div class="flex items-center gap-2">
+                            <button @click="openSessionLogs(session, event)" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg hover:bg-blue-200 transition text-xs flex items-center gap-1">
+                              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                              Logs
+                            </button>
+                            <div class="flex items-center gap-1 text-xs text-gray-400">
+                              <span v-if="session.check_in_locked" class="text-red-500">Check-in locked</span>
+                              <span v-if="session.check_out_locked" class="text-red-500">Check-out locked</span>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -3279,23 +3281,29 @@
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-6">
         <div>
-          <h3 class="text-2xl font-bold text-purple-900">{{ selectedEvent.title }}</h3>
-          <p class="text-gray-500 text-sm">Attendance Logs - {{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
+          <h3 class="text-2xl font-bold text-purple-900">
+            {{ selectedEvent.title }}
+            <span v-if="selectedSessionForLogs" class="text-lg font-medium text-purple-600"> - {{ selectedSessionForLogs.label }} Session</span>
+          </h3>
+          <p class="text-gray-500 text-sm">
+            Attendance Logs - {{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}
+            <span v-if="selectedSessionForLogs"> ({{ formatDisplayTime(selectedSessionForLogs.start_time) }} - {{ formatDisplayTime(selectedSessionForLogs.end_time) }})</span>
+          </p>
         </div>
         <button @click="showEventLogsModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
       </div>
       
       <!-- Filters -->
       <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-        <input v-model="eventLogsFilter.search" type="text" placeholder="Search by name or ID..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" @input="fetchEventLogs(selectedEvent._id)" />
-        <select v-model="eventLogsFilter.yearLevel" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" @change="fetchEventLogs(selectedEvent._id)">
+        <input v-model="eventLogsFilter.search" type="text" placeholder="Search by name or ID..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" @input="selectedSessionForLogs ? fetchSessionLogs(selectedSessionForLogs._id) : fetchEventLogs(selectedEvent._id)" />
+        <select v-model="eventLogsFilter.yearLevel" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" @change="selectedSessionForLogs ? fetchSessionLogs(selectedSessionForLogs._id) : fetchEventLogs(selectedEvent._id)">
           <option value="">All Year Levels</option>
           <option value="1st Year">1st Year</option>
           <option value="2nd Year">2nd Year</option>
           <option value="3rd Year">3rd Year</option>
           <option value="4th Year">4th Year</option>
         </select>
-        <select v-model="eventLogsFilter.program" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" @change="fetchEventLogs(selectedEvent._id)">
+        <select v-model="eventLogsFilter.program" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" @change="selectedSessionForLogs ? fetchSessionLogs(selectedSessionForLogs._id) : fetchEventLogs(selectedEvent._id)">
           <option value="">All Programs</option>
           <option value="BSCS">BSCS</option>
           <option value="BSIS">BSIS</option>
@@ -4017,6 +4025,7 @@ const openCreateEventModal = () => withAdminAction(openCreateEventModalImpl)()
 const showEventLogsModal = ref(false)
 const selectedEvent = ref(null)
 const selectedSession = ref(null)
+const selectedSessionForLogs = ref(null)
 const eventSessions = ref([])
 const showSessionModal = ref(false)
 const expandedEvents = ref({})
@@ -6801,6 +6810,51 @@ const deleteSession = async (sessionId) => {
   }
 }
 
+const fetchSessionLogs = async (sessionId) => {
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  attendanceLoading.value = true
+  try {
+    const params = new URLSearchParams()
+    if (eventLogsFilter.value.yearLevel) params.append('yearLevel', eventLogsFilter.value.yearLevel)
+    if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
+    if (eventLogsFilter.value.search) params.append('search', eventLogsFilter.value.search)
+    
+    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${sessionId}/logs?${params.toString()}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      let logs = (result.data || []).map(log => {
+        const key = deriveStudentKey(log)
+        const cachedPhoto = key ? studentPhotoCache.value[key] : null
+        const existingPhoto = log.student_image || log.student?.photo
+        
+        if (existingPhoto && !cachedPhoto) {
+          cacheStudentPhoto(log, existingPhoto)
+        }
+        
+        return {
+          ...log,
+          student_image: log.student_image || cachedPhoto || log.student?.photo
+        }
+      })
+      
+      attendanceLogs.value = logs
+    } else {
+      console.error('Failed to fetch session logs')
+    }
+  } catch (error) {
+    console.error('Error fetching session logs:', error)
+  } finally {
+    attendanceLoading.value = false
+  }
+}
+
 const fetchEventLogs = async (eventId) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   attendanceLoading.value = true
@@ -7217,8 +7271,16 @@ const processRfidScan = async (inputCode) => {
 
 const openEventLogs = (event) => {
   selectedEvent.value = event
+  selectedSessionForLogs.value = null
   showEventLogsModal.value = true
   fetchEventLogs(event._id)
+}
+
+const openSessionLogs = (session, event) => {
+  selectedEvent.value = event
+  selectedSessionForLogs.value = session
+  showEventLogsModal.value = true
+  fetchSessionLogs(session._id)
 }
 
 const openEditEvent = (event) => {
