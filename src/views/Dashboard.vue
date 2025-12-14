@@ -1439,7 +1439,7 @@
                       <div class="flex flex-wrap items-center gap-2 mb-3">
                         <svg :class="['w-4 h-4 text-purple-600 transition-transform', expandedEvents[event._id || event.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getStatusBadgeClass(getAttendanceStatus(event._id || event.event_id))]">
-                          {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'ongoing' ? 'Ongoing' : getAttendanceStatus(event._id || event.event_id) === 'absent' ? 'Absent' : 'Ongoing' }}
+                          {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'ongoing' ? 'Ongoing' : getAttendanceStatus(event._id || event.event_id) === 'upcoming' ? 'Upcoming' : getAttendanceStatus(event._id || event.event_id) === 'absent' ? 'Absent' : 'Ongoing' }}
                         </span>
                         <span v-if="event.status === 'active' && getEventTimeRemaining(event._id || event.event_id)" :class="['px-3 py-1 rounded-full text-xs font-semibold', getEventTimeRemaining(event._id || event.event_id) === 'Ended' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700']">
                           {{ getEventTimeRemaining(event._id || event.event_id) }}
@@ -2381,7 +2381,7 @@
                 <div class="px-4 pt-4 pb-2">
                   <div class="flex flex-wrap items-center gap-2 mb-3">
                     <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getStatusBadgeClass(getAttendanceStatus(event._id || event.event_id))]">
-                      {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'absent' ? 'Absent' : 'Ongoing' }}
+                      {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'upcoming' ? 'Upcoming' : getAttendanceStatus(event._id || event.event_id) === 'absent' ? 'Absent' : 'Ongoing' }}
                     </span>
                     <span v-if="getEventTimeRemaining(event._id || event.event_id)" class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
                       {{ getEventTimeRemaining(event._id || event.event_id) }}
@@ -7502,6 +7502,14 @@ const hasEventEndedPH = (event) => {
   return nowPH >= eventEnd
 }
 
+// Check if event has started yet (using Philippine time)
+const hasEventStartedPH = (event) => {
+  const eventStart = getEventStartTimeInPH(event)
+  if (!eventStart) return true  // If no start time, assume started
+  const nowPH = getPhilippineTime()
+  return nowPH >= eventStart
+}
+
 const getAttendanceStatus = (eventId) => {
   const record = myAttendanceRecords.value.find(r => r.event_id === eventId || r.event?._id === eventId)
   const event = attendanceEvents.value.find(e => e._id === eventId || e.event_id === eventId)
@@ -7509,15 +7517,27 @@ const getAttendanceStatus = (eventId) => {
   // Check if event has actually ended using Philippine time
   const eventEnded = event ? hasEventEndedPH(event) : false
   
+  // Check if event has started yet (for upcoming vs ongoing)
+  const eventStarted = event ? hasEventStartedPH(event) : true
+  
   if (!record) {
-    // No attendance record - check if event is still active using Philippine time
-    if (event && event.status === 'active' && !eventEnded) {
-      return 'ongoing'  // Event is still ongoing, not yet checked in
+    // No attendance record - check event timing
+    
+    // If event hasn't started yet, show as upcoming (not absent)
+    if (!eventStarted) {
+      return 'upcoming'
     }
+    
+    // If event is ongoing (started but not ended), show as ongoing
+    if (event && event.status === 'active' && !eventEnded) {
+      return 'ongoing'
+    }
+    
     // Only mark absent if event has actually ended
-    if (eventEnded || (event && event.status !== 'active')) {
+    if (eventEnded) {
       return 'absent'
     }
+    
     return 'ongoing'  // Default to ongoing if event status unclear
   }
   
@@ -7540,6 +7560,7 @@ const getStatusBadgeClass = (status) => {
     case 'absent': return 'bg-red-100 text-red-800'
     case 'ongoing': return 'bg-blue-100 text-blue-800'
     case 'active': return 'bg-blue-100 text-blue-800'
+    case 'upcoming': return 'bg-purple-100 text-purple-800'
     case 'draft': return 'bg-yellow-100 text-yellow-800'
     case 'closed': return 'bg-gray-100 text-gray-600'
     case 'ended': return 'bg-gray-100 text-gray-600'
