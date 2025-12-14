@@ -3979,7 +3979,7 @@ const expandedEventSessions = ref({})
 const newSession = ref({ label: 'Morning', start_time: '', end_time: '' })
 const savingSession = ref(false)
 const editingSession = ref(null)
-const sessionLabels = ['Morning', 'Afternoon', 'Noon', 'Night', 'Dawn']
+const sessionLabels = ['Whole Day', 'Morning', 'Afternoon', 'Noon', 'Night', 'Dawn']
 
 const sessionTimeError = computed(() => {
   if (!newSession.value.start_time || !newSession.value.end_time) return ''
@@ -4018,7 +4018,10 @@ watch(() => newSession.value.label, (label) => {
   const eventStart = selectedEvent.value?.start_time || selectedEvent.value?.startTime || '07:00'
   const eventEnd = selectedEvent.value?.end_time || selectedEvent.value?.endTime || '17:00'
   
-  if (label === 'Morning') {
+  if (label === 'Whole Day') {
+    newSession.value.start_time = eventStart
+    newSession.value.end_time = eventEnd
+  } else if (label === 'Morning') {
     newSession.value.start_time = eventStart
     newSession.value.end_time = '11:00'
   } else if (label === 'Afternoon') {
@@ -6508,7 +6511,9 @@ const updateAttendanceEvent = async () => {
       description: selectedEvent.value.description || '',
       location: selectedEvent.value.location || '',
       event_date: eventDate,
-      year_level: selectedEvent.value.year_level || ''
+      year_level: selectedEvent.value.year_level || '',
+      start_time: selectedEvent.value.start_time || selectedEvent.value.startTime || '07:00',
+      end_time: selectedEvent.value.end_time || selectedEvent.value.endTime || '17:00'
     }
     
     const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${selectedEvent.value._id}`, {
