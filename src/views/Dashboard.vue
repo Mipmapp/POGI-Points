@@ -1004,45 +1004,76 @@
                 <p>No attendance events yet. Create one to get started!</p>
               </div>
               <div v-else class="space-y-4">
-                <div v-for="event in attendanceEvents" :key="event._id" class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
-                  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div class="flex-1">
-                      <div class="flex items-center gap-3 mb-2">
-                        <h3 class="font-semibold text-lg text-purple-900">{{ event.title }}</h3>
-                        <span :class="['px-2 py-1 rounded-full text-xs font-medium', getStatusBadgeClass(getEventDisplayStatus(event).status)]">{{ getEventDisplayStatus(event).label }}</span>
-                        <span v-if="event.status === 'active' && getEventTimeRemaining(event._id) && getEventTimeRemaining(event._id) !== 'Ended'" :class="['px-2 py-1 rounded-full text-xs font-medium', 'bg-orange-100 text-orange-800']">
-                          {{ getEventTimeRemaining(event._id) }}
-                        </span>
+                <div v-for="event in attendanceEvents" :key="event._id" class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition">
+                  <!-- Event Header - Clickable to expand -->
+                  <div class="p-4 cursor-pointer" @click="toggleEventExpansion(event._id)">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-3 mb-2">
+                          <svg :class="['w-5 h-5 text-purple-600 transition-transform', expandedEvents[event._id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                          <h3 class="font-semibold text-lg text-purple-900">{{ event.title }}</h3>
+                          <span :class="['px-2 py-1 rounded-full text-xs font-medium', getStatusBadgeClass(getEventDisplayStatus(event).status)]">{{ getEventDisplayStatus(event).label }}</span>
+                          <span v-if="event.status === 'active' && getEventTimeRemaining(event._id) && getEventTimeRemaining(event._id) !== 'Ended'" :class="['px-2 py-1 rounded-full text-xs font-medium', 'bg-orange-100 text-orange-800']">
+                            {{ getEventTimeRemaining(event._id) }}
+                          </span>
+                        </div>
+                        <p v-if="event.description" class="text-gray-600 text-sm mb-2 ml-8">{{ event.description }}</p>
+                        <div class="flex flex-wrap gap-4 text-sm text-gray-500 ml-8">
+                          <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            {{ formatEventDate(event.date || event.event_date) }}
+                          </span>
+                          <span class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            {{ formatEventTime(event.start_time || event.startTime || '07:00') }} - {{ formatEventTime(event.end_time || event.endTime || '17:00') }}
+                          </span>
+                          <span v-if="event.location" class="flex items-center gap-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            {{ event.location }}
+                          </span>
+                        </div>
                       </div>
-                      <p v-if="event.description" class="text-gray-600 text-sm mb-2">{{ event.description }}</p>
-                      <div class="flex flex-wrap gap-4 text-sm text-gray-500">
-                        <span class="flex items-center gap-1">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                          {{ formatEventDate(event.date || event.event_date) }}
-                        </span>
-                        <span v-if="event.startTime || event.start_time" class="flex items-center gap-1">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                          {{ formatEventTime(event.startTime || event.start_time) }} - {{ formatEventTime(event.endTime || event.end_time) }}
-                        </span>
-                        <span v-if="event.location" class="flex items-center gap-1">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                          {{ event.location }}
-                        </span>
+                      <div class="flex items-center gap-2" @click.stop>
+                        <button @click="openEventLogs(event)" class="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition text-sm flex items-center gap-1">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                          Logs
+                        </button>
+                        <button @click="openEditEvent(event)" class="bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg hover:bg-yellow-200 transition text-sm flex items-center gap-1">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                          Edit
+                        </button>
+                        <button @click="deleteAttendanceEvent(event._id)" class="bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 transition text-sm flex items-center gap-1">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                          Delete
+                        </button>
                       </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                      <button @click="openEventLogs(event)" class="bg-blue-100 text-blue-700 px-3 py-2 rounded-lg hover:bg-blue-200 transition text-sm flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                        Logs
-                      </button>
-                      <button @click="openEditEvent(event)" class="bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg hover:bg-yellow-200 transition text-sm flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                        Edit
-                      </button>
-                      <button @click="deleteAttendanceEvent(event._id)" class="bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 transition text-sm flex items-center gap-1">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                        Delete
-                      </button>
+                  </div>
+                  <!-- Sessions Panel - Expandable -->
+                  <div v-if="expandedEvents[event._id]" class="bg-gray-50 border-t border-gray-200 px-4 py-3">
+                    <div class="ml-8">
+                      <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        Sessions
+                      </h4>
+                      <div v-if="!expandedEventSessions[event._id] || expandedEventSessions[event._id].length === 0" class="text-sm text-gray-500 py-2">
+                        No sessions added yet. Click "Edit" to add sessions.
+                      </div>
+                      <div v-else class="space-y-2">
+                        <div v-for="session in expandedEventSessions[event._id]" :key="session._id" class="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-gray-200">
+                          <div class="flex items-center gap-3">
+                            <span class="font-medium text-gray-800">{{ session.label }}</span>
+                            <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
+                            <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', session.status === 'active' ? 'bg-green-100 text-green-700' : session.status === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
+                              {{ session.status === 'active' ? 'Active' : session.status === 'draft' ? 'Draft' : 'Closed' }}
+                            </span>
+                          </div>
+                          <div class="flex items-center gap-1 text-xs text-gray-400">
+                            <span v-if="session.check_in_locked" class="text-red-500">Check-in locked</span>
+                            <span v-if="session.check_out_locked" class="text-red-500">Check-out locked</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1401,9 +1432,10 @@
                 </h3>
                 <div class="space-y-4">
                   <div v-for="event in activeNonEndedEvents" :key="event._id || event.event_id" class="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-sm border border-purple-100 overflow-hidden">
-                    <!-- Header with status badges -->
-                    <div class="px-4 pt-4 pb-2">
+                    <!-- Header with status badges - Clickable to expand -->
+                    <div class="px-4 pt-4 pb-2 cursor-pointer" @click="toggleEventExpansion(event._id || event.event_id)">
                       <div class="flex flex-wrap items-center gap-2 mb-3">
+                        <svg :class="['w-4 h-4 text-purple-600 transition-transform', expandedEvents[event._id || event.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getStatusBadgeClass(getAttendanceStatus(event._id || event.event_id))]">
                           {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'active' ? 'Pending Check-in' : (event.status === 'active' ? 'Pending Check-in' : 'Absent') }}
                         </span>
@@ -1423,13 +1455,34 @@
                           <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                           <span class="font-medium">{{ formatEventDate(event.date || event.event_date) }}</span>
                         </div>
-                        <div v-if="event.startTime || event.start_time" class="flex items-center gap-2">
+                        <div class="flex items-center gap-2">
                           <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                          <span class="font-medium">{{ formatEventTime(event.startTime || event.start_time) }} - {{ formatEventTime(event.endTime || event.end_time) }}</span>
+                          <span class="font-medium">{{ formatEventTime(event.start_time || event.startTime || '07:00') }} - {{ formatEventTime(event.end_time || event.endTime || '17:00') }}</span>
                         </div>
                         <div v-if="event.location" class="flex items-center gap-2">
                           <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                           <span class="font-medium">{{ event.location }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Sessions Panel - Expandable -->
+                    <div v-if="expandedEvents[event._id || event.event_id]" class="bg-purple-50 border-t border-purple-100 px-4 py-3">
+                      <h4 class="text-sm font-semibold text-purple-700 mb-2 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        Sessions
+                      </h4>
+                      <div v-if="!expandedEventSessions[event._id || event.event_id] || expandedEventSessions[event._id || event.event_id].length === 0" class="text-sm text-gray-500 py-2">
+                        No sessions available for this event.
+                      </div>
+                      <div v-else class="space-y-2">
+                        <div v-for="session in expandedEventSessions[event._id || event.event_id]" :key="session._id" class="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-purple-200">
+                          <div class="flex items-center gap-3">
+                            <span class="font-medium text-gray-800">{{ session.label }}</span>
+                            <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
+                          </div>
+                          <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', session.status === 'active' ? 'bg-green-100 text-green-700' : session.status === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
+                            {{ session.status === 'active' ? 'Active' : session.status === 'draft' ? 'Upcoming' : 'Closed' }}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -1445,9 +1498,10 @@
                 </h3>
                 <div class="space-y-4">
                   <div v-for="event in upcomingEvents" :key="event._id || event.event_id" class="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
-                    <!-- Header with status badge -->
-                    <div class="px-4 pt-4 pb-2">
+                    <!-- Header with status badge - Clickable to expand -->
+                    <div class="px-4 pt-4 pb-2 cursor-pointer" @click="toggleEventExpansion(event._id || event.event_id)">
                       <div class="flex flex-wrap items-center gap-2 mb-3">
+                        <svg :class="['w-4 h-4 text-blue-600 transition-transform', expandedEvents[event._id || event.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
                           Upcoming
                         </span>
@@ -1464,13 +1518,34 @@
                           <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                           <span class="font-medium">{{ formatEventDate(event.date || event.event_date) }}</span>
                         </div>
-                        <div v-if="event.startTime || event.start_time" class="flex items-center gap-2">
+                        <div class="flex items-center gap-2">
                           <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                          <span class="font-medium">{{ formatEventTime(event.startTime || event.start_time) }} - {{ formatEventTime(event.endTime || event.end_time) }}</span>
+                          <span class="font-medium">{{ formatEventTime(event.start_time || event.startTime || '07:00') }} - {{ formatEventTime(event.end_time || event.endTime || '17:00') }}</span>
                         </div>
                         <div v-if="event.location" class="flex items-center gap-2">
                           <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                           <span class="font-medium">{{ event.location }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Sessions Panel - Expandable -->
+                    <div v-if="expandedEvents[event._id || event.event_id]" class="bg-blue-50 border-t border-blue-100 px-4 py-3">
+                      <h4 class="text-sm font-semibold text-blue-700 mb-2 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        Sessions
+                      </h4>
+                      <div v-if="!expandedEventSessions[event._id || event.event_id] || expandedEventSessions[event._id || event.event_id].length === 0" class="text-sm text-gray-500 py-2">
+                        No sessions available for this event.
+                      </div>
+                      <div v-else class="space-y-2">
+                        <div v-for="session in expandedEventSessions[event._id || event.event_id]" :key="session._id" class="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-200">
+                          <div class="flex items-center gap-3">
+                            <span class="font-medium text-gray-800">{{ session.label }}</span>
+                            <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
+                          </div>
+                          <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', session.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700']">
+                            {{ session.status === 'active' ? 'Active' : 'Upcoming' }}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -3804,6 +3879,8 @@ const selectedEvent = ref(null)
 const selectedSession = ref(null)
 const eventSessions = ref([])
 const showSessionModal = ref(false)
+const expandedEvents = ref({})
+const expandedEventSessions = ref({})
 const newSession = ref({ label: 'Morning', start_time: '', end_time: '' })
 const savingSession = ref(false)
 const editingSession = ref(null)
@@ -6410,6 +6487,28 @@ const fetchEventSessions = async (eventId) => {
     }
   } catch (error) {
     console.error('Error fetching sessions:', error)
+  }
+}
+
+const toggleEventExpansion = async (eventId) => {
+  if (expandedEvents.value[eventId]) {
+    expandedEvents.value[eventId] = false
+  } else {
+    expandedEvents.value[eventId] = true
+    if (!expandedEventSessions.value[eventId]) {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+      try {
+        const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${eventId}/sessions`, {
+          headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
+        })
+        if (response.ok) {
+          const result = await response.json()
+          expandedEventSessions.value[eventId] = result.data || result.sessions || []
+        }
+      } catch (error) {
+        console.error('Error fetching sessions for expansion:', error)
+      }
+    }
   }
 }
 
