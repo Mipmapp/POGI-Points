@@ -3304,23 +3304,28 @@
         <select v-model="eventLogsFilter.status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" @change="applyStatusFilter()">
           <option value="">All Statuses</option>
           <option value="present">Present</option>
+          <option value="incomplete">Incomplete</option>
           <option value="late">Late</option>
           <option value="absent">Absent</option>
         </select>
       </div>
 
       <!-- Stats Summary -->
-      <div class="grid grid-cols-4 gap-4 mb-6">
+      <div class="grid grid-cols-5 gap-4 mb-6">
         <div class="bg-green-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-green-600">{{ filteredAttendanceLogs.filter(l => (l.attendance_status || l.status) === 'present').length }}</p>
+          <p class="text-2xl font-bold text-green-600">{{ getLogStatusCount('present') }}</p>
           <p class="text-sm text-green-700">Present</p>
         </div>
         <div class="bg-yellow-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-yellow-600">{{ filteredAttendanceLogs.filter(l => (l.attendance_status || l.status) === 'late').length }}</p>
-          <p class="text-sm text-yellow-700">Late</p>
+          <p class="text-2xl font-bold text-yellow-600">{{ getLogStatusCount('incomplete') }}</p>
+          <p class="text-sm text-yellow-700">Incomplete</p>
+        </div>
+        <div class="bg-orange-50 p-4 rounded-lg text-center">
+          <p class="text-2xl font-bold text-orange-600">{{ getLogStatusCount('late') }}</p>
+          <p class="text-sm text-orange-700">Late</p>
         </div>
         <div class="bg-red-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-red-600">{{ filteredAttendanceLogs.filter(l => (l.attendance_status || l.status) === 'absent').length }}</p>
+          <p class="text-2xl font-bold text-red-600">{{ getLogStatusCount('absent') }}</p>
           <p class="text-sm text-red-700">Absent</p>
         </div>
         <div class="bg-purple-50 p-4 rounded-lg text-center">
@@ -3425,7 +3430,7 @@
               <td class="border border-purple-300 px-4 py-3 text-center">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString() : '-' }}</td>
               <td class="border border-purple-300 px-4 py-3 text-center">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</td>
               <td class="border border-purple-300 px-4 py-3 text-center">
-                <span :class="getStatusBadgeClass(log.status)">{{ log.status }}</span>
+                <span :class="getAttendanceLogStatusClass(log)" class="px-2 py-1 rounded-full text-xs font-semibold">{{ getAttendanceLogStatusLabel(log) }}</span>
               </td>
             </tr>
           </tbody>
@@ -3524,18 +3529,38 @@ const getLogCountByYear = (yearLevel) => {
   }).length
 }
 
+// Helper to compute status for a log based on check-in/check-out
+const computeLogStatus = (log) => {
+  const hasCheckIn = log.check_in_at || log.check_in_time
+  const hasCheckOut = log.check_out_at || log.check_out_time
+  const isLate = log.is_late
+  
+  if (hasCheckIn && hasCheckOut) {
+    return isLate ? 'late' : 'present'
+  }
+  if (hasCheckIn && !hasCheckOut) {
+    return isLate ? 'late' : 'incomplete'
+  }
+  return 'absent'
+}
+
 const filteredAttendanceLogs = computed(() => {
   let logs = attendanceLogs.value
   
   if (eventLogsFilter.value.status) {
     logs = logs.filter(log => {
-      const logStatus = log.attendance_status || log.status || ''
+      const logStatus = computeLogStatus(log)
       return logStatus === eventLogsFilter.value.status
     })
   }
   
   return logs
 })
+
+// Get count of logs by computed status
+const getLogStatusCount = (status) => {
+  return filteredAttendanceLogs.value.filter(log => computeLogStatus(log) === status).length
+}
 
 const applyStatusFilter = () => {
 }
