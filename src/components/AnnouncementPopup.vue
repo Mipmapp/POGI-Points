@@ -38,29 +38,30 @@
               style="min-height: 150px; max-height: 45vh;"
             >
               <div class="flex items-start gap-3 mb-4">
-                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
+                <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden', announcement.posted_by === 'admin' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gradient-to-br from-yellow-500 to-amber-600']">
                   <img v-if="announcement.posted_by === 'admin'" src="/assets/ssaam_logo.jpg" alt="SSAAM" class="w-full h-full object-cover" />
-                  <img v-else-if="announcement.posted_by === 'medpub'" src="/media_pub_logo.png" alt="Media and Publication" class="w-8 h-8 object-contain" />
+                  <img v-else-if="announcement.posted_by === 'medpub'" src="/media_pub_logo.png" alt="Media and Publication" class="w-6 h-6 object-contain" />
                   <span v-else>{{ getInitials(announcement.posted_by_name) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span class="font-semibold text-purple-900 text-sm">
+                    <span :class="['font-semibold text-sm', announcement.posted_by === 'admin' ? 'text-purple-900' : 'text-yellow-900']">
                       {{ announcement.posted_by === 'admin' ? (announcement.posted_by_name || 'Admin') : 'Media and Publication' }}
                     </span>
-                    <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', announcement.posted_by === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-yellow-100 text-yellow-700']">
-                      {{ announcement.posted_by === 'admin' ? 'Admin' : 'Org' }}
+                    <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', announcement.posted_by === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-200 text-amber-800']">
+                      {{ announcement.posted_by === 'admin' ? 'Admin' : 'Organization' }}
                     </span>
                     <span v-if="announcement.priority === 'urgent'" class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
                       Urgent
                     </span>
                   </div>
-                  <div v-if="announcement.posted_by === 'medpub'" class="flex items-center gap-1.5 mt-1">
-                    <div class="w-4 h-4 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-                      <img v-if="announcement.poster_photo" :src="announcement.poster_photo" :alt="announcement.posted_by_name" class="w-full h-full object-cover" />
-                      <span v-else class="text-[8px] text-gray-500 flex items-center justify-center w-full h-full">{{ getInitials(announcement.posted_by_name) }}</span>
+                  <div v-if="announcement.posted_by === 'medpub'" class="flex items-center gap-1 mt-1 text-xs text-gray-600">
+                    <span>posted by</span>
+                    <div class="w-4 h-4 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-pink-400 to-purple-600 relative">
+                      <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white uppercase">{{ (announcement.posted_by_name || 'U').charAt(0) }}</span>
+                      <img v-if="announcement.poster_photo" :src="announcement.poster_photo" :alt="announcement.posted_by_name" class="w-full h-full object-cover absolute inset-0 z-10" />
                     </div>
-                    <p class="text-xs text-gray-500">Posted by {{ announcement.posted_by_name }}</p>
+                    <span class="font-semibold text-gray-800">{{ announcement.posted_by_name }}</span>
                   </div>
                   <p class="text-xs text-gray-500 mt-0.5">{{ formatDate(announcement.created_at) }}</p>
                 </div>
