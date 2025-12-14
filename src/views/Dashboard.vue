@@ -3320,6 +3320,20 @@ const exportToExcelByYear = async (event, yearLevel) => {
     
     const workbook = XLSX.utils.book_new()
     
+    const hasDualSessionData = logs.some(log => log.morning_check_in_at || log.afternoon_check_in_at)
+    const sessionTypeLabel = hasDualSessionData ? 'Dual Session (Morning & Afternoon)' : 'Single Session'
+    const eventDateFormatted = formatEventDate(event.date || event.event_date)
+    const eventLocation = event.location || ''
+    
+    const headerRows = [
+      { 'Event Title': event.title || 'Attendance Event' },
+      { 'Event Title': `Date: ${eventDateFormatted}` },
+      { 'Event Title': `Session Type: ${sessionTypeLabel}` },
+      ...(eventLocation ? [{ 'Event Title': `Location: ${eventLocation}` }] : []),
+      { 'Event Title': `Year Level: ${yearLevel}` },
+      { 'Event Title': '' }
+    ]
+    
     const worksheetData = logs.map((log, index) => {
       const checkIn = log.check_in_at || log.check_in_time
       const checkOut = log.check_out_at || log.check_out_time
@@ -3348,10 +3362,10 @@ const exportToExcelByYear = async (event, yearLevel) => {
           'Name': studentName,
           'Program': program,
           'Year Level': yearLevel,
-          'AM In': morningCheckIn ? new Date(morningCheckIn).toLocaleString('en-PH') : '-',
-          'AM Out': morningCheckOut ? new Date(morningCheckOut).toLocaleString('en-PH') : '-',
-          'PM In': afternoonCheckIn ? new Date(afternoonCheckIn).toLocaleString('en-PH') : '-',
-          'PM Out': afternoonCheckOut ? new Date(afternoonCheckOut).toLocaleString('en-PH') : '-',
+          'Morning In': morningCheckIn ? new Date(morningCheckIn).toLocaleString('en-PH') : '-',
+          'Morning Out': morningCheckOut ? new Date(morningCheckOut).toLocaleString('en-PH') : '-',
+          'Afternoon In': afternoonCheckIn ? new Date(afternoonCheckIn).toLocaleString('en-PH') : '-',
+          'Afternoon Out': afternoonCheckOut ? new Date(afternoonCheckOut).toLocaleString('en-PH') : '-',
           'Status': status
         }
       } else {
@@ -3372,18 +3386,21 @@ const exportToExcelByYear = async (event, yearLevel) => {
       }
     })
     
-    const worksheet = XLSX.utils.json_to_sheet(worksheetData)
-    const isDualSession = worksheetData.length > 0 && worksheetData[0]['AM In'] !== undefined
+    const headerSheet = XLSX.utils.json_to_sheet(headerRows)
+    const dataStartRow = headerRows.length + 1
+    XLSX.utils.sheet_add_json(headerSheet, worksheetData, { origin: `A${dataStartRow}` })
+    
+    const isDualSession = worksheetData.length > 0 && worksheetData[0]['Morning In'] !== undefined
     const columnWidths = isDualSession ? [
       { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
-      { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 20 }, { wch: 12 }
+      { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 22 }, { wch: 12 }
     ] : [
       { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
       { wch: 20 }, { wch: 20 }, { wch: 12 }
     ]
-    worksheet['!cols'] = columnWidths
+    headerSheet['!cols'] = columnWidths
     
-    XLSX.utils.book_append_sheet(workbook, worksheet, yearLevel.replace(' ', '_'))
+    XLSX.utils.book_append_sheet(workbook, headerSheet, yearLevel.replace(' ', '_'))
     
     const eventDate = formatEventDate(event.date || event.event_date).replace(/[^a-zA-Z0-9]/g, '_')
     const eventTitle = (event.title || 'Event').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)
@@ -6381,6 +6398,12 @@ const exportEventAttendanceToExcel = async (event) => {
     // Create workbook
     const workbook = XLSX.utils.book_new()
     
+    // Determine session type and prepare event info
+    const hasDualSessionData = logs.some(log => log.morning_check_in_at || log.afternoon_check_in_at)
+    const sessionTypeLabel = hasDualSessionData ? 'Dual Session (Morning & Afternoon)' : 'Single Session'
+    const eventDateFormatted = formatEventDate(event.date || event.event_date)
+    const eventLocation = event.location || ''
+    
     // Year level order for organization
     const yearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
     
@@ -6399,6 +6422,16 @@ const exportEventAttendanceToExcel = async (event) => {
         const nameB = (b.student?.full_name || b.full_name || `${b.student?.first_name || ''} ${b.student?.last_name || ''}`).toLowerCase()
         return nameA.localeCompare(nameB)
       })
+      
+      // Create header rows with event information
+      const headerRows = [
+        { 'Event Title': event.title || 'Attendance Event' },
+        { 'Event Title': `Date: ${eventDateFormatted}` },
+        { 'Event Title': `Session Type: ${sessionTypeLabel}` },
+        ...(eventLocation ? [{ 'Event Title': `Location: ${eventLocation}` }] : []),
+        { 'Event Title': `Year Level: ${yearLevel}` },
+        { 'Event Title': '' }
+      ]
       
       // Prepare data for worksheet - handles both single and dual session modes
       const worksheetData = yearLogs.map((log, index) => {
@@ -6433,10 +6466,10 @@ const exportEventAttendanceToExcel = async (event) => {
             'Name': studentName,
             'Program': program,
             'Year Level': yearLevel,
-            'AM In': morningCheckIn ? new Date(morningCheckIn).toLocaleString('en-PH') : '-',
-            'AM Out': morningCheckOut ? new Date(morningCheckOut).toLocaleString('en-PH') : '-',
-            'PM In': afternoonCheckIn ? new Date(afternoonCheckIn).toLocaleString('en-PH') : '-',
-            'PM Out': afternoonCheckOut ? new Date(afternoonCheckOut).toLocaleString('en-PH') : '-',
+            'Morning In': morningCheckIn ? new Date(morningCheckIn).toLocaleString('en-PH') : '-',
+            'Morning Out': morningCheckOut ? new Date(morningCheckOut).toLocaleString('en-PH') : '-',
+            'Afternoon In': afternoonCheckIn ? new Date(afternoonCheckIn).toLocaleString('en-PH') : '-',
+            'Afternoon Out': afternoonCheckOut ? new Date(afternoonCheckOut).toLocaleString('en-PH') : '-',
             'Status': status
           }
         } else {
@@ -6458,21 +6491,23 @@ const exportEventAttendanceToExcel = async (event) => {
         }
       })
       
-      // Create worksheet
-      const worksheet = XLSX.utils.json_to_sheet(worksheetData)
+      // Create worksheet with headers first
+      const headerSheet = XLSX.utils.json_to_sheet(headerRows)
+      const dataStartRow = headerRows.length + 1
+      XLSX.utils.sheet_add_json(headerSheet, worksheetData, { origin: `A${dataStartRow}` })
       
       // Set column widths - check if dual session based on first record
-      const isDualSession = worksheetData.length > 0 && worksheetData[0]['AM In'] !== undefined
+      const isDualSession = worksheetData.length > 0 && worksheetData[0]['Morning In'] !== undefined
       const columnWidths = isDualSession ? [
         { wch: 5 },   // #
         { wch: 15 },  // Student ID
         { wch: 30 },  // Name
         { wch: 10 },  // Program
         { wch: 12 },  // Year Level
-        { wch: 20 },  // AM In
-        { wch: 20 },  // AM Out
-        { wch: 20 },  // PM In
-        { wch: 20 },  // PM Out
+        { wch: 22 },  // Morning In
+        { wch: 22 },  // Morning Out
+        { wch: 22 },  // Afternoon In
+        { wch: 22 },  // Afternoon Out
         { wch: 12 }   // Status
       ] : [
         { wch: 5 },   // #
@@ -6484,10 +6519,10 @@ const exportEventAttendanceToExcel = async (event) => {
         { wch: 20 },  // Check-Out
         { wch: 12 }   // Status
       ]
-      worksheet['!cols'] = columnWidths
+      headerSheet['!cols'] = columnWidths
       
       // Add worksheet to workbook with year level as sheet name
-      XLSX.utils.book_append_sheet(workbook, worksheet, yearLevel.replace(' ', '_'))
+      XLSX.utils.book_append_sheet(workbook, headerSheet, yearLevel.replace(' ', '_'))
     })
     
     // Create summary sheet - handles both single and dual session modes
@@ -6534,9 +6569,22 @@ const exportEventAttendanceToExcel = async (event) => {
       }
     })
     
-    const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData)
-    summaryWorksheet['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 18 }, { wch: 12 }]
-    XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary')
+    // Add event header to summary sheet
+    const summaryHeaderRows = [
+      { 'Year Level': event.title || 'Attendance Event' },
+      { 'Year Level': `Date: ${eventDateFormatted}` },
+      { 'Year Level': `Session Type: ${sessionTypeLabel}` },
+      ...(eventLocation ? [{ 'Year Level': `Location: ${eventLocation}` }] : []),
+      { 'Year Level': '' },
+      { 'Year Level': 'ATTENDANCE SUMMARY' },
+      { 'Year Level': '' }
+    ]
+    
+    const summaryHeaderSheet = XLSX.utils.json_to_sheet(summaryHeaderRows)
+    const summaryDataStartRow = summaryHeaderRows.length + 1
+    XLSX.utils.sheet_add_json(summaryHeaderSheet, summaryData, { origin: `A${summaryDataStartRow}` })
+    summaryHeaderSheet['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 18 }, { wch: 15 }, { wch: 12 }]
+    XLSX.utils.book_append_sheet(workbook, summaryHeaderSheet, 'Summary')
     
     // Generate filename with event title and date
     const eventDate = formatEventDate(event.date || event.event_date).replace(/[^a-zA-Z0-9]/g, '_')
