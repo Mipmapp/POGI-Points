@@ -4301,13 +4301,23 @@ const getSessionDisplayStatus = (session, event) => {
   const [startH, startM] = session.start_time.split(':').map(Number)
   const [endH, endM] = session.end_time.split(':').map(Number)
   
-  const dateStr = typeof eventDate === 'string' ? eventDate.split('T')[0] : new Date(eventDate).toISOString().split('T')[0]
+  // Parse event date properly - handle both string and Date objects
+  let eventDateObj
+  if (typeof eventDate === 'string') {
+    // If it's an ISO string, parse it; if just date, append time
+    eventDateObj = eventDate.includes('T') ? new Date(eventDate) : new Date(eventDate + 'T12:00:00')
+  } else {
+    eventDateObj = new Date(eventDate)
+  }
   
-  const sessionStart = new Date(dateStr + 'T00:00:00')
-  sessionStart.setHours(startH, startM, 0, 0)
+  // Get year, month, day in LOCAL timezone from the event date
+  const year = eventDateObj.getFullYear()
+  const month = eventDateObj.getMonth()
+  const day = eventDateObj.getDate()
   
-  const sessionEnd = new Date(dateStr + 'T00:00:00')
-  sessionEnd.setHours(endH, endM, 0, 0)
+  // Create session start and end times using the event's local date
+  const sessionStart = new Date(year, month, day, startH, startM, 0, 0)
+  const sessionEnd = new Date(year, month, day, endH, endM, 0, 0)
   
   if (now < sessionStart) {
     return 'draft'
