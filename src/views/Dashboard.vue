@@ -1630,6 +1630,10 @@
                                   <p class="text-xs text-gray-500">
                                     {{ formatEventTime(sessionData.session?.start_time) }} - {{ formatEventTime(sessionData.session?.end_time) }}
                                   </p>
+                                  <p v-if="sessionData.session?.start_time" class="text-xs text-orange-600 flex items-center gap-1 mt-0.5">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    Late after {{ calculateLateThreshold(sessionData.session.start_time) }}
+                                  </p>
                                 </div>
                               </div>
                               
@@ -7416,16 +7420,27 @@ const getSessionAttendanceLabel = (attendance) => {
   if (!attendance) return 'Absent'
   const status = attendance.status
   if (status === 'present') return 'Present'
-  if (status === 'late') return 'Late'
-  if (status === 'incomplete') return 'Incomplete'
+  if (status === 'late') return 'Present (Late)'
+  if (status === 'incomplete') return attendance.is_late ? 'Incomplete (Late)' : 'Incomplete'
   if (status === 'absent') return 'Absent'
   if (attendance.check_in_at && attendance.check_out_at) {
-    return attendance.is_late ? 'Late' : 'Present'
+    return attendance.is_late ? 'Present (Late)' : 'Present'
   }
   if (attendance.check_in_at && !attendance.check_out_at) {
-    return attendance.is_late ? 'Late (Incomplete)' : 'Incomplete'
+    return attendance.is_late ? 'Incomplete (Late)' : 'Incomplete'
   }
   return 'Absent'
+}
+
+const calculateLateThreshold = (startTime, thresholdMinutes = 30) => {
+  if (!startTime) return null
+  const [hours, minutes] = startTime.split(':').map(Number)
+  const totalMinutes = hours * 60 + minutes + thresholdMinutes
+  const lateHours = Math.floor(totalMinutes / 60) % 24
+  const lateMinutes = totalMinutes % 60
+  const period = lateHours >= 12 ? 'PM' : 'AM'
+  const displayHours = lateHours > 12 ? lateHours - 12 : (lateHours === 0 ? 12 : lateHours)
+  return `${displayHours}:${lateMinutes.toString().padStart(2, '0')} ${period}`
 }
 
 const getSessionAttendanceClass = (attendance) => {
