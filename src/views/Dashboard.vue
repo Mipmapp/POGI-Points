@@ -7356,10 +7356,10 @@ const getStatusBadgeClass = (status) => {
     case 'late': return 'bg-orange-100 text-orange-800'
     case 'incomplete': return 'bg-yellow-100 text-yellow-800'
     case 'absent': return 'bg-red-100 text-red-800'
-    case 'active': return 'bg-blue-100 text-blue-800'
-    case 'draft': return 'bg-gray-100 text-gray-800'
-    case 'closed': return 'bg-red-100 text-red-800'
-    case 'ended': return 'bg-red-100 text-red-800'
+    case 'active': return 'bg-green-100 text-green-800'
+    case 'draft': return 'bg-yellow-100 text-yellow-800'
+    case 'closed': return 'bg-gray-100 text-gray-600'
+    case 'ended': return 'bg-gray-100 text-gray-600'
     default: return 'bg-gray-100 text-gray-800'
   }
 }
@@ -7367,48 +7367,37 @@ const getStatusBadgeClass = (status) => {
 const getEventDisplayStatus = (event) => {
   if (!event) return { status: 'draft', label: 'Upcoming' }
   
-  const eventId = event._id || event.event_id
-  const timeRemaining = eventTimeRemaining.value[eventId]
+  const eventDateRaw = event.event_date || event.date
+  if (!eventDateRaw) return { status: 'draft', label: 'Upcoming' }
   
-  if (timeRemaining === 'Ended') {
-    return { status: 'ended', label: 'Ended' }
+  const startTime = event.start_time || event.startTime || '07:00'
+  const endTime = event.end_time || event.endTime || '17:00'
+  
+  const [startH, startM] = startTime.split(':').map(Number)
+  const [endH, endM] = endTime.split(':').map(Number)
+  
+  let eventDateStr
+  if (typeof eventDateRaw === 'string') {
+    eventDateStr = eventDateRaw.includes('T') ? eventDateRaw.split('T')[0] : eventDateRaw
+  } else {
+    const d = new Date(eventDateRaw)
+    eventDateStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   }
   
-  if (event.status === 'active') {
-    return { status: 'active', label: 'Active' }
-  }
+  const eventStartPH = new Date(`${eventDateStr}T${String(startH).padStart(2, '0')}:${String(startM).padStart(2, '0')}:00+08:00`)
+  const eventEndPH = new Date(`${eventDateStr}T${String(endH).padStart(2, '0')}:${String(endM).padStart(2, '0')}:00+08:00`)
   
-  if (event.status === 'draft') {
-    const nowPH = getPhilippineTime()
-    const eventDateRaw = event.event_date || event.date
-    
-    let eventDateObj
-    if (typeof eventDateRaw === 'string') {
-      eventDateObj = eventDateRaw.includes('T') ? new Date(eventDateRaw) : new Date(eventDateRaw + 'T12:00:00')
-    } else {
-      eventDateObj = new Date(eventDateRaw)
-    }
-    
-    const todayStart = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate())
-    const tomorrowStart = new Date(nowPH.getFullYear(), nowPH.getMonth(), nowPH.getDate() + 1)
-    const eventDateOnly = new Date(eventDateObj.getFullYear(), eventDateObj.getMonth(), eventDateObj.getDate())
-    
-    if (eventDateOnly < todayStart) {
-      return { status: 'closed', label: 'Closed' }
-    }
-    
-    if (eventDateOnly >= todayStart && eventDateOnly < tomorrowStart) {
-      return { status: 'active', label: 'Active' }
-    }
-    
+  const nowUTC = Date.now()
+  const eventStartUTC = eventStartPH.getTime()
+  const eventEndUTC = eventEndPH.getTime()
+  
+  if (nowUTC < eventStartUTC) {
     return { status: 'draft', label: 'Upcoming' }
+  } else if (nowUTC >= eventStartUTC && nowUTC <= eventEndUTC) {
+    return { status: 'active', label: 'Active' }
+  } else {
+    return { status: 'closed', label: 'Completed' }
   }
-  
-  if (event.status === 'closed') {
-    return { status: 'closed', label: 'Closed' }
-  }
-  
-  return { status: event.status, label: event.status }
 }
 
 const getAttendanceLogStatusLabel = (log) => {
