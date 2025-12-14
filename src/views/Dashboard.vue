@@ -3813,8 +3813,8 @@ const sessionTimeError = computed(() => {
   if (!newSession.value.start_time || !newSession.value.end_time) return ''
   if (!selectedEvent.value) return ''
   
-  const eventStart = selectedEvent.value.start_time || '07:00'
-  const eventEnd = selectedEvent.value.end_time || '17:00'
+  const eventStart = selectedEvent.value.start_time || selectedEvent.value.startTime || '07:00'
+  const eventEnd = selectedEvent.value.end_time || selectedEvent.value.endTime || '17:00'
   const sessionStart = newSession.value.start_time
   const sessionEnd = newSession.value.end_time
   
@@ -3843,8 +3843,8 @@ const sessionTimeError = computed(() => {
 watch(() => newSession.value.label, (label) => {
   if (editingSession.value) return
   
-  const eventStart = selectedEvent.value?.start_time || '07:00'
-  const eventEnd = selectedEvent.value?.end_time || '17:00'
+  const eventStart = selectedEvent.value?.start_time || selectedEvent.value?.startTime || '07:00'
+  const eventEnd = selectedEvent.value?.end_time || selectedEvent.value?.endTime || '17:00'
   
   if (label === 'Morning') {
     newSession.value.start_time = eventStart
@@ -6270,10 +6270,33 @@ const createAttendanceEvent = async () => {
     })
     
     if (response.ok) {
-      showNotification('Event created successfully. Add sessions to enable check-in.', 'success')
+      const result = await response.json()
+      showNotification('Event created successfully. Now add sessions to enable check-in.', 'success')
       showCreateEventModal.value = false
+      
+      // Store the event times before resetting
+      const createdEventStartTime = newEvent.value.start_time || '07:00'
+      const createdEventEndTime = newEvent.value.end_time || '17:00'
+      const createdEventDate = newEvent.value.date
+      
+      // Reset the form
       newEvent.value = { title: '', description: '', location: '', date: '', year_level: '', start_time: '07:00', end_time: '17:00' }
-      fetchAttendanceData()
+      
+      // Fetch updated data and then open the edit modal for the newly created event
+      await fetchAttendanceData()
+      
+      // Find the newly created event and open edit modal to add sessions
+      if (result.event) {
+        selectedEvent.value = {
+          ...result.event,
+          date: createdEventDate,
+          start_time: createdEventStartTime,
+          end_time: createdEventEndTime
+        }
+        eventSessions.value = []
+        fetchEventSessions(result.event._id)
+        showEditEventModal.value = true
+      }
     } else {
       if (response.status === 403) {
         const handled = await handleAdminActionError(response)
@@ -6835,7 +6858,9 @@ const openEventLogs = (event) => {
 const openEditEvent = (event) => {
   selectedEvent.value = { 
     ...event,
-    date: event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : event.date
+    date: event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : event.date,
+    start_time: event.start_time || event.startTime || '07:00',
+    end_time: event.end_time || event.endTime || '17:00'
   }
   eventSessions.value = []
   fetchEventSessions(event._id)
