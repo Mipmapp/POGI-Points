@@ -3454,7 +3454,7 @@
                   </div>
                   <div>
                     <p class="font-medium text-gray-900">{{ log.student_name }}</p>
-                    <p class="text-xs text-gray-500">{{ log.student_id }}</p>
+                    <p class="text-xs text-gray-500">{{ log.student_id_number || log.student_id }}</p>
                   </div>
                 </div>
               </td>
@@ -3468,6 +3468,24 @@
             </tr>
           </tbody>
         </table>
+      </div>
+      
+      <!-- Load More Button -->
+      <div v-if="attendanceLogsPagination.hasMore && !attendanceLoading" class="mt-4 text-center">
+        <button 
+          @click="loadMoreSessionLogs" 
+          :disabled="loadingMoreLogs"
+          class="px-6 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <span v-if="loadingMoreLogs" class="flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            Loading...
+          </span>
+          <span v-else>Load More ({{ attendanceLogsPagination.total - attendanceLogs.length }} remaining)</span>
+        </button>
+      </div>
+      <div v-if="!attendanceLoading && attendanceLogs.length > 0" class="mt-2 text-center text-sm text-gray-500">
+        Showing {{ attendanceLogs.length }} of {{ attendanceLogsPagination.total }} records
       </div>
     </div>
   </div>
@@ -3624,8 +3642,8 @@ const exportToExcelByYear = async (event, yearLevel) => {
     
     const eventDateFormatted = formatEventDate(event.date || event.event_date)
     const eventLocation = event.location || ''
-    const uniqueSessions = [...new Set(logs.map(log => log.session?.label || log.session_label || 'Session').filter(Boolean))]
-    const sessionsLabel = uniqueSessions.length > 0 ? uniqueSessions.join(', ') : 'All Sessions'
+    const uniqueSessions = [...new Set(logs.map(log => log.session_label || log.session?.label || 'Session').filter(Boolean))]
+    const sessionsLabel = selectedSessionForLogs.value?.label || (uniqueSessions.length > 0 ? uniqueSessions.join(', ') : 'All Sessions')
     
     const headerRows = [
       { 'Event': event.title || 'Attendance Event' },
@@ -3641,7 +3659,7 @@ const exportToExcelByYear = async (event, yearLevel) => {
       const checkOut = log.check_out_at || log.check_out_time
       
       const studentName = log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim() || '-'
-      const studentId = log.student?.student_id || log.student_id || ''
+      const studentId = log.student_id_number || log.student?.student_id || log.student_id || ''
       const program = log.student?.program || log.program || ''
       
       let status = 'Absent'
@@ -4002,6 +4020,8 @@ const getPosterPhotoFallbackStyle = (notif) => {
 const attendanceEvents = ref([])
 const upcomingEventsData = ref([])
 const attendanceLogs = ref([])
+const attendanceLogsPagination = ref({ page: 1, limit: 50, total: 0, hasMore: false })
+const loadingMoreLogs = ref(false)
 const studentPhotoCache = ref({})
 
 // Helper to derive a stable student key from log or student object
@@ -6833,12 +6853,21 @@ const deleteSession = async (sessionId) => {
   }
 }
 
-const fetchSessionLogs = async (sessionId) => {
+const fetchSessionLogs = async (sessionId, loadMore = false) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-  attendanceLoading.value = true
+  
+  if (loadMore) {
+    loadingMoreLogs.value = true
+  } else {
+    attendanceLoading.value = true
+    attendanceLogsPagination.value.page = 1
+    attendanceLogs.value = []
+  }
+  
   try {
     const params = new URLSearchParams()
-    params.append('limit', '10000')
+    params.append('limit', '50')
+    params.append('page', attendanceLogsPagination.value.page.toString())
     if (eventLogsFilter.value.yearLevel) params.append('yearLevel', eventLogsFilter.value.yearLevel)
     if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
     if (eventLogsFilter.value.search) params.append('search', eventLogsFilter.value.search)
@@ -6864,11 +6893,20 @@ const fetchSessionLogs = async (sessionId) => {
         
         return {
           ...log,
+          session_label: selectedSessionForLogs.value?.label || log.session?.label || log.session_label || 'Session',
           student_image: log.student_image || cachedPhoto || log.student?.photo
         }
       })
       
-      attendanceLogs.value = logs
+      if (loadMore) {
+        attendanceLogs.value = [...attendanceLogs.value, ...logs]
+      } else {
+        attendanceLogs.value = logs
+      }
+      
+      const pagination = result.pagination || {}
+      attendanceLogsPagination.value.total = pagination.total || 0
+      attendanceLogsPagination.value.hasMore = (pagination.currentPage || 1) < (pagination.totalPages || 1)
     } else {
       console.error('Failed to fetch session logs')
     }
@@ -6876,6 +6914,14 @@ const fetchSessionLogs = async (sessionId) => {
     console.error('Error fetching session logs:', error)
   } finally {
     attendanceLoading.value = false
+    loadingMoreLogs.value = false
+  }
+}
+
+const loadMoreSessionLogs = () => {
+  if (!loadingMoreLogs.value && attendanceLogsPagination.value.hasMore && selectedSessionForLogs.value) {
+    attendanceLogsPagination.value.page++
+    fetchSessionLogs(selectedSessionForLogs.value._id, true)
   }
 }
 
@@ -7035,8 +7081,8 @@ const exportEventAttendanceToExcel = async (event) => {
     
     const eventDateFormatted = formatEventDate(event.date || event.event_date)
     const eventLocation = event.location || ''
-    const uniqueSessions = [...new Set(logs.map(log => log.session?.label || log.session_label || 'Session').filter(Boolean))]
-    const sessionsLabel = uniqueSessions.length > 0 ? uniqueSessions.join(', ') : 'All Sessions'
+    const uniqueSessions = [...new Set(logs.map(log => log.session_label || log.session?.label || 'Session').filter(Boolean))]
+    const sessionsLabel = selectedSessionForLogs.value?.label || (uniqueSessions.length > 0 ? uniqueSessions.join(', ') : 'All Sessions')
     
     // Year level order for organization
     const yearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
@@ -7073,7 +7119,7 @@ const exportEventAttendanceToExcel = async (event) => {
         const checkOut = log.check_out_at || log.check_out_time
         
         const studentName = log.student?.full_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim()
-        const studentId = log.student?.student_id || log.student_id || ''
+        const studentId = log.student_id_number || log.student?.student_id || log.student_id || ''
         const program = log.student?.program || log.program || ''
         
         let status = 'Absent'
