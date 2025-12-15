@@ -8384,22 +8384,41 @@ const activeUnattendedEvents = computed(() => {
   })
 })
 
-// Sort attendance logs by check-in time (most recent first)
+// Sort attendance logs by most recent activity (check-out or check-in, whichever is more recent)
 const sortedAttendanceLogs = computed(() => {
   return [...attendanceLogs.value].sort((a, b) => {
-    const aTime = a.check_in_at || a.check_in_time || a.created_at || 0
-    const bTime = b.check_in_at || b.check_in_time || b.created_at || 0
-    return new Date(bTime) - new Date(aTime)
+    // Get the most recent activity time for each log (check-out takes priority if it exists)
+    const aCheckOut = a.check_out_at || a.check_out_time
+    const aCheckIn = a.check_in_at || a.check_in_time || a.created_at
+    const aTime = aCheckOut ? new Date(aCheckOut) : (aCheckIn ? new Date(aCheckIn) : new Date(0))
+    
+    const bCheckOut = b.check_out_at || b.check_out_time
+    const bCheckIn = b.check_in_at || b.check_in_time || b.created_at
+    const bTime = bCheckOut ? new Date(bCheckOut) : (bCheckIn ? new Date(bCheckIn) : new Date(0))
+    
+    return bTime - aTime
   })
 })
 
-// Check if a log entry is a recent check-in (within last 30 seconds)
+// Check if a log entry is a recent activity (check-in or check-out within last 30 seconds)
 const isRecentCheckIn = (log) => {
+  const checkOutTime = log.check_out_at || log.check_out_time
   const checkInTime = log.check_in_at || log.check_in_time || log.created_at
-  if (!checkInTime) return false
   const now = new Date()
-  const logTime = new Date(checkInTime)
-  return (now - logTime) < 30000 // 30 seconds
+  
+  // Check if checkout is recent
+  if (checkOutTime) {
+    const outTime = new Date(checkOutTime)
+    if ((now - outTime) < 30000) return true
+  }
+  
+  // Check if check-in is recent
+  if (checkInTime) {
+    const inTime = new Date(checkInTime)
+    if ((now - inTime) < 30000) return true
+  }
+  
+  return false
 }
 
 const clearNotificationImage = () => {
