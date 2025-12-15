@@ -7257,9 +7257,8 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
       
       attendanceLogs.value = logs
       
-      const pagination = result.pagination || {}
       attendanceLogsPagination.value.total = logs.length
-      attendanceLogsPagination.value.hasMore = false // All data loaded
+      attendanceLogsPagination.value.hasMore = false
     } else {
       console.error('Failed to fetch session logs')
     }
