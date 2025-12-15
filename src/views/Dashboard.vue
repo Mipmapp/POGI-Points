@@ -3383,20 +3383,38 @@
         </div>
       </div>
 
-      <!-- Late Threshold Info -->
+      <!-- Late Threshold Editor -->
       <div v-if="selectedSessionForLogs" class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex-1">
-            <p class="text-sm font-medium text-orange-800 mb-1">Late Threshold</p>
+            <p class="text-sm font-medium text-orange-800 mb-1">Late Threshold Editor</p>
             <p class="text-xs text-orange-600">
-              Check-ins after <span class="font-semibold">{{ calculateLateThreshold(selectedSessionForLogs.start_time, selectedSessionForLogs.late_threshold_minutes || 60) }}</span> 
-              ({{ selectedSessionForLogs.late_threshold_minutes || 60 }} minutes after session start) are marked as late.
+              Session starts at <span class="font-semibold">{{ formatDisplayTime(selectedSessionForLogs.start_time) }}</span>.
+              Check-ins after <span class="font-semibold">{{ calculateLateThreshold(selectedSessionForLogs.start_time, selectedLateThresholdMinutes) }}</span> will be marked as late.
             </p>
           </div>
           <div class="flex items-center gap-2">
-            <span class="px-3 py-2 bg-orange-100 text-orange-700 rounded-lg text-sm font-medium">
-              {{ selectedSessionForLogs.late_threshold_minutes || 60 }} min threshold
-            </span>
+            <select 
+              v-model.number="selectedLateThresholdMinutes" 
+              class="px-3 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-sm"
+              :disabled="applyingLateThreshold"
+            >
+              <option :value="30">30 min</option>
+              <option :value="60">60 min</option>
+              <option :value="90">90 min</option>
+              <option :value="120">120 min</option>
+              <option :value="180">180 min</option>
+              <option :value="240">240 min</option>
+            </select>
+            <button 
+              @click="applyLateThresholdByMinutes"
+              :disabled="applyingLateThreshold || sessionStats.total === 0"
+              class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg v-if="applyingLateThreshold" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              {{ applyingLateThreshold ? 'Applying...' : 'Apply & Recalculate' }}
+            </button>
           </div>
         </div>
       </div>
@@ -7013,7 +7031,99 @@ const deleteSession = async (sessionId) => {
 const sessionStats = ref({ present: 0, incomplete: 0, late: 0, absent: 0, total: 0 })
 const allSessionLogs = ref([]) // Store all logs for stats and export
 const lateThresholdTime = ref('')
+const selectedLateThresholdMinutes = ref(60)
 const applyingLateThreshold = ref(false)
+
+const applyLateThresholdByMinutes = async () => {
+  if (!selectedSessionForLogs.value) return
+  
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  applyingLateThreshold.value = true
+  
+  try {
+    const sessionId = selectedSessionForLogs.value._id
+    const sessionStartTime = selectedSessionForLogs.value.start_time // e.g., "07:00"
+    const thresholdMinutes = selectedLateThresholdMinutes.value
+    
+    // Calculate the threshold time (session start + threshold minutes)
+    const [startHours, startMinutes] = sessionStartTime.split(':').map(Number)
+    const totalMinutes = startHours * 60 + startMinutes + thresholdMinutes
+    const thresholdHours = Math.floor(totalMinutes / 60) % 24
+    const thresholdMins = totalMinutes % 60
+    const thresholdTime = `${thresholdHours.toString().padStart(2, '0')}:${thresholdMins.toString().padStart(2, '0')}`
+    
+    // Get all logs with check-in times
+    const logsWithCheckIn = allSessionLogs.value.filter(log => log.check_in_at || log.check_in_time)
+    
+    let updatedCount = 0
+    let errorCount = 0
+    
+    for (const log of logsWithCheckIn) {
+      const checkInTime = log.check_in_at || log.check_in_time
+      const checkInDate = new Date(checkInTime)
+      const checkInHourMin = checkInDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
+      
+      // Determine if this check-in should be marked as late
+      const shouldBeLate = checkInHourMin > thresholdTime
+      
+      // Only update if the late status needs to change
+      if (log.is_late !== shouldBeLate) {
+        try {
+          const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/logs/${log._id || log.id}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'X-SSAAM-TS': encodeTimestamp(),
+              ...getAdminActionHeaders()
+            },
+            body: JSON.stringify({ is_late: shouldBeLate })
+          })
+          
+          if (response.ok) {
+            updatedCount++
+          } else {
+            errorCount++
+          }
+        } catch (err) {
+          console.error('Error updating log:', err)
+          errorCount++
+        }
+      }
+    }
+    
+    // Also update the session's late_threshold_minutes setting
+    try {
+      await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${sessionId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+          'X-SSAAM-TS': encodeTimestamp(),
+          ...getAdminActionHeaders()
+        },
+        body: JSON.stringify({ ...selectedSessionForLogs.value, late_threshold_minutes: thresholdMinutes })
+      })
+    } catch (err) {
+      console.error('Error updating session threshold:', err)
+    }
+    
+    if (updatedCount > 0) {
+      showNotification(`Updated ${updatedCount} attendance records. Late threshold set to ${thresholdMinutes} minutes.`, 'success')
+      // Refresh the logs to show updated stats
+      await fetchSessionLogs(sessionId)
+    } else if (errorCount === 0) {
+      showNotification(`No changes needed - threshold updated to ${thresholdMinutes} minutes`, 'info')
+    } else {
+      showNotification(`Failed to update ${errorCount} records`, 'error')
+    }
+  } catch (error) {
+    console.error('Error applying late threshold:', error)
+    showNotification('Failed to apply late threshold', 'error')
+  } finally {
+    applyingLateThreshold.value = false
+  }
+}
 
 const applyLateThreshold = async () => {
   if (!lateThresholdTime.value || !selectedSessionForLogs.value) return
@@ -7706,6 +7816,7 @@ const openEventLogs = (event) => {
 const openSessionLogs = (session, event) => {
   selectedEvent.value = event
   selectedSessionForLogs.value = session
+  selectedLateThresholdMinutes.value = session.late_threshold_minutes || 60
   showEventLogsModal.value = true
   fetchSessionLogs(session._id)
 }
