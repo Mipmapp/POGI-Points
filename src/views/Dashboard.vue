@@ -3346,24 +3346,51 @@
       <!-- Stats Summary -->
       <div class="grid grid-cols-5 gap-4 mb-6">
         <div class="bg-green-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-green-600">{{ getLogStatusCount('present') }}</p>
+          <p class="text-2xl font-bold text-green-600">{{ sessionStats.present }}</p>
           <p class="text-sm text-green-700">Present</p>
         </div>
         <div class="bg-yellow-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-yellow-600">{{ getLogStatusCount('incomplete') }}</p>
+          <p class="text-2xl font-bold text-yellow-600">{{ sessionStats.incomplete }}</p>
           <p class="text-sm text-yellow-700">Incomplete</p>
         </div>
         <div class="bg-orange-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-orange-600">{{ getLogStatusCount('late') }}</p>
+          <p class="text-2xl font-bold text-orange-600">{{ sessionStats.late }}</p>
           <p class="text-sm text-orange-700">Late</p>
         </div>
         <div class="bg-red-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-red-600">{{ getLogStatusCount('absent') }}</p>
+          <p class="text-2xl font-bold text-red-600">{{ sessionStats.absent }}</p>
           <p class="text-sm text-red-700">Absent</p>
         </div>
         <div class="bg-purple-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-purple-600">{{ filteredAttendanceLogs.length }}</p>
+          <p class="text-2xl font-bold text-purple-600">{{ sessionStats.total }}</p>
           <p class="text-sm text-purple-700">Total</p>
+        </div>
+      </div>
+
+      <!-- Late Threshold Editor -->
+      <div class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+        <div class="flex flex-wrap items-center gap-4">
+          <div class="flex-1">
+            <p class="text-sm font-medium text-orange-800 mb-1">Late Threshold Editor</p>
+            <p class="text-xs text-orange-600">Set a time threshold - check-ins before this time will NOT be marked as late</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <input 
+              v-model="lateThresholdTime" 
+              type="time" 
+              class="px-3 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-sm"
+              :disabled="applyingLateThreshold"
+            />
+            <button 
+              @click="applyLateThreshold"
+              :disabled="!lateThresholdTime || applyingLateThreshold || sessionStats.total === 0"
+              class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <svg v-if="applyingLateThreshold" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              {{ applyingLateThreshold ? 'Applying...' : 'Apply Threshold' }}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -3409,12 +3436,12 @@
           </button>
           <button 
             @click="exportToExcel(selectedEvent)" 
-            :disabled="exportingExcel || filteredAttendanceLogs.length === 0"
+            :disabled="exportingExcel || sessionStats.total === 0"
             class="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:from-purple-700 hover:to-pink-600 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg v-if="exportingExcel" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            All Years ({{ filteredAttendanceLogs.length }})
+            All Years ({{ sessionStats.total }})
           </button>
         </div>
       </div>
@@ -3561,7 +3588,7 @@ const exportingExcel = ref(false)
 const exportingExcelByYear = ref(null)
 
 const getLogCountByYear = (yearLevel) => {
-  return filteredAttendanceLogs.value.filter(log => {
+  return allSessionLogs.value.filter(log => {
     const logYear = log.student?.year_level || log.year_level || ''
     return logYear === yearLevel
   }).length
@@ -3609,7 +3636,7 @@ const exportToExcelByYear = async (event, yearLevel) => {
   exportingExcelByYear.value = yearLevel
   
   try {
-    const logs = attendanceLogs.value.filter(log => {
+    const logs = allSessionLogs.value.filter(log => {
       const logYear = log.student?.year_level || log.year_level || ''
       return logYear === yearLevel
     })
@@ -3699,7 +3726,7 @@ const exportToExcel = async (event) => {
   exportingExcel.value = true
   
   try {
-    const logs = [...attendanceLogs.value]
+    const logs = [...allSessionLogs.value]
     
     if (logs.length === 0) {
       showNotification('No attendance records found to export', 'warning')
@@ -6976,16 +7003,139 @@ const deleteSession = async (sessionId) => {
   }
 }
 
+const sessionStats = ref({ present: 0, incomplete: 0, late: 0, absent: 0, total: 0 })
+const allSessionLogs = ref([]) // Store all logs for stats and export
+const lateThresholdTime = ref('')
+const applyingLateThreshold = ref(false)
+
+const applyLateThreshold = async () => {
+  if (!lateThresholdTime.value || !selectedSessionForLogs.value) return
+  
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  applyingLateThreshold.value = true
+  
+  try {
+    const sessionId = selectedSessionForLogs.value._id
+    const thresholdTime = lateThresholdTime.value // e.g., "08:30"
+    
+    // Get all logs with check-in times
+    const logsWithCheckIn = allSessionLogs.value.filter(log => log.check_in_at || log.check_in_time)
+    
+    let updatedCount = 0
+    let errorCount = 0
+    
+    for (const log of logsWithCheckIn) {
+      const checkInTime = log.check_in_at || log.check_in_time
+      const checkInDate = new Date(checkInTime)
+      const checkInHourMin = checkInDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
+      
+      // Determine if this check-in should be marked as late
+      const shouldBeLate = checkInHourMin > thresholdTime
+      
+      // Only update if the late status needs to change
+      if (log.is_late !== shouldBeLate) {
+        try {
+          const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/logs/${log._id || log.id}`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'X-SSAAM-TS': encodeTimestamp(),
+              ...getAdminActionHeaders()
+            },
+            body: JSON.stringify({ is_late: shouldBeLate })
+          })
+          
+          if (response.ok) {
+            updatedCount++
+          } else {
+            errorCount++
+          }
+        } catch (err) {
+          console.error('Error updating log:', err)
+          errorCount++
+        }
+      }
+    }
+    
+    if (updatedCount > 0) {
+      showNotification(`Updated ${updatedCount} attendance records based on late threshold`, 'success')
+      // Refresh the logs to show updated stats
+      await fetchSessionLogs(sessionId)
+    } else if (errorCount === 0) {
+      showNotification('No changes needed - all records already match the threshold', 'info')
+    } else {
+      showNotification(`Failed to update ${errorCount} records`, 'error')
+    }
+  } catch (error) {
+    console.error('Error applying late threshold:', error)
+    showNotification('Failed to apply late threshold', 'error')
+  } finally {
+    applyingLateThreshold.value = false
+  }
+}
+
 const fetchSessionLogs = async (sessionId, loadMore = false) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   
-  // Always load all data at once for accurate stats and immediate Excel export
-  attendanceLoading.value = true
-  attendanceLogs.value = []
+  if (loadMore) {
+    loadingMoreLogs.value = true
+  } else {
+    attendanceLoading.value = true
+    attendanceLogsPagination.value.page = 1
+    attendanceLogs.value = []
+    allSessionLogs.value = []
+  }
   
   try {
+    // First, fetch ALL logs for stats calculation (only on initial load)
+    if (!loadMore) {
+      const statsParams = new URLSearchParams()
+      statsParams.append('limit', '10000')
+      if (eventLogsFilter.value.yearLevel) statsParams.append('yearLevel', eventLogsFilter.value.yearLevel)
+      if (eventLogsFilter.value.program) statsParams.append('program', eventLogsFilter.value.program)
+      if (eventLogsFilter.value.search) statsParams.append('search', eventLogsFilter.value.search)
+      
+      const statsResponse = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${sessionId}/logs?${statsParams.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'X-SSAAM-TS': encodeTimestamp()
+        }
+      })
+      
+      if (statsResponse.ok) {
+        const statsResult = await statsResponse.json()
+        const allLogs = (statsResult.data || []).map(log => ({
+          ...log,
+          session_label: selectedSessionForLogs.value?.label || log.session?.label || log.session_label || 'Session',
+          student_image: log.student_image || log.student?.photo
+        }))
+        
+        allSessionLogs.value = allLogs
+        
+        // Calculate stats from all logs
+        let present = 0, incomplete = 0, late = 0, absent = 0
+        allLogs.forEach(log => {
+          const hasCheckIn = log.check_in_at || log.check_in_time
+          const hasCheckOut = log.check_out_at || log.check_out_time
+          if (hasCheckIn && hasCheckOut) {
+            if (log.is_late) late++
+            else present++
+          } else if (hasCheckIn && !hasCheckOut) {
+            incomplete++
+          } else {
+            absent++
+          }
+        })
+        sessionStats.value = { present, incomplete, late, absent, total: allLogs.length }
+      }
+    }
+    
+    // Fetch paginated logs for display
     const params = new URLSearchParams()
-    params.append('limit', '10000') // Fetch all records at once for complete stats
+    params.append('limit', '50')
+    params.append('page', attendanceLogsPagination.value.page.toString())
     if (eventLogsFilter.value.yearLevel) params.append('yearLevel', eventLogsFilter.value.yearLevel)
     if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
     if (eventLogsFilter.value.search) params.append('search', eventLogsFilter.value.search)
@@ -7015,6 +7165,16 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
           student_image: log.student_image || cachedPhoto || log.student?.photo
         }
       })
+      
+      if (loadMore) {
+        attendanceLogs.value = [...attendanceLogs.value, ...logs]
+      } else {
+        attendanceLogs.value = logs
+      }
+      
+      const pagination = result.pagination || {}
+      attendanceLogsPagination.value.total = pagination.total || sessionStats.value.total
+      attendanceLogsPagination.value.hasMore = (pagination.currentPage || 1) < (pagination.totalPages || 1)
       
       // Check if session's event has ended - if so, fetch students and add absent entries
       const event = selectedEvent.value
