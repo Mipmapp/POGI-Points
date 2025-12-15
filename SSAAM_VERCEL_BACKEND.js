@@ -4211,19 +4211,8 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
             }
         }
 
-        // Check if student was registered before the event was activated
-        if (event.activated_at) {
-            const eventActivatedDate = new Date(event.activated_at);
-            eventActivatedDate.setHours(23, 59, 59, 999);
-            const studentCreatedDate = new Date(student.created_date);
-
-            if (studentCreatedDate > eventActivatedDate) {
-                return res.status(403).json({ 
-                    message: "Student was registered after this event was activated.",
-                    student_name: `${student.first_name} ${student.last_name}`
-                });
-            }
-        }
+        // Note: Previously blocked students registered after event activation.
+        // Removed this restriction to allow all approved students to attend any active event.
 
         const studentFullName = `${student.first_name} ${student.middle_name || ''} ${student.last_name}`.replace(/\s+/g, ' ').trim();
 
@@ -4373,33 +4362,14 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
             return res.status(404).json({ message: "Student not found" });
         }
 
-        const studentCreatedDate = new Date(student.created_date);
-
+        // Fetch all active and closed events - students can view any event they attended
         const events = await AttendanceEvent.find({ 
-            status: { $in: ['active', 'closed'] },
-            $or: [
-                { status: 'active' },
-                { 
-                    status: 'closed',
-                    $or: [
-                        { activated_at: { $gte: studentCreatedDate } },
-                        { closed_at: { $gte: studentCreatedDate } }
-                    ]
-                }
-            ]
+            status: { $in: ['active', 'closed'] }
         }).sort({ event_date: -1 });
 
         const records = await Promise.all(events.map(async (event) => {
-            const eventActivatedDate = event.activated_at ? new Date(event.activated_at) : null;
-
-            if (event.status === 'closed' && eventActivatedDate) {
-                const eventEndOfDay = new Date(eventActivatedDate);
-                eventEndOfDay.setHours(23, 59, 59, 999);
-
-                if (studentCreatedDate > eventEndOfDay) {
-                    return null;
-                }
-            }
+            // Note: Previously filtered out events where student was registered after activation.
+            // Removed this restriction to allow students to see all events they attended.
 
             // Get all sessions for this event
             const sessions = await AttendanceSession.find({ event_id: event._id })
