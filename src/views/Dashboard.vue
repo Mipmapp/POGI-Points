@@ -3211,7 +3211,8 @@
                   </span>
                 </div>
                 <p class="text-xs text-gray-500">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
-                <div class="flex gap-2 mt-1">
+                <div class="flex flex-wrap gap-2 mt-1">
+                  <span class="text-xs text-orange-600">Late after {{ session.late_threshold_minutes || 60 }}min</span>
                   <span v-if="session.check_in_locked" class="text-xs text-red-600">Check-in locked</span>
                   <span v-if="session.check_out_locked" class="text-xs text-red-600">Check-out locked</span>
                 </div>
@@ -3265,6 +3266,21 @@
               <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </button>
           </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Late Threshold (minutes after start)</label>
+          <div class="flex items-center gap-2">
+            <input 
+              v-model.number="newSession.late_threshold_minutes" 
+              type="number" 
+              min="0" 
+              max="480"
+              placeholder="60"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+            />
+            <span class="text-sm text-gray-500 whitespace-nowrap">minutes</span>
+          </div>
+          <p class="text-xs text-gray-500 mt-1">Check-ins after {{ newSession.late_threshold_minutes || 60 }} minutes from session start will be marked as late</p>
         </div>
         <div v-if="editingSession" class="space-y-3">
           <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -3367,29 +3383,20 @@
         </div>
       </div>
 
-      <!-- Late Threshold Editor -->
-      <div class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+      <!-- Late Threshold Info -->
+      <div v-if="selectedSessionForLogs" class="mb-6 p-4 bg-orange-50 border border-orange-200 rounded-lg">
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex-1">
-            <p class="text-sm font-medium text-orange-800 mb-1">Late Threshold Editor</p>
-            <p class="text-xs text-orange-600">Set a time threshold - check-ins before this time will NOT be marked as late</p>
+            <p class="text-sm font-medium text-orange-800 mb-1">Late Threshold</p>
+            <p class="text-xs text-orange-600">
+              Check-ins after <span class="font-semibold">{{ calculateLateThreshold(selectedSessionForLogs.start_time, selectedSessionForLogs.late_threshold_minutes || 60) }}</span> 
+              ({{ selectedSessionForLogs.late_threshold_minutes || 60 }} minutes after session start) are marked as late.
+            </p>
           </div>
           <div class="flex items-center gap-2">
-            <input 
-              v-model="lateThresholdTime" 
-              type="time" 
-              class="px-3 py-2 border border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-sm"
-              :disabled="applyingLateThreshold"
-            />
-            <button 
-              @click="applyLateThreshold"
-              :disabled="!lateThresholdTime || applyingLateThreshold || sessionStats.total === 0"
-              class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <svg v-if="applyingLateThreshold" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-              {{ applyingLateThreshold ? 'Applying...' : 'Apply Threshold' }}
-            </button>
+            <span class="px-3 py-2 bg-orange-100 text-orange-700 rounded-lg text-sm font-medium">
+              {{ selectedSessionForLogs.late_threshold_minutes || 60 }} min threshold
+            </span>
           </div>
         </div>
       </div>
@@ -4223,7 +4230,7 @@ const eventSessions = ref([])
 const showSessionModal = ref(false)
 const expandedEvents = ref({})
 const expandedEventSessions = ref({})
-const newSession = ref({ label: 'Morning', start_time: '', end_time: '' })
+const newSession = ref({ label: 'Morning', start_time: '', end_time: '', late_threshold_minutes: 60 })
 const savingSession = ref(false)
 const editingSession = ref(null)
 const sessionLabels = ['Whole Day', 'Morning', 'Afternoon', 'Noon', 'Night', 'Dawn']
@@ -6905,7 +6912,7 @@ const toggleEventExpansion = async (eventId) => {
 
 const openAddSessionModal = () => {
   editingSession.value = null
-  newSession.value = { label: 'Morning', start_time: '', end_time: '', check_in_locked: false, check_out_locked: false }
+  newSession.value = { label: 'Morning', start_time: '', end_time: '', check_in_locked: false, check_out_locked: false, late_threshold_minutes: 60 }
   showSessionModal.value = true
 }
 
