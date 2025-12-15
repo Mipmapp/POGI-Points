@@ -3522,9 +3522,23 @@
         </table>
       </div>
       
-      <!-- Total records info -->
-      <div v-if="!attendanceLoading && attendanceLogs.length > 0" class="mt-4 text-center text-sm text-gray-500">
-        Showing all {{ attendanceLogs.length }} records
+      <!-- Total records info and Load More button -->
+      <div v-if="!attendanceLoading && attendanceLogs.length > 0" class="mt-4 text-center">
+        <p class="text-sm text-gray-500 mb-2">
+          Showing {{ attendanceLogs.length }} of {{ attendanceLogsPagination.total || attendanceLogs.length }} records
+        </p>
+        <button 
+          v-if="attendanceLogsPagination.hasMore"
+          @click="loadMoreSessionLogs"
+          :disabled="loadingMoreLogs"
+          class="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:from-purple-700 hover:to-pink-600 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+        >
+          <svg v-if="loadingMoreLogs" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          </svg>
+          {{ loadingMoreLogs ? 'Loading...' : 'Load More' }}
+        </button>
       </div>
     </div>
   </div>
