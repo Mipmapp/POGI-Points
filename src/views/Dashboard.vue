@@ -3470,22 +3470,9 @@
         </table>
       </div>
       
-      <!-- Load More Button -->
-      <div v-if="attendanceLogsPagination.hasMore && !attendanceLoading" class="mt-4 text-center">
-        <button 
-          @click="loadMoreSessionLogs" 
-          :disabled="loadingMoreLogs"
-          class="px-6 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <span v-if="loadingMoreLogs" class="flex items-center gap-2">
-            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            Loading...
-          </span>
-          <span v-else>Load More ({{ attendanceLogsPagination.total - attendanceLogs.length }} remaining)</span>
-        </button>
-      </div>
-      <div v-if="!attendanceLoading && attendanceLogs.length > 0" class="mt-2 text-center text-sm text-gray-500">
-        Showing {{ attendanceLogs.length }} of {{ attendanceLogsPagination.total }} records
+      <!-- Total records info -->
+      <div v-if="!attendanceLoading && attendanceLogs.length > 0" class="mt-4 text-center text-sm text-gray-500">
+        Showing all {{ attendanceLogs.length }} records
       </div>
     </div>
   </div>
@@ -3703,6 +3690,142 @@ const exportToExcelByYear = async (event, yearLevel) => {
     showNotification('Failed to export Excel file', 'error')
   } finally {
     exportingExcelByYear.value = null
+  }
+}
+
+const exportToExcel = async (event) => {
+  if (!event || exportingExcel.value) return
+  
+  exportingExcel.value = true
+  
+  try {
+    const logs = [...attendanceLogs.value]
+    
+    if (logs.length === 0) {
+      showNotification('No attendance records found to export', 'warning')
+      return
+    }
+    
+    const workbook = XLSX.utils.book_new()
+    
+    const eventDateFormatted = formatEventDate(event.date || event.event_date)
+    const eventLocation = event.location || ''
+    const uniqueSessions = [...new Set(logs.map(log => log.session_label || log.session?.label || 'Session').filter(Boolean))]
+    const sessionsLabel = selectedSessionForLogs.value?.label || (uniqueSessions.length > 0 ? uniqueSessions.join(', ') : 'All Sessions')
+    
+    const yearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
+    
+    yearLevels.forEach(yearLevel => {
+      const yearLogs = logs.filter(log => {
+        const studentYearLevel = log.student?.year_level || log.year_level || ''
+        return studentYearLevel === yearLevel
+      })
+      
+      if (yearLogs.length === 0) return
+      
+      yearLogs.sort((a, b) => {
+        const nameA = (a.student?.full_name || a.student_name || a.full_name || '').toLowerCase()
+        const nameB = (b.student?.full_name || b.student_name || b.full_name || '').toLowerCase()
+        return nameA.localeCompare(nameB)
+      })
+      
+      const headerRows = [
+        { 'Event': event.title || 'Attendance Event' },
+        { 'Event': `Date: ${eventDateFormatted}` },
+        { 'Event': `Session: ${sessionsLabel}` },
+        ...(eventLocation ? [{ 'Event': `Location: ${eventLocation}` }] : []),
+        { 'Event': `Year Level: ${yearLevel}` },
+        { 'Event': '' }
+      ]
+      
+      const worksheetData = yearLogs.map((log, index) => {
+        const checkIn = log.check_in_at || log.check_in_time
+        const checkOut = log.check_out_at || log.check_out_time
+        
+        const studentName = log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim() || '-'
+        const studentId = log.student_id_number || log.student?.student_id || log.student_id || ''
+        const program = log.student?.program || log.program || ''
+        
+        let status = 'Absent'
+        if (checkIn && checkOut) status = 'Present'
+        else if (checkIn && !checkOut) status = 'Incomplete'
+        if (log.is_late && status !== 'Absent') status = 'Late'
+        
+        return {
+          '#': index + 1,
+          'Student ID': studentId,
+          'Name': studentName,
+          'Program': program,
+          'Year Level': yearLevel,
+          'Check-In': checkIn ? new Date(checkIn).toLocaleString('en-PH') : '-',
+          'Check-Out': checkOut ? new Date(checkOut).toLocaleString('en-PH') : '-',
+          'Status': status
+        }
+      })
+      
+      const headerSheet = XLSX.utils.json_to_sheet(headerRows)
+      const dataStartRow = headerRows.length + 1
+      XLSX.utils.sheet_add_json(headerSheet, worksheetData, { origin: `A${dataStartRow}` })
+      
+      const columnWidths = [
+        { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
+        { wch: 20 }, { wch: 20 }, { wch: 12 }
+      ]
+      headerSheet['!cols'] = columnWidths
+      
+      XLSX.utils.book_append_sheet(workbook, headerSheet, yearLevel.replace(' ', '_'))
+    })
+    
+    // Create summary sheet
+    const summaryData = yearLevels.map(yearLevel => {
+      const yearLogs = logs.filter(log => {
+        const studentYearLevel = log.student?.year_level || log.year_level || ''
+        return studentYearLevel === yearLevel
+      })
+      
+      const presentCount = yearLogs.filter(log => (log.check_in_at || log.check_in_time) && (log.check_out_at || log.check_out_time)).length
+      const incompleteCount = yearLogs.filter(log => (log.check_in_at || log.check_in_time) && !(log.check_out_at || log.check_out_time)).length
+      const lateCount = yearLogs.filter(log => log.is_late).length
+      const absentCount = yearLogs.filter(log => !(log.check_in_at || log.check_in_time)).length
+      
+      return {
+        'Year Level': yearLevel,
+        'Total': yearLogs.length,
+        'Present': presentCount,
+        'Incomplete': incompleteCount,
+        'Late': lateCount,
+        'Absent': absentCount
+      }
+    })
+    
+    const summaryHeaderRows = [
+      { 'Year Level': event.title || 'Attendance Event' },
+      { 'Year Level': `Date: ${eventDateFormatted}` },
+      { 'Year Level': `Session: ${sessionsLabel}` },
+      ...(eventLocation ? [{ 'Year Level': `Location: ${eventLocation}` }] : []),
+      { 'Year Level': '' },
+      { 'Year Level': 'ATTENDANCE SUMMARY' },
+      { 'Year Level': '' }
+    ]
+    
+    const summaryHeaderSheet = XLSX.utils.json_to_sheet(summaryHeaderRows)
+    const summaryDataStartRow = summaryHeaderRows.length + 1
+    XLSX.utils.sheet_add_json(summaryHeaderSheet, summaryData, { origin: `A${summaryDataStartRow}` })
+    summaryHeaderSheet['!cols'] = [{ wch: 15 }, { wch: 10 }, { wch: 10 }, { wch: 12 }, { wch: 10 }, { wch: 10 }]
+    XLSX.utils.book_append_sheet(workbook, summaryHeaderSheet, 'Summary')
+    
+    const eventDate = formatEventDate(event.date || event.event_date).replace(/[^a-zA-Z0-9]/g, '_')
+    const eventTitle = (event.title || 'Event').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)
+    const filename = `Attendance_${eventTitle}_${eventDate}.xlsx`
+    
+    XLSX.writeFile(workbook, filename)
+    
+    showNotification('Excel file exported successfully!', 'success')
+  } catch (error) {
+    console.error('Error exporting to Excel:', error)
+    showNotification('Failed to export Excel file', 'error')
+  } finally {
+    exportingExcel.value = false
   }
 }
 
@@ -6856,18 +6979,13 @@ const deleteSession = async (sessionId) => {
 const fetchSessionLogs = async (sessionId, loadMore = false) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   
-  if (loadMore) {
-    loadingMoreLogs.value = true
-  } else {
-    attendanceLoading.value = true
-    attendanceLogsPagination.value.page = 1
-    attendanceLogs.value = []
-  }
+  // Always load all data at once for accurate stats and immediate Excel export
+  attendanceLoading.value = true
+  attendanceLogs.value = []
   
   try {
     const params = new URLSearchParams()
-    params.append('limit', '50')
-    params.append('page', attendanceLogsPagination.value.page.toString())
+    params.append('limit', '10000') // Fetch all records at once for complete stats
     if (eventLogsFilter.value.yearLevel) params.append('yearLevel', eventLogsFilter.value.yearLevel)
     if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
     if (eventLogsFilter.value.search) params.append('search', eventLogsFilter.value.search)
@@ -6898,15 +7016,90 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
         }
       })
       
-      if (loadMore) {
-        attendanceLogs.value = [...attendanceLogs.value, ...logs]
-      } else {
-        attendanceLogs.value = logs
+      // Check if session's event has ended - if so, fetch students and add absent entries
+      const event = selectedEvent.value
+      const session = selectedSessionForLogs.value
+      const eventEnded = event ? hasEventEndedPH(event) : false
+      
+      if (eventEnded && session) {
+        try {
+          // Fetch approved students
+          const studentsResponse = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000&status=approved', {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'X-SSAAM-TS': encodeTimestamp()
+            }
+          })
+          
+          if (studentsResponse.ok) {
+            const studentsResult = await studentsResponse.json()
+            const allStudents = studentsResult.students || studentsResult.data || []
+            
+            // Get set of student IDs who have attendance logs
+            const attendedStudentIds = new Set(logs.map(log => log.student_id || log.student?.student_id))
+            
+            // Check if event targets a specific year level
+            const eventYearLevel = event?.year_level || ''
+            const validYearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
+            const hasSpecificYearLevel = validYearLevels.includes(eventYearLevel)
+            
+            // Filter students based on event's target audience
+            let absentStudents = allStudents.filter(student => {
+              // Skip students who already have attendance logs
+              if (attendedStudentIds.has(student.student_id)) return false
+              
+              // If event targets a specific year level, only include those students
+              if (hasSpecificYearLevel && student.year_level !== eventYearLevel) return false
+              
+              // Apply UI year level filter if set
+              if (eventLogsFilter.value.yearLevel && student.year_level !== eventLogsFilter.value.yearLevel) return false
+              
+              // Apply program filter if set
+              if (eventLogsFilter.value.program && student.program !== eventLogsFilter.value.program) return false
+              
+              // Apply search filter if set
+              if (eventLogsFilter.value.search) {
+                const searchLower = eventLogsFilter.value.search.toLowerCase()
+                const nameMatch = (student.full_name || '').toLowerCase().includes(searchLower)
+                const idMatch = (student.student_id || '').toLowerCase().includes(searchLower)
+                if (!nameMatch && !idMatch) return false
+              }
+              
+              return true
+            })
+            
+            // Create absent log entries for students without attendance
+            const absentLogs = absentStudents.map(student => ({
+              id: `absent_${student.student_id}`,
+              student_id: student.student_id,
+              student_name: student.full_name,
+              student_image: student.photo,
+              program: student.program,
+              year_level: student.year_level,
+              check_in_at: null,
+              check_in_time: null,
+              check_out_at: null,
+              check_out_time: null,
+              is_late: false,
+              is_absent: true,
+              session_label: session.label || 'Session',
+              student: student
+            }))
+            
+            // Combine attendance logs with absent entries
+            logs = [...logs, ...absentLogs]
+          }
+        } catch (studentsError) {
+          console.error('Error fetching students for absent list:', studentsError)
+        }
       }
       
+      attendanceLogs.value = logs
+      
       const pagination = result.pagination || {}
-      attendanceLogsPagination.value.total = pagination.total || 0
-      attendanceLogsPagination.value.hasMore = (pagination.currentPage || 1) < (pagination.totalPages || 1)
+      attendanceLogsPagination.value.total = logs.length
+      attendanceLogsPagination.value.hasMore = false // All data loaded
     } else {
       console.error('Failed to fetch session logs')
     }
