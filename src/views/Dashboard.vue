@@ -1255,7 +1255,20 @@
                 <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <p class="text-gray-500 mb-2">Selected: <span class="font-semibold text-purple-700">{{ selectedEvent.title }}</span></p>
                 <p class="text-gray-500 mb-4">Now select a session for attendance</p>
-                <div v-if="eventSessions.length === 0" class="text-center py-4">
+                <!-- Sessions Loading Bar -->
+                <div v-if="sessionsLoading" class="max-w-md mx-auto mb-4">
+                  <div class="flex items-center justify-center gap-2 text-purple-600 mb-2">
+                    <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">Loading sessions...</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-600 to-pink-500 h-2 rounded-full animate-pulse" style="width: 70%"></div>
+                  </div>
+                </div>
+                <div v-else-if="eventSessions.length === 0" class="text-center py-4">
                   <p class="text-sm text-orange-600 mb-2">No sessions found for this event.</p>
                   <p class="text-xs text-gray-500">Please add sessions in the event settings first.</p>
                   <button @click="selectedEvent = null; selectedSession = null" class="mt-3 text-purple-600 hover:text-purple-800 text-sm underline">Select different event</button>
@@ -4259,6 +4272,7 @@ const selectedEvent = ref(null)
 const selectedSession = ref(null)
 const selectedSessionForLogs = ref(null)
 const eventSessions = ref([])
+const sessionsLoading = ref(false)
 const showSessionModal = ref(false)
 const expandedEvents = ref({})
 const expandedEventSessions = ref({})
@@ -6903,6 +6917,7 @@ const deleteAttendanceEvent = async (eventId) => {
 
 const fetchEventSessions = async (eventId) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  sessionsLoading.value = true
   try {
     const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${eventId}/sessions`, {
       headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
@@ -6917,6 +6932,8 @@ const fetchEventSessions = async (eventId) => {
     }
   } catch (error) {
     console.error('Error fetching sessions:', error)
+  } finally {
+    sessionsLoading.value = false
   }
 }
 
