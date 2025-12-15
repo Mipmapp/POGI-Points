@@ -971,23 +971,23 @@
         <div v-if="currentPage === 'attendance'" class="space-y-6">
           <!-- Admin Attendance Management -->
           <div v-if="currentUser.role === 'admin' || currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-              <div class="flex items-center gap-4">
-                <h2 class="text-xl font-bold text-purple-900">Attendance Events</h2>
-                <div class="flex gap-2">
-                  <button @click="attendanceTab = 'events'" :class="['px-4 py-2 rounded-lg text-sm font-medium transition', attendanceTab === 'events' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">Events</button>
-                  <button @click="switchToScannerTab" :class="['px-4 py-2 rounded-lg text-sm font-medium transition', attendanceTab === 'scanner' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">RFID Scanner</button>
+            <div class="flex flex-col gap-4 mb-6">
+              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <h2 class="text-lg sm:text-xl font-bold text-purple-900">Attendance Events</h2>
+                <div class="flex gap-2 flex-wrap">
+                  <button @click="fetchAttendanceData" :disabled="attendanceLoading" class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition flex items-center gap-2 text-sm" title="Refresh">
+                    <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <span class="sr-only sm:not-sr-only">Refresh</span>
+                  </button>
+                  <button @click="openCreateEventModal" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-3 py-2 rounded-lg hover:from-purple-700 hover:to-pink-600 transition flex items-center gap-2 text-sm" title="Create Event">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span class="sr-only sm:not-sr-only">Create Event</span>
+                  </button>
                 </div>
               </div>
-              <div class="flex gap-2 flex-wrap">
-                <button @click="fetchAttendanceData" :disabled="attendanceLoading" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition flex items-center gap-2">
-                  <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                  Refresh
-                </button>
-                <button @click="openCreateEventModal" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-600 transition flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                  Create Event
-                </button>
+              <div class="flex gap-1 sm:gap-2 overflow-x-auto pb-1">
+                <button @click="attendanceTab = 'events'" :class="['px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap', attendanceTab === 'events' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">Events</button>
+                <button @click="switchToScannerTab" :class="['px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap', attendanceTab === 'scanner' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">RFID Scanner</button>
               </div>
             </div>
 
@@ -1006,48 +1006,48 @@
               <div v-else class="space-y-4">
                 <div v-for="event in attendanceEvents" :key="event._id" class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition">
                   <!-- Event Header - Clickable to expand -->
-                  <div class="p-4 cursor-pointer" @click="toggleEventExpansion(event._id)">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div class="p-3 sm:p-4 cursor-pointer" @click="toggleEventExpansion(event._id)">
+                    <div class="flex flex-col gap-3">
                       <div class="flex-1">
-                        <div class="flex items-center gap-3 mb-2">
-                          <svg :class="['w-5 h-5 text-purple-600 transition-transform', expandedEvents[event._id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                          <h3 class="font-semibold text-lg text-purple-900">{{ event.title }}</h3>
-                          <span :class="['px-2 py-1 rounded-full text-xs font-medium', getStatusBadgeClass(getEventDisplayStatus(event).status)]">{{ getEventDisplayStatus(event).label }}</span>
-                          <span v-if="event.status === 'active' && getEventTimeRemaining(event._id) && getEventTimeRemaining(event._id) !== 'Ended'" :class="['px-2 py-1 rounded-full text-xs font-medium', 'bg-orange-100 text-orange-800']">
+                        <div class="flex flex-wrap items-center gap-2 mb-2">
+                          <svg :class="['w-4 h-4 sm:w-5 sm:h-5 text-purple-600 transition-transform flex-shrink-0', expandedEvents[event._id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                          <h3 class="font-semibold text-base sm:text-lg text-purple-900 break-words">{{ event.title }}</h3>
+                          <span :class="['px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap', getStatusBadgeClass(getEventDisplayStatus(event).status)]">{{ getEventDisplayStatus(event).label }}</span>
+                          <span v-if="event.status === 'active' && getEventTimeRemaining(event._id) && getEventTimeRemaining(event._id) !== 'Ended'" :class="['px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap', 'bg-orange-100 text-orange-800']">
                             {{ getEventTimeRemaining(event._id) }}
                           </span>
                         </div>
-                        <p v-if="event.description" class="text-gray-600 text-sm mb-2 ml-8">{{ event.description }}</p>
-                        <div class="flex flex-wrap gap-4 text-sm text-gray-500 ml-8">
+                        <p v-if="event.description" class="text-gray-600 text-sm mb-2 ml-0 sm:ml-6">{{ event.description }}</p>
+                        <div class="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 ml-0 sm:ml-6">
                           <span class="flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             {{ formatEventDate(event.date || event.event_date) }}
                           </span>
                           <span class="flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             {{ formatEventTime(event.start_time || event.startTime || '07:00') }} - {{ formatEventTime(event.end_time || event.endTime || '17:00') }}
                           </span>
                           <span v-if="event.location" class="flex items-center gap-1">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                             {{ event.location }}
                           </span>
                         </div>
                       </div>
-                      <div class="flex items-center gap-2" @click.stop>
-                        <button @click="openEditEvent(event)" class="bg-yellow-100 text-yellow-700 px-3 py-2 rounded-lg hover:bg-yellow-200 transition text-sm flex items-center gap-1">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                          Edit
+                      <div class="flex items-center gap-2 ml-0 sm:ml-6" @click.stop>
+                        <button @click="openEditEvent(event)" class="bg-yellow-100 text-yellow-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-yellow-200 transition text-xs sm:text-sm flex items-center gap-1" title="Edit">
+                          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                          <span class="sr-only sm:not-sr-only">Edit</span>
                         </button>
-                        <button @click="deleteAttendanceEvent(event._id)" class="bg-red-100 text-red-700 px-3 py-2 rounded-lg hover:bg-red-200 transition text-sm flex items-center gap-1">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                          Delete
+                        <button @click="deleteAttendanceEvent(event._id)" class="bg-red-100 text-red-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-red-200 transition text-xs sm:text-sm flex items-center gap-1" title="Delete">
+                          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                          <span class="sr-only sm:not-sr-only">Delete</span>
                         </button>
                       </div>
                     </div>
                   </div>
                   <!-- Sessions Panel - Expandable -->
-                  <div v-if="expandedEvents[event._id]" class="bg-gray-50 border-t border-gray-200 px-4 py-3">
-                    <div class="ml-8">
+                  <div v-if="expandedEvents[event._id]" class="bg-gray-50 border-t border-gray-200 px-3 sm:px-4 py-3">
+                    <div class="ml-0 sm:ml-6">
                       <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                         Sessions
@@ -1056,15 +1056,15 @@
                         No sessions added yet. Click "Edit" to add sessions.
                       </div>
                       <div v-else class="space-y-2">
-                        <div v-for="session in expandedEventSessions[event._id]" :key="session._id" class="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-gray-200">
-                          <div class="flex items-center gap-3">
-                            <span class="font-medium text-gray-800">{{ session.label }}</span>
+                        <div v-for="session in expandedEventSessions[event._id]" :key="session._id" class="flex flex-col sm:flex-row sm:items-center justify-between bg-white rounded-lg px-3 py-2 border border-gray-200 gap-2">
+                          <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <span class="font-medium text-gray-800 text-sm">{{ session.label }}</span>
                             <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
                             <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', getSessionDisplayStatus(session, event) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, event) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
                               {{ getSessionDisplayStatus(session, event) === 'active' ? 'Active' : getSessionDisplayStatus(session, event) === 'draft' ? 'Upcoming' : 'Closed' }}
                             </span>
                           </div>
-                          <div class="flex items-center gap-2">
+                          <div class="flex items-center gap-2 flex-wrap">
                             <button @click="openSessionLogs(session, event)" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg hover:bg-blue-200 transition text-xs flex items-center gap-1">
                               <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                               Logs
@@ -1085,9 +1085,9 @@
             <!-- RFID Scanner Tab -->
             <div v-if="attendanceTab === 'scanner'" class="space-y-4">
               <!-- RFID Scanner Lock Controls -->
-              <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4 mb-4">
-                <h3 class="font-semibold text-purple-900 mb-4 flex items-center gap-2">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3 sm:p-4 mb-4">
+                <h3 class="font-semibold text-purple-900 mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                   Attendance Mode (Select One)
                 </h3>
                 
@@ -1122,7 +1122,7 @@
                   </p>
                 </div>
                 
-                <div class="grid md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <!-- Check-In Control -->
                   <div :class="['rounded-lg p-4 shadow-sm transition-all', appSettings.rfidScanner.checkInEnabled ? 'bg-green-50 ring-2 ring-green-400' : 'bg-white']">
                     <div class="flex items-center justify-between mb-3">
@@ -1366,33 +1366,58 @@
                   <div v-if="attendanceLogs.length === 0" class="text-center py-4 text-gray-500">
                     No attendance records yet for this event.
                   </div>
-                  <div v-else class="overflow-x-auto">
+                  <!-- Mobile Card View -->
+                  <div v-else class="block sm:hidden space-y-3">
+                    <div v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['rounded-lg border p-3 transition-all duration-300', index === 0 && isRecentCheckIn(log) ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 ring-2 ring-purple-300 ring-inset animate-pulse' : 'bg-white border-gray-200']">
+                      <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center gap-2">
+                          <div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 flex items-center justify-center text-white text-xs overflow-hidden flex-shrink-0">
+                            <img v-if="log.student_image || log.student?.photo" :src="log.student_image || log.student?.photo" class="w-full h-full object-cover" />
+                            <span v-else>{{ (log.student?.full_name || log.student_name)?.charAt(0) || '?' }}</span>
+                          </div>
+                          <div>
+                            <p class="font-medium text-sm text-gray-900">{{ log.student?.full_name || log.student_name }}</p>
+                            <p class="text-xs text-gray-500">{{ log.program || log.student?.program || '-' }}</p>
+                          </div>
+                        </div>
+                        <span :class="['px-2 py-1 rounded-full text-xs font-medium', getAttendanceLogStatusClass(log)]">
+                          {{ getAttendanceLogStatusLabel(log) }}
+                        </span>
+                      </div>
+                      <div class="flex justify-between text-xs text-gray-600">
+                        <span>In: {{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString() : '-' }}</span>
+                        <span>Out: {{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Desktop Table View -->
+                  <div class="hidden sm:block overflow-x-auto">
                     <table class="w-full text-sm">
                       <thead class="bg-gray-50">
                         <tr>
-                          <th class="px-4 py-2 text-left">Student</th>
-                          <th class="px-4 py-2 text-left">Program</th>
-                          <th class="px-4 py-2 text-left">Check-in</th>
-                          <th class="px-4 py-2 text-left">Check-out</th>
-                          <th class="px-4 py-2 text-left">Status</th>
+                          <th class="px-3 py-2 text-left text-xs">Student</th>
+                          <th class="px-3 py-2 text-left text-xs">Program</th>
+                          <th class="px-3 py-2 text-left text-xs">Check-in</th>
+                          <th class="px-3 py-2 text-left text-xs">Check-out</th>
+                          <th class="px-3 py-2 text-left text-xs">Status</th>
                         </tr>
                       </thead>
                       <tbody>
                         <tr v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['border-b transition-all duration-300', index === 0 && isRecentCheckIn(log) ? 'bg-gradient-to-r from-purple-50 to-pink-50 ring-2 ring-purple-300 ring-inset animate-pulse' : 'hover:bg-gray-50']">
-                          <td class="px-4 py-2">
-                            <div class="flex items-center gap-3">
-                              <div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 flex items-center justify-center text-white text-xs overflow-hidden flex-shrink-0">
+                          <td class="px-3 py-2">
+                            <div class="flex items-center gap-2">
+                              <div class="w-7 h-7 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 flex items-center justify-center text-white text-xs overflow-hidden flex-shrink-0">
                                 <img v-if="log.student_image || log.student?.photo" :src="log.student_image || log.student?.photo" class="w-full h-full object-cover" />
                                 <span v-else>{{ (log.student?.full_name || log.student_name)?.charAt(0) || '?' }}</span>
                               </div>
-                              <span class="font-medium">{{ log.student?.full_name || log.student_name }}</span>
+                              <span class="font-medium text-xs">{{ log.student?.full_name || log.student_name }}</span>
                             </div>
                           </td>
-                          <td class="px-4 py-2">{{ log.program || log.student?.program || '-' }}</td>
-                          <td class="px-4 py-2">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString() : '-' }}</td>
-                          <td class="px-4 py-2">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</td>
-                          <td class="px-4 py-2">
-                            <span :class="['px-2 py-1 rounded-full text-xs font-medium', getAttendanceLogStatusClass(log)]">
+                          <td class="px-3 py-2 text-xs">{{ log.program || log.student?.program || '-' }}</td>
+                          <td class="px-3 py-2 text-xs">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString() : '-' }}</td>
+                          <td class="px-3 py-2 text-xs">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</td>
+                          <td class="px-3 py-2">
+                            <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', getAttendanceLogStatusClass(log)]">
                               {{ getAttendanceLogStatusLabel(log) }}
                             </span>
                           </td>
