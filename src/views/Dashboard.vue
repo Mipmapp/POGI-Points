@@ -6838,6 +6838,7 @@ const fetchSessionLogs = async (sessionId) => {
   attendanceLoading.value = true
   try {
     const params = new URLSearchParams()
+    params.append('limit', '10000')
     if (eventLogsFilter.value.yearLevel) params.append('yearLevel', eventLogsFilter.value.yearLevel)
     if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
     if (eventLogsFilter.value.search) params.append('search', eventLogsFilter.value.search)
@@ -6883,6 +6884,7 @@ const fetchEventLogs = async (eventId) => {
   attendanceLoading.value = true
   try {
     const params = new URLSearchParams()
+    params.append('limit', '10000')
     if (eventLogsFilter.value.yearLevel) params.append('yearLevel', eventLogsFilter.value.yearLevel)
     if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
     if (eventLogsFilter.value.search) params.append('search', eventLogsFilter.value.search)
