@@ -4216,10 +4216,12 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
 
         const studentFullName = `${student.first_name} ${student.middle_name || ''} ${student.last_name}`.replace(/\s+/g, ' ').trim();
 
-        // Calculate late threshold
-        const lateThreshold = rfidSettings.lateThresholdMinutes !== undefined && rfidSettings.lateThresholdMinutes !== null 
-            ? rfidSettings.lateThresholdMinutes 
-            : 30;
+        // Calculate late threshold - prioritize session's late_threshold_minutes over global setting
+        const lateThreshold = session.late_threshold_minutes !== undefined && session.late_threshold_minutes !== null
+            ? session.late_threshold_minutes
+            : (rfidSettings.lateThresholdMinutes !== undefined && rfidSettings.lateThresholdMinutes !== null 
+                ? rfidSettings.lateThresholdMinutes 
+                : 30);
 
         const calculateIsLate = (startTime) => {
             if (!startTime || !event.event_date) return false;
