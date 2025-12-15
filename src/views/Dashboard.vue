@@ -3378,8 +3378,8 @@
           <p class="text-sm text-red-700">Absent</p>
         </div>
         <div class="bg-purple-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-purple-600">{{ sessionStats.total }}</p>
-          <p class="text-sm text-purple-700">Total</p>
+          <p class="text-2xl font-bold text-purple-600">{{ sessionStats.total }}<span v-if="sessionStats.totalStudents > 0" class="text-lg text-purple-400">/{{ sessionStats.totalStudents }}</span></p>
+          <p class="text-sm text-purple-700">Total<span v-if="sessionStats.totalStudents > 0"> Attended</span></p>
         </div>
       </div>
 
@@ -3413,7 +3413,7 @@
             >
               <svg v-if="applyingLateThreshold" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-              {{ applyingLateThreshold ? 'Applying...' : 'Apply & Recalculate' }}
+              {{ applyingLateThreshold ? (recalculateProgress.isProcessing ? `Processing ${recalculateProgress.current}/${recalculateProgress.total}...` : 'Applying...') : 'Apply & Recalculate' }}
             </button>
           </div>
         </div>
@@ -7028,11 +7028,12 @@ const deleteSession = async (sessionId) => {
   }
 }
 
-const sessionStats = ref({ present: 0, incomplete: 0, late: 0, absent: 0, total: 0 })
+const sessionStats = ref({ present: 0, incomplete: 0, late: 0, absent: 0, total: 0, totalStudents: 0 })
 const allSessionLogs = ref([]) // Store all logs for stats and export
 const lateThresholdTime = ref('')
 const selectedLateThresholdMinutes = ref(60)
 const applyingLateThreshold = ref(false)
+const recalculateProgress = ref({ current: 0, total: 0, isProcessing: false })
 
 const applyLateThresholdByMinutes = async () => {
   if (!selectedSessionForLogs.value) return
@@ -7058,7 +7059,12 @@ const applyLateThresholdByMinutes = async () => {
     let updatedCount = 0
     let errorCount = 0
     
-    for (const log of logsWithCheckIn) {
+    // Initialize progress counter
+    recalculateProgress.value = { current: 0, total: logsWithCheckIn.length, isProcessing: true }
+    
+    for (let i = 0; i < logsWithCheckIn.length; i++) {
+      const log = logsWithCheckIn[i]
+      
       const checkInTime = log.check_in_at || log.check_in_time
       const checkInDate = new Date(checkInTime)
       const checkInHourMin = checkInDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
@@ -7090,7 +7096,13 @@ const applyLateThresholdByMinutes = async () => {
           errorCount++
         }
       }
+      
+      // Always update progress after each iteration
+      recalculateProgress.value.current = i + 1
     }
+    
+    // Reset progress counter
+    recalculateProgress.value = { current: 0, total: 0, isProcessing: false }
     
     // Also update the session's late_threshold_minutes setting
     try {
@@ -7245,7 +7257,42 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
             absent++
           }
         })
-        sessionStats.value = { present, incomplete, late, absent, total: allLogs.length }
+        sessionStats.value = { present, incomplete, late, absent, total: allLogs.length, totalStudents: 0 }
+        
+        // Fetch total students count based on event's target audience
+        const event = selectedEvent.value
+        const eventEnded = event ? hasEventEndedPH(event) : false
+        
+        if (eventEnded) {
+          try {
+            const studentsResponse = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000', {
+              method: 'GET',
+              headers: {
+                'Authorization': 'Bearer SSAAMStudents',
+                'X-SSAAM-TS': encodeTimestamp()
+              }
+            })
+            
+            if (studentsResponse.ok) {
+              const studentsResult = await studentsResponse.json()
+              const allStudents = studentsResult.students || studentsResult.data || []
+              
+              // Filter students based on event's target audience
+              const eventYearLevel = event?.year_level || ''
+              const validYearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
+              const hasSpecificYearLevel = validYearLevels.includes(eventYearLevel)
+              
+              let targetStudents = allStudents
+              if (hasSpecificYearLevel) {
+                targetStudents = allStudents.filter(s => s.year_level === eventYearLevel)
+              }
+              
+              sessionStats.value.totalStudents = targetStudents.length
+            }
+          } catch (err) {
+            console.error('Error fetching students count:', err)
+          }
+        }
       }
     }
     
@@ -7301,10 +7348,10 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
       if (eventEnded && session) {
         try {
           // Fetch approved students
-          const studentsResponse = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000&status=approved', {
+          const studentsResponse = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000', {
             method: 'GET',
             headers: {
-              'Authorization': `Bearer ${token}`,
+              'Authorization': 'Bearer SSAAMStudents',
               'X-SSAAM-TS': encodeTimestamp()
             }
           })
@@ -7438,10 +7485,10 @@ const fetchEventLogs = async (eventId) => {
       if (eventEnded) {
         try {
           // Fetch approved students
-          const studentsResponse = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000&status=approved', {
+          const studentsResponse = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000', {
             method: 'GET',
             headers: {
-              'Authorization': `Bearer ${token}`,
+              'Authorization': 'Bearer SSAAMStudents',
               'X-SSAAM-TS': encodeTimestamp()
             }
           })
