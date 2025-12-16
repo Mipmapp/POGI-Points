@@ -4043,60 +4043,247 @@ app.get('/apis/attendance/sessions/:id/logs', auth, async (req, res) => {
 });
 
 // Get attendance logs for an event (admin only) - aggregated across all sessions
+// When no session_id is provided, aggregates logs by student to show one record per student
+// with their best status across all sessions (present > late > incomplete > absent)
 app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
     try {
         const { search, yearLevel, program, session_id, page = 1, limit = 50 } = req.query;
-        const filter = { event_id: req.params.id };
+        const filter = { event_id: new mongoose.Types.ObjectId(req.params.id) };
         
-        // If session_id is provided, filter by specific session
+        // If session_id is provided, filter by specific session (non-aggregated view)
         if (session_id) {
-            filter.session_id = session_id;
+            filter.session_id = new mongoose.Types.ObjectId(session_id);
         }
-
-        if (yearLevel) filter.year_level = yearLevel;
-        if (program) filter.program = program;
-
-        if (search) {
-            const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            filter.$or = [
-                { student_name: { $regex: escapedSearch, $options: 'i' } },
-                { student_id_number: { $regex: escapedSearch, $options: 'i' } },
-                { rfid_code: { $regex: escapedSearch, $options: 'i' } }
-            ];
-        }
-
-        const skip = (parseInt(page) - 1) * parseInt(limit);
-            
-        const logs = await AttendanceLog.find(filter)
-            .sort({ check_in_at: -1, created_at: -1 })
-            .skip(skip)
-            .limit(parseInt(limit));
-
-        const total = await AttendanceLog.countDocuments(filter);
 
         // Get all sessions for this event
         const sessions = await AttendanceSession.find({ event_id: req.params.id })
             .sort({ start_time: 1 });
 
-        // Stats for this event (across all sessions or filtered by session_id)
-        const stats = await AttendanceLog.aggregate([
-            { $match: filter.session_id 
-                ? { session_id: new mongoose.Types.ObjectId(filter.session_id) }
-                : { event_id: new mongoose.Types.ObjectId(req.params.id) } 
+        // If viewing a specific session, return raw logs (original behavior)
+        if (session_id) {
+            const sessionFilter = { ...filter };
+            if (yearLevel) sessionFilter.year_level = yearLevel;
+            if (program) sessionFilter.program = program;
+
+            if (search) {
+                const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                sessionFilter.$or = [
+                    { student_name: { $regex: escapedSearch, $options: 'i' } },
+                    { student_id_number: { $regex: escapedSearch, $options: 'i' } },
+                    { rfid_code: { $regex: escapedSearch, $options: 'i' } }
+                ];
+            }
+
+            const skip = (parseInt(page) - 1) * parseInt(limit);
+            const logs = await AttendanceLog.find(sessionFilter)
+                .sort({ check_in_at: -1, created_at: -1 })
+                .skip(skip)
+                .limit(parseInt(limit));
+
+            const total = await AttendanceLog.countDocuments(sessionFilter);
+
+            const stats = await AttendanceLog.aggregate([
+                { $match: { session_id: new mongoose.Types.ObjectId(session_id) } },
+                {
+                    $group: {
+                        _id: null,
+                        total: { $sum: 1 },
+                        present: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", false] }] }, 1, 0] } },
+                        late: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", true] }] }, 1, 0] } },
+                        incomplete: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $eq: ["$check_out_at", null] }] }, 1, 0] } }
+                    }
+                }
+            ]);
+
+            return res.json({
+                data: logs,
+                sessions,
+                stats: stats[0] || { total: 0, present: 0, late: 0, incomplete: 0 },
+                pagination: {
+                    currentPage: parseInt(page),
+                    limit: parseInt(limit),
+                    total,
+                    totalPages: Math.ceil(total / parseInt(limit))
+                }
+            });
+        }
+
+        // Aggregate logs by student for event-level view
+        // This ensures each student appears only once with their best status
+        const matchStage = { event_id: new mongoose.Types.ObjectId(req.params.id) };
+        
+        const pipeline = [
+            { $match: matchStage },
+            {
+                $group: {
+                    _id: '$student_id_number',
+                    student_id: { $first: '$student_id' },
+                    student_id_number: { $first: '$student_id_number' },
+                    student_name: { $first: '$student_name' },
+                    program: { $first: '$program' },
+                    year_level: { $first: '$year_level' },
+                    rfid_code: { $first: '$rfid_code' },
+                    check_in_at: { $min: '$check_in_at' },
+                    check_out_at: { $max: '$check_out_at' },
+                    has_present: { 
+                        $max: { 
+                            $cond: [
+                                { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', false] }] }, 
+                                1, 
+                                0
+                            ] 
+                        } 
+                    },
+                    has_late: { 
+                        $max: { 
+                            $cond: [
+                                { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', true] }] }, 
+                                1, 
+                                0
+                            ] 
+                        } 
+                    },
+                    has_incomplete: { 
+                        $max: { 
+                            $cond: [
+                                { $and: [{ $ne: ['$check_in_at', null] }, { $eq: ['$check_out_at', null] }] }, 
+                                1, 
+                                0
+                            ] 
+                        } 
+                    },
+                    session_count: { $sum: 1 },
+                    sessions_attended: {
+                        $push: {
+                            session_id: '$session_id',
+                            check_in_at: '$check_in_at',
+                            check_out_at: '$check_out_at',
+                            is_late: '$is_late'
+                        }
+                    },
+                    created_at: { $min: '$created_at' }
+                }
+            },
+            {
+                $addFields: {
+                    is_late: {
+                        $cond: [
+                            { $eq: ['$has_present', 1] },
+                            false,
+                            { $eq: ['$has_late', 1] }
+                        ]
+                    },
+                    event_status: {
+                        $switch: {
+                            branches: [
+                                { case: { $eq: ['$has_present', 1] }, then: 'present' },
+                                { case: { $eq: ['$has_late', 1] }, then: 'late' },
+                                { case: { $eq: ['$has_incomplete', 1] }, then: 'incomplete' }
+                            ],
+                            default: 'absent'
+                        }
+                    }
+                }
+            }
+        ];
+
+        // Apply filters after grouping
+        const postGroupMatch = {};
+        if (yearLevel) postGroupMatch.year_level = yearLevel;
+        if (program) postGroupMatch.program = program;
+        if (search) {
+            const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            postGroupMatch.$or = [
+                { student_name: { $regex: escapedSearch, $options: 'i' } },
+                { student_id_number: { $regex: escapedSearch, $options: 'i' } },
+                { rfid_code: { $regex: escapedSearch, $options: 'i' } }
+            ];
+        }
+        if (Object.keys(postGroupMatch).length > 0) {
+            pipeline.push({ $match: postGroupMatch });
+        }
+
+        // Sort by check_in_at descending, then created_at
+        pipeline.push({ $sort: { check_in_at: -1, created_at: -1 } });
+
+        // Get total count before pagination
+        const countPipeline = [...pipeline, { $count: 'total' }];
+        const countResult = await AttendanceLog.aggregate(countPipeline);
+        const total = countResult[0]?.total || 0;
+
+        // Apply pagination
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        pipeline.push({ $skip: skip });
+        pipeline.push({ $limit: parseInt(limit) });
+
+        const aggregatedLogs = await AttendanceLog.aggregate(pipeline);
+
+        // Stats aggregated by unique students (not session logs)
+        const statsPipeline = [
+            { $match: matchStage },
+            {
+                $group: {
+                    _id: '$student_id_number',
+                    has_present: { 
+                        $max: { 
+                            $cond: [
+                                { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', false] }] }, 
+                                1, 
+                                0
+                            ] 
+                        } 
+                    },
+                    has_late: { 
+                        $max: { 
+                            $cond: [
+                                { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', true] }] }, 
+                                1, 
+                                0
+                            ] 
+                        } 
+                    },
+                    has_incomplete: { 
+                        $max: { 
+                            $cond: [
+                                { $and: [{ $ne: ['$check_in_at', null] }, { $eq: ['$check_out_at', null] }] }, 
+                                1, 
+                                0
+                            ] 
+                        } 
+                    }
+                }
             },
             {
                 $group: {
                     _id: null,
                     total: { $sum: 1 },
-                    present: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", false] }] }, 1, 0] } },
-                    late: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", true] }] }, 1, 0] } },
-                    incomplete: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $eq: ["$check_out_at", null] }] }, 1, 0] } }
+                    present: { $sum: '$has_present' },
+                    late: { 
+                        $sum: { 
+                            $cond: [
+                                { $and: [{ $eq: ['$has_present', 0] }, { $eq: ['$has_late', 1] }] }, 
+                                1, 
+                                0
+                            ] 
+                        } 
+                    },
+                    incomplete: { 
+                        $sum: { 
+                            $cond: [
+                                { $and: [{ $eq: ['$has_present', 0] }, { $eq: ['$has_late', 0] }, { $eq: ['$has_incomplete', 1] }] }, 
+                                1, 
+                                0
+                            ] 
+                        } 
+                    }
                 }
             }
-        ]);
+        ];
+
+        const stats = await AttendanceLog.aggregate(statsPipeline);
 
         res.json({
-            data: logs,
+            data: aggregatedLogs,
             sessions,
             stats: stats[0] || { total: 0, present: 0, late: 0, incomplete: 0 },
             pagination: {
@@ -4104,7 +4291,8 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
                 limit: parseInt(limit),
                 total,
                 totalPages: Math.ceil(total / parseInt(limit))
-            }
+            },
+            aggregated: true
         });
     } catch (err) {
         res.status(500).json({ message: err.message });

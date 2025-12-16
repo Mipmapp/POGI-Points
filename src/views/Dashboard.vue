@@ -7391,8 +7391,9 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
             const studentsResult = await studentsResponse.json()
             const allStudents = studentsResult.students || studentsResult.data || []
             
-            // Get set of student IDs who have attendance logs
-            const attendedStudentIds = new Set(logs.map(log => log.student_id || log.student?.student_id))
+            // Get set of student ID numbers who have attendance logs
+            // Use student_id_number (string like "25-A-00546") not student_id (MongoDB ObjectId)
+            const attendedStudentIds = new Set(logs.map(log => log.student_id_number || log.student?.student_id))
             
             // Check if event targets a specific year level
             const eventYearLevel = event?.year_level || ''
@@ -7528,8 +7529,9 @@ const fetchEventLogs = async (eventId) => {
             const studentsResult = await studentsResponse.json()
             const allStudents = studentsResult.students || studentsResult.data || []
             
-            // Get set of student IDs who have attendance logs
-            const attendedStudentIds = new Set(logs.map(log => log.student_id || log.student?.student_id))
+            // Get set of student ID numbers who have attendance logs
+            // Use student_id_number (string like "25-A-00546") not student_id (MongoDB ObjectId)
+            const attendedStudentIds = new Set(logs.map(log => log.student_id_number || log.student?.student_id))
             
             // Check if event targets a specific year level
             const eventYearLevel = event?.year_level || ''
@@ -7564,7 +7566,8 @@ const fetchEventLogs = async (eventId) => {
             // Create absent log entries for students without attendance
             const absentLogs = absentStudents.map(student => ({
               id: `absent_${student.student_id}`,
-              student_id: student.student_id,
+              student_id: student._id,
+              student_id_number: student.student_id,
               student_name: student.full_name,
               student_image: student.photo,
               program: student.program,
@@ -7575,6 +7578,7 @@ const fetchEventLogs = async (eventId) => {
               check_out_time: null,
               is_late: false,
               is_absent: true,
+              event_status: 'absent',
               student: student
             }))
             
