@@ -7319,6 +7319,9 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
               }
               
               sessionStats.value.totalStudents = targetStudents.length
+              // Calculate absent count: total eligible students - students who attended
+              const attendedCount = sessionStats.value.present + sessionStats.value.late + sessionStats.value.incomplete
+              sessionStats.value.absent = Math.max(0, targetStudents.length - attendedCount)
             }
           } catch (err) {
             console.error('Error fetching students count:', err)
