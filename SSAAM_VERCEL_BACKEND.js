@@ -32,7 +32,7 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-SSAAM-TS', 'X-Admin-Action-Token'],
   credentials: true
 };
@@ -4293,6 +4293,32 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
                 totalPages: Math.ceil(total / parseInt(limit))
             },
             aggregated: true
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// PATCH endpoint to update individual attendance log (e.g., for late threshold recalculation)
+app.patch('/apis/attendance/logs/:id', auth, async (req, res) => {
+    try {
+        const { is_late } = req.body;
+        
+        const log = await AttendanceLog.findById(req.params.id);
+        if (!log) {
+            return res.status(404).json({ message: "Attendance log not found" });
+        }
+
+        // Only allow updating is_late field for now
+        if (typeof is_late === 'boolean') {
+            log.is_late = is_late;
+            log.updated_at = new Date();
+            await log.save();
+        }
+
+        res.json({ 
+            message: "Attendance log updated successfully",
+            data: log
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
