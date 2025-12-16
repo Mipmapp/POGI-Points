@@ -7395,8 +7395,9 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
             const allStudents = studentsResult.students || studentsResult.data || []
             
             // Get set of student ID numbers who have attendance logs
+            // Use allSessionLogs.value (all logs) instead of logs (paginated 50) to correctly identify ALL attended students
             // Use student_id_number (string like "25-A-00546") not student_id (MongoDB ObjectId)
-            const attendedStudentIds = new Set(logs.map(log => log.student_id_number || log.student?.student_id))
+            const attendedStudentIds = new Set(allSessionLogs.value.map(log => log.student_id_number || log.student?.student_id))
             
             // Check if event targets a specific year level
             const eventYearLevel = event?.year_level || ''
