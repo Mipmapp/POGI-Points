@@ -265,7 +265,7 @@ const getInitials = (name) => {
 const formatMessage = (message) => {
   if (!message) return ''
   
-  // Platform icons mapping (using SVG paths or common emojis as fallback)
+  // Platform icons mapping
   const icons = {
     fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
     facebook: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
@@ -277,37 +277,39 @@ const formatMessage = (message) => {
     whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
   }
 
-  // Regex to match [platform][name][link]
-  const pattern = /\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/gi
+  const socialPattern = /\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/gi
+  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/gi
 
-  // Use a placeholder strategy to prevent escaping the HTML we generate
-  const socialTags = []
-  const textWithPlaceholders = message.replace(pattern, (match, platform, name, link) => {
-    const iconUrl = icons[platform.toLowerCase()]
-    const fullLink = link.startsWith('http') ? link : `https://${link}`
-    const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle pointer-events-auto cursor-pointer" style="position: relative; z-index: 1;"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
-    socialTags.push(tag)
-    return `__SOCIAL_TAG_${socialTags.length - 1}__`
-  })
-
-  // Escape the remaining text for safety
-  let escapedText = textWithPlaceholders
+  let result = message
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
+    .replace(/\//g, '/')
 
-  // Restore the social tags
-  socialTags.forEach((tag, index) => {
-    escapedText = escapedText.replace(`__SOCIAL_TAG_${index}__`, tag)
+  // BB Tags
+  result = result
+    .replace(/\[b\](.*?)\[\/b\]/gi, '<strong>$1</strong>')
+    .replace(/\[i\](.*?)\[\/i\]/gi, '<em>$1</em>')
+    .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
+    .replace(/\[h1\](.*?)\[\/h1\]/gi, '<h1 class="text-2xl font-bold my-2">$1</h1>')
+    .replace(/\[h2\](.*?)\[\/h2\]/gi, '<h2 class="text-xl font-bold my-1.5">$1</h2>')
+    .replace(/\[h3\](.*?)\[\/h3\]/gi, '<h3 class="text-lg font-bold my-1">$1</h3>')
+
+  // Social Tags
+  result = result.replace(socialPattern, (match, platform, name, link) => {
+    const iconUrl = icons[platform.toLowerCase()]
+    const fullLink = link.startsWith('http') ? link : `https://${link}`
+    return `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle pointer-events-auto cursor-pointer" style="position: relative; z-index: 5;"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
   })
 
-  // Final pass to unescape common technical terms and characters
-  return escapedText
-    .replace(/&#x2F;/g, '/')
-    .replace(/&#47;/g, '/')
-    .replace(/&amp;/g, '&')
+  // Auto-links
+  result = result.replace(urlRegex, (url) => {
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="ssaam-link">${url}</a>`
+  })
+
+  return result
 }
 
 const formatDate = (dateString) => {

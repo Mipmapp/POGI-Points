@@ -1723,113 +1723,176 @@
 
         <!-- Notifications Page -->
         <div v-if="currentPage === 'notifications'" class="space-y-6">
-          <div v-if="currentUser.role === 'admin' || currentUser.isMaster || currentUser.role === 'medpub'" class="bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-bold text-purple-900">Post New Announcement</h2>
-            </div>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                <input v-model="newNotification.title" type="text" placeholder="Announcement title..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" maxlength="200" />
+          <!-- Social Post Style Input -->
+          <div v-if="currentUser.role === 'admin' || currentUser.isMaster || currentUser.role === 'medpub'" class="bg-white rounded-xl shadow-lg border border-purple-100 overflow-hidden">
+            <div class="p-4 flex items-center gap-3 border-b border-gray-50">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shadow-sm overflow-hidden flex-shrink-0">
+                <img v-if="currentUser.role === 'admin'" src="/assets/ssaam_logo.jpg" alt="SSAAM" class="w-full h-full object-cover" />
+                <img v-else-if="currentUser.role === 'medpub'" src="/media_pub_logo.png" alt="MedPub" class="w-6 h-6 object-contain" />
+                <span v-else>{{ getInitials(currentUser.full_name || currentUser.username) }}</span>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
-                <textarea 
-                  ref="announcementTextareaRef"
-                  v-model="newNotification.content" 
-                  placeholder="Write your announcement here..." 
-                  rows="4" 
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none resize-none" 
-                  maxlength="2000"
-                ></textarea>
-                
-                <!-- Social Shortcut Buttons -->
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <div 
-                    v-for="(icon, platform) in socialIconsShort" 
-                    :key="platform"
-                    class="relative group"
-                  >
-                    <button 
-                      @click="insertSocialTag(platform)"
-                      class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all text-xs font-medium text-gray-700 shadow-sm"
-                    >
-                      <img :src="icon" :alt="platform" class="w-4 h-4 object-contain" />
-                      <span class="capitalize">{{ platform }}</span>
-                    </button>
-                    
-                    <!-- Inline Input Popover -->
-                    <div v-if="activeSocialInput === platform" class="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-xl shadow-2xl border border-purple-100 p-3 z-50 animate-slide-up">
-                      <div class="space-y-2">
-                        <input 
-                          v-model="socialInputData.name"
-                          type="text" 
-                          :placeholder="'Enter ' + platform + ' name...'"
-                          class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
-                          @keyup.enter="confirmSocialInsert"
-                          ref="socialNameInputRef"
-                        />
-                        <input 
-                          v-model="socialInputData.link"
-                          type="text" 
-                          :placeholder="'Enter ' + platform + ' link...'"
-                          class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
-                          @keyup.enter="confirmSocialInsert"
-                        />
-                        <div class="flex gap-2">
-                          <button @click="confirmSocialInsert" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition">Confirm</button>
-                          <button @click="activeSocialInput = null" class="px-3 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Cancel</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div 
+                @click="showPostModal = true"
+                class="flex-1 bg-gray-100 hover:bg-gray-200 transition-colors rounded-full px-5 py-2.5 text-gray-500 text-sm cursor-pointer"
+              >
+                What's on your mind, {{ (currentUser.full_name || currentUser.username || '').split(' ')[0] }}?
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Image (Optional)</label>
-                <div class="space-y-3">
-                  <div class="flex flex-col gap-3">
-                    <label class="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-all duration-200" :class="{'border-purple-500 bg-purple-50': notificationImagePreview}">
-                      <input type="file" accept="image/*" class="hidden" @change="handleImageFileSelect" ref="imageFileInput" />
-                      <div v-if="!notificationImagePreview" class="text-center">
-                        <svg class="w-10 h-10 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        <p class="text-sm text-gray-500">Click to upload an image</p>
-                        <p class="text-xs text-gray-400 mt-1">JPG, PNG, GIF up to 10MB</p>
-                      </div>
-                      <div v-else class="relative">
-                        <img :src="notificationImagePreview" alt="Preview" class="max-h-28 rounded-lg object-contain" />
-                      </div>
-                    </label>
-                  </div>
-                  <div v-if="notificationImagePreview || notificationImageUrl" class="flex items-center justify-between">
-                    <span v-if="notificationImagePreview" class="text-xs text-green-600 flex items-center gap-1">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                      Image selected - will be uploaded when you post
-                    </span>
-                    <button @click="clearNotificationImage" class="text-red-500 hover:text-red-700 text-sm flex items-center gap-1 ml-auto">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="flex justify-end">
-                <button @click="postNotification" :disabled="postingNotification || uploadingImage || !newNotification.title.trim() || !newNotification.content.trim()" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                  <svg v-if="postingNotification || uploadingImage" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                  {{ uploadingImage ? 'Uploading Image...' : postingNotification ? 'Posting...' : 'Post Announcement' }}
+              <div class="flex items-center gap-1">
+                <button @click="showPostModal = true" class="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors" title="Post Urgent">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"></path><circle cx="10" cy="12" r="2" fill="white"></circle></svg>
+                </button>
+                <button @click="showPostModal = true" class="p-2 text-green-500 hover:bg-green-50 rounded-full transition-colors" title="Add Image">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"></path></svg>
+                </button>
+                <button @click="showPostModal = true" class="p-2 text-yellow-500 hover:bg-yellow-50 rounded-full transition-colors" title="Feeling/Activity">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5s.67 1.5 1.5 1.5zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"></path></svg>
                 </button>
               </div>
             </div>
           </div>
 
-          <div class="bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-lg font-bold text-purple-900">Announcements Feed</h2>
-              <button @click="fetchNotifications" :disabled="notificationsLoading" class="text-purple-600 hover:text-purple-800 p-2 rounded-lg hover:bg-purple-50 transition">
-                <svg :class="{'animate-spin': notificationsLoading}" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              </button>
+          <!-- Create Post Modal -->
+          <transition name="fade">
+            <div v-if="showPostModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100] p-4" @click.self="showPostModal = false">
+              <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-slide-up">
+                <!-- Modal Header -->
+                <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                  <div class="w-8"></div>
+                  <h3 class="text-lg font-bold text-gray-900">Create post</h3>
+                  <button @click="showPostModal = false" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+                </div>
+
+                <!-- User Info -->
+                <div class="p-4 flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shadow-sm overflow-hidden flex-shrink-0">
+                    <img v-if="currentUser.role === 'admin'" src="/assets/ssaam_logo.jpg" alt="SSAAM" class="w-full h-full object-cover" />
+                    <img v-else-if="currentUser.role === 'medpub'" src="/media_pub_logo.png" alt="MedPub" class="w-6 h-6 object-contain" />
+                    <span v-else>{{ getInitials(currentUser.full_name || currentUser.username) }}</span>
+                  </div>
+                  <div>
+                    <p class="font-bold text-gray-900 leading-tight">{{ currentUser.full_name || currentUser.username }}</p>
+                    <div class="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md mt-0.5 w-fit">
+                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg>
+                      <span>Public</span>
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Input Area -->
+                <div class="px-4 pb-2">
+                  <input 
+                    v-model="newNotification.title" 
+                    type="text" 
+                    placeholder="Announcement title..." 
+                    class="w-full px-0 py-2 border-none text-xl font-bold placeholder-gray-400 focus:ring-0 outline-none mb-1" 
+                    maxlength="200" 
+                  />
+                  <textarea 
+                    ref="announcementTextareaRef"
+                    v-model="newNotification.content" 
+                    :placeholder="'What\'s on your mind, ' + (currentUser.full_name || currentUser.username || '').split(' ')[0] + '?'" 
+                    class="w-full px-0 py-1 border-none text-lg placeholder-gray-400 focus:ring-0 outline-none resize-none min-h-[150px] max-h-[300px]" 
+                    maxlength="2000"
+                  ></textarea>
+                </div>
+
+                <!-- Formatting Bar -->
+                <div class="px-4 py-2 flex items-center justify-between border-t border-gray-50 bg-gray-50/50">
+                  <div class="flex items-center gap-1">
+                    <button @click="insertFormatting('bold')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 font-bold" title="Bold">B</button>
+                    <button @click="insertFormatting('italic')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 italic" title="Italic">I</button>
+                    <button @click="insertFormatting('underline')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 underline" title="Underline">U</button>
+                    <div class="w-px h-4 bg-gray-300 mx-1"></div>
+                    <button @click="insertFormatting('h1')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 font-black text-xs" title="Heading 1">H1</button>
+                    <button @click="insertFormatting('h2')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 font-bold text-xs" title="Heading 2">H2</button>
+                    <button @click="insertFormatting('h3')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 font-semibold text-xs" title="Heading 3">H3</button>
+                  </div>
+                </div>
+
+                <!-- Add to Post Bar -->
+                <div class="px-4 py-3">
+                  <div class="border border-gray-200 rounded-lg p-3 flex items-center justify-between shadow-sm">
+                    <span class="text-sm font-bold text-gray-700">Add to your post</span>
+                    <div class="flex items-center gap-2">
+                      <!-- Social Shortcuts as Popovers -->
+                      <div v-for="(icon, platform) in socialIconsShort" :key="platform" class="relative">
+                        <button 
+                          @click="insertSocialTag(platform)"
+                          class="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                          :title="platform"
+                        >
+                          <img :src="icon" :alt="platform" class="w-5 h-5 object-contain" />
+                        </button>
+                        <!-- Popover -->
+                        <div v-if="activeSocialInput === platform" class="absolute bottom-full right-0 mb-3 w-64 bg-white rounded-xl shadow-2xl border border-purple-100 p-3 z-[110] animate-slide-up">
+                          <div class="space-y-2 text-left">
+                            <input 
+                              v-model="socialInputData.name"
+                              type="text" 
+                              :placeholder="'Enter ' + platform + ' name...'"
+                              class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                              @keyup.enter="confirmSocialInsert"
+                              ref="socialNameInputRef"
+                            />
+                            <input 
+                              v-model="socialInputData.link"
+                              type="text" 
+                              :placeholder="'Enter ' + platform + ' link...'"
+                              class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                              @keyup.enter="confirmSocialInsert"
+                            />
+                            <div class="flex gap-2">
+                              <button @click="confirmSocialInsert" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition">Confirm</button>
+                              <button @click="activeSocialInput = null" class="px-3 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Cancel</button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="w-px h-6 bg-gray-200 mx-1"></div>
+                      
+                      <button @click="$refs.imageFileInput.click()" class="p-1.5 text-green-500 hover:bg-green-50 rounded-full transition-colors">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"></path></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Preview Image -->
+                <div v-if="notificationImagePreview" class="px-4 pb-3 relative group">
+                  <img :src="notificationImagePreview" class="w-full rounded-lg max-h-48 object-cover border border-gray-100 shadow-sm" />
+                  <button @click="clearNotificationImage" class="absolute top-2 right-6 p-1.5 bg-white rounded-full shadow-md text-gray-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+                </div>
+
+                <!-- Post Button -->
+                <div class="px-4 pb-4">
+                  <button 
+                    @click="postNotificationFromModal" 
+                    :disabled="postingNotification || !newNotification.title.trim() || !newNotification.content.trim()"
+                    class="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-2.5 rounded-lg transition-colors shadow-md flex items-center justify-center gap-2"
+                  >
+                    <svg v-if="postingNotification" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    <span>Post</span>
+                  </button>
+                </div>
+              </div>
             </div>
+          </transition>
+          
+          <input type="file" accept="image/*" class="hidden" @change="handleImageFileSelect" ref="imageFileInput" />
+
+          <!-- Notifications Feed Header -->
+          <div class="flex items-center justify-between mb-4 mt-8">
+            <h2 class="text-xl font-bold text-purple-900">Announcements Feed</h2>
+            <button @click="fetchNotifications" :disabled="notificationsLoading" class="p-2 text-purple-600 hover:bg-purple-50 rounded-full transition" :class="{ 'animate-spin': notificationsLoading }">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+          </div>
 
             <div v-if="notificationsLoading" class="flex items-center justify-center py-12">
               <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -8843,6 +8906,43 @@ const formatNotificationDate = (dateStr) => {
   return date.toLocaleDateString('en-US', options)
 }
 
+const showPostModal = ref(false)
+
+const insertFormatting = (type) => {
+  const textarea = announcementTextareaRef.value
+  if (!textarea) return
+
+  const start = textarea.selectionStart
+  const end = textarea.selectionEnd
+  const text = newNotification.value.content
+  const selectedText = text.substring(start, end)
+  
+  let formattedText = ''
+  switch(type) {
+    case 'bold': formattedText = `[b]${selectedText}[/b]`; break;
+    case 'italic': formattedText = `[i]${selectedText}[/i]`; break;
+    case 'underline': formattedText = `[u]${selectedText}[/u]`; break;
+    case 'h1': formattedText = `[h1]${selectedText}[/h1]`; break;
+    case 'h2': formattedText = `[h2]${selectedText}[/h2]`; break;
+    case 'h3': formattedText = `[h3]${selectedText}[/h3]`; break;
+  }
+  
+  newNotification.value.content = text.substring(0, start) + formattedText + text.substring(end)
+  
+  setTimeout(() => {
+    textarea.focus()
+    const newPos = start + formattedText.length
+    textarea.setSelectionRange(newPos, newPos)
+  }, 0)
+}
+
+const postNotificationFromModal = async () => {
+  await postNotification()
+  if (!postingNotification.value) {
+    showPostModal.value = false
+  }
+}
+
 const formatMessageWithLinks = (text) => {
   if (!text) return ''
   
@@ -8858,43 +8958,64 @@ const formatMessageWithLinks = (text) => {
     whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
   }
 
+  // First handle all BB-style formatting tags
+  let html = text
+    .replace(/\[b\](.*?)\[\/b\]/gi, '<strong>$1</strong>')
+    .replace(/\[i\](.*?)\[\/i\]/gi, '<em>$1</em>')
+    .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
+    .replace(/\[h1\](.*?)\[\/h1\]/gi, '<h1 class="text-2xl font-bold my-2">$1</h1>')
+    .replace(/\[h2\](.*?)\[\/h2\]/gi, '<h2 class="text-xl font-bold my-1.5">$1</h2>')
+    .replace(/\[h3\](.*?)\[\/h3\]/gi, '<h3 class="text-lg font-bold my-1">$1</h3>')
+
   // Regex to match [platform][name][link]
   const socialPattern = /\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/gi
   const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/gi
 
-  // First, find all social tags and replace them with unique placeholders
+  // Find all social tags and replace them with unique placeholders
   const socialTags = []
-  let processedText = text.replace(socialPattern, (match, platform, name, link) => {
+  html = html.replace(socialPattern, (match, platform, name, link) => {
     const iconUrl = icons[platform.toLowerCase()]
     const fullLink = link.startsWith('http') ? link : `https://${link}`
-    const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle pointer-events-auto cursor-pointer" style="position: relative; z-index: 1;"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
+    const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle pointer-events-auto cursor-pointer" style="position: relative; z-index: 5;"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
     socialTags.push(tag)
     return `__SOCIAL_TAG_${socialTags.length - 1}__`
   })
 
-  // Escape the text, but NOT the placeholders
-  const escapedText = processedText
+  // Escape the text but preserve our BB tags we already converted? 
+  // No, let's just do a clean pass.
+  // Realistically, we should escape first then do the tags. 
+  // Let's refactor the order for maximum stability.
+  
+  let result = text
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
+    .replace(/\//g, '/') // Don't escape slashes anymore
 
-  // Now apply urlRegex to the escaped text
-  let finalHtml = escapedText.replace(urlRegex, (url) => {
+  // BB Tags
+  result = result
+    .replace(/\[b\](.*?)\[\/b\]/gi, '<strong>$1</strong>')
+    .replace(/\[i\](.*?)\[\/i\]/gi, '<em>$1</em>')
+    .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
+    .replace(/\[h1\](.*?)\[\/h1\]/gi, '<h1 class="text-2xl font-bold my-2">$1</h1>')
+    .replace(/\[h2\](.*?)\[\/h2\]/gi, '<h2 class="text-xl font-bold my-1.5">$1</h2>')
+    .replace(/\[h3\](.*?)\[\/h3\]/gi, '<h3 class="text-lg font-bold my-1">$1</h3>')
+
+  // Social Tags
+  result = result.replace(socialPattern, (match, platform, name, link) => {
+    const iconUrl = icons[platform.toLowerCase()]
+    const fullLink = link.startsWith('http') ? link : `https://${link}`
+    return `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle pointer-events-auto cursor-pointer" style="position: relative; z-index: 5;"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
+  })
+
+  // Auto-links
+  result = result.replace(urlRegex, (url) => {
     return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="ssaam-link">${url}</a>`
   })
 
-  // Finally, put back the social tags
-  socialTags.forEach((tag, index) => {
-    finalHtml = finalHtml.replace(`__SOCIAL_TAG_${index}__`, tag)
-  })
-
-  // Final pass to unescape common technical terms and characters
-  return finalHtml
-    .replace(/&#x2F;/g, '/')
-    .replace(/&#47;/g, '/')
-    .replace(/&amp;/g, '&')
+  return result
 }
 
 const uploadToImgbb = async (base64Image) => {
