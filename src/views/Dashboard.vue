@@ -1734,7 +1734,14 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
-                <textarea v-model="newNotification.content" placeholder="Write your announcement here..." rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none resize-none" maxlength="2000"></textarea>
+                <textarea 
+                  ref="announcementTextareaRef"
+                  v-model="newNotification.content" 
+                  placeholder="Write your announcement here..." 
+                  rows="4" 
+                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none resize-none" 
+                  maxlength="2000"
+                ></textarea>
                 
                 <!-- Social Shortcut Buttons -->
                 <div class="mt-3 flex flex-wrap gap-2">
@@ -4368,6 +4375,7 @@ const eventLogsFilter = ref({
 })
 const rfidInput = ref('')
 const rfidInputRef = ref(null)
+const announcementTextareaRef = ref(null)
 
 // Social shortcuts data
 const socialIconsShort = {
@@ -4380,14 +4388,58 @@ const socialIconsShort = {
 }
 
 const insertSocialTag = (platform) => {
-  const name = prompt(`Enter the name for the ${platform} profile (e.g., Jullan Maglinte):`)
-  if (!name) return
+  const textarea = announcementTextareaRef.value
+  if (!textarea) return
+
+  const start = textarea.selectionStart
+  const end = textarea.selectionEnd
+  const text = newNotification.value.content
   
-  const link = prompt(`Enter the ${platform} link or username (e.g., www.facebook.com/jullan.maglinte):`)
-  if (!link) return
+  // Check if we are inside an existing tag to "edit" it
+  const beforeText = text.substring(0, start)
+  const afterText = text.substring(end)
+  
+  // Simple check for tag pattern [platform][name][link]
+  const tagMatchBefore = beforeText.match(/\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[[^\]]*\]\[[^\]]*$/)
+  const tagMatchAfter = afterText.match(/^[^\[]*\]/)
+  
+  let existingName = ''
+  let existingLink = ''
+  let replaceRange = { start, end }
+  
+  if (tagMatchBefore && tagMatchAfter) {
+    // We are inside a tag
+    const fullTag = tagMatchBefore[0] + tagMatchAfter[0]
+    const parts = fullTag.match(/\[(.*??)\]\[(.*??)\]\[(.*?)\]/)
+    if (parts) {
+      existingName = parts[2]
+      existingLink = parts[3]
+      replaceRange.start = start - tagMatchBefore[0].length
+      replaceRange.end = end + tagMatchAfter[0].length
+    }
+  }
+
+  const name = prompt(`Enter the name for the ${platform} profile:`, existingName)
+  if (name === null) return // Cancel
+  
+  if (name === '') {
+    // Delete tag if name is cleared
+    newNotification.value.content = text.substring(0, replaceRange.start) + text.substring(replaceRange.end)
+    return
+  }
+  
+  const link = prompt(`Enter the ${platform} link or username:`, existingLink)
+  if (link === null) return // Cancel
   
   const tag = `[${platform}][${name}][${link}]`
-  newNotification.value.content += (newNotification.value.content ? ' ' : '') + tag
+  newNotification.value.content = text.substring(0, replaceRange.start) + tag + text.substring(replaceRange.end)
+  
+  // Refocus and set cursor
+  setTimeout(() => {
+    textarea.focus()
+    const newPos = replaceRange.start + tag.length
+    textarea.setSelectionRange(newPos, newPos)
+  }, 0)
 }
 
 const rfidLastKeyTime = ref(0)
