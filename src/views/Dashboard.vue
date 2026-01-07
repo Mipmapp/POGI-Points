@@ -4498,7 +4498,9 @@ const confirmSocialInsert = () => {
     // Delete tag if name is cleared
     newNotification.value.content = text.substring(0, start) + text.substring(end)
   } else {
-    const tag = `[${platform}][${name}][${link || ''}]`
+    // Ensure the link starts with http/https
+    const fullLink = link ? (link.startsWith('http') ? link : `https://${link}`) : ''
+    const tag = `[${platform}][${name}][${fullLink}]`
     newNotification.value.content = text.substring(0, start) + tag + text.substring(end)
   }
 
@@ -8897,10 +8899,33 @@ const postNotificationFromModal = async () => {
 
 const formatMessageWithLinks = (text) => {
   if (!text) return ''
-  // With CKEditor, we are already storing HTML, so we just return it.
-  // We can still sanitize if needed, but let's trust the input for now
-  // to show the live preview effects.
-  return text
+  
+  // Social icons mapping
+  const socialIcons = {
+    fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
+    facebook: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
+    insta: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
+    instagram: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
+    tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
+    discord: 'https://cdn-icons-png.flaticon.com/512/3670/3670157.png',
+    telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
+    whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
+  }
+
+  // Replace [platform][name][link] with styled HTML
+  const formatted = text.replace(/\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/g, (match, platform, name, link) => {
+    const iconUrl = socialIcons[platform.toLowerCase()] || socialIcons.fb
+    const fullLink = link.startsWith('http') ? link : `https://${link}`
+    
+    return `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="social-tag inline-flex items-center gap-1 text-blue-600 font-semibold" style="text-decoration: none; vertical-align: middle;">
+      <img src="${iconUrl}" style="width: 16px; height: 16px; object-fit: contain; display: inline-block; vertical-align: middle; margin-right: 4px;" />
+      <span>${name}</span>
+    </a>`
+  })
+
+  // Also handle standard URLs
+  const urlRegex = /(?<!href=")(https?:\/\/[^\s<]+)/g
+  return formatted.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">$1</a>')
 }
 
 const uploadToImgbb = async (base64Image) => {
