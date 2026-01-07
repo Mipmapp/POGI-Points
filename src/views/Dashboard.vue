@@ -8867,7 +8867,7 @@ const formatMessageWithLinks = (text) => {
   let processedText = text.replace(socialPattern, (match, platform, name, link) => {
     const iconUrl = icons[platform.toLowerCase()]
     const fullLink = link.startsWith('http') ? link : `https://${link}`
-    const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
+    const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle pointer-events-auto cursor-pointer" style="position: relative; z-index: 1;"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
     socialTags.push(tag)
     return `__SOCIAL_TAG_${socialTags.length - 1}__`
   })
@@ -8879,13 +8879,10 @@ const formatMessageWithLinks = (text) => {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
-    .replace(/\//g, '&#47;')
 
   // Now apply urlRegex to the escaped text
   let finalHtml = escapedText.replace(urlRegex, (url) => {
-    // Unescape the slash in the URL so it's a valid link
-    const cleanUrl = url.replace(/&#47;/g, '/')
-    return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="ssaam-link">${cleanUrl}</a>`
+    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="ssaam-link">${url}</a>`
   })
 
   // Finally, put back the social tags
@@ -8893,11 +8890,11 @@ const formatMessageWithLinks = (text) => {
     finalHtml = finalHtml.replace(`__SOCIAL_TAG_${index}__`, tag)
   })
 
-  // Final pass to unescape common technical terms that should remain readable
-  // like UI/UX instead of UI&#47;UX or UI&#x2F;UX
+  // Final pass to unescape common technical terms and characters
   return finalHtml
-    .replace(/UI&#47;UX/g, 'UI/UX')
-    .replace(/UI&#x2F;UX/g, 'UI/UX')
+    .replace(/&#x2F;/g, '/')
+    .replace(/&#47;/g, '/')
+    .replace(/&amp;/g, '&')
 }
 
 const uploadToImgbb = async (base64Image) => {

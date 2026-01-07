@@ -285,7 +285,7 @@ const formatMessage = (message) => {
   const textWithPlaceholders = message.replace(pattern, (match, platform, name, link) => {
     const iconUrl = icons[platform.toLowerCase()]
     const fullLink = link.startsWith('http') ? link : `https://${link}`
-    const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
+    const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle pointer-events-auto cursor-pointer" style="position: relative; z-index: 1;"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
     socialTags.push(tag)
     return `__SOCIAL_TAG_${socialTags.length - 1}__`
   })
@@ -297,17 +297,17 @@ const formatMessage = (message) => {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
-    .replace(/\//g, '&#47;')
 
   // Restore the social tags
   socialTags.forEach((tag, index) => {
     escapedText = escapedText.replace(`__SOCIAL_TAG_${index}__`, tag)
   })
 
-  // Final pass to unescape common technical terms like UI/UX
+  // Final pass to unescape common technical terms and characters
   return escapedText
-    .replace(/UI&#47;UX/g, 'UI/UX')
-    .replace(/UI&#x2F;UX/g, 'UI/UX')
+    .replace(/&#x2F;/g, '/')
+    .replace(/&#47;/g, '/')
+    .replace(/&amp;/g, '&')
 }
 
 const formatDate = (dateString) => {
