@@ -4410,7 +4410,7 @@ const insertSocialTag = (platform) => {
   if (tagMatchBefore && tagMatchAfter) {
     // We are inside a tag
     const fullTag = tagMatchBefore[0] + tagMatchAfter[0]
-    const parts = fullTag.match(/\[(.*??)\]\[(.*??)\]\[(.*?)\]/)
+    const parts = fullTag.match(/\[(.*?)\]\[(.*?)\]\[(.*?)\]/)
     if (parts) {
       existingName = parts[2]
       existingLink = parts[3]
