@@ -1735,6 +1735,19 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
                 <textarea v-model="newNotification.content" placeholder="Write your announcement here..." rows="4" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none resize-none" maxlength="2000"></textarea>
+                
+                <!-- Social Shortcut Buttons -->
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <button 
+                    v-for="(icon, platform) in socialIconsShort" 
+                    :key="platform"
+                    @click="insertSocialTag(platform)"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all text-xs font-medium text-gray-700 shadow-sm"
+                  >
+                    <img :src="icon" :alt="platform" class="w-4 h-4 object-contain" />
+                    <span class="capitalize">{{ platform }}</span>
+                  </button>
+                </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Image (Optional)</label>
