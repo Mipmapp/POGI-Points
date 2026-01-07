@@ -8733,29 +8733,37 @@ const formatMessageWithLinks = (text) => {
 
   // Regex to match [platform][name][link]
   const socialPattern = /\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/gi
-  
   const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/gi
-  const escapedText = text
+
+  // First, find all social tags and replace them with unique placeholders
+  const socialTags = []
+  let processedText = text.replace(socialPattern, (match, platform, name, link) => {
+    const iconUrl = icons[platform.toLowerCase()]
+    const fullLink = link.startsWith('http') ? link : `https://${link}`
+    const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
+    socialTags.push(tag)
+    return `__SOCIAL_TAG_${socialTags.length - 1}__`
+  })
+
+  // Escape the text, but NOT the placeholders
+  const escapedText = processedText
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
 
-  // First handle social platform tags
-  let formattedText = escapedText.replace(socialPattern, (match, platform, name, link) => {
-    const iconUrl = icons[platform.toLowerCase()]
-    const fullLink = link.startsWith('http') ? link : `https://${link}`
-    
-    return `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle">
-      <img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" />
-      <span>${name}</span>
-    </a>`
-  })
-
-  return formattedText.replace(urlRegex, (url) => {
+  // Now apply urlRegex to the escaped text
+  let finalHtml = escapedText.replace(urlRegex, (url) => {
     return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="ssaam-link">${url}</a>`
   })
+
+  // Finally, put back the social tags
+  socialTags.forEach((tag, index) => {
+    finalHtml = finalHtml.replace(`__SOCIAL_TAG_${index}__`, tag)
+  })
+
+  return finalHtml
 }
 
 const uploadToImgbb = async (base64Image) => {
