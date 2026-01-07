@@ -4368,6 +4368,28 @@ const eventLogsFilter = ref({
 })
 const rfidInput = ref('')
 const rfidInputRef = ref(null)
+
+// Social shortcuts data
+const socialIconsShort = {
+  fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
+  insta: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
+  tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
+  discord: 'https://cdn-icons-png.flaticon.com/512/3670/3670157.png',
+  telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
+  whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
+}
+
+const insertSocialTag = (platform) => {
+  const name = prompt(`Enter the name for the ${platform} profile (e.g., Jullan Maglinte):`)
+  if (!name) return
+  
+  const link = prompt(`Enter the ${platform} link or username (e.g., www.facebook.com/jullan.maglinte):`)
+  if (!link) return
+  
+  const tag = `[${platform}][${name}][${link}]`
+  newNotification.value.content += (newNotification.value.content ? ' ' : '') + tag
+}
+
 const rfidLastKeyTime = ref(0)
 const rfidInputBuffer = ref('')
 const rfidProcessing = ref(false)
