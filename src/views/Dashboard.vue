@@ -1738,14 +1738,8 @@
                 What's on your mind, {{ (currentUser.full_name || currentUser.username || '').split(' ')[0] }}?
               </div>
               <div class="flex items-center gap-1">
-                <button @click="showPostModal = true" class="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors" title="Post Urgent">
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M17 10.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-3.5l4 4v-11l-4 4z"></path><circle cx="10" cy="12" r="2" fill="white"></circle></svg>
-                </button>
                 <button @click="showPostModal = true" class="p-2 text-green-500 hover:bg-green-50 rounded-full transition-colors" title="Add Image">
                   <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"></path></svg>
-                </button>
-                <button @click="showPostModal = true" class="p-2 text-yellow-500 hover:bg-yellow-50 rounded-full transition-colors" title="Feeling/Activity">
-                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5s.67 1.5 1.5 1.5zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"></path></svg>
                 </button>
               </div>
             </div>
@@ -1754,7 +1748,7 @@
           <!-- Create Post Modal -->
           <transition name="fade">
             <div v-if="showPostModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100] p-4" @click.self="showPostModal = false">
-              <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-slide-up">
+              <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
                 <!-- Modal Header -->
                 <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
                   <div class="w-8"></div>
@@ -1764,113 +1758,85 @@
                   </button>
                 </div>
 
-                <!-- User Info -->
-                <div class="p-4 flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shadow-sm overflow-hidden flex-shrink-0">
-                    <img v-if="currentUser.role === 'admin'" src="/assets/ssaam_logo.jpg" alt="SSAAM" class="w-full h-full object-cover" />
-                    <img v-else-if="currentUser.role === 'medpub'" src="/media_pub_logo.png" alt="MedPub" class="w-6 h-6 object-contain" />
-                    <span v-else>{{ getInitials(currentUser.full_name || currentUser.username) }}</span>
-                  </div>
-                  <div>
-                    <p class="font-bold text-gray-900 leading-tight">{{ currentUser.full_name || currentUser.username }}</p>
-                    <div class="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md mt-0.5 w-fit">
-                      <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"></path></svg>
-                      <span>Public</span>
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                <div class="overflow-y-auto flex-1 custom-scrollbar">
+                  <!-- User Info -->
+                  <div class="p-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shadow-sm overflow-hidden flex-shrink-0">
+                      <img v-if="currentUser.role === 'admin'" src="/assets/ssaam_logo.jpg" alt="SSAAM" class="w-full h-full object-cover" />
+                      <img v-else-if="currentUser.role === 'medpub'" src="/media_pub_logo.png" alt="MedPub" class="w-6 h-6 object-contain" />
+                      <span v-else>{{ getInitials(currentUser.full_name || currentUser.username) }}</span>
+                    </div>
+                    <div>
+                      <p class="font-bold text-gray-900 leading-tight">{{ currentUser.full_name || currentUser.username }}</p>
                     </div>
                   </div>
-                </div>
 
-                <!-- Input Area -->
-                <div class="px-4 pb-2">
-                  <input 
-                    v-model="newNotification.title" 
-                    type="text" 
-                    placeholder="Announcement title..." 
-                    class="w-full px-0 py-2 border-none text-xl font-bold placeholder-gray-400 focus:ring-0 outline-none mb-1" 
-                    maxlength="200" 
-                  />
-                  <textarea 
-                    ref="announcementTextareaRef"
-                    v-model="newNotification.content" 
-                    :placeholder="'What\'s on your mind, ' + (currentUser.full_name || currentUser.username || '').split(' ')[0] + '?'" 
-                    class="w-full px-0 py-1 border-none text-lg placeholder-gray-400 focus:ring-0 outline-none resize-none min-h-[150px] max-h-[300px]" 
-                    maxlength="2000"
-                  ></textarea>
-                </div>
-
-                <!-- Formatting Bar -->
-                <div class="px-4 py-2 flex items-center justify-between border-t border-gray-50 bg-gray-50/50">
-                  <div class="flex items-center gap-1">
-                    <button @click="insertFormatting('bold')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 font-bold" title="Bold">B</button>
-                    <button @click="insertFormatting('italic')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 italic" title="Italic">I</button>
-                    <button @click="insertFormatting('underline')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 underline" title="Underline">U</button>
-                    <div class="w-px h-4 bg-gray-300 mx-1"></div>
-                    <button @click="insertFormatting('h1')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 font-black text-xs" title="Heading 1">H1</button>
-                    <button @click="insertFormatting('h2')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 font-bold text-xs" title="Heading 2">H2</button>
-                    <button @click="insertFormatting('h3')" class="p-1.5 hover:bg-gray-200 rounded text-gray-600 font-semibold text-xs" title="Heading 3">H3</button>
+                  <!-- Input Area -->
+                  <div class="px-4 pb-2">
+                    <input 
+                      v-model="newNotification.title" 
+                      type="text" 
+                      placeholder="Announcement title..." 
+                      class="w-full px-0 py-2 border-none text-xl font-bold placeholder-gray-400 focus:ring-0 outline-none mb-1" 
+                      maxlength="200" 
+                    />
+                    
+                    <div class="editor-wrapper min-h-[200px] prose prose-purple max-w-none ck-content">
+                      <ckeditor :editor="ClassicEditor" v-model="newNotification.content" :config="editorConfig"></ckeditor>
+                    </div>
                   </div>
-                </div>
 
-                <!-- Add to Post Bar -->
-                <div class="px-4 py-3">
-                  <div class="border border-gray-200 rounded-lg p-3 flex items-center justify-between shadow-sm">
-                    <span class="text-sm font-bold text-gray-700">Add to your post</span>
-                    <div class="flex items-center gap-2">
-                      <!-- Social Shortcuts as Popovers -->
-                      <div v-for="(icon, platform) in socialIconsShort" :key="platform" class="relative">
-                        <button 
-                          @click="insertSocialTag(platform)"
-                          class="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
-                          :title="platform"
-                        >
-                          <img :src="icon" :alt="platform" class="w-5 h-5 object-contain" />
-                        </button>
-                        <!-- Popover -->
-                        <div v-if="activeSocialInput === platform" class="absolute bottom-full right-0 mb-3 w-64 bg-white rounded-xl shadow-2xl border border-purple-100 p-3 z-[110] animate-slide-up">
-                          <div class="space-y-2 text-left">
-                            <input 
-                              v-model="socialInputData.name"
-                              type="text" 
-                              :placeholder="'Enter ' + platform + ' name...'"
-                              class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
-                              @keyup.enter="confirmSocialInsert"
-                              ref="socialNameInputRef"
-                            />
-                            <input 
-                              v-model="socialInputData.link"
-                              type="text" 
-                              :placeholder="'Enter ' + platform + ' link...'"
-                              class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
-                              @keyup.enter="confirmSocialInsert"
-                            />
-                            <div class="flex gap-2">
-                              <button @click="confirmSocialInsert" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition">Confirm</button>
-                              <button @click="activeSocialInput = null" class="px-3 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Cancel</button>
+                  <!-- Add Social Tools -->
+                  <div class="px-4 py-3">
+                    <div class="border border-gray-200 rounded-lg p-3 flex items-center justify-between shadow-sm">
+                      <span class="text-sm font-bold text-gray-700">Add social media</span>
+                      <div class="flex items-center gap-2">
+                        <div v-for="(icon, platform) in socialIconsShort" :key="platform" class="relative">
+                          <button 
+                            @click="insertSocialTag(platform)"
+                            class="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                            :title="platform"
+                          >
+                            <img :src="icon" :alt="platform" class="w-5 h-5 object-contain" />
+                          </button>
+                          <div v-if="activeSocialInput === platform" class="absolute bottom-full right-0 mb-3 w-64 bg-white rounded-xl shadow-2xl border border-purple-100 p-3 z-[110] animate-slide-up">
+                            <div class="space-y-2 text-left">
+                              <input 
+                                v-model="socialInputData.name"
+                                type="text" 
+                                :placeholder="'Enter ' + platform + ' name...'"
+                                class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                                @keyup.enter="confirmSocialInsert"
+                              />
+                              <input 
+                                v-model="socialInputData.link"
+                                type="text" 
+                                :placeholder="'Enter ' + platform + ' link...'"
+                                class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                                @keyup.enter="confirmSocialInsert"
+                              />
+                              <div class="flex gap-2">
+                                <button @click="confirmSocialInsert" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition">Confirm</button>
+                                <button @click="activeSocialInput = null" class="px-3 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Cancel</button>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
-
-                      <div class="w-px h-6 bg-gray-200 mx-1"></div>
-                      
-                      <button @click="$refs.imageFileInput.click()" class="p-1.5 text-green-500 hover:bg-green-50 rounded-full transition-colors">
-                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"></path></svg>
-                      </button>
                     </div>
+                  </div>
+
+                  <!-- Preview Image -->
+                  <div v-if="notificationImagePreview" class="px-4 pb-3 relative group">
+                    <img :src="notificationImagePreview" class="w-full rounded-lg max-h-48 object-cover border border-gray-100 shadow-sm" />
+                    <button @click="clearNotificationImage" class="absolute top-2 right-6 p-1.5 bg-white rounded-full shadow-md text-gray-500 hover:text-red-500 transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                   </div>
                 </div>
 
-                <!-- Preview Image -->
-                <div v-if="notificationImagePreview" class="px-4 pb-3 relative group">
-                  <img :src="notificationImagePreview" class="w-full rounded-lg max-h-48 object-cover border border-gray-100 shadow-sm" />
-                  <button @click="clearNotificationImage" class="absolute top-2 right-6 p-1.5 bg-white rounded-full shadow-md text-gray-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  </button>
-                </div>
-
                 <!-- Post Button -->
-                <div class="px-4 pb-4">
+                <div class="px-4 py-4 border-t border-gray-100">
                   <button 
                     @click="postNotificationFromModal" 
                     :disabled="postingNotification || !newNotification.title.trim() || !newNotification.content.trim()"
@@ -1883,6 +1849,7 @@
               </div>
             </div>
           </transition>
+
           
           <input type="file" accept="image/*" class="hidden" @change="handleImageFileSelect" ref="imageFileInput" />
 
@@ -8904,45 +8871,29 @@ const formatNotificationDate = (dateStr) => {
   return date.toLocaleDateString('en-US', options)
 }
 
+import CKEditor from '@ckeditor/ckeditor5-vue'
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
+
 const showPostModal = ref(false)
 
-const insertFormatting = (type) => {
-  const textarea = announcementTextareaRef.value
-  if (!textarea) return
-
-  const start = textarea.selectionStart
-  const end = textarea.selectionEnd
-  const text = newNotification.value.content
-  const selectedText = text.substring(start, end)
-  
-  let formattedText = ''
-  switch(type) {
-    case 'bold': formattedText = `[b]${selectedText}[/b]`; break;
-    case 'italic': formattedText = `[i]${selectedText}[/i]`; break;
-    case 'underline': formattedText = `[u]${selectedText}[/u]`; break;
-    case 'h1': formattedText = `[h1]${selectedText}[/h1]`; break;
-    case 'h2': formattedText = `[h2]${selectedText}[/h2]`; break;
-    case 'h3': formattedText = `[h3]${selectedText}[/h3]`; break;
-  }
-  
-  newNotification.value.content = text.substring(0, start) + formattedText + text.substring(end)
-  
-  setTimeout(() => {
-    textarea.focus()
-    const newPos = start + formattedText.length
-    textarea.setSelectionRange(newPos, newPos)
-  }, 0)
-}
-
-const postNotificationFromModal = async () => {
-  await postNotification()
-  if (!postingNotification.value) {
-    showPostModal.value = false
+const editorConfig = {
+  toolbar: [ 'bold', 'italic', 'underline', 'link', 'heading', '|', 'undo', 'redo' ],
+  heading: {
+    options: [
+      { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+      { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+      { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+      { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+    ]
   }
 }
 
-const formatMessageWithLinks = (text) => {
-  if (!text) return ''
+const confirmSocialInsert = () => {
+  if (!socialInputData.value.name || !socialInputData.value.link) return
+  
+  const platform = activeSocialInput.value
+  const name = socialInputData.value.name
+  const link = socialInputData.value.link
   
   // Platform icons mapping
   const icons = {
@@ -8955,65 +8906,31 @@ const formatMessageWithLinks = (text) => {
     telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
     whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
   }
-
-  // First handle all BB-style formatting tags
-  let html = text
-    .replace(/\[b\](.*?)\[\/b\]/gi, '<strong>$1</strong>')
-    .replace(/\[i\](.*?)\[\/i\]/gi, '<em>$1</em>')
-    .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
-    .replace(/\[h1\](.*?)\[\/h1\]/gi, '<h1 class="text-2xl font-bold my-2">$1</h1>')
-    .replace(/\[h2\](.*?)\[\/h2\]/gi, '<h2 class="text-xl font-bold my-1.5">$1</h2>')
-    .replace(/\[h3\](.*?)\[\/h3\]/gi, '<h3 class="text-lg font-bold my-1">$1</h3>')
-
-  // Regex to match [platform][name][link]
-  const socialPattern = /\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/gi
-  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/gi
-
-  // Find all social tags and replace them with unique placeholders
-  const socialTags = []
-  html = html.replace(socialPattern, (match, platform, name, link) => {
-    const iconUrl = icons[platform.toLowerCase()]
-    const fullLink = link.startsWith('http') ? link : `https://${link}`
-    const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle pointer-events-auto cursor-pointer" style="position: relative; z-index: 5;"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
-    socialTags.push(tag)
-    return `__SOCIAL_TAG_${socialTags.length - 1}__`
-  })
-
-  // Escape the text but preserve our BB tags we already converted? 
-  // No, let's just do a clean pass.
-  // Realistically, we should escape first then do the tags. 
-  // Let's refactor the order for maximum stability.
   
-  let result = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
-    .replace(/\//g, '/') // Don't escape slashes anymore
+  const iconUrl = icons[platform.toLowerCase()]
+  const fullLink = link.startsWith('http') ? link : `https://${link}`
+  
+  const htmlTag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="social-tag inline-flex items-center gap-1 text-blue-600 font-semibold" style="text-decoration: none; vertical-align: middle;"><img src="${iconUrl}" style="width: 16px; height: 16px; object-fit: contain;" /><span>${name}</span></a>&nbsp;`
+  
+  newNotification.value.content += htmlTag
+  
+  activeSocialInput.value = null
+  socialInputData.value = { name: '', link: '' }
+}
 
-  // BB Tags
-  result = result
-    .replace(/\[b\](.*?)\[\/b\]/gi, '<strong>$1</strong>')
-    .replace(/\[i\](.*?)\[\/i\]/gi, '<em>$1</em>')
-    .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
-    .replace(/\[h1\](.*?)\[\/h1\]/gi, '<h1 class="text-2xl font-bold my-2">$1</h1>')
-    .replace(/\[h2\](.*?)\[\/h2\]/gi, '<h2 class="text-xl font-bold my-1.5">$1</h2>')
-    .replace(/\[h3\](.*?)\[\/h3\]/gi, '<h3 class="text-lg font-bold my-1">$1</h3>')
+const postNotificationFromModal = async () => {
+  await postNotification()
+  if (!postingNotification.value) {
+    showPostModal.value = false
+  }
+}
 
-  // Social Tags
-  result = result.replace(socialPattern, (match, platform, name, link) => {
-    const iconUrl = icons[platform.toLowerCase()]
-    const fullLink = link.startsWith('http') ? link : `https://${link}`
-    return `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle pointer-events-auto cursor-pointer" style="position: relative; z-index: 5;"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
-  })
-
-  // Auto-links
-  result = result.replace(urlRegex, (url) => {
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="ssaam-link">${url}</a>`
-  })
-
-  return result
+const formatMessageWithLinks = (text) => {
+  if (!text) return ''
+  // With CKEditor, we are already storing HTML, so we just return it.
+  // We can still sanitize if needed, but let's trust the input for now
+  // to show the live preview effects.
+  return text
 }
 
 const uploadToImgbb = async (base64Image) => {

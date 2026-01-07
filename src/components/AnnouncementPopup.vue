@@ -264,52 +264,8 @@ const getInitials = (name) => {
 
 const formatMessage = (message) => {
   if (!message) return ''
-  
-  // Platform icons mapping
-  const icons = {
-    fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
-    facebook: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
-    insta: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
-    instagram: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
-    tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
-    discord: 'https://cdn-icons-png.flaticon.com/512/3670/3670157.png',
-    telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
-    whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
-  }
-
-  const socialPattern = /\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/gi
-  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/gi
-
-  let result = message
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
-    .replace(/\//g, '/')
-
-  // BB Tags
-  result = result
-    .replace(/\[b\](.*?)\[\/b\]/gi, '<strong>$1</strong>')
-    .replace(/\[i\](.*?)\[\/i\]/gi, '<em>$1</em>')
-    .replace(/\[u\](.*?)\[\/u\]/gi, '<u>$1</u>')
-    .replace(/\[h1\](.*?)\[\/h1\]/gi, '<h1 class="text-2xl font-bold my-2">$1</h1>')
-    .replace(/\[h2\](.*?)\[\/h2\]/gi, '<h2 class="text-xl font-bold my-1.5">$1</h2>')
-    .replace(/\[h3\](.*?)\[\/h3\]/gi, '<h3 class="text-lg font-bold my-1">$1</h3>')
-
-  // Social Tags
-  result = result.replace(socialPattern, (match, platform, name, link) => {
-    const iconUrl = icons[platform.toLowerCase()]
-    const fullLink = link.startsWith('http') ? link : `https://${link}`
-    return `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle pointer-events-auto cursor-pointer" style="position: relative; z-index: 5;"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
-  })
-
-  // Auto-links
-  result = result.replace(urlRegex, (url) => {
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="ssaam-link">${url}</a>`
-  })
-
-  return result
+  // With CKEditor content, we just return the HTML directly
+  return message
 }
 
 const formatDate = (dateString) => {
