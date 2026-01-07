@@ -1745,15 +1745,44 @@
                 
                 <!-- Social Shortcut Buttons -->
                 <div class="mt-3 flex flex-wrap gap-2">
-                  <button 
+                  <div 
                     v-for="(icon, platform) in socialIconsShort" 
                     :key="platform"
-                    @click="insertSocialTag(platform)"
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all text-xs font-medium text-gray-700 shadow-sm"
+                    class="relative group"
                   >
-                    <img :src="icon" :alt="platform" class="w-4 h-4 object-contain" />
-                    <span class="capitalize">{{ platform }}</span>
-                  </button>
+                    <button 
+                      @click="insertSocialTag(platform)"
+                      class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all text-xs font-medium text-gray-700 shadow-sm"
+                    >
+                      <img :src="icon" :alt="platform" class="w-4 h-4 object-contain" />
+                      <span class="capitalize">{{ platform }}</span>
+                    </button>
+                    
+                    <!-- Inline Input Popover -->
+                    <div v-if="activeSocialInput === platform" class="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-xl shadow-2xl border border-purple-100 p-3 z-50 animate-slide-up">
+                      <div class="space-y-2">
+                        <input 
+                          v-model="socialInputData.name"
+                          type="text" 
+                          :placeholder="'Enter ' + platform + ' name...'"
+                          class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                          @keyup.enter="confirmSocialInsert"
+                          ref="socialNameInputRef"
+                        />
+                        <input 
+                          v-model="socialInputData.link"
+                          type="text" 
+                          :placeholder="'Enter ' + platform + ' link...'"
+                          class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                          @keyup.enter="confirmSocialInsert"
+                        />
+                        <div class="flex gap-2">
+                          <button @click="confirmSocialInsert" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition">Confirm</button>
+                          <button @click="activeSocialInput = null" class="px-3 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Cancel</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div>
@@ -4376,8 +4405,13 @@ const eventLogsFilter = ref({
 const rfidInput = ref('')
 const rfidInputRef = ref(null)
 const announcementTextareaRef = ref(null)
+const socialNameInputRef = ref(null)
 
 // Social shortcuts data
+const activeSocialInput = ref(null)
+const socialInputData = ref({ name: '', link: '' })
+const socialInputRange = ref({ start: 0, end: 0 })
+
 const socialIconsShort = {
   fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
   insta: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
@@ -4399,46 +4433,52 @@ const insertSocialTag = (platform) => {
   const beforeText = text.substring(0, start)
   const afterText = text.substring(end)
   
-  // Simple check for tag pattern [platform][name][link]
   const tagMatchBefore = beforeText.match(/\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[[^\]]*\]\[[^\]]*$/)
   const tagMatchAfter = afterText.match(/^[^\[]*\]/)
   
-  let existingName = ''
-  let existingLink = ''
-  let replaceRange = { start, end }
+  activeSocialInput.value = platform
+  socialInputData.value = { name: '', link: '' }
+  socialInputRange.value = { start, end }
   
   if (tagMatchBefore && tagMatchAfter) {
-    // We are inside a tag
     const fullTag = tagMatchBefore[0] + tagMatchAfter[0]
     const parts = fullTag.match(/\[(.*?)\]\[(.*?)\]\[(.*?)\]/)
     if (parts) {
-      existingName = parts[2]
-      existingLink = parts[3]
-      replaceRange.start = start - tagMatchBefore[0].length
-      replaceRange.end = end + tagMatchAfter[0].length
+      socialInputData.value.name = parts[2]
+      socialInputData.value.link = parts[3]
+      socialInputRange.value.start = start - tagMatchBefore[0].length
+      socialInputRange.value.end = end + tagMatchAfter[0].length
     }
   }
 
-  const name = prompt(`Enter the name for the ${platform} profile:`, existingName)
-  if (name === null) return // Cancel
-  
-  if (name === '') {
-    // Delete tag if name is cleared
-    newNotification.value.content = text.substring(0, replaceRange.start) + text.substring(replaceRange.end)
-    return
-  }
-  
-  const link = prompt(`Enter the ${platform} link or username:`, existingLink)
-  if (link === null) return // Cancel
-  
-  const tag = `[${platform}][${name}][${link}]`
-  newNotification.value.content = text.substring(0, replaceRange.start) + tag + text.substring(replaceRange.end)
-  
-  // Refocus and set cursor
+  // Auto focus the name input in the popover
   setTimeout(() => {
-    textarea.focus()
-    const newPos = replaceRange.start + tag.length
-    textarea.setSelectionRange(newPos, newPos)
+    if (socialNameInputRef.value && socialNameInputRef.value[0]) {
+      socialNameInputRef.value[0].focus()
+    }
+  }, 100)
+}
+
+const confirmSocialInsert = () => {
+  const platform = activeSocialInput.value
+  const { name, link } = socialInputData.value
+  const { start, end } = socialInputRange.value
+  const text = newNotification.value.content
+  const textarea = announcementTextareaRef.value
+
+  if (!name) {
+    // Delete tag if name is cleared
+    newNotification.value.content = text.substring(0, start) + text.substring(end)
+  } else {
+    const tag = `[${platform}][${name}][${link || ''}]`
+    newNotification.value.content = text.substring(0, start) + tag + text.substring(end)
+  }
+
+  activeSocialInput.value = null
+  
+  // Refocus textarea
+  setTimeout(() => {
+    if (textarea) textarea.focus()
   }, 0)
 }
 
