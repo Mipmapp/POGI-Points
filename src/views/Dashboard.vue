@@ -1949,7 +1949,7 @@
                           <p class="text-sm text-gray-500 mb-2">Failed to load image</p>
                           <button @click.stop="retryNotifImage(notif._id, notif.image_url)" class="text-xs text-purple-600 hover:text-purple-800 font-medium">Try again</button>
                         </div>
-                        <img v-show="notifImageLoaded[notif._id] && !notifImageFailed[notif._id]" :src="notif.image_url" alt="Announcement image" class="max-w-full w-full h-auto max-h-[500px] rounded-lg border border-gray-200 object-contain cursor-pointer hover:opacity-90 transition shadow-sm" @click="openImagePreview(notif.image_url)" @load="handleNotifImageLoad(notif._id)" @error="handleNotifImageError(notif._id, notif.image_url, $event)" />
+                        <img v-show="notifImageLoaded[notif._id] && !notifImageFailed[notif._id]" :src="notif.image_url" alt="Announcement image" class="max-w-full w-full h-auto max-h-[600px] rounded-xl border border-purple-100 object-contain cursor-pointer hover:opacity-95 transition-all shadow-lg hover:shadow-xl" @click="openImagePreview(notif.image_url)" @load="handleNotifImageLoad(notif._id)" @error="handleNotifImageError(notif._id, notif.image_url, $event)" />
                         <div v-if="!notifImageFailed[notif._id]" class="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button @click.stop="openImagePreview(notif.image_url)" class="bg-black bg-opacity-60 hover:bg-opacity-80 text-white p-2 rounded-lg transition" title="View full size">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
@@ -4490,26 +4490,16 @@ const insertSocialTag = (platform) => {
 const confirmSocialInsert = () => {
   const platform = activeSocialInput.value
   const { name, link } = socialInputData.value
-  const { start, end } = socialInputRange.value
-  const text = newNotification.value.content
-  const textarea = announcementTextareaRef.value
+  
+  if (!name) return
 
-  if (!name) {
-    // Delete tag if name is cleared
-    newNotification.value.content = text.substring(0, start) + text.substring(end)
-  } else {
-    // Ensure the link starts with http/https
-    const fullLink = link ? (link.startsWith('http') ? link : `https://${link}`) : ''
-    const tag = `[${platform}][${name}][${fullLink}]`
-    newNotification.value.content = text.substring(0, start) + tag + text.substring(end)
-  }
+  const fullLink = link ? (link.startsWith('http') ? link : `https://${link}`) : ''
+  const tag = `[${platform}][${name}][${fullLink}]`
+  
+  newNotification.value.content += tag
 
   activeSocialInput.value = null
-  
-  // Refocus textarea
-  setTimeout(() => {
-    if (textarea) textarea.focus()
-  }, 0)
+  socialInputData.value = { name: '', link: '' }
 }
 
 const rfidLastKeyTime = ref(0)
@@ -8879,7 +8869,7 @@ import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
 const showPostModal = ref(false)
 
 const editorConfig = {
-  toolbar: [ 'bold', 'italic', 'underline', 'link', 'heading', '|', 'undo', 'redo' ],
+  toolbar: [ 'heading', '|', 'bold', 'italic', 'underline', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo' ],
   heading: {
     options: [
       { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
@@ -8917,15 +8907,13 @@ const formatMessageWithLinks = (text) => {
     const iconUrl = socialIcons[platform.toLowerCase()] || socialIcons.fb
     const fullLink = link.startsWith('http') ? link : `https://${link}`
     
-    return `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="social-tag inline-flex items-center gap-1 text-blue-600 font-semibold" style="text-decoration: none; vertical-align: middle;">
+    return `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="social-tag inline-flex items-center gap-1 text-blue-600 font-semibold" style="text-decoration: none; vertical-align: middle; display: inline-flex; align-items: center; white-space: nowrap;">
       <img src="${iconUrl}" style="width: 16px; height: 16px; object-fit: contain; display: inline-block; vertical-align: middle; margin-right: 4px;" />
       <span>${name}</span>
     </a>`
   })
 
-  // Also handle standard URLs
-  const urlRegex = /(?<!href=")(https?:\/\/[^\s<]+)/g
-  return formatted.replace(urlRegex, '<a href="$1" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">$1</a>')
+  return formatted
 }
 
 const uploadToImgbb = async (base64Image) => {
