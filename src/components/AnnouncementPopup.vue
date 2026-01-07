@@ -68,7 +68,7 @@
               </div>
 
               <h4 class="text-lg font-bold text-gray-900 mb-2">{{ announcement.title }}</h4>
-              <p class="text-gray-700 text-sm whitespace-pre-wrap break-words leading-relaxed">{{ announcement.message }}</p>
+              <div class="text-gray-700 text-sm whitespace-pre-wrap break-words leading-relaxed" v-html="formatMessage(announcement.message)"></div>
 
               <div v-if="announcement.image_url" class="mt-3">
                 <img 
@@ -260,6 +260,35 @@ const handleTouchEnd = (e) => {
 const getInitials = (name) => {
   if (!name) return '?'
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+}
+
+const formatMessage = (message) => {
+  if (!message) return ''
+  
+  // Platform icons mapping (using SVG paths or common emojis as fallback)
+  const icons = {
+    fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
+    facebook: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
+    insta: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
+    instagram: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
+    tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
+    discord: 'https://cdn-icons-png.flaticon.com/512/3670/3670157.png',
+    telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
+    whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
+  }
+
+  // Regex to match [platform][name][link]
+  const pattern = /\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/gi
+
+  return message.replace(pattern, (match, platform, name, link) => {
+    const iconUrl = icons[platform.toLowerCase()]
+    const fullLink = link.startsWith('http') ? link : `https://${link}`
+    
+    return `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle">
+      <img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" />
+      <span>${name}</span>
+    </a>`
+  })
 }
 
 const formatDate = (dateString) => {
