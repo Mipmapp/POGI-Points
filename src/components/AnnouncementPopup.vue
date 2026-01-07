@@ -297,13 +297,15 @@ const formatMessage = (message) => {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
+    .replace(/\//g, '&#47;')
 
   // Restore the social tags
   socialTags.forEach((tag, index) => {
     escapedText = escapedText.replace(`__SOCIAL_TAG_${index}__`, tag)
   })
 
-  return escapedText
+  // Final pass to unescape common technical terms like UI/UX
+  return escapedText.replace(/UI&#47;UX/g, 'UI/UX')
 }
 
 const formatDate = (dateString) => {

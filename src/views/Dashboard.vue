@@ -8879,10 +8879,13 @@ const formatMessageWithLinks = (text) => {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
+    .replace(/\//g, '&#47;')
 
   // Now apply urlRegex to the escaped text
   let finalHtml = escapedText.replace(urlRegex, (url) => {
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="ssaam-link">${url}</a>`
+    // Unescape the slash in the URL so it's a valid link
+    const cleanUrl = url.replace(/&#47;/g, '/')
+    return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer" class="ssaam-link">${cleanUrl}</a>`
   })
 
   // Finally, put back the social tags
@@ -8890,7 +8893,9 @@ const formatMessageWithLinks = (text) => {
     finalHtml = finalHtml.replace(`__SOCIAL_TAG_${index}__`, tag)
   })
 
-  return finalHtml
+  // Final pass to unescape common technical terms that should remain readable
+  // like UI/UX instead of UI&#47;UX
+  return finalHtml.replace(/UI&#47;UX/g, 'UI/UX')
 }
 
 const uploadToImgbb = async (base64Image) => {
