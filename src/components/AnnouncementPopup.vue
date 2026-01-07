@@ -305,7 +305,9 @@ const formatMessage = (message) => {
   })
 
   // Final pass to unescape common technical terms like UI/UX
-  return escapedText.replace(/UI&#47;UX/g, 'UI/UX')
+  return escapedText
+    .replace(/UI&#47;UX/g, 'UI/UX')
+    .replace(/UI&#x2F;UX/g, 'UI/UX')
 }
 
 const formatDate = (dateString) => {

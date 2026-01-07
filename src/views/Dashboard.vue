@@ -8894,8 +8894,10 @@ const formatMessageWithLinks = (text) => {
   })
 
   // Final pass to unescape common technical terms that should remain readable
-  // like UI/UX instead of UI&#47;UX
-  return finalHtml.replace(/UI&#47;UX/g, 'UI/UX')
+  // like UI/UX instead of UI&#47;UX or UI&#x2F;UX
+  return finalHtml
+    .replace(/UI&#47;UX/g, 'UI/UX')
+    .replace(/UI&#x2F;UX/g, 'UI/UX')
 }
 
 const uploadToImgbb = async (base64Image) => {
