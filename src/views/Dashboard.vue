@@ -4423,35 +4423,35 @@ const socialIconsShort = {
 
 const insertSocialTag = (platform) => {
   const textarea = announcementTextareaRef.value
-  if (!textarea) return
+  if (!textarea) {
+    activeSocialInput.value = platform
+    socialInputData.value = { name: '', link: '' }
+    socialInputRange.value = { start: newNotification.value.content.length, end: newNotification.value.content.length }
+    return
+  }
 
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
   const text = newNotification.value.content
   
-  // Check if we are inside an existing tag to "edit" it
-  const beforeText = text.substring(0, start)
-  const afterText = text.substring(end)
-  
-  const tagMatchBefore = beforeText.match(/\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[[^\]]*\]\[[^\]]*$/)
-  const tagMatchAfter = afterText.match(/^[^\[]*\]/)
-  
   activeSocialInput.value = platform
   socialInputData.value = { name: '', link: '' }
   socialInputRange.value = { start, end }
   
+  // Check if we are selecting an existing tag or near one
+  const beforeText = text.substring(0, start)
+  const afterText = text.substring(end)
+  
+  const tagMatchBefore = beforeText.match(/\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[([^\]]*)\]\[([^\]]*)$/)
+  const tagMatchAfter = afterText.match(/^([^\[]*)\]/)
+  
   if (tagMatchBefore && tagMatchAfter) {
-    const fullTag = tagMatchBefore[0] + tagMatchAfter[0]
-    const parts = fullTag.match(/\[(.*?)\]\[(.*?)\]\[(.*?)\]/)
-    if (parts) {
-      socialInputData.value.name = parts[2]
-      socialInputData.value.link = parts[3]
-      socialInputRange.value.start = start - tagMatchBefore[0].length
-      socialInputRange.value.end = end + tagMatchAfter[0].length
-    }
+    socialInputData.value.name = tagMatchBefore[2] + tagMatchAfter[1]
+    socialInputData.value.link = tagMatchBefore[3]
+    socialInputRange.value.start = start - tagMatchBefore[0].length
+    socialInputRange.value.end = end + tagMatchAfter[0].length
   }
 
-  // Auto focus the name input in the popover
   setTimeout(() => {
     if (socialNameInputRef.value && socialNameInputRef.value[0]) {
       socialNameInputRef.value[0].focus()
@@ -4467,7 +4467,6 @@ const confirmSocialInsert = () => {
   const textarea = announcementTextareaRef.value
 
   if (!name) {
-    // Delete tag if name is cleared
     newNotification.value.content = text.substring(0, start) + text.substring(end)
   } else {
     const tag = `[${platform}][${name}][${link || ''}]`
@@ -4476,7 +4475,6 @@ const confirmSocialInsert = () => {
 
   activeSocialInput.value = null
   
-  // Refocus textarea
   setTimeout(() => {
     if (textarea) textarea.focus()
   }, 0)
@@ -8878,11 +8876,12 @@ const formatMessageWithLinks = (text) => {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;')
+    .replace(/'/g, '&#39;')
 
   // Now apply urlRegex to the escaped text
   let finalHtml = escapedText.replace(urlRegex, (url) => {
-    return `<a href="${url}" target="_blank" rel="noopener noreferrer" class="ssaam-link">${url}</a>`
+    const fullUrl = url.startsWith('http') ? url : `https://${url}`
+    return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer" class="ssaam-link text-blue-600 hover:underline">${url}</a>`
   })
 
   // Finally, put back the social tags
