@@ -8731,10 +8731,21 @@ const handleImageUrlError = (e) => {
 }
 
 const openEditNotification = (notif) => {
+  // Unescape HTML entities for editing
+  let message = notif.message || notif.content || ''
+  message = message
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x2F;/g, '/')
+    .replace(/&#x3A;/g, ':')
+
   editNotificationData.value = {
     _id: notif._id,
     title: notif.title,
-    message: notif.message || notif.content,
+    message: message,
     priority: notif.priority || 'normal'
   }
   showEditNotificationModal.value = true
@@ -8858,13 +8869,21 @@ const formatMessageWithLinks = (text) => {
 
   // Regex to match [platform][name][link]
   const socialPattern = /\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/gi
-  const urlRegex = /(https?:\/\/[^\s<>"{}|\\^`\[\]]+)/gi
+  // Improved URL regex to be more selective and avoid capturing too much
+  const urlRegex = /(?:https?:\/\/|www\.)[^\s<>"{}|\\^`\[\]]+/gi
 
   // First, find all social tags and replace them with unique placeholders
   const socialTags = []
   let processedText = text.replace(socialPattern, (match, platform, name, link) => {
     const iconUrl = icons[platform.toLowerCase()]
-    const fullLink = link.startsWith('http') ? link : `https://${link}`
+    // Fix link decoding and double-slash issue
+    let decodedLink = link.replace(/&amp;/g, '&').replace(/&#x2F;/g, '/').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&#x3A;/g, ':')
+    // Remove any trailing slashes or backslashes if present
+    decodedLink = decodedLink.replace(/[\\\/]+$/, '')
+    // Ensure no double slashes after protocol
+    decodedLink = decodedLink.replace(/^(https?:\/\/)\/+/, '$1')
+    
+    const fullLink = decodedLink.match(/^https?:\/\//i) ? decodedLink : `https://${decodedLink}`
     const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
     socialTags.push(tag)
     return `__SOCIAL_TAG_${socialTags.length - 1}__`
@@ -8880,7 +8899,8 @@ const formatMessageWithLinks = (text) => {
 
   // Now apply urlRegex to the escaped text
   let finalHtml = escapedText.replace(urlRegex, (url) => {
-    const fullUrl = url.startsWith('http') ? url : `https://${url}`
+    // Prevent prepending https if it's already a full link being escaped
+    const fullUrl = url.match(/^https?:\/\//i) ? url : `https://${url}`
     return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer" class="ssaam-link text-blue-600 hover:underline">${url}</a>`
   })
 
