@@ -8900,36 +8900,6 @@ const editorConfig = {
   }
 }
 
-const confirmSocialInsert = () => {
-  if (!socialInputData.value.name || !socialInputData.value.link) return
-  
-  const platform = activeSocialInput.value
-  const name = socialInputData.value.name
-  const link = socialInputData.value.link
-  
-  // Platform icons mapping
-  const icons = {
-    fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
-    facebook: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
-    insta: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
-    instagram: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
-    tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
-    discord: 'https://cdn-icons-png.flaticon.com/512/3670/3670157.png',
-    telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
-    whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
-  }
-  
-  const iconUrl = icons[platform.toLowerCase()]
-  const fullLink = link.startsWith('http') ? link : `https://${link}`
-  
-  const htmlTag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="social-tag inline-flex items-center gap-1 text-blue-600 font-semibold" style="text-decoration: none; vertical-align: middle;"><img src="${iconUrl}" style="width: 16px; height: 16px; object-fit: contain;" /><span>${name}</span></a>&nbsp;`
-  
-  newNotification.value.content += htmlTag
-  
-  activeSocialInput.value = null
-  socialInputData.value = { name: '', link: '' }
-}
-
 const postNotificationFromModal = async () => {
   await postNotification()
   if (!postingNotification.value) {
