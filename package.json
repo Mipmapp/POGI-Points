@@ -8,8 +8,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ckeditor/ckeditor5-build-classic": "^41.0.0",
-    "@ckeditor/ckeditor5-vue": "^5.1.0",
     "cropperjs": "^2.1.0",
     "next-cloudinary": "^6.17.5",
     "nodemailer": "^7.0.11",

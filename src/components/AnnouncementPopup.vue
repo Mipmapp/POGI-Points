@@ -264,8 +264,46 @@ const getInitials = (name) => {
 
 const formatMessage = (message) => {
   if (!message) return ''
-  // With CKEditor content, we just return the HTML directly
-  return message
+  
+  // Platform icons mapping (using SVG paths or common emojis as fallback)
+  const icons = {
+    fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
+    facebook: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
+    insta: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
+    instagram: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
+    tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
+    discord: 'https://cdn-icons-png.flaticon.com/512/3670/3670157.png',
+    telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
+    whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
+  }
+
+  // Regex to match [platform][name][link]
+  const pattern = /\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/gi
+
+  // Use a placeholder strategy to prevent escaping the HTML we generate
+  const socialTags = []
+  const textWithPlaceholders = message.replace(pattern, (match, platform, name, link) => {
+    const iconUrl = icons[platform.toLowerCase()]
+    const fullLink = link.startsWith('http') ? link : `https://${link}`
+    const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
+    socialTags.push(tag)
+    return `__SOCIAL_TAG_${socialTags.length - 1}__`
+  })
+
+  // Escape the remaining text for safety
+  let escapedText = textWithPlaceholders
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+
+  // Restore the social tags
+  socialTags.forEach((tag, index) => {
+    escapedText = escapedText.replace(`__SOCIAL_TAG_${index}__`, tag)
+  })
+
+  return escapedText
 }
 
 const formatDate = (dateString) => {
