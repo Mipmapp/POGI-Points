@@ -4451,7 +4451,15 @@ const socialIconsShort = {
 
 const insertSocialTag = (platform) => {
   const textarea = announcementTextareaRef.value
-  if (!textarea) return
+  if (!textarea) {
+    // Fallback for when textarea ref is not yet available or if using CKEditor directly
+    // Since we are using CKEditor, we might not have a raw textarea ref easily accessible for selection
+    // But we can still append or handle it if we find the editor instance
+    activeSocialInput.value = platform
+    socialInputData.value = { name: '', link: '' }
+    socialInputRange.value = { start: newNotification.value.content.length, end: newNotification.value.content.length }
+    return
+  }
 
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
@@ -4498,13 +4506,17 @@ const confirmSocialInsert = () => {
     // Delete tag if name is cleared
     newNotification.value.content = text.substring(0, start) + text.substring(end)
   } else {
-    const tag = `[${platform}][${name}][${link || ''}]`
-    newNotification.value.content = text.substring(0, start) + tag + text.substring(end)
+    // Wrap in the proper HTML tag for CKEditor
+    const fullLink = link ? (link.startsWith('http') ? link : `https://${link}`) : '#'
+    const iconUrl = socialIconsShort[platform] || ''
+    const htmlTag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="social-tag inline-flex items-center gap-1 text-blue-600 font-semibold" style="text-decoration: none; vertical-align: middle;"><img src="${iconUrl}" style="width: 16px; height: 16px; object-fit: contain;" /><span>${name}</span></a>&nbsp;`
+    
+    newNotification.value.content = text.substring(0, start) + htmlTag + text.substring(end)
   }
 
   activeSocialInput.value = null
   
-  // Refocus textarea
+  // Refocus textarea if available
   setTimeout(() => {
     if (textarea) textarea.focus()
   }, 0)
