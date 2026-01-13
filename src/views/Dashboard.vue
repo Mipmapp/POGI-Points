@@ -4547,7 +4547,11 @@ const confirmSocialInsert = () => {
 const rfidLastKeyTime = ref(0)
 const rfidInputBuffer = ref('')
 const rfidProcessing = ref(false)
-const rfidOperationType = ref('in') // New ref for check-in/check-out mode
+const rfidOperationType = ref(localStorage.getItem('ssaam_rfid_op_type') || 'in')
+
+watch(rfidOperationType, (newVal) => {
+  localStorage.setItem('ssaam_rfid_op_type', newVal)
+})
 const rfidResult = ref(null)
 const attendanceTab = ref('events')
 const rfidScannerVerified = ref(false)
