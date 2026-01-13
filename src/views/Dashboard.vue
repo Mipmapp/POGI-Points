@@ -1723,113 +1723,143 @@
 
         <!-- Notifications Page -->
         <div v-if="currentPage === 'notifications'" class="space-y-6">
-          <div v-if="currentUser.role === 'admin' || currentUser.isMaster || currentUser.role === 'medpub'" class="bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-bold text-purple-900">Post New Announcement</h2>
-            </div>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                <input v-model="newNotification.title" type="text" placeholder="Announcement title..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" maxlength="200" />
+          <!-- Social Post Style Input -->
+          <div v-if="currentUser.role === 'admin' || currentUser.isMaster || currentUser.role === 'medpub'" class="bg-white rounded-xl shadow-lg border border-purple-100 overflow-hidden">
+            <div class="p-4 flex items-center gap-3 border-b border-gray-50">
+              <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shadow-sm overflow-hidden flex-shrink-0">
+                <img v-if="currentUser.role === 'admin'" src="/assets/ssaam_logo.jpg" alt="SSAAM" class="w-full h-full object-cover" />
+                <img v-else-if="currentUser.role === 'medpub'" src="/media_pub_logo.png" alt="MedPub" class="w-6 h-6 object-contain" />
+                <span v-else>{{ getInitials(currentUser.full_name || currentUser.username) }}</span>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
-                <textarea 
-                  ref="announcementTextareaRef"
-                  v-model="newNotification.content" 
-                  placeholder="Write your announcement here..." 
-                  rows="4" 
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none resize-none" 
-                  maxlength="2000"
-                ></textarea>
-                
-                <!-- Social Shortcut Buttons -->
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <div 
-                    v-for="(icon, platform) in socialIconsShort" 
-                    :key="platform"
-                    class="relative group"
-                  >
-                    <button 
-                      @click="insertSocialTag(platform)"
-                      class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all text-xs font-medium text-gray-700 shadow-sm"
-                    >
-                      <img :src="icon" :alt="platform" class="w-4 h-4 object-contain" />
-                      <span class="capitalize">{{ platform }}</span>
-                    </button>
-                    
-                    <!-- Inline Input Popover -->
-                    <div v-if="activeSocialInput === platform" class="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-xl shadow-2xl border border-purple-100 p-3 z-50 animate-slide-up">
-                      <div class="space-y-2">
-                        <input 
-                          v-model="socialInputData.name"
-                          type="text" 
-                          :placeholder="'Enter ' + platform + ' name...'"
-                          class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
-                          @keyup.enter="confirmSocialInsert"
-                          ref="socialNameInputRef"
-                        />
-                        <input 
-                          v-model="socialInputData.link"
-                          type="text" 
-                          :placeholder="'Enter ' + platform + ' link...'"
-                          class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
-                          @keyup.enter="confirmSocialInsert"
-                        />
-                        <div class="flex gap-2">
-                          <button @click="confirmSocialInsert" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition">Confirm</button>
-                          <button @click="activeSocialInput = null" class="px-3 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Cancel</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <div 
+                @click="showPostModal = true"
+                class="flex-1 bg-gray-100 hover:bg-gray-200 transition-colors rounded-full px-5 py-2.5 text-gray-500 text-sm cursor-pointer"
+              >
+                What's on your mind, {{ (currentUser.full_name || currentUser.username || '').split(' ')[0] }}?
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Image (Optional)</label>
-                <div class="space-y-3">
-                  <div class="flex flex-col gap-3">
-                    <label class="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-all duration-200" :class="{'border-purple-500 bg-purple-50': notificationImagePreview}">
-                      <input type="file" accept="image/*" class="hidden" @change="handleImageFileSelect" ref="imageFileInput" />
-                      <div v-if="!notificationImagePreview" class="text-center">
-                        <svg class="w-10 h-10 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        <p class="text-sm text-gray-500">Click to upload an image</p>
-                        <p class="text-xs text-gray-400 mt-1">JPG, PNG, GIF up to 10MB</p>
-                      </div>
-                      <div v-else class="relative">
-                        <img :src="notificationImagePreview" alt="Preview" class="max-h-28 rounded-lg object-contain" />
-                      </div>
-                    </label>
-                  </div>
-                  <div v-if="notificationImagePreview || notificationImageUrl" class="flex items-center justify-between">
-                    <span v-if="notificationImagePreview" class="text-xs text-green-600 flex items-center gap-1">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                      Image selected - will be uploaded when you post
-                    </span>
-                    <button @click="clearNotificationImage" class="text-red-500 hover:text-red-700 text-sm flex items-center gap-1 ml-auto">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                      Remove
-                    </button>
-                  </div>
-                </div>
-              </div>
-              <div class="flex justify-end">
-                <button @click="postNotification" :disabled="postingNotification || uploadingImage || !newNotification.title.trim() || !newNotification.content.trim()" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                  <svg v-if="postingNotification || uploadingImage" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                  {{ uploadingImage ? 'Uploading Image...' : postingNotification ? 'Posting...' : 'Post Announcement' }}
+              <div class="flex items-center gap-1">
+                <button @click="showPostModal = true" class="p-2 text-green-500 hover:bg-green-50 rounded-full transition-colors" title="Add Image">
+                  <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V5h14v14zm-5.04-6.71l-2.75 3.54-1.96-2.36L6.5 17h11l-3.54-4.71z"></path></svg>
                 </button>
               </div>
             </div>
           </div>
 
-          <div class="bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 class="text-lg font-bold text-purple-900">Announcements Feed</h2>
-              <button @click="fetchNotifications" :disabled="notificationsLoading" class="text-purple-600 hover:text-purple-800 p-2 rounded-lg hover:bg-purple-50 transition">
-                <svg :class="{'animate-spin': notificationsLoading}" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              </button>
+          <!-- Create Post Modal -->
+          <transition name="fade">
+            <div v-if="showPostModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[100] p-4" @click.self="showPostModal = false">
+              <div class="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
+                <!-- Modal Header -->
+                <div class="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+                  <div class="w-8"></div>
+                  <h3 class="text-lg font-bold text-gray-900">Create post</h3>
+                  <button @click="showPostModal = false" class="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+                </div>
+
+                <div class="overflow-y-auto flex-1 custom-scrollbar">
+                  <!-- User Info -->
+                  <div class="p-4 flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold shadow-sm overflow-hidden flex-shrink-0">
+                      <img v-if="currentUser.role === 'admin'" src="/assets/ssaam_logo.jpg" alt="SSAAM" class="w-full h-full object-cover" />
+                      <img v-else-if="currentUser.role === 'medpub'" src="/media_pub_logo.png" alt="MedPub" class="w-6 h-6 object-contain" />
+                      <span v-else>{{ getInitials(currentUser.full_name || currentUser.username) }}</span>
+                    </div>
+                    <div>
+                      <p class="font-bold text-gray-900 leading-tight">{{ currentUser.full_name || currentUser.username }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Input Area -->
+                  <div class="px-4 pb-2">
+                    <input 
+                      v-model="newNotification.title" 
+                      type="text" 
+                      placeholder="Announcement title..." 
+                      class="w-full px-0 py-2 border-none text-xl font-bold placeholder-gray-400 focus:ring-0 outline-none mb-1" 
+                      maxlength="200" 
+                    />
+                    
+                    <div class="editor-wrapper min-h-[200px] prose prose-purple max-w-none ck-content">
+                      <ckeditor :editor="ClassicEditor" v-model="newNotification.content" :config="editorConfig"></ckeditor>
+                    </div>
+                  </div>
+
+                  <!-- Add Social Tools -->
+                  <div class="px-4 py-3">
+                    <div class="border border-gray-200 rounded-lg p-3 flex items-center justify-between shadow-sm">
+                      <span class="text-sm font-bold text-gray-700">Add social media</span>
+                      <div class="flex items-center gap-2">
+                        <div v-for="(icon, platform) in socialIconsShort" :key="platform" class="relative">
+                          <button 
+                            @click="insertSocialTag(platform)"
+                            class="p-1.5 hover:bg-gray-100 rounded-full transition-colors"
+                            :title="platform"
+                          >
+                            <img :src="icon" :alt="platform" class="w-5 h-5 object-contain" />
+                          </button>
+                          <div v-if="activeSocialInput === platform" class="absolute bottom-full right-0 mb-3 w-64 bg-white rounded-xl shadow-2xl border border-purple-100 p-3 z-[110] animate-slide-up">
+                            <div class="space-y-2 text-left">
+                              <input 
+                                v-model="socialInputData.name"
+                                type="text" 
+                                :placeholder="'Enter ' + platform + ' name...'"
+                                class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                                @keyup.enter="confirmSocialInsert"
+                              />
+                              <input 
+                                v-model="socialInputData.link"
+                                type="text" 
+                                :placeholder="'Enter ' + platform + ' link...'"
+                                class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                                @keyup.enter="confirmSocialInsert"
+                              />
+                              <div class="flex gap-2">
+                                <button @click="confirmSocialInsert" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition">Confirm</button>
+                                <button @click="activeSocialInput = null" class="px-3 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Cancel</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Preview Image -->
+                  <div v-if="notificationImagePreview" class="px-4 pb-3 relative group">
+                    <img :src="notificationImagePreview" class="w-full rounded-lg max-h-48 object-cover border border-gray-100 shadow-sm" />
+                    <button @click="clearNotificationImage" class="absolute top-2 right-6 p-1.5 bg-white rounded-full shadow-md text-gray-500 hover:text-red-500 transition-colors">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Post Button -->
+                <div class="px-4 py-4 border-t border-gray-100">
+                  <button 
+                    @click="postNotificationFromModal" 
+                    :disabled="postingNotification || !newNotification.title.trim() || !newNotification.content.trim()"
+                    class="w-full bg-purple-600 hover:bg-purple-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-bold py-2.5 rounded-lg transition-colors shadow-md flex items-center justify-center gap-2"
+                  >
+                    <svg v-if="postingNotification" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    <span>Post</span>
+                  </button>
+                </div>
+              </div>
             </div>
+          </transition>
+
+          
+          <input type="file" accept="image/*" class="hidden" @change="handleImageFileSelect" ref="imageFileInput" />
+
+          <!-- Notifications Feed Header -->
+          <div class="flex items-center justify-between mb-4 mt-8">
+            <h2 class="text-xl font-bold text-purple-900">Announcements Feed</h2>
+            <button @click="fetchNotifications" :disabled="notificationsLoading" class="p-2 text-purple-600 hover:bg-purple-50 rounded-full transition" :class="{ 'animate-spin': notificationsLoading }">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
+          </div>
 
             <div v-if="notificationsLoading" class="flex items-center justify-center py-12">
               <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1919,7 +1949,7 @@
                           <p class="text-sm text-gray-500 mb-2">Failed to load image</p>
                           <button @click.stop="retryNotifImage(notif._id, notif.image_url)" class="text-xs text-purple-600 hover:text-purple-800 font-medium">Try again</button>
                         </div>
-                        <img v-show="notifImageLoaded[notif._id] && !notifImageFailed[notif._id]" :src="notif.image_url" alt="Announcement image" class="max-w-full w-full h-auto max-h-[500px] rounded-lg border border-gray-200 object-contain cursor-pointer hover:opacity-90 transition shadow-sm" @click="openImagePreview(notif.image_url)" @load="handleNotifImageLoad(notif._id)" @error="handleNotifImageError(notif._id, notif.image_url, $event)" />
+                        <img v-show="notifImageLoaded[notif._id] && !notifImageFailed[notif._id]" :src="notif.image_url" alt="Announcement image" class="max-w-full w-full h-auto max-h-[600px] rounded-xl border border-purple-100 object-contain cursor-pointer hover:opacity-95 transition-all shadow-lg hover:shadow-xl" @click="openImagePreview(notif.image_url)" @load="handleNotifImageLoad(notif._id)" @error="handleNotifImageError(notif._id, notif.image_url, $event)" />
                         <div v-if="!notifImageFailed[notif._id]" class="absolute bottom-2 right-2 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button @click.stop="openImagePreview(notif.image_url)" class="bg-black bg-opacity-60 hover:bg-opacity-80 text-white p-2 rounded-lg transition" title="View full size">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
@@ -2731,12 +2761,10 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
-  </div>
 
-  <!-- Edit User Modal -->
+    <!-- Edit User Modal -->
   <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
       <h3 class="text-2xl font-bold text-purple-900 mb-6">Edit User</h3>
@@ -4423,35 +4451,35 @@ const socialIconsShort = {
 
 const insertSocialTag = (platform) => {
   const textarea = announcementTextareaRef.value
-  if (!textarea) {
-    activeSocialInput.value = platform
-    socialInputData.value = { name: '', link: '' }
-    socialInputRange.value = { start: newNotification.value.content.length, end: newNotification.value.content.length }
-    return
-  }
+  if (!textarea) return
 
   const start = textarea.selectionStart
   const end = textarea.selectionEnd
   const text = newNotification.value.content
   
+  // Check if we are inside an existing tag to "edit" it
+  const beforeText = text.substring(0, start)
+  const afterText = text.substring(end)
+  
+  const tagMatchBefore = beforeText.match(/\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[[^\]]*\]\[[^\]]*$/)
+  const tagMatchAfter = afterText.match(/^[^\[]*\]/)
+  
   activeSocialInput.value = platform
   socialInputData.value = { name: '', link: '' }
   socialInputRange.value = { start, end }
   
-  // Check if we are selecting an existing tag or near one
-  const beforeText = text.substring(0, start)
-  const afterText = text.substring(end)
-  
-  const tagMatchBefore = beforeText.match(/\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[([^\]]*)\]\[([^\]]*)$/)
-  const tagMatchAfter = afterText.match(/^([^\[]*)\]/)
-  
   if (tagMatchBefore && tagMatchAfter) {
-    socialInputData.value.name = tagMatchBefore[2] + tagMatchAfter[1]
-    socialInputData.value.link = tagMatchBefore[3]
-    socialInputRange.value.start = start - tagMatchBefore[0].length
-    socialInputRange.value.end = end + tagMatchAfter[0].length
+    const fullTag = tagMatchBefore[0] + tagMatchAfter[0]
+    const parts = fullTag.match(/\[(.*?)\]\[(.*?)\]\[(.*?)\]/)
+    if (parts) {
+      socialInputData.value.name = parts[2]
+      socialInputData.value.link = parts[3]
+      socialInputRange.value.start = start - tagMatchBefore[0].length
+      socialInputRange.value.end = end + tagMatchAfter[0].length
+    }
   }
 
+  // Auto focus the name input in the popover
   setTimeout(() => {
     if (socialNameInputRef.value && socialNameInputRef.value[0]) {
       socialNameInputRef.value[0].focus()
@@ -4462,22 +4490,16 @@ const insertSocialTag = (platform) => {
 const confirmSocialInsert = () => {
   const platform = activeSocialInput.value
   const { name, link } = socialInputData.value
-  const { start, end } = socialInputRange.value
-  const text = newNotification.value.content
-  const textarea = announcementTextareaRef.value
+  
+  if (!name) return
 
-  if (!name) {
-    newNotification.value.content = text.substring(0, start) + text.substring(end)
-  } else {
-    const tag = `[${platform}][${name}][${link || ''}]`
-    newNotification.value.content = text.substring(0, start) + tag + text.substring(end)
-  }
+  const fullLink = link ? (link.startsWith('http') ? link : `https://${link}`) : ''
+  const tag = `[${platform}][${name}][${fullLink}]`
+  
+  newNotification.value.content += tag
 
   activeSocialInput.value = null
-  
-  setTimeout(() => {
-    if (textarea) textarea.focus()
-  }, 0)
+  socialInputData.value = { name: '', link: '' }
 }
 
 const rfidLastKeyTime = ref(0)
@@ -8731,21 +8753,10 @@ const handleImageUrlError = (e) => {
 }
 
 const openEditNotification = (notif) => {
-  // Unescape HTML entities for editing
-  let message = notif.message || notif.content || ''
-  message = message
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&#x2F;/g, '/')
-    .replace(/&#x3A;/g, ':')
-
   editNotificationData.value = {
     _id: notif._id,
     title: notif.title,
-    message: message,
+    message: notif.message || notif.content,
     priority: notif.priority || 'normal'
   }
   showEditNotificationModal.value = true
@@ -8852,11 +8863,35 @@ const formatNotificationDate = (dateStr) => {
   return date.toLocaleDateString('en-US', options)
 }
 
+import CKEditor from '@ckeditor/ckeditor5-vue'
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
+
+const showPostModal = ref(false)
+
+const editorConfig = {
+  toolbar: [ 'heading', '|', 'bold', 'italic', 'underline', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo' ],
+  heading: {
+    options: [
+      { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
+      { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
+      { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
+      { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
+    ]
+  }
+}
+
+const postNotificationFromModal = async () => {
+  await postNotification()
+  if (!postingNotification.value) {
+    showPostModal.value = false
+  }
+}
+
 const formatMessageWithLinks = (text) => {
   if (!text) return ''
   
-  // Platform icons mapping
-  const icons = {
+  // Social icons mapping
+  const socialIcons = {
     fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
     facebook: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
     insta: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
@@ -8867,49 +8902,18 @@ const formatMessageWithLinks = (text) => {
     whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
   }
 
-  // Regex to match [platform][name][link]
-  const socialPattern = /\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/gi
-  // Improved URL regex to be more selective and avoid capturing too much
-  const urlRegex = /(?:https?:\/\/|www\.)[^\s<>"{}|\\^`\[\]]+/gi
-
-  // First, find all social tags and replace them with unique placeholders
-  const socialTags = []
-  let processedText = text.replace(socialPattern, (match, platform, name, link) => {
-    const iconUrl = icons[platform.toLowerCase()]
-    // Fix link decoding and double-slash issue
-    let decodedLink = link.replace(/&amp;/g, '&').replace(/&#x2F;/g, '/').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&#x3A;/g, ':')
-    // Remove any trailing slashes or backslashes if present
-    decodedLink = decodedLink.replace(/[\\\/]+$/, '')
-    // Ensure no double slashes after protocol
-    decodedLink = decodedLink.replace(/^(https?:\/\/)\/+/, '$1')
+  // Replace [platform][name][link] with styled HTML
+  const formatted = text.replace(/\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/g, (match, platform, name, link) => {
+    const iconUrl = socialIcons[platform.toLowerCase()] || socialIcons.fb
+    const fullLink = link.startsWith('http') ? link : `https://${link}`
     
-    const fullLink = decodedLink.match(/^https?:\/\//i) ? decodedLink : `https://${decodedLink}`
-    const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
-    socialTags.push(tag)
-    return `__SOCIAL_TAG_${socialTags.length - 1}__`
+    return `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="social-tag inline-flex items-center gap-1 text-blue-600 font-semibold" style="text-decoration: none; vertical-align: middle; display: inline-flex; align-items: center; white-space: nowrap;">
+      <img src="${iconUrl}" style="width: 16px; height: 16px; object-fit: contain; display: inline-block; vertical-align: middle; margin-right: 4px;" />
+      <span>${name}</span>
+    </a>`
   })
 
-  // Escape the text, but NOT the placeholders
-  const escapedText = processedText
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;')
-
-  // Now apply urlRegex to the escaped text
-  let finalHtml = escapedText.replace(urlRegex, (url) => {
-    // Prevent prepending https if it's already a full link being escaped
-    const fullUrl = url.match(/^https?:\/\//i) ? url : `https://${url}`
-    return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer" class="ssaam-link text-blue-600 hover:underline">${url}</a>`
-  })
-
-  // Finally, put back the social tags
-  socialTags.forEach((tag, index) => {
-    finalHtml = finalHtml.replace(`__SOCIAL_TAG_${index}__`, tag)
-  })
-
-  return finalHtml
+  return formatted
 }
 
 const uploadToImgbb = async (base64Image) => {
