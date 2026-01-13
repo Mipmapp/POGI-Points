@@ -301,6 +301,7 @@
             <input 
               ref="rfidFullscreenInputRef"
               v-model="rfidInput"
+              @keydown.enter="manualRfidSubmit"
               @keydown="handleRfidKeydown"
               type="text"
               :placeholder="scanMode === 'rfid' ? 'Waiting for RFID scan...' : 'Enter Student ID...'"
