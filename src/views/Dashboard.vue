@@ -1752,7 +1752,7 @@
                     <textarea 
                       ref="announcementTextareaRef"
                       v-model="newNotification.content" 
-                      rows="3" 
+                      rows="8" 
                       placeholder="What's happening? Write your announcement here..."
                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all placeholder-gray-400 resize-none"
                       maxlength="2000"
