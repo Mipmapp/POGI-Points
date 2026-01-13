@@ -1,16 +1,16 @@
 <template>
   <Transition name="fade">
     <div v-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center bg-purple-950/30 backdrop-blur-md">
-      <div class="relative max-w-md w-full p-8 text-center">
+      <div class="relative max-w-md w-full p-8 text-center flex flex-col items-center justify-center">
         <!-- Matrix-like background effect -->
-        <div class="absolute inset-0 overflow-hidden opacity-20 pointer-events-none">
-          <div class="matrix-text text-xs text-purple-400 font-mono text-left leading-none whitespace-pre select-none">
+        <div class="absolute inset-0 overflow-hidden opacity-20 pointer-events-none flex items-center justify-center">
+          <div class="matrix-text text-xs text-purple-400 font-mono text-center leading-none whitespace-pre select-none">
             {{ matrixText }}
           </div>
         </div>
 
         <!-- Main Scanner Animation -->
-        <div class="relative mb-4">
+        <div class="relative mb-4 z-10">
           <div class="w-32 h-32 mx-auto border-4 border-purple-500/30 rounded-2xl relative overflow-hidden bg-purple-900/40">
             <div class="absolute inset-0 bg-gradient-to-b from-purple-500/0 via-purple-400/50 to-purple-500/0 h-1 w-full scanner-line"></div>
             <div class="absolute inset-0 flex items-center justify-center">
@@ -28,7 +28,7 @@
         </div>
 
         <!-- Status Text -->
-        <div class="font-mono">
+        <div class="font-mono z-10">
           <h2 class="text-2xl font-bold text-white tracking-widest uppercase">
             Processing...
           </h2>
