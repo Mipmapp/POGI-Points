@@ -2842,26 +2842,62 @@
   </div>
 
   <!-- Edit Notification Modal -->
-  <div v-if="showEditNotificationModal && editNotificationData" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeEditNotificationModal">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-purple-900">Edit Announcement</h3>
-        <button @click="closeEditNotificationModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+  <div v-if="showEditNotificationModal && editNotificationData" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="closeEditNotificationModal">
+    <div class="bg-white rounded-2xl shadow-2xl border border-purple-100 w-full max-w-xl overflow-hidden animate-slide-up">
+      <div class="p-4 border-b border-purple-50 bg-purple-50/30 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center text-white shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+            </svg>
+          </div>
+          <h2 class="text-md font-bold text-purple-900 uppercase tracking-wide">Edit Announcement</h2>
+        </div>
+        <button @click="closeEditNotificationModal" class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
       </div>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
-          <input v-model="editNotificationData.title" type="text" placeholder="Announcement title..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" maxlength="200" />
+      
+      <div class="p-6 space-y-4">
+        <div class="space-y-3">
+          <div class="relative group">
+            <label class="block text-xs font-bold text-purple-900 uppercase tracking-wider mb-1.5 ml-1">Title</label>
+            <input 
+              v-model="editNotificationData.title" 
+              type="text" 
+              placeholder="Announcement Title"
+              class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all font-medium"
+              maxlength="200"
+            />
+          </div>
+          
+          <div class="relative group">
+            <label class="block text-xs font-bold text-purple-900 uppercase tracking-wider mb-1.5 ml-1">Content</label>
+            <textarea 
+              v-model="editNotificationData.message" 
+              rows="4" 
+              placeholder="What's happening?"
+              class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
+              maxlength="2000"
+            ></textarea>
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
-          <textarea v-model="editNotificationData.message" placeholder="Write your announcement here..." rows="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none resize-none" maxlength="2000"></textarea>
-        </div>
-        <div class="flex gap-3 mt-6">
-          <button @click="closeEditNotificationModal" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-          <button @click="saveEditedNotification" :disabled="savingEditedNotification || !editNotificationData.title.trim() || !editNotificationData.message.trim()" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-            <svg v-if="savingEditedNotification" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            {{ savingEditedNotification ? 'Saving...' : 'Save Changes' }}
+
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <button 
+            @click="updateNotification"
+            :disabled="updatingNotification || !editNotificationData.title.trim() || !editNotificationData.message.trim()"
+            class="flex-1 px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 justify-center"
+          >
+            <span v-if="updatingNotification" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+            <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            {{ updatingNotification ? 'Saving...' : 'Save Changes' }}
+          </button>
+          
+          <button @click="closeEditNotificationModal" class="px-6 py-2.5 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200 transition-all">
+            Cancel
           </button>
         </div>
       </div>
