@@ -4465,20 +4465,6 @@ const confirmSocialInsert = () => {
   
   if (!name) return
 
-<<<<<<< HEAD
-  if (!name) {
-    newNotification.value.content = text.substring(0, start) + text.substring(end)
-  } else {
-    const tag = `[${platform}][${name}][${link || ''}]`
-    newNotification.value.content = text.substring(0, start) + tag + text.substring(end)
-  }
-
-  activeSocialInput.value = null
-  
-  setTimeout(() => {
-    if (textarea) textarea.focus()
-  }, 0)
-=======
   const fullLink = link ? (link.startsWith('http') ? link : `https://${link}`) : ''
   const tag = `[${platform}][${name}][${fullLink}]`
   
@@ -4486,7 +4472,6 @@ const confirmSocialInsert = () => {
 
   activeSocialInput.value = null
   socialInputData.value = { name: '', link: '' }
->>>>>>> 85d81e4d8e04e36684865d79a7de6c736a6578a0
 }
 
 const rfidLastKeyTime = ref(0)
@@ -8861,7 +8846,6 @@ const formatNotificationDate = (dateStr) => {
   return date.toLocaleDateString('en-US', options)
 }
 
-<<<<<<< HEAD
 const formatMessageWithLinks = (text) => {
   if (!text) return ''
   
@@ -8920,59 +8904,6 @@ const formatMessageWithLinks = (text) => {
   })
 
   return finalHtml
-=======
-import CKEditor from '@ckeditor/ckeditor5-vue'
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic'
-
-const showPostModal = ref(false)
-
-const editorConfig = {
-  toolbar: [ 'heading', '|', 'bold', 'italic', 'underline', 'link', 'bulletedList', 'numberedList', 'blockQuote', '|', 'undo', 'redo' ],
-  heading: {
-    options: [
-      { model: 'paragraph', title: 'Paragraph', class: 'ck-heading_paragraph' },
-      { model: 'heading1', view: 'h1', title: 'Heading 1', class: 'ck-heading_heading1' },
-      { model: 'heading2', view: 'h2', title: 'Heading 2', class: 'ck-heading_heading2' },
-      { model: 'heading3', view: 'h3', title: 'Heading 3', class: 'ck-heading_heading3' }
-    ]
-  }
-}
-
-const postNotificationFromModal = async () => {
-  await postNotification()
-  if (!postingNotification.value) {
-    showPostModal.value = false
-  }
-}
-
-const formatMessageWithLinks = (text) => {
-  if (!text) return ''
-  
-  // Social icons mapping
-  const socialIcons = {
-    fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
-    facebook: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
-    insta: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
-    instagram: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
-    tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
-    discord: 'https://cdn-icons-png.flaticon.com/512/3670/3670157.png',
-    telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
-    whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
-  }
-
-  // Replace [platform][name][link] with styled HTML
-  const formatted = text.replace(/\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[(.*?)\]\[(.*?)\]/g, (match, platform, name, link) => {
-    const iconUrl = socialIcons[platform.toLowerCase()] || socialIcons.fb
-    const fullLink = link.startsWith('http') ? link : `https://${link}`
-    
-    return `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="social-tag inline-flex items-center gap-1 text-blue-600 font-semibold" style="text-decoration: none; vertical-align: middle; display: inline-flex; align-items: center; white-space: nowrap;">
-      <img src="${iconUrl}" style="width: 16px; height: 16px; object-fit: contain; display: inline-block; vertical-align: middle; margin-right: 4px;" />
-      <span>${name}</span>
-    </a>`
-  })
-
-  return formatted
->>>>>>> 85d81e4d8e04e36684865d79a7de6c736a6578a0
 }
 
 const uploadToImgbb = async (base64Image) => {
