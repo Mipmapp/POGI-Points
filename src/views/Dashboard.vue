@@ -3677,6 +3677,7 @@ import { useRouter } from 'vue-router'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import * as XLSX from 'xlsx'
 import AnnouncementPopup from '../components/AnnouncementPopup.vue'
+import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 
 const router = useRouter()
 const currentUser = ref({})
