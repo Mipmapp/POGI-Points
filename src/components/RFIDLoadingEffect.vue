@@ -76,7 +76,7 @@ const startAnimation = () => {
       logs.value.shift();
       logs.value.push(possibleLogs[Math.floor(Math.random() * possibleLogs.length)]);
     }
-  }, 800);
+  }, 300);
 
   matrixInterval = setInterval(() => {
     let text = '';
