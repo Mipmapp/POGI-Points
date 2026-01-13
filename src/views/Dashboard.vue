@@ -227,6 +227,9 @@
 
   <!-- RFID Scanner Fullscreen Modal - Two Column Layout -->
   <div v-if="rfidFullscreenMode" class="fixed inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 z-[70] overflow-hidden">
+    <!-- Unique Programming Loading Effect -->
+    <RFIDLoadingEffect :visible="rfidProcessing" />
+
     <button @click="rfidFullscreenMode = false" class="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:text-pink-300 transition z-10">
       <svg class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
@@ -254,20 +257,42 @@
         </div>
         
         <!-- Scan Mode Toggle -->
-        <div class="flex justify-center mb-3 lg:mb-4">
-          <div class="inline-flex bg-white bg-opacity-20 rounded-lg p-1">
-            <button 
-              @click="scanMode = 'rfid'" 
-              :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition', scanMode === 'rfid' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
-            >
-              RFID Scan
-            </button>
-            <button 
-              @click="scanMode = 'student_id'" 
-              :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition', scanMode === 'student_id' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
-            >
-              Student ID
-            </button>
+        <div class="flex flex-col gap-4 mb-3 lg:mb-4 w-full max-w-md">
+          <div class="flex justify-center">
+            <div class="inline-flex bg-white bg-opacity-20 rounded-lg p-1">
+              <button 
+                @click="scanMode = 'rfid'" 
+                :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition', scanMode === 'rfid' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
+              >
+                RFID Scan
+              </button>
+              <button 
+                @click="scanMode = 'student_id'" 
+                :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition', scanMode === 'student_id' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
+              >
+                Student ID
+              </button>
+            </div>
+          </div>
+
+          <!-- Operation Type Toggle (Check-in/Check-out) -->
+          <div class="flex justify-center">
+            <div class="inline-flex bg-white bg-opacity-10 rounded-lg p-1 border border-white/20">
+              <button 
+                @click="rfidOperationType = 'in'" 
+                :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition flex items-center gap-2', rfidOperationType === 'in' ? 'bg-green-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
+              >
+                <div class="w-2 h-2 rounded-full bg-white animate-pulse"></div>
+                Check-In
+              </button>
+              <button 
+                @click="rfidOperationType = 'out'" 
+                :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition flex items-center gap-2', rfidOperationType === 'out' ? 'bg-pink-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
+              >
+                <div class="w-2 h-2 rounded-full bg-white"></div>
+                Check-Out
+              </button>
+            </div>
           </div>
         </div>
         
@@ -4521,6 +4546,7 @@ const confirmSocialInsert = () => {
 const rfidLastKeyTime = ref(0)
 const rfidInputBuffer = ref('')
 const rfidProcessing = ref(false)
+const rfidOperationType = ref('in') // New ref for check-in/check-out mode
 const rfidResult = ref(null)
 const attendanceTab = ref('events')
 const rfidScannerVerified = ref(false)
