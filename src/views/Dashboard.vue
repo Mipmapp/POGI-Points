@@ -3738,7 +3738,14 @@ const computeLogStatus = (log) => {
 }
 
 const filteredAttendanceLogs = computed(() => {
-  let logs = attendanceLogs.value
+  let logs = [...attendanceLogs.value]
+  
+  // Sort logs: Present -> Late -> Incomplete -> Absent
+  logs.sort((a, b) => {
+    const statusA = computeLogStatus(a)
+    const statusB = computeLogStatus(b)
+    return getStatusWeight(statusA) - getStatusWeight(statusB)
+  })
   
   if (eventLogsFilter.value.status) {
     logs = logs.filter(log => {
@@ -3753,6 +3760,16 @@ const filteredAttendanceLogs = computed(() => {
 // Get count of logs by computed status
 const getLogStatusCount = (status) => {
   return filteredAttendanceLogs.value.filter(log => computeLogStatus(log) === status).length
+}
+
+const getStatusWeight = (status) => {
+  switch (status) {
+    case 'present': return 1
+    case 'late': return 2
+    case 'incomplete': return 3
+    case 'absent': return 4
+    default: return 5
+  }
 }
 
 const applyStatusFilter = () => {
