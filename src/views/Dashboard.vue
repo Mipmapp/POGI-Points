@@ -280,10 +280,10 @@
           <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white bg-opacity-10 border border-white border-opacity-20 backdrop-blur-md shadow-lg">
             <div 
               class="w-3 h-3 rounded-full animate-pulse" 
-              :class="rfidOperationType === 'in' ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-pink-400 shadow-[0_0_10px_rgba(244,114,182,0.5)]'"
+              :class="appSettings.rfidScanner.checkInEnabled ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-pink-400 shadow-[0_0_10px_rgba(244,114,182,0.5)]'"
             ></div>
             <span class="text-white font-bold tracking-widest uppercase text-sm">
-              {{ rfidOperationType === 'in' ? 'Check-In Mode' : 'Check-Out Mode' }}
+              {{ appSettings.rfidScanner.checkInEnabled ? 'Check-In Mode' : 'Check-Out Mode' }}
             </span>
           </div>
         </div>
@@ -5892,16 +5892,9 @@ const toggleCheckIn = async () => {
   // Mutually exclusive: disable check-out when enabling check-in
   if (newValue) {
     appSettings.value.rfidScanner.checkOutEnabled = false
-    appSettings.value.rfidScanner.autoDisableCheckOut = false
-    appSettings.value.rfidScanner.checkOutDisableAt = null
     setRfidOperation('in')
   }
   
-  // Clear timer when disabling
-  if (!newValue) {
-    appSettings.value.rfidScanner.autoDisableCheckIn = false
-    appSettings.value.rfidScanner.checkInDisableAt = null
-  }
   await saveRfidScannerSettings()
 }
 
@@ -5912,16 +5905,9 @@ const toggleCheckOut = async () => {
   // Mutually exclusive: disable check-in when enabling check-out
   if (newValue) {
     appSettings.value.rfidScanner.checkInEnabled = false
-    appSettings.value.rfidScanner.autoDisableCheckIn = false
-    appSettings.value.rfidScanner.checkInDisableAt = null
     setRfidOperation('out')
   }
   
-  // Clear timer when disabling
-  if (!newValue) {
-    appSettings.value.rfidScanner.autoDisableCheckOut = false
-    appSettings.value.rfidScanner.checkOutDisableAt = null
-  }
   await saveRfidScannerSettings()
 }
 
