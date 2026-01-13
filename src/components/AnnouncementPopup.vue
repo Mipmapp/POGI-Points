@@ -35,7 +35,7 @@
               v-for="(announcement, index) in announcements" 
               :key="announcement._id"
               class="w-full flex-shrink-0 p-4 sm:p-6 overflow-y-auto"
-              style="min-height: 150px; max-height: 45vh;"
+              style="min-height: 150px; max-height: 65vh;"
             >
               <div class="flex items-start gap-3 mb-4">
                 <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden', announcement.posted_by === 'admin' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gradient-to-br from-yellow-500 to-amber-600']">
@@ -73,7 +73,7 @@
                 <img 
                   :src="announcement.image_url" 
                   :alt="announcement.title"
-                  class="w-full rounded-lg max-h-32 sm:max-h-48 object-cover cursor-pointer hover:opacity-90 transition"
+                  class="w-full rounded-lg max-h-64 sm:max-h-[500px] object-contain bg-gray-50 cursor-pointer hover:opacity-95 transition"
                   @click="$emit('preview-image', announcement.image_url)"
                 />
               </div>
