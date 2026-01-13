@@ -1723,101 +1723,125 @@
 
         <!-- Notifications Page -->
         <div v-if="currentPage === 'notifications'" class="space-y-6">
-          <div v-if="currentUser.role === 'admin' || currentUser.isMaster || currentUser.role === 'medpub'" class="bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-bold text-purple-900">Post New Announcement</h2>
-            </div>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
-                <input v-model="newNotification.title" type="text" placeholder="Announcement title..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" maxlength="200" />
+          <div v-if="currentUser.role === 'admin' || currentUser.isMaster || currentUser.role === 'medpub'" class="bg-white rounded-2xl shadow-sm border border-purple-100 overflow-hidden mb-8">
+            <div class="p-4 border-b border-purple-50 bg-purple-50/30 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center text-white shadow-sm">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
+                  </svg>
+                </div>
+                <h2 class="text-md font-bold text-purple-900 uppercase tracking-wide">New Announcement</h2>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Content</label>
-                <textarea 
-                  ref="announcementTextareaRef"
-                  v-model="newNotification.content" 
-                  placeholder="Write your announcement here..." 
-                  rows="4" 
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none resize-none" 
-                  maxlength="2000"
-                ></textarea>
-                
-                <!-- Social Shortcut Buttons -->
-                <div class="mt-3 flex flex-wrap gap-2">
-                  <div 
-                    v-for="(icon, platform) in socialIconsShort" 
-                    :key="platform"
-                    class="relative group"
-                  >
-                    <button 
-                      @click="insertSocialTag(platform)"
-                      class="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all text-xs font-medium text-gray-700 shadow-sm"
-                    >
-                      <img :src="icon" :alt="platform" class="w-4 h-4 object-contain" />
-                      <span class="capitalize">{{ platform }}</span>
-                    </button>
+            </div>
+            
+            <div class="p-4 space-y-4">
+              <div class="grid grid-cols-1 gap-4">
+                <div class="space-y-3">
+                  <div class="relative group">
+                    <input 
+                      v-model="newNotification.title" 
+                      type="text" 
+                      placeholder="Announcement Title"
+                      class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all placeholder-gray-400 font-medium"
+                      maxlength="200"
+                    />
+                  </div>
+                  
+                  <div class="relative group">
+                    <textarea 
+                      ref="announcementTextareaRef"
+                      v-model="newNotification.content" 
+                      rows="3" 
+                      placeholder="What's happening? Write your announcement here..."
+                      class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all placeholder-gray-400 resize-none"
+                      maxlength="2000"
+                    ></textarea>
                     
-                    <!-- Inline Input Popover -->
-                    <div v-if="activeSocialInput === platform" class="absolute bottom-full left-0 mb-2 w-64 bg-white rounded-xl shadow-2xl border border-purple-100 p-3 z-50 animate-slide-up">
-                      <div class="space-y-2">
-                        <input 
-                          v-model="socialInputData.name"
-                          type="text" 
-                          :placeholder="'Enter ' + platform + ' name...'"
-                          class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
-                          @keyup.enter="confirmSocialInsert"
-                          ref="socialNameInputRef"
-                        />
-                        <input 
-                          v-model="socialInputData.link"
-                          type="text" 
-                          :placeholder="'Enter ' + platform + ' link...'"
-                          class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
-                          @keyup.enter="confirmSocialInsert"
-                        />
-                        <div class="flex gap-2">
-                          <button @click="confirmSocialInsert" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition">Confirm</button>
-                          <button @click="activeSocialInput = null" class="px-3 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Cancel</button>
+                    <!-- Floating Social Icons for easier access -->
+                    <div class="absolute right-3 bottom-3 flex items-center gap-1.5 p-1.5 bg-white/80 backdrop-blur-sm rounded-lg border border-gray-100 shadow-sm">
+                      <div v-for="(icon, platform) in socialIconsShort" :key="platform" class="relative">
+                        <button 
+                          @click="insertSocialTag(platform)"
+                          class="p-1.5 rounded-md hover:bg-purple-50 transition-colors group/btn"
+                          :title="'Insert ' + platform"
+                        >
+                          <img :src="icon" class="w-4 h-4 grayscale group-hover/btn:grayscale-0 transition-all" :alt="platform" />
+                        </button>
+                        
+                        <!-- Inline Input Popover -->
+                        <div v-if="activeSocialInput === platform" class="absolute bottom-full right-0 mb-2 w-64 bg-white rounded-xl shadow-2xl border border-purple-100 p-3 z-50 animate-slide-up">
+                          <div class="space-y-2 text-left">
+                            <input 
+                              v-model="socialInputData.name"
+                              type="text" 
+                              :placeholder="'Enter ' + platform + ' name...'"
+                              class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                              @keyup.enter="confirmSocialInsert"
+                              ref="socialNameInputRef"
+                            />
+                            <input 
+                              v-model="socialInputData.link"
+                              type="text" 
+                              :placeholder="'Enter ' + platform + ' link...'"
+                              class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                              @keyup.enter="confirmSocialInsert"
+                            />
+                            <div class="flex gap-2">
+                              <button @click="confirmSocialInsert" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition">Confirm</button>
+                              <button @click="activeSocialInput = null" class="px-3 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Cancel</button>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Image (Optional)</label>
-                <div class="space-y-3">
-                  <div class="flex flex-col gap-3">
-                    <label class="flex items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-purple-500 hover:bg-purple-50 transition-all duration-200" :class="{'border-purple-500 bg-purple-50': notificationImagePreview}">
-                      <input type="file" accept="image/*" class="hidden" @change="handleImageFileSelect" ref="imageFileInput" />
-                      <div v-if="!notificationImagePreview" class="text-center">
-                        <svg class="w-10 h-10 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                        <p class="text-sm text-gray-500">Click to upload an image</p>
-                        <p class="text-xs text-gray-400 mt-1">JPG, PNG, GIF up to 10MB</p>
-                      </div>
-                      <div v-else class="relative">
-                        <img :src="notificationImagePreview" alt="Preview" class="max-h-28 rounded-lg object-contain" />
-                      </div>
-                    </label>
-                  </div>
-                  <div v-if="notificationImagePreview || notificationImageUrl" class="flex items-center justify-between">
-                    <span v-if="notificationImagePreview" class="text-xs text-green-600 flex items-center gap-1">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                      Image selected - will be uploaded when you post
-                    </span>
-                    <button @click="clearNotificationImage" class="text-red-500 hover:text-red-700 text-sm flex items-center gap-1 ml-auto">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                      Remove
-                    </button>
+
+              <!-- Media Section: Compact Upload -->
+              <div class="flex flex-wrap items-center gap-4 pt-2">
+                <div class="flex-1 min-w-[200px]">
+                  <div 
+                    @click="$refs.imageFileInput.click()"
+                    class="relative flex items-center justify-center gap-3 p-3 border-2 border-dashed border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50/30 transition-all cursor-pointer group"
+                    :class="{'border-purple-500 bg-purple-50': notificationImagePreview}"
+                  >
+                    <input 
+                      type="file" 
+                      ref="imageFileInput" 
+                      class="hidden" 
+                      accept="image/*"
+                      @change="handleImageFileSelect"
+                    />
+                    <div v-if="!notificationImagePreview" class="flex items-center gap-2 text-gray-500 group-hover:text-purple-600 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span class="text-sm font-medium">Add Image</span>
+                    </div>
+                    <div v-else class="flex items-center gap-3 w-full overflow-hidden">
+                      <img :src="notificationImagePreview" class="w-10 h-10 rounded-lg object-cover border border-purple-100 flex-shrink-0" />
+                      <span class="text-xs text-gray-600 truncate flex-1">Image selected</span>
+                      <button @click.stop="clearNotificationImage" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div class="flex justify-end">
-                <button @click="postNotification" :disabled="postingNotification || uploadingImage || !newNotification.title.trim() || !newNotification.content.trim()" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition-all duration-200 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-                  <svg v-if="postingNotification || uploadingImage" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                  {{ uploadingImage ? 'Uploading Image...' : postingNotification ? 'Posting...' : 'Post Announcement' }}
+
+                <button 
+                  @click="postNotification"
+                  :disabled="postingNotification || uploadingImage || !newNotification.title.trim() || !newNotification.content.trim()"
+                  class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 min-w-[160px] justify-center"
+                >
+                  <span v-if="postingNotification || uploadingImage" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                  {{ uploadingImage ? 'Uploading...' : postingNotification ? 'Posting...' : 'Post Now' }}
                 </button>
               </div>
             </div>
