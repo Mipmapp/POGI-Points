@@ -4542,6 +4542,11 @@ const rfidInputBuffer = ref('')
 const rfidProcessing = ref(false)
 const rfidOperationType = ref(localStorage.getItem('ssaam_rfid_op_type') || 'in')
 
+const setRfidOperation = (type) => {
+  rfidOperationType.value = type
+  localStorage.setItem('ssaam_rfid_op_type', type)
+}
+
 watch(rfidOperationType, (newVal) => {
   localStorage.setItem('ssaam_rfid_op_type', newVal)
 })
@@ -5889,6 +5894,7 @@ const toggleCheckIn = async () => {
     appSettings.value.rfidScanner.checkOutEnabled = false
     appSettings.value.rfidScanner.autoDisableCheckOut = false
     appSettings.value.rfidScanner.checkOutDisableAt = null
+    setRfidOperation('in')
   }
   
   // Clear timer when disabling
@@ -5908,6 +5914,7 @@ const toggleCheckOut = async () => {
     appSettings.value.rfidScanner.checkInEnabled = false
     appSettings.value.rfidScanner.autoDisableCheckIn = false
     appSettings.value.rfidScanner.checkInDisableAt = null
+    setRfidOperation('out')
   }
   
   // Clear timer when disabling
