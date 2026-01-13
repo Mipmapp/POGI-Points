@@ -1159,30 +1159,6 @@
                     <span :class="['text-sm font-medium px-3 py-1 rounded-full', appSettings.rfidScanner.checkInEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
                       {{ appSettings.rfidScanner.checkInEnabled ? 'Active' : 'Inactive' }}
                     </span>
-                    <!-- Timer controls -->
-                    <div v-if="appSettings.rfidScanner.checkInEnabled" class="mt-3 pt-3 border-t border-green-200">
-                      <p class="text-xs text-gray-500 mb-2">Auto-disable after:</p>
-                      <div class="flex items-center gap-2 flex-wrap">
-                        <input 
-                          v-model.number="checkInTimerMinutes" 
-                          type="number" 
-                          min="1" 
-                          max="1440"
-                          class="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 outline-none"
-                        />
-                        <span class="text-sm text-gray-600">minutes</span>
-                        <button 
-                          @click="setCheckInTimer" 
-                          :disabled="rfidScannerSaving"
-                          class="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition"
-                        >
-                          Set Timer
-                        </button>
-                      </div>
-                      <p v-if="appSettings.rfidScanner.autoDisableCheckIn && appSettings.rfidScanner.checkInDisableAt" class="text-xs text-orange-600 mt-2">
-                        Will disable at: {{ new Date(appSettings.rfidScanner.checkInDisableAt).toLocaleTimeString() }}
-                      </p>
-                    </div>
                   </div>
                   
                   <!-- Check-Out Control -->
@@ -1203,30 +1179,6 @@
                     <span :class="['text-sm font-medium px-3 py-1 rounded-full', appSettings.rfidScanner.checkOutEnabled ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700']">
                       {{ appSettings.rfidScanner.checkOutEnabled ? 'Active' : 'Inactive' }}
                     </span>
-                    <!-- Timer controls -->
-                    <div v-if="appSettings.rfidScanner.checkOutEnabled" class="mt-3 pt-3 border-t border-blue-200">
-                      <p class="text-xs text-gray-500 mb-2">Auto-disable after:</p>
-                      <div class="flex items-center gap-2 flex-wrap">
-                        <input 
-                          v-model.number="checkOutTimerMinutes" 
-                          type="number" 
-                          min="1" 
-                          max="1440"
-                          class="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 outline-none"
-                        />
-                        <span class="text-sm text-gray-600">minutes</span>
-                        <button 
-                          @click="setCheckOutTimer" 
-                          :disabled="rfidScannerSaving"
-                          class="px-3 py-1 text-xs bg-purple-100 text-purple-700 rounded hover:bg-purple-200 transition"
-                        >
-                          Set Timer
-                        </button>
-                      </div>
-                      <p v-if="appSettings.rfidScanner.autoDisableCheckOut && appSettings.rfidScanner.checkOutDisableAt" class="text-xs text-orange-600 mt-2">
-                        Will disable at: {{ new Date(appSettings.rfidScanner.checkOutDisableAt).toLocaleTimeString() }}
-                      </p>
-                    </div>
                   </div>
                 </div>
                 
