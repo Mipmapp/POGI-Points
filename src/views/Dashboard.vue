@@ -1885,8 +1885,7 @@
                       </div>
                       <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-1.5 flex-wrap">
-                          <span :class="['font-bold text-sm truncate', notif.posted_by === 'admin' ? 'text-purple-900' : 'text-amber-900']">
-                            {{ notif.posted_by === 'admin' ? (notif.posted_by_name || 'JRMSU Admin') : 'Media & Publication' }}
+                          <span :class="['font-bold text-sm truncate', notif.posted_by === 'admin' ? 'text-purple-900' : 'text-amber-900']" v-html="notif.posted_by === 'admin' ? (notif.posted_by_name || 'JRMSU Admin').replace(/&#x2F;/g, '/').replace(/&#47;/g, '/') : 'Media & Publication'">
                           </span>
                           <span :class="['text-[10px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider', notif.posted_by === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700']">
                             {{ notif.posted_by === 'admin' ? 'Admin' : 'Org' }}
