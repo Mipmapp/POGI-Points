@@ -106,31 +106,29 @@
     </div>
   </div>
 
-  <Transition name="popup-zoom">
-    <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
-      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
-          <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-6">
-          <a v-for="dev in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition">
-            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-400 flex items-center justify-center text-white text-2xl shadow-lg mb-3 overflow-hidden flex-shrink-0">
-              <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
-              <span v-else>{{ dev.initials }}</span>
-            </div>
-            <p class="text-xs font-semibold text-purple-600 hover:text-purple-800 text-center line-clamp-2 min-h-[2rem] flex items-center">{{ dev.name }}</p>
-            <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-            <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
-          </a>
-        </div>
-        <div class="text-center text-sm text-gray-600">
-          <p class="font-medium text-purple-900">CCS - Creatives Committee</p>
-          <p>Chairperson: Sheen Lee</p>
-        </div>
+  <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
+        <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      </div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-6">
+        <a v-for="dev in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition">
+          <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-400 flex items-center justify-center text-white text-2xl shadow-lg mb-3 overflow-hidden flex-shrink-0">
+            <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
+            <span v-else>{{ dev.initials }}</span>
+          </div>
+          <p class="text-xs font-semibold text-purple-600 hover:text-purple-800 text-center line-clamp-2 min-h-[2rem] flex items-center">{{ dev.name }}</p>
+          <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
+          <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+        </a>
+      </div>
+      <div class="text-center text-sm text-gray-600">
+        <p class="font-medium text-purple-900">CCS - Creatives Committee</p>
+        <p>Chairperson: Sheen Lee</p>
       </div>
     </div>
-  </Transition>
+  </div>
 
   <div class="hidden md:flex min-h-screen bg-white w-full">
     <div class="w-2/5 desktop-bg-panel flex-shrink-0">
@@ -773,15 +771,4 @@ const verifyAdminCode = () => {
     if (verificationInputs.value[0]) verificationInputs.value[0].focus();
   }
 };
-<style scoped>
-.popup-zoom-enter-active {
-  animation: popup-zoom-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.popup-zoom-leave-active {
-  animation: popup-zoom-in 0.3s cubic-bezier(0.36, 0, 0.66, -0.56) reverse;
-}
-@keyframes popup-zoom-in {
-  0% { transform: scale(0.3); opacity: 0; }
-  100% { transform: scale(1); opacity: 1; }
-}
-</style> 
+</script> 
