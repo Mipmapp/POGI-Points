@@ -9,7 +9,7 @@
       </div>
 
       <!-- Main Scanner Animation -->
-      <div class="relative mb-8">
+      <div class="relative mb-4">
         <div class="w-32 h-32 mx-auto border-4 border-purple-500/30 rounded-2xl relative overflow-hidden bg-purple-900/40">
           <div class="absolute inset-0 bg-gradient-to-b from-purple-500/0 via-purple-400/50 to-purple-500/0 h-1 w-full scanner-line"></div>
           <div class="absolute inset-0 flex items-center justify-center">
@@ -27,17 +27,10 @@
       </div>
 
       <!-- Status Text -->
-      <div class="space-y-4 font-mono">
+      <div class="font-mono">
         <h2 class="text-2xl font-bold text-white tracking-widest uppercase">
           Processing...
         </h2>
-        <div class="flex flex-col gap-2">
-          <div v-for="(log, index) in logs" :key="index" 
-               class="text-xs text-left"
-               :class="index === logs.length - 1 ? 'text-purple-300' : 'text-purple-500/60'">
-            <span class="mr-2">></span> {{ log }}
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -68,16 +61,6 @@ const possibleLogs = [
 ];
 
 const startAnimation = () => {
-  logs.value = [possibleLogs[0]];
-  logInterval = setInterval(() => {
-    if (logs.value.length < 5) {
-      logs.value.push(possibleLogs[Math.floor(Math.random() * possibleLogs.length)]);
-    } else {
-      logs.value.shift();
-      logs.value.push(possibleLogs[Math.floor(Math.random() * possibleLogs.length)]);
-    }
-  }, 300);
-
   matrixInterval = setInterval(() => {
     let text = '';
     const chars = '01ABCDEF';
@@ -92,7 +75,6 @@ const startAnimation = () => {
 };
 
 const stopAnimation = () => {
-  clearInterval(logInterval);
   clearInterval(matrixInterval);
 };
 
