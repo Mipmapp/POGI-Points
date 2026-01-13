@@ -298,6 +298,9 @@ const formatMessage = (message) => {
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
 
+  // Unescape slashes
+  escapedText = escapedText.replace(/&#x2F;/g, '/').replace(/&#47;/g, '/')
+
   // Restore the social tags
   socialTags.forEach((tag, index) => {
     escapedText = escapedText.replace(`__SOCIAL_TAG_${index}__`, tag)

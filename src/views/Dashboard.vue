@@ -8928,6 +8928,9 @@ const formatMessageWithLinks = (text) => {
     return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer" class="ssaam-link text-blue-600 hover:underline">${url}</a>`
   })
 
+  // Unescape slashes that were escaped by the server or during processing
+  finalHtml = finalHtml.replace(/&#x2F;/g, '/').replace(/&#47;/g, '/')
+
   // Finally, put back the social tags
   socialTags.forEach((tag, index) => {
     finalHtml = finalHtml.replace(`__SOCIAL_TAG_${index}__`, tag)
