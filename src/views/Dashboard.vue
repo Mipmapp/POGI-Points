@@ -3588,7 +3588,7 @@
             <tr v-else-if="filteredAttendanceLogs.length === 0" class="text-center">
               <td colspan="6" class="py-8 text-gray-500">No attendance records found</td>
             </tr>
-            <tr v-else v-for="log in filteredAttendanceLogs" :key="log.id" class="hover:bg-gray-50">
+            <tr v-else v-for="log in filteredAttendanceLogs.slice(0, sessionLogsDisplayLimit)" :key="log.id" class="hover:bg-gray-50">
               <td class="border border-purple-300 px-4 py-3">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 flex items-center justify-center text-white text-xs overflow-hidden">
@@ -3616,19 +3616,17 @@
       <!-- Total records info and Load More button -->
       <div v-if="!attendanceLoading && attendanceLogs.length > 0" class="mt-4 text-center">
         <p class="text-sm text-gray-500 mb-2">
-          Showing {{ attendanceLogs.length }} of {{ attendanceLogsPagination.total || attendanceLogs.length }} records
+          Showing {{ Math.min(sessionLogsDisplayLimit, filteredAttendanceLogs.length) }} of {{ filteredAttendanceLogs.length }} records
         </p>
         <button 
-          v-if="attendanceLogsPagination.hasMore"
-          @click="loadMoreSessionLogs"
-          :disabled="loadingMoreLogs"
-          class="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:from-purple-700 hover:to-pink-600 transition font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+          v-if="filteredAttendanceLogs.length > sessionLogsDisplayLimit"
+          @click="sessionLogsDisplayLimit += 20"
+          class="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:from-purple-700 hover:to-pink-600 transition font-medium text-sm flex items-center gap-2 mx-auto"
         >
-          <svg v-if="loadingMoreLogs" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+          <span>Show More</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
           </svg>
-          {{ loadingMoreLogs ? 'Loading...' : 'Load More' }}
         </button>
       </div>
     </div>
@@ -5596,6 +5594,8 @@ const unreadableCount = computed(() => {
 })
 
 // RFID List computed properties with filtering, sorting, and pagination
+const sessionLogsDisplayLimit = ref(20)
+
 const rfidListFilteredUsers = computed(() => {
   let filtered = [...rfidListUsers.value]
   
@@ -8052,6 +8052,7 @@ const openSessionLogs = (session, event) => {
   selectedSessionForLogs.value = session
   selectedLateThresholdMinutes.value = session.late_threshold_minutes || 60
   showEventLogsModal.value = true
+  sessionLogsDisplayLimit.value = 20
   fetchSessionLogs(session._id)
 }
 
