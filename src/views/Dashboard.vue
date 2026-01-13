@@ -8037,8 +8037,8 @@ const processRfidScan = async (inputCode) => {
   try {
     // Determine the request body based on scan mode
     const requestBody = scanMode.value === 'student_id' 
-      ? { student_id: inputCode, identifier_type: 'student_id', source: 'manual' }
-      : { rfid_code: inputCode, identifier_type: 'rfid', source: 'rfid' }
+      ? { student_id: inputCode, identifier_type: 'student_id', source: 'manual', operation_type: rfidOperationType.value }
+      : { rfid_code: inputCode, identifier_type: 'rfid', source: 'rfid', operation_type: rfidOperationType.value }
     
     const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${selectedSession.value._id}/check`, {
       method: 'POST',
