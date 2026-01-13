@@ -271,6 +271,9 @@ const getInitials = (name) => {
 const formatMessage = (message) => {
   if (!message) return ''
   
+  // Unescape slashes from source first
+  let unescapedMessage = message.replace(/&#x2F;/g, '/').replace(/&#47;/g, '/')
+
   // Platform icons mapping (using SVG paths or common emojis as fallback)
   const icons = {
     fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
@@ -288,7 +291,7 @@ const formatMessage = (message) => {
 
   // Use a placeholder strategy to prevent escaping the HTML we generate
   const socialTags = []
-  const textWithPlaceholders = message.replace(pattern, (match, platform, name, link) => {
+  const textWithPlaceholders = unescapedMessage.replace(pattern, (match, platform, name, link) => {
     const iconUrl = icons[platform.toLowerCase()]
     const fullLink = link.startsWith('http') ? link : `https://${link}`
     const tag = `<a href="${fullLink}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 font-semibold no-underline align-middle"><img src="${iconUrl}" alt="${platform}" class="w-4 h-4 object-contain" /><span>${name}</span></a>`
@@ -303,9 +306,6 @@ const formatMessage = (message) => {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;')
-
-  // Unescape slashes
-  escapedText = escapedText.replace(/&#x2F;/g, '/').replace(/&#47;/g, '/')
 
   // Restore the social tags
   socialTags.forEach((tag, index) => {

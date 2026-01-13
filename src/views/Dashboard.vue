@@ -8885,6 +8885,9 @@ const formatPosterName = (notif) => {
 const formatMessageWithLinks = (text) => {
   if (!text) return ''
   
+  // Unescape slashes from source text first
+  let unescapedText = text.replace(/&#x2F;/g, '/').replace(/&#47;/g, '/')
+  
   // Platform icons mapping
   const icons = {
     fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
@@ -8904,7 +8907,7 @@ const formatMessageWithLinks = (text) => {
 
   // First, find all social tags and replace them with unique placeholders
   const socialTags = []
-  let processedText = text.replace(socialPattern, (match, platform, name, link) => {
+  let processedText = unescapedText.replace(socialPattern, (match, platform, name, link) => {
     const iconUrl = icons[platform.toLowerCase()]
     // Fix link decoding and double-slash issue
     let decodedLink = link.replace(/&amp;/g, '&').replace(/&#x2F;/g, '/').replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/&#x3A;/g, ':')
@@ -8933,9 +8936,6 @@ const formatMessageWithLinks = (text) => {
     const fullUrl = url.match(/^https?:\/\//i) ? url : `https://${url}`
     return `<a href="${fullUrl}" target="_blank" rel="noopener noreferrer" class="ssaam-link text-blue-600 hover:underline">${url}</a>`
   })
-
-  // Unescape slashes that were escaped by the server or during processing
-  finalHtml = finalHtml.replace(/&#x2F;/g, '/').replace(/&#47;/g, '/')
 
   // Finally, put back the social tags
   socialTags.forEach((tag, index) => {
