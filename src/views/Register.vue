@@ -370,38 +370,43 @@
                   <img src="/mail-gradient.svg" alt="Email" class="w-8 h-8" />
                 </div>
                 <h3 class="text-lg font-semibold text-purple-900 mb-2">Verify Your Email</h3>
-                <p class="text-sm text-gray-600">We sent a 6-digit code to <span class="font-bold text-purple-600">{{ formData.email }}</span></p>
+                <p class="text-sm text-gray-600">We've sent a 6-digit verification code to:</p>
+                <p class="text-sm font-medium text-purple-600 mt-1">{{ formData.email }}</p>
               </div>
-
-              <div class="flex justify-center gap-2 mb-4">
-                <input 
-                  v-for="(digit, index) in 6" 
-                  :key="index"
-                  v-model="verificationCode[index]"
-                  type="text"
-                  inputmode="numeric"
-                  pattern="[0-9]*"
-                  maxlength="1"
-                  @input="handleCodeInput(index, $event)"
-                  @keydown="handleCodeKeydown(index, $event)"
-                  @paste="handleCodePaste($event)"
-                  :ref="el => codeInputs[index] = el"
-                  class="w-10 h-12 md:w-12 md:h-14 text-center text-xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none transition-all"
-                />
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2 text-center">Enter Verification Code</label>
+                <p class="text-xs text-purple-600 mb-3 text-center font-medium">You can copy the code from your email and paste it here</p>
+                <div class="flex justify-center gap-2">
+                  <input 
+                    v-for="(digit, index) in verificationCode" 
+                    :key="index"
+                    v-model="verificationCode[index]"
+                    type="text"
+                    inputmode="numeric"
+                    pattern="[0-9]*"
+                    maxlength="1"
+                    @input="handleCodeInput(index, $event)"
+                    @keydown="handleCodeKeydown(index, $event)"
+                    @paste="handleCodePaste($event)"
+                    :ref="el => codeInputs[index] = el"
+                    class="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none"
+                  />
+                </div>
+                <p class="text-xs text-gray-500 mt-3 text-center">Code expires in 30 minutes</p>
               </div>
               
-              <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-4">
+              <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-4 mt-4">
                 <div class="flex items-start gap-3">
                   <div class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0">
                     <svg class="w-5 h-5 text-yellow-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                   </div>
                   <div>
                     <p class="font-bold text-yellow-900 text-sm">Important: Your Temporary Password</p>
-                    <p class="text-yellow-800 text-xs mt-1 leading-relaxed">After approval, your password will be your <span class="font-bold bg-yellow-200 px-1 rounded">LAST NAME</span> (uppercase).</p>
+                    <p class="text-yellow-800 text-xs mt-1">After your account is approved, your temporary password will be your <span class="font-bold bg-yellow-200 px-1 rounded">LAST NAME</span> (in uppercase). You can change it anytime from your Dashboard settings.</p>
                   </div>
                 </div>
               </div>
-
+              
               <div class="flex items-center justify-center pt-2">
                 <button type="button" @click="resendCode" :disabled="resendCooldown > 0" class="text-sm text-purple-600 hover:text-purple-800 disabled:text-gray-400 disabled:cursor-not-allowed">
                   {{ resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code' }}
@@ -426,7 +431,7 @@
             </div>
           </form>
 
-          <div class="mt-8 text-center text-xs text-gray-500">
+          <div class="mt-6 text-center text-xs text-gray-500">
             Powered by <button @click="showDevelopersPopup = true" class="text-yellow-500 font-medium hover:text-yellow-600 cursor-pointer">CCS - Creatives Committee</button>
           </div>
         </div>
@@ -434,99 +439,104 @@
     </div>
   </div>
 
-  <div class="mobile-bg-panel md:hidden min-h-screen flex flex-col w-full">
-    <div class="text-center text-white pt-10 pb-6 px-4 relative z-10">
-      <div class="w-24 h-24 mx-auto mb-3">
-        <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl" />
+  <div class="mobile-bg-panel md:hidden min-h-screen flex flex-col">
+
+    <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
+      <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="w-16 h-16 mx-auto mb-4 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+        <img src="/user_plus.svg" alt="Register" class="w-10 h-10" style="filter: brightness(0) invert(1);" />
       </div>
-      <h1 class="text-3xl font-bold mb-1">SSAAM</h1>
-      <p class="text-base mb-2">Let's Create Your Profile!</p>
-      <p class="text-xs opacity-90 italic">Please provide your basic information.</p>
-      <p class="text-xs font-semibold mt-2 underline decoration-2 underline-offset-4">{{ stepTitle }}</p>
+      <h1 class="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Let's Create</h1>
+      <h2 class="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Your Profile!</h2>
+      <p class="text-xs sm:text-sm opacity-90 italic mb-3 sm:mb-4">Please provide your basic information.</p>
+      <p class="text-sm sm:text-base font-semibold">
+        {{ stepTitle }}
+      </p>
     </div>
 
-    <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-5 py-6 overflow-auto">
+    <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 overflow-auto">
       <div class="max-w-md mx-auto">
-        <div class="flex mb-6 bg-gray-100 rounded-lg p-1">
-          <button @click="goToLogin" class="flex-1 py-2.5 px-4 text-center font-medium text-gray-500 hover:text-gray-700">
+
+        <div class="flex mb-8 bg-gray-100 rounded-lg p-1">
+          <button @click="goToLogin" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700">
             Log In
           </button>
-          <button class="flex-1 py-2.5 px-4 text-center font-medium rounded-md bg-white text-purple-600 shadow-sm flex items-center justify-center gap-1">
-            <img src="/register_user.svg" alt="Register" class="w-4 h-4" /> Register
+          <button class="flex-1 py-3 px-4 text-center font-medium rounded-md bg-white text-purple-600 shadow-sm flex items-center justify-center gap-1">
+            <img src="/register_user.svg" alt="Register" class="w-5 h-5" /> Register
           </button>
         </div>
 
         <form @submit.prevent="handleNext" novalidate class="space-y-4">
+
           <div v-if="currentStep === 1" class="space-y-4">
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1.5">First Name</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
               <div class="relative">
-                <img src="/user.svg" alt="First Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
-                <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="JUAN" class="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm uppercase" required />
+                <img src="/user.svg" alt="First Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+                <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="JUAN" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
               </div>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1.5">Middle Name <span class="text-gray-500 text-[10px]">(optional)</span></label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Middle Name <span class="text-gray-500 text-xs">(optional)</span></label>
               <div class="relative">
-                <img src="/user.svg" alt="Middle Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
-                <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="DELA" class="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm uppercase" />
+                <img src="/user.svg" alt="Middle Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+                <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="DELA" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" />
               </div>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1.5">Last Name</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
               <div class="relative">
-                <img src="/user.svg" alt="Last Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
-                <input v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" type="text" placeholder="CRUZ" class="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm uppercase" required />
+                <img src="/user.svg" alt="Last Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+                <input v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" type="text" placeholder="CRUZ" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
               </div>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1.5">Suffix <span class="text-gray-500 text-[10px]">(optional)</span></label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Suffix <span class="text-gray-500 text-xs">(optional)</span></label>
               <div class="relative">
-                <select v-model="formData.suffix" class="w-full pl-3 pr-9 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none bg-white text-sm appearance-none">
+                <select v-model="formData.suffix" class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white">
                   <option value="">Select Suffix</option>
                   <option value="Jr.">Jr.</option>
                   <option value="Sr.">Sr.</option>
-                  <option value="I">I</option>
                   <option value="II">II</option>
                   <option value="III">III</option>
+                  <option value="IV">IV</option>
                 </select>
-                <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none" />
+                <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none" />
               </div>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1.5">E-mail</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
               <div class="relative">
-                <img src="/mail.svg" alt="Email" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
-                <input v-model="formData.email" type="email" placeholder="juandelacruz@gmail.com" class="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm" required />
+                <img src="/mail.svg" alt="Email" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+                <input v-model="formData.email" type="email" placeholder="juandelacruz@gmail.com" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
               </div>
             </div>
-            <div class="flex items-center justify-center pt-2">
+            <div class="flex items-center justify-center pt-4">
               <div class="flex space-x-2">
-                <div class="w-10 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 h-1 bg-gray-300 rounded"></div>
-                <div class="w-10 h-1 bg-gray-300 rounded"></div>
-                <div class="w-10 h-1 bg-gray-300 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                <div class="w-12 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
-            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center text-sm">
+            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
               Next <span class="ml-2">→</span>
             </button>
           </div>
 
           <div v-if="currentStep === 2" class="space-y-4">
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1.5">Student ID</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
               <div class="relative">
-                <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
-                <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="00-A-00000" maxlength="10" class="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm uppercase" required />
+                <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+                <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="00-A-00000" maxlength="10" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
               </div>
-              <p class="text-[10px] text-gray-400 mt-1 pl-9">Format: 00-A-00000</p>
+              <p class="text-xs text-gray-400 mt-1">Format: 00-A-00000</p>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1.5">Year Level</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
               <div class="relative">
-                <img src="/book.svg" alt="Year Level" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
-                <select v-model="formData.year_level" class="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none bg-white text-sm appearance-none" required>
+                <img src="/book.svg" alt="Year Level" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+                <select v-model="formData.year_level" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white" required>
                   <option value="" disabled>Select Year Level</option>
                   <option value="1st Year">1st Year</option>
                   <option value="2nd Year">2nd Year</option>
@@ -536,10 +546,10 @@
               </div>
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1.5">Program</label>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Program</label>
               <div class="relative">
-                <img src="/course.svg" alt="Program" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
-                <select v-model="formData.program" class="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none bg-white text-sm appearance-none" required>
+                <img src="/course.svg" alt="Program" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+                <select v-model="formData.program" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white" required>
                   <option value="" disabled>Select Program</option>
                   <option value="BSCS">BSCS</option>
                   <option value="BSIS">BSIS</option>
@@ -547,173 +557,191 @@
                 </select>
               </div>
             </div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-4">
               <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1.5">Semester</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
                 <div class="relative">
-                  <select v-model="formData.semester" class="w-full pl-3 pr-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none bg-white text-xs appearance-none" required>
-                    <option value="" disabled>Sem</option>
+                  <img src="/calendar.svg" alt="Semester" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
+                  <select v-model="formData.semester" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white text-sm" required>
+                    <option value="" disabled>Semester</option>
                     <option value="1st Sem">1st Sem</option>
                     <option value="2nd Sem">2nd Sem</option>
                   </select>
-                  <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                 </div>
               </div>
               <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1.5">School Year</label>
+                <label class="block text-sm font-medium text-gray-700 mb-2">School Year</label>
                 <div class="relative">
-                  <select v-model="formData.school_year" class="w-full pl-3 pr-8 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none bg-white text-xs appearance-none" required>
+                  <img src="/event_note.svg" alt="School Year" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
+                  <select v-model="formData.school_year" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white text-sm" required>
                     <option value="" disabled>Year</option>
-                    <option value="2024-2025">24-25</option>
-                    <option value="2025-2026">25-26</option>
+                    <option value="2024-2025">2024-2025</option>
+                    <option value="2025-2026">2025-2026</option>
                   </select>
-                  <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-2 top-1/2 transform -translate-y-1/2 w-3.5 h-3.5 pointer-events-none" />
                 </div>
               </div>
             </div>
-            <div class="flex items-center justify-center pt-2">
+            <div class="flex items-center justify-center pt-4">
               <div class="flex space-x-2">
-                <div class="w-10 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 h-1 bg-gray-300 rounded"></div>
-                <div class="w-10 h-1 bg-gray-300 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                <div class="w-12 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
-            <div class="flex gap-3">
-              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-2.5 px-3 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
-                <span class="mr-1">←</span>Back
+            <div class="flex gap-4">
+              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+                <span class="mr-2">←</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2.5 px-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center text-sm">
-                Next <span class="ml-1">→</span>
+              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
+                Next <span class="ml-2">→</span>
               </button>
             </div>
           </div>
 
           <div v-if="currentStep === 3" class="space-y-4">
             <div class="text-center">
-              <div class="w-40 h-40 mx-auto mb-3 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-300">
+              <div class="w-40 h-40 sm:w-48 sm:h-48 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
                 <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
-                <div v-else class="flex flex-col items-center justify-center p-4">
-                  <div class="w-16 h-16 rounded-full bg-gray-400 mb-2 opacity-50"></div>
-                  <p class="text-[10px] text-gray-500">Your photo here</p>
+                <div v-else class="flex flex-col items-center justify-center">
+                  <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-400 mb-3 sm:mb-4"></div>
+                  <div class="w-28 h-16 sm:w-32 sm:h-20 bg-gray-500 rounded-t-full"></div>
                 </div>
               </div>
-              <label class="block text-xs font-medium text-gray-700 mb-3">Profile Picture</label>
+              <label class="block text-sm font-medium text-gray-700 mb-4">Upload Image</label>
               <div class="relative">
                 <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload-mobile" />
-                <label for="file-upload-mobile" class="cursor-pointer inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 rounded-lg shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-300">
-                  <span class="mr-2">📷</span>{{ imagePreview ? 'Change Photo' : 'Upload Photo' }}
+                <label for="file-upload-mobile" class="cursor-pointer inline-flex items-center justify-center px-6 sm:px-8 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-300">
+                  <span class="mr-2">📷</span>{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
                 </label>
               </div>
             </div>
-            <div class="flex items-center justify-center pt-2">
+            <div class="flex items-center justify-center pt-4">
               <div class="flex space-x-2">
                 <div class="w-10 h-1 bg-purple-600 rounded"></div>
                 <div class="w-10 h-1 bg-purple-600 rounded"></div>
                 <div class="w-10 h-1 bg-purple-600 rounded"></div>
                 <div class="w-10 h-1 bg-gray-300 rounded"></div>
+                <div class="w-10 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
-            <div class="flex gap-3">
-              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-2.5 px-3 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
-                <span class="mr-1">←</span>Back
+            <div class="flex gap-4">
+              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-4 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm sm:text-base">
+                <span class="mr-2">←</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2.5 px-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center text-sm">
-                Next <span class="ml-1">→</span>
+              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 sm:px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center text-sm sm:text-base">
+                Next <span class="ml-2">→</span>
               </button>
             </div>
           </div>
 
           <div v-if="currentStep === 3.5" class="space-y-4">
             <div class="text-center mb-3">
-              <div class="w-12 h-12 mx-auto mb-2 bg-purple-100 rounded-full flex items-center justify-center">
-                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                <svg class="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
-              <p class="text-xs text-gray-600">Please review your information.</p>
+              <h3 class="text-base sm:text-lg font-semibold text-purple-900 mb-1 sm:mb-2">Review Your Information</h3>
+              <p class="text-xs sm:text-sm text-gray-600">Please verify all details are correct.</p>
             </div>
             
-            <div class="bg-gray-50 rounded-xl p-3 space-y-3">
-              <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+            <div class="bg-gray-50 rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3">
+              <div class="flex flex-col items-center text-center gap-2">
+                <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
                   <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
+                  <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                  </div>
                 </div>
-                <div>
-                  <p class="font-bold text-purple-900 text-sm leading-tight">{{ formData.first_name }} {{ formData.last_name }}</p>
-                  <p class="text-[10px] text-gray-500">{{ formData.student_id }}</p>
+                <div class="min-w-0">
+                  <p class="font-bold text-purple-900 text-sm sm:text-base">{{ formData.first_name }} {{ formData.middle_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
+                  <p class="text-xs sm:text-sm text-gray-600">{{ formData.student_id }}</p>
                 </div>
               </div>
               
-              <div class="border-t border-gray-200 pt-2 grid grid-cols-2 gap-x-2 gap-y-2 text-[10px]">
+              <div class="border-t border-gray-200 pt-2 sm:pt-3 grid grid-cols-2 gap-2 text-xs sm:text-sm">
+                <div>
+                  <p class="text-gray-500 text-[10px] sm:text-xs">Email</p>
+                  <p class="font-medium text-gray-800 break-all text-[10px] sm:text-xs leading-tight">{{ formData.email }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-500 text-[10px] sm:text-xs">Program</p>
+                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.program }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-500 text-[10px] sm:text-xs">Year Level</p>
+                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.year_level }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-500 text-[10px] sm:text-xs">Semester</p>
+                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.semester }}</p>
+                </div>
                 <div class="col-span-2">
-                  <p class="text-gray-400">Email</p>
-                  <p class="font-medium text-gray-700 truncate">{{ formData.email }}</p>
-                </div>
-                <div>
-                  <p class="text-gray-400">Program</p>
-                  <p class="font-medium text-gray-700">{{ formData.program }}</p>
-                </div>
-                <div>
-                  <p class="text-gray-400">Year Level</p>
-                  <p class="font-medium text-gray-700">{{ formData.year_level }}</p>
+                  <p class="text-gray-500 text-[10px] sm:text-xs">School Year</p>
+                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.school_year }}</p>
                 </div>
               </div>
             </div>
             
             <div v-if="reviewCountdown > 0" class="text-center">
-              <div class="inline-flex items-center gap-2 bg-purple-50 text-purple-600 px-3 py-1.5 rounded-full text-[10px]">
-                <svg class="w-3 h-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                <span>Please review... {{ reviewCountdown }}s</span>
+              <div class="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-3 sm:px-4 py-2 rounded-full">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <span class="font-medium text-xs sm:text-sm">Please review... {{ reviewCountdown }}s</span>
               </div>
             </div>
             
-            <div class="flex items-center justify-center pt-1">
+            <div class="flex items-center justify-center pt-3 sm:pt-4">
               <div class="flex space-x-2">
-                <div class="w-10 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 h-1 bg-gray-300 rounded"></div>
+                <div class="w-10 sm:w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-10 sm:w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-10 sm:w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-10 sm:w-12 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
-            <div class="flex gap-3">
-              <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-2.5 px-3 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
-                <span class="mr-1">←</span>Back
+            <div class="flex gap-3 sm:gap-4">
+              <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
+                <span class="mr-1 sm:mr-2">←</span>Back
               </button>
-              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-2.5 px-3 rounded-lg font-medium transition duration-300 flex items-center justify-center text-sm', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white']">
-                {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1">→</span>
+              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center text-sm', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600']">
+                {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1 sm:ml-2">→</span>
               </button>
             </div>
           </div>
 
           <div v-if="currentStep === 4" class="space-y-4">
-            <div class="text-center mb-3">
-              <div class="w-12 h-12 mx-auto mb-2 bg-purple-100 rounded-full flex items-center justify-center">
-                <img src="/mail-gradient.svg" alt="Email" class="w-6 h-6" />
+            <div class="text-center mb-3 sm:mb-4">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                <img src="/mail-gradient.svg" alt="Email" class="w-7 h-7 sm:w-8 sm:h-8" />
               </div>
-              <h3 class="text-sm font-semibold text-purple-900 mb-1">Verify Your Email</h3>
-              <p class="text-[10px] text-gray-500">We sent a code to <span class="font-bold text-purple-600">{{ formData.email }}</span></p>
+              <h3 class="text-base sm:text-lg font-semibold text-purple-900 mb-1 sm:mb-2">Verify Your Email</h3>
+              <p class="text-xs sm:text-sm text-gray-600">We've sent a 6-digit verification code to:</p>
+              <p class="text-xs sm:text-sm font-medium text-purple-600 mt-1 break-all px-2">{{ formData.email }}</p>
             </div>
-
-            <div class="flex justify-center gap-1.5 mb-3">
-              <input 
-                v-for="(digit, index) in 6" 
-                :key="index"
-                v-model="verificationCode[index]"
-                type="text"
-                inputmode="numeric"
-                pattern="[0-9]*"
-                maxlength="1"
-                @input="handleCodeInput(index, $event)"
-                @keydown="handleCodeKeydown(index, $event)"
-                @paste="handleCodePaste($event)"
-                :ref="el => codeInputsMobile[index] = el"
-                class="w-9 h-11 sm:w-10 sm:h-12 text-center text-lg sm:text-xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none"
-              />
+            <div>
+              <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2 text-center">Enter Verification Code</label>
+              <p class="text-[10px] sm:text-xs text-purple-600 mb-2 sm:mb-3 text-center font-medium">Copy the code from your email and paste it here</p>
+              <div class="flex justify-center gap-1.5 sm:gap-2">
+                <input 
+                  v-for="(digit, index) in verificationCode" 
+                  :key="index"
+                  v-model="verificationCode[index]"
+                  type="text"
+                  inputmode="numeric"
+                  pattern="[0-9]*"
+                  maxlength="1"
+                  @input="handleCodeInput(index, $event)"
+                  @keydown="handleCodeKeydown(index, $event)"
+                  @paste="handleCodePaste($event)"
+                  :ref="el => codeInputsMobile[index] = el"
+                  class="w-9 h-11 sm:w-10 sm:h-12 text-center text-lg sm:text-xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none"
+                />
+              </div>
+              <p class="text-[10px] sm:text-xs text-gray-500 mt-2 sm:mt-3 text-center">Code expires in 30 minutes</p>
             </div>
             
             <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-3 sm:p-4 mt-3 sm:mt-4">
               <div class="flex items-start gap-2 sm:gap-3">
                 <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-yellow-400 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-4 h-4 sm:w-5 h-5 text-yellow-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5 text-yellow-900" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <div>
                   <p class="font-bold text-yellow-900 text-xs sm:text-sm">Your Temporary Password</p>
@@ -845,56 +873,105 @@ const formData = reactive({
   email: ''
 })
 
-const formatStudentId = (id) => {
-  let cleaned = id.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
-  if (cleaned.length > 2) cleaned = cleaned.slice(0, 2) + '-' + cleaned.slice(2)
-  if (cleaned.length > 4) cleaned = cleaned.slice(0, 4) + '-' + cleaned.slice(4)
-  return cleaned.slice(0, 10)
-}
-
 const isUploading = ref(false)
+const previousStudentIdLength = ref(0)
+
+const imgbbApiKeys = [
+  "b6a37178abd163036357a7ba35fd0364",
+  "3b523af3b0ffb526efddfb51b8928581"
+]
+
 const getRandomApiKey = () => {
-  const keys = ['706f52e22c83c271038290f63b20e03e', '888a75e24a872cc4d830b80985223c7b', 'c1374528178a99c9c100e00d740c000e']
-  return keys[Math.floor(Math.random() * keys.length)]
+  return imgbbApiKeys[Math.floor(Math.random() * imgbbApiKeys.length)]
 }
 
-const compressImage = async (file) => {
+const formatStudentId = (value) => {
+  let input = value.toUpperCase()
+  let cleaned = input.replace(/[^0-9A-Z-]/g, '')
+  let noDashes = cleaned.replace(/-/g, '')
+  const isDeleting = noDashes.length < previousStudentIdLength.value
+  previousStudentIdLength.value = noDashes.length
+  
+  if (isDeleting) {
+    return noDashes.slice(0, 8)
+  }
+  
+  const digits1 = noDashes.slice(0, 2)
+  const letter = noDashes.slice(2, 3)
+  const digits2 = noDashes.slice(3, 8)
+  
+  let formatted = digits1
+  if (digits1.length === 2) formatted += '-'
+  if (letter) formatted += letter
+  if (letter) formatted += '-'
+  if (digits2) formatted += digits2
+  
+  return formatted.slice(0, 10)
+}
+
+const compressImage = (file) => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
+    
     reader.onload = (event) => {
       const img = new Image()
+      
       img.onload = () => {
         const canvas = document.createElement('canvas')
         let width = img.width
         let height = img.height
-        const max_size = 800
+        
+        const maxWidth = 1920
+        const maxHeight = 1920
         
         if (width > height) {
-          if (width > max_size) {
-            height *= max_size / width
-            width = max_size
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width)
+            width = maxWidth
           }
         } else {
-          if (height > max_size) {
-            width *= max_size / height
-            height = max_size
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height)
+            height = maxHeight
           }
         }
         
         canvas.width = width
         canvas.height = height
+        
         const ctx = canvas.getContext('2d')
+        ctx.fillStyle = 'white'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
         ctx.drawImage(img, 0, 0, width, height)
         
-        const tryCompress = (quality = 0.7) => {
+        let quality = 0.9
+        let attempts = 0
+        const maxAttempts = 15
+        const targetSizeKB = 80
+        
+        const tryCompress = () => {
+          if (attempts >= maxAttempts) {
+            canvas.toBlob(resolve, 'image/jpeg', 0.1)
+            return
+          }
+          
           canvas.toBlob((blob) => {
-            if (blob.size > 200 * 1024 && quality > 0.1) {
-              tryCompress(quality - 0.1)
-            } else {
+            const sizeInKB = blob.size / 1024
+            
+            if (sizeInKB <= targetSizeKB) {
               resolve(blob)
+            } else {
+              quality -= 0.06
+              attempts++
+              if (quality >= 0.05) {
+                tryCompress()
+              } else {
+                resolve(blob)
+              }
             }
           }, 'image/jpeg', quality)
         }
+        
         tryCompress()
       }
       
@@ -1253,26 +1330,7 @@ const handleNext = async () => {
 const goToLogin = () => {
   router.push('/')
 }
-</script>
-
 <style scoped>
-.desktop-bg-panel {
-  background: linear-gradient(135deg, #6b21a8 0%, #d946ef 100%);
-  width: 40%;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-.mobile-bg-panel {
-  background: linear-gradient(135deg, #6b21a8 0%, #d946ef 100%);
-}
-
 .popup-zoom-enter-active {
   animation: popup-zoom-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

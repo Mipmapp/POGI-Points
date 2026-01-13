@@ -217,6 +217,7 @@
   </div>
 
   <div class="mobile-bg-panel md:hidden min-h-screen flex flex-col w-full">
+
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
       <div class="w-32 h-32 mx-auto mb-4">
         <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl" />
@@ -229,6 +230,7 @@
 
     <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 overflow-auto">
       <div class="max-w-md mx-auto">
+
         <div class="flex mb-8 bg-gray-100 rounded-lg p-1">
           <button class="flex-1 py-3 px-4 text-center font-medium rounded-md bg-white text-purple-600 shadow-sm">
             Log In
@@ -420,10 +422,124 @@ const closeForgotPasswordModal = () => {
   newPassword.value = ''
   confirmNewPassword.value = ''
   resetMessage.value = ''
+  resetSuccess.value = false
+}
+
+const requestResetCode = async () => {
+  resetLoading.value = true
+  resetMessage.value = ''
+  try {
+    const token = encodeTimestamp()
+    const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/request', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer SSAAMStudents',
+        'X-SSAAM-TS': token
+      },
+      body: JSON.stringify({ 
+        student_id: resetStudentId.value.trim(),
+        email: resetEmail.value.trim(),
+        _ssaam_access_token: token
+      })
+    })
+    const data = await response.json()
+    if (response.ok) {
+      resetSuccess.value = true
+      resetMessage.value = data.message || 'Verification code sent to your email!'
+      resetStep.value = 2
+    } else {
+      resetSuccess.value = false
+      resetMessage.value = data.message || 'Failed to send verification code'
+    }
+  } catch (error) {
+    resetSuccess.value = false
+    resetMessage.value = 'Network error. Please try again.'
+  } finally {
+    resetLoading.value = false
+  }
+}
+
+const verifyResetCode = async () => {
+  resetLoading.value = true
+  resetMessage.value = ''
+  try {
+    const token = encodeTimestamp()
+    const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/verify', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer SSAAMStudents',
+        'X-SSAAM-TS': token
+      },
+      body: JSON.stringify({ 
+        student_id: resetStudentId.value.trim(), 
+        code: resetCode.value.trim(),
+        _ssaam_access_token: token
+      })
+    })
+    const data = await response.json()
+    if (response.ok) {
+      resetSuccess.value = true
+      resetMessage.value = 'Code verified! Enter your new password.'
+      resetToken.value = data.reset_token
+      resetStep.value = 3
+    } else {
+      resetSuccess.value = false
+      resetMessage.value = data.message || 'Invalid verification code'
+    }
+  } catch (error) {
+    resetSuccess.value = false
+    resetMessage.value = 'Network error. Please try again.'
+  } finally {
+    resetLoading.value = false
+  }
+}
+
+const completePasswordReset = async () => {
+  if (newPassword.value !== confirmNewPassword.value) {
+    resetMessage.value = 'Passwords do not match'
+    resetSuccess.value = false
+    return
+  }
+  resetLoading.value = true
+  resetMessage.value = ''
+  try {
+    const token = encodeTimestamp()
+    const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/complete', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer SSAAMStudents',
+        'X-SSAAM-TS': token
+      },
+      body: JSON.stringify({ 
+        student_id: resetStudentId.value.trim(), 
+        reset_token: resetToken.value,
+        new_password: newPassword.value,
+        _ssaam_access_token: token
+      })
+    })
+    const data = await response.json()
+    if (response.ok) {
+      resetSuccess.value = true
+      resetMessage.value = 'Password reset successful! You can now login.'
+      setTimeout(() => {
+        closeForgotPasswordModal()
+      }, 2000)
+    } else {
+      resetSuccess.value = false
+      resetMessage.value = data.message || 'Failed to reset password'
+    }
+  } catch (error) {
+    resetSuccess.value = false
+    resetMessage.value = 'Network error. Please try again.'
+  } finally {
+    resetLoading.value = false
+  }
 }
 
 const togglePasswordVisibility = () => {
-  if (visibilityAnimating.value) return
   visibilityAnimating.value = true
   showPassword.value = !showPassword.value
   setTimeout(() => {
@@ -440,6 +556,16 @@ const developers = [
 ]
 
 onMounted(async () => {
+  const currentUser = localStorage.getItem('currentUser')
+  if (currentUser) {
+    const user = JSON.parse(currentUser)
+    if (user.studentId || user.student_id) {
+      router.push('/dashboard')
+      return
+    }
+  }
+  
+  // Check login settings
   try {
     const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
       method: 'GET',
@@ -647,145 +773,7 @@ const verifyAdminCode = () => {
     if (verificationInputs.value[0]) verificationInputs.value[0].focus();
   }
 };
-
-const requestResetCode = async () => {
-  if (!resetStudentId.value.trim() || !resetEmail.value.trim()) return
-  
-  resetLoading.value = true
-  resetMessage.value = ''
-  
-  try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/students/reset-password-request', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer SSAAMStudents'
-      },
-      body: JSON.stringify({
-        student_id: resetStudentId.value.trim(),
-        email: resetEmail.value.trim()
-      })
-    })
-    
-    const data = await response.json()
-    if (response.ok) {
-      resetSuccess.value = true
-      resetMessage.value = 'Verification code sent to your email.'
-      resetStep.value = 2
-    } else {
-      resetSuccess.value = false
-      resetMessage.value = data.message || 'Failed to send reset code.'
-    }
-  } catch (error) {
-    resetSuccess.value = false
-    resetMessage.value = 'Network error. Please try again.'
-  } finally {
-    resetLoading.value = false
-  }
-}
-
-const verifyResetCode = async () => {
-  if (resetCode.value.length !== 6) return
-  
-  resetLoading.value = true
-  resetMessage.value = ''
-  
-  try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/students/verify-reset-code', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer SSAAMStudents'
-      },
-      body: JSON.stringify({
-        student_id: resetStudentId.value.trim(),
-        code: resetCode.value
-      })
-    })
-    
-    const data = await response.json()
-    if (response.ok) {
-      resetToken.value = data.token
-      resetStep.value = 3
-    } else {
-      resetSuccess.value = false
-      resetMessage.value = data.message || 'Invalid verification code.'
-    }
-  } catch (error) {
-    resetSuccess.value = false
-    resetMessage.value = 'Network error. Please try again.'
-  } finally {
-    resetLoading.value = false
-  }
-}
-
-const completePasswordReset = async () => {
-  if (!newPassword.value || newPassword.value !== confirmNewPassword.value) return
-  
-  resetLoading.value = true
-  resetMessage.value = ''
-  
-  try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/students/complete-password-reset', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${resetToken.value}`
-      },
-      body: JSON.stringify({
-        new_password: newPassword.value
-      })
-    })
-    
-    if (response.ok) {
-      resetSuccess.value = true
-      resetMessage.value = 'Password reset successful. You can now login.'
-      setTimeout(() => {
-        closeForgotPasswordModal()
-      }, 2000)
-    } else {
-      const data = await response.json()
-      resetSuccess.value = false
-      resetMessage.value = data.message || 'Failed to reset password.'
-    }
-  } catch (error) {
-    resetSuccess.value = false
-    resetMessage.value = 'Network error. Please try again.'
-  } finally {
-    resetLoading.value = false
-  }
-}
-</script>
-
 <style scoped>
-.desktop-bg-panel {
-  background: linear-gradient(135deg, #6b21a8 0%, #d946ef 100%);
-  color: white;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
-}
-
-.mobile-bg-panel {
-  background: linear-gradient(135deg, #6b21a8 0%, #d946ef 100%);
-}
-
-.gradient-icon {
-  background: linear-gradient(135deg, #6b21a8 0%, #d946ef 100%);
-}
-
-.animate-wipe {
-  animation: wipe 0.4s ease-in-out;
-}
-
-@keyframes wipe {
-  0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
-  100% { transform: translate(0, -50%) scale(1); opacity: 1; }
-}
-
 .popup-zoom-enter-active {
   animation: popup-zoom-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -796,4 +784,4 @@ const completePasswordReset = async () => {
   0% { transform: scale(0.3); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
-</style>
+</style> 
