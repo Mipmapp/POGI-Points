@@ -1913,15 +1913,15 @@
                     <h3 class="text-sm font-bold text-gray-900 mb-1 leading-snug">{{ notif.title }}</h3>
                     <div class="text-xs text-gray-600 whitespace-pre-wrap break-words leading-relaxed" v-html="formatMessageWithLinks(notif.message || notif.content)"></div>
                     
-                    <!-- Compact Image Preview -->
-                    <div v-if="notif.image_url" class="mt-3 relative group max-w-sm">
+                    <!-- Expanded Image Preview -->
+                    <div v-if="notif.image_url" class="mt-3 relative group w-full">
                       <div v-show="!notifImageLoaded[notif._id]" class="aspect-video bg-gray-50 rounded-xl border border-gray-100 flex items-center justify-center">
                         <div class="w-6 h-6 border-2 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
                       </div>
                       <img 
                         v-show="notifImageLoaded[notif._id]" 
                         :src="notif.image_url" 
-                        class="w-full h-auto max-h-[300px] object-cover rounded-xl border border-gray-100 shadow-sm cursor-pointer hover:brightness-95 transition-all" 
+                        class="w-full h-auto max-h-[600px] object-contain bg-gray-50 rounded-xl border border-gray-100 shadow-sm cursor-pointer hover:brightness-95 transition-all" 
                         @click="openImagePreview(notif.image_url)" 
                         @load="handleNotifImageLoad(notif._id)" 
                         @error="handleNotifImageError(notif._id, notif.image_url, $event)" 

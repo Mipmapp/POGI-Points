@@ -69,11 +69,11 @@
               <h4 class="text-lg font-bold text-gray-900 mb-2">{{ announcement.title }}</h4>
               <div class="text-gray-700 text-sm whitespace-pre-wrap break-words leading-relaxed" v-html="formatMessage(announcement.message)"></div>
 
-              <div v-if="announcement.image_url" class="mt-3">
+              <div v-if="announcement.image_url" class="mt-3 w-full">
                 <img 
                   :src="announcement.image_url" 
                   :alt="announcement.title"
-                  class="w-full rounded-lg max-h-64 sm:max-h-[500px] object-contain bg-gray-50 cursor-pointer hover:opacity-95 transition"
+                  class="w-full rounded-lg max-h-96 sm:max-h-[600px] object-contain bg-gray-50 cursor-pointer hover:opacity-95 transition"
                   @click="$emit('preview-image', announcement.image_url)"
                 />
               </div>
