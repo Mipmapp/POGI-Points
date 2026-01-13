@@ -54,7 +54,22 @@
       </div>
       <h3 class="text-2xl font-bold text-purple-900 mb-2">2nd Verification</h3>
       <p class="text-gray-600 mb-6 text-sm">Please enter the daily verification code to access the Admin Dashboard.</p>
-      <input v-model="verificationCode" type="password" placeholder="••••••" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-center text-2xl tracking-widest mb-6" @keyup.enter="verifyAdminCode" />
+      
+      <div class="flex justify-center gap-2 mb-8">
+        <input 
+          v-for="(digit, index) in 6" 
+          :key="index"
+          :ref="el => { if (el) verificationInputs[index] = el }"
+          v-model="verificationDigits[index]"
+          type="password"
+          maxlength="1"
+          class="w-10 h-12 md:w-12 md:h-14 border-2 border-gray-300 rounded-lg text-center text-xl font-bold focus:border-purple-600 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+          @input="handleDigitInput(index, $event)"
+          @keydown.delete="handleDigitDelete(index, $event)"
+          inputmode="numeric"
+        />
+      </div>
+
       <div class="flex gap-3">
         <button @click="showVerificationModal = false; isLoading = false" class="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition duration-300">
           Cancel
@@ -358,8 +373,30 @@ const visibilityAnimating = ref(false)
 const loginDisabled = ref(false)
 const loginDisabledMessage = ref('')
 const showVerificationModal = ref(false)
-const verificationCode = ref('')
+const verificationDigits = ref(['', '', '', '', '', ''])
+const verificationInputs = ref([])
 let pendingUser = null
+
+const handleDigitInput = (index, event) => {
+  const val = event.target.value;
+  if (val.length > 0) {
+    // Only take the last character entered
+    verificationDigits.value[index] = val.slice(-1);
+    // Move to next input
+    if (index < 5) {
+      verificationInputs.value[index + 1].focus();
+    } else {
+      // Auto-verify on last digit
+      verifyAdminCode();
+    }
+  }
+};
+
+const handleDigitDelete = (index, event) => {
+  if (!verificationDigits.value[index] && index > 0) {
+    verificationInputs.value[index - 1].focus();
+  }
+};
 
 const showForgotPasswordModal = ref(false)
 const resetStep = ref(1)
@@ -673,16 +710,20 @@ const handleLogin = async () => {
       if (userLikeId) {
         localStorage.setItem('userLikeId', userLikeId)
       }
-      localStorage.setItem("currentUser", JSON.stringify(normalizedUser));
-      localStorage.setItem("authToken", normalizedUser.token);
       
       if (normalizedUser.role === 'master' || normalizedUser.isMaster) {
         pendingUser = normalizedUser;
         showVerificationModal.value = true;
         isLoading.value = false;
+        // Focus the first digit input after modal opens
+        setTimeout(() => {
+          if (verificationInputs.value[0]) verificationInputs.value[0].focus();
+        }, 100);
         return;
       }
 
+      localStorage.setItem("currentUser", JSON.stringify(normalizedUser));
+      localStorage.setItem("authToken", normalizedUser.token);
       console.log("Navigating to dashboard...");
       router.push("/dashboard");
       return;
@@ -713,14 +754,21 @@ const verifyAdminCode = () => {
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const year = String(now.getFullYear()).slice(-2);
   const correctCode = `${day}${month}${year}`;
+  const enteredCode = verificationDigits.value.join('');
 
-  if (verificationCode.value === correctCode) {
+  if (enteredCode === correctCode) {
     showVerificationModal.value = false;
+    // Only now store the sensitive data
+    localStorage.setItem("currentUser", JSON.stringify(pendingUser));
+    localStorage.setItem("authToken", pendingUser.token);
     console.log("Admin Verification Success. Navigating to dashboard...");
     router.push("/dashboard");
   } else {
     errorMessage.value = "Invalid verification code. Please try again.";
     showErrorNotification.value = true;
+    // Clear digits on error
+    verificationDigits.value = ['', '', '', '', '', ''];
+    if (verificationInputs.value[0]) verificationInputs.value[0].focus();
   }
 };
 </script> 
