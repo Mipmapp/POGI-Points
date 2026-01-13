@@ -7480,7 +7480,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
     
     // Fetch paginated logs for display
     const params = new URLSearchParams()
-    params.append('limit', '50')
+    params.append('limit', '10000')
     params.append('page', attendanceLogsPagination.value.page.toString())
     if (eventLogsFilter.value.yearLevel) params.append('yearLevel', eventLogsFilter.value.yearLevel)
     if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
