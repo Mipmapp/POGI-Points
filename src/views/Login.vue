@@ -54,7 +54,7 @@
       </div>
       <h3 class="text-2xl font-bold text-purple-900 mb-2">2nd Verification</h3>
       <p class="text-gray-600 mb-6 text-sm">Please enter the daily verification code to access the Admin Dashboard.</p>
-      <input v-model="verificationCode" type="text" placeholder="DDMMYY" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-center text-2xl tracking-widest mb-6" @keyup.enter="verifyAdminCode" />
+      <input v-model="verificationCode" type="password" placeholder="••••••" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-center text-2xl tracking-widest mb-6" @keyup.enter="verifyAdminCode" />
       <div class="flex gap-3">
         <button @click="showVerificationModal = false; isLoading = false" class="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition duration-300">
           Cancel
