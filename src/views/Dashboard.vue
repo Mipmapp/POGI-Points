@@ -275,25 +275,18 @@
             </div>
           </div>
 
-          <!-- Operation Type Toggle (Check-in/Check-out) -->
-          <div class="flex justify-center">
-            <div class="inline-flex bg-white bg-opacity-10 rounded-lg p-1 border border-white/20">
-              <button 
-                @click="rfidOperationType = 'in'" 
-                :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition flex items-center gap-2', rfidOperationType === 'in' ? 'bg-green-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
-              >
-                <div class="w-2 h-2 rounded-full bg-white animate-pulse"></div>
-                Check-In
-              </button>
-              <button 
-                @click="rfidOperationType = 'out'" 
-                :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition flex items-center gap-2', rfidOperationType === 'out' ? 'bg-pink-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
-              >
-                <div class="w-2 h-2 rounded-full bg-white"></div>
-                Check-Out
-              </button>
-            </div>
+        <!-- Operation Mode Label (Display Only) -->
+        <div class="flex justify-center mb-4">
+          <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white bg-opacity-10 border border-white border-opacity-20 backdrop-blur-md shadow-lg">
+            <div 
+              class="w-3 h-3 rounded-full animate-pulse" 
+              :class="rfidOperationType === 'in' ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-pink-400 shadow-[0_0_10px_rgba(244,114,182,0.5)]'"
+            ></div>
+            <span class="text-white font-bold tracking-widest uppercase text-sm">
+              {{ rfidOperationType === 'in' ? 'Check-In Mode' : 'Check-Out Mode' }}
+            </span>
           </div>
+        </div>
         </div>
         
         <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-4 lg:p-8 w-full max-w-md border border-white border-opacity-20 shadow-2xl">
