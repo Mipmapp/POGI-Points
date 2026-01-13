@@ -45,7 +45,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 flex-wrap">
-                    <span :class="['font-semibold text-sm', announcement.posted_by === 'admin' ? 'text-purple-900' : 'text-yellow-900']" v-html="announcement.posted_by === 'admin' ? (announcement.posted_by_name || 'Admin').replace(/&#x2F;/g, '/').replace(/&#47;/g, '/') : 'Media and Publication'">
+                    <span :class="['font-semibold text-sm', announcement.posted_by === 'admin' ? 'text-purple-900' : 'text-yellow-900']" v-html="formatPosterName(announcement)">
                     </span>
                     <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', announcement.posted_by === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-200 text-amber-800']">
                       {{ announcement.posted_by === 'admin' ? 'Admin' : 'Organization' }}
@@ -254,6 +254,13 @@ const handleTouchEnd = (e) => {
   
   swipeOffset.value = 0
   isSwiping.value = false
+}
+
+const formatPosterName = (announcement) => {
+  if (announcement.posted_by === 'admin') {
+    return (announcement.posted_by_name || 'Admin').replace(/&#x2F;/g, '/').replace(/&#47;/g, '/')
+  }
+  return 'Media and Publication'
 }
 
 const getInitials = (name) => {
