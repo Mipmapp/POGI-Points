@@ -1,3 +1,4 @@
+<template>
   <ProgrammerLoadingEffect :visible="isPageLoading" message="AUTHENTICATING" />
   <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" />
   <!-- Announcement Popup for Students -->
