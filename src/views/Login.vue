@@ -753,6 +753,7 @@ const handleLogin = async () => {
       localStorage.setItem("currentUser", JSON.stringify(normalizedUser));
       localStorage.setItem("authToken", normalizedUser.token);
       console.log("Navigating to dashboard...");
+      // DO NOT set isLoading = false here to keep the loading screen active during transition
       router.push("/dashboard");
       return;
     }
@@ -790,6 +791,7 @@ const verifyAdminCode = () => {
     localStorage.setItem("currentUser", JSON.stringify(pendingUser));
     localStorage.setItem("authToken", pendingUser.token);
     console.log("Admin Verification Success. Navigating to dashboard...");
+    // DO NOT set isLoading = false here
     router.push("/dashboard");
   } else {
     errorMessage.value = "Invalid verification code. Please try again.";
