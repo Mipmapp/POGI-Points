@@ -1,29 +1,31 @@
 <template>
-  <transition name="fade-scale">
+  <transition name="fade">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
-      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 transform transition-all duration-300">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
-          <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 transform transition-all duration-300">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
+            <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6">
+            <a v-for="(dev, index) in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" 
+               class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
+               :style="{ transitionDelay: `${index * 50}ms` }">
+              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-400 flex items-center justify-center text-white text-2xl shadow-lg mb-2 overflow-hidden ring-2 ring-purple-100">
+                <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
+                <span v-else>{{ dev.initials }}</span>
+              </div>
+              <p class="text-xs font-semibold text-purple-600 hover:text-purple-800 text-center">{{ dev.name }}</p>
+              <p class="text-xs text-gray-600 text-center font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
+              <p class="text-xs text-gray-500 text-center">{{ dev.role }}</p>
+            </a>
+          </div>
+          <div class="text-center text-sm text-gray-600">
+            <p class="font-medium text-purple-900">CCS - Creatives Committee</p>
+            <p>Chairperson: Sheen Lee</p>
+          </div>
         </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6">
-          <a v-for="(dev, index) in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" 
-             class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
-             :style="{ transitionDelay: `${index * 50}ms` }">
-            <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-400 flex items-center justify-center text-white text-2xl shadow-lg mb-2 overflow-hidden ring-2 ring-purple-100">
-              <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
-              <span v-else>{{ dev.initials }}</span>
-            </div>
-            <p class="text-xs font-semibold text-purple-600 hover:text-purple-800 text-center">{{ dev.name }}</p>
-            <p class="text-xs text-gray-600 text-center font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-            <p class="text-xs text-gray-500 text-center">{{ dev.role }}</p>
-          </a>
-        </div>
-        <div class="text-center text-sm text-gray-600">
-          <p class="font-medium text-purple-900">CCS - Creatives Committee</p>
-          <p>Chairperson: Sheen Lee</p>
-        </div>
-      </div>
+      </transition>
     </div>
   </transition>
 
