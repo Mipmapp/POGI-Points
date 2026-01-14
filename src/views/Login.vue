@@ -148,7 +148,7 @@
     </div>
   </transition>
 
-  <ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" />
+  <ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" @complete="handleLoadingComplete" />
   <div class="hidden md:flex min-h-screen bg-white w-full">
     <div class="w-2/5 desktop-bg-panel flex-shrink-0">
       <div class="relative z-10 text-center">
@@ -374,6 +374,14 @@ const router = useRouter()
 const studentId = ref('')
 const password = ref('')
 const isLoading = ref(false)
+const isNavigationPending = ref(false)
+
+const handleLoadingComplete = () => {
+  if (isNavigationPending.value) {
+    router.push("/dashboard")
+  }
+}
+
 const showDevelopersPopup = ref(false)
 const showErrorNotification = ref(false)
 const showContactModal = ref(false)
@@ -752,8 +760,7 @@ const handleLogin = async () => {
       localStorage.setItem("currentUser", JSON.stringify(normalizedUser));
       localStorage.setItem("authToken", normalizedUser.token);
       console.log("Navigating to dashboard...");
-      // DO NOT set isLoading = false here to keep the loading screen active during transition
-      router.push("/dashboard");
+      isNavigationPending.value = true;
       return;
     }
 
@@ -790,8 +797,7 @@ const verifyAdminCode = () => {
     localStorage.setItem("currentUser", JSON.stringify(pendingUser));
     localStorage.setItem("authToken", pendingUser.token);
     console.log("Admin Verification Success. Navigating to dashboard...");
-    // DO NOT set isLoading = false here
-    router.push("/dashboard");
+    isNavigationPending.value = true;
   } else {
     errorMessage.value = "Invalid verification code. Please try again.";
     showErrorNotification.value = true;

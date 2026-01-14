@@ -1,35 +1,35 @@
 <template>
   <transition name="terminal-fade">
-    <div v-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center bg-purple-50 font-mono">
+    <div v-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 font-mono">
       <!-- Animated Background Scanner Lines -->
       <div class="absolute inset-0 overflow-hidden opacity-30 pointer-events-none">
         <div class="scanner-line"></div>
         <div class="grid-overlay"></div>
       </div>
 
-      <div class="relative w-full max-w-2xl p-8 border border-purple-200 bg-white/90 backdrop-blur-2xl shadow-[0_20px_50px_rgba(168,85,247,0.15)] rounded-2xl overflow-hidden">
+      <div class="relative w-full max-w-2xl p-8 border border-white/20 bg-black/40 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden">
         <!-- SSAAM Branding Corner -->
         <div class="absolute top-0 right-0 p-4 opacity-10">
-          <div class="text-[40px] font-bold text-purple-900 select-none tracking-tighter">SSAAM</div>
+          <div class="text-[40px] font-bold text-white select-none tracking-tighter">SSAAM</div>
         </div>
 
         <!-- Terminal Header -->
-        <div class="absolute top-0 left-0 right-0 h-10 bg-gradient-to-r from-purple-100 to-pink-50 border-b border-purple-100 flex items-center px-4 gap-2">
+        <div class="absolute top-0 left-0 right-0 h-10 bg-white/5 border-b border-white/10 flex items-center px-4 gap-2">
           <div class="w-2.5 h-2.5 rounded-full bg-purple-400"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-pink-400"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-indigo-400"></div>
-          <span class="ml-3 text-[10px] text-purple-900/40 tracking-[0.3em] uppercase font-bold">Secure Access Protocol v2.0</span>
+          <span class="ml-3 text-[10px] text-white/40 tracking-[0.3em] uppercase font-bold">Secure Access Protocol v2.0</span>
         </div>
 
         <!-- Terminal Content -->
         <div class="mt-6 space-y-3 text-sm md:text-base min-h-[220px] relative z-10">
           <div v-for="(line, index) in visibleLines" :key="index" class="flex items-start">
-            <span class="mr-3 text-purple-400 font-bold">>></span>
-            <span class="typing-text text-purple-900 font-medium">{{ line }}</span>
+            <span class="mr-3 text-pink-400 font-bold">>></span>
+            <span class="typing-text text-white font-medium">{{ line }}</span>
           </div>
           
           <div v-if="visibleLines.length < script.length" class="flex items-center">
-            <span class="mr-3 text-purple-400 font-bold">>></span>
+            <span class="mr-3 text-pink-400 font-bold">>></span>
             <div class="w-2 h-5 bg-pink-500 animate-pulse"></div>
           </div>
 
@@ -37,14 +37,14 @@
           <div v-if="showProgress" class="mt-10 space-y-2">
             <div class="flex justify-between items-end">
               <div class="flex flex-col">
-                <span class="text-[10px] uppercase tracking-widest text-purple-900/40 font-bold">System Status</span>
-                <span class="text-xs text-purple-900 font-bold">{{ message }}</span>
+                <span class="text-[10px] uppercase tracking-widest text-white/40 font-bold">System Status</span>
+                <span class="text-xs text-white font-bold">{{ message }}</span>
               </div>
-              <span class="text-xl font-bold italic text-pink-500 tabular-nums">{{ progress }}%</span>
+              <span class="text-xl font-bold italic text-pink-400 tabular-nums">{{ progress }}%</span>
             </div>
-            <div class="h-2 w-full bg-purple-100 rounded-full relative overflow-hidden">
+            <div class="h-2 w-full bg-white/10 rounded-full relative overflow-hidden">
               <div 
-                class="h-full bg-gradient-to-r from-purple-600 to-pink-500 rounded-full transition-all duration-300 relative" 
+                class="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300 relative" 
                 :style="{ width: `${progress}%` }"
               >
                 <div class="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.4)_50%,transparent_100%)] animate-shimmer"></div>
@@ -76,6 +76,8 @@ const props = defineProps({
   }
 })
 
+const emit = defineEmits(['complete'])
+
 const progress = ref(0)
 const visibleLines = ref([])
 const showProgress = ref(false)
@@ -96,7 +98,7 @@ const runTerminal = async () => {
   
   for (let i = 0; i < script.length; i++) {
     if (!props.visible) break
-    await new Promise(r => setTimeout(r, 300 + Math.random() * 300))
+    await new Promise(r => setTimeout(r, 200 + Math.random() * 200))
     visibleLines.value.push(script[i])
     if (i === 1) showProgress.value = true
   }
@@ -107,12 +109,18 @@ watch(() => props.visible, (newVal) => {
     runTerminal()
     const interval = setInterval(() => {
       if (progress.value < 100) {
-        progress.value += Math.floor(Math.random() * 12) + 6
-        if (progress.value > 100) progress.value = 100
+        progress.value += Math.floor(Math.random() * 8) + 4
+        if (progress.value >= 100) {
+          progress.value = 100
+          clearInterval(interval)
+          setTimeout(() => {
+            emit('complete')
+          }, 500)
+        }
       } else {
         clearInterval(interval)
       }
-    }, 180)
+    }, 120)
   }
 })
 
@@ -133,8 +141,8 @@ onMounted(() => {
   position: absolute;
   inset: 0;
   background-image: 
-    linear-gradient(rgba(168, 85, 247, 0.1) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(168, 85, 247, 0.1) 1px, transparent 1px);
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
@@ -144,7 +152,7 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(168, 85, 247, 0.3), transparent);
+  background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.5), transparent);
   animation: scan 4s linear infinite;
   z-index: 1;
 }
