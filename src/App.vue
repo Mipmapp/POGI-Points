@@ -1,11 +1,7 @@
 <template>
   <div id="app">
     <LoadingScreen v-if="isLoading" />
-    <router-view v-slot="{ Component }" v-if="!isLoading">
-      <transition name="page-fade" mode="out-in">
-        <component :is="Component" />
-      </transition>
-    </router-view>
+    <router-view v-if="!isLoading" />
   </div>
 </template>
 
@@ -48,28 +44,5 @@ onUnmounted(() => {
 #app {
   width: 100%;
   height: 100vh;
-  background-color: #f3f4f6;
-  position: relative;
-  overflow: hidden;
-}
-
-.page-fade-enter-active,
-.page-fade-leave-active {
-  transition: all 0.4s ease-in-out;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
-}
-
-.page-fade-enter-from {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-.page-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-20px);
 }
 </style>
