@@ -177,7 +177,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
               <div class="relative">
                 <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input v-model="studentId" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+                <input ref="studentIdInput" v-model="studentId" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" @keydown.enter.prevent="focusPassword" required />
               </div>
             </div>
 
@@ -185,7 +185,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div class="relative">
                 <img src="/key.svg" alt="Password" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
+                <input ref="passwordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
                 <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
               </div>
             </div>
@@ -246,23 +246,23 @@
           </button>
         </div>
 
-        <form @submit.prevent="handleLogin" novalidate class="space-y-6">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
-            <div class="relative">
-              <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input v-model="studentId" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+          <form @submit.prevent="handleLogin" novalidate class="space-y-6">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
+              <div class="relative">
+                <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input ref="mobileStudentIdInput" v-model="studentId" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" @keydown.enter.prevent="focusMobilePassword" required />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-            <div class="relative">
-              <img src="/key.svg" alt="Password" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
-              <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <div class="relative">
+                <img src="/key.svg" alt="Password" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input ref="mobilePasswordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+                <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
+              </div>
             </div>
-          </div>
 
           <button type="submit" :disabled="isLoading" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
             <span v-if="isLoading" class="flex items-center">
@@ -542,6 +542,23 @@ const completePasswordReset = async () => {
     resetMessage.value = 'Network error. Please try again.'
   } finally {
     resetLoading.value = false
+  }
+}
+
+const studentIdInput = ref(null)
+const passwordInput = ref(null)
+const mobileStudentIdInput = ref(null)
+const mobilePasswordInput = ref(null)
+
+const focusPassword = () => {
+  if (passwordInput.value) {
+    passwordInput.value.focus()
+  }
+}
+
+const focusMobilePassword = () => {
+  if (mobilePasswordInput.value) {
+    mobilePasswordInput.value.focus()
   }
 }
 
