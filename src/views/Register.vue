@@ -38,35 +38,39 @@
     </div>
   </div>
 
-  <transition name="modal-bounce">
+  <transition name="fade">
     <div v-if="showNotification" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center transform transition-all">
-        <div class="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-          <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-          </svg>
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center transform transition-all">
+          <div class="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+            <svg class="w-12 h-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-purple-900 mb-2">Success!</h3>
+          <p class="text-gray-600">{{ notificationMessage }}</p>
+          <p class="text-sm text-gray-500 mt-4">Redirecting to login...</p>
         </div>
-        <h3 class="text-2xl font-bold text-purple-900 mb-2">Success!</h3>
-        <p class="text-gray-600">{{ notificationMessage }}</p>
-        <p class="text-sm text-gray-500 mt-4">Redirecting to login...</p>
-      </div>
+      </transition>
     </div>
   </transition>
 
-  <transition name="modal-bounce">
+  <transition name="fade">
     <div v-if="showErrorNotification" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center transform transition-all border-2 border-red-500">
-        <div class="w-20 h-20 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-          <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-          </svg>
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center transform transition-all border-2 border-red-500">
+          <div class="w-20 h-20 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-red-600 mb-2">Oops!</h3>
+          <p class="text-red-700 font-medium">{{ errorMessage }}</p>
+          <button @click="showErrorNotification = false" class="mt-6 px-6 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg font-medium hover:from-red-700 hover:to-red-600 transition duration-300">
+            Try Again
+          </button>
         </div>
-        <h3 class="text-2xl font-bold text-red-600 mb-2">Oops!</h3>
-        <p class="text-red-700 font-medium">{{ errorMessage }}</p>
-        <button @click="showErrorNotification = false" class="mt-6 px-6 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg font-medium hover:from-red-700 hover:to-red-600 transition duration-300">
-          Try Again
-        </button>
-      </div>
+      </transition>
     </div>
   </transition>
 
@@ -1386,6 +1390,15 @@ const goToLogin = () => {
 }
 .desktop-bg-panel {
   transition: all 0.5s ease-in-out;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 
 .modal-bounce-enter-active {
