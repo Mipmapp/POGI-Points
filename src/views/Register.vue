@@ -1335,19 +1335,29 @@ const goToLogin = () => {
 </script>
 
 <style scoped>
-.fade-scale-enter-active,
+.fade-scale-enter-active {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .fade-scale-leave-active {
-  transition: all 0.3s ease-out;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .fade-scale-enter-from {
   opacity: 0;
-  transform: scale(0.95) translateY(10px);
+  transform: translateY(100%) scale(0.9);
 }
 
 .fade-scale-leave-to {
   opacity: 0;
-  transform: scale(0.95) translateY(10px);
+  transform: translateY(20px) scale(0.95);
+}
+
+@media (min-width: 768px) {
+  .fade-scale-enter-from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.95);
+  }
 }
 
 .desktop-bg-panel {
