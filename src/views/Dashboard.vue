@@ -1,5 +1,7 @@
-<GlobalLoadingEffect :visible="isPageLoading" message="AUTHENTICATING" />
+  <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" />
 <template>
+  <ProgrammerLoadingEffect :visible="isPageLoading" message="AUTHENTICATING" />
+  <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" />
   <!-- Announcement Popup for Students -->
   <AnnouncementPopup 
     :visible="showAnnouncementPopup" 
@@ -3486,9 +3488,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import GlobalLoadingEffect from '../components/GlobalLoadingEffect.vue'
-import { encodeTimestamp } from '../utils/ssaamCrypto.js'
-import * as XLSX from 'xlsx'
+import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import AnnouncementPopup from '../components/AnnouncementPopup.vue'
 import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 
