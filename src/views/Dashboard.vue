@@ -101,29 +101,33 @@
     </div>
   </div>
 
-  <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
-        <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-      </div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-6">
-        <a v-for="dev in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition">
-          <div class="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white text-2xl shadow-lg mb-3 overflow-hidden flex-shrink-0">
-            <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
-            <span v-else>{{ dev.initials }}</span>
-          </div>
-          <p class="text-xs font-semibold text-purple-600 hover:text-purple-800 text-center line-clamp-2 min-h-[2rem] flex items-center">{{ dev.name }}</p>
-          <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-          <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
-        </a>
-      </div>
-      <div class="text-center text-sm text-gray-600">
-        <p class="font-medium text-purple-900">CCS - Creatives Committee</p>
-        <p>Chairperson: Sheen Lee</p>
+  <transition name="fade-scale">
+    <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
+          <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-6">
+          <a v-for="(dev, index) in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" 
+             class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
+             :style="{ transitionDelay: `${index * 50}ms` }">
+            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white text-2xl shadow-lg mb-3 overflow-hidden flex-shrink-0 ring-2 ring-purple-100">
+              <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
+              <span v-else>{{ dev.initials }}</span>
+            </div>
+            <p class="text-xs font-semibold text-purple-600 hover:text-purple-800 text-center line-clamp-2 min-h-[2rem] flex items-center">{{ dev.name }}</p>
+            <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
+            <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+          </a>
+        </div>
+        <div class="text-center text-sm text-gray-600">
+          <p class="font-medium text-purple-900">CCS - Creatives Committee</p>
+          <p>Chairperson: Sheen Lee</p>
+        </div>
       </div>
     </div>
-  </div>
+  </transition>
 
   <!-- Delete Notification Confirmation Modal -->
   <div v-if="showDeleteNotificationConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="cancelDeleteNotification">
@@ -9512,3 +9516,30 @@ onUnmounted(() => {
   }
 })
 </script>
+
+<style scoped>
+.fade-scale-enter-active,
+.fade-scale-leave-active {
+  transition: all 0.3s ease-out;
+}
+
+.fade-scale-enter-from {
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
+}
+
+.fade-scale-leave-to {
+  opacity: 0;
+  transform: scale(0.95) translateY(10px);
+}
+
+.logo-flip-animation {
+  animation: logo-flip 0.6s ease-in-out;
+}
+
+@keyframes logo-flip {
+  0% { transform: rotateY(0deg); }
+  50% { transform: rotateY(180deg); }
+  100% { transform: rotateY(360deg); }
+}
+</style>
