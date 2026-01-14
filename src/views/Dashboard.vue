@@ -2249,37 +2249,36 @@
         </div>
 
         <!-- Dashboard Page -->
-        <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-8 mb-8">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <div class="flex items-center gap-2">
-              <h2 class="text-xl md:text-2xl font-bold text-purple-900">My Profile</h2>
-              <button @click="refreshCurrentUser" :disabled="refreshingUserData" class="p-2 rounded-full hover:bg-purple-100 transition-all duration-200 hover:scale-105 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed" title="Refresh Profile Data">
-                <svg :class="['w-5 h-5 text-purple-600', refreshingUserData ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              </button>
-            </div>
+        <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+          <!-- Profile Header -->
+          <div class="relative h-32 bg-gradient-to-r from-purple-600 to-pink-500">
+            <button @click="refreshCurrentUser" :disabled="refreshingUserData" class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all backdrop-blur-sm" title="Refresh Profile">
+              <svg :class="['w-5 h-5', refreshingUserData ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            </button>
           </div>
-          
-          <!-- Profile Header Section -->
-          <div class="flex flex-col md:flex-row gap-8 mb-8 pb-8 border-b-2 border-gray-200">
-            <div class="flex flex-col items-center md:items-start">
-              <div class="relative">
-                <div class="w-32 h-32 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 overflow-hidden mb-4 shadow-lg flex items-center justify-center">
+
+          <div class="px-8 pb-8">
+            <div class="relative -mt-16 mb-6">
+              <div class="inline-block relative">
+                <div class="w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
                   <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
-                    <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                   </div>
                   <img v-else-if="!profileImageFailed && (currentUser.image || currentUser.photo)" :src="currentUser.image || currentUser.photo" alt="Profile Picture" class="w-full h-full object-cover" @load="() => { profileImageLoading = false; profileImageFailed = false; }" @error="handleProfileImageError" />
-                  <img v-else src="/user.svg" alt="Profile" class="w-16 h-16" style="filter: brightness(0) invert(1);" />
+                  <div v-else class="w-full h-full flex items-center justify-center text-4xl font-bold text-purple-300">
+                    {{ getInitials(currentUser?.full_name || displayName || '') }}
+                  </div>
                 </div>
                 <button 
                   v-if="currentUser.role !== 'admin' && !currentUser.isMaster"
                   @click="$refs.studentPhotoInput.click()" 
-                  class="absolute bottom-1 right-1 w-9 h-9 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 hover:scale-110 border-3 border-white"
+                  class="absolute -bottom-2 -right-2 p-2.5 bg-white text-purple-600 rounded-2xl shadow-lg hover:scale-110 transition-transform border border-gray-100"
                   title="Change Photo"
                 >
-                  <img src="/change_photo.svg" alt="Change Photo" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                 </button>
               </div>
               <input 
@@ -2289,245 +2288,95 @@
                 accept="image/*" 
                 class="hidden" 
               />
-              <div class="text-center md:text-left">
-                <p class="text-2xl font-bold text-purple-900">{{ displayName }}</p>
-                <p class="text-sm text-gray-500 mt-1">ID: {{ currentUser.studentId || currentUser.student_id }}</p>
-                <p v-if="studentPhotoUploading" class="text-xs text-purple-600 mt-2 font-medium">Uploading photo...</p>
-              </div>
             </div>
-          </div>
 
-          <!-- Personal Information Section -->
-          <div class="mb-8">
-            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300">Personal Information</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div class="bg-purple-50 p-4 rounded-lg">
-                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">First Name</p>
-                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.firstName || currentUser.first_name || 'N/A' }}</p>
-              </div>
-              <div class="bg-purple-50 p-4 rounded-lg">
-                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Middle Name</p>
-                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.middleName || currentUser.middle_name || 'N/A' }}</p>
-              </div>
-              <div class="bg-purple-50 p-4 rounded-lg">
-                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Last Name</p>
-                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.lastName || currentUser.last_name || 'N/A' }}</p>
-              </div>
+            <div class="mb-8">
+              <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">{{ displayName }}</h1>
+              <p class="text-lg font-medium text-purple-600">ID: {{ currentUser.studentId || currentUser.student_id }}</p>
+              <p v-if="studentPhotoUploading" class="text-xs text-purple-600 mt-2 font-medium">Uploading photo...</p>
             </div>
-          </div>
 
-          <!-- Contact & ID Section -->
-          <div class="mb-8">
-            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300">Contact & Identification</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div class="bg-pink-50 p-4 rounded-lg">
-                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Email</p>
-                <p class="text-base font-semibold text-gray-900 mt-2 break-words">{{ currentUser.email || 'Not provided' }}</p>
-              </div>
-              <div :class="['p-4 rounded-lg', currentUser.rfid_status === 'verified' ? 'bg-green-50 border-2 border-green-200' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-50 border-2 border-gray-200' : 'bg-yellow-50 border-2 border-yellow-200']">
-                <div class="flex items-center justify-between mb-2">
-                  <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">RFID Status</p>
-                  <span :class="['text-xs px-2 py-1 rounded-full font-semibold', currentUser.rfid_status === 'verified' ? 'bg-green-500 text-white' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-500 text-white' : 'bg-yellow-500 text-white']">
-                    {{ currentUser.rfid_status === 'verified' ? 'Verified' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'Unreadable' : 'Pending' }}
-                  </span>
+            <!-- Info Grid -->
+            <div class="space-y-8">
+              <section>
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Personal Information</h3>
                 </div>
-                <div v-if="currentUser.rfid_status === 'verified'">
-                  <div class="flex items-center gap-2">
-                    <p class="text-base font-semibold text-gray-900 font-mono">{{ currentUser.rfidCode || currentUser.rfid_code }}</p>
-                    <button 
-                      @click="copyRfidToClipboard(currentUser.rfidCode || currentUser.rfid_code)" 
-                      class="p-1.5 rounded-md hover:bg-green-100 transition-colors group"
-                      title="Copy RFID"
-                    >
-                      <svg v-if="!rfidCopied" class="w-4 h-4 text-gray-500 group-hover:text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
-                      </svg>
-                      <svg v-else class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                      </svg>
-                    </button>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div v-for="(val, label) in { 'First Name': currentUser.firstName || currentUser.first_name, 'Middle Name': currentUser.middleName || currentUser.middle_name || 'N/A', 'Last Name': currentUser.lastName || currentUser.last_name }" :key="label" 
+                       class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-colors">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ label }}</p>
+                    <p class="text-gray-900 font-semibold truncate">{{ val }}</p>
                   </div>
-                  <p v-if="currentUser.rfid_verified_by" class="text-xs text-gray-500 mt-2">
-                    Verified by the Administrator
-                  </p>
-                  <p v-if="currentUser.rfid_verified_at" class="text-xs text-gray-500">
-                    Date: {{ new Date(currentUser.rfid_verified_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' }) }}
-                  </p>
-                  <p class="text-xs text-green-600 mt-2 font-medium">Your RFID card is active and ready for attendance logging.</p>
                 </div>
-                <div v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))">
-                  <div class="flex items-center gap-2 mb-2">
-                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-                    </svg>
-                    <p class="text-base font-semibold text-gray-700">Card Damaged</p>
+              </section>
+
+              <section>
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Contact & Identification</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-colors">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email Address</p>
+                    <p class="text-gray-900 font-semibold truncate">{{ currentUser.email || 'Not provided' }}</p>
                   </div>
-                  <p class="text-xs text-gray-700 mt-2">Your student ID card appears to be damaged, resulting in an unreadable RFID code. The card's chip may have been corrupted or physically damaged.</p>
-                  <p class="text-xs text-gray-600 mt-2">Please visit the CCS office to request a replacement card or to have your RFID re-assigned.</p>
+                  <div :class="['p-4 bg-white rounded-2xl border-2 shadow-sm relative overflow-hidden group', currentUser.rfid_status === 'verified' ? 'border-green-100' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'border-gray-200' : 'border-yellow-100']">
+                    <div class="absolute top-0 right-0 p-2">
+                      <span :class="['px-2 py-0.5 rounded-full text-[10px] font-bold', currentUser.rfid_status === 'verified' ? 'bg-green-100 text-green-700' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-100 text-gray-700' : 'bg-yellow-100 text-yellow-700']">
+                        {{ currentUser.rfid_status === 'verified' ? 'Verified' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'Unreadable' : 'Pending' }}
+                      </span>
+                    </div>
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">RFID STATUS</p>
+                    <div v-if="currentUser.rfid_status === 'verified'" class="flex items-center gap-2">
+                      <p class="text-lg font-mono font-bold text-purple-900 tracking-tight">{{ currentUser.rfidCode || currentUser.rfid_code }}</p>
+                      <button @click="copyRfidToClipboard(currentUser.rfidCode || currentUser.rfid_code)" class="p-1 hover:bg-purple-50 rounded text-purple-400 transition-colors">
+                        <svg v-if="!rfidCopied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        <svg v-else class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                      </button>
+                    </div>
+                    <div v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))">
+                      <p class="text-base font-semibold text-gray-700">Card Damaged</p>
+                    </div>
+                    <div v-else>
+                      <p class="text-base font-semibold text-gray-900">Not Yet Assigned</p>
+                    </div>
+                    <p class="text-[10px] text-gray-500 mt-2 italic">{{ currentUser.rfid_status === 'verified' ? 'Active and ready for attendance logging.' : 'Please visit the CCS office for assistance.' }}</p>
+                  </div>
                 </div>
-                <div v-else>
-                  <p class="text-base font-semibold text-gray-900">Not Yet Assigned</p>
-                  <p class="text-xs text-yellow-700 mt-2">Your RFID card has not been verified yet. Please visit the CCS office to have your attendance card assigned and verified by an admin.</p>
-                  <p class="text-xs text-gray-500 mt-2">You will receive an email notification once your RFID is verified.</p>
+              </section>
+
+              <section>
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Academic Information</h3>
                 </div>
-              </div>
-            </div>
-          </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div v-for="(val, label) in { 'Program': currentUser.program || 'N/A', 'Year': currentUser.yearLevel || currentUser.year_level || 'N/A', 'Sem': currentUser.semester || 'N/A', 'S.Y.': currentUser.schoolYear || currentUser.school_year || 'N/A' }" :key="label" 
+                       class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-colors">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ label }}</p>
+                    <p class="text-gray-900 font-bold">{{ val }}</p>
+                  </div>
+                </div>
+              </section>
 
-          <!-- Academic Information Section -->
-          <div>
-            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300">Academic Information</h3>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div class="bg-blue-50 p-4 rounded-lg">
-                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Program</p>
-                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.program || 'Not provided' }}</p>
-              </div>
-              <div class="bg-blue-50 p-4 rounded-lg">
-                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Year Level</p>
-                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.yearLevel || currentUser.year_level || 'Not provided' }}</p>
-              </div>
-              <div class="bg-blue-50 p-4 rounded-lg">
-                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">Semester</p>
-                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.semester || 'Not provided' }}</p>
-              </div>
-              <div class="bg-blue-50 p-4 rounded-lg">
-                <p class="text-xs font-semibold text-gray-600 uppercase tracking-wide">School Year</p>
-                <p class="text-base font-semibold text-gray-900 mt-2">{{ currentUser.schoolYear || currentUser.school_year || 'Not provided' }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- My Attendance Logs Section -->
-          <div class="mt-8">
-            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300">My Recent Attendance</h3>
-            <div v-if="userAttendanceLogsLoading" class="flex justify-center py-8">
-              <svg class="animate-spin h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-              </svg>
-            </div>
-            <div v-else-if="userAttendanceLogs.length === 0" class="text-center py-8 text-gray-500">
-              <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-              <p>No attendance records found yet.</p>
-              <p class="text-sm mt-1">Your attendance logs will appear here after you check in to events.</p>
-            </div>
-            <div v-else class="space-y-3">
-              <div v-for="log in userAttendanceLogs.slice(0, 5)" :key="log.id" class="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <section>
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Account Security</h3>
+                </div>
+                <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between gap-4">
                   <div>
-                    <p class="font-semibold text-gray-900">{{ log.event_name || log.eventName || 'Event' }}</p>
-                    <p class="text-sm text-gray-500">{{ formatAttendanceDate(log.created_at || log.check_in_time) }}</p>
+                    <h4 class="font-bold text-gray-900 mb-1">Password</h4>
+                    <p class="text-xs text-gray-500">Keep your account secure by updating your password regularly.</p>
                   </div>
-                  <div class="flex items-center gap-2">
-                    <span :class="['px-3 py-1 rounded-full text-xs font-medium', getUserLogStatusClass(log)]">
-                      {{ getUserLogStatus(log) }}
-                    </span>
-                    <span v-if="log.check_in_time" class="text-xs text-gray-500">
-                      In: {{ formatAttendanceTime(log.check_in_time) }}
-                    </span>
-                    <span v-if="log.check_out_time" class="text-xs text-gray-500">
-                      Out: {{ formatAttendanceTime(log.check_out_time) }}
-                    </span>
-                  </div>
+                  <button @click="showPasswordChangeModal = true" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-purple-200 hover:scale-105 transition-transform flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                    Change Password
+                  </button>
                 </div>
-              </div>
-              <button v-if="userAttendanceLogs.length > 5" @click="currentPage = 'attendance'" class="w-full py-2 text-purple-600 hover:text-purple-800 text-sm font-medium">
-                View all {{ userAttendanceLogs.length }} records →
-              </button>
-            </div>
-          </div>
-
-          <!-- Active Events Section for Student Dashboard -->
-          <div v-if="activeNonEndedEvents.length > 0" class="mt-8">
-            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300 flex items-center gap-2">
-              <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-              Active Events
-            </h3>
-            <div class="space-y-4">
-              <div v-for="event in activeNonEndedEvents" :key="event._id || event.event_id" class="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-sm border border-purple-100 overflow-hidden">
-                <div class="px-4 pt-4 pb-2">
-                  <div class="flex flex-wrap items-center gap-2 mb-3">
-                    <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getStatusBadgeClass(getAttendanceStatus(event._id || event.event_id))]">
-                      {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'upcoming' ? 'Upcoming' : getAttendanceStatus(event._id || event.event_id) === 'absent' ? 'Absent' : 'Ongoing' }}
-                    </span>
-                    <span v-if="getEventTimeRemaining(event._id || event.event_id)" class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-100 text-orange-700">
-                      {{ getEventTimeRemaining(event._id || event.event_id) }}
-                    </span>
-                  </div>
-                  <h3 class="font-bold text-base md:text-lg text-purple-900 leading-tight mb-2">{{ event.title }}</h3>
-                  <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3">{{ event.description }}</p>
-                </div>
-                <div class="bg-white bg-opacity-60 px-4 py-3 border-t border-purple-100">
-                  <div class="flex flex-col gap-2 text-xs text-gray-600">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                      <span class="font-medium">{{ formatEventDate(event.date || event.event_date) }}</span>
-                    </div>
-                    <div v-if="event.startTime || event.start_time" class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      <span class="font-medium">{{ formatEventTime(event.startTime || event.start_time) }} - {{ formatEventTime(event.endTime || event.end_time) }}</span>
-                    </div>
-                    <div v-if="event.location" class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                      <span class="font-medium">{{ event.location }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Upcoming Events Section for Student Dashboard -->
-          <div v-if="upcomingEvents.length > 0" class="mt-8">
-            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300 flex items-center gap-2">
-              <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-              Upcoming Events
-            </h3>
-            <div class="space-y-4">
-              <div v-for="event in upcomingEvents" :key="event._id || event.event_id" class="bg-gradient-to-br from-white to-blue-50 rounded-2xl shadow-sm border border-blue-100 overflow-hidden">
-                <div class="px-4 pt-4 pb-2">
-                  <div class="flex flex-wrap items-center gap-2 mb-3">
-                    <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
-                      Upcoming
-                    </span>
-                  </div>
-                  <h3 class="font-bold text-base md:text-lg text-purple-900 leading-tight mb-2">{{ event.title }}</h3>
-                  <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3">{{ event.description }}</p>
-                </div>
-                <div class="bg-white bg-opacity-60 px-4 py-3 border-t border-blue-100">
-                  <div class="flex flex-col gap-2 text-xs text-gray-600">
-                    <div class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                      <span class="font-medium">{{ formatEventDate(event.date || event.event_date) }}</span>
-                    </div>
-                    <div v-if="event.startTime || event.start_time" class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      <span class="font-medium">{{ formatEventTime(event.startTime || event.start_time) }} - {{ formatEventTime(event.endTime || event.end_time) }}</span>
-                    </div>
-                    <div v-if="event.location" class="flex items-center gap-2">
-                      <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                      <span class="font-medium">{{ event.location }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Account Security Section -->
-          <div class="mt-8">
-            <h3 class="text-lg font-bold text-purple-900 mb-4 pb-2 border-b-2 border-purple-300">Account Security</h3>
-            <div class="bg-gray-50 p-4 rounded-lg">
-              <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <p class="text-base font-semibold text-gray-900">Password</p>
-                  <p class="text-sm text-gray-600 mt-1">Keep your account secure by updating your password regularly</p>
-                </div>
-                <button @click="showPasswordChangeModal = true" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-6 py-2 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition-all duration-200 hover:scale-105 active:scale-95 flex items-center gap-2">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                  Change Password
-                </button>
-              </div>
+              </section>
             </div>
           </div>
         </div>
