@@ -3493,6 +3493,7 @@ import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 const router = useRouter()
 const currentUser = ref({})
 const users = ref([])
+const loggingOut = ref(false)
 const isPageLoading = ref(false)
 const statsLoading = ref(false)
 const profileImageLoading = ref(false)
