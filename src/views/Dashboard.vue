@@ -1,3 +1,4 @@
+<GlobalLoadingEffect :visible="loggingOut" message="LOGGING OUT" />
 <template>
   <!-- Global Loading Effect for Logout -->
   <GlobalLoadingEffect :visible="loggingOut" message="LOGGING OUT" />
@@ -3488,6 +3489,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import GlobalLoadingEffect from '../components/GlobalLoadingEffect.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import * as XLSX from 'xlsx'
 import AnnouncementPopup from '../components/AnnouncementPopup.vue'

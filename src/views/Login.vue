@@ -1,3 +1,4 @@
+<GlobalLoadingEffect :visible="isLoading" message="AUTHENTICATING" />
 <template>
   <transition name="fade">
     <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40" @click.self="showContactModal = false">
@@ -380,6 +381,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import GlobalLoadingEffect from '../components/GlobalLoadingEffect.vue'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 
