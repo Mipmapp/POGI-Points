@@ -1,7 +1,7 @@
 <template>
   <transition name="fade-scale">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
-      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4 transform transition-all duration-300">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 transform transition-all duration-300">
         <div class="flex justify-between items-center mb-6">
           <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
           <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
