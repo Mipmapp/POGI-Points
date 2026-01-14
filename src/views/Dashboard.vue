@@ -1,5 +1,3 @@
-  <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" />
-<template>
   <ProgrammerLoadingEffect :visible="isPageLoading" message="AUTHENTICATING" />
   <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" />
   <!-- Announcement Popup for Students -->
@@ -3495,7 +3493,7 @@ import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 const router = useRouter()
 const currentUser = ref({})
 const users = ref([])
-const isPageLoading = ref(true)
+const isPageLoading = ref(false)
 const statsLoading = ref(false)
 const profileImageLoading = ref(false)
 const sidebarImageLoading = ref(false)
@@ -5096,6 +5094,10 @@ onMounted(async () => {
     fetchStats()
     fetchPendingStudents()
   } else {
+    // If we're coming from the login screen, we might already be "authenticating"
+    // but we don't want a double loading screen.
+    // However, if the user refreshes, we might need a small state check here.
+    
     users.value = JSON.parse(localStorage.getItem('users') || '[]')
   }
   
