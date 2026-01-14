@@ -149,7 +149,7 @@
     </div>
   </transition>
 
-  <GlobalLoadingEffect :visible="isLoading" message="AUTHENTICATING" />
+  <ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" />
   <div class="hidden md:flex min-h-screen bg-white w-full">
     <div class="w-2/5 desktop-bg-panel flex-shrink-0">
       <div class="relative z-10 text-center">
