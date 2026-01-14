@@ -1,4 +1,7 @@
 <template>
+  <!-- Global Loading Effect for Logout -->
+  <GlobalLoadingEffect :visible="loggingOut" message="LOGGING OUT" />
+
   <!-- Announcement Popup for Students -->
   <AnnouncementPopup 
     :visible="showAnnouncementPopup" 
