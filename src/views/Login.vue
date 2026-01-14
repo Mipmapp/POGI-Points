@@ -1,85 +1,93 @@
 <template>
-  <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40" @click.self="showContactModal = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-purple-900">Need Help?</h3>
-        <button @click="showContactModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-      </div>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div class="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
-          <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
-          <p class="font-semibold text-purple-900 text-sm">Email Support</p>
-          <p class="text-xs text-gray-600 mt-2">ssaamjrmsu@gmail.com</p>
-          <p class="text-xs text-gray-500 mt-1">For general inquiries</p>
+  <transition name="fade">
+    <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40" @click.self="showContactModal = false">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-purple-900">Need Help?</h3>
+            <button @click="showContactModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div class="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
+              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
+              <p class="font-semibold text-purple-900 text-sm">Email Support</p>
+              <p class="text-xs text-gray-600 mt-2">ssaamjrmsu@gmail.com</p>
+              <p class="text-xs text-gray-500 mt-1">For general inquiries</p>
+            </div>
+
+            <div class="flex flex-col items-center text-center p-4 bg-pink-50 rounded-lg">
+              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat;"></div>
+              <p class="font-semibold text-purple-900 text-sm">JRMSU CCS Office</p>
+              <p class="text-xs text-gray-600 mt-2">College of Computer Studies</p>
+              <p class="text-xs text-gray-500 mt-1">Visit during office hours</p>
+            </div>
+
+            <div class="flex flex-col items-center text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
+              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat;"></div>
+              <p class="font-semibold text-purple-900 text-sm">Meet Our Developers</p>
+              <p class="text-xs text-gray-600 mt-2">CCS - Creatives Committee</p>
+              <button @click="showDevelopersPopup = true; showContactModal = false" class="text-xs text-purple-600 hover:text-purple-800 font-medium mt-2 underline">View Team →</button>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 rounded-lg p-4 mb-6">
+            <p class="text-sm text-blue-900 font-medium mb-3">Quick Help</p>
+            <ul class="text-xs text-blue-800 space-y-2">
+              <li>• First time login? Your default password is your Last Name (uppercase)</li>
+              <li>• Changed your password and forgot it? Use the Forgot Password option</li>
+              <li>• Looking for your RFID? Register it to the CCS office</li>
+              <li>• Profile problems? Contact Developers or Proceed to the CCS office</li>
+            </ul>
+          </div>
+
+          <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
+            Close
+          </button>
         </div>
-
-        <div class="flex flex-col items-center text-center p-4 bg-pink-50 rounded-lg">
-          <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat;"></div>
-          <p class="font-semibold text-purple-900 text-sm">JRMSU CCS Office</p>
-          <p class="text-xs text-gray-600 mt-2">College of Computer Studies</p>
-          <p class="text-xs text-gray-500 mt-1">Visit during office hours</p>
-        </div>
-
-        <div class="flex flex-col items-center text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
-          <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat;"></div>
-          <p class="font-semibold text-purple-900 text-sm">Meet Our Developers</p>
-          <p class="text-xs text-gray-600 mt-2">CCS - Creatives Committee</p>
-          <button @click="showDevelopersPopup = true; showContactModal = false" class="text-xs text-purple-600 hover:text-purple-800 font-medium mt-2 underline">View Team →</button>
-        </div>
-      </div>
-
-      <div class="bg-blue-50 rounded-lg p-4 mb-6">
-        <p class="text-sm text-blue-900 font-medium mb-3">Quick Help</p>
-        <ul class="text-xs text-blue-800 space-y-2">
-          <li>• First time login? Your default password is your Last Name (uppercase)</li>
-          <li>• Changed your password and forgot it? Use the Forgot Password option</li>
-          <li>• Looking for your RFID? Register it to the CCS office</li>
-          <li>• Profile problems? Contact Developers or Proceed to the CCS office</li>
-        </ul>
-      </div>
-
-      <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
-        Close
-      </button>
+      </transition>
     </div>
-  </div>
+  </transition>
 
-  <div v-if="showVerificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
-      <div class="w-20 h-20 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-        <svg class="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-        </svg>
-      </div>
-      <h3 class="text-2xl font-bold text-purple-900 mb-2">2nd Verification</h3>
-      <p class="text-gray-600 mb-6 text-sm">Please enter the daily verification code to access the Admin Dashboard.</p>
-      
-      <div class="flex justify-center gap-2 mb-8">
-        <input 
-          v-for="(digit, index) in 6" 
-          :key="index"
-          :ref="el => { if (el) verificationInputs[index] = el }"
-          v-model="verificationDigits[index]"
-          type="password"
-          maxlength="1"
-          class="w-10 h-12 md:w-12 md:h-14 border-2 border-gray-300 rounded-lg text-center text-xl font-bold focus:border-purple-600 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
-          @input="handleDigitInput(index, $event)"
-          @keydown.delete="handleDigitDelete(index, $event)"
-          inputmode="numeric"
-        />
-      </div>
+  <transition name="fade">
+    <div v-if="showVerificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
+          <div class="w-20 h-20 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+            <svg class="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-purple-900 mb-2">2nd Verification</h3>
+          <p class="text-gray-600 mb-6 text-sm">Please enter the daily verification code to access the Admin Dashboard.</p>
+          
+          <div class="flex justify-center gap-2 mb-8">
+            <input 
+              v-for="(digit, index) in 6" 
+              :key="index"
+              :ref="el => { if (el) verificationInputs[index] = el }"
+              v-model="verificationDigits[index]"
+              type="password"
+              maxlength="1"
+              class="w-10 h-12 md:w-12 md:h-14 border-2 border-gray-300 rounded-lg text-center text-xl font-bold focus:border-purple-600 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+              @input="handleDigitInput(index, $event)"
+              @keydown.delete="handleDigitDelete(index, $event)"
+              inputmode="numeric"
+            />
+          </div>
 
-      <div class="flex gap-3">
-        <button @click="showVerificationModal = false; isLoading = false" class="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition duration-300">
-          Cancel
-        </button>
-        <button @click="verifyAdminCode" class="flex-1 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300">
-          Verify
-        </button>
-      </div>
+          <div class="flex gap-3">
+            <button @click="showVerificationModal = false; isLoading = false" class="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition duration-300">
+              Cancel
+            </button>
+            <button @click="verifyAdminCode" class="flex-1 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300">
+              Verify
+            </button>
+          </div>
+        </div>
+      </transition>
     </div>
-  </div>
+  </transition>
 
   <transition name="fade">
     <div v-if="showErrorNotification" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -302,66 +310,70 @@
   </div>
 
   <!-- Forgot Password Modal -->
-  <div v-if="showForgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeForgotPasswordModal">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-purple-900">Reset Password</h3>
-        <button @click="closeForgotPasswordModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-      </div>
+  <transition name="fade">
+    <div v-if="showForgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeForgotPasswordModal">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-purple-900">Reset Password</h3>
+            <button @click="closeForgotPasswordModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+          </div>
 
-      <!-- Step 1: Enter Student ID and Email -->
-      <div v-if="resetStep === 1" class="space-y-4">
-        <p class="text-gray-600 text-sm">Enter your Student ID and registered email to receive a verification code.</p>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
-          <input v-model="resetStudentId" type="text" placeholder="25-A-12345" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-          <input v-model="resetEmail" type="email" placeholder="your.email@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-        </div>
-        <button @click="requestResetCode" :disabled="resetLoading || !resetStudentId.trim() || !resetEmail.trim()" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-          <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-          {{ resetLoading ? 'Sending...' : 'Send Code' }}
-        </button>
-        <p v-if="resetMessage" :class="['text-sm text-center', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
-      </div>
+          <!-- Step 1: Enter Student ID and Email -->
+          <div v-if="resetStep === 1" class="space-y-4">
+            <p class="text-gray-600 text-sm">Enter your Student ID and registered email to receive a verification code.</p>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
+              <input v-model="resetStudentId" type="text" placeholder="25-A-12345" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+              <input v-model="resetEmail" type="email" placeholder="your.email@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+            </div>
+            <button @click="requestResetCode" :disabled="resetLoading || !resetStudentId.trim() || !resetEmail.trim()" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+              <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              {{ resetLoading ? 'Sending...' : 'Send Code' }}
+            </button>
+            <p v-if="resetMessage" :class="['text-sm text-center', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
+          </div>
 
-      <!-- Step 2: Enter Verification Code -->
-      <div v-if="resetStep === 2" class="space-y-4">
-        <p class="text-gray-600 text-sm">Enter the 6-digit verification code sent to your email.</p>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
-          <input v-model="resetCode" type="text" placeholder="123456" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-center text-2xl tracking-widest" />
-        </div>
-        <button @click="verifyResetCode" :disabled="resetLoading || resetCode.length !== 6" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-          <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-          {{ resetLoading ? 'Verifying...' : 'Verify Code' }}
-        </button>
-        <button @click="resetStep = 1" class="w-full text-purple-600 hover:text-purple-700 text-sm font-medium">Back to Step 1</button>
-        <p v-if="resetMessage" :class="['text-sm text-center', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
-      </div>
+          <!-- Step 2: Enter Verification Code -->
+          <div v-if="resetStep === 2" class="space-y-4">
+            <p class="text-gray-600 text-sm">Enter the 6-digit verification code sent to your email.</p>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
+              <input v-model="resetCode" type="text" placeholder="123456" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-center text-2xl tracking-widest" />
+            </div>
+            <button @click="verifyResetCode" :disabled="resetLoading || resetCode.length !== 6" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+              <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              {{ resetLoading ? 'Verifying...' : 'Verify Code' }}
+            </button>
+            <button @click="resetStep = 1" class="w-full text-purple-600 hover:text-purple-700 text-sm font-medium">Back to Step 1</button>
+            <p v-if="resetMessage" :class="['text-sm text-center', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
+          </div>
 
-      <!-- Step 3: Enter New Password -->
-      <div v-if="resetStep === 3" class="space-y-4">
-        <p class="text-gray-600 text-sm">Create a new password for your account.</p>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-          <input v-model="newPassword" type="password" placeholder="Enter new password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+          <!-- Step 3: Enter New Password -->
+          <div v-if="resetStep === 3" class="space-y-4">
+            <p class="text-gray-600 text-sm">Create a new password for your account.</p>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+              <input v-model="newPassword" type="password" placeholder="Enter new password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+              <input v-model="confirmNewPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+            </div>
+            <button @click="completePasswordReset" :disabled="resetLoading || !newPassword || newPassword !== confirmNewPassword" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+              <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              {{ resetLoading ? 'Resetting...' : 'Reset Password' }}
+            </button>
+            <p v-if="newPassword && confirmNewPassword && newPassword !== confirmNewPassword" class="text-sm text-red-600 text-center">Passwords do not match</p>
+            <p v-if="resetMessage" :class="['text-sm text-center', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-          <input v-model="confirmNewPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-        </div>
-        <button @click="completePasswordReset" :disabled="resetLoading || !newPassword || newPassword !== confirmNewPassword" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-          <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-          {{ resetLoading ? 'Resetting...' : 'Reset Password' }}
-        </button>
-        <p v-if="newPassword && confirmNewPassword && newPassword !== confirmNewPassword" class="text-sm text-red-600 text-center">Passwords do not match</p>
-        <p v-if="resetMessage" :class="['text-sm text-center', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
-      </div>
+      </transition>
     </div>
-  </div>
+  </transition>
 </template>
 
 <script setup>
