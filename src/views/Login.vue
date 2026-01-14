@@ -804,7 +804,7 @@ const verifyAdminCode = () => {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(135deg, rgba(109, 40, 217, 0.9) 0%, rgba(219, 39, 119, 0.9) 100%), url('/attached_assets/stock_images/modern_classroom_bac_7727cfb7.jpg');
+  background: linear-gradient(135deg, rgba(109, 40, 217, 0.9) 0%, rgba(219, 39, 119, 0.9) 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -817,7 +817,7 @@ const verifyAdminCode = () => {
 }
 
 .mobile-bg-panel {
-  background: linear-gradient(135deg, rgba(109, 40, 217, 0.9) 0%, rgba(219, 39, 119, 0.9) 100%), url('/attached_assets/stock_images/modern_classroom_bac_7727cfb7.jpg');
+  background: linear-gradient(135deg, rgba(109, 40, 217, 0.9) 0%, rgba(219, 39, 119, 0.9) 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
 }
