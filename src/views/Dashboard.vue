@@ -9,25 +9,28 @@
     @toggle-like="handlePopupLike"
   />
 
-  <!-- Event Ended Modal -->
-  <div v-if="eventEndedModalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeEventEndedModal">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-      <div class="text-center mb-6">
-        <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-          <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-          </svg>
+  <transition name="fade">
+    <div v-if="eventEndedModalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeEventEndedModal">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+          <div class="text-center mb-6">
+            <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-purple-900 mb-2">Event Ended</h3>
+            <p class="text-gray-600">
+              The event "<span class="font-semibold">{{ eventEndedModalEvent?.title }}</span>" has ended.
+            </p>
+          </div>
+          <button @click="closeEventEndedModal" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
+            Got it, don't show again
+          </button>
         </div>
-        <h3 class="text-xl font-bold text-purple-900 mb-2">Event Ended</h3>
-        <p class="text-gray-600">
-          The event "<span class="font-semibold">{{ eventEndedModalEvent?.title }}</span>" has ended.
-        </p>
-      </div>
-      <button @click="closeEventEndedModal" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
-        Got it, don't show again
-      </button>
+      </transition>
     </div>
-  </div>
+  </transition>
 
   <!-- Image Preview Modal -->
   <div v-if="showImagePreviewModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50" @click.self="showImagePreviewModal = false">
@@ -39,93 +42,102 @@
     <img :src="imagePreviewUrl" alt="Preview" class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" @click.stop />
   </div>
 
-  <div v-if="showLogoutConfirmation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showLogoutConfirmation = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4">
-      <h3 class="text-2xl font-bold text-purple-900 mb-4">Confirm Logout</h3>
-      <p class="text-gray-600 mb-6">Are you sure you want to exit? You'll be logged out of your account.</p>
-      <div class="flex gap-3">
-        <button @click="showLogoutConfirmation = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">
-          Cancel
-        </button>
-        <button @click="confirmLogout" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
-          Logout
-        </button>
-      </div>
+  <transition name="fade">
+    <div v-if="showLogoutConfirmation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showLogoutConfirmation = false">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4">
+          <h3 class="text-2xl font-bold text-purple-900 mb-4">Confirm Logout</h3>
+          <p class="text-gray-600 mb-6">Are you sure you want to exit? You'll be logged out of your account.</p>
+          <div class="flex gap-3">
+            <button @click="showLogoutConfirmation = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">
+              Cancel
+            </button>
+            <button @click="confirmLogout" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
+              Logout
+            </button>
+          </div>
+        </div>
+      </transition>
     </div>
-  </div>
+  </transition>
 
-  <!-- Contact Modal -->
-  <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40" @click.self="showContactModal = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-purple-900">Need Help?</h3>
-        <button @click="showContactModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-      </div>
-      
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        <div class="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
-          <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
-          <p class="font-semibold text-purple-900 text-sm">Email Support</p>
-          <p class="text-xs text-gray-600 mt-2">ssaamjrmsu@gmail.com</p>
-          <p class="text-xs text-gray-500 mt-1">For general inquiries</p>
-        </div>
-
-        <div class="flex flex-col items-center text-center p-4 bg-pink-50 rounded-lg">
-          <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat;"></div>
-          <p class="font-semibold text-purple-900 text-sm">JRMSU CCS Office</p>
-          <p class="text-xs text-gray-600 mt-2">College of Computer Studies</p>
-          <p class="text-xs text-gray-500 mt-1">Visit during office hours</p>
-        </div>
-
-        <div class="flex flex-col items-center text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
-          <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat;"></div>
-          <p class="font-semibold text-purple-900 text-sm">Meet Our Developers</p>
-          <p class="text-xs text-gray-600 mt-2">CCS - Creatives Committee</p>
-          <button @click="showDevelopersPopup = true; showContactModal = false" class="text-xs text-purple-600 hover:text-purple-800 font-medium mt-2 underline">View Team →</button>
-        </div>
-      </div>
-
-      <div class="bg-blue-50 rounded-lg p-4 mb-6">
-        <p class="text-sm text-blue-900 font-medium mb-3">Quick Help</p>
-        <ul class="text-xs text-blue-800 space-y-2">
-          <li>• First time login? Your default password is your Last Name (uppercase)</li>
-          <li>• Changed your password and forgot it? Use the Forgot Password option on the login page</li>
-          <li>• Looking for your RFID? Register it to the CCS office</li>
-          <li>• Profile problems? Contact Developers or Proceed to the CCS office</li>
-        </ul>
-      </div>
-
-      <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
-        Close
-      </button>
-    </div>
-  </div>
-
-  <transition name="fade-scale">
-    <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
-      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300">
-        <div class="flex justify-between items-center mb-6">
-          <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
-          <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-        </div>
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-6">
-          <a v-for="(dev, index) in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" 
-             class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
-             :style="{ transitionDelay: `${index * 50}ms` }">
-            <div class="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white text-2xl shadow-lg mb-3 overflow-hidden flex-shrink-0 ring-2 ring-purple-100">
-              <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
-              <span v-else>{{ dev.initials }}</span>
+  <transition name="fade">
+    <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40" @click.self="showContactModal = false">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-purple-900">Need Help?</h3>
+            <button @click="showContactModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+          </div>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+            <div class="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
+              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
+              <p class="font-semibold text-purple-900 text-sm">Email Support</p>
+              <p class="text-xs text-gray-600 mt-2">ssaamjrmsu@gmail.com</p>
+              <p class="text-xs text-gray-500 mt-1">For general inquiries</p>
             </div>
-            <p class="text-xs font-semibold text-purple-600 hover:text-purple-800 text-center line-clamp-2 min-h-[2rem] flex items-center">{{ dev.name }}</p>
-            <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-            <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
-          </a>
+
+            <div class="flex flex-col items-center text-center p-4 bg-pink-50 rounded-lg">
+              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat;"></div>
+              <p class="font-semibold text-purple-900 text-sm">JRMSU CCS Office</p>
+              <p class="text-xs text-gray-600 mt-2">College of Computer Studies</p>
+              <p class="text-xs text-gray-500 mt-1">Visit during office hours</p>
+            </div>
+
+            <div class="flex flex-col items-center text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
+              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat;"></div>
+              <p class="font-semibold text-purple-900 text-sm">Meet Our Developers</p>
+              <p class="text-xs text-gray-600 mt-2">CCS - Creatives Committee</p>
+              <button @click="showDevelopersPopup = true; showContactModal = false" class="text-xs text-purple-600 hover:text-purple-800 font-medium mt-2 underline">View Team →</button>
+            </div>
+          </div>
+
+          <div class="bg-blue-50 rounded-lg p-4 mb-6">
+            <p class="text-sm text-blue-900 font-medium mb-3">Quick Help</p>
+            <ul class="text-xs text-blue-800 space-y-2">
+              <li>• First time login? Your default password is your Last Name (uppercase)</li>
+              <li>• Changed your password and forgot it? Use the Forgot Password option on the login page</li>
+              <li>• Looking for your RFID? Register it to the CCS office</li>
+              <li>• Profile problems? Contact Developers or Proceed to the CCS office</li>
+            </ul>
+          </div>
+
+          <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
+            Close
+          </button>
         </div>
-        <div class="text-center text-sm text-gray-600">
-          <p class="font-medium text-purple-900">CCS - Creatives Committee</p>
-          <p>Chairperson: Sheen Lee</p>
+      </transition>
+    </div>
+  </transition>
+
+  <transition name="fade">
+    <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300">
+          <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
+            <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-6">
+            <a v-for="(dev, index) in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" 
+               class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
+               :style="{ transitionDelay: `${index * 50}ms` }">
+              <div class="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white text-2xl shadow-lg mb-3 overflow-hidden flex-shrink-0 ring-2 ring-purple-100">
+                <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
+                <span v-else>{{ dev.initials }}</span>
+              </div>
+              <p class="text-xs font-semibold text-purple-600 hover:text-purple-800 text-center line-clamp-2 min-h-[2rem] flex items-center">{{ dev.name }}</p>
+              <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
+              <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+            </a>
+          </div>
+          <div class="text-center text-sm text-gray-600">
+            <p class="font-medium text-purple-900">CCS - Creatives Committee</p>
+            <p>Chairperson: Sheen Lee</p>
+          </div>
         </div>
-      </div>
+      </transition>
     </div>
   </transition>
 
@@ -9551,5 +9563,24 @@ onUnmounted(() => {
   0% { transform: rotateY(0deg); }
   50% { transform: rotateY(180deg); }
   100% { transform: rotateY(360deg); }
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.modal-bounce-enter-active {
+  animation: bounce-in 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.modal-bounce-leave-active {
+  animation: bounce-in 0.3s reverse;
+}
+@keyframes bounce-in {
+  0% { transform: scale(0.7); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
 }
 </style>
