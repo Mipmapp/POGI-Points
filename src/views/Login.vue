@@ -1,4 +1,3 @@
-<ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" />
 <template>
   <transition name="fade">
     <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40" @click.self="showContactModal = false">
