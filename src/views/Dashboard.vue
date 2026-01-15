@@ -2265,7 +2265,7 @@
 
         <!-- Active Attendance Event Banner for Students -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster && activeUnattendedEvents.length > 0" class="mb-4">
-          <div v-for="event in activeUnattendedEvents" :key="event._id" class="bg-gradient-to-r from-purple-600 to-pink-500 rounded-lg shadow-lg p-4 mb-3 text-white">
+          <div v-for="event in activeUnattendedEvents" :key="event._id" class="rounded-lg shadow-lg p-4 mb-3 text-white" :style="{ background: profileGradient }">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
               <div class="flex items-start gap-3">
                 <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -2314,7 +2314,7 @@
         <!-- Dashboard Page -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
           <!-- Profile Header -->
-          <div class="relative h-32 bg-gradient-to-r from-purple-600 to-pink-500 overflow-hidden">
+          <div class="relative h-32 overflow-hidden" :style="{ background: profileGradient }">
             <div class="light-sweep"></div>
             <button @click="refreshCurrentUser" :disabled="refreshingUserData" class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all backdrop-blur-sm z-10" title="Refresh Profile">
               <svg :class="['w-5 h-5', refreshingUserData ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
