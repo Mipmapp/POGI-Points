@@ -3614,9 +3614,8 @@ const updateProfileGradient = async (url) => {
   try {
     const color = await fac.getColorAsync(url)
     const hex = color.hex
-    // Generate a complementary or darker/lighter version for the gradient
-    // Simple approach: Use the color and a darker version of it
-    profileGradient.value = `linear-gradient(to bottom right, ${hex}, #000000)`
+    // Generate a lighter gradient by blending with white instead of black
+    profileGradient.value = `linear-gradient(to bottom right, ${hex}, #ffffff)`
   } catch (e) {
     console.error('Failed to get average color:', e)
     profileGradient.value = 'linear-gradient(to bottom right, #ec4899, #9333ea)'
