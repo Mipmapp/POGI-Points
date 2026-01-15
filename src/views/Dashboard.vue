@@ -3612,19 +3612,33 @@ const updateProfileGradient = async (url) => {
     return
   }
   try {
-    const color = await fac.getColorAsync(url)
-    const { r, g, b } = color.rgba
+    // Get multiple colors to find highlights
+    const palette = await fac.getPaletteAsync(url, { algorithm: 'dominant' })
     
-    // Increase brightness and saturation for a more vibrant, "not too dark" look
-    // Using a simpler approach: lighten both ends of the gradient
-    const lighten = (val, amount) => Math.min(255, val + (255 - val) * amount)
+    // Sort colors by brightness (lightest first)
+    // Brightness formula: (0.299*R + 0.587*G + 0.114*B)
+    const sortedPalette = [...palette].sort((a, b) => {
+      const brightA = (0.299 * a.rgba[0] + 0.587 * a.rgba[1] + 0.114 * a.rgba[2])
+      const brightB = (0.299 * b.rgba[0] + 0.587 * b.rgba[1] + 0.114 * b.rgba[2])
+      return brightB - brightA
+    })
+
+    // Take the two brightest colors
+    const colorA = sortedPalette[0]
+    const colorB = sortedPalette[1] || sortedPalette[0]
     
-    const color1 = `rgb(${lighten(r, 0.2)}, ${lighten(g, 0.2)}, ${lighten(b, 0.2)})`
-    const color2 = `rgb(${lighten(r, 0.6)}, ${lighten(g, 0.6)}, ${lighten(b, 0.6)})`
+    // Ensure colors are vibrant and light
+    const lighten = (rgba, amount) => {
+      const [r, g, b] = rgba
+      return `rgb(${Math.min(255, r + (255 - r) * amount)}, ${Math.min(255, g + (255 - g) * amount)}, ${Math.min(255, b + (255 - b) * amount)})`
+    }
     
-    profileGradient.value = `linear-gradient(to bottom right, ${color1}, ${color2})`
+    const grad1 = lighten(colorA.rgba, 0.1)
+    const grad2 = lighten(colorB.rgba, 0.4)
+    
+    profileGradient.value = `linear-gradient(to bottom right, ${grad1}, ${grad2})`
   } catch (e) {
-    console.error('Failed to get average color:', e)
+    console.error('Failed to get palette color:', e)
     profileGradient.value = 'linear-gradient(to bottom right, #ec4899, #9333ea)'
   }
 }
