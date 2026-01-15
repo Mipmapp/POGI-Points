@@ -2350,7 +2350,7 @@
         <!-- Dashboard Page -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
           <!-- Profile Header -->
-          <div class="relative h-40 overflow-hidden bg-gray-900">
+          <div class="relative h-40 overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600">
             <!-- Artistic Blurred Background -->
             <div 
               v-if="currentUser.image || currentUser.photo"
