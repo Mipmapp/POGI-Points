@@ -4754,7 +4754,7 @@ const checkAdminActionStatus = async () => {
   if (!token || (!currentUser.value.isMaster && currentUser.value.role !== 'admin')) return
   
   try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/admin-actions/status', {
+    const response = await fetch(`/apis/admin-actions/status`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -4777,7 +4777,7 @@ const requestAdminActionToken = async (adminKey) => {
   const token = localStorage.getItem('authToken')
   if (!token) throw new Error('Authentication required')
   
-  const response = await fetch('https://ssaam-api.vercel.app/apis/admin-actions/token', {
+  const response = await fetch(`/apis/admin-actions/token`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -5006,7 +5006,7 @@ onMounted(async () => {
     }
     
     try {
-      const verifyResponse = await fetch('https://ssaam-api.vercel.app/apis/admin/verify', {
+      const verifyResponse = await fetch(`/apis/admin/verify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -5055,7 +5055,7 @@ onMounted(async () => {
     
     try {
       // Fetch only current page (10-20 students)
-      const response = await fetch(`https://ssaam-api.vercel.app/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`, {
+      const response = await fetch(`/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer SSAAMStudents`
@@ -5157,7 +5157,7 @@ const refreshCurrentUser = async () => {
   try {
     const studentId = currentUser.value.studentId || currentUser.value.student_id
     
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/search?search=${encodeURIComponent(studentId)}&limit=1`, {
+    const response = await fetch(`/apis/students/search?search=${encodeURIComponent(studentId)}&limit=1`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -5264,7 +5264,7 @@ const toggleRfidList = async (type) => {
   rfidListDisplayLimit.value = 20
   
   try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/students?limit=1000', {
+    const response = await fetch(`/apis/students?limit=1000`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -5586,7 +5586,7 @@ const fetchSettings = async () => {
   
   settingsLoading.value = true
   try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
+    const response = await fetch(`/apis/settings`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -5627,7 +5627,7 @@ const saveSettingsImpl = async () => {
   settingsSaving.value = true
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
+    const response = await fetch(`/apis/settings`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -5674,7 +5674,7 @@ const saveRfidScannerSettings = async () => {
   rfidScannerSaving.value = true
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
+    const response = await fetch(`/apis/settings`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -5779,7 +5779,7 @@ const clearAllSessionTokens = async () => {
   
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch('https://ssaam-api.vercel.app/apis/debug/session-tokens/clear?type=all', {
+    const response = await fetch(`/apis/debug/session-tokens/clear?type=all`, {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -6130,7 +6130,7 @@ const confirmLogout = async () => {
   try {
     const token = localStorage.getItem('authToken')
     if (token) {
-      const endpoint = currentUser.value.isMaster ? 'https://ssaam-api.vercel.app/apis/masters/logout' : 'https://ssaam-api.vercel.app/apis/students/logout'
+      const endpoint = currentUser.value.isMaster ? '/apis/masters/logout' : '/apis/students/logout'
       await fetch(endpoint, {
         method: 'POST',
         headers: {
@@ -6513,7 +6513,7 @@ const saveUserImpl = async () => {
       
       if (newRole && newRole !== originalRole) {
         try {
-          const roleResponse = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}/role`, {
+    const response = await fetch(`/apis/students/${studentId}/role`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
@@ -6542,7 +6542,7 @@ const saveUserImpl = async () => {
       
       if (newRfid && newRfid !== 'N/A' && newRfid !== originalRfid) {
         try {
-          const rfidResponse = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}/rfid`, {
+    const response = await fetch(`/apis/students/${studentId}/rfid`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
@@ -6621,7 +6621,7 @@ const confirmDeleteImpl = async () => {
   
   if (userToDelete.value) {
     try {
-      const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${userToDelete.value}`, {
+    const response = await fetch(`/apis/students/${userToDelete.value}`, {
         method: 'DELETE',
         headers: { 
           'Content-Type': 'application/json',
@@ -6661,7 +6661,7 @@ const confirmDelete = () => withAdminAction(confirmDeleteImpl)()
 const fetchNotifications = async () => {
   notificationsLoading.value = true
   try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/notifications', {
+    const response = await fetch(`/apis/notifications`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -7302,7 +7302,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
         
         if (eventEnded) {
           try {
-            const studentsResponse = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000', {
+    const response = await fetch(`/apis/students?limit=10000`, {
               method: 'GET',
               headers: {
                 'Authorization': 'Bearer SSAAMStudents',
@@ -7388,7 +7388,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
       if (eventEnded && session) {
         try {
           // Fetch approved students
-          const studentsResponse = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000', {
+    const response = await fetch(`/apis/students?limit=10000`, {
             method: 'GET',
             headers: {
               'Authorization': 'Bearer SSAAMStudents',
@@ -7527,7 +7527,7 @@ const fetchEventLogs = async (eventId) => {
       if (eventEnded) {
         try {
           // Fetch approved students
-          const studentsResponse = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000', {
+    const response = await fetch(`/apis/students?limit=10000`, {
             method: 'GET',
             headers: {
               'Authorization': 'Bearer SSAAMStudents',
@@ -8671,7 +8671,7 @@ const saveEditedNotification = async () => {
   savingEditedNotification.value = true
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/notifications/${editNotificationData.value._id}`, {
+    const response = await fetch(`/apis/notifications/${editNotificationData.value._id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -8887,7 +8887,7 @@ const postNotification = async () => {
       payload.image_url = notificationImageUrl.value
     }
     
-    const response = await fetch('https://ssaam-api.vercel.app/apis/notifications', {
+    const response = await fetch(`/apis/notifications`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -8930,7 +8930,7 @@ const confirmDeleteNotification = async () => {
   deletingNotification.value = true
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/notifications/${notificationToDelete.value}`, {
+    const response = await fetch(`/apis/notifications/${notificationToDelete.value}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -9044,7 +9044,7 @@ const toggleLike = async (notif) => {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
     const visitorId = currentUser.value.studentId || currentUser.value.student_id || currentUser.value._id
     
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/notifications/${notif._id}/like`, {
+    const response = await fetch(`/apis/notifications/${notif._id}/like`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -9135,7 +9135,7 @@ const requestPasswordChangeCode = async () => {
     const token = encodeTimestamp()
     const studentId = currentUser.value.studentId || currentUser.value.student_id
     
-    const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/request', {
+    const response = await fetch(`/apis/password-reset/request`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -9173,7 +9173,7 @@ const verifyPasswordChangeCode = async () => {
     const token = encodeTimestamp()
     const studentId = currentUser.value.studentId || currentUser.value.student_id
     
-    const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/verify', {
+    const response = await fetch(`/apis/password-reset/verify`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -9226,7 +9226,7 @@ const completePasswordChange = async () => {
     const token = encodeTimestamp()
     const studentId = currentUser.value.studentId || currentUser.value.student_id
     
-    const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/complete', {
+    const response = await fetch(`/apis/password-reset/complete`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
