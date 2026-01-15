@@ -3633,8 +3633,13 @@ const updateProfileGradientFromImage = async (img) => {
 };
 
 const applyPaletteToGradient = (palette) => {
-  const isWhite = (rgba) => rgba[0] > 245 && rgba[1] > 245 && rgba[2] > 245;
-  const isDark = (rgba) => (0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2]) < 40;
+  if (!palette || palette.length === 0) {
+    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+    return;
+  }
+  
+  const isWhite = (rgba) => rgba[0] > 240 && rgba[1] > 240 && rgba[2] > 240;
+  const isDark = (rgba) => (0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2]) < 50;
 
   const getBrightness = (rgba) => (0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2]);
   const getSaturation = (rgba) => {
@@ -3643,23 +3648,25 @@ const applyPaletteToGradient = (palette) => {
     return max === 0 ? 0 : (max - min) / max;
   };
 
-  let bestColor = null;
-  let maxScore = -1;
-
-  for (const color of palette) {
-    if (!isWhite(color.rgba) && !isDark(color.rgba)) {
-      const brightness = getBrightness(color.rgba);
-      const saturation = getSaturation(color.rgba);
-      const score = (brightness / 255) * 0.6 + saturation * 0.4;
-      if (score > maxScore && brightness > 120) {
-        maxScore = score;
-        bestColor = color;
-      }
-    }
+  // Find all valid colors
+  const validColors = palette.filter(c => !isWhite(c.rgba) && !isDark(c.rgba));
+  
+  if (validColors.length === 0) {
+    // If no valid colorful colors, use the dominant one even if it's white/dark
+    const dominant = palette[0];
+    profileGradient.value = `linear-gradient(to top, rgb(${dominant.rgba[0]},${dominant.rgba[1]},${dominant.rgba[2]}), rgb(${dominant.rgba[0]+20},${dominant.rgba[1]+20},${dominant.rgba[2]+20}))`;
+    return;
   }
 
-  const mainColor = bestColor || palette[0];
-  const secondaryColor = palette.find(c => c !== mainColor && !isWhite(c.rgba) && !isDark(c.rgba)) || palette[1] || mainColor;
+  // Sort by vibrant score (brightness + saturation)
+  validColors.sort((a, b) => {
+    const scoreA = (getBrightness(a.rgba) / 255) * 0.4 + getSaturation(a.rgba) * 0.6;
+    const scoreB = (getBrightness(b.rgba) / 255) * 0.4 + getSaturation(b.rgba) * 0.6;
+    return scoreB - scoreA;
+  });
+
+  const mainColor = validColors[0];
+  const secondaryColor = validColors[1] || mainColor;
 
   const b1 = getBrightness(mainColor.rgba);
   const b2 = getBrightness(secondaryColor.rgba);
@@ -3681,12 +3688,26 @@ const updateProfileGradient = async (url) => {
     profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
     return;
   }
+
   try {
-    const palette = await fac.getPaletteAsync(url, { algorithm: 'sqrt', colorCount: 10 });
+    // Attempt to fetch the image as a blob to bypass some CORS issues if the server allows it
+    const response = await fetch(url, { mode: 'cors' });
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    
+    const palette = await fac.getPaletteAsync(blobUrl, { algorithm: 'sqrt', colorCount: 15 });
     applyPaletteToGradient(palette);
+    
+    URL.revokeObjectURL(blobUrl);
   } catch (e) {
-    console.error('Failed to extract colors from URL:', e);
-    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+    console.warn('Fetch-based color extraction failed, trying direct method:', e);
+    try {
+      const palette = await fac.getPaletteAsync(url, { algorithm: 'sqrt', colorCount: 15, crossOrigin: 'anonymous' });
+      applyPaletteToGradient(palette);
+    } catch (e2) {
+      console.error('All color extraction methods failed:', e2);
+      profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+    }
   }
 };
 
