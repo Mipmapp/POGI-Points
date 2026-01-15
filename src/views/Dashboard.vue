@@ -1012,7 +1012,7 @@
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h2 class="text-lg sm:text-xl font-bold text-purple-900">Attendance Events</h2>
                 <div class="flex gap-2 flex-wrap">
-                  <button @click="fetchAttendanceData" :disabled="attendanceLoading" class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition flex items-center gap-2 text-sm" title="Refresh">
+                  <button @click="refreshAttendanceData" :disabled="attendanceLoading" class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition flex items-center gap-2 text-sm" title="Refresh">
                     <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     <span class="sr-only sm:not-sr-only">Refresh</span>
                   </button>
@@ -5215,7 +5215,7 @@ const refreshCurrentUser = async () => {
 const fetchStats = async () => {
   statsLoading.value = true
   try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/students/stats', {
+    const response = await fetch(`/apis/students/stats`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -5311,7 +5311,7 @@ const toggleRfidList = async (type) => {
 const fetchPendingStudents = async () => {
   pendingLoading.value = true
   try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/students/pending?limit=1000', {
+    const response = await fetch(`/apis/students/pending?limit=1000`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -5334,7 +5334,7 @@ const approveStudentImpl = async (student) => {
   approvingStudent.value = student.student_id
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${student.student_id}/approve`, {
+    const response = await fetch(`/apis/students/${student.student_id}/approve`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -5385,7 +5385,7 @@ const confirmRejectStudentImpl = async () => {
   rejectingStudent.value = true
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentToReject.value.student_id}/reject`, {
+    const response = await fetch(`/apis/students/${studentToReject.value.student_id}/reject`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -6686,7 +6686,7 @@ const fetchAttendanceData = async () => {
   
   try {
     if (isAdmin) {
-      const response = await fetch('https://ssaam-api.vercel.app/apis/attendance/events', {
+      const response = await fetch('/apis/attendance/events', {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -6699,21 +6699,21 @@ const fetchAttendanceData = async () => {
       }
     } else {
       const [eventsRes, upcomingRes, myRecordsRes] = await Promise.all([
-        fetch('https://ssaam-api.vercel.app/apis/attendance/events/active', {
+        fetch('/apis/attendance/events/active', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
             'X-SSAAM-TS': encodeTimestamp()
           }
         }),
-        fetch('https://ssaam-api.vercel.app/apis/attendance/events/upcoming', {
+        fetch('/apis/attendance/events/upcoming', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
             'X-SSAAM-TS': encodeTimestamp()
           }
         }),
-        fetch('https://ssaam-api.vercel.app/apis/attendance/my-records', {
+        fetch('/apis/attendance/my-records', {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -6855,7 +6855,7 @@ const updateAttendanceEvent = async () => {
       end_time: selectedEvent.value.end_time || selectedEvent.value.endTime || '17:00'
     }
     
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${selectedEvent.value._id}`, {
+    const response = await fetch(`/apis/attendance/events/${selectedEvent.value._id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -6891,7 +6891,7 @@ const updateAttendanceEvent = async () => {
 const deleteAttendanceEvent = async (eventId) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${eventId}`, {
+    const response = await fetch(`/apis/attendance/events/${eventId}`, {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -6925,7 +6925,7 @@ const fetchEventSessions = async (eventId) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   sessionsLoading.value = true
   try {
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${eventId}/sessions`, {
+    const response = await fetch(`/apis/attendance/events/${eventId}/sessions`, {
       headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
     })
     if (response.ok) {
@@ -6951,7 +6951,7 @@ const toggleEventExpansion = async (eventId) => {
     if (!expandedEventSessions.value[eventId]) {
       const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
       try {
-        const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${eventId}/sessions`, {
+        const response = await fetch(`/apis/attendance/events/${eventId}/sessions`, {
           headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
         })
         if (response.ok) {
@@ -6986,7 +6986,7 @@ const saveSession = async () => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
     if (editingSession.value) {
-      const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${editingSession.value._id}`, {
+    const response = await fetch(`/apis/attendance/sessions/${editingSession.value._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() },
         body: JSON.stringify(newSession.value)
@@ -7008,7 +7008,7 @@ const saveSession = async () => {
         showNotification(errorData.message || 'Failed to update session', 'error')
       }
     } else {
-      const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${selectedEvent.value._id}/sessions`, {
+      const response = await fetch(`/apis/attendance/events/${selectedEvent.value._id}/sessions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() },
         body: JSON.stringify(newSession.value)
@@ -7041,7 +7041,7 @@ const saveSession = async () => {
 const deleteSession = async (sessionId) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${sessionId}`, {
+    const response = await fetch(`/apis/attendance/sessions/${sessionId}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() }
     })
@@ -7112,7 +7112,7 @@ const applyLateThresholdByMinutes = async () => {
       // Only update if the late status needs to change
       if (log.is_late !== shouldBeLate) {
         try {
-          const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/logs/${log._id || log.id}`, {
+          const response = await fetch(`/apis/attendance/logs/${log._id || log.id}`, {
             method: 'PATCH',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -7201,7 +7201,7 @@ const applyLateThreshold = async () => {
       // Only update if the late status needs to change
       if (log.is_late !== shouldBeLate) {
         try {
-          const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/logs/${log._id || log.id}`, {
+          const response = await fetch(`/apis/attendance/logs/${log._id || log.id}`, {
             method: 'PATCH',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -7262,7 +7262,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
       if (eventLogsFilter.value.program) statsParams.append('program', eventLogsFilter.value.program)
       if (eventLogsFilter.value.search) statsParams.append('search', eventLogsFilter.value.search)
       
-      const statsResponse = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${sessionId}/logs?${statsParams.toString()}`, {
+      const statsResponse = await fetch(`/apis/attendance/sessions/${sessionId}/logs?${statsParams.toString()}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -7344,7 +7344,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
     if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
     if (eventLogsFilter.value.search) params.append('search', eventLogsFilter.value.search)
     
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${sessionId}/logs?${params.toString()}`, {
+    const response = await fetch(`/apis/attendance/sessions/${sessionId}/logs?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -7493,7 +7493,7 @@ const fetchEventLogs = async (eventId) => {
     if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
     if (eventLogsFilter.value.search) params.append('search', eventLogsFilter.value.search)
     
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${eventId}/logs?${params.toString()}`, {
+    const response = await fetch(`/apis/attendance/events/${eventId}/logs?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -7616,7 +7616,7 @@ const exportEventAttendanceToExcel = async (event) => {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
     
     // Fetch all logs for this event
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/events/${event._id}/logs?limit=1000`, {
+    const response = await fetch(`/apis/attendance/events/${event._id}/logs?limit=1000`, {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -7866,7 +7866,7 @@ const processRfidScan = async (inputCode) => {
           force_mode: true // Tell backend to strictly use the operation_type
         }
     
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${selectedSession.value._id}/check`, {
+    const response = await fetch(`/apis/attendance/sessions/${selectedSession.value._id}/check`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -8042,7 +8042,7 @@ const fetchUserAttendanceLogs = async () => {
   try {
     const token = localStorage.getItem('authToken')
     
-    const response = await fetch('https://ssaam-api.vercel.app/apis/attendance/my-records', {
+    const response = await fetch('/apis/attendance/my-records', {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
