@@ -3553,6 +3553,7 @@ import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import AnnouncementPopup from '../components/AnnouncementPopup.vue'
 import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
+import { buildAPIUrl } from '../config/api.js'
 
 const router = useRouter()
 const currentUser = ref({})
@@ -5069,7 +5070,7 @@ onMounted(async () => {
     }
     
     try {
-      const verifyResponse = await fetch(`/apis/admin/verify`, {
+      const verifyResponse = await fetch(buildAPIUrl(`/apis/admin/verify`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -6724,7 +6725,7 @@ const confirmDelete = () => withAdminAction(confirmDeleteImpl)()
 const fetchNotifications = async () => {
   notificationsLoading.value = true
   try {
-    const response = await fetch(`/apis/notifications`, {
+    const response = await fetch(buildAPIUrl(`/apis/notifications`), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -6756,7 +6757,7 @@ const fetchAttendanceData = async () => {
 
     if (isAdmin) {
       console.log('Fetching admin attendance events...')
-      const response = await fetch('/apis/attendance/events', {
+      const response = await fetch(buildAPIUrl('/apis/attendance/events'), {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -6777,21 +6778,21 @@ const fetchAttendanceData = async () => {
     } else {
       console.log('Fetching student attendance records...')
       const [eventsRes, upcomingRes, myRecordsRes] = await Promise.all([
-        fetch('/apis/attendance/events/active', {
+        fetch(buildAPIUrl('/apis/attendance/events/active'), {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
             'X-SSAAM-TS': encodeTimestamp()
           }
         }),
-        fetch('/apis/attendance/events/upcoming', {
+        fetch(buildAPIUrl('/apis/attendance/events/upcoming'), {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
             'X-SSAAM-TS': encodeTimestamp()
           }
         }),
-        fetch('/apis/attendance/my-records', {
+        fetch(buildAPIUrl('/apis/attendance/my-records'), {
           method: 'GET',
           headers: {
             'Authorization': `Bearer ${token}`,
