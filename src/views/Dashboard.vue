@@ -2314,7 +2314,19 @@
         <!-- Dashboard Page -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
           <!-- Profile Header -->
-          <div class="relative h-32 overflow-hidden" :style="{ background: profileGradient }">
+          <div class="relative h-32 overflow-hidden bg-gray-100">
+            <!-- Blurred Image Background -->
+            <div 
+              v-if="currentUser.image || currentUser.photo"
+              class="absolute inset-0 w-full h-full bg-cover bg-center transition-all duration-700 opacity-60 scale-110"
+              :style="{ 
+                backgroundImage: `url(${currentUser.image || currentUser.photo})`,
+                filter: 'blur(20px) saturate(1.5)'
+              }"
+            ></div>
+            <div v-else class="absolute inset-0 w-full h-full bg-gradient-to-br from-purple-600 to-purple-800 opacity-60"></div>
+            
+            <div class="absolute inset-0 bg-black/10"></div>
             <div class="light-sweep"></div>
             <button @click="refreshCurrentUser" :disabled="refreshingUserData" class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all backdrop-blur-sm z-10" title="Refresh Profile">
               <svg :class="['w-5 h-5', refreshingUserData ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
