@@ -647,6 +647,15 @@
           <span class="flex items-center gap-2">Notifications <span v-if="unreadNotificationCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ unreadNotificationCount }}</span></span>
         </button>
         <button 
+          @click="refreshCurrentUser"
+          :class="['flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 w-full text-left mt-2 transition-all duration-300', refreshingUserData ? 'opacity-70' : '']"
+        >
+          <svg class="w-5 h-5 transition-transform duration-700" :class="{ 'animate-spin': refreshingUserData }" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          <span>Refresh Data</span>
+        </button>
+        <button 
           @click="handleLogoutWithAnimation"
           :class="['flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 w-full text-left mt-2 transition-all duration-300', isLoggingOut ? 'scale-95 opacity-70' : '']"
         >
@@ -748,6 +757,15 @@
           <button @click="goToNotifications" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'notifications' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
             <span class="flex items-center gap-2">Notifications <span v-if="unreadNotificationCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ unreadNotificationCount }}</span></span>
+          </button>
+          <button 
+            @click="refreshCurrentUser(); showMobileMenu = false"
+            :class="['flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 w-full text-left mt-2 transition-all duration-300', refreshingUserData ? 'opacity-70' : '']"
+          >
+            <svg class="w-5 h-5 transition-transform duration-700" :class="{ 'animate-spin': refreshingUserData }" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            <span>Refresh Data</span>
           </button>
           <button 
             @click="handleLogoutWithAnimation"
@@ -5416,7 +5434,9 @@ const refreshCurrentUser = async () => {
   refreshingUserData.value = true
   try {
     const studentId = currentUser.value.studentId || currentUser.value.student_id
+    const token = localStorage.getItem('authToken')
     
+    // First refresh the basic profile data
     const response = await fetch(buildAPIUrl(`/apis/students/search?search=${encodeURIComponent(studentId)}&limit=1`), {
       method: 'GET',
       headers: {
@@ -5451,8 +5471,24 @@ const refreshCurrentUser = async () => {
         
         // Update localStorage
         localStorage.setItem('currentUser', JSON.stringify(currentUser.value))
+
+        // Trigger other data refreshes that usually happen on login/mount
+        const refreshPromises = []
         
-        showNotification('Profile data refreshed successfully!', 'success')
+        refreshPromises.push(fetchNotifications())
+        
+        if (currentUser.value.role === 'admin' || currentUser.value.isMaster) {
+          refreshPromises.push(fetchStats())
+          refreshPromises.push(fetchPendingStudents())
+          refreshPromises.push(refreshStudents())
+        } else {
+          refreshPromises.push(fetchAttendanceData())
+          refreshPromises.push(fetchUserAttendanceLogs())
+        }
+
+        await Promise.all(refreshPromises)
+        
+        showNotification('Dashboard data refreshed successfully!', 'success')
       } else {
         showNotification('Could not find your profile data', 'error')
       }
