@@ -7974,11 +7974,26 @@ const formatAttendanceDate = (dateStr) => {
   return date.toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-// Format attendance time for user logs
-const formatAttendanceTime = (timeStr) => {
-  if (!timeStr) return ''
-  const date = new Date(timeStr)
-  return date.toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true })
+// Refresh attendance data
+const refreshAttendanceData = async () => {
+  attendanceLoading.value = true
+  try {
+    await fetchAttendanceData()
+    // If we're in admin view and have a session selected, refresh its logs too
+    if ((currentUser.value.role === 'admin' || currentUser.value.isMaster) && selectedSessionForLogs.value) {
+      await fetchSessionLogs(selectedSessionForLogs.value._id)
+    }
+    // If student, refresh their logs
+    if (currentUser.value.role !== 'admin' && !currentUser.value.isMaster) {
+      await fetchUserAttendanceLogs()
+    }
+    showNotification('Attendance data refreshed successfully!', 'success')
+  } catch (error) {
+    console.error('Attendance refresh error:', error)
+    showNotification('Failed to refresh attendance data', 'error')
+  } finally {
+    attendanceLoading.value = false
+  }
 }
 
 // Get user log attendance status based on check-in time vs event start time
