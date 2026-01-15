@@ -8143,7 +8143,7 @@ const fetchUserAttendanceLogs = async () => {
   try {
     const token = localStorage.getItem('authToken')
     
-    const response = await fetch('/apis/attendance/my-records', {
+    const response = await fetch(buildAPIUrl('/apis/attendance/my-records'), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
