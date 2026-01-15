@@ -3613,9 +3613,16 @@ const updateProfileGradient = async (url) => {
   }
   try {
     const color = await fac.getColorAsync(url)
-    const hex = color.hex
-    // Generate a lighter gradient by blending with white instead of black
-    profileGradient.value = `linear-gradient(to bottom right, ${hex}, #ffffff)`
+    const { r, g, b } = color.rgba
+    
+    // Increase brightness and saturation for a more vibrant, "not too dark" look
+    // Using a simpler approach: lighten both ends of the gradient
+    const lighten = (val, amount) => Math.min(255, val + (255 - val) * amount)
+    
+    const color1 = `rgb(${lighten(r, 0.2)}, ${lighten(g, 0.2)}, ${lighten(b, 0.2)})`
+    const color2 = `rgb(${lighten(r, 0.6)}, ${lighten(g, 0.6)}, ${lighten(b, 0.6)})`
+    
+    profileGradient.value = `linear-gradient(to bottom right, ${color1}, ${color2})`
   } catch (e) {
     console.error('Failed to get average color:', e)
     profileGradient.value = 'linear-gradient(to bottom right, #ec4899, #9333ea)'
