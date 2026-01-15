@@ -3596,8 +3596,8 @@
             <button @click="cancelDeleteEvent" class="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition">
               Cancel
             </button>
-            <button @click="confirmDeleteEvent" class="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700 transition flex items-center justify-center gap-2">
-              <span>Delete Event</span>
+            <button @click="confirmDeleteEvent" :disabled="deleteCooldown > 0" class="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              <span>{{ deleteCooldown > 0 ? `Wait ${deleteCooldown}s` : 'Delete Event' }}</span>
             </button>
           </div>
         </div>
@@ -3676,6 +3676,8 @@ const rfidListDisplayLimit = ref(20)
 const notification = ref({ show: false, message: '', type: 'info' })
 const showDeleteEventConfirm = ref(false)
 const eventToDelete = ref(null)
+const deleteCooldown = ref(0)
+let cooldownTimer = null
 const profileImageFailed = ref(false)
 const sidebarImageFailed = ref(false)
 const profileImageRetries = ref(0)
@@ -7186,11 +7188,26 @@ const updateAttendanceEvent = async () => {
 const requestDeleteEvent = (event) => {
   eventToDelete.value = event
   showDeleteEventConfirm.value = true
+  deleteCooldown.value = 5
+  if (cooldownTimer) clearInterval(cooldownTimer)
+  cooldownTimer = setInterval(() => {
+    if (deleteCooldown.value > 0) {
+      deleteCooldown.value--
+    } else {
+      clearInterval(cooldownTimer)
+      cooldownTimer = null
+    }
+  }, 1000)
 }
 
 const cancelDeleteEvent = () => {
   showDeleteEventConfirm.value = false
   eventToDelete.value = null
+  if (cooldownTimer) {
+    clearInterval(cooldownTimer)
+    cooldownTimer = null
+  }
+  deleteCooldown.value = 0
 }
 
 const confirmDeleteEvent = () => {
