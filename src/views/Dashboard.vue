@@ -256,9 +256,9 @@
       <!-- Left Panel - Scanner -->
       <div class="lg:w-1/2 h-1/2 lg:h-full flex flex-col items-center justify-center p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white border-opacity-20">
         <div class="flex flex-col items-center text-center mb-4 lg:mb-6 w-full max-w-md">
-          <img 
+            <img 
             ref="fullscreenLogoRef"
-            src="/src/assets/jrmsu-logo.webp" 
+            src="/admin_logo.png" 
             alt="JRMSU" 
             class="w-16 h-16 lg:w-24 lg:h-24 drop-shadow-2xl mb-2" 
             :class="{ 'logo-flip-animation': logoFlipping }"
