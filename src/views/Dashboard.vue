@@ -9719,12 +9719,12 @@ onUnmounted(() => {
 
 @keyframes sweep-7s {
   0% { transform: skewX(-20deg) translateX(-150%); }
-  15% { transform: skewX(-20deg) translateX(150%); }
+  30% { transform: skewX(-20deg) translateX(150%); }
   100% { transform: skewX(-20deg) translateX(150%); }
 }
 
 .animate-sweep-7s {
-  animation: sweep-7s 7s ease-in-out infinite;
+  animation: sweep-7s 7s cubic-bezier(0.4, 0, 0.2, 1) infinite;
 }
 
 @keyframes pulse-slow {
