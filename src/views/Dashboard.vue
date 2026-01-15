@@ -1789,8 +1789,8 @@
               </div>
 
               <!-- Media Section: Compact Upload -->
-              <div class="flex flex-wrap items-center gap-4 pt-2">
-                <div class="flex-1 min-w-[200px]">
+              <div class="flex flex-col md:flex-row md:items-center gap-4 pt-2">
+                <div class="flex-1 min-w-0">
                   <div 
                     @click="$refs.imageFileInput.click()"
                     class="relative flex items-center justify-center gap-3 p-3 border-2 border-dashed border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50/30 transition-all cursor-pointer group"
@@ -1804,14 +1804,14 @@
                       @change="handleImageFileSelect"
                     />
                     <div v-if="!notificationImagePreview" class="flex items-center gap-2 text-gray-500 group-hover:text-purple-600 transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                       <span class="text-sm font-medium">Add Image</span>
                     </div>
                     <div v-else class="flex items-center gap-3 w-full overflow-hidden">
                       <img :src="notificationImagePreview" class="w-10 h-10 rounded-lg object-cover border border-purple-100 flex-shrink-0" />
-                      <span class="text-xs text-gray-600 truncate flex-1">Image selected</span>
+                      <span class="text-xs text-gray-600 truncate flex-1 min-w-0">Image selected</span>
                       <button @click.stop="clearNotificationImage" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -1824,10 +1824,10 @@
                 <button 
                   @click="postNotification"
                   :disabled="postingNotification || uploadingImage || !newNotification.title.trim() || !newNotification.content.trim()"
-                  class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 min-w-[160px] justify-center"
+                  class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 w-full md:w-auto md:min-w-[160px]"
                 >
-                  <span v-if="postingNotification || uploadingImage" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <span v-if="postingNotification || uploadingImage" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0"></span>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                   </svg>
                   {{ uploadingImage ? 'Uploading...' : postingNotification ? 'Posting...' : 'Post Now' }}
@@ -1860,27 +1860,44 @@
             </div>
 
             <div v-else class="space-y-3">
-              <div v-for="notif in notifications" :key="notif._id" :class="['rounded-2xl p-3 md:p-4 border border-opacity-50 transition-all hover:shadow-md bg-white shadow-sm', notif.posted_by === 'admin' ? 'border-purple-200' : 'border-amber-200']">
+              <div v-for="notif in notifications" :key="notif._id" :class="['rounded-2xl p-3 md:p-4 border border-opacity-50 transition-all hover:shadow-md shadow-sm', notif.posted_by === 'admin' ? 'bg-gradient-to-br from-pink-50 to-purple-50 border-purple-200' : 'bg-gradient-to-br from-orange-50 to-amber-50 border-amber-200']">
                 <div class="flex flex-col">
                   <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-2.5 min-w-0">
                       <!-- Admin: JRMSU Logo -->
-                      <div v-if="notif.posted_by === 'admin'" class="w-9 h-9 md:w-10 md:h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden bg-purple-50 p-1.5 border border-purple-100">
+                      <div v-if="notif.posted_by === 'admin'" class="w-9 h-9 md:w-10 md:h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-pink-500 to-purple-600 p-1.5 border border-pink-400">
                         <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU" class="w-full h-full object-contain" />
                       </div>
                       <!-- MedPub: Media and Publication Logo -->
-                      <div v-else class="w-9 h-9 md:w-10 md:h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden bg-amber-50 p-1.5 border border-amber-100">
+                      <div v-else class="w-9 h-9 md:w-10 md:h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-orange-500 to-amber-500 p-1.5 border border-orange-400">
                         <img src="/media_pub_logo.png" alt="Media and Publication" class="w-full h-full object-contain" />
                       </div>
                       <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-1.5 flex-wrap">
-                          <span :class="['font-bold text-sm truncate', notif.posted_by === 'admin' ? 'text-purple-900' : 'text-amber-900']" v-html="formatPosterName(notif)">
-                          </span>
-                          <span :class="['text-[10px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider', notif.posted_by === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700']">
-                            {{ notif.posted_by === 'admin' ? 'Admin' : 'Org' }}
+                        <div v-if="notif.posted_by === 'admin'" class="flex items-center gap-1.5 flex-wrap">
+                          <span class="font-bold text-sm text-purple-900">SSAAM</span>
+                          <span class="text-[10px] px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider bg-purple-100 text-purple-700">
+                            Admin
                           </span>
                         </div>
-                        <div class="flex items-center gap-1.5 text-[10px] text-gray-400 font-medium">
+                        <div v-else class="flex flex-col gap-0.5">
+                          <div class="flex items-center gap-1 flex-wrap">
+                            <span class="text-[10px] sm:text-[11px] font-bold text-amber-900">Media and Publication</span>
+                            <span class="text-[9px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wider bg-amber-100 text-amber-700">
+                              Org
+                            </span>
+                          </div>
+                          <div class="flex items-center gap-0.5 flex-wrap">
+                            <span class="text-[8px] sm:text-[9px] text-gray-400">posted by</span>
+                            <div v-if="notif.poster_photo" class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full overflow-hidden flex-shrink-0 border border-amber-300">
+                              <img :src="notif.poster_photo" alt="poster" class="w-full h-full object-cover" />
+                            </div>
+                            <div v-else class="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full bg-amber-200 flex-shrink-0 flex items-center justify-center border border-amber-300">
+                              <svg class="w-2 h-2 sm:w-2.5 sm:h-2.5 text-amber-700" fill="currentColor" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"></path></svg>
+                            </div>
+                            <span class="text-[8px] sm:text-[9px] font-bold text-gray-600 truncate">{{ notif.posted_by_name || 'Unknown' }}</span>
+                          </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-[9px] sm:text-[10px] text-gray-400 font-medium pt-1">
                           <span>{{ formatNotificationDate(notif.created_at) }}</span>
                           <span v-if="notif.was_edited">• Edited</span>
                         </div>
@@ -2368,13 +2385,13 @@
                   <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Account Security</h3>
                 </div>
-                <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100 flex items-center justify-between gap-4">
-                  <div>
+                <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-4">
+                  <div class="flex-1">
                     <h4 class="font-bold text-gray-900 mb-1">Password</h4>
                     <p class="text-xs text-gray-500">Keep your account secure by updating your password regularly.</p>
                   </div>
-                  <button @click="showPasswordChangeModal = true" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-purple-200 hover:scale-105 transition-transform flex items-center gap-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                  <button @click="showPasswordChangeModal = true" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-purple-200 hover:scale-105 transition-transform flex items-center justify-center md:justify-start gap-2 whitespace-nowrap">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
                     Change Password
                   </button>
                 </div>
@@ -3490,6 +3507,7 @@ import { useRouter } from 'vue-router'
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import AnnouncementPopup from '../components/AnnouncementPopup.vue'
 import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
+import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 
 const router = useRouter()
 const currentUser = ref({})
@@ -6402,23 +6420,15 @@ const handleStudentPhotoUpload = async (event) => {
         if (data.success) {
           const photoUrl = data.data.url;
           const studentId = currentUser.value.studentId || currentUser.value.student_id;
-          const updateResponse = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}`, {
+          const token = localStorage.getItem('authToken') || localStorage.getItem('studentToken');
+          const updateResponse = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}/photo`, {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
-              'Authorization': `Bearer SSAAMStudents`
+              'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-              student_id: studentId,
-              first_name: currentUser.value.firstName || currentUser.value.first_name,
-              middle_name: currentUser.value.middleName || currentUser.value.middle_name || '',
-              last_name: currentUser.value.lastName || currentUser.value.last_name,
-              email: currentUser.value.email,
-              rfid_code: currentUser.value.rfidCode || currentUser.value.rfid_code || 'N/A',
-              year_level: currentUser.value.yearLevel || currentUser.value.year_level,
-              program: currentUser.value.program,
-              photo: photoUrl,
-              _ssaam_access_token: encodeTimestamp()
+              photo: photoUrl
             })
           });
           if (updateResponse.ok) {
@@ -6432,6 +6442,12 @@ const handleStudentPhotoUpload = async (event) => {
             uploadSuccess = true;
             showNotification('Photo updated successfully!', 'success');
             break;
+          } else {
+            const errorData = await updateResponse.json().catch(() => ({}));
+            console.error('Photo update failed:', errorData);
+            if (attempt < maxUploadRetries) {
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
           }
         } else {
           if (attempt < maxUploadRetries) {
@@ -6439,6 +6455,7 @@ const handleStudentPhotoUpload = async (event) => {
           }
         }
       } catch (error) {
+        console.error('Photo upload attempt error:', error);
         if (attempt < maxUploadRetries) {
           await new Promise(resolve => setTimeout(resolve, 1000));
         }
@@ -6448,6 +6465,7 @@ const handleStudentPhotoUpload = async (event) => {
       showNotification('Failed to update photo. Please try again.', 'error');
     }
   } catch (error) {
+    console.error('Photo processing error:', error);
     showNotification('Image processing error. Please try again.', 'error');
   }
   studentPhotoUploading.value = false;
@@ -6685,6 +6703,12 @@ const fetchAttendanceData = async () => {
   const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster
   
   try {
+    if (!token) {
+      console.error('No authentication token found')
+      showNotification('Error: No authentication token. Please login again.', 'error')
+      return
+    }
+
     if (isAdmin) {
       console.log('Fetching admin attendance events...')
       const response = await fetch('/apis/attendance/events', {
@@ -6698,11 +6722,12 @@ const fetchAttendanceData = async () => {
       if (response.ok) {
         const result = await response.json()
         console.log('Admin attendance events data:', result)
-        attendanceEvents.value = result.data || []
+        attendanceEvents.value = result.data || result || []
+        console.log('Attendance events loaded:', attendanceEvents.value.length)
       } else {
         const errorText = await response.text()
         console.error('Admin attendance events fetch error:', response.status, errorText)
-        throw new Error(`Admin fetch failed: ${response.status}`)
+        showNotification(`Failed to load attendance events: ${response.status}`, 'error')
       }
     } else {
       console.log('Fetching student attendance records...')
@@ -6736,45 +6761,61 @@ const fetchAttendanceData = async () => {
         myRecords: myRecordsRes.status
       })
 
-      if (!eventsRes.ok || !upcomingRes.ok || !myRecordsRes.ok) {
-        throw new Error('One or more student fetches failed')
+      if (!eventsRes.ok) {
+        const errorText = await eventsRes.text()
+        console.error('Active events fetch error:', eventsRes.status, errorText)
+        showNotification(`Failed to load active events: ${eventsRes.status}`, 'error')
+      } else {
+        const eventsResult = await eventsRes.json()
+        attendanceEvents.value = eventsResult.data || eventsResult || []
+        console.log('Active attendance events loaded:', attendanceEvents.value.length)
       }
 
-      const eventsResult = await eventsRes.json()
-      attendanceEvents.value = eventsResult.data || []
+      if (!upcomingRes.ok) {
+        const errorText = await upcomingRes.text()
+        console.error('Upcoming events fetch error:', upcomingRes.status, errorText)
+      } else {
+        const upcomingResult = await upcomingRes.json()
+        upcomingEventsData.value = upcomingResult.data || upcomingResult || []
+        console.log('Upcoming attendance events loaded:', upcomingEventsData.value.length)
+      }
       
-      const upcomingResult = await upcomingRes.json()
-      upcomingEventsData.value = upcomingResult.data || []
-      
-      const recordsResult = await myRecordsRes.json()
-      const records = recordsResult.data || []
-      myAttendanceRecords.value = records.map((r, idx) => {
-        const eventId = r.event?._id || r.event_id || `record-${idx}`
-        return {
-          ...r,
-          _id: eventId,
-          event_id: eventId,
-          event_title: r.event?.title,
-          sessions: (r.sessions || []).map((s, sIdx) => ({
-            ...s,
-            session: s.session || {},
-            session_id: s.session?._id || `session-${sIdx}`,
-            attendance: s.attendance || { check_in_at: null, check_out_at: null, status: 'absent' }
-          })),
-          overall_status: r.overall_status || 'absent',
-          check_in_at: r.attendance?.check_in_at,
-          check_out_at: r.attendance?.check_out_at,
-          morning_check_in_at: r.attendance?.morning_check_in_at,
-          morning_check_out_at: r.attendance?.morning_check_out_at,
-          afternoon_check_in_at: r.attendance?.afternoon_check_in_at,
-          afternoon_check_out_at: r.attendance?.afternoon_check_out_at,
-          is_late: r.attendance?.is_late,
-          status: r.attendance?.status || r.overall_status || 'absent'
-        }
-      })
+      if (!myRecordsRes.ok) {
+        const errorText = await myRecordsRes.text()
+        console.error('My records fetch error:', myRecordsRes.status, errorText)
+      } else {
+        const recordsResult = await myRecordsRes.json()
+        const records = recordsResult.data || recordsResult || []
+        console.log('My attendance records loaded:', records.length)
+        myAttendanceRecords.value = records.map((r, idx) => {
+          const eventId = r.event?._id || r.event_id || `record-${idx}`
+          return {
+            ...r,
+            _id: eventId,
+            event_id: eventId,
+            event_title: r.event?.title,
+            sessions: (r.sessions || []).map((s, sIdx) => ({
+              ...s,
+              session: s.session || {},
+              session_id: s.session?._id || `session-${sIdx}`,
+              attendance: s.attendance || { check_in_at: null, check_out_at: null, status: 'absent' }
+            })),
+            overall_status: r.overall_status || 'absent',
+            check_in_at: r.attendance?.check_in_at,
+            check_out_at: r.attendance?.check_out_at,
+            morning_check_in_at: r.attendance?.morning_check_in_at,
+            morning_check_out_at: r.attendance?.morning_check_out_at,
+            afternoon_check_in_at: r.attendance?.afternoon_check_in_at,
+            afternoon_check_out_at: r.attendance?.afternoon_check_out_at,
+            is_late: r.attendance?.is_late,
+            status: r.attendance?.status || r.overall_status || 'absent'
+          }
+        })
+      }
     }
   } catch (error) {
     console.error('Failed to fetch attendance data:', error)
+    showNotification('Failed to load attendance data', 'error')
   } finally {
     attendanceLoading.value = false
     // After data is loaded, check for ended events and notify user (only for students, only once per event)

@@ -50,7 +50,7 @@
   </transition>
 
   <transition name="fade">
-    <div v-if="showVerificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div v-if="showVerificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[120]">
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
           <div class="w-20 h-20 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
@@ -369,6 +369,7 @@ import { useRouter } from 'vue-router'
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
+import API_BASE_URL from '../config/api.js'
 
 const router = useRouter()
 const studentId = ref('')
@@ -658,7 +659,7 @@ const handleLogin = async () => {
     
     if (startsWithLetter) {
       // Use masters login API with POST
-      const response = await fetch("/apis/masters/login", {
+      const response = await fetch(`${API_BASE_URL}/apis/masters/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -684,7 +685,7 @@ const handleLogin = async () => {
       }
     } else {
       // Use POST login endpoint for students
-      const response = await fetch("/apis/students/login", {
+      const response = await fetch(`${API_BASE_URL}/apis/students/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -748,12 +749,15 @@ const handleLogin = async () => {
       
       if (normalizedUser.role === 'master' || normalizedUser.isMaster) {
         pendingUser = normalizedUser;
-        showVerificationModal.value = true;
         isLoading.value = false;
-        // Focus the first digit input after modal opens
+        // Wait for loading to finish animating out before showing modal
         setTimeout(() => {
-          if (verificationInputs.value[0]) verificationInputs.value[0].focus();
-        }, 100);
+          showVerificationModal.value = true;
+          // Focus the first digit input after modal opens
+          setTimeout(() => {
+            if (verificationInputs.value[0]) verificationInputs.value[0].focus();
+          }, 100);
+        }, 300);
         return;
       }
 
@@ -768,8 +772,18 @@ const handleLogin = async () => {
     showErrorNotification.value = true
   } catch (error) {
     console.error("Login error:", error);
+    console.error("Error details:", {
+      message: error.message,
+      name: error.name,
+      stack: error.stack
+    });
+    
     if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
-      errorMessage.value = "Network connection error. Please check your internet connection and try again."
+      errorMessage.value = "Network connection error: Cannot reach the authentication server. Please check your internet connection and try again."
+      console.error("Network error detected - check if API is accessible at https://ssaam-api.vercel.app");
+    } else if (error instanceof SyntaxError) {
+      errorMessage.value = "Server error: Invalid response format. The server may be down."
+      console.error("JSON parse error - server response was invalid");
     } else {
       errorMessage.value = "Server error. Please try again later."
     }
@@ -797,6 +811,7 @@ const verifyAdminCode = () => {
     localStorage.setItem("currentUser", JSON.stringify(pendingUser));
     localStorage.setItem("authToken", pendingUser.token);
     console.log("Admin Verification Success. Navigating to dashboard...");
+    isLoading.value = true;
     isNavigationPending.value = true;
   } else {
     errorMessage.value = "Invalid verification code. Please try again.";

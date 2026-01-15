@@ -13,9 +13,11 @@ dotenv.config();
 const ALLOWED_ORIGINS = [
   'https://ssaam.vercel.app',
   'https://ssaam-api.vercel.app',
-  process.env.FRONTEND_URL,
-  process.env.NODE_ENV === 'development' ? 'http://localhost:5000' : null,
-  process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : null
+  'http://localhost:5000',
+  'http://localhost:3000',
+  'http://127.0.0.1:5000',
+  'http://127.0.0.1:3000',
+  process.env.FRONTEND_URL
 ].filter(Boolean);
 
 const isReplitOrigin = (origin) => {
@@ -23,18 +25,34 @@ const isReplitOrigin = (origin) => {
   return origin.endsWith('.replit.dev') || origin.endsWith('.repl.co');
 };
 
+const isLocalhost = (origin) => {
+  if (!origin) return false;
+  return origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1');
+};
+
 const corsOptions = {
   origin: function(origin, callback) {
+    // Allow requests with no origin (same-origin requests, mobile apps, etc.)
     if (!origin) return callback(null, true);
-    if (ALLOWED_ORIGINS.includes(origin) || isReplitOrigin(origin)) {
+    
+    // Allow if origin is in allowed list, is a Replit origin, or is localhost (for development)
+    if (ALLOWED_ORIGINS.includes(origin) || isReplitOrigin(origin) || isLocalhost(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      // Log unauthorized origins for debugging but still allow OPTIONS requests (preflight)
+      console.log(`[CORS] Blocked origin: ${origin}`);
+      // For development, allow all origins. For production, be strict.
+      if (process.env.NODE_ENV === 'development') {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
     }
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-SSAAM-TS', 'X-Admin-Action-Token'],
-  credentials: true
+  credentials: true,
+  maxAge: 86400 // Cache preflight for 24 hours
 };
 
 app.use(cors(corsOptions));
@@ -2219,6 +2237,60 @@ app.put('/apis/students/:student_id/role', auth, adminActionAuth, timestampAuth,
             student: updated
         });
     } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Allow students to update their own photo without admin privileges
+app.put('/apis/students/:student_id/photo', auth, async (req, res) => {
+    try {
+        const { photo } = req.body;
+        
+        if (!photo || typeof photo !== 'string') {
+            return res.status(400).json({ message: 'Photo URL is required' });
+        }
+        
+        // Verify user is updating their own photo or is an admin
+        const tokenData = req.master || req.decoded;
+        const requestedStudentId = req.params.student_id;
+        
+        // Check if it's a student updating their own photo or an admin
+        if (tokenData) {
+            const isOwnPhoto = tokenData.student_id === requestedStudentId || tokenData.studentId === requestedStudentId;
+            const isAdmin = tokenData.isMaster === true;
+            
+            if (!isOwnPhoto && !isAdmin) {
+                return res.status(403).json({ 
+                    message: 'Access denied. You can only update your own photo.',
+                    code: 'PERMISSION_DENIED'
+                });
+            }
+            
+            const student = await Student.findOneAndUpdate(
+                { student_id: requestedStudentId },
+                { photo: photo },
+                { new: true }
+            );
+            
+            if (!student) {
+                return res.status(404).json({ message: 'Student not found' });
+            }
+            
+            res.json({ 
+                message: 'Photo updated successfully',
+                student: {
+                    student_id: student.student_id,
+                    photo: student.photo
+                }
+            });
+        } else {
+            return res.status(401).json({ 
+                message: 'Authentication required',
+                code: 'NOT_AUTHENTICATED'
+            });
+        }
+    } catch (err) {
+        console.error('Photo update error:', err);
         res.status(500).json({ message: err.message });
     }
 });

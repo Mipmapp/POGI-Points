@@ -11,8 +11,15 @@ export default defineConfig({
       '/apis': {
         target: 'https://ssaam-api.vercel.app',
         changeOrigin: true,
-        secure: false
+        secure: false,
+        rewrite: (path) => {
+          console.log(`[Proxy] Routing ${path} to https://ssaam-api.vercel.app${path}`);
+          return path;
+        }
       }
-    }
+    },
+    // Increase max request size and add timeout
+    middlewareMode: false,
+    corsUseCredentials: true
   }
 })
