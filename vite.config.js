@@ -11,7 +11,7 @@ export default defineConfig({
       '/apis': {
         target: 'https://ssaam-api.vercel.app',
         changeOrigin: true,
-        secure: true
+        secure: false
       }
     }
   }

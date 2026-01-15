@@ -847,7 +847,7 @@ const stepTitle = computed(() => {
 
 onMounted(async () => {
   try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
+    const response = await fetch('/apis/settings', {
       method: 'GET',
       headers: {
         'Authorization': 'Bearer SSAAMStudents'
@@ -1127,7 +1127,7 @@ const sendVerificationCode = async () => {
   }
 
   try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/students/send-verification', {
+    const response = await fetch('/apis/students/send-verification', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -1287,7 +1287,7 @@ const handleNext = async () => {
     loadingSubMessage.value = 'Please wait while we create your account'
     
     try {
-      const response = await fetch('https://ssaam-api.vercel.app/apis/students/verify-and-register', {
+      const response = await fetch('/apis/students/verify-and-register', {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

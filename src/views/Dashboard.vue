@@ -6686,6 +6686,7 @@ const fetchAttendanceData = async () => {
   
   try {
     if (isAdmin) {
+      console.log('Fetching admin attendance events...')
       const response = await fetch('/apis/attendance/events', {
         method: 'GET',
         headers: {
@@ -6693,11 +6694,18 @@ const fetchAttendanceData = async () => {
           'X-SSAAM-TS': encodeTimestamp()
         }
       })
+      console.log('Admin attendance events response status:', response.status)
       if (response.ok) {
         const result = await response.json()
+        console.log('Admin attendance events data:', result)
         attendanceEvents.value = result.data || []
+      } else {
+        const errorText = await response.text()
+        console.error('Admin attendance events fetch error:', response.status, errorText)
+        throw new Error(`Admin fetch failed: ${response.status}`)
       }
     } else {
+      console.log('Fetching student attendance records...')
       const [eventsRes, upcomingRes, myRecordsRes] = await Promise.all([
         fetch('/apis/attendance/events/active', {
           method: 'GET',
@@ -6722,42 +6730,48 @@ const fetchAttendanceData = async () => {
         })
       ])
       
-      if (eventsRes.ok) {
-        const eventsResult = await eventsRes.json()
-        attendanceEvents.value = eventsResult.data || []
+      console.log('Student fetch statuses:', {
+        events: eventsRes.status,
+        upcoming: upcomingRes.status,
+        myRecords: myRecordsRes.status
+      })
+
+      if (!eventsRes.ok || !upcomingRes.ok || !myRecordsRes.ok) {
+        throw new Error('One or more student fetches failed')
       }
-      if (upcomingRes.ok) {
-        const upcomingResult = await upcomingRes.json()
-        upcomingEventsData.value = upcomingResult.data || []
-      }
-      if (myRecordsRes.ok) {
-        const recordsResult = await myRecordsRes.json()
-        const records = recordsResult.data || []
-        myAttendanceRecords.value = records.map((r, idx) => {
-          const eventId = r.event?._id || r.event_id || `record-${idx}`
-          return {
-            ...r,
-            _id: eventId,
-            event_id: eventId,
-            event_title: r.event?.title,
-            sessions: (r.sessions || []).map((s, sIdx) => ({
-              ...s,
-              session: s.session || {},
-              session_id: s.session?._id || `session-${sIdx}`,
-              attendance: s.attendance || { check_in_at: null, check_out_at: null, status: 'absent' }
-            })),
-            overall_status: r.overall_status || 'absent',
-            check_in_at: r.attendance?.check_in_at,
-            check_out_at: r.attendance?.check_out_at,
-            morning_check_in_at: r.attendance?.morning_check_in_at,
-            morning_check_out_at: r.attendance?.morning_check_out_at,
-            afternoon_check_in_at: r.attendance?.afternoon_check_in_at,
-            afternoon_check_out_at: r.attendance?.afternoon_check_out_at,
-            is_late: r.attendance?.is_late,
-            status: r.attendance?.status || r.overall_status || 'absent'
-          }
-        })
-      }
+
+      const eventsResult = await eventsRes.json()
+      attendanceEvents.value = eventsResult.data || []
+      
+      const upcomingResult = await upcomingRes.json()
+      upcomingEventsData.value = upcomingResult.data || []
+      
+      const recordsResult = await myRecordsRes.json()
+      const records = recordsResult.data || []
+      myAttendanceRecords.value = records.map((r, idx) => {
+        const eventId = r.event?._id || r.event_id || `record-${idx}`
+        return {
+          ...r,
+          _id: eventId,
+          event_id: eventId,
+          event_title: r.event?.title,
+          sessions: (r.sessions || []).map((s, sIdx) => ({
+            ...s,
+            session: s.session || {},
+            session_id: s.session?._id || `session-${sIdx}`,
+            attendance: s.attendance || { check_in_at: null, check_out_at: null, status: 'absent' }
+          })),
+          overall_status: r.overall_status || 'absent',
+          check_in_at: r.attendance?.check_in_at,
+          check_out_at: r.attendance?.check_out_at,
+          morning_check_in_at: r.attendance?.morning_check_in_at,
+          morning_check_out_at: r.attendance?.morning_check_out_at,
+          afternoon_check_in_at: r.attendance?.afternoon_check_in_at,
+          afternoon_check_out_at: r.attendance?.afternoon_check_out_at,
+          is_late: r.attendance?.is_late,
+          status: r.attendance?.status || r.overall_status || 'absent'
+        }
+      })
     }
   } catch (error) {
     console.error('Failed to fetch attendance data:', error)

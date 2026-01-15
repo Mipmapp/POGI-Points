@@ -446,7 +446,7 @@ const requestResetCode = async () => {
   resetMessage.value = ''
   try {
     const token = encodeTimestamp()
-    const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/request', {
+    const response = await fetch('/apis/password-reset/request', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -481,7 +481,7 @@ const verifyResetCode = async () => {
   resetMessage.value = ''
   try {
     const token = encodeTimestamp()
-    const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/verify', {
+    const response = await fetch('/apis/password-reset/verify', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -522,7 +522,7 @@ const completePasswordReset = async () => {
   resetMessage.value = ''
   try {
     const token = encodeTimestamp()
-    const response = await fetch('https://ssaam-api.vercel.app/apis/password-reset/complete', {
+    const response = await fetch('/apis/password-reset/complete', {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -600,7 +600,7 @@ onMounted(async () => {
   
   // Check login settings
   try {
-    const response = await fetch('https://ssaam-api.vercel.app/apis/settings', {
+    const response = await fetch('/apis/settings', {
       method: 'GET',
       headers: {
         'Authorization': 'Bearer SSAAMStudents'
@@ -658,7 +658,7 @@ const handleLogin = async () => {
     
     if (startsWithLetter) {
       // Use masters login API with POST
-      const response = await fetch("https://ssaam-api.vercel.app/apis/masters/login", {
+      const response = await fetch("/apis/masters/login", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -684,7 +684,7 @@ const handleLogin = async () => {
       }
     } else {
       // Use POST login endpoint for students
-      const response = await fetch("https://ssaam-api.vercel.app/apis/students/login", {
+      const response = await fetch("/apis/students/login", {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
