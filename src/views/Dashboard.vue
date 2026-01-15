@@ -565,7 +565,7 @@
 
       <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex items-center space-x-3">
-          <div class="w-12 h-12 rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden">
+          <div class="w-12 h-12 aspect-square rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden">
             <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
               <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -578,13 +578,35 @@
           <div>
             <p class="text-sm">Welcome back,</p>
             <p class="font-bold">{{ displayName }}!</p>
-            <div class="flex flex-wrap gap-1 mt-1" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
-              <span :class="['text-xs px-2 py-0.5 rounded-full', currentUser.role === 'medpub' ? 'bg-yellow-400 text-yellow-900' : 'bg-white bg-opacity-30']">
-                {{ currentUser.role === 'medpub' ? 'Medpub' : 'Student' }}
-              </span>
-              <span :class="['text-xs px-2 py-0.5 rounded-full', currentUser.rfid_status === 'verified' ? 'bg-green-400 text-green-900' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-400 text-gray-900' : 'bg-yellow-400 text-yellow-900']">
-                {{ currentUser.rfid_status === 'verified' ? 'Verified' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'Unreadable' : 'Unverified' }}
-              </span>
+            <div class="flex flex-wrap gap-1 mt-1.5" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
+              <!-- Medpub Badge -->
+              <div v-if="currentUser.role === 'medpub'" class="relative group">
+                <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300"></div>
+                <span class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-yellow-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md hover:shadow-lg transition overflow-hidden whitespace-nowrap">
+                  <div class="absolute inset-0 light-sweep-badge"></div>
+                  <img src="/medpub.svg" alt="Medpub" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                  <span class="relative z-10">Medpub</span>
+                </span>
+              </div>
+              <!-- Verification Badge -->
+              <div :class="['relative group', currentUser.rfid_status === 'verified' ? 'verified-badge' : '']">
+                <div v-if="currentUser.rfid_status === 'verified'" class="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300"></div>
+                <span v-if="currentUser.rfid_status === 'verified'" class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-green-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md hover:shadow-lg transition overflow-hidden whitespace-nowrap">
+                  <div class="absolute inset-0 light-sweep-badge"></div>
+                  <img src="/verified.svg" alt="Verified" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                  <span class="relative z-10">Verified</span>
+                </span>
+                <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-gray-400 to-slate-500 text-gray-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
+                  <div class="absolute inset-0 light-sweep-badge"></div>
+                  <img src="/unverified.svg" alt="Unreadable" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                  <span class="relative z-10">Unreadable</span>
+                </span>
+                <span v-else class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-amber-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
+                  <div class="absolute inset-0 light-sweep-badge"></div>
+                  <img src="/unverified.svg" alt="Unverified" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                  <span class="relative z-10">Unverified</span>
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -637,7 +659,7 @@
         
         <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
           <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden">
+            <div class="w-12 h-12 aspect-square rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden">
               <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
                 <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -650,13 +672,35 @@
             <div>
               <p class="text-sm">Welcome back,</p>
               <p class="font-bold">{{ displayName }}!</p>
-              <div class="flex flex-wrap gap-1 mt-1" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
-                <span :class="['text-xs px-2 py-0.5 rounded-full', currentUser.role === 'medpub' ? 'bg-yellow-400 text-yellow-900' : 'bg-white bg-opacity-30']">
-                  {{ currentUser.role === 'medpub' ? 'Medpub' : 'Student' }}
-                </span>
-                <span :class="['text-xs px-2 py-0.5 rounded-full', currentUser.rfid_status === 'verified' ? 'bg-green-400 text-green-900' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-400 text-gray-900' : 'bg-yellow-400 text-yellow-900']">
-                  {{ currentUser.rfid_status === 'verified' ? 'Verified' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'Unreadable' : 'Unverified' }}
-                </span>
+              <div class="flex flex-wrap gap-1 mt-1.5" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
+                <!-- Medpub Badge -->
+                <div v-if="currentUser.role === 'medpub'" class="relative group">
+                  <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300"></div>
+                  <span class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-yellow-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md hover:shadow-lg transition overflow-hidden whitespace-nowrap">
+                    <div class="absolute inset-0 light-sweep-badge"></div>
+                    <img src="/medpub.svg" alt="Medpub" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                    <span class="relative z-10">Medpub</span>
+                  </span>
+                </div>
+                <!-- Verification Badge -->
+                <div :class="['relative group', currentUser.rfid_status === 'verified' ? 'verified-badge' : '']">
+                  <div v-if="currentUser.rfid_status === 'verified'" class="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300"></div>
+                  <span v-if="currentUser.rfid_status === 'verified'" class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-green-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md hover:shadow-lg transition overflow-hidden whitespace-nowrap">
+                    <div class="absolute inset-0 light-sweep-badge"></div>
+                    <img src="/verified.svg" alt="Verified" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                    <span class="relative z-10">Verified</span>
+                  </span>
+                  <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-gray-400 to-slate-500 text-gray-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
+                    <div class="absolute inset-0 light-sweep-badge"></div>
+                    <img src="/unverified.svg" alt="Unreadable" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                    <span class="relative z-10">Unreadable</span>
+                  </span>
+                  <span v-else class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-amber-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
+                    <div class="absolute inset-0 light-sweep-badge"></div>
+                    <img src="/unverified.svg" alt="Unverified" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                    <span class="relative z-10">Unverified</span>
+                  </span>
+                </div>
               </div>
             </div>
           </div>
@@ -1037,7 +1081,7 @@
                 </svg>
               </div>
               <div v-else-if="attendanceEvents.length === 0" class="text-center py-12 text-gray-500">
-                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                <img src="/events.svg" alt="No Events" class="w-16 h-16 mx-auto mb-4 text-gray-300" style="filter: invert(0.5);" />
                 <p>No attendance events yet. Create one to get started!</p>
               </div>
               <div v-else class="space-y-4">
@@ -1585,7 +1629,7 @@
               <!-- My Attendance Records Section - Enhanced with Expandable Event Folders -->
               <div v-if="myAttendanceRecords.length > 0">
                 <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"></path></svg>
+                  <img src="/events.svg" alt="History" class="w-5 h-5 text-purple-600" style="filter: invert(0.3) sepia(1) hue-rotate(270deg) saturate(1.5);" />
                   My Attendance History
                 </h3>
                 <div class="space-y-3">
@@ -2270,8 +2314,9 @@
         <!-- Dashboard Page -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
           <!-- Profile Header -->
-          <div class="relative h-32 bg-gradient-to-r from-purple-600 to-pink-500">
-            <button @click="refreshCurrentUser" :disabled="refreshingUserData" class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all backdrop-blur-sm" title="Refresh Profile">
+          <div class="relative h-32 bg-gradient-to-r from-purple-600 to-pink-500 overflow-hidden">
+            <div class="light-sweep"></div>
+            <button @click="refreshCurrentUser" :disabled="refreshingUserData" class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all backdrop-blur-sm z-10" title="Refresh Profile">
               <svg :class="['w-5 h-5', refreshingUserData ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             </button>
           </div>
@@ -9507,5 +9552,59 @@ onUnmounted(() => {
 @keyframes bounce-in {
   0% { transform: scale(0.7); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+.light-sweep {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.3) 25%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(255, 255, 255, 0.3) 75%,
+    transparent 100%
+  );
+  animation: sweep 3s infinite;
+  pointer-events: none;
+}
+
+@keyframes sweep {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+@keyframes sweep-badge {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.light-sweep-badge {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.5) 25%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0.5) 75%,
+    transparent 100%
+  );
+  animation: sweep-badge 7s infinite;
+  pointer-events: none;
 }
 </style>

@@ -1,25 +1,29 @@
 <template>
-  <transition name="popup-slide-up">
-    <div v-if="visible && announcements.length > 0" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]" @click.self="close">
-      <div 
-        class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-3 sm:mx-4 overflow-hidden max-h-[80vh] flex flex-col"
-        @touchstart="handleTouchStart"
-        @touchmove="handleTouchMove"
-        @touchend="handleTouchEnd"
-      >
-        <div class="bg-gradient-to-r from-purple-600 to-pink-500 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+  <Teleport to="body">
+    <Transition name="fade">
+      <div v-if="visible && announcements.length > 0" class="fixed inset-0 bg-black bg-opacity-50 z-[59]" @click="close"></div>
+    </Transition>
+    <Transition name="popup-slide-up">
+      <div v-if="visible && announcements.length > 0" class="fixed inset-0 flex items-center justify-center z-[60] pointer-events-none">
+        <div 
+          class="bg-white rounded-2xl shadow-2xl max-w-lg w-full mx-3 sm:mx-4 overflow-hidden max-h-[80vh] flex flex-col pointer-events-auto"
+          @touchstart="handleTouchStart"
+          @touchmove="handleTouchMove"
+          @touchend="handleTouchEnd"
+        >
+        <div class="bg-gradient-to-r from-purple-600 via-pink-500 to-pink-600 px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between shadow-md">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+            <div class="w-11 h-11 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition">
               <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
               </svg>
             </div>
             <div>
-              <h3 class="text-lg font-bold text-white">Latest Announcements</h3>
-              <p class="text-white text-opacity-80 text-xs">{{ currentIndex + 1 }} of {{ announcements.length }}</p>
+              <h3 class="text-xl font-bold text-white">Latest Announcements</h3>
+              <p class="text-white text-opacity-90 text-xs font-medium">{{ currentIndex + 1 }} of {{ announcements.length }}</p>
             </div>
           </div>
-          <button @click="close" class="text-white text-opacity-80 hover:text-opacity-100 transition">
+          <button @click="close" class="text-white text-opacity-80 hover:text-opacity-100 transition active:scale-90 p-2 hover:bg-white hover:bg-opacity-10 rounded-lg">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
@@ -34,75 +38,75 @@
             <div 
               v-for="(announcement, index) in announcements" 
               :key="announcement._id"
-              class="w-full flex-shrink-0 p-4 sm:p-6 overflow-y-auto"
+              class="w-full flex-shrink-0 p-5 sm:p-7 overflow-y-auto"
               style="min-height: 150px; max-height: 65vh;"
             >
-              <div class="flex items-start gap-3 mb-4">
-                <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden', announcement.posted_by === 'admin' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gradient-to-br from-yellow-500 to-amber-600']">
+              <div class="flex items-start gap-4 mb-5">
+                <div :class="['w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden shadow-md', announcement.posted_by === 'admin' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gradient-to-br from-yellow-500 to-amber-600']">
                   <img v-if="announcement.posted_by === 'admin'" src="/assets/ssaam_logo.jpg" alt="SSAAM" class="w-full h-full object-cover" />
                   <img v-else-if="announcement.posted_by === 'medpub'" src="/media_pub_logo.png" alt="Media and Publication" class="w-6 h-6 object-contain" />
                   <span v-else>{{ getInitials(announcement.posted_by_name) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span :class="['font-semibold text-sm', announcement.posted_by === 'admin' ? 'text-purple-900' : 'text-yellow-900']" v-html="formatPosterName(announcement)">
+                  <div class="flex items-center gap-2 flex-wrap mb-1">
+                    <span :class="['font-bold text-sm', announcement.posted_by === 'admin' ? 'text-purple-900' : 'text-yellow-900']" v-html="formatPosterName(announcement)">
                     </span>
-                    <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', announcement.posted_by === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-200 text-amber-800']">
+                    <span :class="['px-2.5 py-0.5 rounded-full text-xs font-semibold', announcement.posted_by === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-200 text-amber-800']">
                       {{ announcement.posted_by === 'admin' ? 'Admin' : 'Organization' }}
                     </span>
-                    <span v-if="announcement.priority === 'urgent'" class="px-2 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-700">
+                    <span v-if="announcement.priority === 'urgent'" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
                       Urgent
                     </span>
                   </div>
-                  <div v-if="announcement.posted_by === 'medpub'" class="flex items-center gap-1 mt-1 text-xs text-gray-600">
+                  <div v-if="announcement.posted_by === 'medpub'" class="flex items-center gap-1.5 text-xs text-gray-600 mb-1">
                     <span>posted by</span>
-                    <div class="w-4 h-4 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-pink-400 to-purple-600 relative">
+                    <div class="w-5 h-5 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-pink-400 to-purple-600 relative ring-1 ring-white">
                       <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white uppercase">{{ (announcement.posted_by_name || 'U').charAt(0) }}</span>
                       <img v-if="announcement.poster_photo" :src="announcement.poster_photo" :alt="announcement.posted_by_name" class="w-full h-full object-cover absolute inset-0 z-10" />
                     </div>
                     <span class="font-semibold text-gray-800">{{ announcement.posted_by_name }}</span>
                   </div>
-                  <p class="text-xs text-gray-500 mt-0.5">{{ formatDate(announcement.created_at) }}</p>
+                  <p class="text-xs text-gray-500">{{ formatDate(announcement.created_at) }}</p>
                 </div>
               </div>
 
-              <h4 class="text-lg font-bold text-gray-900 mb-2">{{ announcement.title }}</h4>
-              <div class="text-gray-700 text-sm whitespace-pre-wrap break-words leading-relaxed" v-html="formatMessage(announcement.message)"></div>
+              <h4 class="text-lg font-bold text-gray-900 mb-2.5 leading-tight">{{ announcement.title }}</h4>
+              <div class="text-gray-700 text-sm whitespace-pre-wrap break-words leading-relaxed mb-4" v-html="formatMessage(announcement.message)"></div>
 
-              <div v-if="announcement.image_url" class="mt-3 w-full">
+              <div v-if="announcement.image_url" class="mt-4 w-full rounded-xl overflow-hidden shadow-md hover:shadow-lg transition">
                 <img 
                   :src="announcement.image_url" 
                   :alt="announcement.title"
-                  class="w-full rounded-lg max-h-96 sm:max-h-[600px] object-contain bg-gray-50 cursor-pointer hover:opacity-95 transition"
+                  class="w-full max-h-96 sm:max-h-[600px] object-contain bg-gradient-to-br from-gray-50 to-gray-100 cursor-pointer hover:opacity-95 transition"
                   @click="$emit('preview-image', announcement.image_url)"
                 />
               </div>
 
-              <div class="flex items-center gap-4 mt-4 pt-4 border-t border-gray-100">
+              <div class="flex items-center gap-4 mt-5 pt-4 border-t border-gray-100">
                 <button 
                   @click.stop="$emit('toggle-like', announcement)"
-                  class="flex items-center gap-1.5 text-gray-500 text-sm hover:text-pink-500 transition group px-2 py-1 -ml-2 rounded-lg hover:bg-pink-50 active:scale-95"
+                  class="flex items-center gap-2 text-gray-600 text-sm hover:text-pink-500 transition group px-3 py-2 -ml-3 rounded-lg hover:bg-pink-50 active:scale-95"
                 >
                   <svg 
-                    :class="['w-5 h-5 transition-all', isLiked(announcement) ? 'text-pink-500 scale-110' : 'group-hover:scale-110']" 
+                    :class="['w-5 h-5 transition-all duration-300', isLiked(announcement) ? 'text-pink-500 scale-125' : 'group-hover:scale-110']" 
                     :fill="isLiked(announcement) ? 'currentColor' : 'none'" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
                   >
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                   </svg>
-                  <span :class="isLiked(announcement) ? 'text-pink-500 font-medium' : ''">{{ announcement.liked_by?.length || 0 }}</span>
+                  <span :class="['font-semibold text-sm', isLiked(announcement) ? 'text-pink-500' : 'text-gray-600']">{{ announcement.liked_by?.length || 0 }}</span>
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="px-4 sm:px-6 py-3 sm:py-4 bg-gray-50 border-t flex items-center justify-between">
+        <div class="px-4 sm:px-6 py-4 sm:py-5 bg-gray-50 border-t border-gray-200 flex items-center justify-between gap-3">
           <button 
             @click="prevSlide" 
             :disabled="currentIndex === 0"
-            :class="['flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition', currentIndex === 0 ? 'text-gray-300 cursor-not-allowed' : 'text-purple-600 hover:bg-purple-50']"
+            :class="['flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition', currentIndex === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-purple-600 hover:bg-purple-100 active:scale-95']"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -110,19 +114,19 @@
             <span class="hidden sm:inline">Previous</span>
           </button>
 
-          <div class="flex gap-1.5">
+          <div class="flex gap-2 items-center">
             <button 
               v-for="(_, index) in announcements" 
               :key="index"
               @click="goToSlide(index)"
-              :class="['w-2.5 h-2.5 rounded-full transition-all duration-300', index === currentIndex ? 'bg-gradient-to-r from-purple-600 to-pink-500 w-6' : 'bg-gray-300 hover:bg-gray-400']"
+              :class="['rounded-full transition-all duration-300 hover:scale-110', index === currentIndex ? 'bg-gradient-to-r from-purple-600 to-pink-500 h-2.5 w-8 shadow-md' : 'bg-gray-300 h-2 w-2 hover:bg-gray-400 hover:scale-125']"
             ></button>
           </div>
 
           <button 
             @click="nextSlide" 
             :disabled="currentIndex === announcements.length - 1"
-            :class="['flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition', currentIndex === announcements.length - 1 ? 'text-gray-300 cursor-not-allowed' : 'text-purple-600 hover:bg-purple-50']"
+            :class="['flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition', currentIndex === announcements.length - 1 ? 'text-gray-400 cursor-not-allowed' : 'text-purple-600 hover:bg-purple-100 active:scale-95']"
           >
             <span class="hidden sm:inline">Next</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -131,17 +135,18 @@
           </button>
         </div>
 
-        <div class="px-4 sm:px-6 pb-3 sm:pb-4 bg-gray-50">
+        <div class="px-4 sm:px-6 pb-4 sm:pb-5 bg-gray-50">
           <button 
             @click="close" 
-            class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition"
+            class="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-pink-600 text-white py-3 px-4 rounded-lg font-bold hover:from-purple-700 hover:via-pink-600 hover:to-pink-700 transition shadow-md hover:shadow-lg active:scale-95"
           >
             Got it!
           </button>
         </div>
       </div>
-    </div>
-  </transition>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <script setup>
@@ -258,7 +263,7 @@ const handleTouchEnd = (e) => {
 
 const formatPosterName = (announcement) => {
   if (announcement.posted_by === 'admin') {
-    return (announcement.posted_by_name || 'Admin').replace(/&#x2F;/g, '/').replace(/&#47;/g, '/')
+    return 'SSAAM'
   }
   return 'Media and Publication'
 }
@@ -338,6 +343,19 @@ const formatDate = (dateString) => {
 </script>
 
 <style scoped>
+.fade-enter-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
 .popup-slide-up-enter-active {
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }

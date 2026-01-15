@@ -2242,7 +2242,7 @@ app.put('/apis/students/:student_id/role', auth, adminActionAuth, timestampAuth,
 });
 
 // Allow students to update their own photo without admin privileges
-app.put('/apis/students/:student_id/photo', auth, async (req, res) => {
+app.put('/apis/students/:student_id/photo', studentAuthWithToken, async (req, res) => {
     try {
         const { photo } = req.body;
         
@@ -2250,45 +2250,44 @@ app.put('/apis/students/:student_id/photo', auth, async (req, res) => {
             return res.status(400).json({ message: 'Photo URL is required' });
         }
         
-        // Verify user is updating their own photo or is an admin
-        const tokenData = req.master || req.decoded;
+        // Get token data
+        const tokenData = req.user;
         const requestedStudentId = req.params.student_id;
         
-        // Check if it's a student updating their own photo or an admin
-        if (tokenData) {
-            const isOwnPhoto = tokenData.student_id === requestedStudentId || tokenData.studentId === requestedStudentId;
-            const isAdmin = tokenData.isMaster === true;
-            
-            if (!isOwnPhoto && !isAdmin) {
-                return res.status(403).json({ 
-                    message: 'Access denied. You can only update your own photo.',
-                    code: 'PERMISSION_DENIED'
-                });
-            }
-            
-            const student = await Student.findOneAndUpdate(
-                { student_id: requestedStudentId },
-                { photo: photo },
-                { new: true }
-            );
-            
-            if (!student) {
-                return res.status(404).json({ message: 'Student not found' });
-            }
-            
-            res.json({ 
-                message: 'Photo updated successfully',
-                student: {
-                    student_id: student.student_id,
-                    photo: student.photo
-                }
-            });
-        } else {
+        if (!tokenData) {
             return res.status(401).json({ 
                 message: 'Authentication required',
                 code: 'NOT_AUTHENTICATED'
             });
         }
+        
+        // Check if it's a student updating their own photo
+        const isOwnPhoto = tokenData.student_id === requestedStudentId;
+        
+        if (!isOwnPhoto) {
+            return res.status(403).json({ 
+                message: 'Access denied. You can only update your own photo.',
+                code: 'PERMISSION_DENIED'
+            });
+        }
+        
+        const student = await Student.findOneAndUpdate(
+            { student_id: requestedStudentId },
+            { photo: photo },
+            { new: true }
+        );
+        
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+        
+        res.json({ 
+            message: 'Photo updated successfully',
+            student: {
+                student_id: student.student_id,
+                photo: student.photo
+            }
+        });
     } catch (err) {
         console.error('Photo update error:', err);
         res.status(500).json({ message: err.message });
