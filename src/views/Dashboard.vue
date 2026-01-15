@@ -2314,21 +2314,26 @@
         <!-- Dashboard Page -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
           <!-- Profile Header -->
-          <div class="relative h-32 overflow-hidden bg-gray-100">
-            <!-- Blurred Image Background -->
+          <div class="relative h-40 overflow-hidden bg-gray-900">
+            <!-- Artistic Blurred Background -->
             <div 
               v-if="currentUser.image || currentUser.photo"
-              class="absolute inset-0 w-full h-full bg-cover bg-center transition-all duration-700 opacity-60 scale-110"
+              class="absolute inset-0 w-full h-full bg-cover bg-center transition-all duration-1000 scale-125"
               :style="{ 
                 backgroundImage: `url(${currentUser.image || currentUser.photo})`,
-                filter: 'blur(20px) saturate(1.5)'
+                filter: 'blur(30px) saturate(1.8) brightness(0.8)'
               }"
             ></div>
-            <div v-else class="absolute inset-0 w-full h-full bg-gradient-to-br from-purple-600 to-purple-800 opacity-60"></div>
+            <div v-else class="absolute inset-0 w-full h-full bg-gradient-to-br from-purple-900 via-purple-600 to-pink-600 animate-gradient-slow"></div>
             
-            <div class="absolute inset-0 bg-black/10"></div>
+            <!-- Artistic Overlays -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
+            <div class="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+            <div class="absolute -top-20 -right-20 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-pink-500/20 rounded-full blur-3xl animate-pulse-slow"></div>
+            
             <div class="light-sweep"></div>
-            <button @click="refreshCurrentUser" :disabled="refreshingUserData" class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-all backdrop-blur-sm z-10" title="Refresh Profile">
+            <button @click="refreshCurrentUser" :disabled="refreshingUserData" class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition-all backdrop-blur-md z-10 border border-white/20 shadow-lg" title="Refresh Profile">
               <svg :class="['w-5 h-5', refreshingUserData ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             </button>
           </div>
@@ -9692,6 +9697,26 @@ onUnmounted(() => {
 @keyframes bounce-in {
   0% { transform: scale(0.7); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 0.2; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.1); }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 8s ease-in-out infinite;
+}
+
+.animate-gradient-slow {
+  background-size: 200% 200%;
+  animation: gradient-shift 10s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .light-sweep {
