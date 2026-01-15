@@ -598,7 +598,7 @@
                 </span>
                 <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-gray-400 to-slate-500 text-gray-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
                   <div class="absolute inset-0 light-sweep-badge"></div>
-                  <img src="/unverified.svg" alt="Unreadable" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                  <img src="/unreadable.svg" alt="Unreadable" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
                   <span class="relative z-10">Unreadable</span>
                 </span>
                 <span v-else class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-amber-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
@@ -692,7 +692,7 @@
                   </span>
                   <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-gray-400 to-slate-500 text-gray-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
                     <div class="absolute inset-0 light-sweep-badge"></div>
-                    <img src="/unverified.svg" alt="Unreadable" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                    <img src="/unreadable.svg" alt="Unreadable" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
                     <span class="relative z-10">Unreadable</span>
                   </span>
                   <span v-else class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-amber-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
