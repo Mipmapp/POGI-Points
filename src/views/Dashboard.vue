@@ -565,7 +565,7 @@
 
       <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex items-center space-x-3">
-          <div class="w-12 h-12 aspect-square rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden">
+          <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
             <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
               <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -677,7 +677,7 @@
         
         <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
           <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden" :style="{ background: profileGradient }">
+            <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
               <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
                 <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -2083,7 +2083,7 @@
             <div v-for="student in paginatedPendingStudents" :key="student.student_id" class="border border-gray-200 rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow">
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-shrink-0">
-                  <div class="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden" :style="{ background: profileGradient }">
+                  <div class="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
                     <img v-if="student.photo" :src="student.photo" alt="Student Photo" class="w-full h-full object-cover" />
                     <img v-else src="/user.svg" alt="No Photo" class="w-10 h-10 brightness-0 invert" />
                   </div>
@@ -2301,7 +2301,7 @@
 
         <!-- Active Attendance Event Banner for Students -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster && activeUnattendedEvents.length > 0" class="mb-4">
-          <div v-for="event in activeUnattendedEvents" :key="event._id" class="rounded-lg shadow-lg p-4 mb-3 text-white" :style="{ background: profileGradient }">
+          <div v-for="event in activeUnattendedEvents" :key="event._id" class="rounded-lg shadow-lg p-4 mb-3 text-white bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
               <div class="flex items-start gap-3">
                 <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
