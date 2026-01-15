@@ -3691,7 +3691,22 @@ const updateProfileGradient = async (url) => {
 };
 
 watch(() => currentUser.value?.image || currentUser.value?.photo, (newUrl) => {
-  updateProfileGradient(newUrl)
+  if (!newUrl) {
+    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+    return;
+  }
+
+  // Create a temporary image to detect colors before applying to background
+  const img = new Image();
+  img.crossOrigin = 'Anonymous';
+  img.onload = () => {
+    updateProfileGradientFromImage(img);
+  };
+  img.onerror = (err) => {
+    console.error('Error detecting image for colors:', err);
+    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+  };
+  img.src = newUrl;
 }, { immediate: true })
 const sidebarImageRetries = ref(0)
 const maxRetries = 3
