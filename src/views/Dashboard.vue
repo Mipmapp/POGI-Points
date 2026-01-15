@@ -4818,7 +4818,7 @@ const checkAdminActionStatus = async () => {
   if (!token || (!currentUser.value.isMaster && currentUser.value.role !== 'admin')) return
   
   try {
-    const response = await fetch(`/apis/admin-actions/status`, {
+    const response = await fetch(buildAPIUrl(`/apis/admin-actions/status`), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -4841,7 +4841,7 @@ const requestAdminActionToken = async (adminKey) => {
   const token = localStorage.getItem('authToken')
   if (!token) throw new Error('Authentication required')
   
-  const response = await fetch(`/apis/admin-actions/token`, {
+  const response = await fetch(buildAPIUrl(`/apis/admin-actions/token`), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -5119,7 +5119,7 @@ onMounted(async () => {
     
     try {
       // Fetch only current page (10-20 students)
-      const response = await fetch(`/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`, {
+      const response = await fetch(buildAPIUrl(`/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`), {
         method: 'GET',
         headers: {
           'Authorization': `Bearer SSAAMStudents`
@@ -5221,7 +5221,7 @@ const refreshCurrentUser = async () => {
   try {
     const studentId = currentUser.value.studentId || currentUser.value.student_id
     
-    const response = await fetch(`/apis/students/search?search=${encodeURIComponent(studentId)}&limit=1`, {
+    const response = await fetch(buildAPIUrl(`/apis/students/search?search=${encodeURIComponent(studentId)}&limit=1`), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -5279,7 +5279,7 @@ const refreshCurrentUser = async () => {
 const fetchStats = async () => {
   statsLoading.value = true
   try {
-    const response = await fetch(`/apis/students/stats`, {
+    const response = await fetch(buildAPIUrl(`/apis/students/stats`), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -5328,7 +5328,7 @@ const toggleRfidList = async (type) => {
   rfidListDisplayLimit.value = 20
   
   try {
-    const response = await fetch(`/apis/students?limit=1000`, {
+    const response = await fetch(buildAPIUrl(`/apis/students?limit=1000`), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -5375,7 +5375,7 @@ const toggleRfidList = async (type) => {
 const fetchPendingStudents = async () => {
   pendingLoading.value = true
   try {
-    const response = await fetch(`/apis/students/pending?limit=1000`, {
+    const response = await fetch(buildAPIUrl(`/apis/students/pending?limit=1000`), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -5398,7 +5398,7 @@ const approveStudentImpl = async (student) => {
   approvingStudent.value = student.student_id
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch(`/apis/students/${student.student_id}/approve`, {
+    const response = await fetch(buildAPIUrl(`/apis/students/${student.student_id}/approve`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -5449,7 +5449,7 @@ const confirmRejectStudentImpl = async () => {
   rejectingStudent.value = true
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch(`/apis/students/${studentToReject.value.student_id}/reject`, {
+    const response = await fetch(buildAPIUrl(`/apis/students/${studentToReject.value.student_id}/reject`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -5650,7 +5650,7 @@ const fetchSettings = async () => {
   
   settingsLoading.value = true
   try {
-    const response = await fetch(`/apis/settings`, {
+    const response = await fetch(buildAPIUrl(`/apis/settings`), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer SSAAMStudents`
@@ -5691,7 +5691,7 @@ const saveSettingsImpl = async () => {
   settingsSaving.value = true
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch(`/apis/settings`, {
+    const response = await fetch(buildAPIUrl(`/apis/settings`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -5738,7 +5738,7 @@ const saveRfidScannerSettings = async () => {
   rfidScannerSaving.value = true
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch(`/apis/settings`, {
+    const response = await fetch(buildAPIUrl(`/apis/settings`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -5843,7 +5843,7 @@ const clearAllSessionTokens = async () => {
   
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch(`/apis/debug/session-tokens/clear?type=all`, {
+    const response = await fetch(buildAPIUrl(`/apis/debug/session-tokens/clear?type=all`), {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -6577,7 +6577,7 @@ const saveUserImpl = async () => {
       
       if (newRole && newRole !== originalRole) {
         try {
-    const response = await fetch(`/apis/students/${studentId}/role`, {
+    const response = await fetch(buildAPIUrl(`/apis/students/${studentId}/role`), {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
@@ -6606,7 +6606,7 @@ const saveUserImpl = async () => {
       
       if (newRfid && newRfid !== 'N/A' && newRfid !== originalRfid) {
         try {
-    const response = await fetch(`/apis/students/${studentId}/rfid`, {
+    const response = await fetch(buildAPIUrl(`/apis/students/${studentId}/rfid`), {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
@@ -6685,7 +6685,7 @@ const confirmDeleteImpl = async () => {
   
   if (userToDelete.value) {
     try {
-    const response = await fetch(`/apis/students/${userToDelete.value}`, {
+    const response = await fetch(buildAPIUrl(`/apis/students/${userToDelete.value}`), {
         method: 'DELETE',
         headers: { 
           'Content-Type': 'application/json',
@@ -6956,7 +6956,7 @@ const updateAttendanceEvent = async () => {
       end_time: selectedEvent.value.end_time || selectedEvent.value.endTime || '17:00'
     }
     
-    const response = await fetch(`/apis/attendance/events/${selectedEvent.value._id}`, {
+    const response = await fetch(buildAPIUrl(`/apis/attendance/events/${selectedEvent.value._id}`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -6992,7 +6992,7 @@ const updateAttendanceEvent = async () => {
 const deleteAttendanceEvent = async (eventId) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
-    const response = await fetch(`/apis/attendance/events/${eventId}`, {
+    const response = await fetch(buildAPIUrl(`/apis/attendance/events/${eventId}`), {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -7026,7 +7026,7 @@ const fetchEventSessions = async (eventId) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   sessionsLoading.value = true
   try {
-    const response = await fetch(`/apis/attendance/events/${eventId}/sessions`, {
+    const response = await fetch(buildAPIUrl(`/apis/attendance/events/${eventId}/sessions`), {
       headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
     })
     if (response.ok) {
@@ -7052,7 +7052,7 @@ const toggleEventExpansion = async (eventId) => {
     if (!expandedEventSessions.value[eventId]) {
       const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
       try {
-        const response = await fetch(`/apis/attendance/events/${eventId}/sessions`, {
+        const response = await fetch(buildAPIUrl(`/apis/attendance/events/${eventId}/sessions`), {
           headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
         })
         if (response.ok) {
@@ -7087,7 +7087,7 @@ const saveSession = async () => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
     if (editingSession.value) {
-    const response = await fetch(`/apis/attendance/sessions/${editingSession.value._id}`, {
+    const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${editingSession.value._id}`), {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() },
         body: JSON.stringify(newSession.value)
@@ -7109,7 +7109,7 @@ const saveSession = async () => {
         showNotification(errorData.message || 'Failed to update session', 'error')
       }
     } else {
-      const response = await fetch(`/apis/attendance/events/${selectedEvent.value._id}/sessions`, {
+      const response = await fetch(buildAPIUrl(`/apis/attendance/events/${selectedEvent.value._id}/sessions`), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() },
         body: JSON.stringify(newSession.value)
@@ -7142,7 +7142,7 @@ const saveSession = async () => {
 const deleteSession = async (sessionId) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
-    const response = await fetch(`/apis/attendance/sessions/${sessionId}`, {
+    const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${sessionId}`), {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() }
     })
@@ -7213,7 +7213,7 @@ const applyLateThresholdByMinutes = async () => {
       // Only update if the late status needs to change
       if (log.is_late !== shouldBeLate) {
         try {
-          const response = await fetch(`/apis/attendance/logs/${log._id || log.id}`, {
+          const response = await fetch(buildAPIUrl(`/apis/attendance/logs/${log._id || log.id}`), {
             method: 'PATCH',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -7302,7 +7302,7 @@ const applyLateThreshold = async () => {
       // Only update if the late status needs to change
       if (log.is_late !== shouldBeLate) {
         try {
-          const response = await fetch(`/apis/attendance/logs/${log._id || log.id}`, {
+          const response = await fetch(buildAPIUrl(`/apis/attendance/logs/${log._id || log.id}`), {
             method: 'PATCH',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -7363,7 +7363,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
       if (eventLogsFilter.value.program) statsParams.append('program', eventLogsFilter.value.program)
       if (eventLogsFilter.value.search) statsParams.append('search', eventLogsFilter.value.search)
       
-      const statsResponse = await fetch(`/apis/attendance/sessions/${sessionId}/logs?${statsParams.toString()}`, {
+      const statsResponse = await fetch(buildAPIUrl(`/apis/attendance/sessions/${sessionId}/logs?${statsParams.toString()}`), {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -7403,7 +7403,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
         
         if (eventEnded) {
           try {
-    const response = await fetch(`/apis/students?limit=10000`, {
+    const response = await fetch(buildAPIUrl(`/apis/students?limit=10000`), {
               method: 'GET',
               headers: {
                 'Authorization': 'Bearer SSAAMStudents',
@@ -7445,7 +7445,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
     if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
     if (eventLogsFilter.value.search) params.append('search', eventLogsFilter.value.search)
     
-    const response = await fetch(`/apis/attendance/sessions/${sessionId}/logs?${params.toString()}`, {
+    const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${sessionId}/logs?${params.toString()}`), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -7489,7 +7489,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
       if (eventEnded && session) {
         try {
           // Fetch approved students
-    const response = await fetch(`/apis/students?limit=10000`, {
+    const response = await fetch(buildAPIUrl(`/apis/students?limit=10000`), {
             method: 'GET',
             headers: {
               'Authorization': 'Bearer SSAAMStudents',
@@ -7594,7 +7594,7 @@ const fetchEventLogs = async (eventId) => {
     if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
     if (eventLogsFilter.value.search) params.append('search', eventLogsFilter.value.search)
     
-    const response = await fetch(`/apis/attendance/events/${eventId}/logs?${params.toString()}`, {
+    const response = await fetch(buildAPIUrl(`/apis/attendance/events/${eventId}/logs?${params.toString()}`), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -7628,7 +7628,7 @@ const fetchEventLogs = async (eventId) => {
       if (eventEnded) {
         try {
           // Fetch approved students
-    const response = await fetch(`/apis/students?limit=10000`, {
+    const response = await fetch(buildAPIUrl(`/apis/students?limit=10000`), {
             method: 'GET',
             headers: {
               'Authorization': 'Bearer SSAAMStudents',
@@ -7717,7 +7717,7 @@ const exportEventAttendanceToExcel = async (event) => {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
     
     // Fetch all logs for this event
-    const response = await fetch(`/apis/attendance/events/${event._id}/logs?limit=1000`, {
+    const response = await fetch(buildAPIUrl(`/apis/attendance/events/${event._id}/logs?limit=1000`), {
       method: 'GET',
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -7967,7 +7967,7 @@ const processRfidScan = async (inputCode) => {
           force_mode: true // Tell backend to strictly use the operation_type
         }
     
-    const response = await fetch(`/apis/attendance/sessions/${selectedSession.value._id}/check`, {
+    const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${selectedSession.value._id}/check`), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -8772,7 +8772,7 @@ const saveEditedNotification = async () => {
   savingEditedNotification.value = true
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    const response = await fetch(`/apis/notifications/${editNotificationData.value._id}`, {
+    const response = await fetch(buildAPIUrl(`/apis/notifications/${editNotificationData.value._id}`), {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -8988,7 +8988,7 @@ const postNotification = async () => {
       payload.image_url = notificationImageUrl.value
     }
     
-    const response = await fetch(`/apis/notifications`, {
+    const response = await fetch(buildAPIUrl(`/apis/notifications`), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -9031,7 +9031,7 @@ const confirmDeleteNotification = async () => {
   deletingNotification.value = true
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    const response = await fetch(`/apis/notifications/${notificationToDelete.value}`, {
+    const response = await fetch(buildAPIUrl(`/apis/notifications/${notificationToDelete.value}`), {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -9145,7 +9145,7 @@ const toggleLike = async (notif) => {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
     const visitorId = currentUser.value.studentId || currentUser.value.student_id || currentUser.value._id
     
-    const response = await fetch(`/apis/notifications/${notif._id}/like`, {
+    const response = await fetch(buildAPIUrl(`/apis/notifications/${notif._id}/like`), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -9236,7 +9236,7 @@ const requestPasswordChangeCode = async () => {
     const token = encodeTimestamp()
     const studentId = currentUser.value.studentId || currentUser.value.student_id
     
-    const response = await fetch(`/apis/password-reset/request`, {
+    const response = await fetch(buildAPIUrl(`/apis/password-reset/request`), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -9274,7 +9274,7 @@ const verifyPasswordChangeCode = async () => {
     const token = encodeTimestamp()
     const studentId = currentUser.value.studentId || currentUser.value.student_id
     
-    const response = await fetch(`/apis/password-reset/verify`, {
+    const response = await fetch(buildAPIUrl(`/apis/password-reset/verify`), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -9327,7 +9327,7 @@ const completePasswordChange = async () => {
     const token = encodeTimestamp()
     const studentId = currentUser.value.studentId || currentUser.value.student_id
     
-    const response = await fetch(`/apis/password-reset/complete`, {
+    const response = await fetch(buildAPIUrl(`/apis/password-reset/complete`), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

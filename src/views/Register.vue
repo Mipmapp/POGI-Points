@@ -803,6 +803,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
+import { buildAPIUrl } from '../config/api.js'
 
 const router = useRouter()
 const currentStep = ref(1)
@@ -847,7 +848,7 @@ const stepTitle = computed(() => {
 
 onMounted(async () => {
   try {
-    const response = await fetch('/apis/settings', {
+    const response = await fetch(buildAPIUrl('/apis/settings'), {
       method: 'GET',
       headers: {
         'Authorization': 'Bearer SSAAMStudents'
@@ -1127,7 +1128,7 @@ const sendVerificationCode = async () => {
   }
 
   try {
-    const response = await fetch('/apis/students/send-verification', {
+    const response = await fetch(buildAPIUrl('/apis/students/send-verification'), {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -1287,7 +1288,7 @@ const handleNext = async () => {
     loadingSubMessage.value = 'Please wait while we create your account'
     
     try {
-      const response = await fetch('/apis/students/verify-and-register', {
+      const response = await fetch(buildAPIUrl('/apis/students/verify-and-register'), {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

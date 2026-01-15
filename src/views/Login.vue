@@ -369,7 +369,7 @@ import { useRouter } from 'vue-router'
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
-import API_BASE_URL from '../config/api.js'
+import API_BASE_URL, { buildAPIUrl } from '../config/api.js'
 
 const router = useRouter()
 const studentId = ref('')
@@ -447,7 +447,7 @@ const requestResetCode = async () => {
   resetMessage.value = ''
   try {
     const token = encodeTimestamp()
-    const response = await fetch('/apis/password-reset/request', {
+    const response = await fetch(buildAPIUrl(`/apis/password-reset/request`), {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -482,7 +482,7 @@ const verifyResetCode = async () => {
   resetMessage.value = ''
   try {
     const token = encodeTimestamp()
-    const response = await fetch('/apis/password-reset/verify', {
+    const response = await fetch(buildAPIUrl(`/apis/password-reset/verify`), {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -523,7 +523,7 @@ const completePasswordReset = async () => {
   resetMessage.value = ''
   try {
     const token = encodeTimestamp()
-    const response = await fetch('/apis/password-reset/complete', {
+    const response = await fetch(buildAPIUrl(`/apis/password-reset/complete`), {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
@@ -601,7 +601,7 @@ onMounted(async () => {
   
   // Check login settings
   try {
-    const response = await fetch('/apis/settings', {
+    const response = await fetch(buildAPIUrl('/apis/settings'), {
       method: 'GET',
       headers: {
         'Authorization': 'Bearer SSAAMStudents'
