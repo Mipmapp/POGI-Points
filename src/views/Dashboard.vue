@@ -565,7 +565,7 @@
 
       <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden" :style="{ background: profileGradient }">
+          <div class="w-12 h-12 aspect-square rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden">
             <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
               <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -2324,7 +2324,7 @@
           <div class="px-8 pb-8">
             <div class="relative -mt-16 mb-6">
               <div class="inline-block relative">
-                <div class="w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center" :style="{ background: profileGradient }">
+                <div class="w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
                   <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
                     <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -3608,60 +3608,38 @@ const profileGradient = ref('linear-gradient(to bottom right, #ec4899, #9333ea)'
 
 const updateProfileGradient = async (url) => {
   if (!url) {
-    profileGradient.value = 'linear-gradient(to bottom right, #ec4899, #9333ea)'
+    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #ec4899)'
     return
   }
   try {
-    // Get multiple colors to find highlights
     const palette = await fac.getPaletteAsync(url, { algorithm: 'dominant' })
     
-    // Sort colors by brightness (lightest first)
-    // Brightness formula: (0.299*R + 0.587*G + 0.114*B)
-    const sortedPalette = [...palette].sort((a, b) => {
-      const brightA = (0.299 * a.rgba[0] + 0.587 * a.rgba[1] + 0.114 * a.rgba[2])
-      const brightB = (0.299 * b.rgba[0] + 0.587 * b.rgba[1] + 0.114 * b.rgba[2])
-      return brightB - brightA
-    })
+    // palette[0] is most used, palette[1] is second most used
+    const color1 = palette[0]
+    const color2 = palette[1] || palette[0]
 
-    // Take the two brightest colors
-    const colorA = sortedPalette[0]
-    const colorB = sortedPalette[1] || sortedPalette[0]
-    
-    // Ensure colors are vibrant and light
-    const lighten = (rgba, amount) => {
-      const [r, g, b] = rgba
-      return `rgb(${Math.min(255, r + (255 - r) * amount)}, ${Math.min(255, g + (255 - g) * amount)}, ${Math.min(255, b + (255 - b) * amount)})`
-    }
-    
-    const grad1 = lighten(colorA.rgba, 0.1)
-    const grad2 = lighten(colorB.rgba, 0.4)
-    
-    const newGradient = `linear-gradient(to bottom right, ${grad1}, ${grad2})`
-    console.log('Setting new profile gradient:', newGradient)
-    
-    // Check if the colors are actual colors (not gray/white/black)
-    const isGray = (rgba) => {
-      const [r, g, b] = rgba
-      const threshold = 20
-      return Math.abs(r - g) < threshold && Math.abs(g - b) < threshold && Math.abs(r - b) < threshold
-    }
-    
-    if (isGray(colorA.rgba) && isGray(colorB.rgba) && sortedPalette.length > 2) {
-      // Find the most saturated color instead
-      const saturated = [...palette].sort((a, b) => {
-        const satA = Math.max(a.rgba[0], a.rgba[1], a.rgba[2]) - Math.min(a.rgba[0], a.rgba[1], a.rgba[2])
-        const satB = Math.max(b.rgba[0], b.rgba[1], b.rgba[2]) - Math.min(b.rgba[0], b.rgba[1], b.rgba[2])
-        return satB - satA
-      })[0]
-      const s1 = lighten(saturated.rgba, 0.1)
-      const s2 = lighten(saturated.rgba, 0.4)
-      profileGradient.value = `linear-gradient(to bottom right, ${s1}, ${s2})`
+    // Calculate brightness to determine which is darker
+    // Brightness formula: (0.299*R + 0.587*G + 0.114*B)
+    const getBrightness = (rgba) => (0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2])
+    const b1 = getBrightness(color1.rgba)
+    const b2 = getBrightness(color2.rgba)
+
+    let topColor, bottomColor
+    if (b1 > b2) {
+      // color1 is lighter (top), color2 is darker (bottom)
+      topColor = `rgb(${color1.rgba[0]}, ${color1.rgba[1]}, ${color1.rgba[2]})`
+      bottomColor = `rgb(${color2.rgba[0]}, ${color2.rgba[1]}, ${color2.rgba[2]})`
     } else {
-      profileGradient.value = newGradient
+      // color2 is lighter (top), color1 is darker (bottom)
+      topColor = `rgb(${color2.rgba[0]}, ${color2.rgba[1]}, ${color2.rgba[2]})`
+      bottomColor = `rgb(${color1.rgba[0]}, ${color1.rgba[1]}, ${color1.rgba[2]})`
     }
+
+    // Gradient with darker color at bottom, lighter color at top
+    profileGradient.value = `linear-gradient(to top, ${bottomColor}, ${topColor})`
   } catch (e) {
-    console.error('Failed to get palette color:', e)
-    profileGradient.value = 'linear-gradient(to bottom right, #ec4899, #9333ea)'
+    console.error('Failed to extract colors:', e)
+    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #ec4899)'
   }
 }
 
