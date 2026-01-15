@@ -580,7 +580,7 @@
             <div class="flex items-center gap-2">
               <p class="font-bold text-lg" v-if="currentUser.role === 'admin' || currentUser.isMaster">
                 <span class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-xs font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden group">
-                  <div class="absolute inset-0 bg-white/40 skew-x-[-20deg] translate-x-[-150%] animate-sweep-7s"></div>
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-7s"></div>
                   <img src="/crown.svg" alt="Admin" class="w-4 h-4 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
                   <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                 </span>
@@ -683,7 +683,7 @@
               <div class="flex items-center gap-2">
                 <p class="font-bold text-lg" v-if="currentUser.role === 'admin' || currentUser.isMaster">
                   <span class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-xs font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden group">
-                    <div class="absolute inset-0 bg-white/40 skew-x-[-20deg] translate-x-[-150%] animate-sweep-7s"></div>
+                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-7s"></div>
                     <img src="/crown.svg" alt="Admin" class="w-4 h-4 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
                     <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                   </span>
