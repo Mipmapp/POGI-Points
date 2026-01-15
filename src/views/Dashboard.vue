@@ -3612,51 +3612,64 @@ const updateProfileGradient = async (url) => {
     return
   }
   try {
-    const palette = await fac.getPaletteAsync(url, { algorithm: 'dominant' })
+    // Use 'sqrt' for better color variety in palette
+    const palette = await fac.getPaletteAsync(url, { algorithm: 'sqrt', colorCount: 10 })
     
-    // palette[0] is most used, but we want a light color (exclude white)
-    // Filter out very white colors (brightness > 240)
-    const isWhite = (rgba) => {
-      return rgba[0] > 240 && rgba[1] > 240 && rgba[2] > 240
-    }
+    // Filter out very white colors (brightness > 240) and very dark colors
+    const isWhite = (rgba) => rgba[0] > 245 && rgba[1] > 245 && rgba[2] > 245
+    const isDark = (rgba) => (0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2]) < 40
 
     const getBrightness = (rgba) => (0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2])
+    const getSaturation = (rgba) => {
+      const max = Math.max(rgba[0], rgba[1], rgba[2])
+      const min = Math.min(rgba[0], rgba[1], rgba[2])
+      return max === 0 ? 0 : (max - min) / max
+    }
 
-    // Try to find the brightest non-white color in the palette
-    let lightColor = null
-    let maxBrightness = -1
+    // Find the best light, vibrant color
+    let bestColor = null
+    let maxScore = -1
 
     for (const color of palette) {
-      if (!isWhite(color.rgba)) {
-        const b = getBrightness(color.rgba)
-        if (b > maxBrightness) {
-          maxBrightness = b
-          lightColor = color
+      if (!isWhite(color.rgba) && !isDark(color.rgba)) {
+        const brightness = getBrightness(color.rgba)
+        const saturation = getSaturation(color.rgba)
+        
+        // Score based on a mix of brightness and saturation to find "vibrant light" colors
+        // We want high brightness but also some color (saturation)
+        const score = (brightness / 255) * 0.6 + saturation * 0.4
+        
+        if (score > maxScore && brightness > 120) {
+          maxScore = score
+          bestColor = color
         }
       }
     }
 
-    // Fallback to dominant if no suitable light color found
-    if (!lightColor) lightColor = palette[0]
+    // Fallback to dominant if no suitable color found
+    const dominant = await fac.getColorAsync(url, { algorithm: 'dominant' })
+    const mainColor = bestColor || dominant
 
-    const color1 = lightColor
-    const color2 = palette.find(c => c !== lightColor && !isWhite(c.rgba)) || palette[1] || palette[0]
+    // For the gradient, we can use the selected color and a slightly darker version or a secondary palette color
+    const color1 = mainColor
+    const secondaryColor = palette.find(c => c !== mainColor && !isWhite(c.rgba) && !isDark(c.rgba)) || palette[1] || mainColor
 
     const b1 = getBrightness(color1.rgba)
-    const b2 = getBrightness(color2.rgba)
+    const b2 = getBrightness(secondaryColor.rgba)
 
     let topColor, bottomColor
     if (b1 > b2) {
       topColor = `rgb(${color1.rgba[0]}, ${color1.rgba[1]}, ${color1.rgba[2]})`
-      bottomColor = `rgb(${color2.rgba[0]}, ${color2.rgba[1]}, ${color2.rgba[2]})`
+      bottomColor = `rgb(${secondaryColor.rgba[0]}, ${secondaryColor.rgba[1]}, ${secondaryColor.rgba[2]})`
     } else {
-      topColor = `rgb(${color2.rgba[0]}, ${color2.rgba[1]}, ${color2.rgba[2]})`
+      topColor = `rgb(${secondaryColor.rgba[0]}, ${secondaryColor.rgba[1]}, ${secondaryColor.rgba[2]})`
       bottomColor = `rgb(${color1.rgba[0]}, ${color1.rgba[1]}, ${color1.rgba[2]})`
     }
 
     profileGradient.value = `linear-gradient(to top, ${bottomColor}, ${topColor})`
   } catch (e) {
     console.error('Failed to extract colors:', e)
+    // Fallback to purple as requested
     profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)'
   }
 }
