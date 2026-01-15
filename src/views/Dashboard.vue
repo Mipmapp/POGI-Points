@@ -2331,7 +2331,15 @@
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
                   </div>
-                  <img v-else-if="!profileImageFailed && (currentUser.image || currentUser.photo)" :src="currentUser.image || currentUser.photo" alt="Profile Picture" class="w-full h-full object-cover" @load="() => { profileImageLoading = false; profileImageFailed = false; }" @error="handleProfileImageError" />
+                  <img 
+                    v-else-if="!profileImageFailed && (currentUser.image || currentUser.photo)" 
+                    :src="currentUser.image || currentUser.photo" 
+                    alt="Profile Picture" 
+                    class="w-full h-full object-cover" 
+                    crossorigin="anonymous"
+                    @load="onProfileImageLoad" 
+                    @error="handleProfileImageError" 
+                  />
                   <div v-else class="w-full h-full flex items-center justify-center text-4xl font-bold text-purple-300">
                     {{ getInitials(currentUser?.full_name || displayName || '') }}
                   </div>
@@ -3606,73 +3614,81 @@ const sidebarImageFailed = ref(false)
 const profileImageRetries = ref(0)
 const profileGradient = ref('linear-gradient(to bottom right, #ec4899, #9333ea)')
 
-const updateProfileGradient = async (url) => {
-  if (!url) {
-    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)'
-    return
-  }
+const onProfileImageLoad = (event) => {
+  profileImageLoading.value = false;
+  profileImageFailed.value = false;
+  const img = event.target;
+  updateProfileGradientFromImage(img);
+};
+
+const updateProfileGradientFromImage = async (img) => {
   try {
-    // Use 'sqrt' for better color variety in palette
-    const palette = await fac.getPaletteAsync(url, { algorithm: 'sqrt', colorCount: 10 })
-    
-    // Filter out very white colors (brightness > 240) and very dark colors
-    const isWhite = (rgba) => rgba[0] > 245 && rgba[1] > 245 && rgba[2] > 245
-    const isDark = (rgba) => (0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2]) < 40
+    const palette = await fac.getPaletteAsync(img, { algorithm: 'sqrt', colorCount: 10 });
+    applyPaletteToGradient(palette);
+  } catch (e) {
+    console.error('Failed to extract colors from image element:', e);
+    // Try with URL as backup
+    updateProfileGradient(img.src);
+  }
+};
 
-    const getBrightness = (rgba) => (0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2])
-    const getSaturation = (rgba) => {
-      const max = Math.max(rgba[0], rgba[1], rgba[2])
-      const min = Math.min(rgba[0], rgba[1], rgba[2])
-      return max === 0 ? 0 : (max - min) / max
-    }
+const applyPaletteToGradient = (palette) => {
+  const isWhite = (rgba) => rgba[0] > 245 && rgba[1] > 245 && rgba[2] > 245;
+  const isDark = (rgba) => (0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2]) < 40;
 
-    // Find the best light, vibrant color
-    let bestColor = null
-    let maxScore = -1
+  const getBrightness = (rgba) => (0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2]);
+  const getSaturation = (rgba) => {
+    const max = Math.max(rgba[0], rgba[1], rgba[2]);
+    const min = Math.min(rgba[0], rgba[1], rgba[2]);
+    return max === 0 ? 0 : (max - min) / max;
+  };
 
-    for (const color of palette) {
-      if (!isWhite(color.rgba) && !isDark(color.rgba)) {
-        const brightness = getBrightness(color.rgba)
-        const saturation = getSaturation(color.rgba)
-        
-        // Score based on a mix of brightness and saturation to find "vibrant light" colors
-        // We want high brightness but also some color (saturation)
-        const score = (brightness / 255) * 0.6 + saturation * 0.4
-        
-        if (score > maxScore && brightness > 120) {
-          maxScore = score
-          bestColor = color
-        }
+  let bestColor = null;
+  let maxScore = -1;
+
+  for (const color of palette) {
+    if (!isWhite(color.rgba) && !isDark(color.rgba)) {
+      const brightness = getBrightness(color.rgba);
+      const saturation = getSaturation(color.rgba);
+      const score = (brightness / 255) * 0.6 + saturation * 0.4;
+      if (score > maxScore && brightness > 120) {
+        maxScore = score;
+        bestColor = color;
       }
     }
-
-    // Fallback to dominant if no suitable color found
-    const dominant = await fac.getColorAsync(url, { algorithm: 'dominant' })
-    const mainColor = bestColor || dominant
-
-    // For the gradient, we can use the selected color and a slightly darker version or a secondary palette color
-    const color1 = mainColor
-    const secondaryColor = palette.find(c => c !== mainColor && !isWhite(c.rgba) && !isDark(c.rgba)) || palette[1] || mainColor
-
-    const b1 = getBrightness(color1.rgba)
-    const b2 = getBrightness(secondaryColor.rgba)
-
-    let topColor, bottomColor
-    if (b1 > b2) {
-      topColor = `rgb(${color1.rgba[0]}, ${color1.rgba[1]}, ${color1.rgba[2]})`
-      bottomColor = `rgb(${secondaryColor.rgba[0]}, ${secondaryColor.rgba[1]}, ${secondaryColor.rgba[2]})`
-    } else {
-      topColor = `rgb(${secondaryColor.rgba[0]}, ${secondaryColor.rgba[1]}, ${secondaryColor.rgba[2]})`
-      bottomColor = `rgb(${color1.rgba[0]}, ${color1.rgba[1]}, ${color1.rgba[2]})`
-    }
-
-    profileGradient.value = `linear-gradient(to top, ${bottomColor}, ${topColor})`
-  } catch (e) {
-    console.error('Failed to extract colors:', e)
-    // Fallback to purple as requested
-    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)'
   }
-}
+
+  const mainColor = bestColor || palette[0];
+  const secondaryColor = palette.find(c => c !== mainColor && !isWhite(c.rgba) && !isDark(c.rgba)) || palette[1] || mainColor;
+
+  const b1 = getBrightness(mainColor.rgba);
+  const b2 = getBrightness(secondaryColor.rgba);
+
+  let topColor, bottomColor;
+  if (b1 > b2) {
+    topColor = `rgb(${mainColor.rgba[0]}, ${mainColor.rgba[1]}, ${mainColor.rgba[2]})`;
+    bottomColor = `rgb(${secondaryColor.rgba[0]}, ${secondaryColor.rgba[1]}, ${secondaryColor.rgba[2]})`;
+  } else {
+    topColor = `rgb(${secondaryColor.rgba[0]}, ${secondaryColor.rgba[1]}, ${secondaryColor.rgba[2]})`;
+    bottomColor = `rgb(${mainColor.rgba[0]}, ${mainColor.rgba[1]}, ${mainColor.rgba[2]})`;
+  }
+
+  profileGradient.value = `linear-gradient(to top, ${bottomColor}, ${topColor})`;
+};
+
+const updateProfileGradient = async (url) => {
+  if (!url) {
+    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+    return;
+  }
+  try {
+    const palette = await fac.getPaletteAsync(url, { algorithm: 'sqrt', colorCount: 10 });
+    applyPaletteToGradient(palette);
+  } catch (e) {
+    console.error('Failed to extract colors from URL:', e);
+    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+  }
+};
 
 watch(() => currentUser.value?.image || currentUser.value?.photo, (newUrl) => {
   updateProfileGradient(newUrl)
