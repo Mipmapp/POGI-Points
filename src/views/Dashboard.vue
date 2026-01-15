@@ -3614,28 +3614,46 @@ const updateProfileGradient = async (url) => {
   try {
     const palette = await fac.getPaletteAsync(url, { algorithm: 'dominant' })
     
-    // palette[0] is most used, palette[1] is second most used
-    const color1 = palette[0]
-    const color2 = palette[1] || palette[0]
+    // palette[0] is most used, but we want a light color (exclude white)
+    // Filter out very white colors (brightness > 240)
+    const isWhite = (rgba) => {
+      return rgba[0] > 240 && rgba[1] > 240 && rgba[2] > 240
+    }
 
-    // Calculate brightness to determine which is darker
-    // Brightness formula: (0.299*R + 0.587*G + 0.114*B)
     const getBrightness = (rgba) => (0.299 * rgba[0] + 0.587 * rgba[1] + 0.114 * rgba[2])
+
+    // Try to find the brightest non-white color in the palette
+    let lightColor = null
+    let maxBrightness = -1
+
+    for (const color of palette) {
+      if (!isWhite(color.rgba)) {
+        const b = getBrightness(color.rgba)
+        if (b > maxBrightness) {
+          maxBrightness = b
+          lightColor = color
+        }
+      }
+    }
+
+    // Fallback to dominant if no suitable light color found
+    if (!lightColor) lightColor = palette[0]
+
+    const color1 = lightColor
+    const color2 = palette.find(c => c !== lightColor && !isWhite(c.rgba)) || palette[1] || palette[0]
+
     const b1 = getBrightness(color1.rgba)
     const b2 = getBrightness(color2.rgba)
 
     let topColor, bottomColor
     if (b1 > b2) {
-      // color1 is lighter (top), color2 is darker (bottom)
       topColor = `rgb(${color1.rgba[0]}, ${color1.rgba[1]}, ${color1.rgba[2]})`
       bottomColor = `rgb(${color2.rgba[0]}, ${color2.rgba[1]}, ${color2.rgba[2]})`
     } else {
-      // color2 is lighter (top), color1 is darker (bottom)
       topColor = `rgb(${color2.rgba[0]}, ${color2.rgba[1]}, ${color2.rgba[2]})`
       bottomColor = `rgb(${color1.rgba[0]}, ${color1.rgba[1]}, ${color1.rgba[2]})`
     }
 
-    // Gradient with darker color at bottom, lighter color at top
     profileGradient.value = `linear-gradient(to top, ${bottomColor}, ${topColor})`
   } catch (e) {
     console.error('Failed to extract colors:', e)
