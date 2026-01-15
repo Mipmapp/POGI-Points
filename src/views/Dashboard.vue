@@ -1137,7 +1137,7 @@
                           <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                           <span class="sr-only sm:not-sr-only">Edit</span>
                         </button>
-                        <button @click="deleteAttendanceEvent(event._id)" class="bg-red-100 text-red-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-red-200 transition text-xs sm:text-sm flex items-center gap-1" title="Delete">
+                        <button @click="requestDeleteEvent(event)" class="bg-red-100 text-red-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-red-200 transition text-xs sm:text-sm flex items-center gap-1" title="Delete">
                           <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                           <span class="sr-only sm:not-sr-only">Delete</span>
                         </button>
@@ -3575,6 +3575,36 @@
     </div>
   </div>
 
+  <!-- Event Deletion Confirmation Modal -->
+  <transition name="fade">
+    <div v-if="showDeleteEventConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="cancelDeleteEvent">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+          <div class="text-center mb-6">
+            <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+              <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Delete Event</h3>
+            <p class="text-gray-600">
+              Are you sure you want to delete "<span class="font-semibold">{{ eventToDelete?.title }}</span>"?
+            </p>
+            <p class="text-red-500 text-xs mt-2">This will also delete all associated sessions and logs. This action cannot be undone.</p>
+          </div>
+          <div class="flex gap-3">
+            <button @click="cancelDeleteEvent" class="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition">
+              Cancel
+            </button>
+            <button @click="confirmDeleteEvent" class="flex-1 bg-red-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-red-700 transition flex items-center justify-center gap-2">
+              <span>Delete Event</span>
+            </button>
+          </div>
+        </div>
+      </transition>
+    </div>
+  </transition>
+
   <!-- Notification Toast - Bottom Left, Always in Front -->
   <transition name="slide-up">
     <div v-if="notification.show" :class="['fixed bottom-4 left-4 px-6 py-3 rounded-lg shadow-2xl text-white font-medium transition-all duration-300 z-[100] max-w-sm', notification.type === 'success' ? 'bg-green-500' : notification.type === 'error' ? 'bg-red-500' : notification.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500']">
@@ -3644,6 +3674,8 @@ const rfidListFilterYear = ref('')
 const rfidListSortAsc = ref(true)
 const rfidListDisplayLimit = ref(20)
 const notification = ref({ show: false, message: '', type: 'info' })
+const showDeleteEventConfirm = ref(false)
+const eventToDelete = ref(null)
 const profileImageFailed = ref(false)
 const sidebarImageFailed = ref(false)
 const profileImageRetries = ref(0)
@@ -7148,6 +7180,24 @@ const updateAttendanceEvent = async () => {
   } catch (error) {
     console.error('Error updating event:', error)
     showNotification('Error updating event', 'error')
+  }
+}
+
+const requestDeleteEvent = (event) => {
+  eventToDelete.value = event
+  showDeleteEventConfirm.value = true
+}
+
+const cancelDeleteEvent = () => {
+  showDeleteEventConfirm.value = false
+  eventToDelete.value = null
+}
+
+const confirmDeleteEvent = () => {
+  if (eventToDelete.value) {
+    deleteAttendanceEvent(eventToDelete.value._id)
+    showDeleteEventConfirm.value = false
+    eventToDelete.value = null
   }
 }
 
