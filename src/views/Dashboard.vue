@@ -2324,7 +2324,7 @@
           <div class="px-8 pb-8">
             <div class="relative -mt-16 mb-6">
               <div class="inline-block relative">
-                <div class="w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center">
+                <div class="w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
                   <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
                     <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -3608,7 +3608,7 @@ const profileGradient = ref('linear-gradient(to bottom right, #ec4899, #9333ea)'
 
 const updateProfileGradient = async (url) => {
   if (!url) {
-    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #ec4899)'
+    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)'
     return
   }
   try {
@@ -3639,7 +3639,7 @@ const updateProfileGradient = async (url) => {
     profileGradient.value = `linear-gradient(to top, ${bottomColor}, ${topColor})`
   } catch (e) {
     console.error('Failed to extract colors:', e)
-    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #ec4899)'
+    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)'
   }
 }
 
