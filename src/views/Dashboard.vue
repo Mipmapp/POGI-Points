@@ -551,7 +551,7 @@
 
   <div class="flex h-screen flex-col md:flex-row">
     <!-- Sidebar (Hidden on mobile, visible on desktop) -->
-    <div class="hidden md:flex w-64 bg-gradient-to-b from-purple-600 to-pink-400 text-white flex-col order-1 border-r-2 border-white border-opacity-20 h-screen">
+    <div class="hidden md:flex w-64 bg-gray-500 bg-opacity-10 backdrop-blur-md text-white flex-col order-1 border-r border-white border-opacity-10 h-screen shadow-xl">
       <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex items-center justify-center mb-2">
           <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-32 h-32 object-contain drop-shadow-xl" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
@@ -561,7 +561,7 @@
 
       <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex items-center space-x-3">
-          <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
+          <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gray-500 bg-opacity-20 backdrop-blur-sm border border-white border-opacity-10" :style="{ background: profileGradient }">
             <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
               <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -670,12 +670,12 @@
 
     <!-- Mobile Sidebar (Slide-in menu for mobile) with Animation -->
     <transition name="slide-in">
-      <div v-if="showMobileMenu" class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-purple-600 to-pink-400 text-white flex flex-col z-40 md:hidden shadow-2xl">
+      <div v-if="showMobileMenu" class="fixed left-0 top-0 h-screen w-64 bg-gray-600 bg-opacity-20 backdrop-blur-lg text-white flex flex-col z-40 md:hidden shadow-2xl border-r border-white border-opacity-10">
         <button @click="showMobileMenu = false" class="p-4 text-right text-2xl hover:text-gray-200 flex-shrink-0">×</button>
         
         <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
           <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
+            <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gray-500 bg-opacity-20 backdrop-blur-sm border border-white border-opacity-10" :style="{ background: profileGradient }">
               <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
                 <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
