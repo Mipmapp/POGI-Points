@@ -573,7 +573,11 @@
               </svg>
             </div>
             <img v-else-if="(currentUser.image || currentUser.photo) && !sidebarImageFailed" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
-            <img v-else src="/admin_logo.png" alt="Profile" class="w-10 h-10" />
+            <div v-else class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg shadow-lg">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
           </div>
           <div>
             <p class="text-sm mb-1.5">Welcome back,</p>
@@ -685,7 +689,11 @@
                 </svg>
               </div>
               <img v-else-if="(currentUser.image || currentUser.photo) && !sidebarImageFailed" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
-              <img v-else src="/admin_logo.png" alt="Profile" class="w-10 h-10" />
+              <div v-else class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg shadow-lg">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
             </div>
             <div>
               <p class="text-sm mb-1.5">Welcome back,</p>
