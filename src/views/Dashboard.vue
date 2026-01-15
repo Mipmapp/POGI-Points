@@ -576,13 +576,13 @@
             <img v-else :src="currentUser.role === 'admin' || currentUser.isMaster ? '/user_admin.svg' : '/user.svg'" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
           </div>
           <div>
-            <p class="text-sm">Welcome back,</p>
+            <p class="text-sm mb-1.5">Welcome back,</p>
             <div class="flex items-center gap-2">
               <p class="font-bold text-lg" v-if="currentUser.role === 'admin' || currentUser.isMaster">
-                <span class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-xs font-black rounded-full shadow-[0_0_20px_rgba(245,158,11,0.6)] border border-yellow-300/30 overflow-hidden group">
-                  <div class="absolute inset-0 bg-white/30 skew-x-[-20deg] translate-x-[-150%] animate-sweep-7s"></div>
-                  <img src="/crown.svg" alt="Admin" class="w-4 h-4 drop-shadow-md brightness-0 invert" />
-                  <span class="tracking-widest uppercase text-white drop-shadow-sm">Admin</span>
+                <span class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-xs font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden group">
+                  <div class="absolute inset-0 bg-white/40 skew-x-[-20deg] translate-x-[-150%] animate-sweep-7s"></div>
+                  <img src="/crown.svg" alt="Admin" class="w-4 h-4 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
+                  <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                 </span>
               </p>
               <p class="font-bold" v-else>{{ displayName }}!</p>
@@ -679,13 +679,13 @@
               <img v-else :src="currentUser.role === 'admin' || currentUser.isMaster ? '/user_admin.svg' : '/user.svg'" alt="Profile" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
             </div>
             <div>
-              <p class="text-sm">Welcome back,</p>
+              <p class="text-sm mb-1.5">Welcome back,</p>
               <div class="flex items-center gap-2">
                 <p class="font-bold text-lg" v-if="currentUser.role === 'admin' || currentUser.isMaster">
-                  <span class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-xs font-black rounded-full shadow-[0_0_20px_rgba(245,158,11,0.6)] border border-yellow-300/30 overflow-hidden group">
-                    <div class="absolute inset-0 bg-white/30 skew-x-[-20deg] translate-x-[-150%] animate-sweep-7s"></div>
-                    <img src="/crown.svg" alt="Admin" class="w-4 h-4 drop-shadow-md brightness-0 invert" />
-                    <span class="tracking-widest uppercase text-white drop-shadow-sm">Admin</span>
+                  <span class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-xs font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden group">
+                    <div class="absolute inset-0 bg-white/40 skew-x-[-20deg] translate-x-[-150%] animate-sweep-7s"></div>
+                    <img src="/crown.svg" alt="Admin" class="w-4 h-4 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
+                    <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                   </span>
                 </p>
                 <p class="font-bold" v-else>{{ displayName }}!</p>
