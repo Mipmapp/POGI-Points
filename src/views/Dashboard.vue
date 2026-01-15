@@ -256,10 +256,8 @@
       <!-- Left Panel - Scanner -->
       <div class="lg:w-1/2 h-1/2 lg:h-full flex flex-col items-center justify-center p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white border-opacity-20">
         <div class="flex flex-col items-center text-center mb-4 lg:mb-6 w-full max-w-md">
-            <div class="w-16 h-16 lg:w-24 lg:h-24 mx-auto mb-2 flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl shadow-2xl">
-              <svg class="w-10 h-10 lg:w-16 lg:h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+            <div class="w-16 h-16 lg:w-24 lg:h-24 mx-auto mb-2 flex items-center justify-center bg-gray-500 bg-opacity-20 backdrop-blur-sm rounded-2xl shadow-xl border border-white border-opacity-10">
+              <img src="/user_admin.svg" alt="Admin" class="w-10 h-10 lg:w-16 lg:h-16" style="filter: brightness(0) invert(1);" />
             </div>
           <h1 class="text-xl lg:text-3xl font-bold text-white mb-0.5">SSAAM</h1>
           <p class="text-white text-opacity-80 text-xs lg:text-base">{{ selectedEvent?.title || 'Select an Event' }}</p>
@@ -571,10 +569,8 @@
               </svg>
             </div>
             <img v-else-if="(currentUser.image || currentUser.photo) && !sidebarImageFailed" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
-            <div v-else class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg shadow-lg">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+            <div v-else class="w-10 h-10 flex items-center justify-center bg-gray-500 bg-opacity-20 backdrop-blur-sm rounded-lg shadow-lg border border-white border-opacity-10">
+              <img src="/user_admin.svg" alt="Admin" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
             </div>
           </div>
           <div>
@@ -687,10 +683,8 @@
                 </svg>
               </div>
               <img v-else-if="(currentUser.image || currentUser.photo) && !sidebarImageFailed" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
-              <div v-else class="w-10 h-10 flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg shadow-lg">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+              <div v-else class="w-10 h-10 flex items-center justify-center bg-gray-500 bg-opacity-20 backdrop-blur-sm rounded-lg shadow-lg border border-white border-opacity-10">
+              <img src="/user_admin.svg" alt="Admin" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
             </div>
             </div>
             <div>
