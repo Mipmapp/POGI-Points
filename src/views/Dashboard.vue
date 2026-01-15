@@ -659,7 +659,7 @@
         
         <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
           <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 aspect-square rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden">
+            <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden" :style="{ background: profileGradient }">
               <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
                 <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -2047,7 +2047,7 @@
             <div v-for="student in paginatedPendingStudents" :key="student.student_id" class="border border-gray-200 rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow">
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-shrink-0">
-                  <div class="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden" :class="student.photo ? 'bg-purple-100' : 'bg-gradient-to-br from-pink-500 to-purple-600'">
+                  <div class="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden" :style="{ background: profileGradient }">
                     <img v-if="student.photo" :src="student.photo" alt="Student Photo" class="w-full h-full object-cover" />
                     <img v-else src="/user.svg" alt="No Photo" class="w-10 h-10 brightness-0 invert" />
                   </div>
@@ -3549,6 +3549,8 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { FastAverageColor } from 'fast-average-color'
+const fac = new FastAverageColor()
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import AnnouncementPopup from '../components/AnnouncementPopup.vue'
 import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
@@ -3602,6 +3604,28 @@ const notification = ref({ show: false, message: '', type: 'info' })
 const profileImageFailed = ref(false)
 const sidebarImageFailed = ref(false)
 const profileImageRetries = ref(0)
+const profileGradient = ref('linear-gradient(to bottom right, #ec4899, #9333ea)')
+
+const updateProfileGradient = async (url) => {
+  if (!url) {
+    profileGradient.value = 'linear-gradient(to bottom right, #ec4899, #9333ea)'
+    return
+  }
+  try {
+    const color = await fac.getColorAsync(url)
+    const hex = color.hex
+    // Generate a complementary or darker/lighter version for the gradient
+    // Simple approach: Use the color and a darker version of it
+    profileGradient.value = `linear-gradient(to bottom right, ${hex}, #000000)`
+  } catch (e) {
+    console.error('Failed to get average color:', e)
+    profileGradient.value = 'linear-gradient(to bottom right, #ec4899, #9333ea)'
+  }
+}
+
+watch(() => currentUser.value?.image || currentUser.value?.photo, (newUrl) => {
+  updateProfileGradient(newUrl)
+}, { immediate: true })
 const sidebarImageRetries = ref(0)
 const maxRetries = 3
 const studentPhotoUploading = ref(false)
