@@ -1118,20 +1118,20 @@
             <div class="flex flex-col gap-4 mb-6">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h2 class="text-lg sm:text-xl font-bold text-purple-900">Attendance Events</h2>
-                <div class="flex gap-2 flex-wrap">
-                  <button @click="refreshAttendanceData" :disabled="attendanceLoading" class="bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition flex items-center gap-2 text-sm" title="Refresh">
+                <div class="flex gap-2 flex-wrap sm:flex-nowrap">
+                  <button @click="refreshAttendanceData" :disabled="attendanceLoading" class="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 text-sm" title="Refresh">
                     <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    <span class="sr-only sm:not-sr-only">Refresh</span>
+                    <span>Refresh</span>
                   </button>
-                  <button @click="openCreateEventModal" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-3 py-2 rounded-lg hover:from-purple-700 hover:to-pink-600 transition flex items-center gap-2 text-sm" title="Create Event">
+                  <button @click="openCreateEventModal" class="flex-1 sm:flex-none bg-gradient-to-r from-purple-600 to-pink-500 text-white px-3 py-2 rounded-lg hover:from-purple-700 hover:to-pink-600 transition flex items-center justify-center gap-2 text-sm" title="Create Event">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    <span class="sr-only sm:not-sr-only">Create Event</span>
+                    <span>Create Event</span>
                   </button>
                 </div>
               </div>
-              <div class="flex gap-1 sm:gap-2 overflow-x-auto pb-1">
-                <button @click="attendanceTab = 'events'" :class="['px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap', attendanceTab === 'events' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">Events</button>
-                <button @click="switchToScannerTab" :class="['px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition whitespace-nowrap', attendanceTab === 'scanner' ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">RFID Scanner</button>
+              <div class="flex gap-2 overflow-x-auto pb-1">
+                <button @click="attendanceTab = 'events'" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'events' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">Events</button>
+                <button @click="switchToScannerTab" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'scanner' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">RFID Scanner</button>
               </div>
             </div>
 
