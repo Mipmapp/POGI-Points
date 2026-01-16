@@ -558,11 +558,11 @@
   <div class="flex h-screen flex-col md:flex-row">
     <!-- Sidebar (Hidden on mobile, visible on desktop) -->
     <div class="hidden md:flex w-64 bg-gradient-to-b from-purple-600 to-pink-400 text-white flex-col order-1 border-r-2 border-white border-opacity-20 h-screen">
-      <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
-        <div class="flex items-center justify-center mb-2">
-          <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-32 h-32 object-contain drop-shadow-xl" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
+      <div class="p-4 border-b border-white border-opacity-20 flex-shrink-0">
+        <div class="flex items-center justify-center mb-1">
+          <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-20 h-20 object-contain drop-shadow-xl" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
         </div>
-        <h1 class="text-xl font-bold text-center">SSAAM</h1>
+        <h1 class="text-lg font-bold text-center">SSAAM</h1>
       </div>
 
       <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
