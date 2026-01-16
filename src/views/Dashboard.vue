@@ -2508,8 +2508,8 @@
                   <div v-for="(val, label) in { 
                     'Program': currentUser.program || 'N/A', 
                     'Year': currentUser.yearLevel || currentUser.year_level || 'N/A', 
-                    'Sem': appSettings.semester || 'N/A', 
-                    'S.Y.': appSettings.schoolYear || 'N/A' 
+                    'Semester': appSettings.semester || 'N/A', 
+                    'School Year': appSettings.schoolYear || 'N/A' 
                   }" :key="label" 
                        class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-colors">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ label }}</p>
