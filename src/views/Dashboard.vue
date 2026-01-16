@@ -257,7 +257,10 @@
       <div class="lg:w-1/2 min-h-max lg:h-full flex flex-col items-center justify-center p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white border-opacity-20 flex-shrink-0">
         <div class="flex flex-col items-center text-center mb-4 lg:mb-6 w-full max-w-md">
           <div class="flex items-center justify-center gap-3 mb-1">
-            <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-10 h-10 lg:w-16 lg:h-16 object-contain" />
+            <div class="relative overflow-hidden rounded-full group">
+              <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-10 h-10 lg:w-16 lg:h-16 object-contain relative z-10" />
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20"></div>
+            </div>
             <h1 class="text-2xl lg:text-4xl font-bold text-white">SSAAM</h1>
           </div>
           <p class="text-white text-opacity-80 text-xs lg:text-lg font-medium">{{ selectedEvent?.title || 'Select an Event' }}</p>

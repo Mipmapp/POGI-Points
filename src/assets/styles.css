@@ -516,6 +516,16 @@ input, textarea, select {
 }
 
 /*  Dashboard Page Styles  */
+@keyframes sweep {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-sweep {
+  animation: sweep 3s ease-in-out infinite;
+}
+
 .dashboard-container {
   @apply flex h-screen;
 }
