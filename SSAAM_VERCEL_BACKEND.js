@@ -944,6 +944,7 @@ const attendanceSessionSchema = new mongoose.Schema({
     },
     check_in_locked: { type: Boolean, default: false },
     check_out_locked: { type: Boolean, default: false },
+    late_timer_minutes: { type: Number, default: 0 },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
 });
@@ -4024,7 +4025,7 @@ app.delete('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res
 // Create session for an event (admin only)
 app.post('/apis/attendance/events/:eventId/sessions', auth, adminActionAuth, async (req, res) => {
     try {
-        const { label, start_time, end_time, status } = req.body;
+        const { label, start_time, end_time, status, late_timer_minutes } = req.body;
 
         if (!label || !start_time || !end_time) {
             return res.status(400).json({ message: "Label, start time, and end time are required" });
@@ -4049,6 +4050,7 @@ app.post('/apis/attendance/events/:eventId/sessions', auth, adminActionAuth, asy
             label,
             start_time,
             end_time,
+            late_timer_minutes: late_timer_minutes || 0,
             status: status || (event.status === 'active' ? 'active' : 'draft')
         });
 
@@ -4073,7 +4075,7 @@ app.get('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
 // Update session (admin only)
 app.put('/apis/attendance/sessions/:id', auth, adminActionAuth, async (req, res) => {
     try {
-        const { label, start_time, end_time, status, check_in_locked, check_out_locked } = req.body;
+        const { label, start_time, end_time, status, check_in_locked, check_out_locked, late_timer_minutes } = req.body;
 
         const session = await AttendanceSession.findById(req.params.id);
         if (!session) {
@@ -4097,6 +4099,7 @@ app.put('/apis/attendance/sessions/:id', auth, adminActionAuth, async (req, res)
         if (status) session.status = status;
         if (check_in_locked !== undefined) session.check_in_locked = check_in_locked;
         if (check_out_locked !== undefined) session.check_out_locked = check_out_locked;
+        if (late_timer_minutes !== undefined) session.late_timer_minutes = late_timer_minutes;
 
         session.updated_at = new Date();
         const updated = await session.save();
@@ -4569,9 +4572,9 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
 
         const studentFullName = `${student.first_name} ${student.middle_name || ''} ${student.last_name}`.replace(/\s+/g, ' ').trim();
 
-        // Calculate late threshold - prioritize session's late_threshold_minutes over global setting
-        const lateThreshold = session.late_threshold_minutes !== undefined && session.late_threshold_minutes !== null
-            ? session.late_threshold_minutes
+        // Calculate late threshold - prioritize session's late_timer_minutes over global setting
+        const lateThreshold = session.late_timer_minutes !== undefined && session.late_timer_minutes !== null
+            ? session.late_timer_minutes
             : (rfidSettings.lateThresholdMinutes !== undefined && rfidSettings.lateThresholdMinutes !== null 
                 ? rfidSettings.lateThresholdMinutes 
                 : 30);
