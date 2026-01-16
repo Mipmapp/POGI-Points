@@ -568,9 +568,9 @@
             </div>
             <img :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
           </div>
-          <div>
-            <p class="text-sm mb-1.5">Welcome back,</p>
-            <div class="flex items-center gap-2">
+          <div class="w-full flex flex-col items-center">
+            <p class="text-sm mb-1.5 text-center">Welcome back,</p>
+            <div class="flex items-center justify-center gap-2">
               <p class="font-bold text-lg" v-if="currentUser.role === 'admin' || currentUser.isMaster">
                 <span class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-xs font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden group">
                   <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
@@ -744,7 +744,7 @@
           </button>
           <button 
             @click="refreshCurrentUser(); showMobileMenu = false"
-            :class="['flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 w-full text-left mt-2 transition-all duration-300', refreshingUserData ? 'opacity-70' : '']"
+            :class="['md:flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 w-full text-left mt-2 transition-all duration-300 hidden', refreshingUserData ? 'opacity-70' : '']"
           >
             <svg class="w-5 h-5 transition-transform duration-700" :class="{ 'animate-spin': refreshingUserData }" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
