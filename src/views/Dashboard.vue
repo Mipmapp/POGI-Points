@@ -3300,7 +3300,7 @@
                 </div>
                 <p class="text-xs text-gray-500">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
                 <div class="flex flex-wrap gap-2 mt-1">
-                  <span class="text-xs text-orange-600">Late after {{ session.late_timer_minutes || 60 }}min</span>
+                  <span class="text-xs text-orange-600">Late after {{ session.late_timer_minutes || 60 }} mins</span>
                   <span v-if="session.check_in_locked" class="text-xs text-red-600">Check-in locked</span>
                   <span v-if="session.check_out_locked" class="text-xs text-red-600">Check-out locked</span>
                 </div>
