@@ -5456,6 +5456,9 @@ onMounted(async () => {
   if (!user.isMaster && user.role !== 'admin') {
     fetchUserAttendanceLogs()
   }
+
+  // Fetch settings for all users to ensure academic info is accurate
+  await fetchSettings()
   
   isPageLoading.value = false
 })
@@ -5928,8 +5931,6 @@ const refreshStudents = async () => {
 
 // Fetch settings from API
 const fetchSettings = async () => {
-  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') return
-  
   settingsLoading.value = true
   try {
     const response = await fetch(buildAPIUrl(`/apis/settings`), {
@@ -5951,7 +5952,9 @@ const fetchSettings = async () => {
           checkInDisableAt: null,
           checkOutDisableAt: null,
           lateThresholdMinutes: 30
-        }
+        },
+        semester: data.semester || '1st Sem',
+        schoolYear: data.schoolYear || `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
       }
       // Sync lateThresholdMinutes ref with settings
       if (appSettings.value.rfidScanner.lateThresholdMinutes) {
