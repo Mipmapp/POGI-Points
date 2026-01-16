@@ -98,10 +98,10 @@
           <div class="bg-blue-50 rounded-lg p-4 mb-6">
             <p class="text-sm text-blue-900 font-medium mb-3">Quick Help</p>
             <ul class="text-xs text-blue-800 space-y-2">
-              <li>• First time login? Your default password is your Last Name (uppercase)</li>
-              <li>• Changed your password and forgot it? Use the Forgot Password option on the login page</li>
-              <li>• Looking for your RFID? Register it to the CCS office</li>
-              <li>• Profile problems? Contact Developers or Proceed to the CCS office</li>
+              <li>• Your default password is your Last Name (UPPERCASE)</li>
+              <li>• Use “Forgot Password” if needed</li>
+              <li>• Register your RFID at the CCS office</li>
+              <li>• For profile issues, contact the Developers or visit the CCS office</li>
             </ul>
           </div>
 
