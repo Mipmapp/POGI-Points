@@ -3534,15 +3534,37 @@ app.delete('/apis/notifications/:id', canPostNotification, async (req, res) => {
 });
 
 // Mark notifications as seen (stores in database, not localStorage)
-app.post('/apis/notifications/mark-seen', studentAuthWithToken, async (req, res) => {
+app.post('/apis/notifications/mark-seen', async (req, res) => {
     try {
-        const { notification_ids } = req.body;
+        const token = req.headers.authorization?.split(" ")[1];
+        if (!token) {
+            return res.status(401).json({ message: "Unauthorized: No token provided" });
+        }
 
+        let userId;
+        try {
+            const decoded = jwt.verify(token, SSAAM_API_KEY);
+            const tokenHash = hashToken(token);
+            const sessionToken = await SessionToken.findOne({ 
+                token_hash: tokenHash,
+                is_revoked: false,
+                expires_at: { $gt: new Date() }
+            });
+
+            if (!sessionToken) {
+                return res.status(401).json({ message: "Session expired or invalid. Please login again." });
+            }
+
+            userId = decoded.id || decoded._id || decoded.student_id;
+        } catch (jwtError) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+
+        const { notification_ids } = req.body;
         if (!notification_ids || !Array.isArray(notification_ids) || notification_ids.length === 0) {
             return res.status(400).json({ message: "notification_ids array is required" });
         }
 
-        const userId = req.user.id || req.user._id;
         const seenRecords = notification_ids.map(notifId => ({
             user_id: userId,
             notification_id: notifId,
@@ -3570,9 +3592,32 @@ app.post('/apis/notifications/mark-seen', studentAuthWithToken, async (req, res)
 });
 
 // Get seen notification IDs for current user
-app.get('/apis/notifications/seen', studentAuthWithToken, async (req, res) => {
+app.get('/apis/notifications/seen', async (req, res) => {
     try {
-        const userId = req.user.id || req.user._id;
+        const token = req.headers.authorization?.split(" ")[1];
+        if (!token) {
+            return res.status(401).json({ message: "Unauthorized: No token provided" });
+        }
+
+        let userId;
+        try {
+            const decoded = jwt.verify(token, SSAAM_API_KEY);
+            const tokenHash = hashToken(token);
+            const sessionToken = await SessionToken.findOne({ 
+                token_hash: tokenHash,
+                is_revoked: false,
+                expires_at: { $gt: new Date() }
+            });
+
+            if (!sessionToken) {
+                return res.status(401).json({ message: "Session expired or invalid. Please login again." });
+            }
+
+            userId = decoded.id || decoded._id || decoded.student_id;
+        } catch (jwtError) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
+
         const seenRecords = await NotificationSeen.find({ user_id: userId })
             .select('notification_id seen_at')
             .lean();
