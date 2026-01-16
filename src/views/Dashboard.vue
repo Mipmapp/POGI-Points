@@ -256,7 +256,7 @@
       <!-- Left Panel - Scanner -->
       <div class="lg:w-1/2 h-1/2 lg:h-full flex flex-col items-center justify-center p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white border-opacity-20">
         <div class="flex flex-col items-center text-center mb-4 lg:mb-6 w-full max-w-md">
-            <div class="w-16 h-16 lg:w-24 lg:h-24 mx-auto mb-2 flex items-center justify-center bg-gray-600 rounded-full shadow-xl border-4 border-purple-500 overflow-hidden">
+            <div class="w-16 h-16 lg:w-24 lg:h-24 mx-auto mb-2 flex items-center justify-center bg-gray-600 rounded-full shadow-xl overflow-hidden">
               <img src="/user_admin.svg" alt="Admin" class="w-10 h-10 lg:w-16 lg:h-16" style="filter: brightness(0) invert(1);" />
             </div>
           <h1 class="text-xl lg:text-3xl font-bold text-white mb-0.5">SSAAM</h1>
@@ -569,7 +569,7 @@
               </svg>
             </div>
             <img v-else-if="(currentUser.image || currentUser.photo) && !sidebarImageFailed" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
-            <div v-else class="w-10 h-10 flex items-center justify-center bg-gray-600 rounded-full shadow-lg border-2 border-purple-500 overflow-hidden">
+            <div v-else class="w-10 h-10 flex items-center justify-center bg-gray-600 rounded-full shadow-lg overflow-hidden">
               <img src="/user_admin.svg" alt="Admin" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
             </div>
           </div>
@@ -674,7 +674,7 @@
                 </svg>
               </div>
               <img v-else-if="(currentUser.image || currentUser.photo) && !sidebarImageFailed" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
-              <div v-else class="w-10 h-10 flex items-center justify-center bg-gray-600 rounded-full shadow-lg border-2 border-purple-500 overflow-hidden">
+              <div v-else class="w-10 h-10 flex items-center justify-center bg-gray-600 rounded-full shadow-lg overflow-hidden">
               <img src="/user_admin.svg" alt="Admin" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
             </div>
             </div>
