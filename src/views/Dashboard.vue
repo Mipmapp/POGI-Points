@@ -5144,57 +5144,68 @@ const submitAdminKey = async () => {
 const editNotificationData = ref(null)
 const savingEditedNotification = ref(false)
 
-// Notification seen tracking - TIME-BASED approach
-// Stores the timestamp when user last viewed notifications
-// Any notification created AFTER this timestamp is considered "new/unread"
-const lastViewedNotificationsAt = ref(null)
+const seenNotificationIds = ref(new Set())
 
-const getLastViewedKey = () => {
-  const userId = currentUser.value?._id || currentUser.value?.id || 'guest'
-  return `ssaam_last_viewed_notifications_${userId}`
-}
+const fetchSeenNotifications = async () => {
+  const token = localStorage.getItem('authToken')
+  if (!token) return
 
-const loadLastViewedTimestamp = () => {
   try {
-    const stored = localStorage.getItem(getLastViewedKey())
-    if (stored) {
-      lastViewedNotificationsAt.value = new Date(stored)
+    const response = await fetch(buildAPIUrl('/apis/notifications/seen'), {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+    if (response.ok) {
+      const data = await response.json()
+      seenNotificationIds.value = new Set(data.seen_notification_ids || [])
     }
   } catch (error) {
-    console.error('Failed to load last viewed timestamp:', error)
+    console.error('Failed to fetch seen notifications:', error)
   }
 }
 
-const saveLastViewedTimestamp = () => {
+const markNotificationsAsSeen = async (notificationIds) => {
+  if (!notificationIds || notificationIds.length === 0) return
+  
+  const token = localStorage.getItem('authToken')
+  if (!token) return
+
   try {
-    const now = new Date().toISOString()
-    localStorage.setItem(getLastViewedKey(), now)
-    lastViewedNotificationsAt.value = new Date(now)
+    const response = await fetch(buildAPIUrl('/apis/notifications/mark-seen'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ notification_ids: notificationIds })
+    })
+    if (response.ok) {
+      notificationIds.forEach(id => seenNotificationIds.value.add(id))
+    }
   } catch (error) {
-    console.error('Failed to save last viewed timestamp:', error)
+    console.error('Failed to mark notifications as seen:', error)
   }
 }
 
 const unreadNotificationCount = computed(() => {
   if (!notifications.value || notifications.value.length === 0) return 0
-  if (!lastViewedNotificationsAt.value) {
-    // Never viewed notifications before - all are new
-    return notifications.value.length
-  }
-  
-  // Count notifications created after the last viewed timestamp
-  return notifications.value.filter(n => {
-    const createdAt = new Date(n.created_at)
-    return createdAt > lastViewedNotificationsAt.value
-  }).length
+  return notifications.value.filter(n => !seenNotificationIds.value.has(n._id)).length
 })
 
 const goToNotifications = async () => {
   currentPage.value = 'notifications'
   showMobileMenu.value = false
   await fetchNotifications()
-  // Mark all as seen by saving current timestamp
-  saveLastViewedTimestamp()
+  
+  const unseenIds = notifications.value
+    .filter(n => !seenNotificationIds.value.has(n._id))
+    .map(n => n._id)
+    
+  if (unseenIds.length > 0) {
+    await markNotificationsAsSeen(unseenIds)
+  }
 }
 
 // Password change management with email verification
@@ -5369,9 +5380,9 @@ onMounted(async () => {
     users.value = JSON.parse(localStorage.getItem('users') || '[]')
   }
   
-  // Fetch notifications for badge counter and load last viewed timestamp
+  // Fetch notifications for badge counter and load seen status from database
   await fetchNotifications()
-  loadLastViewedTimestamp()
+  await fetchSeenNotifications()
   
   // Check and show announcement popup for students
   checkAndShowAnnouncementPopup()
@@ -5464,6 +5475,7 @@ const refreshCurrentUser = async () => {
         const refreshPromises = []
         
         refreshPromises.push(fetchNotifications())
+        refreshPromises.push(fetchSeenNotifications())
         
         if (currentUser.value.role === 'admin' || currentUser.value.isMaster) {
           refreshPromises.push(fetchStats())
