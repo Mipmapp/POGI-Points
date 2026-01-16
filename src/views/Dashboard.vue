@@ -905,6 +905,40 @@
               </div>
             </div>
 
+            <!-- Academic Term Settings -->
+            <div class="border border-gray-200 rounded-xl p-6 bg-purple-50/30">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+                <div>
+                  <h3 class="text-lg font-semibold text-purple-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Academic Term Settings
+                  </h3>
+                  <p class="text-sm text-gray-500 mt-1">Global semester and school year configuration</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
+                  <select 
+                    v-model="appSettings.semester"
+                    class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none transition-all"
+                  >
+                    <option value="1st Sem">1st Semester</option>
+                    <option value="2nd Sem">2nd Semester</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">School Year</label>
+                  <input 
+                    v-model="appSettings.schoolYear"
+                    type="text"
+                    placeholder="e.g. 2023-2024"
+                    class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none transition-all"
+                  />
+                </div>
+              </div>
+            </div>
+
             <!-- Search for Duplicates Section -->
             <div class="border border-blue-200 rounded-xl p-6 bg-blue-50">
               <div class="mb-4">
@@ -4129,7 +4163,9 @@ const appSettings = ref({
     checkInDisableAt: null,
     checkOutDisableAt: null,
     lateThresholdMinutes: 30
-  }
+  },
+  semester: '1st Sem',
+  schoolYear: ''
 })
 const rfidScannerSaving = ref(false)
 const checkInTimerMinutes = ref(30)
@@ -5943,7 +5979,9 @@ const saveSettingsImpl = async () => {
       body: JSON.stringify({
         userRegister: appSettings.value.userRegister,
         userLogin: appSettings.value.userLogin,
-        rfidScanner: appSettings.value.rfidScanner
+        rfidScanner: appSettings.value.rfidScanner,
+        semester: appSettings.value.semester,
+        schoolYear: appSettings.value.schoolYear
       })
     })
     
