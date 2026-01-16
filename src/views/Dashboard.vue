@@ -645,15 +645,6 @@
           <span class="flex items-center gap-2">Notifications <span v-if="unreadNotificationCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ unreadNotificationCount }}</span></span>
         </button>
         <button 
-          @click="refreshCurrentUser"
-          :class="['flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 w-full text-left mt-2 transition-all duration-300', refreshingUserData ? 'opacity-70' : '']"
-        >
-          <svg class="w-5 h-5 transition-transform duration-700" :class="{ 'animate-spin': refreshingUserData }" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-          </svg>
-          <span>Refresh Data</span>
-        </button>
-        <button 
           @click="handleLogoutWithAnimation"
           :class="['flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 w-full text-left mt-2 transition-all duration-300', isLoggingOut ? 'scale-95 opacity-70' : '']"
         >
