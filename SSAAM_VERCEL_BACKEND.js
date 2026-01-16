@@ -4503,8 +4503,10 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
             return res.status(404).json({ message: "Event not found" });
         }
 
-        if (event.status !== 'active') {
-            return res.status(400).json({ message: "Event is not active" });
+        // Fix: Be more lenient with status check or log the actual status for debugging
+        if (event.status !== 'active' && event.status !== 'upcoming') {
+            console.log(`[Attendance] Blocked scan for event ${event._id}: status is ${event.status}`);
+            return res.status(400).json({ message: `Event is ${event.status || 'not active'}` });
         }
 
         // Helper function to calculate if session is currently active based on time
