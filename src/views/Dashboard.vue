@@ -252,63 +252,72 @@
       <svg class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
     
-    <div class="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
+    <div class="h-full flex flex-col lg:flex-row overflow-hidden">
       <!-- Left Panel - Scanner -->
-      <div class="lg:w-1/2 flex-shrink-0 lg:h-full flex flex-col items-center justify-center p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white border-opacity-20">
-        <div class="flex flex-col items-center text-center mb-4 lg:mb-6 w-full max-w-md">
-          <h1 class="text-xl lg:text-3xl font-bold text-white mb-0.5">SSAAM</h1>
-          <p class="text-white text-opacity-80 text-[10px] sm:text-xs lg:text-base">{{ selectedEvent?.title || 'Select an Event' }}</p>
+      <div class="lg:w-1/2 flex-shrink-0 lg:h-full flex flex-col items-center justify-center p-3 sm:p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white border-opacity-20 relative">
+        <div class="absolute top-4 left-4 md:static md:mb-6 flex items-center gap-3">
+          <div class="w-8 h-8 sm:w-10 sm:h-10 lg:w-12 lg:h-12 bg-white rounded-xl flex items-center justify-center p-1 shadow-lg ring-2 ring-white ring-opacity-20">
+            <img src="/ssaam-logo.png" class="w-full h-full object-contain" alt="SSAAM" @error="(e) => e.target.src = 'https://cdn-icons-png.flaticon.com/512/2991/2991148.png'" />
+          </div>
+          <h1 class="text-xl lg:text-3xl font-bold text-white tracking-wider">SSAAM</h1>
+        </div>
+
+        <div class="flex flex-col items-center text-center mb-3 sm:mb-4 lg:mb-6 w-full max-w-md mt-10 md:mt-0">
+          <p class="text-white text-opacity-80 text-[10px] sm:text-xs lg:text-base font-medium">{{ selectedEvent?.title || 'Select an Event' }}</p>
           <p v-if="selectedEvent" class="text-white text-opacity-60 text-[10px] sm:text-xs">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
-          <div v-if="selectedSession" class="mt-1.5 lg:mt-2">
-            <span class="px-2 lg:px-3 py-0.5 lg:py-1 rounded-full text-[10px] lg:text-xs font-medium bg-gradient-to-r from-purple-400 to-pink-400 text-white">
+          <div v-if="selectedSession" class="mt-1 lg:mt-2">
+            <span class="px-2 lg:px-3 py-0.5 lg:py-1 rounded-full text-[10px] lg:text-xs font-bold bg-gradient-to-r from-purple-400 to-pink-400 text-white shadow-sm">
               {{ selectedSession.label }} Session
             </span>
-            <p class="text-white text-opacity-60 text-[10px] lg:text-xs mt-0.5 lg:mt-1">{{ formatDisplayTime(selectedSession.start_time) }} - {{ formatDisplayTime(selectedSession.end_time) }}</p>
+            <p class="text-white text-opacity-60 text-[10px] lg:text-xs mt-0.5 lg:mt-1 font-medium">{{ formatDisplayTime(selectedSession.start_time) }} - {{ formatDisplayTime(selectedSession.end_time) }}</p>
           </div>
         </div>
         
         <!-- Scan Mode Toggle -->
         <div class="flex flex-col gap-2 lg:gap-4 mb-3 lg:mb-4 w-full max-w-md">
           <div class="flex justify-center">
-            <div class="inline-flex bg-white bg-opacity-20 rounded-lg p-0.5 lg:p-1">
+            <div class="inline-flex bg-white bg-opacity-20 rounded-lg p-0.5 lg:p-1 backdrop-blur-sm border border-white border-opacity-10">
               <button 
                 @click="scanMode = 'rfid'" 
-                :class="['px-2.5 lg:px-4 py-1 lg:py-2 rounded-lg text-[10px] sm:text-xs lg:text-sm font-medium transition', scanMode === 'rfid' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
+                :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-[10px] sm:text-xs lg:text-sm font-bold transition-all duration-300', scanMode === 'rfid' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-105' : 'text-white text-opacity-70 hover:text-opacity-100 hover:bg-white hover:bg-opacity-5']"
               >
                 RFID Scan
               </button>
               <button 
                 @click="scanMode = 'student_id'" 
-                :class="['px-2.5 lg:px-4 py-1 lg:py-2 rounded-lg text-[10px] sm:text-xs lg:text-sm font-medium transition', scanMode === 'student_id' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
+                :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-[10px] sm:text-xs lg:text-sm font-bold transition-all duration-300', scanMode === 'student_id' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg scale-105' : 'text-white text-opacity-70 hover:text-opacity-100 hover:bg-white hover:bg-opacity-5']"
               >
                 Student ID
               </button>
             </div>
           </div>
 
-        <!-- Operation Mode Label (Display Only) -->
-        <div class="flex justify-center mb-2 lg:mb-4">
-          <div class="inline-flex items-center gap-1.5 lg:gap-2 px-3 lg:px-5 py-1.5 lg:py-2.5 rounded-full bg-white bg-opacity-10 border border-white border-opacity-20 backdrop-blur-md shadow-lg">
-            <div 
-              class="w-2 h-2 lg:w-3 lg:h-3 rounded-full animate-pulse" 
-              :class="appSettings.rfidScanner.checkInEnabled ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-pink-400 shadow-[0_0_10px_rgba(244,114,182,0.5)]'"
-            ></div>
-            <span class="text-white font-bold tracking-widest uppercase text-[10px] lg:text-sm">
-              {{ appSettings.rfidScanner.checkInEnabled ? 'Check-In Mode' : 'Check-Out Mode' }}
-            </span>
+          <!-- Operation Mode Label -->
+          <div class="flex justify-center mb-1 lg:mb-4">
+            <div class="inline-flex items-center gap-1.5 lg:gap-2 px-3 lg:px-5 py-1.5 lg:py-2.5 rounded-full bg-black bg-opacity-20 border border-white border-opacity-20 backdrop-blur-md shadow-xl">
+              <div 
+                class="w-2 h-2 lg:w-3 lg:h-3 rounded-full animate-pulse" 
+                :class="appSettings.rfidScanner.checkInEnabled ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.8)]' : 'bg-pink-400 shadow-[0_0_10px_rgba(244,114,182,0.8)]'"
+              ></div>
+              <span class="text-white font-black tracking-widest uppercase text-[9px] lg:text-sm">
+                {{ appSettings.rfidScanner.checkInEnabled ? 'Check-In Mode' : 'Check-Out Mode' }}
+              </span>
+            </div>
           </div>
-        </div>
         </div>
         
-        <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-4 lg:p-8 w-full max-w-md border border-white border-opacity-20 shadow-2xl">
-          <div class="text-center mb-3 lg:mb-6">
-            <svg v-if="scanMode === 'rfid'" class="w-8 h-8 lg:w-16 lg:h-16 mx-auto mb-1 lg:mb-2 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
-            <svg v-else class="w-8 h-8 lg:w-16 lg:h-16 mx-auto mb-1 lg:mb-2 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"></path></svg>
-            <p class="text-sm lg:text-lg font-semibold text-white mb-0.5 lg:mb-1">{{ scanMode === 'rfid' ? 'Ready for RFID Scan' : 'Enter Student ID' }}</p>
-            <p class="text-white text-opacity-70 text-[10px] lg:text-sm">{{ scanMode === 'rfid' ? 'Scan card or type code' : 'Type Student ID manually' }}</p>
+        <div class="bg-white bg-opacity-10 backdrop-blur-xl rounded-3xl p-4 lg:p-8 w-full max-w-md border border-white border-opacity-20 shadow-2xl relative overflow-hidden group">
+          <div class="absolute inset-0 bg-gradient-to-br from-white to-transparent opacity-[0.03] pointer-events-none"></div>
+          <div class="text-center mb-3 lg:mb-6 relative z-10">
+            <div class="relative inline-block">
+              <svg v-if="scanMode === 'rfid'" class="w-10 h-10 lg:w-16 lg:h-16 mx-auto mb-1 lg:mb-2 text-white opacity-90 transition-transform duration-500 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
+              <svg v-else class="w-10 h-10 lg:w-16 lg:h-16 mx-auto mb-1 lg:mb-2 text-white opacity-90 transition-transform duration-500 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"></path></svg>
+            </div>
+            <p class="text-sm lg:text-lg font-black text-white mb-0.5 lg:mb-1 tracking-tight">{{ scanMode === 'rfid' ? 'Ready for RFID Scan' : 'Enter Student ID' }}</p>
+            <p class="text-white text-opacity-70 text-[10px] lg:text-sm font-medium">{{ scanMode === 'rfid' ? 'Scan card or type code' : 'Type Student ID manually' }}</p>
           </div>
           
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 relative z-10">
             <input 
               ref="rfidFullscreenInputRef"
               v-model="rfidInput"
@@ -316,30 +325,30 @@
               @keydown="handleRfidKeydown"
               type="text"
               :placeholder="scanMode === 'rfid' ? 'Waiting for scan...' : 'Enter ID...'"
-              class="flex-1 px-3 lg:px-4 py-2 lg:py-3 text-center text-xs sm:text-sm lg:text-lg bg-white bg-opacity-20 border-2 border-white border-opacity-30 rounded-xl focus:border-pink-400 focus:ring-4 focus:ring-pink-300 focus:ring-opacity-50 outline-none text-white placeholder-white placeholder-opacity-50 transition-all"
+              class="flex-1 px-3 lg:px-4 py-2.5 lg:py-3 text-center text-xs sm:text-sm lg:text-lg bg-black bg-opacity-30 border-2 border-white border-opacity-10 rounded-2xl focus:border-pink-400 focus:ring-4 focus:ring-pink-500 focus:ring-opacity-30 outline-none text-white font-bold placeholder-white placeholder-opacity-30 transition-all duration-300 shadow-inner"
               :disabled="rfidProcessing"
               autofocus
             />
             <button 
               @click="manualRfidSubmit"
               :disabled="rfidProcessing || !rfidInput.trim()"
-              class="px-3 lg:px-4 py-2 lg:py-3 bg-white bg-opacity-20 border-2 border-white border-opacity-30 rounded-xl text-white hover:bg-opacity-30 transition disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-3 lg:px-5 py-2.5 lg:py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl text-white hover:brightness-110 active:scale-95 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale shadow-lg"
             >
-              <svg class="w-4 h-4 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+              <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             </button>
           </div>
           
           <div v-if="rfidProcessing" class="mt-2 lg:mt-4 flex items-center justify-center gap-2 text-white">
             <svg class="w-4 h-4 lg:w-6 lg:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <span class="text-xs lg:text-base">Processing...</span>
+            <span class="text-xs lg:text-base font-bold tracking-widest uppercase opacity-80">Processing...</span>
           </div>
         </div>
         
-        <p class="text-white text-opacity-50 text-[10px] lg:text-xs mt-2 lg:mt-4">Press ESC or click X to exit</p>
+        <p class="text-white text-opacity-40 text-[9px] lg:text-xs mt-2 lg:mt-4 font-medium tracking-tight">Press ESC or click X to exit</p>
       </div>
       
       <!-- Right Panel - Check-in Result & Recent Logs -->
-      <div class="lg:w-1/2 flex-shrink-0 flex flex-col p-4 lg:p-6 lg:overflow-hidden min-h-[300px]">
+      <div class="lg:w-1/2 flex-shrink-0 flex flex-col p-3 sm:p-4 lg:p-6 lg:overflow-hidden h-1/2 lg:h-full">
         <!-- Prominent Check-in Result Card with Student Profile -->
         <transition name="slide-down">
           <div v-if="rfidResult && rfidResult.success && (rfidResult.student || rfidResult.student_name)" class="mb-3 lg:mb-6">
