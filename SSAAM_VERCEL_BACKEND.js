@@ -4504,7 +4504,7 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
         }
 
         // Fix: Be more lenient with status check or log the actual status for debugging
-        if (event.status !== 'active' && event.status !== 'upcoming') {
+        if (event.status !== 'active' && event.status !== 'upcoming' && event.status !== 'draft') {
             console.log(`[Attendance] Blocked scan for event ${event._id}: status is ${event.status}`);
             return res.status(400).json({ message: `Event is ${event.status || 'not active'}` });
         }
@@ -4542,7 +4542,7 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
 
         // Check if session is active - either by stored status OR by current time within session window
         // This allows scanning when the event is active and current time is within the session's time window
-        const sessionIsActive = session.status === 'active' || (event.status === 'active' && isSessionActiveByTime());
+        const sessionIsActive = session.status === 'active' || session.status === 'draft' || (event.status === 'active' && isSessionActiveByTime());
         
         if (!sessionIsActive) {
             return res.status(400).json({ message: "Session is not active" });
