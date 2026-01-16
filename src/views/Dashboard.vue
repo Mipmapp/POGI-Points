@@ -3370,24 +3370,6 @@
           </div>
           <p class="text-xs text-gray-500 mt-1">Check-ins after {{ newSession.late_timer_minutes || 60 }} minutes from session start will be marked as late</p>
         </div>
-        <div v-if="editingSession" class="space-y-3">
-          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <div>
-              <p class="font-medium text-gray-800 text-sm">Lock Check-In</p>
-            </div>
-            <button @click="newSession.check_in_locked = !newSession.check_in_locked" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300', newSession.check_in_locked ? 'bg-red-500' : 'bg-gray-300']">
-              <span :class="['inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300', newSession.check_in_locked ? 'translate-x-6' : 'translate-x-1']"></span>
-            </button>
-          </div>
-          <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-            <div>
-              <p class="font-medium text-gray-800 text-sm">Lock Check-Out</p>
-            </div>
-            <button @click="newSession.check_out_locked = !newSession.check_out_locked" :class="['relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300', newSession.check_out_locked ? 'bg-red-500' : 'bg-gray-300']">
-              <span :class="['inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform duration-300', newSession.check_out_locked ? 'translate-x-6' : 'translate-x-1']"></span>
-            </button>
-          </div>
-        </div>
         <div v-if="sessionTimeError" class="bg-red-50 border border-red-200 rounded-lg p-3">
           <p class="text-sm text-red-700">{{ sessionTimeError }}</p>
         </div>
