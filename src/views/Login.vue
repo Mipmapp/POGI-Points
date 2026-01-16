@@ -61,6 +61,10 @@
           <h3 class="text-2xl font-bold text-purple-900 mb-2">2nd Verification</h3>
           <p class="text-gray-600 mb-6 text-sm">Please enter the daily verification code to access the Admin Dashboard.</p>
           
+          <div v-if="verificationError" class="mb-4 p-3 bg-red-100 border border-red-200 rounded-lg text-red-700 text-sm font-medium animate-shake">
+            {{ verificationErrorMessage }}
+          </div>
+
           <div class="flex justify-center gap-2 mb-8">
             <input 
               v-for="(digit, index) in 6" 
@@ -394,6 +398,8 @@ const loginDisabledMessage = ref('')
 const showVerificationModal = ref(false)
 const verificationDigits = ref(['', '', '', '', '', ''])
 const verificationInputs = ref([])
+const verificationError = ref(false)
+const verificationErrorMessage = ref('')
 let pendingUser = null
 
 const handleDigitInput = (index, event) => {
@@ -807,6 +813,8 @@ const verifyAdminCode = () => {
 
   if (enteredCode === correctCode) {
     showVerificationModal.value = false;
+    verificationError.value = false;
+    verificationErrorMessage.value = '';
     // Only now store the sensitive data
     localStorage.setItem("currentUser", JSON.stringify(pendingUser));
     localStorage.setItem("authToken", pendingUser.token);
@@ -814,8 +822,8 @@ const verifyAdminCode = () => {
     isLoading.value = true;
     isNavigationPending.value = true;
   } else {
-    errorMessage.value = "Invalid verification code. Please try again.";
-    showErrorNotification.value = true;
+    verificationErrorMessage.value = "Invalid verification code. Please try again.";
+    verificationError.value = true;
     // Clear digits on error
     verificationDigits.value = ['', '', '', '', '', ''];
     if (verificationInputs.value[0]) verificationInputs.value[0].focus();
