@@ -519,7 +519,7 @@
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
           </svg>
-          <span>{{ adminKeyLoading ? 'Verifying...' : 'Verify & Continue' }}</span>
+          <span>{{ adminKeyLoading ? 'Verifying...' : 'Verify' }}</span>
         </button>
       </div>
     </div>
@@ -3300,7 +3300,7 @@
                 </div>
                 <p class="text-xs text-gray-500">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
                 <div class="flex flex-wrap gap-2 mt-1">
-                  <span class="text-xs text-orange-600">Late after {{ session.late_threshold_minutes || 60 }}min</span>
+                  <span class="text-xs text-orange-600">Late after {{ session.late_timer_minutes || 60 }}min</span>
                   <span v-if="session.check_in_locked" class="text-xs text-red-600">Check-in locked</span>
                   <span v-if="session.check_out_locked" class="text-xs text-red-600">Check-out locked</span>
                 </div>
@@ -3359,7 +3359,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">Late Threshold (minutes after start)</label>
           <div class="flex items-center gap-2">
             <input 
-              v-model.number="newSession.late_threshold_minutes" 
+              v-model.number="newSession.late_timer_minutes" 
               type="number" 
               min="0" 
               max="480"
@@ -3368,7 +3368,7 @@
             />
             <span class="text-sm text-gray-500 whitespace-nowrap">minutes</span>
           </div>
-          <p class="text-xs text-gray-500 mt-1">Check-ins after {{ newSession.late_threshold_minutes || 60 }} minutes from session start will be marked as late</p>
+          <p class="text-xs text-gray-500 mt-1">Check-ins after {{ newSession.late_timer_minutes || 60 }} minutes from session start will be marked as late</p>
         </div>
         <div v-if="editingSession" class="space-y-3">
           <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
@@ -4524,7 +4524,7 @@ const sessionsLoading = ref(false)
 const showSessionModal = ref(false)
 const expandedEvents = ref({})
 const expandedEventSessions = ref({})
-const newSession = ref({ label: 'Morning', start_time: '', end_time: '', late_threshold_minutes: 60 })
+const newSession = ref({ label: 'Morning', start_time: '', end_time: '', late_timer_minutes: 60 })
 const savingSession = ref(false)
 const editingSession = ref(null)
 const sessionLabels = ['Whole Day', 'Morning', 'Afternoon', 'Noon', 'Night', 'Dawn']
@@ -7388,7 +7388,7 @@ const toggleEventExpansion = async (eventId) => {
 
 const openAddSessionModal = () => {
   editingSession.value = null
-  newSession.value = { label: 'Morning', start_time: '', end_time: '', check_in_locked: false, check_out_locked: false, late_threshold_minutes: 60 }
+  newSession.value = { label: 'Morning', start_time: '', end_time: '', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60 }
   showSessionModal.value = true
 }
 
@@ -7572,7 +7572,7 @@ const applyLateThresholdByMinutes = async () => {
           'X-SSAAM-TS': encodeTimestamp(),
           ...getAdminActionHeaders()
         },
-        body: JSON.stringify({ ...selectedSessionForLogs.value, late_threshold_minutes: thresholdMinutes })
+        body: JSON.stringify({ ...selectedSessionForLogs.value, late_timer_minutes: thresholdMinutes })
       })
     } catch (err) {
       console.error('Error updating session threshold:', err)
@@ -8341,7 +8341,7 @@ const openEventLogs = (event) => {
 const openSessionLogs = (session, event) => {
   selectedEvent.value = event
   selectedSessionForLogs.value = session
-  selectedLateThresholdMinutes.value = session.late_threshold_minutes || 60
+  selectedLateThresholdMinutes.value = session.late_timer_minutes || 60
   showEventLogsModal.value = true
   sessionLogsDisplayLimit.value = 20
   fetchSessionLogs(session._id)
