@@ -259,7 +259,7 @@
           <div class="flex items-center justify-center gap-3 mb-1">
             <div 
               class="relative overflow-hidden group w-10 h-10 lg:w-16 lg:h-16"
-              style="-webkit-mask-image: url(/jrmsu.svg); mask-image: url(/jrmsu.svg); -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;"
+              style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;"
             >
               <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-full h-full object-contain relative z-10" />
               <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
