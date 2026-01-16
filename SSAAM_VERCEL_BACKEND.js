@@ -837,7 +837,9 @@ const settingsSchema = new mongoose.Schema({
         checkInDisableAt: { type: Date, default: null },
         checkOutDisableAt: { type: Date, default: null },
         lateThresholdMinutes: { type: Number, default: 30 }
-    }
+    },
+    semester: { type: String, default: '1st Sem' },
+    schoolYear: { type: String, default: '' }
 });
 
 const Settings = mongoose.model("Settings", settingsSchema, "settings");
@@ -1034,23 +1036,39 @@ async function getSettings() {
                 autoDisableCheckOut: false,
                 checkInDisableAt: null,
                 checkOutDisableAt: null
-            }
+            },
+            semester: '1st Sem',
+            schoolYear: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
         });
-    } else if (!settings.rfidScanner) {
-        settings.rfidScanner = { 
-            checkInEnabled: true, 
-            checkOutEnabled: true,
-            autoDisableCheckIn: false,
-            autoDisableCheckOut: false,
-            checkInDisableAt: null,
-            checkOutDisableAt: null
-        };
-        await settings.save();
+    } else {
+        let needsSave = false;
+        if (!settings.rfidScanner) {
+            settings.rfidScanner = { 
+                checkInEnabled: true, 
+                checkOutEnabled: true,
+                autoDisableCheckIn: false,
+                autoDisableCheckOut: false,
+                checkInDisableAt: null,
+                checkOutDisableAt: null
+            };
+            needsSave = true;
+        }
+        if (!settings.semester) {
+            settings.semester = '1st Sem';
+            needsSave = true;
+        }
+        if (settings.schoolYear === undefined) {
+            settings.schoolYear = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
+            needsSave = true;
+        }
+        if (needsSave) {
+            await settings.save();
+        }
     }
 
     // Check auto-disable timers and update if needed
     const now = new Date();
-    let needsSave = false;
+    let needsSaveAfterTimer = false;
 
     if (settings.rfidScanner.autoDisableCheckIn && settings.rfidScanner.checkInDisableAt) {
         if (new Date(settings.rfidScanner.checkInDisableAt) <= now) {
@@ -1070,7 +1088,7 @@ async function getSettings() {
         }
     }
 
-    if (needsSave) {
+    if (needsSaveAfterTimer) {
         await settings.save();
     }
 
@@ -2915,6 +2933,12 @@ app.put('/apis/settings', auth, adminActionAuth, async (req, res) => {
                     ...settings.rfidScanner,
                     ...rfidScanner
                 };
+            }
+            if (req.body.semester !== undefined) {
+                settings.semester = req.body.semester;
+            }
+            if (req.body.schoolYear !== undefined) {
+                settings.schoolYear = req.body.schoolYear;
             }
         }
 
