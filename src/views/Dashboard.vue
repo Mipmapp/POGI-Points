@@ -2861,12 +2861,13 @@
   </div>
 
   <!-- Password Change Modal with Email Verification -->
-  <div v-if="showPasswordChangeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closePasswordChangeModal">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-purple-900">Change Password</h3>
-        <button @click="closePasswordChangeModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-      </div>
+  <transition name="modal-bounce">
+    <div v-if="showPasswordChangeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closePasswordChangeModal">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h3 class="text-2xl font-bold text-purple-900">Change Password</h3>
+          <button @click="closePasswordChangeModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
 
       <!-- Step 1: Request Email Verification -->
       <div v-if="pwChangeStep === 1" class="space-y-4">
@@ -2945,7 +2946,7 @@
         <p v-if="pwChangeMessage" :class="['text-sm text-center', pwChangeSuccess ? 'text-green-600' : 'text-red-600']">{{ pwChangeMessage }}</p>
       </div>
     </div>
-  </div>
+  </transition>
 
   <!-- Custom Calendar Picker Modal -->
   <div v-if="showCalendarPicker" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-2 sm:p-4 overflow-y-auto" @click.self="showCalendarPicker = false">
