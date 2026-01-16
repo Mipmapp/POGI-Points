@@ -659,61 +659,56 @@
       <div v-if="showMobileMenu" class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-purple-600 to-pink-400 text-white flex flex-col z-40 md:hidden shadow-2xl">
         <button @click="showMobileMenu = false" class="p-4 text-right text-2xl hover:text-gray-200 flex-shrink-0">×</button>
         
-        <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
-          <div class="flex items-center space-x-3">
-            <!-- Mobile Profile Picture Container (Hidden for Admins) -->
-            <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }" v-if="currentUser.role !== 'admin' && !currentUser.isMaster">
+        <div class="p-4 md:p-6 border-b border-white border-opacity-20 flex-shrink-0 flex flex-col items-center text-center">
+          <div v-if="currentUser.role !== 'admin' && !currentUser.isMaster" class="mb-4">
+            <div class="w-16 h-16 md:w-20 md:h-20 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
               <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
-                <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg class="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </div>
               <img v-else-if="(currentUser.image || currentUser.photo) && !sidebarImageFailed" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
-              <div v-else class="w-10 h-10 flex items-center justify-center bg-gray-600/20 backdrop-blur-md rounded-full shadow-lg border border-white/20 overflow-hidden">
-                <div class="w-6 h-6 flex items-center justify-center" style="filter: brightness(0) invert(1);">
-                  <img src="/user_admin.svg" alt="Admin" class="w-full h-full object-contain" />
-                </div>
-              </div>
             </div>
-            <div>
-              <p class="text-sm mb-1.5">Welcome back,</p>
-              <div class="flex items-center gap-2">
-                <p class="font-bold text-lg" v-if="currentUser.role === 'admin' || currentUser.isMaster">
-                  <span class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-xs font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden group">
-                    <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
-                    <img src="/crown.svg" alt="Admin" class="w-4 h-4 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
-                    <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
-                  </span>
-                </p>
-                <p class="font-bold" v-else>{{ displayName }}!</p>
-              </div>
-              <div class="flex flex-wrap gap-1 mt-1.5" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
+          </div>
+          <div class="w-full flex flex-col items-center">
+            <p class="text-sm mb-2 opacity-90 text-white">Welcome back,</p>
+            <div class="flex flex-col items-center gap-2">
+              <p class="font-bold text-lg" v-if="currentUser.role === 'admin' || currentUser.isMaster">
+                <span class="relative inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-sm font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden group">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
+                  <img src="/crown.svg" alt="Admin" class="w-5 h-5 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
+                  <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
+                </span>
+              </p>
+              <p class="font-bold text-lg text-white" v-else>{{ displayName }}!</p>
+              
+              <div class="flex flex-wrap justify-center gap-1.5 mt-1" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
                 <!-- Medpub Badge -->
                 <div v-if="currentUser.role === 'medpub'" class="relative group">
                   <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300"></div>
-                  <span class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-yellow-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md hover:shadow-lg transition overflow-hidden whitespace-nowrap">
+                  <span class="relative inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-yellow-900 text-xs font-bold rounded-full shadow-md transition overflow-hidden whitespace-nowrap">
                     <div class="absolute inset-0 light-sweep-badge"></div>
-                    <img src="/medpub.svg" alt="Medpub" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                    <img src="/medpub.svg" alt="Medpub" class="w-3 h-3 relative z-10" style="filter: brightness(0) invert(1);" />
                     <span class="relative z-10">Medpub</span>
                   </span>
                 </div>
                 <!-- Verification Badge -->
                 <div :class="['relative group', currentUser.rfid_status === 'verified' ? 'verified-badge' : '']">
                   <div v-if="currentUser.rfid_status === 'verified'" class="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300"></div>
-                  <span v-if="currentUser.rfid_status === 'verified'" class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-green-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md hover:shadow-lg transition overflow-hidden whitespace-nowrap">
+                  <span v-if="currentUser.rfid_status === 'verified'" class="relative inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-green-400 to-emerald-500 text-green-900 text-xs font-bold rounded-full shadow-md transition overflow-hidden whitespace-nowrap">
                     <div class="absolute inset-0 light-sweep-badge"></div>
-                    <img src="/verified.svg" alt="Verified" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                    <img src="/verified.svg" alt="Verified" class="w-3 h-3 relative z-10" style="filter: brightness(0) invert(1);" />
                     <span class="relative z-10">Verified</span>
                   </span>
-                  <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-gray-400 to-slate-500 text-gray-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
+                  <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="relative inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-gray-400 to-slate-500 text-gray-900 text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
                     <div class="absolute inset-0 light-sweep-badge"></div>
-                    <img src="/unreadable.svg" alt="Unreadable" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                    <img src="/unreadable.svg" alt="Unreadable" class="w-3 h-3 relative z-10" style="filter: brightness(0) invert(1);" />
                     <span class="relative z-10">Unreadable</span>
                   </span>
-                  <span v-else class="relative inline-flex items-center gap-0.5 px-2 py-0.5 sm:px-2.5 sm:py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-amber-900 text-[10px] sm:text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
+                  <span v-else class="relative inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-amber-400 to-orange-500 text-amber-900 text-xs font-bold rounded-full shadow-md overflow-hidden whitespace-nowrap">
                     <div class="absolute inset-0 light-sweep-badge"></div>
-                    <img src="/unverified.svg" alt="Unverified" class="w-2.5 h-2.5 sm:w-3 sm:h-3 relative z-10" style="filter: brightness(0) invert(1);" />
+                    <img src="/unverified.svg" alt="Unverified" class="w-3 h-3 relative z-10" style="filter: brightness(0) invert(1);" />
                     <span class="relative z-10">Unverified</span>
                   </span>
                 </div>
