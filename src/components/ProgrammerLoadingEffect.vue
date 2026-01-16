@@ -7,7 +7,7 @@
         <div class="grid-overlay"></div>
       </div>
 
-      <div class="relative w-full max-w-2xl p-8 border border-white/20 bg-black/40 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden">
+      <div class="relative w-full max-w-2xl p-6 md:p-8 mx-4 border border-white/20 bg-black/40 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden">
         <!-- SSAAM Branding Corner -->
         <div class="absolute top-0 right-0 p-4 opacity-10">
           <div class="text-[40px] font-bold text-white select-none tracking-tighter">SSAAM</div>
