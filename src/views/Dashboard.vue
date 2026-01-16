@@ -558,14 +558,15 @@
 
       <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex items-center space-x-3">
-          <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
-            <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
+          <!-- Profile Picture Container (Hidden for Admins) -->
+          <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }" v-if="currentUser.role !== 'admin' && !currentUser.isMaster && (currentUser.image || currentUser.photo) && !sidebarImageFailed">
+            <div v-if="sidebarImageLoading" class="w-full h-full flex items-center justify-center">
               <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
             </div>
-            <img v-else-if="(currentUser.image || currentUser.photo) && !sidebarImageFailed" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
+            <img :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
           </div>
           <div>
             <p class="text-sm mb-1.5">Welcome back,</p>
@@ -660,7 +661,8 @@
         
         <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
           <div class="flex items-center space-x-3">
-            <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
+            <!-- Mobile Profile Picture Container (Hidden for Admins) -->
+            <div class="w-12 h-12 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }" v-if="currentUser.role !== 'admin' && !currentUser.isMaster">
               <div v-if="sidebarImageLoading && !sidebarImageFailed" class="w-full h-full flex items-center justify-center">
                 <svg class="animate-spin h-6 w-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -669,10 +671,10 @@
               </div>
               <img v-else-if="(currentUser.image || currentUser.photo) && !sidebarImageFailed" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @load="() => { sidebarImageLoading = false; sidebarImageFailed = false; }" @error="handleSidebarImageError" />
               <div v-else class="w-10 h-10 flex items-center justify-center bg-gray-600/20 backdrop-blur-md rounded-full shadow-lg border border-white/20 overflow-hidden">
-              <div class="w-6 h-6 flex items-center justify-center" style="filter: brightness(0) invert(1);">
-                <img src="/user_admin.svg" alt="Admin" class="w-full h-full object-contain" />
+                <div class="w-6 h-6 flex items-center justify-center" style="filter: brightness(0) invert(1);">
+                  <img src="/user_admin.svg" alt="Admin" class="w-full h-full object-contain" />
+                </div>
               </div>
-            </div>
             </div>
             <div>
               <p class="text-sm mb-1.5">Welcome back,</p>
