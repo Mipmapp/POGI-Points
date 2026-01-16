@@ -2505,7 +2505,12 @@
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Academic Information</h3>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  <div v-for="(val, label) in { 'Program': currentUser.program || 'N/A', 'Year': currentUser.yearLevel || currentUser.year_level || 'N/A', 'Sem': currentUser.semester || 'N/A', 'S.Y.': currentUser.schoolYear || currentUser.school_year || 'N/A' }" :key="label" 
+                  <div v-for="(val, label) in { 
+                    'Program': currentUser.program || 'N/A', 
+                    'Year': currentUser.yearLevel || currentUser.year_level || 'N/A', 
+                    'Sem': appSettings.semester || 'N/A', 
+                    'S.Y.': appSettings.schoolYear || 'N/A' 
+                  }" :key="label" 
                        class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-colors">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ label }}</p>
                     <p class="text-gray-900 font-bold">{{ val }}</p>
