@@ -252,13 +252,16 @@
       <svg class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
     
-    <div class="h-full flex flex-col lg:flex-row">
+    <div class="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
       <!-- Left Panel - Scanner -->
-      <div class="lg:w-1/2 h-1/2 lg:h-full flex flex-col items-center justify-center p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white border-opacity-20">
+      <div class="lg:w-1/2 min-h-max lg:h-full flex flex-col items-center justify-center p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white border-opacity-20 flex-shrink-0">
         <div class="flex flex-col items-center text-center mb-4 lg:mb-6 w-full max-w-md">
-          <h1 class="text-xl lg:text-3xl font-bold text-white mb-0.5">SSAAM</h1>
-          <p class="text-white text-opacity-80 text-xs lg:text-base">{{ selectedEvent?.title || 'Select an Event' }}</p>
-          <p v-if="selectedEvent" class="text-white text-opacity-60 text-xs">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
+          <div class="flex items-center justify-center gap-3 mb-1">
+            <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-10 h-10 lg:w-16 lg:h-16 object-contain" />
+            <h1 class="text-2xl lg:text-4xl font-bold text-white">SSAAM</h1>
+          </div>
+          <p class="text-white text-opacity-80 text-xs lg:text-lg font-medium">{{ selectedEvent?.title || 'Select an Event' }}</p>
+          <p v-if="selectedEvent" class="text-white text-opacity-60 text-xs lg:text-sm">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
           <div v-if="selectedSession" class="mt-2">
             <span class="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-400 to-pink-400 text-white">
               {{ selectedSession.label }} Session
@@ -340,7 +343,7 @@
       </div>
       
       <!-- Right Panel - Check-in Result & Recent Logs -->
-      <div class="lg:w-1/2 h-1/2 lg:h-full flex flex-col p-4 lg:p-6 overflow-hidden">
+      <div class="lg:w-1/2 flex-1 min-h-0 flex flex-col p-4 lg:p-6 overflow-hidden">
         <!-- Prominent Check-in Result Card with Student Profile -->
         <transition name="slide-down">
           <div v-if="rfidResult && rfidResult.success && (rfidResult.student || rfidResult.student_name)" class="mb-4 lg:mb-6">
