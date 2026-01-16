@@ -257,12 +257,12 @@
       <div class="lg:w-1/2 min-h-max lg:h-full flex flex-col items-center justify-center p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-white border-opacity-20 flex-shrink-0">
         <div class="flex flex-col items-center text-center mb-4 lg:mb-6 w-full max-w-md">
           <div class="flex items-center justify-center gap-3 mb-1">
-            <div class="relative overflow-hidden group">
-              <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-10 h-10 lg:w-16 lg:h-16 object-contain relative z-10" />
-              <div 
-                class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"
-                style="-webkit-mask-image: url(/jrmsu.svg); mask-image: url(/jrmsu.svg); -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;"
-              ></div>
+            <div 
+              class="relative overflow-hidden group w-10 h-10 lg:w-16 lg:h-16"
+              style="-webkit-mask-image: url(/jrmsu.svg); mask-image: url(/jrmsu.svg); -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;"
+            >
+              <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-full h-full object-contain relative z-10" />
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
             </div>
             <h1 class="text-2xl lg:text-4xl font-bold text-white">SSAAM</h1>
           </div>
