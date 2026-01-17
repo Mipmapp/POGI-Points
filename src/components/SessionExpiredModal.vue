@@ -1,6 +1,6 @@
 <template>
   <transition name="fade">
-    <div v-if="visible" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[9999] backdrop-blur-sm" @click.stop>
+    <div v-if="visible && !isClosing" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-[9999] backdrop-blur-sm" @click.stop>
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full mx-4 border-4 border-red-100">
           <div class="text-center mb-8">
@@ -13,7 +13,7 @@
             <p class="text-gray-600 text-lg leading-relaxed">Your session has expired or the security token is invalid. For your protection, you must log in again to continue.</p>
           </div>
           <button 
-            @click="$emit('logout')" 
+            @click="handleLogout" 
             class="w-full bg-gradient-to-r from-red-600 to-purple-700 text-white py-4 px-6 rounded-2xl font-black text-xl hover:from-red-700 hover:to-purple-800 transition-all duration-300 shadow-[0_10px_20px_rgba(220,38,38,0.3)] transform active:scale-95 flex items-center justify-center gap-3"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -28,11 +28,22 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+
 defineProps({
   visible: Boolean
 });
 
-defineEmits(['logout']);
+const emit = defineEmits(['logout']);
+const isClosing = ref(false)
+
+const handleLogout = () => {
+  isClosing.value = true
+  // Small delay to allow animation to start before parent triggers logout/unmount
+  setTimeout(() => {
+    emit('logout')
+  }, 300)
+}
 </script>
 
 <style scoped>
@@ -44,15 +55,19 @@ defineEmits(['logout']);
 }
 
 .modal-bounce-enter-active {
-  animation: bounce-in 0.5s;
+  animation: pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .modal-bounce-leave-active {
-  animation: bounce-in 0.3s reverse;
+  animation: pop-out 0.3s cubic-bezier(0.36, 0, 0.66, -0.56);
 }
 
-@keyframes bounce-in {
-  0% { transform: scale(0.9); opacity: 0; }
-  50% { transform: scale(1.05); }
+@keyframes pop-in {
+  0% { transform: scale(0.5); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes pop-out {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(0.5); opacity: 0; }
 }
 </style>
