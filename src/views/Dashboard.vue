@@ -641,6 +641,10 @@
           <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>Dashboard</span>
         </button>
+        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'contributions'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>Contributions</span>
+        </button>
         <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'users'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'users' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <img src="/user.svg" alt="Users" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>Manage</span>
@@ -756,7 +760,11 @@
             <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>Dashboard</span>
           </button>
-          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'users'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'users' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'contributions'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span>Contributions</span>
+        </button>
+        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'users'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'users' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
             <img src="/user.svg" alt="Users" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>Manage</span>
           </button>
@@ -846,6 +854,42 @@
         </div>
 
         <!-- Settings Page -->
+        <!-- Admin Contributions Page -->
+        <div v-if="currentPage === 'contributions' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
+          <h2 class="text-2xl font-bold text-purple-900 mb-6">Record Student Contribution</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Search Student (ID or Name)</label>
+                <div class="flex gap-2">
+                  <input v-model="contributionSearchQuery" type="text" placeholder="Enter student ID or name" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+                  <button @click="searchStudentForContribution" :disabled="searchingStudent" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50">
+                    {{ searchingStudent ? '...' : 'Search' }}
+                  </button>
+                </div>
+              </div>
+              <div v-if="selectedStudentForContribution" class="p-4 bg-purple-50 rounded-lg border border-purple-100">
+                <p class="font-bold text-purple-900">{{ selectedStudentForContribution.full_name || selectedStudentForContribution.firstName + ' ' + selectedStudentForContribution.lastName }}</p>
+                <p class="text-sm text-purple-700">{{ selectedStudentForContribution.student_id }} | {{ selectedStudentForContribution.program }} {{ selectedStudentForContribution.year_level }}</p>
+                <p v-if="selectedStudentForContribution.rfid_code" class="text-xs text-purple-600 mt-1">RFID: {{ selectedStudentForContribution.rfid_code }}</p>
+              </div>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Amount (₱)</label>
+                <input v-model="contributionAmount" type="number" placeholder="0.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <input v-model="contributionDescription" type="text" placeholder="e.g., Membership Fee, Event Fee" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+              </div>
+              <button @click="recordContribution" :disabled="!selectedStudentForContribution || !contributionAmount || recordingContribution" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg font-bold shadow-lg hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50">
+                {{ recordingContribution ? 'Recording...' : 'Record Contribution' }}
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div v-if="currentPage === 'settings' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h2 class="text-xl md:text-2xl font-bold text-purple-900">Access Control Settings</h2>
@@ -2543,6 +2587,31 @@
                 </div>
               </section>
 
+              <section v-if="currentUser.contributions && currentUser.contributions.length > 0">
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Payment Contributions</h3>
+                </div>
+                <div class="bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr class="bg-gray-100">
+                        <th class="px-4 py-2 text-left text-gray-600">Date</th>
+                        <th class="px-4 py-2 text-left text-gray-600">Description</th>
+                        <th class="px-4 py-2 text-right text-gray-600">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                      <tr v-for="pay in currentUser.contributions" :key="pay.date" class="hover:bg-white">
+                        <td class="px-4 py-2 text-gray-700">{{ new Date(pay.date).toLocaleDateString() }}</td>
+                        <td class="px-4 py-2 text-gray-700">{{ pay.description }}</td>
+                        <td class="px-4 py-2 text-right font-bold text-purple-900">₱{{ pay.amount.toFixed(2) }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
               <section>
                 <div class="flex items-center gap-2 mb-4">
                   <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
@@ -3698,6 +3767,74 @@ const users = ref([])
 const loggingOut = ref(false)
 const isPageLoading = ref(false)
 const statsLoading = ref(false)
+
+// Contribution feature state
+const contributionSearchQuery = ref('')
+const searchingStudent = ref(false)
+const selectedStudentForContribution = ref(null)
+const contributionAmount = ref('')
+const contributionDescription = ref('')
+const recordingContribution = ref(false)
+
+const searchStudentForContribution = async () => {
+  if (!contributionSearchQuery.value.trim()) return
+  searchingStudent.value = true
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const response = await fetch(buildAPIUrl(`/apis/students?search=${contributionSearchQuery.value}`), {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    const result = await response.json()
+    if (response.ok) {
+      const students = result.data || result || []
+      if (students.length > 0) {
+        selectedStudentForContribution.value = students[0]
+      } else {
+        showNotification('Student not found', 'error')
+      }
+    }
+  } catch (error) {
+    console.error('Search failed:', error)
+  } finally {
+    searchingStudent.value = false
+  }
+}
+
+const recordContribution = async () => {
+  if (!selectedStudentForContribution.value || !contributionAmount.value) return
+  recordingContribution.value = true
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const response = await fetch(buildAPIUrl('/apis/admin/contributions'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        student_id: selectedStudentForContribution.value.student_id,
+        amount: contributionAmount.value,
+        description: contributionDescription.value,
+        admin_username: currentUser.value.username || 'admin'
+      })
+    })
+    if (response.ok) {
+      showNotification('Contribution recorded successfully', 'success')
+      contributionAmount.value = ''
+      contributionDescription.value = ''
+      selectedStudentForContribution.value = null
+      contributionSearchQuery.value = ''
+    } else {
+      const error = await response.json()
+      showNotification(error.message || 'Failed to record contribution', 'error')
+    }
+  } catch (error) {
+    console.error('Recording failed:', error)
+    showNotification('Recording error', 'error')
+  } finally {
+    recordingContribution.value = false
+  }
+}
 const profileImageLoading = ref(false)
 const sidebarImageLoading = ref(false)
 const showDevelopersPopup = ref(false)
