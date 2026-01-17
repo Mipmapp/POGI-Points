@@ -572,6 +572,33 @@ function antiBotProtection(req, res, next) {
     next();
 }
 
+// Add contribution to student
+app.post('/apis/admin/contributions', async (req, res) => {
+    try {
+        const { student_id, rfid_code, amount, description, admin_username } = req.body;
+        
+        let query = {};
+        if (student_id) query.student_id = student_id;
+        else if (rfid_code) query.rfid_code = rfid_code;
+        else return res.status(400).json({ message: "Student ID or RFID required" });
+
+        const student = await Student.findOne(query);
+        if (!student) return res.status(404).json({ message: "Student not found" });
+
+        student.contributions.push({
+            amount: Number(amount),
+            description,
+            collected_by: admin_username,
+            date: new Date()
+        });
+
+        await student.save();
+        res.json({ success: true, message: "Contribution added successfully", student });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 5000) => {
     try {
         await mongoose.connect(MONGO_URI, { 
@@ -789,7 +816,13 @@ const studentSchema = new mongoose.Schema({
     rejection_reason: { type: String, default: "" },
     created_date: { type: Date, default: Date.now },
     // Custom password field (optional) - if set, user uses this instead of last_name for login
-    custom_password: { type: String, default: null }
+    custom_password: { type: String, default: null },
+    contributions: [{
+        amount: { type: Number, required: true },
+        description: { type: String, required: true },
+        date: { type: Date, default: Date.now },
+        collected_by: { type: String }
+    }]
 });
 
 const Student = mongoose.model("Student", studentSchema);
