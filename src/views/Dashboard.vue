@@ -7061,6 +7061,10 @@ const fetchAttendanceData = async () => {
         }
       })
       console.log('Admin attendance events response status:', response.status)
+      if (response.status === 401) {
+        showSessionExpiredModal.value = true
+        return
+      }
       if (response.ok) {
         const result = await response.json()
         console.log('Admin attendance events data:', result)
@@ -7102,6 +7106,11 @@ const fetchAttendanceData = async () => {
         upcoming: upcomingRes.status,
         myRecords: myRecordsRes.status
       })
+
+      if (eventsRes.status === 401 || upcomingRes.status === 401 || myRecordsRes.status === 401) {
+        showSessionExpiredModal.value = true
+        return
+      }
 
       if (!eventsRes.ok) {
         const errorText = await eventsRes.text()
