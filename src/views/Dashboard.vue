@@ -3688,6 +3688,7 @@ const fac = new FastAverageColor()
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import AnnouncementPopup from '../components/AnnouncementPopup.vue'
 import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
+import SessionExpiredModal from '../components/SessionExpiredModal.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
 
