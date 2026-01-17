@@ -6142,7 +6142,7 @@ const clearAllSessionTokens = async () => {
   
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch(buildAPIUrl(`/apis/debug/session-tokens/clear?type=all`), {
+    const response = await fetch(buildAPIUrl(`/apis/debug/session-tokens/clear?type=all&keep_current=true`), {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
