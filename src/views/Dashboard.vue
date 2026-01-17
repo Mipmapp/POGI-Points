@@ -856,36 +856,78 @@
         <!-- Settings Page -->
         <!-- Admin Contributions Page -->
         <div v-if="currentPage === 'contributions' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
-          <h2 class="text-2xl font-bold text-purple-900 mb-6">Record Student Contribution</h2>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Search Student (ID or Name)</label>
-                <div class="flex gap-2">
-                  <input v-model="contributionSearchQuery" type="text" placeholder="Enter student ID or name" class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-                  <button @click="searchStudentForContribution" :disabled="searchingStudent" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50">
-                    {{ searchingStudent ? '...' : 'Search' }}
+          <div class="flex justify-between items-center mb-6">
+            <h2 class="text-2xl font-bold text-purple-900">Contribution Recording</h2>
+            <div class="flex bg-gray-100 rounded-lg p-1">
+              <button @click="contributionScanMode = 'rfid'" :class="['px-4 py-1.5 rounded-lg text-sm font-medium transition', contributionScanMode === 'rfid' ? 'bg-purple-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200']">RFID</button>
+              <button @click="contributionScanMode = 'student_id'" :class="['px-4 py-1.5 rounded-lg text-sm font-medium transition', contributionScanMode === 'student_id' ? 'bg-purple-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200']">Student ID</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-6">
+              <div class="bg-purple-50 rounded-2xl p-6 border border-purple-100">
+                <div class="text-center mb-6">
+                  <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <svg v-if="contributionScanMode === 'rfid'" class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
+                    <svg v-else class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"></path></svg>
+                  </div>
+                  <h3 class="font-bold text-purple-900">{{ contributionScanMode === 'rfid' ? 'Scan RFID Card' : 'Enter Student ID' }}</h3>
+                  <p class="text-xs text-purple-600">Waiting for input...</p>
+                </div>
+                
+                <input 
+                  ref="contributionInputRef"
+                  v-model="contributionSearchQuery" 
+                  type="text" 
+                  :placeholder="contributionScanMode === 'rfid' ? 'Scan card now...' : 'Enter 00-X-00000'"
+                  @keydown.enter="searchStudentForContribution"
+                  class="w-full px-4 py-3 bg-white border-2 border-purple-200 rounded-xl text-center font-mono text-lg focus:border-purple-500 outline-none transition-all"
+                />
+              </div>
+
+              <div v-if="selectedStudentForContribution" class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm animate-fade-in">
+                <div class="flex items-center gap-4">
+                  <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold text-xl">
+                    {{ getInitials(selectedStudentForContribution.full_name || selectedStudentForContribution.first_name + ' ' + selectedStudentForContribution.last_name) }}
+                  </div>
+                  <div>
+                    <p class="font-bold text-gray-900 text-lg">{{ selectedStudentForContribution.full_name || selectedStudentForContribution.first_name + ' ' + selectedStudentForContribution.last_name }}</p>
+                    <p class="text-sm text-gray-500">{{ selectedStudentForContribution.student_id }}</p>
+                    <p class="text-xs font-medium text-purple-600">{{ selectedStudentForContribution.program }} | {{ selectedStudentForContribution.year_level }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-6">
+              <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                  Payment Details
+                </h4>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Amount (₱)</label>
+                    <input v-model="contributionAmount" type="number" placeholder="0.00" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Description / Purpose</label>
+                    <input v-model="contributionDescription" type="text" placeholder="e.g., Membership Fee" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+                  </div>
+                  <button 
+                    @click="recordContribution" 
+                    :disabled="!selectedStudentForContribution || !contributionAmount || recordingContribution" 
+                    class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold shadow-lg shadow-purple-200 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
+                  >
+                    <span v-if="recordingContribution" class="flex items-center justify-center gap-2">
+                      <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                      Processing...
+                    </span>
+                    <span v-else>Confirm & Record Payment</span>
                   </button>
                 </div>
               </div>
-              <div v-if="selectedStudentForContribution" class="p-4 bg-purple-50 rounded-lg border border-purple-100">
-                <p class="font-bold text-purple-900">{{ selectedStudentForContribution.full_name || selectedStudentForContribution.firstName + ' ' + selectedStudentForContribution.lastName }}</p>
-                <p class="text-sm text-purple-700">{{ selectedStudentForContribution.student_id }} | {{ selectedStudentForContribution.program }} {{ selectedStudentForContribution.year_level }}</p>
-                <p v-if="selectedStudentForContribution.rfid_code" class="text-xs text-purple-600 mt-1">RFID: {{ selectedStudentForContribution.rfid_code }}</p>
-              </div>
-            </div>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Amount (₱)</label>
-                <input v-model="contributionAmount" type="number" placeholder="0.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <input v-model="contributionDescription" type="text" placeholder="e.g., Membership Fee, Event Fee" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-              </div>
-              <button @click="recordContribution" :disabled="!selectedStudentForContribution || !contributionAmount || recordingContribution" class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg font-bold shadow-lg hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50">
-                {{ recordingContribution ? 'Recording...' : 'Record Contribution' }}
-              </button>
             </div>
           </div>
         </div>
@@ -3770,6 +3812,8 @@ const statsLoading = ref(false)
 
 // Contribution feature state
 const contributionSearchQuery = ref('')
+const contributionScanMode = ref('rfid')
+const contributionInputRef = ref(null)
 const searchingStudent = ref(false)
 const selectedStudentForContribution = ref(null)
 const contributionAmount = ref('')
@@ -3781,7 +3825,8 @@ const searchStudentForContribution = async () => {
   searchingStudent.value = true
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    const response = await fetch(buildAPIUrl(`/apis/students?search=${contributionSearchQuery.value}`), {
+    const queryParam = contributionScanMode.value === 'rfid' ? `rfid=${contributionSearchQuery.value}` : `search=${contributionSearchQuery.value}`
+    const response = await fetch(buildAPIUrl(`/apis/students?${queryParam}`), {
       headers: { 'Authorization': `Bearer ${token}` }
     })
     const result = await response.json()
@@ -3789,10 +3834,14 @@ const searchStudentForContribution = async () => {
       const students = result.data || result || []
       if (students.length > 0) {
         selectedStudentForContribution.value = students[0]
+        showNotification('Student found!', 'success')
       } else {
         showNotification('Student not found', 'error')
+        selectedStudentForContribution.value = null
       }
     }
+    contributionSearchQuery.value = ''
+    nextTick(() => contributionInputRef.value?.focus())
   } catch (error) {
     console.error('Search failed:', error)
   } finally {
