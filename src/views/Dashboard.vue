@@ -5389,9 +5389,6 @@ onMounted(async () => {
       rfidScannerVerified.value = true
     }
     
-    // Auto-refresh attendance data every 30 seconds to catch session expiration
-    statsRefreshInterval.value = setInterval(fetchAttendanceData, 30000)
-    
     try {
       // Fetch only current page (10-20 students)
       const response = await fetch(buildAPIUrl(`/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`), {
@@ -5437,8 +5434,6 @@ onMounted(async () => {
   } else {
     // Student path
     fetchAttendanceData()
-    // Auto-refresh attendance data every 30 seconds for students too
-    statsRefreshInterval.value = setInterval(fetchAttendanceData, 30000)
     
     // If we're coming from the login screen, we might already be "authenticating"
     // but we don't want a double loading screen.
