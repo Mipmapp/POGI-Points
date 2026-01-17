@@ -896,7 +896,7 @@
                   <button 
                     @click="searchStudentForContribution"
                     :disabled="searchingStudent || !contributionSearchQuery.trim()"
-                    class="px-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50"
+                    class="px-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50 flex items-center justify-center min-w-[50px]"
                   >
                     <svg v-if="searchingStudent" class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                     <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -936,7 +936,7 @@
                   <button 
                     @click="recordContribution" 
                     :disabled="!selectedStudentForContribution || !contributionAmount || recordingContribution" 
-                    class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold shadow-lg shadow-purple-200 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:hover:scale-100"
+                    :class="['w-full py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold shadow-lg transition-all', (!selectedStudentForContribution || !contributionAmount || recordingContribution) ? 'opacity-50 cursor-not-allowed grayscale' : 'shadow-purple-200 hover:scale-[1.02] active:scale-[0.98]']"
                   >
                     <span v-if="recordingContribution" class="flex items-center justify-center gap-2">
                       <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
