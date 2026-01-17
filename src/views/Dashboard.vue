@@ -1,6 +1,7 @@
 <template>
   <ProgrammerLoadingEffect :visible="isPageLoading" message="AUTHENTICATING" />
   <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" />
+  <SessionExpiredModal :visible="showSessionExpiredModal" @logout="confirmLogout" />
   <!-- Announcement Popup for Students -->
   <AnnouncementPopup 
     :visible="showAnnouncementPopup" 
@@ -3700,6 +3701,7 @@ const profileImageLoading = ref(false)
 const sidebarImageLoading = ref(false)
 const showDevelopersPopup = ref(false)
 const showLogoutConfirmation = ref(false)
+const showSessionExpiredModal = ref(false)
 const showMobileMenu = ref(false)
 const showContactModal = ref(false)
 const currentPage = ref('dashboard')
@@ -9490,7 +9492,7 @@ const toggleLike = async (notif) => {
     
     if (response.status === 401) {
       // Session expired or invalid - prompt user to re-login
-      showNotification('Your session has expired. Please log in again to like posts.', 'error')
+      showSessionExpiredModal.value = true
       return
     }
     
