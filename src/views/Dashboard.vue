@@ -7050,7 +7050,7 @@ const fetchAttendanceData = async () => {
   try {
     if (!token) {
       console.error('No authentication token found')
-      showNotification('Error: No authentication token. Please login again.', 'error')
+      showSessionExpiredModal.value = true
       return
     }
 
