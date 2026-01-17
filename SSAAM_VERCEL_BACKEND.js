@@ -599,6 +599,28 @@ app.post('/apis/admin/contributions', async (req, res) => {
     }
 });
 
+// Get all contributions for transparency
+app.get('/apis/contributions/transparency', async (req, res) => {
+    try {
+        const students = await Student.find({ "contributions.0": { $exists: true } }, 'full_name first_name last_name program year_level contributions');
+        
+        const allContributions = students.map(s => ({
+            name: s.full_name || `${s.first_name} ${s.last_name}`,
+            program: s.program,
+            year_level: s.year_level,
+            payments: s.contributions.map(c => ({
+                amount: c.amount,
+                description: c.description,
+                date: c.date
+            }))
+        }));
+
+        res.json({ success: true, data: allContributions });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 5000) => {
     try {
         await mongoose.connect(MONGO_URI, { 

@@ -661,6 +661,10 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
           <span>Attendance</span>
         </button>
+        <button @click="currentPage = 'transparency'; fetchTransparencyBoard()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'transparency' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>Transparency Board</span>
+        </button>
         <button @click="goToNotifications" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'notifications' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
           <span class="flex items-center gap-2">Notifications <span v-if="unreadNotificationCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ unreadNotificationCount }}</span></span>
@@ -1223,6 +1227,50 @@
         </div>
 
         <!-- Attendance Page -->
+        <!-- Transparency Board Page -->
+        <div v-if="currentPage === 'transparency'" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
+            <div>
+              <h2 class="text-2xl font-bold text-purple-900">Transparency Board</h2>
+              <p class="text-sm text-gray-500">View all students who have fulfilled their contributions.</p>
+            </div>
+            <button @click="fetchTransparencyBoard" :disabled="transparencyLoading" class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition flex items-center gap-2">
+              <svg :class="['w-4 h-4', transparencyLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              Refresh Board
+            </button>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div v-for="student in transparencyList" :key="student.name" class="bg-gray-50 rounded-2xl p-6 border border-gray-100 hover:border-purple-200 transition-all shadow-sm">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold">
+                  {{ getInitials(student.name) }}
+                </div>
+                <div>
+                  <p class="font-bold text-gray-900 leading-tight">{{ student.name }}</p>
+                  <p class="text-xs text-purple-600 font-medium">{{ student.program }} | {{ student.year_level }}</p>
+                </div>
+              </div>
+              <div class="space-y-3">
+                <div v-for="payment in student.payments" :key="payment.date" class="bg-white rounded-xl p-3 border border-gray-100">
+                  <div class="flex justify-between items-start">
+                    <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">{{ new Date(payment.date).toLocaleDateString() }}</p>
+                    <span class="text-sm font-black text-green-600">₱{{ payment.amount.toFixed(2) }}</span>
+                  </div>
+                  <p class="text-sm text-gray-700 mt-1 line-clamp-1">{{ payment.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="transparencyList.length === 0 && !transparencyLoading" class="text-center py-20">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            </div>
+            <p class="text-gray-500">No payment records found yet.</p>
+          </div>
+        </div>
+
         <div v-if="currentPage === 'attendance'" class="space-y-6">
           <!-- Admin Attendance Management -->
           <div v-if="currentUser.role === 'admin' || currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-6">
@@ -3822,6 +3870,25 @@ const selectedStudentForContribution = ref(null)
 const contributionAmount = ref('')
 const contributionDescription = ref('')
 const recordingContribution = ref(false)
+
+// Transparency board state
+const transparencyList = ref([])
+const transparencyLoading = ref(false)
+
+const fetchTransparencyBoard = async () => {
+  transparencyLoading.value = true
+  try {
+    const response = await fetch(buildAPIUrl('/apis/contributions/transparency'))
+    const result = await response.json()
+    if (response.ok) {
+      transparencyList.value = result.data || []
+    }
+  } catch (error) {
+    console.error('Failed to fetch transparency board:', error)
+  } finally {
+    transparencyLoading.value = false
+  }
+}
 
 const searchStudentForContribution = async () => {
   if (!contributionSearchQuery.value.trim()) return
