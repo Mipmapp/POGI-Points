@@ -2632,25 +2632,28 @@
               <section v-if="currentUser.contributions && currentUser.contributions.length > 0">
                 <div class="flex items-center gap-2 mb-4">
                   <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
-                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Payment Contributions</h3>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Payment Status</h3>
                 </div>
-                <div class="bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden">
-                  <table class="w-full text-sm">
-                    <thead>
-                      <tr class="bg-gray-100">
-                        <th class="px-4 py-2 text-left text-gray-600">Date</th>
-                        <th class="px-4 py-2 text-left text-gray-600">Description</th>
-                        <th class="px-4 py-2 text-right text-gray-600">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-200">
-                      <tr v-for="pay in currentUser.contributions" :key="pay.date" class="hover:bg-white">
-                        <td class="px-4 py-2 text-gray-700">{{ new Date(pay.date).toLocaleDateString() }}</td>
-                        <td class="px-4 py-2 text-gray-700">{{ pay.description }}</td>
-                        <td class="px-4 py-2 text-right font-bold text-purple-900">₱{{ pay.amount.toFixed(2) }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div v-for="pay in currentUser.contributions" :key="pay.date" 
+                       class="p-5 bg-white rounded-2xl border-2 border-purple-100 shadow-sm hover:shadow-md transition-all group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-3">
+                      <div class="bg-green-100 text-green-600 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                        Paid
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                      <div class="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 group-hover:bg-purple-600 group-hover:text-white transition-colors">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                      </div>
+                      <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ new Date(pay.date).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }) }}</p>
+                        <p class="text-gray-900 font-bold leading-tight mb-1">{{ pay.description }}</p>
+                        <p class="text-lg font-black text-purple-600">₱{{ pay.amount.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </section>
 
