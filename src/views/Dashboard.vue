@@ -663,7 +663,7 @@
         </button>
         <button @click="currentPage = 'transparency'; fetchTransparencyBoard()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'transparency' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          <span>Transparency Board</span>
+          <span>Contributions</span>
         </button>
         <button @click="goToNotifications" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'notifications' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
@@ -1227,8 +1227,63 @@
         </div>
 
         <!-- Attendance Page -->
-        <!-- Transparency Board Page -->
-        <div v-if="currentPage === 'transparency'" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
+        <!-- Contributions Page (Student View) -->
+        <div v-if="currentPage === 'transparency' && currentUser.role === 'student'" class="space-y-6">
+          <div class="bg-white rounded-3xl shadow-lg p-6 md:p-8">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+              </div>
+              <h2 class="text-2xl font-bold text-purple-900">My Contributions</h2>
+            </div>
+            
+            <div v-if="!currentUser.contributions || currentUser.contributions.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
+              <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5"></path></svg>
+              </div>
+              <p class="text-gray-500 font-medium">No contribution records found.</p>
+            </div>
+            
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div v-for="pay in currentUser.contributions" :key="pay.date" class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+                <div class="flex justify-between items-start mb-4">
+                  <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ new Date(pay.date).toLocaleDateString() }}</p>
+                  <span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Paid</span>
+                </div>
+                <p class="text-gray-900 font-bold text-lg mb-1">{{ pay.description }}</p>
+                <p class="text-2xl font-black text-purple-600">₱{{ pay.amount.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl shadow-lg p-6 md:p-8">
+            <div class="flex items-center gap-3 mb-8">
+              <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              </div>
+              <h2 class="text-2xl font-bold text-purple-900">My Contributions</h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div class="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
+                <p class="text-sm font-bold text-white/70 uppercase tracking-widest mb-2">Total Contributions</p>
+                <p class="text-4xl font-black">₱{{ (currentUser.contributions?.reduce((sum, c) => sum + c.amount, 0) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</p>
+              </div>
+              
+              <div class="bg-gradient-to-br from-pink-500 to-rose-500 rounded-2xl p-8 text-white shadow-xl">
+                <p class="text-sm font-bold text-white/70 uppercase tracking-widest mb-2">Recent Payment</p>
+                <p class="text-2xl font-bold" v-if="currentUser.contributions?.length">
+                  ₱{{ currentUser.contributions[currentUser.contributions.length - 1].amount.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}
+                  <span class="block text-sm font-medium text-white/80 mt-1">{{ currentUser.contributions[currentUser.contributions.length - 1].description }}</span>
+                </p>
+                <p class="text-2xl font-bold" v-else>No payments yet</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transparency Board Page (Admin View) -->
+        <div v-if="currentPage === 'transparency' && currentUser.role === 'admin'" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
               <h2 class="text-2xl font-bold text-purple-900">Transparency Board</h2>
