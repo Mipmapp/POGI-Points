@@ -2,6 +2,16 @@
   <ProgrammerLoadingEffect :visible="isPageLoading" message="AUTHENTICATING" />
   <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" />
   <SessionExpiredModal :visible="showSessionExpiredModal" @logout="confirmLogout" />
+  
+  <!-- Contributions Modal (Treasurer Only) -->
+  <ContributionsModal
+    :visible="showContributionsModal"
+    :event-id="selectedEventForContributions"
+    :event-title="selectedEventTitleForContributions"
+    @close="showContributionsModal = false"
+    @payment-updated="handlePaymentUpdated"
+  />
+  
   <!-- Announcement Popup for Students -->
   <AnnouncementPopup 
     :visible="showAnnouncementPopup" 
@@ -641,7 +651,7 @@
           <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>Dashboard</span>
         </button>
-        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'contributions'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'contributions'; contributionTabMode = 'payments'; showMobileMenu = false; fetchPayments()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span>Contributions</span>
         </button>
@@ -661,10 +671,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
           <span>Attendance</span>
         </button>
-        <button @click="currentPage = 'transparency'; fetchTransparencyBoard()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'transparency' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          <span>Contributions</span>
-        </button>
+
         <button @click="goToNotifications" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'notifications' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
           <span class="flex items-center gap-2">Notifications <span v-if="unreadNotificationCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ unreadNotificationCount }}</span></span>
@@ -764,7 +771,7 @@
             <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>Dashboard</span>
           </button>
-          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'contributions'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'contributions'; contributionTabMode = 'payments'; showMobileMenu = false; fetchPayments()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span>Contributions</span>
         </button>
@@ -784,10 +791,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
             <span>Attendance</span>
           </button>
-          <button @click="currentPage = 'transparency'; showMobileMenu = false; fetchTransparencyBoard()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'transparency' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            <span>Contributions</span>
-          </button>
+
           <button @click="goToNotifications" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'notifications' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
             <span class="flex items-center gap-2">Notifications <span v-if="unreadNotificationCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ unreadNotificationCount }}</span></span>
@@ -838,7 +842,7 @@
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 class="hidden md:block text-2xl md:text-4xl font-bold text-purple-900 mb-8 pb-4 border-b-2 border-purple-900">{{ currentPage === 'users' ? 'Manage' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'notifications' ? 'Notifications' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'transparency' ? 'Contributions' : 'Dashboard' }}</h1>
+        <h1 class="hidden md:block text-2xl md:text-4xl font-bold text-purple-900 mb-8 pb-4 border-b-2 border-purple-900">{{ currentPage === 'users' ? 'Manage' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'notifications' ? 'Notifications' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'payments' ? 'Payments' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg shadow-sm">
@@ -862,88 +866,436 @@
         </div>
 
         <!-- Settings Page -->
-        <!-- Admin Contributions Page -->
-        <div v-if="currentPage === 'contributions' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
-          <div class="flex justify-between items-center mb-6">
-            <h2 class="text-2xl font-bold text-purple-900">Contribution Recording</h2>
-            <div class="flex bg-gray-100 rounded-lg p-1">
-              <button @click="contributionScanMode = 'rfid'" :class="['px-4 py-1.5 rounded-lg text-sm font-medium transition', contributionScanMode === 'rfid' ? 'bg-purple-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200']">RFID</button>
-              <button @click="contributionScanMode = 'student_id'" :class="['px-4 py-1.5 rounded-lg text-sm font-medium transition', contributionScanMode === 'student_id' ? 'bg-purple-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200']">Student ID</button>
-            </div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div class="space-y-6">
-              <div class="bg-purple-50 rounded-2xl p-6 border border-purple-100">
-                <div class="text-center mb-6">
-                  <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                    <svg v-if="contributionScanMode === 'rfid'" class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
-                    <svg v-else class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"></path></svg>
-                  </div>
-                  <h3 class="font-bold text-purple-900">{{ contributionScanMode === 'rfid' ? 'Scan RFID Card' : 'Enter Student ID' }}</h3>
-                  <p class="text-xs text-purple-600">Waiting for input...</p>
-                </div>
-                
-                <div class="flex gap-2">
-                  <input 
-                    ref="contributionInputRef"
-                    v-model="contributionSearchQuery" 
-                    type="text" 
-                    :placeholder="contributionScanMode === 'rfid' ? 'Scan card now...' : 'Enter 00-X-00000'"
-                    @keydown.enter="searchStudentForContribution"
-                    class="flex-1 px-4 py-3 bg-white border-2 border-purple-200 rounded-xl text-center font-mono text-lg focus:border-purple-500 outline-none transition-all"
-                  />
-                  <button 
-                    @click="searchStudentForContribution"
-                    :disabled="searchingStudent || !contributionSearchQuery.trim()"
-                    class="px-4 bg-purple-600 text-white rounded-xl hover:bg-purple-700 transition-all disabled:opacity-50 flex items-center justify-center min-w-[50px]"
-                  >
-                    <svg v-if="searchingStudent" class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                    <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                  </button>
-                </div>
-              </div>
-
-              <div v-if="selectedStudentForContribution" class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm animate-fade-in">
-                <div class="flex items-center gap-4">
-                  <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold text-xl">
-                    {{ getInitials(selectedStudentForContribution.full_name || selectedStudentForContribution.first_name + ' ' + selectedStudentForContribution.last_name) }}
-                  </div>
-                  <div>
-                    <p class="font-bold text-gray-900 text-lg">{{ selectedStudentForContribution.full_name || selectedStudentForContribution.first_name + ' ' + selectedStudentForContribution.last_name }}</p>
-                    <p class="text-sm text-gray-500">{{ selectedStudentForContribution.student_id }}</p>
-                    <p class="text-xs font-medium text-purple-600">{{ selectedStudentForContribution.program }} | {{ selectedStudentForContribution.year_level }}</p>
-                  </div>
-                </div>
+        <!-- Admin Contributions Page - Unified -->
+        <div v-if="currentPage === 'contributions' && (currentUser.role === 'admin' || currentUser.isMaster || currentUser.role === 'treasurer')" class="space-y-6">
+          <!-- Tabs for Different Contribution Types -->
+          <div class="bg-white rounded-lg shadow-lg p-4 md:p-8">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+              <h2 class="text-2xl font-bold text-purple-900">Contribution Management</h2>
+              <div class="flex bg-gray-100 rounded-lg p-1 w-full md:w-auto">
+                <button 
+                  @click="contributionTabMode = 'payments'" 
+                  :class="['flex-1 px-4 py-2 rounded-lg text-sm font-medium transition', contributionTabMode === 'payments' ? 'bg-purple-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200']"
+                >
+                  Manage Payments
+                </button>
               </div>
             </div>
 
-            <div class="space-y-6">
-              <div class="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                <h4 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                  Payment Details
-                </h4>
-                <div class="space-y-4">
+            <!-- Payments Tab (replaces General Contributions) -->
+            <div v-if="contributionTabMode === 'payments'" class="space-y-6">
+              <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
+                <p class="text-sm text-purple-800">
+                  <strong>Payments:</strong> Create and manage payment campaigns. Treasurer can mark students as paid, track completion rates, and generate transparency records.
+                </p>
+              </div>
+
+              <!-- Create Payment Form -->
+              <div class="bg-white rounded-lg p-6 border border-gray-200">
+                <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Create New Payment
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Amount (₱)</label>
-                    <input v-model="contributionAmount" type="number" placeholder="0.00" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Title</label>
+                    <input v-model="newPaymentData.title" type="text" placeholder="e.g., Membership Fee Q1 2026" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
                   </div>
                   <div>
-                    <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Description / Purpose</label>
-                    <input v-model="contributionDescription" type="text" placeholder="e.g., Membership Fee" class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 outline-none transition-all" />
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Type</label>
+                    <select v-model="newPaymentData.type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none">
+                      <option value="membership">Membership</option>
+                      <option value="donation">Donation</option>
+                      <option value="fee">Fee</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Amount Due (₱)</label>
+                    <input v-model.number="newPaymentData.amount_due" type="number" placeholder="0.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
+                  </div>
+                  <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Deadline (Optional)</label>
+                    <input v-model="newPaymentData.deadline" type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
+                  </div>
+                  <div class="md:col-span-2">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                    <textarea v-model="newPaymentData.description" placeholder="Add notes or details..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" rows="3"></textarea>
+                  </div>
+                </div>
+                <button 
+                  @click="createPayment" 
+                  :disabled="creatingPayment || !newPaymentData.title.trim()"
+                  class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 flex items-center gap-2"
+                >
+                  <svg v-if="creatingPayment" class="animate-spin h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  {{ creatingPayment ? 'Creating...' : 'Create Payment' }}
+                </button>
+              </div>
+
+              <!-- Active Payments List -->
+              <div>
+                <div class="flex justify-between items-center mb-4">
+                  <h3 class="text-xl font-bold text-gray-900">Active Payments</h3>
+                  <button 
+                    @click="loadPaymentsList()"
+                    class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition"
+                  >
+                    {{ showPaymentsList ? 'Hide List' : 'Show Payments' }}
+                  </button>
+                </div>
+
+                <div v-if="!showPaymentsList" class="text-center py-8 text-gray-500">
+                  <p>Click "Show Payments" to view and manage payment campaigns</p>
+                </div>
+
+                <div v-else>
+                  <div v-if="paymentsList.length === 0" class="text-center py-8 text-gray-500">
+                    <div v-if="paymentsLoading" class="flex justify-center">
+                      <svg class="animate-spin h-5 w-5 text-purple-600" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    </div>
+                    <p v-else>No payments created yet</p>
+                </div>
+
+                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div v-for="payment in paymentsList.filter(p => p.status === 'active')" :key="payment._id" class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border border-purple-200 hover:shadow-lg transition">
+                    <div class="flex justify-between items-start mb-2">
+                      <h4 class="font-bold text-gray-900">{{ payment.title }}</h4>
+                      <span class="text-xs font-semibold px-2 py-1 bg-blue-200 text-blue-800 rounded-full">{{ payment.type }}</span>
+                    </div>
+                    <p class="text-sm text-gray-600 mb-3">{{ payment.description }}</p>
+                    
+                    <div class="bg-white rounded-lg p-3 mb-3 space-y-1 text-sm">
+                      <div class="flex justify-between">
+                        <span class="text-gray-600">Students:</span>
+                        <span class="font-bold">{{ payment.stats.total_students }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-gray-600">Paid:</span>
+                        <span class="font-bold text-green-600">{{ payment.stats.paid_count }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="text-gray-600">Unpaid:</span>
+                        <span class="font-bold text-red-600">{{ payment.stats.unpaid_count }}</span>
+                      </div>
+                      <div class="flex justify-between pt-1 border-t">
+                        <span class="text-gray-600">Progress:</span>
+                        <span class="font-bold text-blue-600">{{ payment.stats.completion_percentage }}%</span>
+                      </div>
+                    </div>
+
+                    <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                      <div class="bg-green-500 h-2 rounded-full transition-all" :style="{ width: payment.stats.completion_percentage + '%' }"></div>
+                    </div>
+
+                    <button 
+                      @click="selectPaymentForMarking(payment)"
+                      class="w-full px-3 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition font-medium"
+                    >
+                      Manage Payments
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Scanner with Student Verification -->
+            <div v-if="selectedPayment && contributionTabMode === 'payments'" class="bg-white rounded-lg shadow-lg p-4 md:p-8 mt-6">
+              <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900">{{ selectedPayment.title }} - Mark Students as Paid</h3>
+                <button @click="selectedPayment = null" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+                <!-- Search and Verification Combined -->
+                <div class="lg:col-span-2">
+                  <div class="bg-purple-50 rounded-lg p-4 border-2 border-purple-200">
+                    <label class="block text-sm font-bold text-purple-900 mb-3">Search & Verify Student</label>
+                    
+                    <!-- Tabs for Student ID vs RFID -->
+                    <div class="flex gap-2 mb-3 border-b border-purple-200">
+                      <button 
+                        @click="paymentSearchMode = 'id'"
+                        :class="['px-3 py-2 text-sm font-semibold border-b-2 transition', paymentSearchMode === 'id' ? 'text-purple-600 border-purple-600' : 'text-gray-600 border-transparent']"
+                      >
+                        Student ID
+                      </button>
+                      <button 
+                        @click="paymentSearchMode = 'rfid'"
+                        :class="['px-3 py-2 text-sm font-semibold border-b-2 transition', paymentSearchMode === 'rfid' ? 'text-purple-600 border-purple-600' : 'text-gray-600 border-transparent']"
+                      >
+                        RFID Scan
+                      </button>
+                    </div>
+
+                    <!-- Student ID Search -->
+                    <div v-if="paymentSearchMode === 'id'" class="flex gap-2 mb-3">
+                      <input 
+                        v-model="paymentSearchQuery" 
+                        type="text" 
+                        placeholder="e.g., 25-A-01207"
+                        @keydown.enter="searchStudentForPayment"
+                        class="flex-1 px-3 py-2 bg-white border-2 border-purple-200 rounded-lg text-sm font-mono focus:border-purple-500 outline-none"
+                      />
+                      <button 
+                        @click="searchStudentForPayment"
+                        :disabled="!paymentSearchQuery.trim()"
+                        class="px-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 flex items-center justify-center"
+                      >
+                        <svg v-if="searchingPaymentStudent" class="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                      </button>
+                    </div>
+
+                    <!-- RFID Search -->
+                    <div v-else class="flex gap-2 mb-3">
+                      <input 
+                        v-model="paymentSearchQuery" 
+                        type="text" 
+                        placeholder="Scan RFID code..."
+                        @keydown.enter="searchStudentForPayment"
+                        class="flex-1 px-3 py-2 bg-white border-2 border-purple-200 rounded-lg text-sm font-mono focus:border-purple-500 outline-none"
+                        autofocus
+                      />
+                      <button 
+                        @click="searchStudentForPayment"
+                        :disabled="!paymentSearchQuery.trim()"
+                        class="px-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 flex items-center justify-center"
+                      >
+                        <svg v-if="searchingPaymentStudent" class="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.658 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                      </button>
+                    </div>
+
+                    <!-- Student Details Card (Compact) -->
+                    <div v-if="verifyingPaymentStudent" class="text-center py-4">
+                      <svg class="animate-spin h-5 w-5 text-purple-600 mx-auto" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                      <p class="text-purple-600 mt-1 text-xs font-medium">Loading...</p>
+                    </div>
+                    
+                    <div v-else-if="selectedPaymentStudent" class="bg-white rounded-lg p-3 border-2 border-green-200">
+                      <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+                          {{ getInitials(selectedPaymentStudent.full_name || selectedPaymentStudent.first_name + ' ' + selectedPaymentStudent.last_name) }}
+                        </div>
+                        <div class="flex-1 min-w-0">
+                          <p class="font-bold text-gray-900 text-sm">{{ selectedPaymentStudent.full_name || selectedPaymentStudent.first_name + ' ' + selectedPaymentStudent.last_name }}</p>
+                          <p class="text-xs text-gray-600 font-mono">{{ selectedPaymentStudent.student_id }}</p>
+                          <p class="text-xs text-gray-500">{{ selectedPaymentStudent.program }} - {{ selectedPaymentStudent.year_level }}</p>
+                          <span class="inline-block mt-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold">✓ Verified</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div v-else class="text-center py-3 text-gray-500 text-xs">
+                      <p>Enter student ID to verify</p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Action Buttons Column -->
+                <div class="lg:col-span-2 flex flex-col gap-3">
+                  <button 
+                    v-if="selectedPaymentStudent"
+                    @click="confirmMarkPaymentAsPaid()"
+                    :disabled="!selectedPaymentStudent || markingPaymentAsPaid"
+                    class="w-full py-2 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-lg font-bold hover:from-green-700 hover:to-emerald-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-sm"
+                  >
+                    <svg v-if="markingPaymentAsPaid" class="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    {{ markingPaymentAsPaid ? 'Processing...' : 'Mark as Paid' }}
+                  </button>
+                  
+                  <button 
+                    v-if="selectedPaymentStudent"
+                    @click="clearPaymentStudent"
+                    class="w-full py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition font-medium text-sm"
+                  >
+                    Search Another
+                  </button>
+
+                  <!-- Quick Stats -->
+                  <div class="grid grid-cols-2 gap-2 pt-2 border-t">
+                    <div class="bg-green-50 rounded p-2 text-center border border-green-200">
+                      <p class="text-xs text-green-700">Paid</p>
+                      <p class="text-lg font-bold text-green-600">{{ selectedPayment.stats.paid_count }}</p>
+                    </div>
+                    <div class="bg-red-50 rounded p-2 text-center border border-red-200">
+                      <p class="text-xs text-red-700">Unpaid</p>
+                      <p class="text-lg font-bold text-red-600">{{ selectedPayment.stats.unpaid_count }}</p>
+                    </div>
+                  </div>
+                  <div class="bg-purple-50 rounded p-2 border border-purple-200">
+                    <p class="text-xs text-purple-700 text-center">Completion</p>
+                    <div class="w-full bg-gray-200 rounded-full h-2 mt-1">
+                      <div class="bg-purple-600 h-2 rounded-full transition-all" :style="{ width: selectedPayment.stats.completion_percentage + '%' }"></div>
+                    </div>
+                    <p class="text-xs text-purple-600 text-center mt-1 font-bold">{{ selectedPayment.stats.completion_percentage }}%</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Latest Paid Users Section -->
+              <div class="bg-white rounded-lg shadow-lg p-4 md:p-6 mt-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                  <div>
+                    <h3 class="text-lg font-bold text-gray-900">Payment Records</h3>
+                    <span class="text-xs text-gray-500">Track payment status</span>
                   </div>
                   <button 
-                    @click="recordContribution" 
-                    :disabled="!selectedStudentForContribution || !contributionAmount || recordingContribution" 
-                    :class="['w-full py-4 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold shadow-lg transition-all', (!selectedStudentForContribution || !contributionAmount || recordingContribution) ? 'opacity-50 cursor-not-allowed grayscale' : 'shadow-purple-200 hover:scale-[1.02] active:scale-[0.98]']"
+                    @click="fetchPayments"
+                    :disabled="paymentsLoading"
+                    class="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 font-medium text-xs"
                   >
-                    <span v-if="recordingContribution" class="flex items-center justify-center gap-2">
-                      <svg class="animate-spin h-5 w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                      Processing...
-                    </span>
-                    <span v-else>Confirm & Record Payment</span>
+                    <svg v-if="paymentsLoading" class="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    {{ paymentsLoading ? 'Refreshing...' : 'Refresh' }}
                   </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Status</label>
+                    <div class="flex gap-1 flex-wrap">
+                      <button 
+                        @click="paymentRecordsFilter.status = 'all'"
+                        :class="['px-2 py-1 rounded text-xs font-medium transition', paymentRecordsFilter.status === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300']"
+                      >
+                        All
+                      </button>
+                      <button 
+                        @click="paymentRecordsFilter.status = 'paid'"
+                        :class="['px-2 py-1 rounded text-xs font-medium transition', paymentRecordsFilter.status === 'paid' ? 'bg-green-600 text-white' : 'bg-white text-gray-700 border border-gray-300']"
+                      >
+                        Paid
+                      </button>
+                      <button 
+                        @click="paymentRecordsFilter.status = 'unpaid'"
+                        :class="['px-2 py-1 rounded text-xs font-medium transition', paymentRecordsFilter.status === 'unpaid' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 border border-gray-300']"
+                      >
+                        Unpaid
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Campaign</label>
+                    <select 
+                      v-model="paymentRecordsFilter.paymentId"
+                      class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                    >
+                      <option value="">All Campaigns</option>
+                      <option v-for="payment in paymentsList" :key="payment._id" :value="payment._id">
+                        {{ payment.title }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Search Student</label>
+                    <input 
+                      v-model="paymentRecordsFilter.searchQuery"
+                      type="text"
+                      placeholder="Name or ID"
+                      class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div v-if="paymentsList.length === 0" class="text-center py-12">
+                  <p class="text-gray-500">No payments created yet</p>
+                </div>
+
+                <div v-else class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b">
+                      <tr>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Student Name</th>
+                        <th class="hidden md:table-cell px-4 py-3 text-left font-semibold text-gray-700">Student ID</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Payment</th>
+                        <th class="hidden lg:table-cell px-4 py-3 text-left font-semibold text-gray-700">Paid By</th>
+                        <th class="hidden sm:table-cell px-4 py-3 text-left font-semibold text-gray-700">Date</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                      <template v-for="payment in paymentsList" :key="payment._id">
+                        <tr v-for="record in (payment.payment_records || [])" :key="`${payment._id}-${record.student_id}`">
+                          <!-- Show based on filter -->
+                          <template v-if="shouldShowRecord(payment, record)">
+                            <td class="px-4 py-3 hover:bg-gray-50 font-medium">
+                              <div class="flex items-center gap-2">
+                                {{ record.student_name || 'N/A' }}
+                                <span v-if="record.is_paid" class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold">Paid</span>
+                                <span v-else class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-semibold">Unpaid</span>
+                              </div>
+                            </td>
+                            <td class="hidden md:table-cell px-4 py-3 font-mono text-xs hover:bg-gray-50">{{ record.student_id }}</td>
+                            <td class="px-4 py-3 hover:bg-gray-50 text-xs">{{ payment.title }}</td>
+                            <td class="hidden lg:table-cell px-4 py-3 text-xs hover:bg-gray-50">{{ record.paid_by_treasurer || 'Admin' }}</td>
+                            <td class="hidden sm:table-cell px-4 py-3 text-xs text-gray-500 hover:bg-gray-50">{{ record.paid_date ? new Date(record.paid_date).toLocaleDateString() : '-' }}</td>
+                            <td class="px-4 py-3 hover:bg-gray-50">
+                              <button 
+                                @click="confirmDeletePayment(payment._id, record.student_id, record.student_name)"
+                                class="text-red-600 hover:text-red-800 font-medium text-xs hover:underline"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </template>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+
+                  <div v-if="!paymentsList.some(p => p.payment_records && p.payment_records.some(r => shouldShowRecord(p, r)))" class="text-center py-8">
+                    <p class="text-gray-500">No records match your filters</p>
+                  </div>
+                </div>
+
+                <!-- Summary Stats -->
+                <div v-if="paymentsList.length > 0" class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6 pt-6 border-t">
+                  <div class="bg-green-50 rounded-lg p-4 border border-green-200">
+                    <p class="text-xs text-green-700 mb-1">Total Paid</p>
+                    <p class="text-2xl font-bold text-green-600">{{ getFilteredStats().paid }}</p>
+                  </div>
+                  <div class="bg-red-50 rounded-lg p-4 border border-red-200">
+                    <p class="text-xs text-red-700 mb-1">Total Unpaid</p>
+                    <p class="text-2xl font-bold text-red-600">{{ getFilteredStats().unpaid }}</p>
+                  </div>
+                  <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <p class="text-xs text-blue-700 mb-1">Total Records</p>
+                    <p class="text-2xl font-bold text-blue-600">{{ getFilteredStats().total }}</p>
+                  </div>
+                  <div class="bg-purple-50 rounded-lg p-4 border border-purple-200">
+                    <p class="text-xs text-purple-700 mb-1">Completion Rate</p>
+                    <p class="text-2xl font-bold text-purple-600">{{ getFilteredStats().percentage }}%</p>
+                  </div>
+                </div>
+
+                <!-- Delete Confirmation Modal -->
+                <div v-if="deletePaymentConfirmModal.show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
+                    <h3 class="text-lg font-bold text-gray-900 mb-2">Delete Payment Record</h3>
+                    <p class="text-gray-600 mb-6">Are you sure you want to remove <strong>{{ deletePaymentConfirmModal.studentName }}</strong> from the paid list? This action cannot be undone.</p>
+                    <div class="flex gap-3">
+                      <button 
+                        @click="deletePaymentConfirmModal.show = false"
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition"
+                      >
+                        Cancel
+                      </button>
+                      <button 
+                        @click="deletePaymentRecord(deletePaymentConfirmModal.paymentId, deletePaymentConfirmModal.studentId)"
+                        :disabled="deletingPaymentRecord"
+                        class="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        <svg v-if="deletingPaymentRecord" class="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                        {{ deletingPaymentRecord ? 'Deleting...' : 'Delete' }}
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1406,6 +1758,17 @@
                         </div>
                       </div>
                       <div class="flex items-center gap-2 ml-0 sm:ml-6" @click.stop>
+                        <button 
+                          v-if="currentUser.role === 'treasurer'"
+                          @click="openContributionsModal(event._id, event.title)" 
+                          class="bg-purple-100 text-purple-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-purple-200 transition text-xs sm:text-sm flex items-center gap-1" 
+                          title="View Contributions"
+                        >
+                          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                          <span class="sr-only sm:not-sr-only">Contributions</span>
+                        </button>
                         <button @click="openEditEvent(event)" class="bg-yellow-100 text-yellow-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-yellow-200 transition text-xs sm:text-sm flex items-center gap-1" title="Edit">
                           <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                           <span class="sr-only sm:not-sr-only">Edit</span>
@@ -2038,6 +2401,175 @@
                         </div>
                       </div>
                     </transition>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payments Page -->
+        <div v-if="currentPage === 'payments'" class="space-y-6">
+          <div v-if="currentUser.role === 'admin' || currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
+            <!-- Create Payment Section -->
+            <div class="mb-8 pb-8 border-b">
+              <h2 class="text-2xl font-bold text-purple-900 mb-6">Create New Payment</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Title</label>
+                  <input v-model="newPaymentData.title" type="text" placeholder="e.g., Membership Fee Q1 2026" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Type</label>
+                  <select v-model="newPaymentData.type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none">
+                    <option value="membership">Membership</option>
+                    <option value="donation">Donation</option>
+                    <option value="fee">Fee</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Amount Due (₱)</label>
+                  <input v-model.number="newPaymentData.amount_due" type="number" placeholder="0.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Deadline (Optional)</label>
+                  <input v-model="newPaymentData.deadline" type="date" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
+                  <textarea v-model="newPaymentData.description" placeholder="Add notes or details..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" rows="3"></textarea>
+                </div>
+              </div>
+              <button 
+                @click="createPayment" 
+                :disabled="creatingPayment || !newPaymentData.title.trim()"
+                class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 flex items-center gap-2"
+              >
+                <svg v-if="creatingPayment" class="animate-spin h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                {{ creatingPayment ? 'Creating...' : 'Create Payment' }}
+              </button>
+            </div>
+
+            <!-- Payments List -->
+            <div>
+              <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-gray-900">Active Payments</h3>
+                <button 
+                  @click="fetchPayments()"
+                  :disabled="paymentsLoading"
+                  class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition disabled:opacity-50"
+                >
+                  {{ paymentsLoading ? 'Loading...' : 'Refresh' }}
+                </button>
+              </div>
+
+              <div v-if="paymentsList.length === 0" class="text-center py-8 text-gray-500">
+                <p>No payments created yet</p>
+              </div>
+
+              <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div v-for="payment in paymentsList.filter(p => p.status === 'active')" :key="payment._id" class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border border-purple-200 hover:shadow-lg transition">
+                  <div class="flex justify-between items-start mb-2">
+                    <h4 class="font-bold text-gray-900">{{ payment.title }}</h4>
+                    <span class="text-xs font-semibold px-2 py-1 bg-blue-200 text-blue-800 rounded-full">{{ payment.type }}</span>
+                  </div>
+                  <p class="text-sm text-gray-600 mb-3">{{ payment.description }}</p>
+                  
+                  <div class="bg-white rounded-lg p-3 mb-3 space-y-1 text-sm">
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Students:</span>
+                      <span class="font-bold">{{ payment.stats.total_students }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Paid:</span>
+                      <span class="font-bold text-green-600">{{ payment.stats.paid_count }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Unpaid:</span>
+                      <span class="font-bold text-red-600">{{ payment.stats.unpaid_count }}</span>
+                    </div>
+                    <div class="flex justify-between pt-1 border-t">
+                      <span class="text-gray-600">Progress:</span>
+                      <span class="font-bold text-blue-600">{{ payment.stats.completion_percentage }}%</span>
+                    </div>
+                  </div>
+
+                  <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
+                    <div class="bg-green-500 h-2 rounded-full transition-all" :style="{ width: payment.stats.completion_percentage + '%' }"></div>
+                  </div>
+
+                  <button 
+                    @click="selectPaymentForMarking(payment)"
+                    class="w-full px-3 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition font-medium"
+                  >
+                    Manage Payments
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Scanner -->
+          <div v-if="selectedPayment" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-xl font-bold text-gray-900">{{ selectedPayment.title }} - Student Scanner</h3>
+              <button @click="selectedPayment = null" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <!-- Scanner Input -->
+              <div class="space-y-4">
+                <div class="bg-purple-50 rounded-lg p-6 border-2 border-purple-200">
+                  <div class="text-center mb-4">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"></path>
+                      </svg>
+                    </div>
+                    <h4 class="font-bold text-purple-900">Scan Student ID or RFID</h4>
+                  </div>
+                  
+                  <input 
+                    v-model="paymentSearchQuery" 
+                    type="text" 
+                    placeholder="Enter Student ID or scan RFID"
+                    @keydown.enter="markPaymentAsPaid(selectedPayment._id)"
+                    class="w-full px-4 py-3 bg-white border-2 border-purple-200 rounded-lg text-center font-mono focus:border-purple-500 outline-none"
+                  />
+                </div>
+
+                <button 
+                  @click="markPaymentAsPaid(selectedPayment._id)"
+                  :disabled="!paymentSearchQuery.trim()"
+                  class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg font-bold hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50"
+                >
+                  Mark as Paid
+                </button>
+              </div>
+
+              <!-- Payment Stats -->
+              <div class="space-y-4">
+                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+                  <p class="text-sm text-green-800 mb-1">Total Students</p>
+                  <p class="text-3xl font-bold text-green-600">{{ selectedPayment.stats.total_students }}</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-4 border border-blue-200">
+                  <p class="text-sm text-blue-800 mb-1">Paid</p>
+                  <p class="text-3xl font-bold text-blue-600">{{ selectedPayment.stats.paid_count }}</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-red-50 to-pink-50 rounded-lg p-4 border border-red-200">
+                  <p class="text-sm text-red-800 mb-1">Still Unpaid</p>
+                  <p class="text-3xl font-bold text-red-600">{{ selectedPayment.stats.unpaid_count }}</p>
+                </div>
+
+                <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
+                  <p class="text-sm text-purple-800 mb-1">Completion Rate</p>
+                  <p class="text-3xl font-bold text-purple-600">{{ selectedPayment.stats.completion_percentage }}%</p>
+                  <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                    <div class="bg-purple-600 h-2 rounded-full transition-all" :style="{ width: selectedPayment.stats.completion_percentage + '%' }"></div>
                   </div>
                 </div>
               </div>
@@ -3075,8 +3607,10 @@
           <select v-model="editingUser.role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
             <option value="student">Student</option>
             <option value="medpub">Medpub</option>
+            <option value="treasurer">Treasurer</option>
           </select>
           <p v-if="editingUser.role === 'medpub'" class="text-xs text-yellow-600 mt-1">Medpub users can post announcements and notifications.</p>
+          <p v-else-if="editingUser.role === 'treasurer'" class="text-xs text-blue-600 mt-1">Treasurer users can manage payments and contributions.</p>
         </div>
         <div class="flex gap-3 mt-6">
           <button @click="closeEditModal" :disabled="savingUser" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
@@ -3160,6 +3694,26 @@
       <div class="flex gap-3">
         <button @click="showDeleteConfirm = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
         <button @click="confirmDelete" class="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-700 transition">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Payment Record Modal -->
+  <div v-if="deletePaymentConfirmation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4">
+      <h3 class="text-2xl font-bold text-red-600 mb-4">Delete Payment Record?</h3>
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <p class="text-sm text-gray-700 mb-3"><strong>Student:</strong> {{ deletePaymentConfirmation.name }}</p>
+        <p class="text-sm text-gray-700 mb-3"><strong>Amount:</strong> ₱{{ parseFloat(deletePaymentConfirmation.amount || 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
+        <p class="text-sm text-gray-700"><strong>Description:</strong> {{ deletePaymentConfirmation.description || '-' }}</p>
+      </div>
+      <p class="text-gray-600 mb-6">Are you sure you want to delete this payment record? This action cannot be undone.</p>
+      <div class="flex gap-3">
+        <button @click="deletePaymentConfirmation = null" :disabled="deletingPayment" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition disabled:opacity-50">Cancel</button>
+        <button @click="confirmDeletePaymentRecord" :disabled="deletingPayment" class="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50 flex items-center justify-center gap-2">
+          <svg v-if="deletingPayment" class="animate-spin h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          {{ deletingPayment ? 'Deleting...' : 'Delete' }}
+        </button>
       </div>
     </div>
   </div>
@@ -3909,6 +4463,7 @@
       </div>
     </div>
   </transition>
+  </div>
 </template>
 
 <script setup>
@@ -3920,6 +4475,8 @@ import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import AnnouncementPopup from '../components/AnnouncementPopup.vue'
 import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 import SessionExpiredModal from '../components/SessionExpiredModal.vue'
+import ContributionsModal from '../components/ContributionsModal.vue'
+import StudentContributionsView from '../components/StudentContributionsView.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
 
@@ -3930,7 +4487,14 @@ const loggingOut = ref(false)
 const isPageLoading = ref(false)
 const statsLoading = ref(false)
 
+// Contributions modal state
+const showContributionsModal = ref(false)
+const selectedEventForContributions = ref(null)
+const selectedEventTitleForContributions = ref('')
+
 // Contribution feature state
+const contributionTabMode = ref('general') // 'general' or 'events'
+const selectedEventForPaymentTab = ref('')
 const contributionSearchQuery = ref('')
 const contributionScanMode = ref('rfid')
 const contributionInputRef = ref(null)
@@ -3943,6 +4507,46 @@ const recordingContribution = ref(false)
 // Transparency board state
 const transparencyList = ref([])
 const transparencyLoading = ref(false)
+const deletePaymentConfirmation = ref(null)
+const deletingPayment = ref(false)
+
+// Payments state
+const paymentsList = ref([])
+const paymentsLoading = ref(false)
+const showPaymentsList = ref(false) // Only show when explicitly clicked
+const selectedPayment = ref(null)
+const paymentScanMode = ref('student_id')
+const paymentSearchMode = ref('id') // 'id' or 'rfid'
+const paymentSearchQuery = ref('')
+const creatingPayment = ref(false)
+const selectedPaymentStudent = ref(null)
+const verifyingPaymentStudent = ref(false)
+const searchingPaymentStudent = ref(false)
+const markingPaymentAsPaid = ref(false)
+const deletingPaymentRecord = ref(false)
+const deletePaymentConfirmModal = ref({
+  show: false,
+  paymentId: null,
+  studentId: null,
+  studentName: ''
+})
+const paymentRecordsFilter = ref({
+  status: 'all', // all, paid, unpaid
+  paymentId: '', // filter by payment campaign
+  searchQuery: '' // search by name or ID
+})
+const newPaymentData = ref({
+  title: '',
+  description: '',
+  type: 'fee',
+  amount_due: 0,
+  deadline: null
+})
+
+// Get session token from localStorage
+const getSessionToken = () => {
+  return localStorage.getItem('authToken') || localStorage.getItem('adminToken') || ''
+}
 
 const fetchTransparencyBoard = async () => {
   transparencyLoading.value = true
@@ -3950,12 +4554,379 @@ const fetchTransparencyBoard = async () => {
     const response = await fetch(buildAPIUrl('/apis/contributions/transparency'))
     const result = await response.json()
     if (response.ok) {
-      transparencyList.value = result.data || []
+      // Flatten the nested structure: each student has payments array
+      // Transform into flat array with one row per payment
+      const flatData = []
+      const students = result.data || []
+      
+      students.forEach(student => {
+        if (student.payments && Array.isArray(student.payments)) {
+          student.payments.forEach(payment => {
+            flatData.push({
+              name: student.name,
+              program: student.program,
+              year_level: student.year_level,
+              contribution_amount: payment.amount,
+              contribution_description: payment.description,
+              contribution_date: payment.date
+            })
+          })
+        }
+      })
+      
+      transparencyList.value = flatData
     }
   } catch (error) {
     console.error('Failed to fetch transparency board:', error)
   } finally {
     transparencyLoading.value = false
+  }
+}
+
+// Fetch all payments
+const fetchPayments = async () => {
+  paymentsLoading.value = true
+  try {
+    const response = await fetch(buildAPIUrl('/apis/payments'), {
+      headers: { 'Authorization': `Bearer ${getSessionToken()}` }
+    })
+    const result = await response.json()
+    if (response.ok) {
+      paymentsList.value = result.data || []
+      // Automatically fix student IDs in the background
+      await autoFixStudentIds()
+    }
+  } catch (error) {
+    console.error('Failed to fetch payments:', error)
+    showNotification('Failed to load payments', 'error')
+  } finally {
+    paymentsLoading.value = false
+  }
+}
+
+// Create new payment
+const createPayment = async () => {
+  if (!newPaymentData.value.title.trim()) {
+    showNotification('Payment title is required', 'error')
+    return
+  }
+  
+  creatingPayment.value = true
+  try {
+    const response = await fetch(buildAPIUrl('/apis/payments'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getSessionToken()}`
+      },
+      body: JSON.stringify(newPaymentData.value)
+    })
+    
+    const result = await response.json()
+    if (response.ok) {
+      showNotification('Payment created successfully', 'success')
+      newPaymentData.value = { title: '', description: '', type: 'fee', amount_due: 0, deadline: null }
+      await fetchPayments()
+    } else {
+      showNotification(result.message || 'Failed to create payment', 'error')
+    }
+  } catch (error) {
+    console.error('Error creating payment:', error)
+    showNotification('Error creating payment', 'error')
+  } finally {
+    creatingPayment.value = false
+  }
+}
+
+// Search for student and show verification
+const searchStudentForPayment = async () => {
+  if (!paymentSearchQuery.value.trim()) {
+    showNotification(`Enter ${paymentSearchMode.value === 'id' ? 'Student ID' : 'RFID code'}`, 'error')
+    return
+  }
+  
+  searchingPaymentStudent.value = true
+  verifyingPaymentStudent.value = true
+  
+  try {
+    // Build search params based on mode
+    let searchParams
+    if (paymentSearchMode.value === 'id') {
+      // Search specifically by student ID
+      searchParams = new URLSearchParams({
+        search: paymentSearchQuery.value,
+        limit: 1
+      })
+    } else {
+      // Search specifically by RFID
+      searchParams = new URLSearchParams({
+        search: paymentSearchQuery.value,
+        rfid_status: 'all',
+        limit: 1
+      })
+    }
+    
+    const response = await fetch(buildAPIUrl(`/apis/students/search?${searchParams}`), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getSessionToken()}`
+      }
+    })
+    
+    const result = await response.json()
+    
+    if (response.ok && result.data && result.data.length > 0) {
+      selectedPaymentStudent.value = result.data[0]
+      showNotification('Student found! Please verify the information.', 'info')
+    } else {
+      selectedPaymentStudent.value = null
+      showNotification(`Student not found. Make sure the ${paymentSearchMode.value === 'id' ? 'Student ID is correct' : 'RFID is registered'}.`, 'error')
+    }
+  } catch (error) {
+    console.error('Error searching student:', error)
+    selectedPaymentStudent.value = null
+    showNotification('Error searching for student', 'error')
+  } finally {
+    searchingPaymentStudent.value = false
+    verifyingPaymentStudent.value = false
+  }
+}
+
+// Clear the selected student and allow new search
+const clearPaymentStudent = () => {
+  selectedPaymentStudent.value = null
+  paymentSearchQuery.value = ''
+  paymentSearchMode.value = 'id' // Reset to Student ID mode
+}
+
+// Load payments list when user shows it
+const loadPaymentsList = async () => {
+  if (!showPaymentsList.value) {
+    showPaymentsList.value = true
+    await fetchPayments()
+  }
+}
+
+// Select a payment and reset search
+const selectPaymentForMarking = (payment) => {
+  selectedPayment.value = payment
+  clearPaymentStudent()
+}
+
+// Confirm and mark payment as paid
+const confirmMarkPaymentAsPaid = async () => {
+  if (!selectedPaymentStudent.value || !selectedPayment.value) {
+    showNotification('Please select a student first', 'error')
+    return
+  }
+  
+  markingPaymentAsPaid.value = true
+  
+  try {
+    const response = await fetch(buildAPIUrl(`/apis/payments/${selectedPayment.value._id}/mark-paid`), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getSessionToken()}`
+      },
+      body: JSON.stringify({
+        student_id_input: selectedPaymentStudent.value.student_id
+      })
+    })
+    
+    const result = await response.json()
+    if (response.ok) {
+      showNotification(`${selectedPaymentStudent.value.full_name || selectedPaymentStudent.value.first_name + ' ' + selectedPaymentStudent.value.last_name} marked as paid!`, 'success')
+      clearPaymentStudent()
+      await fetchPayments()
+    } else {
+      showNotification(result.message || 'Failed to mark payment', 'error')
+    }
+  } catch (error) {
+    console.error('Error marking payment:', error)
+    showNotification('Error marking payment', 'error')
+  } finally {
+    markingPaymentAsPaid.value = false
+  }
+}
+
+// Confirm delete payment record
+const confirmDeletePayment = (paymentId, studentId, studentName) => {
+  deletePaymentConfirmModal.value = {
+    show: true,
+    paymentId,
+    studentId,
+    studentName
+  }
+}
+
+// Delete payment record from paid list
+const deletePaymentRecord = async (paymentId, studentId) => {
+  deletingPaymentRecord.value = true
+  
+  try {
+    const response = await fetch(buildAPIUrl(`/apis/payments/${paymentId}/student/${studentId}`), {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getSessionToken()}`
+      }
+    })
+    
+    const result = await response.json()
+    if (response.ok) {
+      showNotification('Payment record deleted successfully', 'success')
+      deletePaymentConfirmModal.value.show = false
+      await fetchPayments()
+    } else {
+      showNotification(result.message || 'Failed to delete payment record', 'error')
+    }
+  } catch (error) {
+    console.error('Error deleting payment record:', error)
+    showNotification('Error deleting payment record', 'error')
+  } finally {
+    deletingPaymentRecord.value = false
+  }
+}
+
+// Filter payment records based on filters
+const shouldShowRecord = (payment, record) => {
+  // Filter by payment ID if selected
+  if (paymentRecordsFilter.value.paymentId && payment._id !== paymentRecordsFilter.value.paymentId) {
+    return false
+  }
+
+  // Filter by status
+  if (paymentRecordsFilter.value.status === 'paid' && !record.is_paid) {
+    return false
+  }
+  if (paymentRecordsFilter.value.status === 'unpaid' && record.is_paid) {
+    return false
+  }
+
+  // Filter by search query (name or ID)
+  if (paymentRecordsFilter.value.searchQuery.trim()) {
+    const query = paymentRecordsFilter.value.searchQuery.toLowerCase()
+    const name = (record.student_name || '').toLowerCase()
+    const id = (record.student_id || '').toLowerCase()
+    if (!name.includes(query) && !id.includes(query)) {
+      return false
+    }
+  }
+
+  return true
+}
+
+// Get filtered statistics
+const getFilteredStats = () => {
+  let paid = 0
+  let unpaid = 0
+  let total = 0
+
+  paymentsList.value.forEach(payment => {
+    (payment.payment_records || []).forEach(record => {
+      if (shouldShowRecord(payment, record)) {
+        total++
+        if (record.is_paid) {
+          paid++
+        } else {
+          unpaid++
+        }
+      }
+    })
+  })
+
+  const percentage = total > 0 ? Math.round((paid / total) * 100) : 0
+
+  return { paid, unpaid, total, percentage }
+}
+
+// Fix old student IDs (ObjectId format) to proper student IDs
+const autoFixStudentIds = async () => {
+  try {
+    const response = await fetch(buildAPIUrl('/apis/payments/migrate/fix-student-ids'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getSessionToken()}`
+      }
+    })
+
+    const result = await response.json()
+    if (response.ok) {
+      // Silent success - don't show notification for automatic fix
+      if (result.fixed > 0) {
+        console.log(`Fixed ${result.fixed} student IDs automatically`)
+      }
+    } else {
+      console.error('Error auto-fixing student IDs:', result.message)
+    }
+  } catch (error) {
+    console.error('Error auto-fixing student IDs:', error)
+  }
+}
+
+// Delete payment record from transparency board
+const deletePaymentRecordTransparency = (record) => {
+  deletePaymentConfirmation.value = {
+    name: record.name,
+    amount: record.contribution_amount,
+    description: record.contribution_description,
+    record: record
+  }
+}
+
+const confirmDeletePaymentRecord = async () => {
+  if (!deletePaymentConfirmation.value) return
+  
+  deletingPayment.value = true
+  try {
+    // Find payment from the record and attempt to delete
+    // Since we have student name but need ID, we'll search through our data
+    const record = deletePaymentConfirmation.value.record
+    
+    // Try to find the payment ID from transparency list or payments list
+    let deleted = false
+    
+    // First, try to find in the selected payment if one is selected
+    if (selectedPayment.value && selectedPayment.value._id) {
+      // Find the student ID from their full name
+      const students = await fetch(buildAPIUrl('/apis/students'), {
+        headers: { 'Authorization': `Bearer ${getSessionToken()}` }
+      }).then(r => r.json())
+      
+      const student = students.data?.find(s => 
+        (s.full_name || `${s.first_name} ${s.last_name}`).toLowerCase() === record.name.toLowerCase()
+      )
+      
+      if (student) {
+        const deleteResponse = await fetch(buildAPIUrl(`/apis/payments/${selectedPayment.value._id}/student/${student._id}`), {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${getSessionToken()}`
+          }
+        })
+        
+        if (deleteResponse.ok) {
+          deleted = true
+        }
+      }
+    }
+    
+    if (deleted) {
+      showNotification(`Payment deleted for ${record.name}`, 'success')
+      deletePaymentConfirmation.value = null
+      await fetchTransparencyBoard()
+      if (selectedPayment.value) await fetchPayments()
+    } else {
+      showNotification('Could not delete payment record', 'error')
+    }
+  } catch (error) {
+    console.error('Error deleting payment:', error)
+    showNotification('Error deleting payment record', 'error')
+  } finally {
+    deletingPayment.value = false
   }
 }
 
@@ -4023,6 +4994,18 @@ const recordContribution = async () => {
     recordingContribution.value = false
   }
 }
+
+const openContributionsModal = (eventId, eventTitle) => {
+  selectedEventForContributions.value = eventId
+  selectedEventTitleForContributions.value = eventTitle
+  showContributionsModal.value = true
+}
+
+const handlePaymentUpdated = (data) => {
+  // Refresh the current view if needed
+  console.log('Payment updated:', data)
+}
+
 const profileImageLoading = ref(false)
 const sidebarImageLoading = ref(false)
 const showDevelopersPopup = ref(false)
@@ -9212,6 +10195,26 @@ const getInitials = (name) => {
   const parts = name.trim().split(/\s+/)
   if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+}
+
+// Transparency board helper functions
+const getTotalContributions = () => {
+  return transparencyList.value.reduce((sum, record) => {
+    return sum + (parseFloat(record.contribution_amount) || 0)
+  }, 0).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+const getUniqueContributors = () => {
+  const uniqueIds = new Set(transparencyList.value.map(record => record.student_id))
+  return uniqueIds.size
+}
+
+const getAverageContribution = () => {
+  if (transparencyList.value.length === 0) return '0.00'
+  const total = transparencyList.value.reduce((sum, record) => {
+    return sum + (parseFloat(record.contribution_amount) || 0)
+  }, 0)
+  return (total / transparencyList.value.length).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
 }
 
 const activeUnattendedEvents = computed(() => {

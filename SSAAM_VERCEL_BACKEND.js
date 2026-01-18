@@ -91,7 +91,7 @@ const VALID_PROGRAMS = ['BSCS', 'BSIT', 'BSIS'];
 const VALID_SUFFIXES = ['', 'Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const VALID_SEMESTERS = ['1st Sem', '2nd Sem'];
 const VALID_YEAR_LEVELS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
-const VALID_ROLES = ['student', 'medpub'];
+const VALID_ROLES = ['student', 'medpub', 'treasurer'];
 const VALID_RFID_STATUS = ['verified', 'unverified', 'Unreadable'];
 
 // Rate limiting for likes (in-memory, resets on serverless cold start)
@@ -621,6 +621,339 @@ app.get('/apis/contributions/transparency', async (req, res) => {
     }
 });
 
+// ==================== PAYMENT ENDPOINTS ====================
+
+// Create new payment
+app.post('/apis/payments', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { title, description, type, amount_due, deadline } = req.body;
+        
+        if (!title) {
+            return res.status(400).json({ message: 'Payment title is required' });
+        }
+        
+        // Get creator identifier - could be admin (master) or treasurer (student)
+        const createdBy = req.master ? req.master.username : req.student.student_id;
+        
+        const payment = new Payment({
+            title,
+            description: description || '',
+            type: type || 'fee',
+            amount_due: amount_due || 0,
+            deadline: deadline || null,
+            created_by: createdBy
+        });
+        
+        await payment.save();
+        
+        // Initialize payment records for all active students
+        const students = await Student.find({});
+        const paymentRecords = students.map(student => ({
+            payment_id: payment._id,
+            student_id: student.student_id,
+            student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+            program: student.program,
+            year_level: student.year_level,
+            payment_status: 'unpaid'
+        }));
+        
+        await PaymentRecord.insertMany(paymentRecords);
+        
+        res.json({ success: true, data: payment, message: 'Payment created and records initialized' });
+    } catch (err) {
+        console.error('Error creating payment:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get all payments
+app.get('/apis/payments', auth, async (req, res) => {
+    try {
+        const { status } = req.query;
+        const query = status ? { status } : {};
+        
+        const payments = await Payment.find(query).sort({ created_at: -1 });
+        
+        // Get statistics and records for each payment
+        const paymentsWithStats = await Promise.all(payments.map(async (payment) => {
+            const records = await PaymentRecord.find({ payment_id: payment._id });
+            const paid = records.filter(r => r.payment_status === 'paid').length;
+            const unpaid = records.filter(r => r.payment_status === 'unpaid').length;
+            const total = records.length;
+            
+            return {
+                ...payment.toObject(),
+                payment_records: records.map(r => ({
+                    student_id: r.student_id,
+                    student_name: r.student_name,
+                    is_paid: r.payment_status === 'paid',
+                    paid_by_treasurer: r.marked_by || null,
+                    paid_date: r.payment_date || null
+                })),
+                stats: {
+                    total_students: total,
+                    paid_count: paid,
+                    unpaid_count: unpaid,
+                    completion_percentage: total > 0 ? Math.round((paid / total) * 100) : 0
+                }
+            };
+        }));
+        
+        res.json({ success: true, data: paymentsWithStats });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Migrate old student IDs (ObjectId) to proper student IDs (like 25-A-XXXXX)
+app.post('/apis/payments/migrate/fix-student-ids', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const records = await PaymentRecord.find({});
+        let fixedCount = 0;
+        
+        for (const record of records) {
+            // Check if student_id looks like an ObjectId (24 hex characters)
+            if (record.student_id && /^[0-9a-f]{24}$/.test(record.student_id)) {
+                // Try to find the student by this ObjectId
+                const student = await Student.findById(record.student_id);
+                if (student && student.student_id) {
+                    // Update the record with the correct student ID
+                    record.student_id = student.student_id;
+                    await record.save();
+                    fixedCount++;
+                }
+            }
+        }
+        
+        res.json({ success: true, message: `Fixed ${fixedCount} payment records with correct student IDs` });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+// Get payment details with student records
+app.get('/apis/payments/:id', auth, async (req, res) => {
+    try {
+        const payment = await Payment.findById(req.params.id);
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment not found' });
+        }
+        
+        const records = await PaymentRecord.find({ payment_id: payment._id });
+        const paid = records.filter(r => r.payment_status === 'paid').length;
+        const unpaid = records.filter(r => r.payment_status === 'unpaid').length;
+        
+        res.json({ 
+            success: true, 
+            data: {
+                ...payment.toObject(),
+                records,
+                stats: {
+                    total_students: records.length,
+                    paid_count: paid,
+                    unpaid_count: unpaid,
+                    completion_percentage: records.length > 0 ? Math.round((paid / records.length) * 100) : 0
+                }
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Mark student as paid using RFID or Student ID
+app.put('/apis/payments/:paymentId/mark-paid', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { student_id_input, amount_paid, notes, payment_method } = req.body;
+        const { paymentId } = req.params;
+        
+        if (!student_id_input) {
+            return res.status(400).json({ message: 'Student ID or RFID is required' });
+        }
+        
+        // Find student by student_id or rfid_code
+        const student = await Student.findOne({
+            $or: [
+                { student_id: student_id_input },
+                { rfid_code: student_id_input }
+            ]
+        });
+        
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+        
+        // Find or create payment record
+        let paymentRecord = await PaymentRecord.findOne({
+            payment_id: paymentId,
+            student_id: student._id
+        });
+        
+        if (!paymentRecord) {
+            paymentRecord = new PaymentRecord({
+                payment_id: paymentId,
+                student_id: student._id,
+                student_id_number: student.student_id,
+                student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+                program: student.program,
+                year_level: student.year_level
+            });
+        }
+        
+        // Update payment status
+        paymentRecord.payment_status = 'paid';
+        paymentRecord.amount_paid = amount_paid || 0;
+        paymentRecord.paid_at = new Date();
+        paymentRecord.paid_by_treasurer = req.master ? req.master.username : req.user.username;
+        paymentRecord.notes = notes || '';
+        paymentRecord.payment_method = payment_method || null;
+        paymentRecord.updated_at = new Date();
+        
+        await paymentRecord.save();
+        
+        res.json({ 
+            success: true, 
+            message: `${student.full_name || student.student_id} marked as paid`,
+            data: paymentRecord 
+        });
+    } catch (err) {
+        console.error('Error marking payment:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Mark student as unpaid
+app.put('/apis/payments/:paymentId/mark-unpaid', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { student_id_input } = req.body;
+        const { paymentId } = req.params;
+        
+        if (!student_id_input) {
+            return res.status(400).json({ message: 'Student ID is required' });
+        }
+        
+        const student = await Student.findOne({
+            $or: [
+                { student_id: student_id_input },
+                { rfid_code: student_id_input }
+            ]
+        });
+        
+        if (!student) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+        
+        const paymentRecord = await PaymentRecord.findOneAndUpdate(
+            { payment_id: paymentId, student_id: student._id },
+            {
+                payment_status: 'unpaid',
+                paid_at: null,
+                amount_paid: 0,
+                paid_by_treasurer: null,
+                updated_at: new Date()
+            },
+            { new: true }
+        );
+        
+        if (!paymentRecord) {
+            return res.status(404).json({ message: 'Payment record not found' });
+        }
+        
+        res.json({ 
+            success: true, 
+            message: `${student.full_name || student.student_id} marked as unpaid`,
+            data: paymentRecord 
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get student's payment status for a specific payment
+app.get('/apis/payments/:paymentId/student/:studentId', async (req, res) => {
+    try {
+        const paymentRecord = await PaymentRecord.findOne({
+            payment_id: req.params.paymentId,
+            student_id: req.params.studentId
+        });
+        
+        if (!paymentRecord) {
+            return res.json({ 
+                success: true, 
+                data: { payment_status: 'unpaid', message: 'No record found' }
+            });
+        }
+        
+        res.json({ success: true, data: paymentRecord });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update payment status (close/archive)
+app.put('/apis/payments/:id', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { status, description } = req.body;
+        
+        const update = {};
+        if (status) update.status = status;
+        if (description !== undefined) update.description = description;
+        update.updated_at = new Date();
+        
+        const payment = await Payment.findByIdAndUpdate(
+            req.params.id,
+            update,
+            { new: true }
+        );
+        
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment not found' });
+        }
+        
+        res.json({ success: true, data: payment });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Delete payment record for a student
+app.delete('/apis/payments/:paymentId/student/:studentId', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { paymentId, studentId } = req.params;
+        
+        // Find the payment record first to get student details
+        const paymentRecord = await PaymentRecord.findOne({
+            payment_id: paymentId,
+            student_id: studentId
+        }).populate('student_id', 'full_name student_id');
+        
+        if (!paymentRecord) {
+            return res.status(404).json({ message: 'Payment record not found' });
+        }
+        
+        const studentName = paymentRecord.student_id?.full_name || paymentRecord.student_id?.student_id || 'Unknown Student';
+        const amount = paymentRecord.amount_paid || 0;
+        
+        // Delete the payment record
+        await PaymentRecord.deleteOne({
+            payment_id: paymentId,
+            student_id: studentId
+        });
+        
+        res.json({ 
+            success: true, 
+            message: `Deleted payment for ${studentName}`,
+            data: { 
+                student_name: studentName, 
+                amount: amount,
+                payment_id: paymentId,
+                student_id: studentId
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 5000) => {
     try {
         await mongoose.connect(MONGO_URI, { 
@@ -1049,6 +1382,93 @@ attendanceLogSchema.set('toObject', { virtuals: true });
 
 const AttendanceLog = mongoose.model("AttendanceLog", attendanceLogSchema);
 
+// ==================== CONTRIBUTION SCHEMAS ====================
+
+// Event Contribution Schema - Track student payments for specific events
+// Used by treasurer to record which students have paid their event contributions
+const eventContributionSchema = new mongoose.Schema({
+    event_id: { type: mongoose.Schema.Types.ObjectId, ref: 'AttendanceEvent', required: true },
+    student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+    student_id_number: { type: String, required: true }, // e.g., "21-A-12345"
+    student_name: { type: String, required: true },
+    program: { type: String },
+    year_level: { type: String },
+    payment_status: { 
+        type: String, 
+        enum: ['unpaid', 'paid'],
+        default: 'unpaid'
+    },
+    paid_at: { type: Date, default: null },
+    paid_by_treasurer: { type: String, default: null }, // Username of treasurer who recorded payment
+    notes: { type: String, default: "" },
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now }
+});
+
+eventContributionSchema.index({ event_id: 1, student_id: 1 }, { unique: true });
+eventContributionSchema.index({ event_id: 1, payment_status: 1 });
+eventContributionSchema.index({ student_id: 1, payment_status: 1 });
+eventContributionSchema.index({ event_id: 1, student_id_number: 1 });
+
+const EventContribution = mongoose.model("EventContribution", eventContributionSchema);
+
+// ==================== PAYMENT SCHEMAS ====================
+
+// Payment Schema - Create payment periods/campaigns to track contributions
+const paymentSchema = new mongoose.Schema({
+    title: { type: String, required: true }, // e.g., "Membership Fee Q1 2026"
+    description: { type: String, default: "" },
+    type: { 
+        type: String, 
+        enum: ['membership', 'donation', 'fee', 'other'],
+        default: 'fee'
+    },
+    amount_due: { type: Number, default: 0 }, // Amount each student should pay (0 if flexible)
+    deadline: { type: Date, default: null },
+    status: {
+        type: String,
+        enum: ['active', 'closed', 'archived'],
+        default: 'active'
+    },
+    created_by: { type: String, required: true }, // Username of admin who created it
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now }
+});
+
+paymentSchema.index({ status: 1, created_at: -1 });
+paymentSchema.index({ created_by: 1 });
+
+const Payment = mongoose.model("Payment", paymentSchema);
+
+// Payment Record Schema - Track which students have paid
+const paymentRecordSchema = new mongoose.Schema({
+    payment_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', required: true },
+    student_id: { type: String, required: true }, // e.g., "25-A-01207"
+    student_id_number: { type: String, required: true }, // e.g., "21-A-12345"
+    student_name: { type: String, required: true },
+    program: { type: String },
+    year_level: { type: String },
+    payment_status: { 
+        type: String, 
+        enum: ['unpaid', 'paid', 'partial', 'waived'],
+        default: 'unpaid'
+    },
+    amount_paid: { type: Number, default: 0 },
+    paid_at: { type: Date, default: null },
+    paid_by_treasurer: { type: String, default: null }, // Username of treasurer who recorded payment
+    notes: { type: String, default: "" },
+    payment_method: { type: String, default: null }, // e.g., "cash", "gcash", "bank_transfer"
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now }
+});
+
+paymentRecordSchema.index({ payment_id: 1, student_id: 1 }, { unique: true });
+paymentRecordSchema.index({ payment_id: 1, payment_status: 1 });
+paymentRecordSchema.index({ student_id: 1, payment_status: 1 });
+paymentRecordSchema.index({ payment_id: 1, student_id_number: 1 });
+
+const PaymentRecord = mongoose.model("PaymentRecord", paymentRecordSchema);
+
 // Send Password Reset Email
 async function sendPasswordResetEmail(toEmail, code, studentName) {
     const mailOptions = {
@@ -1324,6 +1744,117 @@ async function adminActionAuth(req, res, next) {
     } catch (err) {
         console.error("Admin action auth error:", err);
         return res.status(500).json({ message: "Authentication error" });
+    }
+}
+
+// Middleware for treasurer role authorization
+async function treasurerAuth(req, res, next) {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized: No token provided" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, SSAAM_API_KEY);
+
+        const tokenHash = hashToken(token);
+        const sessionToken = await SessionToken.findOneAndUpdate(
+            { 
+                token_hash: tokenHash,
+                is_revoked: false,
+                expires_at: { $gt: new Date() }
+            },
+            { last_used_at: new Date() },
+            { new: true }
+        );
+
+        if (!sessionToken) {
+            return res.status(401).json({ message: "Session expired or invalid. Please login again." });
+        }
+
+        // Fetch the full student document
+        const student = await Student.findOne({ student_id: decoded.student_id });
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        // Check if user has treasurer role
+        if (student.role !== 'treasurer') {
+            return res.status(403).json({ 
+                message: "Access denied. Treasurer role required.",
+                code: 'TREASURER_ACCESS_REQUIRED'
+            });
+        }
+
+        req.user = decoded;
+        req.student = student;
+        req.sessionToken = sessionToken;
+        next();
+    } catch (err) {
+        return res.status(401).json({ message: "Invalid token." });
+    }
+}
+
+// Middleware for both admin and treasurer authorization
+async function adminOrTreasurerAuth(req, res, next) {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized: No token provided" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, SSAAM_API_KEY);
+
+        const tokenHash = hashToken(token);
+        const sessionToken = await SessionToken.findOneAndUpdate(
+            { 
+                token_hash: tokenHash,
+                is_revoked: false,
+                expires_at: { $gt: new Date() }
+            },
+            { last_used_at: new Date() },
+            { new: true }
+        );
+
+        if (!sessionToken) {
+            return res.status(401).json({ message: "Session expired or invalid. Please login again." });
+        }
+
+        // Check if this is an admin/master login
+        if (decoded.isMaster) {
+            // For admin/master users, verify from Master collection
+            const master = await Master.findById(decoded.id);
+            if (!master) {
+                return res.status(404).json({ message: "Admin user not found" });
+            }
+            req.user = decoded;
+            req.master = master;
+            req.sessionToken = sessionToken;
+            next();
+        } else {
+            // For treasurer logins, verify from Student collection
+            const student = await Student.findOne({ student_id: decoded.student_id });
+            if (!student) {
+                return res.status(404).json({ message: "Student not found" });
+            }
+
+            // Check if user has treasurer role
+            if (student.role !== 'treasurer' && student.role !== 'admin') {
+                return res.status(403).json({ 
+                    message: "Access denied. Treasurer role required.",
+                    code: 'TREASURER_ACCESS_REQUIRED'
+                });
+            }
+
+            req.user = decoded;
+            req.student = student;
+            req.sessionToken = sessionToken;
+            next();
+        }
+    } catch (err) {
+        return res.status(401).json({ message: "Invalid token." });
     }
 }
 
@@ -1781,7 +2312,44 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
     }
 });
 
-app.get('/apis/students/search', studentAuth, async (req, res) => {
+// Search for student by ID or RFID (POST endpoint for payment verification)
+app.post('/apis/students/search', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { search_query } = req.body;
+
+        if (!search_query || !search_query.trim()) {
+            return res.status(400).json({ message: 'Search query is required' });
+        }
+
+        const escapedSearch = escapeRegex(search_query.trim());
+        
+        // Search by student_id or rfid_code
+        const student = await Student.findOne({
+            status: 'approved',
+            $or: [
+                { student_id: { $regex: escapedSearch, $options: 'i' } },
+                { rfid_code: { $regex: escapedSearch, $options: 'i' } }
+            ]
+        }).select('student_id first_name last_name middle_name suffix full_name program year_level email rfid_status');
+
+        if (!student) {
+            return res.status(404).json({ 
+                message: 'Student not found',
+                student: null
+            });
+        }
+
+        res.json({
+            message: 'Student found',
+            student: student
+        });
+    } catch (err) {
+        console.error('Error searching student:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+app.get('/apis/students/search', adminOrTreasurerAuth, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -4866,6 +5434,308 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
         const filteredRecords = records.filter(r => r !== null);
 
         res.json({ data: filteredRecords });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ==================== CONTRIBUTION TRACKING ENDPOINTS ====================
+
+// Initialize contributions for an event (Treasurer Only)
+// Creates contribution records for all registered students in an event
+app.post('/apis/contributions/initialize/:eventId', treasurerAuth, async (req, res) => {
+    try {
+        const eventId = req.params.eventId;
+        const event = await AttendanceEvent.findById(eventId);
+        
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+
+        // Get all attendance logs (registered students) for this event
+        const registeredStudents = await AttendanceLog.find({ event_id: eventId })
+            .distinct('student_id');
+
+        // Get student details for each registered student
+        const students = await Student.find({ _id: { $in: registeredStudents } });
+
+        // Create contribution records for each student
+        const contributionRecords = [];
+        for (const student of students) {
+            try {
+                const record = await EventContribution.findOneAndUpdate(
+                    { event_id: eventId, student_id: student._id },
+                    {
+                        event_id: eventId,
+                        student_id: student._id,
+                        student_id_number: student.student_id,
+                        student_name: `${student.first_name} ${student.last_name}`,
+                        program: student.program,
+                        year_level: student.year_level,
+                        payment_status: 'unpaid'
+                    },
+                    { upsert: true, new: true }
+                );
+                contributionRecords.push(record);
+            } catch (err) {
+                // Skip duplicate key errors
+                if (err.code !== 11000) {
+                    console.error(`Error creating contribution for student ${student._id}:`, err);
+                }
+            }
+        }
+
+        res.json({ 
+            success: true, 
+            message: `Initialized ${contributionRecords.length} contribution records for event "${event.title}"`,
+            count: contributionRecords.length
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get all contributions for an event (Treasurer Only)
+app.get('/apis/contributions/event/:eventId', treasurerAuth, async (req, res) => {
+    try {
+        const { search, paymentStatus, program, yearLevel, page = 1, limit = 50 } = req.query;
+        
+        const filter = { event_id: new mongoose.Types.ObjectId(req.params.eventId) };
+        
+        if (paymentStatus) {
+            filter.payment_status = paymentStatus;
+        }
+        
+        if (program) {
+            filter.program = program;
+        }
+        
+        if (yearLevel) {
+            filter.year_level = yearLevel;
+        }
+        
+        if (search) {
+            const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            filter.$or = [
+                { student_name: { $regex: escapedSearch, $options: 'i' } },
+                { student_id_number: { $regex: escapedSearch, $options: 'i' } }
+            ];
+        }
+
+        const total = await EventContribution.countDocuments(filter);
+        const skip = (page - 1) * parseInt(limit);
+        
+        const contributions = await EventContribution.find(filter)
+            .sort({ student_name: 1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        // Get summary stats
+        const stats = await EventContribution.aggregate([
+            { $match: filter },
+            {
+                $group: {
+                    _id: null,
+                    total: { $sum: 1 },
+                    paid: { $sum: { $cond: [{ $eq: ['$payment_status', 'paid'] }, 1, 0] } },
+                    unpaid: { $sum: { $cond: [{ $eq: ['$payment_status', 'unpaid'] }, 1, 0] } }
+                }
+            }
+        ]);
+
+        res.json({
+            success: true,
+            data: contributions,
+            stats: stats[0] || { total: 0, paid: 0, unpaid: 0 },
+            pagination: {
+                currentPage: parseInt(page),
+                limit: parseInt(limit),
+                total,
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Mark student payment as paid (Treasurer Only)
+// Can be called with student_id or rfid_code
+app.post('/apis/contributions/event/:eventId/mark-paid', treasurerAuth, async (req, res) => {
+    try {
+        const { student_id_number, rfid_code, notes } = req.body;
+        
+        if (!student_id_number && !rfid_code) {
+            return res.status(400).json({ message: "Student ID or RFID code required" });
+        }
+
+        // Find the student
+        let studentQuery = {};
+        if (student_id_number) {
+            studentQuery.student_id = student_id_number;
+        } else if (rfid_code) {
+            studentQuery.rfid_code = rfid_code;
+        }
+
+        const student = await Student.findOne(studentQuery);
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        // Update contribution status
+        const contribution = await EventContribution.findOneAndUpdate(
+            { 
+                event_id: new mongoose.Types.ObjectId(req.params.eventId),
+                student_id: student._id
+            },
+            {
+                payment_status: 'paid',
+                paid_at: new Date(),
+                paid_by_treasurer: req.student.student_id,
+                notes: notes || ''
+            },
+            { new: true }
+        );
+
+        if (!contribution) {
+            return res.status(404).json({ message: "Contribution record not found for this event" });
+        }
+
+        res.json({
+            success: true,
+            message: `Payment recorded for ${student.first_name} ${student.last_name}`,
+            data: contribution
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Mark student payment as unpaid (Treasurer Only)
+app.post('/apis/contributions/event/:eventId/mark-unpaid', treasurerAuth, async (req, res) => {
+    try {
+        const { student_id_number } = req.body;
+        
+        if (!student_id_number) {
+            return res.status(400).json({ message: "Student ID required" });
+        }
+
+        // Find the student
+        const student = await Student.findOne({ student_id: student_id_number });
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        // Update contribution status
+        const contribution = await EventContribution.findOneAndUpdate(
+            { 
+                event_id: new mongoose.Types.ObjectId(req.params.eventId),
+                student_id: student._id
+            },
+            {
+                payment_status: 'unpaid',
+                paid_at: null,
+                paid_by_treasurer: null
+            },
+            { new: true }
+        );
+
+        if (!contribution) {
+            return res.status(404).json({ message: "Contribution record not found for this event" });
+        }
+
+        res.json({
+            success: true,
+            message: `Payment status reset for ${student.first_name} ${student.last_name}`,
+            data: contribution
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get student's payment status for an event (Students can only view their own)
+app.get('/apis/contributions/student/:eventId', studentAuthWithToken, async (req, res) => {
+    try {
+        const eventId = req.params.eventId;
+        
+        // Student can only view their own contribution status
+        const contribution = await EventContribution.findOne({
+            event_id: new mongoose.Types.ObjectId(eventId),
+            student_id: req.student._id
+        });
+
+        if (!contribution) {
+            return res.status(404).json({ message: "No contribution record found for this event" });
+        }
+
+        const event = await AttendanceEvent.findById(eventId);
+
+        res.json({
+            success: true,
+            data: {
+                event_title: event?.title,
+                event_date: event?.event_date,
+                payment_status: contribution.payment_status,
+                paid_at: contribution.paid_at,
+                notes: contribution.notes
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Export contributions as CSV/JSON (Treasurer Only)
+app.get('/apis/contributions/event/:eventId/export', treasurerAuth, async (req, res) => {
+    try {
+        const { format = 'json' } = req.query;
+        
+        const contributions = await EventContribution.find({ 
+            event_id: new mongoose.Types.ObjectId(req.params.eventId)
+        }).sort({ student_name: 1 });
+
+        const event = await AttendanceEvent.findById(req.params.eventId);
+
+        if (format === 'csv') {
+            // Generate CSV
+            const headers = ['Student ID', 'Name', 'Program', 'Year Level', 'Payment Status', 'Paid At', 'Paid By'];
+            const rows = contributions.map(c => [
+                c.student_id_number,
+                c.student_name,
+                c.program,
+                c.year_level,
+                c.payment_status,
+                c.paid_at ? new Date(c.paid_at).toLocaleString() : '',
+                c.paid_by_treasurer || ''
+            ]);
+
+            const csv = [headers, ...rows].map(row => 
+                row.map(cell => `"${cell}"`).join(',')
+            ).join('\n');
+
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', `attachment; filename="contributions-${event?.title || 'export'}-${Date.now()}.csv"`);
+            res.send(csv);
+        } else {
+            // Return JSON
+            const stats = {
+                total: contributions.length,
+                paid: contributions.filter(c => c.payment_status === 'paid').length,
+                unpaid: contributions.filter(c => c.payment_status === 'unpaid').length
+            };
+
+            res.json({
+                success: true,
+                event: {
+                    _id: event._id,
+                    title: event.title,
+                    date: event.event_date
+                },
+                stats,
+                data: contributions
+            });
+        }
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
