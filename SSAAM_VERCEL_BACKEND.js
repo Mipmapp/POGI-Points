@@ -669,6 +669,9 @@ app.post('/apis/payments', adminOrTreasurerAuth, async (req, res) => {
 // Get all payments
 app.get('/apis/payments', auth, async (req, res) => {
     try {
+        // Auto-fix any corrupted student IDs on each fetch
+        await autoFixStudentIds();
+        
         const { status } = req.query;
         const query = status ? { status } : {};
         
@@ -684,11 +687,12 @@ app.get('/apis/payments', auth, async (req, res) => {
             return {
                 ...payment.toObject(),
                 payment_records: records.map(r => ({
+                    _id: r._id,
                     student_id: r.student_id,
                     student_name: r.student_name,
                     is_paid: r.payment_status === 'paid',
-                    paid_by_treasurer: r.marked_by || null,
-                    paid_date: r.payment_date || null
+                    paid_by_treasurer: r.paid_by_treasurer || null,
+                    paid_date: r.paid_at || null
                 })),
                 stats: {
                     total_students: total,
@@ -704,6 +708,39 @@ app.get('/apis/payments', auth, async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+
+// Auto-fix function for student IDs
+const autoFixStudentIds = async () => {
+    try {
+        const records = await PaymentRecord.find({});
+        let fixedCount = 0;
+        let corruptedCount = 0;
+        
+        for (const record of records) {
+            // Check if student_id looks like an ObjectId (24 hex characters)
+            if (record.student_id && /^[0-9a-f]{24}$/.test(record.student_id)) {
+                corruptedCount++;
+                // Try to find the student by this ObjectId
+                const student = await Student.findById(record.student_id);
+                if (student && student.student_id) {
+                    // Update the record with the correct student ID
+                    record.student_id = student.student_id;
+                    await record.save();
+                    fixedCount++;
+                    console.log(`[AUTO-FIX] Fixed student: ${student.name} (${student.student_id})`);
+                } else {
+                    console.log(`[AUTO-FIX] Could not find student for ObjectId: ${record.student_id}, student name: ${record.student_name}`);
+                }
+            }
+        }
+        
+        if (fixedCount > 0 || corruptedCount > 0) {
+            console.log(`[AUTO-FIX] Summary - Found ${corruptedCount} corrupted IDs, fixed ${fixedCount}`);
+        }
+    } catch (err) {
+        console.error('[AUTO-FIX ERROR]', err.message);
+    }
+};
 
 // Migrate old student IDs (ObjectId) to proper student IDs (like 25-A-XXXXX)
 app.post('/apis/payments/migrate/fix-student-ids', adminOrTreasurerAuth, async (req, res) => {
@@ -785,13 +822,13 @@ app.put('/apis/payments/:paymentId/mark-paid', adminOrTreasurerAuth, async (req,
         // Find or create payment record
         let paymentRecord = await PaymentRecord.findOne({
             payment_id: paymentId,
-            student_id: student._id
+            student_id: student.student_id
         });
         
         if (!paymentRecord) {
             paymentRecord = new PaymentRecord({
                 payment_id: paymentId,
-                student_id: student._id,
+                student_id: student.student_id,
                 student_id_number: student.student_id,
                 student_name: student.full_name || `${student.first_name} ${student.last_name}`,
                 program: student.program,
@@ -948,6 +985,89 @@ app.delete('/apis/payments/:paymentId/student/:studentId', adminOrTreasurerAuth,
                 payment_id: paymentId,
                 student_id: studentId
             }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Delete entire payment campaign
+app.delete('/apis/payments/:paymentId', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        
+        // Find the payment campaign
+        const payment = await Payment.findById(paymentId);
+        
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment campaign not found' });
+        }
+        
+        const paymentTitle = payment.title;
+        const recordCount = payment.payment_records?.length || 0;
+        
+        // Delete all payment records associated with this campaign
+        await PaymentRecord.deleteMany({ payment_id: paymentId });
+        
+        // Delete the payment campaign itself
+        await Payment.deleteOne({ _id: paymentId });
+        
+        res.json({ 
+            success: true, 
+            message: `Deleted payment campaign "${paymentTitle}" and all ${recordCount} associated records`,
+            data: { 
+                payment_id: paymentId,
+                payment_title: paymentTitle,
+                deleted_records_count: recordCount
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get student's payment records (for student dashboard - shows their contribution receipts)
+app.get('/apis/my-payments', auth, async (req, res) => {
+    try {
+        // Get student ID from the verified JWT token
+        const studentId = req.master?.student_id;
+        
+        // If no student ID, return empty array (admin users don't have payment records)
+        if (!studentId) {
+            return res.json({ 
+                success: true, 
+                data: []
+            });
+        }
+        
+        // Find all payment records for this student
+        const paymentRecords = await PaymentRecord.find({ 
+            student_id: studentId 
+        }).populate('payment_id', 'title description type amount_due deadline status created_at');
+        
+        // Format the response as a receipt-style list
+        const formattedRecords = paymentRecords.map(record => ({
+            _id: record._id,
+            title: record.payment_id?.title || 'Unknown Payment',
+            description: record.payment_id?.description || '',
+            type: record.payment_id?.type || 'fee',
+            amount_due: record.payment_id?.amount_due || 0,
+            deadline: record.payment_id?.deadline,
+            is_paid: record.payment_status === 'paid',
+            payment_status: record.payment_status,
+            paid_date: record.paid_at,
+            amount_paid: record.amount_paid || 0,
+            payment_method: record.payment_method,
+            notes: record.notes,
+            created_at: record.created_at
+        }));
+        
+        // Sort by date, most recent first
+        formattedRecords.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+        
+        res.json({ 
+            success: true, 
+            data: formattedRecords
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
