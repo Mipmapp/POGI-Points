@@ -681,15 +681,6 @@
           <span>Attendance</span>
         </button>
 
-        <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster && currentUser.role !== 'treasurer'" @click="currentPage = 'contributions'; showMobileMenu = false; fetchMyPayments()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2 relative', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          <div class="flex-1">
-            <span>Contributions</span>
-            <div class="text-xs opacity-75 mt-0.5">{{ myPayments.filter(p => p.is_paid).length }}/{{ myPayments.length }} Paid</div>
-          </div>
-          <div class="text-2xl" :style="{ color: myPayments.length > 0 ? (myPayments.filter(p => p.is_paid).length === myPayments.length ? '#10b981' : '#f59e0b') : '#9ca3af' }">●</div>
-        </button>
-
         <button @click="goToNotifications" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'notifications' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path></svg>
           <span class="flex items-center gap-2">Notifications <span v-if="unreadNotificationCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ unreadNotificationCount }}</span></span>
@@ -817,16 +808,6 @@
           <button @click="currentPage = 'attendance'; showMobileMenu = false; fetchAttendanceData()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'attendance' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
             <span>Attendance</span>
-          </button>
-
-          <!-- Contributions Button -->
-          <button @click="currentPage = 'contributions'; showMobileMenu = false; fetchMyPayments()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2 relative', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            <div class="flex-1">
-              <span>Contributions</span>
-              <div class="text-xs opacity-75 mt-0.5">{{ myPayments.filter(p => p.is_paid).length }}/{{ myPayments.length }} Paid</div>
-            </div>
-            <div class="text-2xl" :style="{ color: myPayments.length > 0 ? (myPayments.filter(p => p.is_paid).length === myPayments.length ? '#10b981' : '#f59e0b') : '#9ca3af' }">●</div>
           </button>
 
           <button @click="goToNotifications" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'notifications' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
@@ -1054,49 +1035,84 @@
                   <p>No payments created yet</p>
                 </div>
 
-                <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                  <div v-for="payment in paymentsList.filter(p => p.status === 'active')" :key="payment._id" class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 md:p-6 border-2 border-purple-200 hover:border-purple-400 hover:shadow-xl transition-all hover:-translate-y-1">
-                    <div class="flex justify-between items-start mb-3">
-                      <h4 class="font-bold text-lg text-gray-900">{{ payment.title }}</h4>
-                      <div class="flex gap-2">
-                        <span class="text-xs font-bold px-3 py-1 bg-gradient-to-r from-green-200 to-green-300 text-green-900 rounded-full shadow-sm">Active</span>
-                        <span class="text-xs font-bold px-3 py-1 bg-gradient-to-r from-blue-200 to-blue-300 text-blue-900 rounded-full shadow-sm">{{ payment.type.charAt(0).toUpperCase() + payment.type.slice(1) }}</span>
-                      </div>
-                    </div>
-                    <p class="text-sm text-gray-600 mb-4">{{ payment.description || 'No description' }}</p>
-                    <div v-if="payment.amount_due" class="text-sm text-gray-600 mb-4">
-                      <span class="font-semibold">Amount Due:</span> ₱{{ payment.amount_due.toFixed(2) }}
-                    </div>
-                    
-                    <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-3 md:p-4 mb-4 space-y-2 text-sm border border-purple-100">
-                      <div class="flex justify-between items-center">
-                        <span class="text-gray-700 font-medium">Students:</span>
-                        <span class="font-bold text-blue-600 text-lg">{{ payment.stats.total_students }}</span>
-                      </div>
-                      <div class="flex justify-between items-center">
-                        <span class="text-gray-700 font-medium">✓ Paid:</span>
-                        <span class="font-bold text-green-600 text-lg">{{ payment.stats.paid_count }}</span>
-                      </div>
-                      <div class="flex justify-between items-center">
-                        <span class="text-gray-700 font-medium">⚠ Unpaid:</span>
-                        <span class="font-bold text-red-600 text-lg">{{ payment.stats.unpaid_count }}</span>
-                      </div>
-                      <div class="flex justify-between items-center pt-2 border-t border-purple-200">
-                        <span class="text-gray-700 font-medium">Progress:</span>
-                        <span class="font-bold text-purple-600 text-lg">{{ payment.stats.completion_percentage }}%</span>
-                      </div>
-                    </div>
+                <div v-else class="relative px-12 sm:px-14 md:px-0">
+                  <!-- Navigation Buttons -->
+                  <button 
+                    v-if="paymentsList.filter(p => p.status === 'active').length > 1"
+                    @click="prevActivePayment()"
+                    :disabled="activePaymentsCarouselPosition === 0"
+                    class="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 sm:p-2 md:p-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
+                  >
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                  </button>
 
-                    <div class="bg-gray-200 rounded-full h-2 md:h-3 mb-4 overflow-hidden">
-                      <div class="bg-gradient-to-r from-green-400 to-green-600 h-full rounded-full transition-all" :style="{ width: payment.stats.completion_percentage + '%' }"></div>
-                    </div>
+                  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" ref="activePaymentsCarouselRef">
+                    <transition-group :name="carouselSlideDirection === 'right' ? 'carouselSlide-right' : 'carouselSlide-left'">
+                    <div v-for="(payment, index) in paymentsList.filter(p => p.status === 'active').slice(activePaymentsCarouselPosition * getCardsPerPage(), activePaymentsCarouselPosition * getCardsPerPage() + getCardsPerPage())" :key="payment._id" class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 md:p-6 border-2 border-purple-200 hover:border-purple-400 hover:shadow-xl hover:-translate-y-1">
+                      <div class="flex justify-between items-start mb-3">
+                        <h4 class="font-bold text-lg text-gray-900">{{ payment.title }}</h4>
+                        <div class="flex gap-2">
+                          <span class="text-xs font-bold px-3 py-1 bg-gradient-to-r from-green-200 to-green-300 text-green-900 rounded-full shadow-sm animate-pulse">Active</span>
+                          <span class="text-xs font-bold px-3 py-1 bg-gradient-to-r from-blue-200 to-blue-300 text-blue-900 rounded-full shadow-sm">{{ payment.type.charAt(0).toUpperCase() + payment.type.slice(1) }}</span>
+                        </div>
+                      </div>
+                      <p class="text-sm text-gray-600 mb-4">{{ payment.description || 'No description' }}</p>
+                      <div v-if="payment.amount_due" class="text-sm text-gray-600 mb-4">
+                        <span class="font-semibold">Amount Due:</span> ₱{{ payment.amount_due.toFixed(2) }}
+                      </div>
+                      
+                      <div class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-3 md:p-4 mb-4 space-y-2 text-sm border border-purple-100 animate-fadeIn">
+                        <transition-group name="slideInLeft">
+                          <div v-for="(item, idx) in [
+                            { label: 'Students:', value: payment.stats.total_students, color: 'blue' },
+                            { label: '✓ Paid:', value: payment.stats.paid_count, color: 'green' },
+                            { label: '⚠ Unpaid:', value: payment.stats.unpaid_count, color: 'red' }
+                          ]" :key="item.label" class="flex justify-between items-center" :style="{ transitionDelay: `${idx * 75}ms` }">
+                            <span class="text-gray-700 font-medium">{{ item.label }}</span>
+                            <span :class="['font-bold text-lg', item.color === 'blue' ? 'text-blue-600' : item.color === 'green' ? 'text-green-600' : 'text-red-600']">{{ item.value }}</span>
+                          </div>
+                          <div key="progress" class="flex justify-between items-center pt-2 border-t border-purple-200" :style="{ transitionDelay: `225ms` }">
+                            <span class="text-gray-700 font-medium">Progress:</span>
+                            <span class="font-bold text-purple-600 text-lg">{{ payment.stats.completion_percentage }}%</span>
+                          </div>
+                        </transition-group>
+                      </div>
 
+                      <div class="bg-gray-200 rounded-full h-2 md:h-3 mb-4 overflow-hidden">
+                        <div class="bg-gradient-to-r from-green-400 to-green-600 h-full rounded-full transition-all" :style="{ width: payment.stats.completion_percentage + '%' }"></div>
+                      </div>
+
+                      <button 
+                        @click="selectPaymentForMarking(payment)"
+                        class="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg text-sm md:text-base hover:from-purple-700 hover:to-purple-800 transition font-bold shadow-md hover:shadow-lg"
+                      >
+                        Manage Payments
+                      </button>
+                    </div>
+                  </transition-group>
+                  </div>
+
+                  <button 
+                    v-if="paymentsList.filter(p => p.status === 'active').length > 1"
+                    @click="nextActivePayment()"
+                    :disabled="activePaymentsCarouselPosition >= (paymentsList.filter(p => p.status === 'active').length - getCardsPerPage())"
+                    class="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1.5 sm:p-2 md:p-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
+                  >
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                  </button>
+
+                  <!-- Carousel Indicators -->
+                  <div v-if="paymentsList.filter(p => p.status === 'active').length > 1" class="flex justify-center gap-2 mt-4">
                     <button 
-                      @click="selectPaymentForMarking(payment)"
-                      class="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg text-sm md:text-base hover:from-purple-700 hover:to-purple-800 transition font-bold shadow-md hover:shadow-lg"
-                    >
-                      Manage Payments
-                    </button>
+                      v-for="(_, index) in Math.ceil((paymentsList.filter(p => p.status === 'active').length) / getCardsPerPage())"
+                      :key="index"
+                      @click="activePaymentsCarouselPosition = index"
+                      :class="['h-2 rounded-full transition-all', activePaymentsCarouselPosition === index ? 'w-6 bg-purple-600' : 'w-2 bg-gray-300 hover:bg-gray-400']"
+                    ></button>
                   </div>
                 </div>
               </div>
@@ -1456,10 +1472,7 @@
                           </td>
                           <td class="hidden md:table-cell px-4 py-3 font-mono text-xs hover:bg-gray-50">{{ record.student_id }}</td>
                           <td class="hidden lg:table-cell px-4 py-3 text-xs hover:bg-gray-50">
-                            <span v-if="record.payment_status === 'paid' && record.paid_date">
-                              {{ record.marked_by_first_name || (typeof record.paid_by_treasurer === 'string' ? record.paid_by_treasurer : record.paid_by_treasurer?.first_name || 'N/A') }}
-                            </span>
-                            <span v-else>N/A</span>
+                            {{ formatPaidByName(record) }}
                           </td>
                           <td class="hidden sm:table-cell px-4 py-3 text-xs text-gray-500 hover:bg-gray-50">
                             {{ record.payment_status === 'paid' && record.paid_date ? new Date(record.paid_date).toLocaleString() : 'N/A' }}
@@ -3942,8 +3955,12 @@
   </div>
 
   <!-- Delete Payment Campaign Modal -->
-  <div v-if="deletePaymentCampaignConfirm.show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4">
+  <transition name="fadeBackground">
+    <div v-if="deletePaymentCampaignConfirm.show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"></div>
+  </transition>
+  <transition name="modal-bounce" appear>
+    <div v-if="deletePaymentCampaignConfirm.show" class="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 pointer-events-auto">
       <h3 class="text-2xl font-bold text-red-600 mb-4">Delete Payment Campaign?</h3>
       <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
         <p class="text-sm text-gray-700 mb-3"><strong>Campaign:</strong> {{ deletePaymentCampaignConfirm.payment?.title }}</p>
@@ -3959,14 +3976,15 @@
       </div>
       
       <div class="flex gap-3">
-        <button @click="deletePaymentCampaignConfirm.show = false" :disabled="deletingPaymentCampaign" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition disabled:opacity-50">Cancel</button>
+        <button @click="() => { deletePaymentCampaignConfirm.show = false; deletingPaymentCampaign = false; if (deletePaymentCountdownInterval) { clearInterval(deletePaymentCountdownInterval); deletePaymentCountdownInterval = null } }" :disabled="deletingPaymentCampaign" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition disabled:opacity-50">Cancel</button>
         <button @click="deletePaymentCampaign" :disabled="deletingPaymentCampaign || deletePaymentCampaignConfirm.countdownActive" class="flex-1 bg-red-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
           <svg v-if="deletingPaymentCampaign" class="animate-spin h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
           {{ deletingPaymentCampaign ? 'Deleting...' : 'Delete Campaign' }}
         </button>
       </div>
+      </div>
     </div>
-  </div>
+  </transition>
 
   <!-- Password Change Modal with Email Verification -->
   <transition name="fade">
@@ -4786,6 +4804,7 @@ const deletePaymentCampaignConfirm = ref({
   countdownActive: false
 })
 const deletingPaymentCampaign = ref(false)
+let deletePaymentCountdownInterval = null
 const syncingPaymentStudents = ref(false)
 const paymentRecordsFilter = ref({
   status: 'all', // all, paid, unpaid
@@ -4794,6 +4813,11 @@ const paymentRecordsFilter = ref({
   currentPage: 1, // pagination
   recordsPerPage: 20 // show 20 records per page
 })
+
+// Active payments carousel state
+const activePaymentsCarouselPosition = ref(0)
+const activePaymentsCarouselRef = ref(null)
+const carouselSlideDirection = ref('right') // 'left' or 'right' to track animation direction
 
 // Student contributions/receipts state
 const myPayments = ref([])
@@ -5110,6 +5134,24 @@ const clearPaymentStudent = () => {
   paymentSearchMode.value = 'id' // Reset to Student ID mode
 }
 
+// Helper function to format the "Paid By" name
+const formatPaidByName = (record) => {
+  if (record.payment_status !== 'paid' || !record.paid_date) {
+    return 'N/A'
+  }
+  
+  const paidByName = record.marked_by_first_name || 
+    (typeof record.paid_by_treasurer === 'string' ? record.paid_by_treasurer : record.paid_by_treasurer?.first_name)
+  
+  // If no name or it's empty, return "Treasurer" as fallback
+  if (!paidByName || paidByName.trim() === '') {
+    return 'Treasurer'
+  }
+  
+  // Convert to uppercase
+  return paidByName.toUpperCase()
+}
+
 // Select a payment and reset search
 const selectPaymentForMarking = async (payment) => {
   try {
@@ -5206,8 +5248,44 @@ const deletePaymentRecord = async (paymentId, studentId) => {
   }
 }
 
+// Carousel navigation functions
+const getCardsPerPage = () => {
+  // This is computed based on screen size
+  if (window.innerWidth < 768) return 1 // mobile
+  if (window.innerWidth < 1024) return 2 // tablet
+  return 3 // desktop
+}
+
+const prevActivePayment = () => {
+  const cardsPerPage = getCardsPerPage()
+  carouselSlideDirection.value = 'left'
+  if (activePaymentsCarouselPosition.value > 0) {
+    activePaymentsCarouselPosition.value--
+  }
+}
+
+const nextActivePayment = () => {
+  const activePayments = paymentsList.value.filter(p => p.status === 'active')
+  const cardsPerPage = getCardsPerPage()
+  const maxPosition = Math.ceil(activePayments.length / cardsPerPage) - 1
+  carouselSlideDirection.value = 'right'
+  
+  if (activePaymentsCarouselPosition.value < maxPosition) {
+    activePaymentsCarouselPosition.value++
+  }
+}
+
 // Confirm delete entire payment campaign
 const confirmDeletePaymentCampaign = (payment) => {
+  // Clear any existing countdown interval
+  if (deletePaymentCountdownInterval) {
+    clearInterval(deletePaymentCountdownInterval)
+    deletePaymentCountdownInterval = null
+  }
+  
+  // Reset the loading state before showing the confirmation
+  deletingPaymentCampaign.value = false
+  
   deletePaymentCampaignConfirm.value = {
     show: true,
     payment: payment,
@@ -5216,10 +5294,12 @@ const confirmDeletePaymentCampaign = (payment) => {
   }
   
   // Start countdown timer
-  const countdownInterval = setInterval(() => {
+  deletePaymentCountdownInterval = setInterval(() => {
     deletePaymentCampaignConfirm.value.countdown--
+    
     if (deletePaymentCampaignConfirm.value.countdown <= 0) {
-      clearInterval(countdownInterval)
+      clearInterval(deletePaymentCountdownInterval)
+      deletePaymentCountdownInterval = null
       deletePaymentCampaignConfirm.value.countdownActive = false
     }
   }, 1000)
@@ -12059,5 +12139,102 @@ onUnmounted(() => {
   );
   animation: sweep-badge 7s infinite;
   pointer-events: none;
+}
+
+/* Fade Slide Up Animation for Payment Cards */
+.fadeSlideUp-enter-active,
+.fadeSlideUp-leave-active {
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.fadeSlideUp-enter-from {
+  opacity: 0;
+  transform: translateY(30px);
+}
+
+.fadeSlideUp-leave-to {
+  opacity: 0;
+  transform: translateY(-30px);
+}
+
+/* Slide In Left Animation for Stats */
+.slideInLeft-enter-active,
+.slideInLeft-leave-active {
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.slideInLeft-enter-from {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+.slideInLeft-leave-to {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+/* Fade In Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+/* Fade Background Transition */
+.fadeBackground-enter-active,
+.fadeBackground-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fadeBackground-enter-from,
+.fadeBackground-leave-to {
+  opacity: 0;
+}
+
+/* Carousel Slide Animations - Right Direction */
+.carouselSlide-right-enter-active,
+.carouselSlide-right-leave-active {
+  transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.carouselSlide-right-move {
+  transition: none !important;
+}
+
+.carouselSlide-right-enter-from {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+
+.carouselSlide-right-leave-to {
+  opacity: 0;
+  transform: translateX(40px);
+}
+
+/* Carousel Slide Animations - Left Direction */
+.carouselSlide-left-enter-active,
+.carouselSlide-left-leave-active {
+  transition: opacity 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.carouselSlide-left-move {
+  transition: none !important;
+}
+
+.carouselSlide-left-enter-from {
+  opacity: 0;
+  transform: translateX(40px);
+}
+
+.carouselSlide-left-leave-to {
+  opacity: 0;
+  transform: translateX(-40px);
 }
 </style>

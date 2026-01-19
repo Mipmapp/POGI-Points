@@ -651,6 +651,7 @@ app.post('/apis/payments', adminOrTreasurerAuth, async (req, res) => {
         const paymentRecords = students.map(student => ({
             payment_id: payment._id,
             student_id: student.student_id,
+            student_id_number: student.student_id, // Include the required field
             student_name: student.full_name || `${student.first_name} ${student.last_name}`,
             program: student.program,
             year_level: student.year_level,
