@@ -646,15 +646,15 @@ app.post('/apis/payments', adminOrTreasurerAuth, async (req, res) => {
         
         await payment.save();
         
-        // Initialize payment records for all active students
-        const students = await Student.find({});
+        // Initialize payment records for all approved students only
+        const students = await Student.find({ status: 'approved' });
         const paymentRecords = students.map(student => ({
             payment_id: payment._id,
             student_id: student.student_id,
             student_name: student.full_name || `${student.first_name} ${student.last_name}`,
             program: student.program,
             year_level: student.year_level,
-            payment_status: 'unpaid'
+            payment_status: 'pending'
         }));
         
         await PaymentRecord.insertMany(paymentRecords);
@@ -677,27 +677,22 @@ app.get('/apis/payments', auth, async (req, res) => {
         
         const payments = await Payment.find(query).sort({ created_at: -1 });
         
-        // Get statistics and records for each payment
+        // Get statistics for each payment
         const paymentsWithStats = await Promise.all(payments.map(async (payment) => {
             const records = await PaymentRecord.find({ payment_id: payment._id });
             const paid = records.filter(r => r.payment_status === 'paid').length;
             const unpaid = records.filter(r => r.payment_status === 'unpaid').length;
+            const pending = records.filter(r => r.payment_status === 'pending').length;
+            const totalUnpaid = unpaid + pending; // Total unpaid includes both unpaid and pending
             const total = records.length;
             
             return {
                 ...payment.toObject(),
-                payment_records: records.map(r => ({
-                    _id: r._id,
-                    student_id: r.student_id,
-                    student_name: r.student_name,
-                    is_paid: r.payment_status === 'paid',
-                    paid_by_treasurer: r.paid_by_treasurer || null,
-                    paid_date: r.paid_at || null
-                })),
                 stats: {
                     total_students: total,
                     paid_count: paid,
-                    unpaid_count: unpaid,
+                    unpaid_count: totalUnpaid,
+                    pending_count: pending,
                     completion_percentage: total > 0 ? Math.round((paid / total) * 100) : 0
                 }
             };
@@ -778,16 +773,27 @@ app.get('/apis/payments/:id', auth, async (req, res) => {
         const records = await PaymentRecord.find({ payment_id: payment._id });
         const paid = records.filter(r => r.payment_status === 'paid').length;
         const unpaid = records.filter(r => r.payment_status === 'unpaid').length;
+        const pending = records.filter(r => r.payment_status === 'pending').length;
+        const totalUnpaid = unpaid + pending; // Total unpaid includes both unpaid and pending
         
         res.json({ 
             success: true, 
             data: {
                 ...payment.toObject(),
-                records,
+                payment_records: records.map(r => ({
+                    _id: r._id,
+                    student_id: r.student_id,
+                    student_name: r.student_name,
+                    payment_status: r.payment_status,
+                    is_paid: r.payment_status === 'paid',
+                    paid_by_treasurer: r.paid_by_treasurer || null,
+                    paid_date: r.paid_at || null
+                })),
                 stats: {
                     total_students: records.length,
                     paid_count: paid,
-                    unpaid_count: unpaid,
+                    unpaid_count: totalUnpaid,
+                    pending_count: pending,
                     completion_percentage: records.length > 0 ? Math.round((paid / records.length) * 100) : 0
                 }
             }
@@ -1019,6 +1025,174 @@ app.delete('/apis/payments/:paymentId', adminOrTreasurerAuth, async (req, res) =
                 payment_id: paymentId,
                 payment_title: paymentTitle,
                 deleted_records_count: recordCount
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update payment campaign status (Active/Closed)
+app.put('/apis/payments/:paymentId/status', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        const { status } = req.body;
+        
+        // Validate status value
+        if (!['active', 'closed', 'archived'].includes(status)) {
+            return res.status(400).json({ 
+                message: 'Invalid status. Must be "active", "closed", or "archived"' 
+            });
+        }
+        
+        const payment = await Payment.findByIdAndUpdate(
+            paymentId,
+            { 
+                status: status,
+                updated_at: new Date()
+            },
+            { new: true }
+        );
+        
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment campaign not found' });
+        }
+        
+        // When closing a campaign, convert all 'pending' records to 'unpaid'
+        if (status === 'closed') {
+            await PaymentRecord.updateMany(
+                { payment_id: paymentId, payment_status: 'pending' },
+                { payment_status: 'unpaid', updated_at: new Date() }
+            );
+        }
+        
+        // When reopening to active, convert 'unpaid' back to 'pending'
+        if (status === 'active') {
+            await PaymentRecord.updateMany(
+                { payment_id: paymentId, payment_status: 'unpaid' },
+                { payment_status: 'pending', updated_at: new Date() }
+            );
+        }
+        
+        res.json({ 
+            success: true, 
+            message: `Payment campaign status updated to "${status}"`,
+            data: payment 
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Sync payment campaign with all approved students (add missing students)
+app.post('/apis/payments/:paymentId/sync-students', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        
+        const payment = await Payment.findById(paymentId);
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment campaign not found' });
+        }
+        
+        // Get all approved students
+        const allApprovedStudents = await Student.find({ status: 'approved' });
+        
+        // Sync using upsert to prevent duplicates: use findOneAndUpdate with upsert
+        let addedCount = 0;
+        
+        for (const student of allApprovedStudents) {
+            const result = await PaymentRecord.findOneAndUpdate(
+                {
+                    payment_id: paymentId,
+                    student_id: student.student_id
+                },
+                {
+                    $setOnInsert: {
+                        payment_id: paymentId,
+                        student_id: student.student_id,
+                        student_id_number: student.student_id,
+                        student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+                        program: student.program,
+                        year_level: student.year_level,
+                        payment_status: 'pending'
+                    }
+                },
+                { upsert: true, new: true }
+            );
+            
+            // Check if this was a new insert (upserted)
+            if (result.__v === 0 && !result.paid_date) {
+                addedCount++;
+            }
+        }
+        
+        const totalRecords = await PaymentRecord.countDocuments({ payment_id: paymentId });
+        
+        res.json({ 
+            success: true, 
+            message: addedCount > 0 
+                ? `Added ${addedCount} missing students to payment campaign`
+                : 'Payment campaign is already synced with all approved students',
+            data: {
+                added_count: addedCount,
+                total_students: totalRecords
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Deduplicate payment records (remove duplicates - keep only one record per student per payment)
+app.post('/apis/payments/:paymentId/deduplicate', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        
+        const payment = await Payment.findById(paymentId);
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment campaign not found' });
+        }
+        
+        // Get all payment records for this payment
+        const records = await PaymentRecord.find({ payment_id: paymentId });
+        
+        // Find duplicates: group by student_id
+        const studentMap = {};
+        const duplicates = [];
+        
+        records.forEach(record => {
+            const key = record.student_id;
+            if (studentMap[key]) {
+                // This is a duplicate, mark it for deletion
+                duplicates.push(record._id);
+            } else {
+                // First occurrence, keep it
+                studentMap[key] = record._id;
+            }
+        });
+        
+        if (duplicates.length === 0) {
+            return res.json({ 
+                success: true, 
+                message: 'No duplicates found',
+                data: {
+                    duplicates_removed: 0,
+                    total_records_remaining: records.length
+                }
+            });
+        }
+        
+        // Delete duplicate records
+        await PaymentRecord.deleteMany({ _id: { $in: duplicates } });
+        
+        const remainingRecords = await PaymentRecord.find({ payment_id: paymentId });
+        
+        res.json({ 
+            success: true, 
+            message: `Removed ${duplicates.length} duplicate payment records`,
+            data: {
+                duplicates_removed: duplicates.length,
+                total_records_remaining: remainingRecords.length
             }
         });
     } catch (err) {
@@ -1570,8 +1744,8 @@ const paymentRecordSchema = new mongoose.Schema({
     year_level: { type: String },
     payment_status: { 
         type: String, 
-        enum: ['unpaid', 'paid', 'partial', 'waived'],
-        default: 'unpaid'
+        enum: ['pending', 'unpaid', 'paid', 'partial', 'waived'],
+        default: 'pending'
     },
     amount_paid: { type: Number, default: 0 },
     paid_at: { type: Date, default: null },
@@ -1775,8 +1949,9 @@ async function studentAuthWithToken(req, res, next) {
 
 function studentAuth(req, res, next) {
     const token = req.headers.authorization?.split(" ")[1];
+    const validStudentKey = process.env.SSAAM_STUDENT_API_KEY || 'SSAAMStudents';
 
-    if (!token || token !== process.env.SSAAM_STUDENT_API_KEY) {
+    if (!token || token !== validStudentKey) {
         return res.status(401).json({ message: "Unauthorized: Invalid key"});
     }
 
@@ -3059,7 +3234,6 @@ app.put('/apis/students/:student_id/photo', studentAuthWithToken, async (req, re
 app.put('/apis/students/:student_id', auth, adminActionAuth, timestampAuth, async (req, res) => {
     try {
         const updates = { ...req.body };
-        delete updates.student_id;
         delete updates.status;
         delete updates.role;
         
@@ -5503,7 +5677,8 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                         label: session.label,
                         start_time: session.start_time,
                         end_time: session.end_time,
-                        status: session.status
+                        status: session.status,
+                        late_timer_minutes: session.late_timer_minutes || 0
                     },
                     attendance: log ? {
                         check_in_at: log.check_in_at,
