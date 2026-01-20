@@ -487,55 +487,6 @@
   </div>
 
   <!-- Admin Key Modal - Always on top -->
-  <div v-if="showAdminKeyModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[200]" @click.self="cancelAdminKeyModal">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-purple-900">Admin Verification Required</h3>
-        <button @click="cancelAdminKeyModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-      </div>
-      
-      <div class="mb-4">
-        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg mb-4">
-          <p class="text-sm text-yellow-800">
-            This action requires admin verification. Please enter the admin key to continue.
-          </p>
-        </div>
-        
-        <label class="block text-sm font-medium text-gray-700 mb-2">Admin Key</label>
-        <input 
-          v-model="adminKeyInput" 
-          type="password" 
-          placeholder="Enter admin key"
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-          @keyup.enter="submitAdminKey"
-          :disabled="adminKeyLoading"
-        />
-        <p v-if="adminKeyError" class="text-red-500 text-sm mt-2">{{ adminKeyError }}</p>
-      </div>
-      
-      <div class="flex gap-3">
-        <button 
-          @click="cancelAdminKeyModal" 
-          class="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition"
-          :disabled="adminKeyLoading"
-        >
-          Cancel
-        </button>
-        <button 
-          @click="submitAdminKey" 
-          class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition flex items-center justify-center gap-2"
-          :disabled="adminKeyLoading || !adminKeyInput"
-        >
-          <svg v-if="adminKeyLoading" class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          <span>{{ adminKeyLoading ? 'Verifying...' : 'Verify' }}</span>
-        </button>
-      </div>
-    </div>
-  </div>
-
   <div v-if="isPageLoading" class="fixed inset-0 bg-gradient-to-b from-purple-600 to-pink-400 flex items-center justify-center z-50">
     <div class="text-center text-white">
       <svg class="animate-spin h-16 w-16 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -660,12 +611,12 @@
           <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>Dashboard</span>
         </button>
-        <button v-if="currentUser.role === 'admin' || currentUser.isMaster || currentUser.role === 'treasurer'" @click="currentPage = 'contributions'; contributionTabMode = 'payments'; showMobileMenu = false; fetchPayments(true)" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+        <button @click="currentPage = 'contributions'; contributionTabMode = 'payments'; showMobileMenu = false; fetchPayments(true)" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span>Contributions</span>
         </button>
-        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'users'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'users' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
-          <img src="/user.svg" alt="Users" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
+        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'manage' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
           <span>Manage</span>
         </button>
         <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'pending'; fetchPendingStudents()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'pending' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
@@ -789,12 +740,12 @@
             <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>Dashboard</span>
           </button>
-          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'contributions'; contributionTabMode = 'payments'; showMobileMenu = false; fetchPayments(true)" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <button @click="currentPage = 'contributions'; contributionTabMode = 'payments'; showMobileMenu = false; fetchPayments(true)" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'contributions' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span>Contributions</span>
         </button>
-        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'users'; showMobileMenu = false" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'users' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
-            <img src="/user.svg" alt="Users" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
+          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'manage' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
             <span>Manage</span>
           </button>
           <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'pending'; showMobileMenu = false; fetchPendingStudents()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'pending' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
@@ -860,7 +811,7 @@
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 class="hidden md:block text-2xl md:text-4xl font-bold text-purple-900 mb-8 pb-4 border-b-2 border-purple-900">{{ currentPage === 'users' ? 'Manage' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'notifications' ? 'Notifications' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'payments' ? 'Payments' : 'Dashboard' }}</h1>
+        <h1 class="hidden md:block text-2xl md:text-4xl font-bold text-purple-900 mb-8 pb-4 border-b-2 border-purple-900">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'notifications' ? 'Notifications' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'payments' ? 'Payments' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg shadow-sm">
@@ -3350,6 +3301,9 @@
           </div>
         </div>
 
+        <!-- Manage Page (Roles & Users) -->
+        <Manage ref="manageComponent" v-if="currentPage === 'manage' && (currentUser.role === 'admin' || currentUser.isMaster)" />
+
         <!-- Active Attendance Event Banner for Students -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster && activeUnattendedEvents.length > 0" class="mb-4">
           <div v-for="event in activeUnattendedEvents" :key="event._id" class="rounded-lg shadow-lg p-4 mb-3 text-white bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
@@ -4745,6 +4699,7 @@ import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 import SessionExpiredModal from '../components/SessionExpiredModal.vue'
 import ContributionsModal from '../components/ContributionsModal.vue'
 import StudentContributionsView from '../components/StudentContributionsView.vue'
+import Manage from '../components/Manage.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
 
@@ -5492,24 +5447,34 @@ const shouldShowRecord = (payment, record) => {
   return true
 }
 
-// Sort payment records - paid first when showing all
+// Sort payment records - paid first when showing all, then by latest date paid
 const getSortedPaymentRecords = (payment) => {
   if (!payment || !payment.payment_records) return []
   
   const records = [...(payment.payment_records || [])]
   
-  // When showing all records, sort paid first, then unpaid/pending
-  if (paymentRecordsFilter.value.status === 'all') {
-    records.sort((a, b) => {
-      // Paid records come first
-      if (a.payment_status === 'paid' && b.payment_status !== 'paid') return -1
-      if (a.payment_status !== 'paid' && b.payment_status === 'paid') return 1
-      // Then unpaid, then pending
-      if (a.payment_status === 'unpaid' && b.payment_status === 'pending') return -1
-      if (a.payment_status === 'pending' && b.payment_status === 'unpaid') return 1
-      return 0
-    })
-  }
+  // Sort by date paid (latest first) and status
+  records.sort((a, b) => {
+    // Paid records come first
+    if (a.payment_status === 'paid' && b.payment_status !== 'paid') return -1
+    if (a.payment_status !== 'paid' && b.payment_status === 'paid') return 1
+    
+    // If both are paid, sort by date (latest first)
+    if (a.payment_status === 'paid' && b.payment_status === 'paid') {
+      const dateA = new Date(a.paid_date || 0)
+      const dateB = new Date(b.paid_date || 0)
+      return dateB.getTime() - dateA.getTime() // Latest first
+    }
+    
+    // Then unpaid, then pending
+    if (a.payment_status === 'unpaid' && b.payment_status === 'pending') return -1
+    if (a.payment_status === 'pending' && b.payment_status === 'unpaid') return 1
+    
+    // If same status (unpaid or pending), sort by record date (latest first)
+    const dateA = new Date(a.date_submitted || a.created_at || 0)
+    const dateB = new Date(b.date_submitted || b.created_at || 0)
+    return dateB.getTime() - dateA.getTime() // Latest first
+  })
   
   // Filter records before pagination
   const filteredRecords = records.filter(record => shouldShowRecord(payment, record))
@@ -5739,6 +5704,7 @@ const showSessionExpiredModal = ref(false)
 const showMobileMenu = ref(false)
 const showContactModal = ref(false)
 const currentPage = ref('dashboard')
+const manageComponent = ref(null)
 const currentPageNum = ref(1)
 const itemsPerPage = ref(20)
 const paginationTotal = ref(0)
@@ -6468,38 +6434,6 @@ const showDeleteDuplicateConfirm = ref(false)
 const duplicateStudentToDelete = ref(null)
 const deletingDuplicateStudent = ref(false)
 
-// Admin action token management with 10-minute localStorage persistence
-const ADMIN_ACTION_TOKEN_KEY = 'ssaam_admin_action_token'
-const ADMIN_ACTION_TOKEN_EXPIRY_KEY = 'ssaam_admin_action_token_expiry'
-const ADMIN_ACTION_TOKEN_DURATION_MS = 10 * 60 * 1000 // 10 minutes
-
-const adminActionToken = ref(localStorage.getItem(ADMIN_ACTION_TOKEN_KEY) || null)
-const adminActionTokenExpiry = ref(localStorage.getItem(ADMIN_ACTION_TOKEN_EXPIRY_KEY) ? new Date(localStorage.getItem(ADMIN_ACTION_TOKEN_EXPIRY_KEY)) : null)
-const showAdminKeyModal = ref(false)
-const adminKeyInput = ref('')
-const adminKeyError = ref('')
-const adminKeyLoading = ref(false)
-const pendingAdminAction = ref(null)
-const isPrimaryAdmin = ref(false)
-
-// Persist admin action token to localStorage
-const saveAdminActionToken = (token, expiryDate) => {
-  adminActionToken.value = token
-  adminActionTokenExpiry.value = expiryDate
-  if (token && expiryDate) {
-    localStorage.setItem(ADMIN_ACTION_TOKEN_KEY, token)
-    localStorage.setItem(ADMIN_ACTION_TOKEN_EXPIRY_KEY, expiryDate.toISOString())
-  } else {
-    localStorage.removeItem(ADMIN_ACTION_TOKEN_KEY)
-    localStorage.removeItem(ADMIN_ACTION_TOKEN_EXPIRY_KEY)
-  }
-}
-
-// Clear admin action token
-const clearAdminActionToken = () => {
-  saveAdminActionToken(null, null)
-}
-
 // Poster image handling for MedPub posts
 const posterImageFailed = ref({})
 const posterImageRetries = ref({})
@@ -7107,139 +7041,22 @@ const handlePosterImageError = async (notifId, imageUrl) => {
 }
 
 const isAdminActionTokenValid = () => {
-  if (!adminActionToken.value || !adminActionTokenExpiry.value) return false
-  const expiryDate = new Date(adminActionTokenExpiry.value)
-  const isValid = new Date() < expiryDate
-  // Clear expired tokens from localStorage
-  if (!isValid) {
-    clearAdminActionToken()
-  }
-  return isValid
+  return true // Admin actions now use standard auth token only
 }
 
 const checkAdminActionStatus = async () => {
-  const token = localStorage.getItem('authToken')
-  if (!token || (!currentUser.value.isMaster && currentUser.value.role !== 'admin')) return
-  
-  try {
-    const response = await fetch(buildAPIUrl(`/apis/admin-actions/status`), {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    })
-    
-    if (response.ok) {
-      const data = await response.json()
-      isPrimaryAdmin.value = data.is_primary_admin || false
-      if (data.has_active_token && data.token_expires_at) {
-        adminActionTokenExpiry.value = data.token_expires_at
-      }
-    }
-  } catch (error) {
-    console.error('Failed to check admin action status:', error)
-  }
-}
-
-const requestAdminActionToken = async (adminKey) => {
-  const token = localStorage.getItem('authToken')
-  if (!token) throw new Error('Authentication required')
-  
-  const response = await fetch(buildAPIUrl(`/apis/admin-actions/token`), {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      'X-SSAAM-TS': encodeTimestamp()
-    },
-    body: JSON.stringify({ admin_key: adminKey })
-  })
-  
-  const data = await response.json()
-  
-  if (!response.ok) {
-    throw new Error(data.message || 'Failed to verify admin key')
-  }
-  
-  // Use 10-minute client-side expiry for better UX
-  const expiryDate = new Date(Date.now() + ADMIN_ACTION_TOKEN_DURATION_MS)
-  saveAdminActionToken(data.action_token, expiryDate)
-  return data
-}
-
-const getAdminActionHeaders = () => {
-  const headers = {}
-  if (adminActionToken.value && isAdminActionTokenValid()) {
-    headers['X-Admin-Action-Token'] = adminActionToken.value
-  }
-  return headers
+  // Admin actions now use standard auth token only
+  return
 }
 
 const handleAdminActionError = async (response) => {
-  if (response.status === 403) {
-    const data = await response.json()
-    if (data.code === 'NOT_PRIMARY_ADMIN') {
-      showNotification('Only the primary admin (ssaam) can perform this action', 'error')
-      return true
-    }
-    if (data.code === 'ACTION_TOKEN_REQUIRED' || data.code === 'INVALID_ACTION_TOKEN' || data.code === 'ACTION_TOKEN_EXPIRED') {
-      clearAdminActionToken()
-      return false
-    }
-  }
+  // Admin actions now use standard auth token only
   return false
 }
 
 const withAdminAction = (actionFn) => {
   return async (...args) => {
-    if (!isPrimaryAdmin.value) {
-      showNotification('Only the primary admin can perform this action', 'error')
-      return
-    }
-    
-    if (!isAdminActionTokenValid()) {
-      pendingAdminAction.value = () => actionFn(...args)
-      adminKeyInput.value = ''
-      adminKeyError.value = ''
-      showAdminKeyModal.value = true
-      return
-    }
-    
     return await actionFn(...args)
-  }
-}
-
-const cancelAdminKeyModal = () => {
-  showAdminKeyModal.value = false
-  adminKeyInput.value = ''
-  adminKeyError.value = ''
-  pendingAdminAction.value = null
-  pendingEditUser.value = null
-}
-
-const submitAdminKey = async () => {
-  if (!adminKeyInput.value) {
-    adminKeyError.value = 'Please enter the admin key'
-    return
-  }
-  
-  adminKeyLoading.value = true
-  adminKeyError.value = ''
-  
-  try {
-    await requestAdminActionToken(adminKeyInput.value)
-    showAdminKeyModal.value = false
-    adminKeyInput.value = ''
-    
-    if (pendingAdminAction.value) {
-      const action = pendingAdminAction.value
-      pendingAdminAction.value = null
-      await action()
-    }
-  } catch (error) {
-    adminKeyError.value = error.message || 'Invalid admin key'
-  } finally {
-    adminKeyLoading.value = false
   }
 }
 
@@ -7426,11 +7243,6 @@ onMounted(async () => {
     
     // Check admin action status for primary admin
     checkAdminActionStatus()
-    
-    // Restore rfidScannerVerified if there's a valid admin action token
-    if (isAdminActionTokenValid()) {
-      rfidScannerVerified.value = true
-    }
     
     try {
       // Fetch only current page (10-20 students)
@@ -7724,6 +7536,17 @@ const toggleRfidList = async (type) => {
   }
 }
 
+// Handle Manage click - set page and refresh data
+const handleManageClick = async () => {
+  currentPage.value = 'manage'
+  showMobileMenu.value = false
+  // Call refresh on the Manage component after it's rendered
+  await nextTick()
+  if (manageComponent.value) {
+    await manageComponent.value.refreshData()
+  }
+}
+
 // Fetch pending students for approval (fetch all by using high limit)
 const fetchPendingStudents = async () => {
   pendingLoading.value = true
@@ -7756,8 +7579,7 @@ const approveStudentImpl = async (student) => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp(),
-        ...getAdminActionHeaders()
+        'X-SSAAM-TS': encodeTimestamp()
       }
     })
     
@@ -7767,15 +7589,12 @@ const approveStudentImpl = async (student) => {
       await fetchPendingStudents()
     } else {
       if (response.status === 403) {
-        const handled = await handleAdminActionError(response)
-        if (!handled) {
-          pendingAdminAction.value = () => approveStudentImpl(student)
-          showAdminKeyModal.value = true
-        }
-        return
+        const data = await response.json()
+        showNotification(data.message || 'Failed', 'error')
+      } else {
+        const data = await response.json()
+        showNotification(data.message || 'Failed to approve student', 'error')
       }
-      const data = await response.json()
-      showNotification(data.message || 'Failed to approve student', 'error')
     }
   } catch (error) {
     console.error('Failed to approve student:', error)
@@ -7807,8 +7626,7 @@ const confirmRejectStudentImpl = async () => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp(),
-        ...getAdminActionHeaders()
+        'X-SSAAM-TS': encodeTimestamp()
       },
       body: JSON.stringify({ reason: rejectReason.value })
     })
@@ -7821,15 +7639,12 @@ const confirmRejectStudentImpl = async () => {
       await fetchPendingStudents()
     } else {
       if (response.status === 403) {
-        const handled = await handleAdminActionError(response)
-        if (!handled) {
-          pendingAdminAction.value = () => confirmRejectStudentImpl()
-          showAdminKeyModal.value = true
-        }
-        return
+        const data = await response.json()
+        showNotification(data.message || 'Failed', 'error')
+      } else {
+        const data = await response.json()
+        showNotification(data.message || 'Failed to reject student', 'error')
       }
-      const data = await response.json()
-      showNotification(data.message || 'Failed to reject student', 'error')
     }
   } catch (error) {
     console.error('Failed to reject student:', error)
@@ -8049,8 +7864,7 @@ const saveSettingsImpl = async () => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp(),
-        ...getAdminActionHeaders()
+        'X-SSAAM-TS': encodeTimestamp()
       },
       body: JSON.stringify({
         userRegister: appSettings.value.userRegister,
@@ -8065,15 +7879,12 @@ const saveSettingsImpl = async () => {
       showNotification('Settings saved successfully!', 'success')
     } else {
       if (response.status === 403) {
-        const handled = await handleAdminActionError(response)
-        if (!handled) {
-          pendingAdminAction.value = () => saveSettingsImpl()
-          showAdminKeyModal.value = true
-        }
-        return
+        const error = await response.json()
+        showNotification(error.message || 'Failed', 'error')
+      } else {
+        const error = await response.json()
+        showNotification(error.message || 'Failed to save settings', 'error')
       }
-      const error = await response.json()
-      showNotification(error.message || 'Failed to save settings', 'error')
     }
   } catch (error) {
     console.error('Failed to save settings:', error)
@@ -8098,8 +7909,7 @@ const saveRfidScannerSettings = async () => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp(),
-        ...getAdminActionHeaders()
+        'X-SSAAM-TS': encodeTimestamp()
       },
       body: JSON.stringify({
         rfidScanner: appSettings.value.rfidScanner
@@ -8110,15 +7920,12 @@ const saveRfidScannerSettings = async () => {
       showNotification('RFID Scanner settings saved!', 'success')
     } else {
       if (response.status === 403) {
-        const handled = await handleAdminActionError(response)
-        if (!handled) {
-          pendingAdminAction.value = () => saveRfidScannerSettings()
-          showAdminKeyModal.value = true
-        }
-        return
+        const error = await response.json()
+        showNotification(error.message || 'Failed', 'error')
+      } else {
+        const error = await response.json()
+        showNotification(error.message || 'Failed to save RFID settings', 'error')
       }
-      const error = await response.json()
-      showNotification(error.message || 'Failed to save RFID settings', 'error')
     }
   } catch (error) {
     console.error('Failed to save RFID settings:', error)
@@ -8202,8 +8009,7 @@ const clearAllSessionTokens = async () => {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
-        'X-Admin-Action-Token': adminActionToken.value || ''
+        'Authorization': `Bearer ${token}`
       }
     })
     
@@ -8212,15 +8018,12 @@ const clearAllSessionTokens = async () => {
       showNotification(`Successfully cleared ${data.deletedCount || 'all'} session tokens!`, 'success')
     } else {
       if (response.status === 403) {
-        const handled = await handleAdminActionError(response)
-        if (!handled) {
-          pendingAdminAction.value = clearAllSessionTokens
-          showAdminKeyModal.value = true
-        }
-        return
+        const error = await response.json()
+        showNotification(error.message || 'Failed', 'error')
+      } else {
+        const error = await response.json()
+        showNotification(error.message || 'Failed to clear session tokens', 'error')
       }
-      const error = await response.json()
-      showNotification(error.message || 'Failed to clear session tokens', 'error')
     }
   } catch (error) {
     console.error('Failed to clear session tokens:', error)
@@ -8419,16 +8222,6 @@ const openEditDuplicateStudent = (student) => {
   userCopy.rfidCode = userCopy.rfid_code || userCopy.rfidCode || 'N/A'
   userCopy.image = userCopy.photo || userCopy.image || ''
   
-  if (isPrimaryAdmin.value && !isAdminActionTokenValid()) {
-    pendingAdminAction.value = () => {
-      editingUser.value = userCopy
-      editImageLoading.value = false
-      showEditModal.value = true
-    }
-    showAdminKeyModal.value = true
-    return
-  }
-  
   editingUser.value = userCopy
   editImageLoading.value = false
   showEditModal.value = true
@@ -8438,16 +8231,6 @@ const openEditDuplicateStudent = (student) => {
 const deleteDuplicateStudent = (student) => {
   const studentId = student.student_id || student.studentId
   const studentName = `${student.first_name || student.firstName} ${student.last_name || student.lastName}`.trim()
-  
-  // First check admin action token before showing modal
-  if (isPrimaryAdmin.value && !isAdminActionTokenValid()) {
-    pendingAdminAction.value = () => {
-      duplicateStudentToDelete.value = { id: studentId, name: studentName }
-      showDeleteDuplicateConfirm.value = true
-    }
-    showAdminKeyModal.value = true
-    return
-  }
   
   // Show confirmation modal
   duplicateStudentToDelete.value = { id: studentId, name: studentName }
@@ -8479,8 +8262,7 @@ const performDeleteDuplicateStudent = async (studentId, studentName) => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp(),
-        ...getAdminActionHeaders()
+        'X-SSAAM-TS': encodeTimestamp()
       }
     })
     
@@ -8489,14 +8271,8 @@ const performDeleteDuplicateStudent = async (studentId, studentName) => {
       await scanAllForDuplicates()
       await fetchAllUsers()
     } else {
-      const handled = await handleAdminActionError(response)
-      if (handled) {
-        pendingAdminAction.value = () => performDeleteDuplicateStudent(studentId, studentName)
-        showAdminKeyModal.value = true
-      } else {
-        const result = await response.json()
-        showNotification(result.message || 'Failed to delete student', 'error')
-      }
+      const data = await response.json()
+      showNotification(data.message || 'Failed to delete student', 'error')
     }
   } catch (error) {
     console.error('Delete student error:', error)
@@ -8615,15 +8391,6 @@ const editUser = (user) => {
     return
   }
   
-  if (isPrimaryAdmin.value && !isAdminActionTokenValid()) {
-    pendingEditUser.value = user
-    pendingAdminAction.value = () => {
-      openEditModalWithUser(pendingEditUser.value)
-      pendingEditUser.value = null
-    }
-    showAdminKeyModal.value = true
-    return
-  }
   
   openEditModalWithUser(user)
 }
@@ -8921,8 +8688,7 @@ const saveUserImpl = async () => {
       headers: { 
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp(),
-        ...getAdminActionHeaders()
+        'X-SSAAM-TS': encodeTimestamp()
       },
       body: JSON.stringify(updateData)
     })
@@ -8940,8 +8706,7 @@ const saveUserImpl = async () => {
             headers: { 
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`,
-              'X-SSAAM-TS': encodeTimestamp(),
-              ...getAdminActionHeaders()
+              'X-SSAAM-TS': encodeTimestamp()
             },
             body: JSON.stringify({ 
               role: newRole.toLowerCase(),
@@ -8969,8 +8734,7 @@ const saveUserImpl = async () => {
             headers: { 
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`,
-              'X-SSAAM-TS': encodeTimestamp(),
-              ...getAdminActionHeaders()
+              'X-SSAAM-TS': encodeTimestamp()
             },
             body: JSON.stringify({ 
               rfid_code: newRfid,
@@ -8996,15 +8760,12 @@ const saveUserImpl = async () => {
       refreshStudents()
     } else {
       if (response.status === 403) {
-        const handled = await handleAdminActionError(response)
-        if (!handled) {
-          pendingAdminAction.value = () => saveUserImpl()
-          showAdminKeyModal.value = true
-        }
-        return
+        const errorData = await response.json()
+        showNotification(errorData.message || 'Failed', 'error')
+      } else {
+        const errorData = await response.json()
+        showNotification(errorData.message || 'Failed to update user', 'error')
       }
-      const errorData = await response.json()
-      showNotification(errorData.message || 'Failed to update user', 'error')
     }
   } catch (error) {
     console.error('Error updating user:', error)
@@ -9048,8 +8809,7 @@ const confirmDeleteImpl = async () => {
         headers: { 
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
-          'X-SSAAM-TS': encodeTimestamp(),
-          ...getAdminActionHeaders()
+          'X-SSAAM-TS': encodeTimestamp()
         }
       })
       
@@ -9059,15 +8819,12 @@ const confirmDeleteImpl = async () => {
         fetchStats()
       } else {
         if (response.status === 403) {
-          const handled = await handleAdminActionError(response)
-          if (!handled) {
-            pendingAdminAction.value = () => confirmDeleteImpl()
-            showAdminKeyModal.value = true
-          }
-          return
+          const errorData = await response.json()
+          showNotification(errorData.message || 'Failed', 'error')
+        } else {
+          const errorData = await response.json()
+          showNotification(errorData.message || 'Failed to delete user', 'error')
         }
-        const errorData = await response.json()
-        showNotification(errorData.message || 'Failed to delete user', 'error')
       }
     } catch (error) {
       console.error('Error deleting user:', error)
@@ -9256,8 +9013,7 @@ const createAttendanceEvent = async () => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp(),
-        ...getAdminActionHeaders()
+        'X-SSAAM-TS': encodeTimestamp()
       },
       body: JSON.stringify(eventPayload)
     })
@@ -9292,15 +9048,12 @@ const createAttendanceEvent = async () => {
       }
     } else {
       if (response.status === 403) {
-        const handled = await handleAdminActionError(response)
-        if (!handled) {
-          pendingAdminAction.value = () => createAttendanceEvent()
-          showAdminKeyModal.value = true
-        }
-        return
+        const errorData = await response.json()
+        showNotification(errorData.message || 'Failed', 'error')
+      } else {
+        const errorData = await response.json()
+        showNotification(errorData.message || 'Failed to create event', 'error')
       }
-      const errorData = await response.json()
-      showNotification(errorData.message || 'Failed to create event', 'error')
     }
   } catch (error) {
     console.error('Error creating event:', error)
@@ -9328,8 +9081,7 @@ const updateAttendanceEvent = async () => {
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp(),
-        ...getAdminActionHeaders()
+        'X-SSAAM-TS': encodeTimestamp()
       },
       body: JSON.stringify(eventPayload)
     })
@@ -9340,15 +9092,12 @@ const updateAttendanceEvent = async () => {
       fetchAttendanceData()
     } else {
       if (response.status === 403) {
-        const handled = await handleAdminActionError(response)
-        if (!handled) {
-          pendingAdminAction.value = () => updateAttendanceEvent()
-          showAdminKeyModal.value = true
-        }
-        return
+        const errorData = await response.json()
+        showNotification(errorData.message || 'Failed', 'error')
+      } else {
+        const errorData = await response.json()
+        showNotification(errorData.message || 'Failed to update event', 'error')
       }
-      const errorData = await response.json()
-      showNotification(errorData.message || 'Failed to update event', 'error')
     }
   } catch (error) {
     console.error('Error updating event:', error)
@@ -9396,8 +9145,7 @@ const deleteAttendanceEvent = async (eventId) => {
       method: 'DELETE',
       headers: {
         'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp(),
-        ...getAdminActionHeaders()
+        'X-SSAAM-TS': encodeTimestamp()
       }
     })
     
@@ -9406,15 +9154,12 @@ const deleteAttendanceEvent = async (eventId) => {
       fetchAttendanceData()
     } else {
       if (response.status === 403) {
-        const handled = await handleAdminActionError(response)
-        if (!handled) {
-          pendingAdminAction.value = () => deleteAttendanceEvent(eventId)
-          showAdminKeyModal.value = true
-        }
-        return
+        const errorData = await response.json()
+        showNotification(errorData.message || 'Failed', 'error')
+      } else {
+        const errorData = await response.json()
+        showNotification(errorData.message || 'Failed to delete event', 'error')
       }
-      const errorData = await response.json()
-      showNotification(errorData.message || 'Failed to delete event', 'error')
     }
   } catch (error) {
     console.error('Error deleting event:', error)
@@ -9489,7 +9234,7 @@ const saveSession = async () => {
     if (editingSession.value) {
     const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${editingSession.value._id}`), {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() },
         body: JSON.stringify(newSession.value)
       })
       if (response.ok) {
@@ -9497,21 +9242,13 @@ const saveSession = async () => {
         showSessionModal.value = false
         fetchEventSessions(selectedEvent.value._id)
       } else {
-        if (response.status === 403) {
-          const handled = await handleAdminActionError(response)
-          if (!handled) {
-            pendingAdminAction.value = () => saveSession()
-            showAdminKeyModal.value = true
-          }
-          return
-        }
         const errorData = await response.json()
         showNotification(errorData.message || 'Failed to update session', 'error')
       }
     } else {
       const response = await fetch(buildAPIUrl(`/apis/attendance/events/${selectedEvent.value._id}/sessions`), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() },
         body: JSON.stringify(newSession.value)
       })
       if (response.ok) {
@@ -9519,14 +9256,6 @@ const saveSession = async () => {
         showSessionModal.value = false
         fetchEventSessions(selectedEvent.value._id)
       } else {
-        if (response.status === 403) {
-          const handled = await handleAdminActionError(response)
-          if (!handled) {
-            pendingAdminAction.value = () => saveSession()
-            showAdminKeyModal.value = true
-          }
-          return
-        }
         const errorData = await response.json()
         showNotification(errorData.message || 'Failed to add session', 'error')
       }
@@ -9544,20 +9273,12 @@ const deleteSession = async (sessionId) => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${sessionId}`), {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp(), ...getAdminActionHeaders() }
+      headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
     })
     if (response.ok) {
       showNotification('Session deleted', 'success')
       fetchEventSessions(selectedEvent.value._id)
     } else {
-      if (response.status === 403) {
-        const handled = await handleAdminActionError(response)
-        if (!handled) {
-          pendingAdminAction.value = () => deleteSession(sessionId)
-          showAdminKeyModal.value = true
-        }
-        return
-      }
       const errorData = await response.json()
       showNotification(errorData.message || 'Failed to delete session', 'error')
     }
@@ -9618,8 +9339,7 @@ const applyLateThresholdByMinutes = async () => {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
-              'X-SSAAM-TS': encodeTimestamp(),
-              ...getAdminActionHeaders()
+              'X-SSAAM-TS': encodeTimestamp()
             },
             body: JSON.stringify({ is_late: shouldBeLate })
           })
@@ -9649,8 +9369,7 @@ const applyLateThresholdByMinutes = async () => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
-          'X-SSAAM-TS': encodeTimestamp(),
-          ...getAdminActionHeaders()
+          'X-SSAAM-TS': encodeTimestamp()
         },
         body: JSON.stringify({ ...selectedSessionForLogs.value, late_timer_minutes: thresholdMinutes })
       })
@@ -9707,8 +9426,7 @@ const applyLateThreshold = async () => {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json',
-              'X-SSAAM-TS': encodeTimestamp(),
-              ...getAdminActionHeaders()
+              'X-SSAAM-TS': encodeTimestamp()
             },
             body: JSON.stringify({ is_late: shouldBeLate })
           })
@@ -10303,15 +10021,9 @@ const handleRfidKeydown = (event) => {
 }
 
 const switchToScannerTab = () => {
-  if (rfidScannerVerified.value || isAdminActionTokenValid()) {
+  if (rfidScannerVerified.value) {
     rfidScannerVerified.value = true
     attendanceTab.value = 'scanner'
-  } else {
-    pendingAdminAction.value = () => {
-      rfidScannerVerified.value = true
-      attendanceTab.value = 'scanner'
-    }
-    showAdminKeyModal.value = true
   }
 }
 
@@ -10321,7 +10033,7 @@ const launchFullscreenScanner = () => {
     return
   }
   
-  if (rfidScannerVerified.value || isAdminActionTokenValid()) {
+  if (rfidScannerVerified.value) {
     rfidScannerVerified.value = true
     rfidFullscreenMode.value = true
     nextTick(() => {
@@ -10329,17 +10041,6 @@ const launchFullscreenScanner = () => {
         rfidFullscreenInputRef.value.focus()
       }
     })
-  } else {
-    pendingAdminAction.value = () => {
-      rfidScannerVerified.value = true
-      rfidFullscreenMode.value = true
-      nextTick(() => {
-        if (rfidFullscreenInputRef.value) {
-          rfidFullscreenInputRef.value.focus()
-        }
-      })
-    }
-    showAdminKeyModal.value = true
   }
 }
 

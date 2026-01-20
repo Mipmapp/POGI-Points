@@ -2972,7 +2972,7 @@ app.post('/apis/students/verify-and-register', studentAuth, timestampAuth, async
     }
 });
 
-app.put('/apis/students/:student_id/approve', auth, adminActionAuth, async (req, res) => {
+app.put('/apis/students/:student_id/approve', auth, timestampAuth, async (req, res) => {
     try {
         const student = await Student.findOneAndUpdate(
             { student_id: req.params.student_id, status: 'pending' },
@@ -3010,7 +3010,7 @@ app.put('/apis/students/:student_id/approve', auth, adminActionAuth, async (req,
     }
 });
 
-app.put('/apis/students/:student_id/reject', auth, adminActionAuth, async (req, res) => {
+app.put('/apis/students/:student_id/reject', auth, timestampAuth, async (req, res) => {
     try {
         const { reason } = req.body;
 
@@ -3052,7 +3052,7 @@ app.put('/apis/students/:student_id/reject', auth, adminActionAuth, async (req, 
     }
 });
 
-app.put('/apis/students/:student_id/rfid', auth, adminActionAuth, timestampAuth, async (req, res) => {
+app.put('/apis/students/:student_id/rfid', auth, timestampAuth, async (req, res) => {
     try {
         const { rfid_code, admin_verification_token } = req.body;
 
@@ -3152,7 +3152,7 @@ app.delete('/apis/students/:student_id/rfid', auth, adminActionAuth, timestampAu
     }
 });
 
-app.put('/apis/students/:student_id/role', auth, adminActionAuth, timestampAuth, async (req, res) => {
+app.put('/apis/students/:student_id/role', auth, timestampAuth, async (req, res) => {
     try {
         const { role } = req.body;
 
@@ -3232,7 +3232,7 @@ app.put('/apis/students/:student_id/photo', studentAuthWithToken, async (req, re
     }
 });
 
-app.put('/apis/students/:student_id', auth, adminActionAuth, timestampAuth, async (req, res) => {
+app.put('/apis/students/:student_id', auth, timestampAuth, async (req, res) => {
     try {
         const updates = { ...req.body };
         delete updates.status;
@@ -4838,7 +4838,7 @@ app.get('/apis/attendance/events/:id', auth, async (req, res) => {
 });
 
 // Create attendance event (admin only)
-app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
+app.post('/apis/attendance/events', auth, async (req, res) => {
     try {
         const { title, description, location, event_date, year_level, status, start_time, end_time } = req.body;
 
@@ -4874,7 +4874,7 @@ app.post('/apis/attendance/events', auth, adminActionAuth, async (req, res) => {
 });
 
 // Update attendance event (admin only)
-app.put('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) => {
+app.put('/apis/attendance/events/:id', auth, async (req, res) => {
     try {
         const { title, description, location, event_date, year_level, status, start_time, end_time } = req.body;
 
@@ -4920,7 +4920,7 @@ app.put('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) =
 });
 
 // Delete attendance event (admin only)
-app.delete('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res) => {
+app.delete('/apis/attendance/events/:id', auth, async (req, res) => {
     try {
         const event = await AttendanceEvent.findById(req.params.id);
         if (!event) {
@@ -4941,7 +4941,7 @@ app.delete('/apis/attendance/events/:id', auth, adminActionAuth, async (req, res
 // ==================== SESSION CRUD ENDPOINTS ====================
 
 // Create session for an event (admin only)
-app.post('/apis/attendance/events/:eventId/sessions', auth, adminActionAuth, async (req, res) => {
+app.post('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
     try {
         const { label, start_time, end_time, status, late_timer_minutes } = req.body;
 
@@ -4991,7 +4991,7 @@ app.get('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
 });
 
 // Update session (admin only)
-app.put('/apis/attendance/sessions/:id', auth, adminActionAuth, async (req, res) => {
+app.put('/apis/attendance/sessions/:id', auth, async (req, res) => {
     try {
         const { label, start_time, end_time, status, check_in_locked, check_out_locked, late_timer_minutes } = req.body;
 
@@ -5029,7 +5029,7 @@ app.put('/apis/attendance/sessions/:id', auth, adminActionAuth, async (req, res)
 });
 
 // Delete session (admin only)
-app.delete('/apis/attendance/sessions/:id', auth, adminActionAuth, async (req, res) => {
+app.delete('/apis/attendance/sessions/:id', auth, async (req, res) => {
     try {
         const session = await AttendanceSession.findById(req.params.id);
         if (!session) {
