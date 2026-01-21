@@ -127,7 +127,8 @@ export default {
       showReceiptModal: false,
       selectedReceipt: null,
       receiptLoadError: false,
-      stats: { total: 0, paid: 0, unpaid: 0 }
+      stats: { total: 0, paid: 0, unpaid: 0 },
+      isLoading: false
     }
   },
   computed: {
@@ -147,6 +148,10 @@ export default {
   },
   methods: {
     async loadContributions() {
+      // Prevent multiple simultaneous loads
+      if (this.isLoading) return
+      
+      this.isLoading = true
       try {
         const token = localStorage.getItem('authToken')
         const query = new URLSearchParams({ page: this.currentPage, limit: this.itemsPerPage, paymentStatus: this.filterStatus, search: this.searchQuery })
@@ -156,14 +161,20 @@ export default {
         })
         const data = await response.json()
         if (response.ok) {
-          this.contributions = data.data
-          this.stats = data.stats
-          this.totalContributions = data.pagination.total
-          this.totalPages = data.pagination.totalPages
+          this.contributions = data.data || []
+          this.stats = data.stats || { total: 0, paid: 0, unpaid: 0 }
+          this.totalContributions = data.pagination?.total || 0
+          this.totalPages = data.pagination?.totalPages || 1
           this.initialized = this.stats.total > 0
+        } else {
+          console.error('Error loading contributions:', data)
+          this.contributions = []
         }
       } catch (err) {
         console.error('Error loading contributions:', err)
+        this.contributions = []
+      } finally {
+        this.isLoading = false
       }
     },
     async markAsPaid(contribution) {

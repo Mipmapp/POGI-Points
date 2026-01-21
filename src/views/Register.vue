@@ -227,30 +227,6 @@
                   </select>
                 </div>
               </div>
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
-                  <div class="relative">
-                    <img src="/calendar.svg" alt="Semester" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
-                    <select v-model="formData.semester" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white text-sm" required>
-                      <option value="" disabled>Semester</option>
-                      <option value="1st Sem">1st Sem</option>
-                      <option value="2nd Sem">2nd Sem</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">School Year</label>
-                  <div class="relative">
-                    <img src="/event_note.svg" alt="School Year" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
-                    <select v-model="formData.school_year" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white text-sm" required>
-                      <option value="" disabled>Year</option>
-                      <option value="2024-2025">2024-2025</option>
-                      <option value="2025-2026">2025-2026</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
               <div class="flex items-center justify-center pt-4">
                 <div class="flex space-x-2">
                   <div class="w-12 h-1 bg-purple-600 rounded"></div>
@@ -341,12 +317,6 @@
                     <p class="font-medium text-gray-800">{{ formData.year_level }}</p>
                   </div>
                   <div>
-                    <p class="text-gray-500 text-xs">Semester</p>
-                    <p class="font-medium text-gray-800">{{ formData.semester }}</p>
-                  </div>
-                  <div class="col-span-2">
-                    <p class="text-gray-500 text-xs">School Year</p>
-                    <p class="font-medium text-gray-800">{{ formData.school_year }}</p>
                   </div>
                 </div>
               </div>
@@ -567,30 +537,6 @@
                   <option value="BSIS">BSIS</option>
                   <option value="BSIT">BSIT</option>
                 </select>
-              </div>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
-                <div class="relative">
-                  <img src="/calendar.svg" alt="Semester" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
-                  <select v-model="formData.semester" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white text-sm" required>
-                    <option value="" disabled>Semester</option>
-                    <option value="1st Sem">1st Sem</option>
-                    <option value="2nd Sem">2nd Sem</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">School Year</label>
-                <div class="relative">
-                  <img src="/event_note.svg" alt="School Year" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4" />
-                  <select v-model="formData.school_year" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white text-sm" required>
-                    <option value="" disabled>Year</option>
-                    <option value="2024-2025">2024-2025</option>
-                    <option value="2025-2026">2025-2026</option>
-                  </select>
-                </div>
               </div>
             </div>
             <div class="flex items-center justify-center pt-4">
@@ -898,8 +844,6 @@ const formData = reactive({
   suffix: '',
   program: '',
   photo: '',
-  semester: '',
-  school_year: '2024-2025',
   email: ''
 })
 
@@ -1249,16 +1193,6 @@ const handleNext = async () => {
     }
     if (!['BSCS', 'BSIT', 'BSIS'].includes(formData.program)) {
       errorMessage.value = "Program must be BSCS, BSIT, or BSIS."
-      showErrorNotification.value = true
-      return
-    }
-    if (!formData.semester) {
-      errorMessage.value = "Please select your Semester."
-      showErrorNotification.value = true
-      return
-    }
-    if (!formData.school_year) {
-      errorMessage.value = "Please select your School Year."
       showErrorNotification.value = true
       return
     }

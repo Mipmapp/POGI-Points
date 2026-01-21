@@ -32,16 +32,20 @@
           <div class="flex items-center justify-between mb-4">
             <span class="text-gray-700 font-semibold">Payment Status:</span>
             <span
-              :class="event.paymentStatus === 'paid'
+              :class="event.isPaid
                 ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'"
+                : event.isOverdue
+                ? 'bg-red-100 text-red-800'
+                : 'bg-yellow-100 text-yellow-800'"
               class="px-4 py-2 rounded-full font-bold text-sm"
             >
-              {{ event.paymentStatus === 'paid' ? '✓ PAID' : '✗ UNPAID' }}
+              <span v-if="event.isPaid">PAID</span>
+              <span v-else-if="event.isOverdue">OVERDUE</span>
+              <span v-else>PENDING</span>
             </span>
           </div>
 
-          <div v-if="event.paidAt" class="text-sm text-gray-600 mb-4">
+          <div v-if="event.isPaid && event.paidAt" class="text-sm text-gray-600 mb-4">
             <p>Paid on: <span class="font-semibold">{{ formatDateTime(event.paidAt) }}</span></p>
             <p v-if="event.paidByTreasurer">By: <span class="font-semibold">{{ event.paidByTreasurer }}</span></p>
           </div>
@@ -52,14 +56,19 @@
           </div>
 
           <!-- Action Button -->
-          <div v-if="event.paymentStatus === 'unpaid'" class="mt-4 pt-4 border-t border-gray-200">
-            <p class="text-sm text-gray-600 text-center">
-              Please approach the treasurer to record your payment.
+          <div v-if="event.isPaid" class="mt-4 pt-4 border-t border-gray-200">
+            <p class="text-sm text-green-600 text-center font-semibold">
+              ✓ Your payment has been recorded
+            </p>
+          </div>
+          <div v-else-if="event.isOverdue" class="mt-4 pt-4 border-t border-gray-200">
+            <p class="text-sm text-red-600 text-center font-bold">
+              ⚠ Collection period has closed. Please contact the treasurer if you need to pay.
             </p>
           </div>
           <div v-else class="mt-4 pt-4 border-t border-gray-200">
-            <p class="text-sm text-green-600 text-center font-semibold">
-              ✓ Your payment has been recorded
+            <p class="text-sm text-orange-600 text-center font-medium">
+              Please approach the treasurer to record your payment.
             </p>
           </div>
         </div>
@@ -101,7 +110,7 @@ export default {
 
         const eventsData = await eventsResponse.json()
         
-        if (eventsResponse.ok && eventsData.length > 0) {
+        if (eventsResponse.ok && eventsData && eventsData.length > 0) {
           // For each event, get the student's contribution status
           this.events = await Promise.all(eventsData.map(async (event) => {
             try {
@@ -118,20 +127,30 @@ export default {
 
               if (contribResponse.ok) {
                 const contribData = await contribResponse.json()
+                const data = contribData.data || {}
+                const isPaid = data.payment_status === 'paid'
+                const isClosed = event.status === 'closed' || event.status === 'archived'
+                
                 return {
                   _id: event._id,
-                  eventTitle: event.title,
-                  eventDate: event.event_date,
-                  paymentStatus: contribData.data.payment_status,
-                  paidAt: contribData.data.paid_at,
-                  paidByTreasurer: contribData.data.paid_by_treasurer,
-                  notes: contribData.data.notes
+                  eventTitle: event.title || data.event_title,
+                  eventDate: event.event_date || data.event_date,
+                  eventStatus: event.status,
+                  paymentStatus: data.payment_status || 'unpaid',
+                  paidAt: data.paid_at,
+                  paidByTreasurer: data.paid_by_treasurer,
+                  notes: data.notes,
+                  isPaid: isPaid,
+                  isOverdue: isClosed && !isPaid
                 }
+              } else {
+                console.warn(`Contribution not found for event ${event._id}`)
+                return null
               }
             } catch (err) {
               console.error(`Error loading contribution for event ${event._id}:`, err)
+              return null
             }
-            return null
           }))
 
           // Filter out any null entries

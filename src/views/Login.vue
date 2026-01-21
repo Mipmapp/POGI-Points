@@ -733,7 +733,6 @@ const handleLogin = async () => {
         rfid_code: user.rfid_code || '',
         rfid_status: user.rfid_status || 'unverified',
         rfid_verified_at: user.rfid_verified_at || null,
-        rfid_verified_by: user.rfid_verified_by || null,
         yearLevel: user.year_level || '',
         semester: user.semester || '',
         schoolYear: user.school_year || '',

@@ -319,7 +319,7 @@
                   </div>
                   <!-- User Basic Info -->
                   <div class="flex-1 min-w-0">
-                    <h3 class="font-bold text-gray-900 text-base md:text-lg truncate">{{ (user.first_name || user.firstName) }} {{ (user.last_name || user.lastName) }}</h3>
+                    <h3 class="font-bold text-gray-900 text-base md:text-lg truncate">{{ (user.first_name || user.firstName) }} {{ (user.middle_name || user.middleName) ? ((user.middle_name || user.middleName) + ' ') : '' }}{{ (user.last_name || user.lastName) }}{{ user.suffix ? (' ' + user.suffix) : '' }}</h3>
                     <p class="text-sm text-gray-600 truncate">{{ user.student_id }}</p>
                     <div class="flex flex-wrap gap-2 mt-2">
                       <!-- Role Badge -->
@@ -611,7 +611,7 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                 <input 
@@ -636,6 +636,26 @@
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
                 />
               </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Suffix <span class="text-gray-500 text-xs">(optional)</span></label>
+                <div>
+                  <select v-model="editingUser.suffix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white">
+                    <option value="">None</option>
+                    <option value="Jr.">Jr.</option>
+                    <option value="Sr.">Sr.</option>
+                    <option value="I">I</option>
+                    <option value="II">II</option>
+                    <option value="III">III</option>
+                    <option value="IV">IV</option>
+                    <option value="V">V</option>
+                    <option value="VI">VI</option>
+                    <option value="VII">VII</option>
+                    <option value="VIII">VIII</option>
+                    <option value="IX">IX</option>
+                    <option value="X">X</option>
+                  </select>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -650,19 +670,28 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Program</label>
-                <input 
+                <select 
                   v-model="editingUser.program"
-                  type="text"
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
-                />
+                >
+                  <option value="N/A">N/A</option>
+                  <option value="BSCS">BSCS</option>
+                  <option value="BSIT">BSIT</option>
+                  <option value="BSIS">BSIS</option>
+                </select>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
-                <input 
+                <select 
                   v-model="editingUser.year_level"
-                  type="text"
                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
-                />
+                >
+                  <option value="N/A">N/A</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                </select>
               </div>
             </div>
 
@@ -1362,7 +1391,9 @@ export default {
       this.editingUser = {
         ...user,
         first_name: user.first_name || user.firstName || '',
-        last_name: user.last_name || user.lastName || ''
+        middle_name: user.middle_name || user.middleName || '',
+        last_name: user.last_name || user.lastName || '',
+        suffix: user.suffix || ''
       }
       
       // Auto-set verification status based on RFID
@@ -1444,7 +1475,9 @@ export default {
         // Prepare update data (without role - defaults to student)
         const updateData = {
           first_name: this.editingUser.first_name,
+          middle_name: this.editingUser.middle_name,
           last_name: this.editingUser.last_name,
+          suffix: this.editingUser.suffix,
           email: this.editingUser.email,
           program: this.editingUser.program,
           year_level: this.editingUser.year_level,
@@ -1455,11 +1488,13 @@ export default {
           role: 'student'
         }
 
+        const timestamp = encodeTimestamp()
         const response = await fetch(buildAPIUrl(`/apis/students/${userId}`), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'X-SSAAM-TS': timestamp
           },
           body: JSON.stringify(updateData)
         })
@@ -1472,6 +1507,7 @@ export default {
           }
           this.showNotification('success', 'Success', 'User updated successfully')
           this.closeEditUserModal()
+          await this.refreshData()
         } else {
           const errorData = await response.json()
           this.showNotification('error', 'Failed', 'Failed to update user: ' + (errorData.message || 'Unknown error'))

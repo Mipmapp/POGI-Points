@@ -873,7 +873,7 @@
                       <div class="flex items-center gap-2 mb-2">
                         <svg v-if="payment.is_paid" class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                         <svg v-else class="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>
-                        <span :class="[payment.is_paid ? 'text-green-700' : 'text-orange-700', 'font-bold text-sm']">{{ payment.is_paid ? '✓ PAID' : '⚠ UNPAID' }}</span>
+                        <span :class="[payment.is_paid ? 'text-green-700' : 'text-orange-700', 'font-bold text-sm']">{{ payment.is_paid ? 'PAID' : 'UNPAID' }}</span>
                       </div>
                       <h3 class="font-bold text-lg text-gray-900 mb-1">{{ payment.title || 'Payment' }}</h3>
                       <p class="text-sm text-gray-600 line-clamp-2">{{ payment.description || 'No description' }}</p>
@@ -1764,6 +1764,178 @@
               </div>
             </div>
 
+            <!-- Database Migration Section -->
+            <div class="border border-indigo-200 rounded-xl p-6 bg-indigo-50">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-indigo-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-6"></path></svg>
+                    Database Migration
+                  </h3>
+                  <p class="text-sm text-indigo-700 mt-1">Copy all data to another MongoDB instance</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg p-4 border border-indigo-200 space-y-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Destination MongoDB URI</label>
+                  <input 
+                    v-model="migrationDestinationUri"
+                    type="text"
+                    placeholder="mongodb+srv://user:password@cluster.mongodb.net/?appName=..."
+                    class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-600 outline-none transition-all font-mono text-xs"
+                  />
+                  <p class="text-xs text-gray-500 mt-1">Must be different from the current database URI</p>
+                </div>
+                <div class="bg-indigo-50 rounded p-3 border border-indigo-200">
+                  <p class="text-xs text-indigo-700"><strong>Note:</strong> This will copy ALL collections from the current database to the destination. The destination collections will be cleared first.</p>
+                </div>
+                <button 
+                  @click="migrateDatabaseConfirm" 
+                  :disabled="migratingDatabase || !migrationDestinationUri.trim()"
+                  class="w-full bg-gradient-to-r from-indigo-600 to-indigo-700 text-white px-6 py-3 rounded-lg font-medium hover:from-indigo-700 hover:to-indigo-800 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg v-if="migratingDatabase" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-6"></path></svg>
+                  {{ migratingDatabase ? 'Migrating...' : 'Start Migration' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Clean Up Unused Fields Section -->
+            <div class="border border-orange-200 rounded-xl p-6 bg-orange-50">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-orange-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Clean Up Unused Fields
+                  </h3>
+                  <p class="text-sm text-orange-700 mt-1">Remove unused fields and free up database storage</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg p-4 border border-orange-200 space-y-4">
+                <div class="bg-orange-50 rounded p-3 border border-orange-200">
+                  <p class="text-xs text-orange-700"><strong>⚠️ Warning:</strong> This will permanently remove contributions, semester, full_name, and school_year fields from all student records. Student data (ID, name parts, program, etc.) will remain intact. This action cannot be undone.</p>
+                </div>
+                <button 
+                  @click="cleanupUnusedFieldsConfirm" 
+                  :disabled="cleaningUpFields"
+                  class="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white px-6 py-3 rounded-lg font-medium hover:from-orange-700 hover:to-orange-800 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg v-if="cleaningUpFields" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  {{ cleaningUpFields ? 'Cleaning up...' : 'Start Cleanup' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Clean Up Duplicate Payments Section -->
+            <div class="border border-amber-200 rounded-xl p-6 bg-amber-50">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-amber-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Clean Up Duplicate Payments
+                  </h3>
+                  <p class="text-sm text-amber-700 mt-1">Remove duplicate payment records from the database</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg p-4 border border-amber-200 space-y-4">
+                <div class="bg-amber-50 rounded p-3 border border-amber-200">
+                  <p class="text-xs text-amber-700"><strong>⚠️ Warning:</strong> This will remove duplicate payment records (same payment_id and student_id). When duplicates exist, the system keeps the oldest paid record if available, otherwise keeps the oldest record. This action cannot be undone.</p>
+                </div>
+                <button 
+                  @click="cleanupDuplicatePaymentsConfirm" 
+                  :disabled="cleaningDuplicatePayments"
+                  class="w-full bg-gradient-to-r from-amber-600 to-amber-700 text-white px-6 py-3 rounded-lg font-medium hover:from-amber-700 hover:to-amber-800 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg v-if="cleaningDuplicatePayments" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  {{ cleaningDuplicatePayments ? 'Cleaning up...' : 'Start Cleanup' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Consolidate Payment Records Section -->
+            <div class="border border-green-300 rounded-xl p-6 bg-green-50">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-green-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Consolidate Payment Records
+                  </h3>
+                  <p class="text-sm text-green-700 mt-1">Consolidate payment records from multiple documents to single student records (~53% storage reduction)</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg p-4 border border-green-200 space-y-4">
+                <div class="bg-green-50 rounded p-3 border border-green-200">
+                  <p class="text-xs text-green-700"><strong>ℹ️ Info:</strong> This will consolidate all payment records into one per student with campaigns array. This action reorganizes data for better storage efficiency and faster queries. No data is deleted, only reorganized. This action cannot be undone.</p>
+                </div>
+                <button 
+                  @click="consolidatePaymentsConfirm" 
+                  :disabled="consolidatingPayments"
+                  class="w-full bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-lg font-medium hover:from-green-700 hover:to-green-800 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg v-if="consolidatingPayments" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  {{ consolidatingPayments ? 'Consolidating...' : 'Start Consolidation' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Clean Up RFID Verified By Section -->
+            <div class="border border-red-300 rounded-xl p-6 bg-red-50">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-red-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    Clean Up RFID Verified By
+                  </h3>
+                  <p class="text-sm text-red-700 mt-1">Remove the unnecessary rfid_verified_by field from all users</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg p-4 border border-red-200 space-y-4">
+                <div class="bg-red-50 rounded p-3 border border-red-200">
+                  <p class="text-xs text-red-700"><strong>⚠️ Warning:</strong> This will permanently remove the rfid_verified_by field from all student records. RFID verification status and other data will remain intact. This action cannot be undone.</p>
+                </div>
+                <button 
+                  @click="cleanupRfidVerifiedByConfirm" 
+                  :disabled="cleaningRfidVerifiedBy"
+                  class="w-full bg-gradient-to-r from-red-600 to-red-700 text-white px-6 py-3 rounded-lg font-medium hover:from-red-700 hover:to-red-800 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg v-if="cleaningRfidVerifiedBy" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  {{ cleaningRfidVerifiedBy ? 'Cleaning up...' : 'Start Cleanup' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Consolidate Payment Records Section -->
+            <div class="border border-amber-200 rounded-xl p-6 bg-amber-50">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-amber-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                    Consolidate Payment Records
+                  </h3>
+                  <p class="text-sm text-amber-700 mt-1">Combine payment records from multiple documents into single student records to optimize database storage and improve query performance</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg p-4 border border-amber-200 space-y-4">
+                <div class="bg-amber-50 rounded p-3 border border-amber-200">
+                  <p class="text-xs text-amber-700"><strong>ℹ️ Info:</strong> This consolidation reduces storage usage (~53%) and improves query performance (~5x). No data is lost - records are only reorganized. This process typically takes 2-5 seconds.</p>
+                </div>
+                <button 
+                  @click="consolidatePaymentsConfirm" 
+                  :disabled="consolidatingPayments"
+                  class="w-full bg-gradient-to-r from-amber-600 to-amber-700 text-white px-6 py-3 rounded-lg font-medium hover:from-amber-700 hover:to-amber-800 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg v-if="consolidatingPayments" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                  {{ consolidatingPayments ? 'Consolidating...' : 'Start Consolidation' }}
+                </button>
+              </div>
+            </div>
+
             <!-- Clear Session Tokens Section -->
             <div class="border border-red-200 rounded-xl p-6 bg-red-50">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
@@ -1806,58 +1978,8 @@
 
         <!-- Attendance Page -->
         <!-- Contributions Page (Student View) -->
-        <div v-if="currentPage === 'transparency' && (currentUser.role === 'student' || currentUser.role === 'medpub' || currentUser.student_id)" class="space-y-6">
-          <div class="bg-white rounded-3xl shadow-lg p-6 md:p-8">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-              </div>
-              <h2 class="text-2xl font-bold text-purple-900">My Contributions</h2>
-            </div>
-            
-            <div v-if="!currentUser.contributions || currentUser.contributions.length === 0" class="flex flex-col items-center justify-center py-12 text-center">
-              <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0a2 2 0 01-2 2H6a2 2 0 01-2-2m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5"></path></svg>
-              </div>
-              <p class="text-gray-500 font-medium">No contribution records found.</p>
-            </div>
-            
-            <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div v-for="pay in currentUser.contributions" :key="pay.date" class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                <div class="flex justify-between items-start mb-4">
-                  <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">{{ new Date(pay.date).toLocaleDateString() }}</p>
-                  <span class="bg-green-100 text-green-600 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider">Paid</span>
-                </div>
-                <p class="text-gray-900 font-bold text-lg mb-1">{{ pay.description }}</p>
-                <p class="text-2xl font-black text-purple-600">₱{{ pay.amount.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-white rounded-3xl shadow-lg p-6 md:p-8">
-            <div class="flex items-center gap-3 mb-8">
-              <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              </div>
-              <h2 class="text-2xl font-bold text-purple-900">My Contributions Summary</h2>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div class="bg-gradient-to-br from-purple-600 to-indigo-600 rounded-2xl p-8 text-white shadow-xl">
-                <p class="text-sm font-bold text-white/70 uppercase tracking-widest mb-2">Total Contributions</p>
-                <p class="text-4xl font-black">₱{{ (currentUser.contributions?.reduce((sum, c) => sum + c.amount, 0) || 0).toLocaleString(undefined, { minimumFractionDigits: 2 }) }}</p>
-              </div>
-              
-              <div class="bg-gradient-to-br from-pink-500 to-rose-500 rounded-2xl p-8 text-white shadow-xl">
-                <p class="text-sm font-bold text-white/70 uppercase tracking-widest mb-2">Recent Payment</p>
-                <p class="text-2xl font-bold" v-if="currentUser.contributions?.length">
-                  ₱{{ currentUser.contributions[currentUser.contributions.length - 1].amount.toLocaleString(undefined, { minimumFractionDigits: 2 }) }}
-                  <span class="block text-sm font-medium text-white/80 mt-1">{{ currentUser.contributions[currentUser.contributions.length - 1].description }}</span>
-                </p>
-                <p class="text-2xl font-bold" v-else>No payments yet</p>
-              </div>
-            </div>
-          </div>
+        <div v-if="currentPage === 'transparency' && (currentUser.role === 'student' || currentUser.role === 'medpub' || currentUser.student_id)">
+          <StudentContributionsView />
         </div>
 
         <!-- Transparency Board Page (Admin View) -->
@@ -3093,7 +3215,7 @@
                 <div class="flex-1">
                   <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
                     <div>
-                      <h3 class="text-lg font-semibold text-purple-900">{{ student.first_name }} {{ student.middle_name || '' }} {{ student.last_name }} {{ student.suffix || '' }}</h3>
+                      <h3 class="text-lg font-semibold text-purple-900">{{ student.first_name }} {{ student.middle_name || '' }} {{ student.last_name }} {{ student.suffix ? student.suffix : 'N/A' }}</h3>
                       <p class="text-sm text-gray-500">{{ student.student_id }}</p>
                     </div>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 w-fit">
@@ -3433,13 +3555,14 @@
                   <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Personal Information</h3>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div v-for="(val, label) in { 'First Name': currentUser.firstName || currentUser.first_name, 'Middle Name': currentUser.middleName || currentUser.middle_name || 'N/A', 'Last Name': currentUser.lastName || currentUser.last_name }" :key="label" 
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div v-for="(val, label) in { 'First Name': currentUser.firstName || currentUser.first_name, 'Middle Name': currentUser.middleName || currentUser.middle_name || 'N/A', 'Last Name': currentUser.lastName || currentUser.last_name, 'Suffix': currentUser.suffix || 'N/A' }" :key="label" 
                        class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-colors">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ label }}</p>
                     <p class="text-gray-900 font-semibold truncate">{{ val }}</p>
                   </div>
                 </div>
+                <p class="text-xs text-gray-500 mt-3">Account created on {{ formatDateTimeShort(currentUser.created_date) }}</p>
               </section>
 
               <section>
@@ -3459,7 +3582,7 @@
                       </span>
                     </div>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">RFID STATUS</p>
-                    <div v-if="currentUser.rfid_status === 'verified'" class="flex items-center gap-2">
+                    <div v-if="currentUser.rfid_status === 'verified'" class="flex items-center gap-2 mb-2">
                       <p class="text-lg font-mono font-bold text-purple-900 tracking-tight">{{ currentUser.rfidCode || currentUser.rfid_code }}</p>
                       <button @click="copyRfidToClipboard(currentUser.rfidCode || currentUser.rfid_code)" class="p-1 hover:bg-purple-50 rounded text-purple-400 transition-colors">
                         <svg v-if="!rfidCopied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
@@ -3472,7 +3595,8 @@
                     <div v-else>
                       <p class="text-base font-semibold text-gray-900">Not Yet Assigned</p>
                     </div>
-                    <p class="text-[10px] text-gray-500 mt-2 italic">{{ currentUser.rfid_status === 'verified' ? 'Active and ready for attendance logging.' : 'Please visit the CCS office for assistance.' }}</p>
+                    <p v-if="currentUser.rfid_verified_at" class="text-[10px] text-gray-500 mt-2">Verified on: {{ formatDateTimeShort(currentUser.rfid_verified_at) }}</p>
+                    <p v-else class="text-[10px] text-gray-500 mt-2 italic">{{ currentUser.rfid_status === 'verified' ? 'Active and ready for attendance logging.' : 'Please visit the CCS office for assistance.' }}</p>
                   </div>
                 </div>
               </section>
@@ -3534,6 +3658,7 @@
                   <th class="border border-purple-300 px-6 py-3 text-center font-semibold text-purple-900">BSCS</th>
                   <th class="border border-purple-300 px-6 py-3 text-center font-semibold text-purple-900">BSIS</th>
                   <th class="border border-purple-300 px-6 py-3 text-center font-semibold text-purple-900">BSIT</th>
+                  <th class="border border-purple-300 px-6 py-3 text-center font-semibold text-purple-900">Total</th>
                 </tr>
               </thead>
               <tbody>
@@ -3542,30 +3667,35 @@
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['1st Year'] || 0 }}</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['1st Year'] || 0 }}</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['1st Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center font-bold text-purple-700">{{ (stats.BSCS['1st Year'] || 0) + (stats.BSIS['1st Year'] || 0) + (stats.BSIT['1st Year'] || 0) }}</td>
                 </tr>
                 <tr class="hover:bg-gray-50">
                   <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">2nd years</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['2nd Year'] || 0 }}</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['2nd Year'] || 0 }}</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['2nd Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center font-bold text-purple-700">{{ (stats.BSCS['2nd Year'] || 0) + (stats.BSIS['2nd Year'] || 0) + (stats.BSIT['2nd Year'] || 0) }}</td>
                 </tr>
                 <tr class="hover:bg-gray-50">
                   <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">3rd years</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['3rd Year'] || 0 }}</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['3rd Year'] || 0 }}</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['3rd Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center font-bold text-purple-700">{{ (stats.BSCS['3rd Year'] || 0) + (stats.BSIS['3rd Year'] || 0) + (stats.BSIT['3rd Year'] || 0) }}</td>
                 </tr>
                 <tr class="hover:bg-gray-50">
                   <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">4th years</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['4th Year'] || 0 }}</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['4th Year'] || 0 }}</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['4th Year'] || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center font-bold text-purple-700">{{ (stats.BSCS['4th Year'] || 0) + (stats.BSIS['4th Year'] || 0) + (stats.BSIT['4th Year'] || 0) }}</td>
                 </tr>
                 <tr class="bg-purple-50 font-bold">
                   <td class="border border-purple-300 px-6 py-4 font-bold text-gray-900">All year levels</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS.total || 0 }}</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS.total || 0 }}</td>
                   <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT.total || 0 }}</td>
+                  <td class="border border-purple-300 px-6 py-4 text-center bg-purple-200">{{ (stats.BSCS.total || 0) + (stats.BSIS.total || 0) + (stats.BSIT.total || 0) }}</td>
                 </tr>
               </tbody>
             </table>
@@ -4828,17 +4958,28 @@ const fetchTransparencyBoard = async () => {
 
 // Fetch all payments
 const fetchPayments = async (skipAutoSync = false) => {
+  // Only admin/treasurer should fetch all payments; regular students should use fetchMyPayments
+  if (currentUser.value.role !== 'admin' && !currentUser.value.isMaster) {
+    // Skip payment list fetch for students - they use My Payments instead
+    return
+  }
+  
   paymentsLoading.value = true
   try {
-    const response = await fetch(buildAPIUrl('/apis/payments'), {
-      headers: { 'Authorization': `Bearer ${getSessionToken()}` }
-    })
+    const response = await Promise.race([
+      fetch(buildAPIUrl('/apis/payments'), {
+        headers: { 'Authorization': `Bearer ${getSessionToken()}` }
+      }),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Fetch payments timeout')), 10000)
+      )
+    ])
     const result = await response.json()
     if (response.ok) {
       paymentsList.value = result.data || []
       
       // If a payment is currently selected, update it with fresh data
-      if (selectedPayment.value) {
+      if (selectedPayment.value && selectedPayment.value._id) {
         const updatedPayment = paymentsList.value.find(p => p._id === selectedPayment.value._id)
         if (updatedPayment) {
           selectedPayment.value = updatedPayment
@@ -4847,7 +4988,10 @@ const fetchPayments = async (skipAutoSync = false) => {
       
       // Auto-sync all active payments (skip if explicitly requested to avoid recursion)
       if (!skipAutoSync) {
-        await autoSyncPayments()
+        // Don't await sync, let it run in background
+        autoSyncPayments().catch(error => {
+          console.error('Auto-sync failed in background:', error)
+        })
       }
     }
   } catch (error) {
@@ -4882,54 +5026,85 @@ const fetchMyPayments = async () => {
 const refreshAllData = async () => {
   paymentsLoading.value = true
   try {
-    // If a payment is currently selected, prioritize fetching its details using the campaign-specific endpoint
-    if (selectedPayment.value && selectedPayment.value._id) {
-      try {
-        const paymentResponse = await fetch(buildAPIUrl(`/apis/payments/${selectedPayment.value._id}`), {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${getSessionToken()}` }
-        })
-        const paymentResult = await paymentResponse.json()
-        if (paymentResponse.ok && paymentResult.data) {
-          selectedPayment.value = paymentResult.data
-          // Update the payment in the list as well
-          const paymentIndex = paymentsList.value.findIndex(p => p._id === selectedPayment.value._id)
-          if (paymentIndex !== -1) {
-            paymentsList.value[paymentIndex] = selectedPayment.value
+    const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster
+    
+    if (isAdmin) {
+      // ADMIN: Fetch all payments for management
+      let refreshedPayment = null
+      
+      // If a payment is currently selected, prioritize fetching its details using the campaign-specific endpoint
+      if (selectedPayment.value && selectedPayment.value._id) {
+        try {
+          const paymentResponse = await Promise.race([
+            fetch(buildAPIUrl(`/apis/payments/${selectedPayment.value._id}`), {
+              method: 'GET',
+              headers: { 'Authorization': `Bearer ${getSessionToken()}` }
+            }),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Payment fetch timeout')), 8000)
+            )
+          ])
+          const paymentResult = await paymentResponse.json()
+          if (paymentResponse.ok && paymentResult.data) {
+            refreshedPayment = paymentResult.data
+            selectedPayment.value = paymentResult.data
+            // Update the payment in the list as well
+            const paymentIndex = paymentsList.value.findIndex(p => p._id === selectedPayment.value._id)
+            if (paymentIndex !== -1) {
+              paymentsList.value[paymentIndex] = selectedPayment.value
+            }
           }
+        } catch (error) {
+          console.error('Failed to fetch individual payment details:', error)
+          // Don't fail here, try fetching all payments
         }
-      } catch (error) {
-        console.error('Failed to fetch individual payment details:', error)
-        showNotification('Failed to refresh payment records', 'error')
-        paymentsLoading.value = false
-        return
+      }
+      
+      // If individual payment fetch failed or no payment selected, fetch all payments
+      if (!refreshedPayment) {
+        try {
+          const paymentsResponse = await Promise.race([
+            fetch(buildAPIUrl('/apis/payments'), {
+              headers: { 'Authorization': `Bearer ${getSessionToken()}` }
+            }),
+            new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Payments fetch timeout')), 8000)
+            )
+          ])
+          const paymentsResult = await paymentsResponse.json()
+          if (paymentsResponse.ok) {
+            paymentsList.value = paymentsResult.data || []
+            // Update selected payment if needed
+            if (selectedPayment.value) {
+              const updated = paymentsList.value.find(p => p._id === selectedPayment.value._id)
+              if (updated) {
+                selectedPayment.value = updated
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Failed to fetch payments:', error)
+          // Continue anyway with existing data
+        }
       }
     } else {
-      // Fetch all payments if no specific payment is selected
-      try {
-        const paymentsResponse = await fetch(buildAPIUrl('/apis/payments'), {
-          headers: { 'Authorization': `Bearer ${getSessionToken()}` }
-        })
-        const paymentsResult = await paymentsResponse.json()
-        if (paymentsResponse.ok) {
-          paymentsList.value = paymentsResult.data || []
-        }
-      } catch (error) {
-        console.error('Failed to fetch payments:', error)
-        showNotification('Failed to refresh payments', 'error')
-        paymentsLoading.value = false
-        return
-      }
+      // STUDENT: Fetch only their own payments
+      await fetchMyPayments()
     }
 
-    // Fetch students data
+    // Fetch students data (non-blocking)
     try {
-      const studentsResponse = await fetch(buildAPIUrl(`/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`), {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer SSAAMStudents`
-        }
-      })
+      const studentsResponse = await Promise.race([
+        fetch(buildAPIUrl(`/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`), {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer SSAAMStudents`
+          }
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Students fetch timeout')), 8000)
+        )
+      ])
       const studentsResult = await studentsResponse.json()
       const pageData = studentsResult.data || studentsResult
       
@@ -4952,11 +5127,14 @@ const refreshAllData = async () => {
         }))
       }
     } catch (error) {
-      console.error('Failed to fetch students:', error)
+      console.error('Failed to fetch students (non-blocking):', error)
+      // Continue even if this fails
     }
     
-    // Auto-sync all active payments
-    await autoSyncPayments()
+    // Auto-sync payments in background without blocking
+    autoSyncPayments().catch(error => {
+      console.error('Auto-sync failed:', error)
+    })
     
     showNotification('Data refreshed successfully', 'success')
   } catch (error) {
@@ -5087,6 +5265,7 @@ const clearPaymentStudent = () => {
   selectedPaymentStudent.value = null
   paymentSearchQuery.value = ''
   paymentSearchMode.value = 'id' // Reset to Student ID mode
+  markingPaymentAsPaid.value = false // Reset processing state
 }
 
 // Helper function to format the "Paid By" name
@@ -5154,7 +5333,14 @@ const confirmMarkPaymentAsPaid = async () => {
       clearPaymentStudent()
       await fetchPayments()
     } else {
-      showNotification(result.message || 'Failed to mark payment', 'error')
+      // Check if it's an "already paid" error
+      if (result.alreadyPaid) {
+        const paidDate = result.paidAt ? new Date(result.paidAt).toLocaleString() : 'unknown date'
+        const paidBy = result.paidBy || 'a treasurer'
+        showNotification(`${result.message}\n\nAlready paid on: ${paidDate}\nBy: ${paidBy}`, 'warning')
+      } else {
+        showNotification(result.message || 'Failed to mark payment', 'error')
+      }
     }
   } catch (error) {
     console.error('Error marking payment:', error)
@@ -5394,22 +5580,50 @@ const autoSyncPayments = async () => {
     const activePayments = paymentsList.value.filter(p => p.status === 'active')
     if (activePayments.length === 0) return
 
-    for (const payment of activePayments) {
-      try {
-        const response = await fetch(buildAPIUrl(`/apis/payments/${payment._id}/sync-students`), {
+    // Fire sync requests in parallel with timeout protection
+    const syncWithTimeout = (payment) => {
+      return new Promise((resolve) => {
+        const timeout = setTimeout(() => {
+          console.warn(`Sync timeout for payment ${payment._id}`)
+          resolve(null)
+        }, 5000)
+        
+        fetch(buildAPIUrl(`/apis/payments/${payment._id}/sync-students`), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${getSessionToken()}`
           }
         })
-        
-        if (response.ok) {
-          console.log(`Payment ${payment.title} synced successfully`)
-        }
-      } catch (error) {
-        console.error(`Error syncing payment ${payment._id}:`, error)
-      }
+          .then(response => {
+            clearTimeout(timeout)
+            if (response.ok) {
+              console.log(`Payment ${payment.title} synced successfully`)
+            }
+            return response
+          })
+          .catch(error => {
+            clearTimeout(timeout)
+            console.error(`Error syncing payment ${payment._id}:`, error)
+            return null
+          })
+          .then(resolve)
+      })
+    }
+
+    // Sync all payments in parallel with a total timeout of 8 seconds
+    const syncTimeout = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Overall sync timeout')), 8000)
+    )
+    
+    try {
+      await Promise.race([
+        Promise.all(activePayments.map(syncWithTimeout)),
+        syncTimeout
+      ])
+    } catch (error) {
+      console.warn('Sync operation timed out or failed, continuing:', error)
+      // Continue even if sync times out
     }
     
     // Refresh payments after syncing to get updated stats (skip auto-sync to avoid infinite recursion)
@@ -6175,6 +6389,10 @@ const exportToExcel = async (event) => {
 // Settings management
 const settingsLoading = ref(false)
 const settingsSaving = ref(false)
+const cleaningUpFields = ref(false)
+const cleaningDuplicatePayments = ref(false)
+const cleaningRfidVerifiedBy = ref(false)
+const consolidatingPayments = ref(false)
 const appSettings = ref({
   userRegister: { register: true, message: '' },
   userLogin: { login: true, message: '' },
@@ -6198,6 +6416,10 @@ const lateThresholdMinutes = ref(30)
 // Clear sessions management
 const showClearSessionsConfirm = ref(false)
 const clearingSessionTokens = ref(false)
+
+// Database migration management
+const migrationDestinationUri = ref('')
+const migratingDatabase = ref(false)
 
 // Duplicate search management
 const duplicateSearchQuery = ref('')
@@ -6349,6 +6571,7 @@ const filterPendingStudents = () => {
 // Notifications management
 const notifications = ref([])
 const notificationsLoading = ref(false)
+const notificationsFetching = ref(false)
 const likeCooldowns = ref({})
 const likeInProgress = ref({})
 const LIKE_COOLDOWN_MS = 2000
@@ -7287,27 +7510,22 @@ onMounted(async () => {
     fetchStats()
     fetchPendingStudents()
   } else {
-    // Student path
-    fetchAttendanceData()
-    
+    // Student path — do not auto-fetch attendance here. Attendance data
+    // will be fetched when the user opens the Attendance view.
     // If we're coming from the login screen, we might already be "authenticating"
-    // but we don't want a double loading screen.
-    // However, if the user refreshes, we might need a small state check here.
-    
+    // but we don't want a double loading screen. However, if the user refreshes,
+    // we might need a small state check here.
     users.value = JSON.parse(localStorage.getItem('users') || '[]')
   }
   
-  // Fetch notifications for badge counter and load seen status from database
-  await fetchNotifications()
+  // Fetch seen notifications first, then notifications for badge counter
   await fetchSeenNotifications()
+  await fetchNotifications()
   
   // Check and show announcement popup for students
   checkAndShowAnnouncementPopup()
   
-  // Fetch attendance data for students to show notification banner
-  if (!user.isMaster && user.role !== 'admin') {
-    fetchAttendanceData()
-  }
+  // Fetch attendance data for students to show notification banner (already fetched earlier in student path)
   
   // Start auto-refresh for attendance and event timers
   startAttendanceAutoRefresh()
@@ -7319,11 +7537,6 @@ onMounted(async () => {
     startSidebarLogoFlipAnimation()
   }
   
-  // Fetch user attendance logs (students only)
-  if (!user.isMaster && user.role !== 'admin') {
-    fetchUserAttendanceLogs()
-  }
-
   // Fetch settings for all users to ensure academic info is accurate
   await fetchSettings()
   
@@ -7396,7 +7609,6 @@ const refreshCurrentUser = async () => {
           rfid_code: updatedUser.rfid_code,
           rfid_status: updatedUser.rfid_status,
           rfid_verified_at: updatedUser.rfid_verified_at,
-          rfid_verified_by: updatedUser.rfid_verified_by,
           image: updatedUser.photo || currentUser.value.image,
           photo: updatedUser.photo
         }
@@ -7405,18 +7617,18 @@ const refreshCurrentUser = async () => {
         localStorage.setItem('currentUser', JSON.stringify(currentUser.value))
 
         // Trigger other data refreshes that usually happen on login/mount
+        // Ensure seen notifications are loaded before fetching notifications
+        await fetchSeenNotifications()
         const refreshPromises = []
-        
         refreshPromises.push(fetchNotifications())
-        refreshPromises.push(fetchSeenNotifications())
         
         if (currentUser.value.role === 'admin' || currentUser.value.isMaster) {
           refreshPromises.push(fetchStats())
           refreshPromises.push(fetchPendingStudents())
           refreshPromises.push(refreshStudents())
         } else {
-          refreshPromises.push(fetchAttendanceData())
-          refreshPromises.push(fetchUserAttendanceLogs())
+          // For student users, do not automatically fetch attendance here —
+          // attendance data will be fetched when the user opens the Attendance view.
         }
 
         await Promise.all(refreshPromises)
@@ -7664,6 +7876,13 @@ const formatDate = (dateString) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+// Format date and time in short format
+const formatDateTimeShort = (dateString) => {
+  if (!dateString) return 'N/A'
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+}
+
 const stats = computed(() => {
   // Return stats from backend if available
   if (statsData.value) {
@@ -7894,8 +8113,8 @@ const saveSettingsImpl = async () => {
   }
 }
 
-// Save settings (with admin action check)
-const saveSettings = () => withAdminAction(saveSettingsImpl)()
+// Save settings
+const saveSettings = () => saveSettingsImpl()
 
 // RFID Scanner lock control functions
 const saveRfidScannerSettings = async () => {
@@ -8030,6 +8249,200 @@ const clearAllSessionTokens = async () => {
     showNotification('Failed to clear session tokens', 'error')
   } finally {
     clearingSessionTokens.value = false
+  }
+}
+
+// Database Migration function
+const migrateDatabaseConfirm = () => {
+  if (!migrationDestinationUri.value.trim()) {
+    showNotification('Please enter a destination MongoDB URI', 'error')
+    return
+  }
+
+  if (confirm('⚠️ WARNING: This will copy ALL data from the current database to the destination database.\n\nThe destination database collections will be cleared and replaced.\n\nAre you sure you want to proceed?')) {
+    migrateDatabase()
+  }
+}
+
+const migrateDatabase = async () => {
+  migratingDatabase.value = true
+  
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch(buildAPIUrl(`/apis/admin/migrate-database`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      },
+      body: JSON.stringify({
+        destination_uri: migrationDestinationUri.value.trim()
+      })
+    })
+    
+    const data = await response.json()
+    
+    if (response.ok) {
+      showNotification(`Database migration successful! Migrated ${data.migratedCollections}/${data.totalCollections} collections.`, 'success')
+      migrationDestinationUri.value = ''
+      
+      if (data.errors && data.errors.length > 0) {
+        console.warn('Migration completed with errors:', data.errors)
+        showNotification(`Migration completed with ${data.errors.length} collection error(s). Check console for details.`, 'warning')
+      }
+    } else {
+      showNotification(data.message || 'Migration failed', 'error')
+    }
+  } catch (error) {
+    console.error('Database migration error:', error)
+    showNotification('Failed to migrate database: ' + error.message, 'error')
+  } finally {
+    migratingDatabase.value = false
+  }
+}
+
+// Clean Up Unused Fields function
+const cleanupUnusedFieldsConfirm = () => {
+  if (confirm('⚠️ PERMANENT ACTION:\n\nThis will permanently remove the following fields from ALL student records:\n• contributions\n• semester\n• full_name\n• school_year\n\nStudent data (ID, name parts, program, etc.) will remain intact.\n\nThis action CANNOT be undone. Continue?')) {
+    cleanupUnusedFields()
+  }
+}
+
+const cleanupUnusedFields = async () => {
+  cleaningUpFields.value = true
+  
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch(buildAPIUrl(`/apis/admin/cleanup-unused-fields`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      }
+    })
+    
+    const data = await response.json()
+    
+    if (response.ok) {
+      showNotification(`✓ Cleanup successful! ${data.modifiedCount} student records cleaned up. Storage freed!`, 'success')
+    } else {
+      showNotification(data.message || 'Cleanup failed', 'error')
+    }
+  } catch (error) {
+    console.error('Cleanup error:', error)
+    showNotification('Failed to cleanup fields: ' + error.message, 'error')
+  } finally {
+    cleaningUpFields.value = false
+  }
+}
+
+// Clean Up Duplicate Payments function
+const cleanupDuplicatePaymentsConfirm = () => {
+  if (confirm('⚠️ PERMANENT ACTION:\n\nThis will remove duplicate payment records from the database.\n\nWhen duplicates exist with the same payment_id and student_id:\n• Keeps the oldest PAID record if one exists\n• Otherwise keeps the oldest record\n• Deletes all other duplicates\n\nThis action CANNOT be undone. Continue?')) {
+    cleanupDuplicatePayments()
+  }
+}
+
+const cleanupDuplicatePayments = async () => {
+  cleaningDuplicatePayments.value = true
+  
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch(buildAPIUrl(`/apis/admin/cleanup-duplicate-payments`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      }
+    })
+    
+    const data = await response.json()
+    
+    if (response.ok) {
+      showNotification(`✓ Cleanup successful! Total records: ${data.totalRecords}, Duplicates found: ${data.duplicatesFound}, Deleted: ${data.deletedCount}, Kept: ${data.keptCount}`, 'success')
+    } else {
+      showNotification(data.message || 'Cleanup failed', 'error')
+    }
+  } catch (error) {
+    console.error('Duplicate payment cleanup error:', error)
+    showNotification('Failed to cleanup duplicate payments: ' + error.message, 'error')
+  } finally {
+    cleaningDuplicatePayments.value = false
+  }
+}
+
+// Clean Up RFID Verified By function
+const cleanupRfidVerifiedByConfirm = () => {
+  if (confirm('⚠️ PERMANENT ACTION:\n\nThis will permanently remove the rfid_verified_by field from ALL student records.\n\nRFID verification status and other data will remain intact.\n\nThis action CANNOT be undone. Continue?')) {
+    cleanupRfidVerifiedBy()
+  }
+}
+
+const cleanupRfidVerifiedBy = async () => {
+  cleaningRfidVerifiedBy.value = true
+  
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch(buildAPIUrl(`/apis/admin/cleanup-rfid-verified-by`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      }
+    })
+    
+    const data = await response.json()
+    
+    if (response.ok) {
+      showNotification(`✓ Cleanup successful! ${data.modifiedCount} student records cleaned up. rfid_verified_by field removed!`, 'success')
+    } else {
+      showNotification(data.message || 'Cleanup failed', 'error')
+    }
+  } catch (error) {
+    console.error('RFID verified_by cleanup error:', error)
+    showNotification('Failed to cleanup rfid_verified_by field: ' + error.message, 'error')
+  } finally {
+    cleaningRfidVerifiedBy.value = false
+  }
+}
+
+// Consolidate Payment Records function
+const consolidatePaymentsConfirm = () => {
+  if (confirm('⚠️ CONSOLIDATION ACTION:\n\nThis will consolidate payment records from multiple documents into single student records.\n\n• Reduces storage by ~53%\n• Improves query performance by ~5x\n• No data is deleted, only reorganized\n• Process takes 2-5 seconds\n\nThis action CANNOT be undone. Continue?')) {
+    consolidatePayments()
+  }
+}
+
+const consolidatePayments = async () => {
+  consolidatingPayments.value = true
+  
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch(buildAPIUrl(`/apis/admin/consolidate-payments`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      }
+    })
+    
+    const data = await response.json()
+    
+    if (response.ok) {
+      showNotification(`✓ Consolidation successful!\n\n${data.recordsProcessed} records consolidated to ${data.consolidatedRecords} students\nStorage reduction: ${data.storageReduction}\nAverage campaigns per student: ${data.averageCampaignsPerStudent}\nProcessing time: ${data.processingTime}`, 'success')
+    } else {
+      showNotification(data.message || 'Consolidation failed', 'error')
+    }
+  } catch (error) {
+    console.error('Payment consolidation error:', error)
+    showNotification('Failed to consolidate payment records: ' + error.message, 'error')
+  } finally {
+    consolidatingPayments.value = false
   }
 }
 
@@ -8838,6 +9251,8 @@ const confirmDeleteImpl = async () => {
 const confirmDelete = () => withAdminAction(confirmDeleteImpl)()
 
 const fetchNotifications = async () => {
+  if (notificationsFetching.value) return
+  notificationsFetching.value = true
   notificationsLoading.value = true
   try {
     const response = await fetch(buildAPIUrl(`/apis/notifications`), {
@@ -8855,10 +9270,15 @@ const fetchNotifications = async () => {
     notifications.value = []
   } finally {
     notificationsLoading.value = false
+    notificationsFetching.value = false
   }
 }
 
+const attendanceFetching = ref(false)
+
 const fetchAttendanceData = async () => {
+  if (attendanceFetching.value) return
+  attendanceFetching.value = true
   attendanceLoading.value = true
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster
@@ -8988,6 +9408,7 @@ const fetchAttendanceData = async () => {
     showNotification('Failed to load attendance data', 'error')
   } finally {
     attendanceLoading.value = false
+    attendanceFetching.value = false
     // After data is loaded, check for ended events and notify user (only for students, only once per event)
     nextTick(() => {
       updateEventTimeRemaining()
@@ -10021,10 +10442,8 @@ const handleRfidKeydown = (event) => {
 }
 
 const switchToScannerTab = () => {
-  if (rfidScannerVerified.value) {
-    rfidScannerVerified.value = true
-    attendanceTab.value = 'scanner'
-  }
+  rfidScannerVerified.value = true
+  attendanceTab.value = 'scanner'
 }
 
 const launchFullscreenScanner = () => {

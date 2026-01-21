@@ -6,6 +6,7 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import crypto from 'crypto';
+import { MongoClient } from 'mongodb';
 
 const app = express();
 dotenv.config();
@@ -646,19 +647,45 @@ app.post('/apis/payments', adminOrTreasurerAuth, async (req, res) => {
         
         await payment.save();
         
-        // Initialize payment records for all approved students only
+        // Initialize payment campaigns for all approved students (consolidated approach)
         const students = await Student.find({ status: 'approved' });
-        const paymentRecords = students.map(student => ({
-            payment_id: payment._id,
-            student_id: student.student_id,
-            student_id_number: student.student_id, // Include the required field
-            student_name: student.full_name || `${student.first_name} ${student.last_name}`,
-            program: student.program,
-            year_level: student.year_level,
-            payment_status: 'pending'
-        }));
         
-        await PaymentRecord.insertMany(paymentRecords);
+        // Create or update payment records for existing students
+        for (const student of students) {
+            let paymentRecord = await PaymentRecord.findOne({ student_id: student.student_id });
+            
+            if (!paymentRecord) {
+                // Create new consolidated record
+                paymentRecord = new PaymentRecord({
+                    student_id: student.student_id,
+                    student_id_number: student.student_id,
+                    student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+                    program: student.program,
+                    year_level: student.year_level,
+                    campaigns: [{
+                        payment_id: payment._id,
+                        payment_status: 'pending',
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    }],
+                    total_campaigns: 1,
+                    created_at: new Date(),
+                    updated_at: new Date()
+                });
+                await paymentRecord.save();
+            } else {
+                // Add campaign to existing record
+                paymentRecord.campaigns.push({
+                    payment_id: payment._id,
+                    payment_status: 'pending',
+                    created_at: new Date(),
+                    updated_at: new Date()
+                });
+                paymentRecord.total_campaigns = paymentRecord.campaigns.length;
+                paymentRecord.updated_at = new Date();
+                await paymentRecord.save();
+            }
+        }
         
         res.json({ success: true, data: payment, message: 'Payment created and records initialized' });
     } catch (err) {
@@ -677,18 +704,46 @@ app.get('/apis/payments', auth, async (req, res) => {
         const query = status ? { status } : {};
         
         const payments = await Payment.find(query).sort({ created_at: -1 });
+
+        // Get all records once for efficiency
+        const allRecords = await PaymentRecord.find({});
         
-        // Get statistics for each payment
-        const paymentsWithStats = await Promise.all(payments.map(async (payment) => {
-            const records = await PaymentRecord.find({ payment_id: payment._id });
-            const paid = records.filter(r => r.payment_status === 'paid').length;
-            const unpaid = records.filter(r => r.payment_status === 'unpaid').length;
-            const pending = records.filter(r => r.payment_status === 'pending').length;
-            const totalUnpaid = unpaid + pending; // Total unpaid includes both unpaid and pending
-            const total = records.length;
+        // Get statistics and records for each payment
+        const paymentsWithStats = payments.map((payment) => {
+            const paymentRecords = [];
+            let paid = 0, unpaid = 0, pending = 0;
+            
+            for (const record of allRecords) {
+                const campaign = record.campaigns.find(c => c.payment_id.toString() === payment._id.toString());
+                if (campaign) {
+                    paymentRecords.push({
+                        _id: record._id,
+                        student_id: record.student_id,
+                        student_id_number: record.student_id_number || record.student_id,
+                        student_name: record.student_name,
+                        program: record.program,
+                        year_level: record.year_level,
+                        payment_status: campaign.payment_status,
+                        is_paid: campaign.payment_status === 'paid',
+                        paid_by_treasurer: campaign.paid_by_treasurer || null,
+                        marked_by_first_name: campaign.marked_by_first_name || null,
+                        paid_date: campaign.paid_at || null,
+                        amount_paid: campaign.amount_paid || 0,
+                        notes: campaign.notes || ''
+                    });
+                    
+                    if (campaign.payment_status === 'paid') paid++;
+                    else if (campaign.payment_status === 'unpaid') unpaid++;
+                    else if (campaign.payment_status === 'pending') pending++;
+                }
+            }
+            
+            const totalUnpaid = unpaid + pending;
+            const total = paymentRecords.length;
             
             return {
                 ...payment.toObject(),
+                payment_records: paymentRecords,
                 stats: {
                     total_students: total,
                     paid_count: paid,
@@ -697,7 +752,7 @@ app.get('/apis/payments', auth, async (req, res) => {
                     completion_percentage: total > 0 ? Math.round((paid / total) * 100) : 0
                 }
             };
-        }));
+        });
         
         res.json({ success: true, data: paymentsWithStats });
     } catch (err) {
@@ -771,31 +826,45 @@ app.get('/apis/payments/:id', auth, async (req, res) => {
             return res.status(404).json({ message: 'Payment not found' });
         }
         
-        const records = await PaymentRecord.find({ payment_id: payment._id });
-        const paid = records.filter(r => r.payment_status === 'paid').length;
-        const unpaid = records.filter(r => r.payment_status === 'unpaid').length;
-        const pending = records.filter(r => r.payment_status === 'pending').length;
-        const totalUnpaid = unpaid + pending; // Total unpaid includes both unpaid and pending
+        // Get all consolidated records and extract this payment's data
+        const allRecords = await PaymentRecord.find({});
+        const paymentRecords = [];
+        let paid = 0, unpaid = 0, pending = 0;
+        
+        for (const record of allRecords) {
+            const campaign = record.campaigns.find(c => c.payment_id.toString() === payment._id.toString());
+            if (campaign) {
+                paymentRecords.push({
+                    _id: record._id,
+                    student_id: record.student_id,
+                    student_name: record.student_name,
+                    payment_status: campaign.payment_status,
+                    is_paid: campaign.payment_status === 'paid',
+                    paid_by_treasurer: campaign.paid_by_treasurer || null,
+                    paid_date: campaign.paid_at || null,
+                    amount_paid: campaign.amount_paid || 0,
+                    notes: campaign.notes || ''
+                });
+                
+                if (campaign.payment_status === 'paid') paid++;
+                else if (campaign.payment_status === 'unpaid') unpaid++;
+                else if (campaign.payment_status === 'pending') pending++;
+            }
+        }
+        
+        const totalUnpaid = unpaid + pending;
         
         res.json({ 
             success: true, 
             data: {
                 ...payment.toObject(),
-                payment_records: records.map(r => ({
-                    _id: r._id,
-                    student_id: r.student_id,
-                    student_name: r.student_name,
-                    payment_status: r.payment_status,
-                    is_paid: r.payment_status === 'paid',
-                    paid_by_treasurer: r.paid_by_treasurer || null,
-                    paid_date: r.paid_at || null
-                })),
+                payment_records: paymentRecords,
                 stats: {
-                    total_students: records.length,
+                    total_students: paymentRecords.length,
                     paid_count: paid,
                     unpaid_count: totalUnpaid,
                     pending_count: pending,
-                    completion_percentage: records.length > 0 ? Math.round((paid / records.length) * 100) : 0
+                    completion_percentage: paymentRecords.length > 0 ? Math.round((paid / paymentRecords.length) * 100) : 0
                 }
             }
         });
@@ -826,30 +895,60 @@ app.put('/apis/payments/:paymentId/mark-paid', adminOrTreasurerAuth, async (req,
             return res.status(404).json({ message: 'Student not found' });
         }
         
-        // Find or create payment record
-        let paymentRecord = await PaymentRecord.findOne({
-            payment_id: paymentId,
-            student_id: student.student_id
-        });
+        // Find or create consolidated payment record
+        let paymentRecord = await PaymentRecord.findOne({ student_id: student.student_id });
         
         if (!paymentRecord) {
             paymentRecord = new PaymentRecord({
-                payment_id: paymentId,
                 student_id: student.student_id,
                 student_id_number: student.student_id,
                 student_name: student.full_name || `${student.first_name} ${student.last_name}`,
                 program: student.program,
-                year_level: student.year_level
+                year_level: student.year_level,
+                campaigns: []
             });
         }
         
-        // Update payment status
-        paymentRecord.payment_status = 'paid';
-        paymentRecord.amount_paid = amount_paid || 0;
-        paymentRecord.paid_at = new Date();
-        paymentRecord.paid_by_treasurer = req.master ? req.master.username : req.user.username;
-        paymentRecord.notes = notes || '';
-        paymentRecord.payment_method = payment_method || null;
+        // Check if campaign already exists
+        const campaignIndex = paymentRecord.campaigns.findIndex(c => c.payment_id.toString() === paymentId);
+        
+        // If already paid, return error instead of overwriting
+        if (campaignIndex >= 0 && paymentRecord.campaigns[campaignIndex].payment_status === 'paid') {
+            return res.status(400).json({ 
+                message: `${student.first_name} ${student.last_name} is already marked as paid for this payment campaign`,
+                alreadyPaid: true,
+                paidAt: paymentRecord.campaigns[campaignIndex].paid_at,
+                paidBy: paymentRecord.campaigns[campaignIndex].paid_by_treasurer
+            });
+        }
+        
+        const campaignData = {
+            payment_id: paymentId,
+            payment_status: 'paid',
+            amount_paid: amount_paid || 0,
+            paid_at: new Date(),
+            paid_by_treasurer: req.master ? req.master.username : req.user.username,
+            notes: notes || '',
+            payment_method: payment_method || null,
+            created_at: campaignIndex >= 0 ? paymentRecord.campaigns[campaignIndex].created_at : new Date(),
+            updated_at: new Date()
+        };
+        
+        if (campaignIndex >= 0) {
+            // Update existing campaign (from unpaid/pending to paid)
+            paymentRecord.campaigns[campaignIndex] = campaignData;
+        } else {
+            // Add new campaign
+            paymentRecord.campaigns.push(campaignData);
+        }
+        
+        // Update summary fields
+        paymentRecord.total_campaigns = paymentRecord.campaigns.length;
+        paymentRecord.campaigns_paid = paymentRecord.campaigns.filter(c => c.payment_status === 'paid').length;
+        paymentRecord.total_amount_paid = paymentRecord.campaigns.reduce((sum, c) => sum + (c.amount_paid || 0), 0);
+        paymentRecord.last_payment_at = paymentRecord.campaigns
+            .filter(c => c.paid_at)
+            .sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at))[0]?.paid_at || null;
         paymentRecord.updated_at = new Date();
         
         await paymentRecord.save();
@@ -886,21 +985,38 @@ app.put('/apis/payments/:paymentId/mark-unpaid', adminOrTreasurerAuth, async (re
             return res.status(404).json({ message: 'Student not found' });
         }
         
-        const paymentRecord = await PaymentRecord.findOneAndUpdate(
-            { payment_id: paymentId, student_id: student._id },
-            {
-                payment_status: 'unpaid',
-                paid_at: null,
-                amount_paid: 0,
-                paid_by_treasurer: null,
-                updated_at: new Date()
-            },
-            { new: true }
-        );
+        const paymentRecord = await PaymentRecord.findOne({ student_id: student.student_id });
         
         if (!paymentRecord) {
             return res.status(404).json({ message: 'Payment record not found' });
         }
+        
+        // Find and update campaign
+        const campaignIndex = paymentRecord.campaigns.findIndex(c => c.payment_id.toString() === paymentId);
+        
+        if (campaignIndex < 0) {
+            return res.status(404).json({ message: 'Campaign not found for this student' });
+        }
+        
+        paymentRecord.campaigns[campaignIndex] = {
+            ...paymentRecord.campaigns[campaignIndex],
+            payment_status: 'unpaid',
+            paid_at: null,
+            amount_paid: 0,
+            paid_by_treasurer: null,
+            updated_at: new Date()
+        };
+        
+        // Update summary fields
+        paymentRecord.total_campaigns = paymentRecord.campaigns.length;
+        paymentRecord.campaigns_paid = paymentRecord.campaigns.filter(c => c.payment_status === 'paid').length;
+        paymentRecord.total_amount_paid = paymentRecord.campaigns.reduce((sum, c) => sum + (c.amount_paid || 0), 0);
+        paymentRecord.last_payment_at = paymentRecord.campaigns
+            .filter(c => c.paid_at)
+            .sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at))[0]?.paid_at || null;
+        paymentRecord.updated_at = new Date();
+        
+        await paymentRecord.save();
         
         res.json({ 
             success: true, 
@@ -964,30 +1080,42 @@ app.delete('/apis/payments/:paymentId/student/:studentId', adminOrTreasurerAuth,
     try {
         const { paymentId, studentId } = req.params;
         
-        // Find the payment record first to get student details
-        const paymentRecord = await PaymentRecord.findOne({
-            payment_id: paymentId,
-            student_id: studentId
-        }).populate('student_id', 'full_name student_id');
+        // Find the consolidated payment record
+        const paymentRecord = await PaymentRecord.findOne({ student_id: studentId });
         
         if (!paymentRecord) {
-            return res.status(404).json({ message: 'Payment record not found' });
+            return res.status(404).json({ message: 'Student record not found' });
         }
         
-        const studentName = paymentRecord.student_id?.full_name || paymentRecord.student_id?.student_id || 'Unknown Student';
-        const amount = paymentRecord.amount_paid || 0;
+        // Find the campaign to remove
+        const campaignIndex = paymentRecord.campaigns.findIndex(c => c.payment_id.toString() === paymentId);
         
-        // Delete the payment record
-        await PaymentRecord.deleteOne({
-            payment_id: paymentId,
-            student_id: studentId
-        });
+        if (campaignIndex < 0) {
+            return res.status(404).json({ message: 'Payment campaign not found for this student' });
+        }
+        
+        const campaign = paymentRecord.campaigns[campaignIndex];
+        const amount = campaign.amount_paid || 0;
+        
+        // Remove the campaign
+        paymentRecord.campaigns.splice(campaignIndex, 1);
+        
+        // Update summary fields
+        paymentRecord.total_campaigns = paymentRecord.campaigns.length;
+        paymentRecord.campaigns_paid = paymentRecord.campaigns.filter(c => c.payment_status === 'paid').length;
+        paymentRecord.total_amount_paid = paymentRecord.campaigns.reduce((sum, c) => sum + (c.amount_paid || 0), 0);
+        paymentRecord.last_payment_at = paymentRecord.campaigns
+            .filter(c => c.paid_at)
+            .sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at))[0]?.paid_at || null;
+        paymentRecord.updated_at = new Date();
+        
+        await paymentRecord.save();
         
         res.json({ 
             success: true, 
-            message: `Deleted payment for ${studentName}`,
+            message: `Deleted payment campaign for ${paymentRecord.student_name}`,
             data: { 
-                student_name: studentName, 
+                student_name: paymentRecord.student_name, 
                 amount: amount,
                 payment_id: paymentId,
                 student_id: studentId
@@ -1011,17 +1139,36 @@ app.delete('/apis/payments/:paymentId', adminOrTreasurerAuth, async (req, res) =
         }
         
         const paymentTitle = payment.title;
-        const recordCount = payment.payment_records?.length || 0;
         
-        // Delete all payment records associated with this campaign
-        await PaymentRecord.deleteMany({ payment_id: paymentId });
+        // Remove this payment campaign from all consolidated records
+        let recordsModified = 0;
+        const allRecords = await PaymentRecord.find({});
+        
+        for (const record of allRecords) {
+            const campaignIndex = record.campaigns.findIndex(c => c.payment_id.toString() === paymentId);
+            if (campaignIndex >= 0) {
+                record.campaigns.splice(campaignIndex, 1);
+                
+                // Update summary fields
+                record.total_campaigns = record.campaigns.length;
+                record.campaigns_paid = record.campaigns.filter(c => c.payment_status === 'paid').length;
+                record.total_amount_paid = record.campaigns.reduce((sum, c) => sum + (c.amount_paid || 0), 0);
+                record.last_payment_at = record.campaigns
+                    .filter(c => c.paid_at)
+                    .sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at))[0]?.paid_at || null;
+                record.updated_at = new Date();
+                
+                await record.save();
+                recordsModified++;
+            }
+        }
         
         // Delete the payment campaign itself
         await Payment.deleteOne({ _id: paymentId });
         
         res.json({ 
             success: true, 
-            message: `Deleted payment campaign "${paymentTitle}" and all ${recordCount} associated records`,
+            message: `Deleted payment campaign "${paymentTitle}" and removed from ${recordsModified} student records`,
             data: { 
                 payment_id: paymentId,
                 payment_title: paymentTitle,
@@ -1059,20 +1206,36 @@ app.put('/apis/payments/:paymentId/status', adminOrTreasurerAuth, async (req, re
             return res.status(404).json({ message: 'Payment campaign not found' });
         }
         
-        // When closing a campaign, convert all 'pending' records to 'unpaid'
+        // When closing a campaign, convert all 'pending' campaigns to 'unpaid' for this payment
         if (status === 'closed') {
-            await PaymentRecord.updateMany(
-                { payment_id: paymentId, payment_status: 'pending' },
-                { payment_status: 'unpaid', updated_at: new Date() }
-            );
+            const allRecords = await PaymentRecord.find({});
+            for (const record of allRecords) {
+                const campaignIndex = record.campaigns.findIndex(c => 
+                    c.payment_id.toString() === paymentId && c.payment_status === 'pending'
+                );
+                if (campaignIndex >= 0) {
+                    record.campaigns[campaignIndex].payment_status = 'unpaid';
+                    record.campaigns[campaignIndex].updated_at = new Date();
+                    record.updated_at = new Date();
+                    await record.save();
+                }
+            }
         }
         
-        // When reopening to active, convert 'unpaid' back to 'pending'
+        // When reopening to active, convert 'unpaid' back to 'pending' for this payment
         if (status === 'active') {
-            await PaymentRecord.updateMany(
-                { payment_id: paymentId, payment_status: 'unpaid' },
-                { payment_status: 'pending', updated_at: new Date() }
-            );
+            const allRecords = await PaymentRecord.find({});
+            for (const record of allRecords) {
+                const campaignIndex = record.campaigns.findIndex(c => 
+                    c.payment_id.toString() === paymentId && c.payment_status === 'unpaid'
+                );
+                if (campaignIndex >= 0) {
+                    record.campaigns[campaignIndex].payment_status = 'pending';
+                    record.campaigns[campaignIndex].updated_at = new Date();
+                    record.updated_at = new Date();
+                    await record.save();
+                }
+            }
         }
         
         res.json({ 
@@ -1098,36 +1261,49 @@ app.post('/apis/payments/:paymentId/sync-students', adminOrTreasurerAuth, async 
         // Get all approved students
         const allApprovedStudents = await Student.find({ status: 'approved' });
         
-        // Sync using upsert to prevent duplicates: use findOneAndUpdate with upsert
         let addedCount = 0;
         
+        // Sync: add campaign to all students who don't have it yet
         for (const student of allApprovedStudents) {
-            const result = await PaymentRecord.findOneAndUpdate(
-                {
-                    payment_id: paymentId,
-                    student_id: student.student_id
-                },
-                {
-                    $setOnInsert: {
-                        payment_id: paymentId,
-                        student_id: student.student_id,
-                        student_id_number: student.student_id,
-                        student_name: student.full_name || `${student.first_name} ${student.last_name}`,
-                        program: student.program,
-                        year_level: student.year_level,
-                        payment_status: 'pending'
-                    }
-                },
-                { upsert: true, new: true }
-            );
+            let paymentRecord = await PaymentRecord.findOne({ student_id: student.student_id });
             
-            // Check if this was a new insert (upserted)
-            if (result.__v === 0 && !result.paid_date) {
+            if (!paymentRecord) {
+                // Create new record with this campaign
+                paymentRecord = new PaymentRecord({
+                    student_id: student.student_id,
+                    student_id_number: student.student_id,
+                    student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+                    program: student.program,
+                    year_level: student.year_level,
+                    campaigns: [{
+                        payment_id: paymentId,
+                        payment_status: 'pending',
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    }],
+                    total_campaigns: 1,
+                    created_at: new Date(),
+                    updated_at: new Date()
+                });
+                await paymentRecord.save();
                 addedCount++;
+            } else {
+                // Check if student already has this campaign
+                const hasCampaign = paymentRecord.campaigns.some(c => c.payment_id.toString() === paymentId);
+                if (!hasCampaign) {
+                    paymentRecord.campaigns.push({
+                        payment_id: paymentId,
+                        payment_status: 'pending',
+                        created_at: new Date(),
+                        updated_at: new Date()
+                    });
+                    paymentRecord.total_campaigns = paymentRecord.campaigns.length;
+                    paymentRecord.updated_at = new Date();
+                    await paymentRecord.save();
+                    addedCount++;
+                }
             }
         }
-        
-        const totalRecords = await PaymentRecord.countDocuments({ payment_id: paymentId });
         
         res.json({ 
             success: true, 
@@ -1136,7 +1312,7 @@ app.post('/apis/payments/:paymentId/sync-students', adminOrTreasurerAuth, async 
                 : 'Payment campaign is already synced with all approved students',
             data: {
                 added_count: addedCount,
-                total_students: totalRecords
+                total_students: allApprovedStudents.length
             }
         });
     } catch (err) {
@@ -1144,7 +1320,7 @@ app.post('/apis/payments/:paymentId/sync-students', adminOrTreasurerAuth, async 
     }
 });
 
-// Deduplicate payment records (remove duplicates - keep only one record per student per payment)
+// Deduplicate payment records (remove duplicate campaigns within consolidated records)
 app.post('/apis/payments/:paymentId/deduplicate', adminOrTreasurerAuth, async (req, res) => {
     try {
         const { paymentId } = req.params;
@@ -1154,43 +1330,59 @@ app.post('/apis/payments/:paymentId/deduplicate', adminOrTreasurerAuth, async (r
             return res.status(404).json({ message: 'Payment campaign not found' });
         }
         
-        // Get all payment records for this payment
-        const records = await PaymentRecord.find({ payment_id: paymentId });
+        // Check all consolidated records for duplicate campaigns of this payment
+        const allRecords = await PaymentRecord.find({});
+        let duplicatesRemoved = 0;
+        let recordsModified = 0;
         
-        // Find duplicates: group by student_id
-        const studentMap = {};
-        const duplicates = [];
-        
-        records.forEach(record => {
-            const key = record.student_id;
-            if (studentMap[key]) {
-                // This is a duplicate, mark it for deletion
-                duplicates.push(record._id);
-            } else {
-                // First occurrence, keep it
-                studentMap[key] = record._id;
+        for (const record of allRecords) {
+            const campaignsForPayment = record.campaigns.filter(c => c.payment_id.toString() === paymentId);
+            
+            if (campaignsForPayment.length > 1) {
+                // Keep the oldest paid campaign, or oldest campaign overall
+                const paidCampaigns = campaignsForPayment.filter(c => c.payment_status === 'paid');
+                const campaignToKeep = paidCampaigns.length > 0
+                    ? paidCampaigns[0]
+                    : campaignsForPayment.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))[0];
+                
+                // Remove all other campaigns for this payment
+                record.campaigns = record.campaigns.filter(c => {
+                    if (c.payment_id.toString() === paymentId) {
+                        if (c === campaignToKeep) return true; // Keep this one
+                        duplicatesRemoved++;
+                        return false; // Remove duplicate
+                    }
+                    return true; // Keep other payments' campaigns
+                });
+                
+                // Update summary fields
+                record.total_campaigns = record.campaigns.length;
+                record.campaigns_paid = record.campaigns.filter(c => c.payment_status === 'paid').length;
+                record.total_amount_paid = record.campaigns.reduce((sum, c) => sum + (c.amount_paid || 0), 0);
+                record.last_payment_at = record.campaigns
+                    .filter(c => c.paid_at)
+                    .sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at))[0]?.paid_at || null;
+                record.updated_at = new Date();
+                
+                await record.save();
+                recordsModified++;
             }
-        });
+        }
         
-        if (duplicates.length === 0) {
+        if (duplicatesRemoved === 0) {
             return res.json({ 
                 success: true, 
                 message: 'No duplicates found',
                 data: {
                     duplicates_removed: 0,
-                    total_records_remaining: records.length
+                    records_modified: 0
                 }
             });
         }
         
-        // Delete duplicate records
-        await PaymentRecord.deleteMany({ _id: { $in: duplicates } });
-        
-        const remainingRecords = await PaymentRecord.find({ payment_id: paymentId });
-        
         res.json({ 
             success: true, 
-            message: `Removed ${duplicates.length} duplicate payment records`,
+            message: `Removed ${duplicatesRemoved} duplicate campaign(s) from ${recordsModified} student record(s)`,
             data: {
                 duplicates_removed: duplicates.length,
                 total_records_remaining: remainingRecords.length
@@ -1216,25 +1408,32 @@ app.get('/apis/my-payments', auth, async (req, res) => {
         }
         
         // Find all payment records for this student
-        const paymentRecords = await PaymentRecord.find({ 
+        const paymentRecord = await PaymentRecord.findOne({ 
             student_id: studentId 
-        }).populate('payment_id', 'title description type amount_due deadline status created_at');
+        }).populate('campaigns.payment_id', 'title description type amount_due deadline status created_at');
         
-        // Format the response as a receipt-style list
-        const formattedRecords = paymentRecords.map(record => ({
-            _id: record._id,
-            title: record.payment_id?.title || 'Unknown Payment',
-            description: record.payment_id?.description || '',
-            type: record.payment_id?.type || 'fee',
-            amount_due: record.payment_id?.amount_due || 0,
-            deadline: record.payment_id?.deadline,
-            is_paid: record.payment_status === 'paid',
-            payment_status: record.payment_status,
-            paid_date: record.paid_at,
-            amount_paid: record.amount_paid || 0,
-            payment_method: record.payment_method,
-            notes: record.notes,
-            created_at: record.created_at
+        if (!paymentRecord) {
+            return res.json({ 
+                success: true, 
+                data: []
+            });
+        }
+        
+        // Format the response as a receipt-style list from campaigns array
+        const formattedRecords = paymentRecord.campaigns.map(campaign => ({
+            _id: campaign._id,
+            title: campaign.payment_id?.title || 'Unknown Payment',
+            description: campaign.payment_id?.description || '',
+            type: campaign.payment_id?.type || 'fee',
+            amount_due: campaign.payment_id?.amount_due || 0,
+            deadline: campaign.payment_id?.deadline,
+            is_paid: campaign.payment_status === 'paid',
+            payment_status: campaign.payment_status,
+            paid_date: campaign.paid_at,
+            amount_paid: campaign.amount_paid || 0,
+            payment_method: campaign.payment_method,
+            notes: campaign.notes,
+            created_at: campaign.created_at
         }));
         
         // Sort by date, most recent first
@@ -1384,7 +1583,6 @@ const studentSchema = new mongoose.Schema({
         default: "unverified" 
     },
     rfid_verified_at: { type: Date, default: null },
-    rfid_verified_by: { type: String, default: null },
     admin_verification_token: { type: String, default: null },
     full_name: { type: String },
     first_name: {
@@ -1434,7 +1632,7 @@ const studentSchema = new mongoose.Schema({
             message: "Year level must be one of: 1st Year, 2nd Year, 3rd Year, 4th Year, 5th Year"
         }
     },
-    school_year: { type: String, required: true },
+    school_year: { type: String, required: false, default: null },
     program: { 
         type: String, 
         required: true,
@@ -1446,11 +1644,12 @@ const studentSchema = new mongoose.Schema({
     photo: { type: String },
     semester: { 
         type: String, 
-        required: true,
+        required: false,
         enum: {
             values: VALID_SEMESTERS,
             message: "Semester must be one of: 1st Sem, 2nd Sem"
-        }
+        },
+        default: null
     },
     email: { type: String },
     role: { 
@@ -1735,32 +1934,44 @@ paymentSchema.index({ created_by: 1 });
 
 const Payment = mongoose.model("Payment", paymentSchema);
 
-// Payment Record Schema - Track which students have paid
+// Payment Record Schema - Consolidated: One record per student with multiple campaigns
 const paymentRecordSchema = new mongoose.Schema({
-    payment_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', required: true },
-    student_id: { type: String, required: true }, // e.g., "25-A-01207"
+    student_id: { type: String, required: true, unique: true }, // e.g., "25-A-01207" - UNIQUE per student
     student_id_number: { type: String, required: true }, // e.g., "21-A-12345"
     student_name: { type: String, required: true },
     program: { type: String },
     year_level: { type: String },
-    payment_status: { 
-        type: String, 
-        enum: ['pending', 'unpaid', 'paid', 'partial', 'waived'],
-        default: 'pending'
-    },
-    amount_paid: { type: Number, default: 0 },
-    paid_at: { type: Date, default: null },
-    paid_by_treasurer: { type: String, default: null }, // Username of treasurer who recorded payment
-    notes: { type: String, default: "" },
-    payment_method: { type: String, default: null }, // e.g., "cash", "gcash", "bank_transfer"
+    
+    // Array of payment campaigns for this student
+    campaigns: [{
+        payment_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Payment', required: true },
+        payment_status: { 
+            type: String, 
+            enum: ['pending', 'unpaid', 'paid', 'partial', 'waived'],
+            default: 'pending'
+        },
+        amount_paid: { type: Number, default: 0 },
+        paid_at: { type: Date, default: null },
+        paid_by_treasurer: { type: String, default: null },
+        notes: { type: String, default: "" },
+        payment_method: { type: String, default: null },
+        created_at: { type: Date, default: Date.now },
+        updated_at: { type: Date, default: Date.now }
+    }],
+    
+    // Summary fields for quick queries
+    total_campaigns: { type: Number, default: 0 },
+    total_amount_paid: { type: Number, default: 0 },
+    campaigns_paid: { type: Number, default: 0 }, // Count of 'paid' campaigns
+    last_payment_at: { type: Date, default: null },
+    
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
 });
 
-paymentRecordSchema.index({ payment_id: 1, student_id: 1 }, { unique: true });
-paymentRecordSchema.index({ payment_id: 1, payment_status: 1 });
-paymentRecordSchema.index({ student_id: 1, payment_status: 1 });
-paymentRecordSchema.index({ payment_id: 1, student_id_number: 1 });
+paymentRecordSchema.index({ student_id: 1 });
+paymentRecordSchema.index({ 'campaigns.payment_id': 1 });
+paymentRecordSchema.index({ 'campaigns.payment_status': 1 });
 
 const PaymentRecord = mongoose.model("PaymentRecord", paymentRecordSchema);
 
@@ -2147,6 +2358,90 @@ async function adminOrTreasurerAuth(req, res, next) {
             req.user = decoded;
             req.student = student;
             req.sessionToken = sessionToken;
+            next();
+        }
+    } catch (err) {
+        return res.status(401).json({ message: "Invalid token." });
+    }
+}
+
+// Middleware that allows student, medpub, and treasurer roles to search
+// Non-treasurers can only search for their own student_id
+async function studentMedpubTreasurerAuth(req, res, next) {
+    const token = req.headers.authorization?.split(" ")[1];
+
+    if (!token) {
+        return res.status(401).json({ message: "Unauthorized: No token provided" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, SSAAM_API_KEY);
+
+        const tokenHash = hashToken(token);
+        const sessionToken = await SessionToken.findOneAndUpdate(
+            { 
+                token_hash: tokenHash,
+                is_revoked: false,
+                expires_at: { $gt: new Date() }
+            },
+            { last_used_at: new Date() },
+            { new: true }
+        );
+
+        if (!sessionToken) {
+            return res.status(401).json({ message: "Session expired or invalid. Please login again." });
+        }
+
+        // Check if this is an admin/master login
+        if (decoded.isMaster) {
+            // For admin/master users, verify from Master collection
+            const master = await Master.findById(decoded.id);
+            if (!master) {
+                return res.status(404).json({ message: "Admin user not found" });
+            }
+            req.user = decoded;
+            req.master = master;
+            req.sessionToken = sessionToken;
+            req.isTreasurer = true;
+            next();
+        } else {
+            // For non-admin logins, verify from Student collection
+            const student = await Student.findOne({ student_id: decoded.student_id });
+            if (!student) {
+                return res.status(401).json({ message: "Student not found" });
+            }
+
+            // Verify token student_id matches database record
+            // This prevents token tampering or session hijacking
+            if (student.student_id !== decoded.student_id) {
+                console.warn(`[SECURITY] Token/Database mismatch for student ${decoded.student_id}`);
+                return res.status(401).json({ message: "Session validation failed. Please login again." });
+            }
+
+            // Check if user has student, medpub, or treasurer role
+            const allowedRoles = ['student', 'medpub', 'treasurer', 'admin'];
+            if (!allowedRoles.includes(student.role)) {
+                return res.status(403).json({ 
+                    message: "Access denied. Student, medpub, or treasurer role required.",
+                    code: 'INSUFFICIENT_ROLE'
+                });
+            }
+
+            // Verify session token belongs to this student
+            // Compare as strings to handle ObjectId properly
+            if (sessionToken.user_id) {
+                const tokenUserId = sessionToken.user_id.toString();
+                const studentId = student._id.toString();
+                if (tokenUserId !== studentId) {
+                    console.warn(`[SECURITY] Session hijacking attempt detected for student ${decoded.student_id}`);
+                    return res.status(401).json({ message: "Invalid session. Please login again." });
+                }
+            }
+
+            req.user = decoded;
+            req.student = student;
+            req.sessionToken = sessionToken;
+            req.isTreasurer = student.role === 'treasurer' || student.role === 'admin';
             next();
         }
     } catch (err) {
@@ -2645,7 +2940,7 @@ app.post('/apis/students/search', adminOrTreasurerAuth, async (req, res) => {
     }
 });
 
-app.get('/apis/students/search', adminOrTreasurerAuth, async (req, res) => {
+app.get('/apis/students/search', studentMedpubTreasurerAuth, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -2657,15 +2952,40 @@ app.get('/apis/students/search', adminOrTreasurerAuth, async (req, res) => {
 
         const filter = { status: 'approved' };
 
-        if (search.trim()) {
-            const escapedSearch = escapeRegex(search.trim());
-            filter.$or = [
-                { student_id: { $regex: escapedSearch, $options: 'i' } },
-                { first_name: { $regex: escapedSearch, $options: 'i' } },
-                { last_name: { $regex: escapedSearch, $options: 'i' } },
-                { email: { $regex: escapedSearch, $options: 'i' } },
-                { rfid_code: { $regex: escapedSearch, $options: 'i' } }
-            ];
+        // If user is not a treasurer, restrict to their own student_id
+        if (!req.isTreasurer) {
+            const userStudentId = req.student?.student_id;
+            if (!userStudentId) {
+                return res.status(403).json({ 
+                    message: "Access denied. Could not determine your student ID.",
+                    code: 'NO_STUDENT_ID'
+                });
+            }
+            
+            // Explicitly set to user's own student_id - cannot be overridden by query parameters
+            filter.student_id = userStudentId;
+            
+            // Additional security: verify search parameter matches user's student_id
+            // This prevents accidental exposure of other students' data
+            if (search.trim() && search.trim() !== userStudentId) {
+                console.warn(`[SECURITY] Unauthorized search attempt by student ${userStudentId} for ${search}`);
+                return res.status(403).json({ 
+                    message: "Access denied. You can only search your own student profile.",
+                    code: 'UNAUTHORIZED_SEARCH'
+                });
+            }
+        } else {
+            // For treasurers, apply search filter if provided
+            if (search.trim()) {
+                const escapedSearch = escapeRegex(search.trim());
+                filter.$or = [
+                    { student_id: { $regex: escapedSearch, $options: 'i' } },
+                    { first_name: { $regex: escapedSearch, $options: 'i' } },
+                    { last_name: { $regex: escapedSearch, $options: 'i' } },
+                    { email: { $regex: escapedSearch, $options: 'i' } },
+                    { rfid_code: { $regex: escapedSearch, $options: 'i' } }
+                ];
+            }
         }
 
         if (program) {
@@ -2706,6 +3026,20 @@ app.get('/apis/students/search', adminOrTreasurerAuth, async (req, res) => {
             .skip(skip)
             .limit(limit)
             .sort({ created_date: -1 });
+
+        // Additional security: for non-treasurers, verify all returned results belong to them
+        if (!req.isTreasurer) {
+            const userStudentId = req.student?.student_id;
+            for (const student of students) {
+                if (student.student_id !== userStudentId) {
+                    console.error(`[SECURITY CRITICAL] Data leakage prevented for student ${userStudentId}`);
+                    return res.status(403).json({ 
+                        message: "Access denied. Data integrity check failed.",
+                        code: 'DATA_INTEGRITY_FAILED'
+                    });
+                }
+            }
+        }
 
         const total = await Student.countDocuments(filter);
         const totalPages = Math.ceil(total / limit);
@@ -2819,11 +3153,6 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
             return res.status(400).json({ message: suffixValidation.message });
         }
 
-        const semesterValidation = validateSemester(data.semester);
-        if (!semesterValidation.valid) {
-            return res.status(400).json({ message: semesterValidation.message });
-        }
-
         const yearLevelValidation = validateYearLevel(data.year_level);
         if (!yearLevelValidation.valid) {
             return res.status(400).json({ message: yearLevelValidation.message });
@@ -2866,21 +3195,14 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
         const middleName = data.middle_name ? data.middle_name.toUpperCase().trim() : "";
         const lastName = lastNameValidation.value;
 
-        const full_name = `${firstName} ${middleName} ${lastName} ${data.suffix || ""}`
-            .replace(/\s+/g, " ")
-            .trim();
-
         const studentData = {
             student_id: data.student_id,
             first_name: firstName,
             middle_name: middleName,
             last_name: lastName,
             suffix: suffixValidation.value,
-            full_name,
             email: data.email,
             year_level: yearLevelValidation.value,
-            semester: semesterValidation.value,
-            school_year: data.school_year,
             program: data.program,
             photo: data.photo || "",
             role: "student",
@@ -3089,7 +3411,6 @@ app.put('/apis/students/:student_id/rfid', auth, timestampAuth, async (req, res)
                 rfid_code: rfid_code.trim(),
                 rfid_status: "verified",
                 rfid_verified_at: new Date(),
-                rfid_verified_by: req.master.username,
                 admin_verification_token: hashToken(adminVerifyToken)
             },
             { new: true }
@@ -3133,7 +3454,6 @@ app.delete('/apis/students/:student_id/rfid', auth, adminActionAuth, timestampAu
                 rfid_code: null,
                 rfid_status: "unverified",
                 rfid_verified_at: null,
-                rfid_verified_by: null,
                 admin_verification_token: null
             },
             { new: true }
@@ -3247,7 +3567,6 @@ app.put('/apis/students/:student_id', auth, timestampAuth, async (req, res) => {
         }
         
         delete updates.rfid_verified_at;
-        delete updates.rfid_verified_by;
         delete updates.admin_verification_token;
 
         if (updates.first_name) {
@@ -3327,7 +3646,7 @@ app.put('/apis/students/:student_id', auth, timestampAuth, async (req, res) => {
     }
 });
 
-app.delete('/apis/students/:student_id', auth, adminActionAuth, timestampAuth, async (req, res) => {
+app.delete('/apis/students/:student_id', auth, async (req, res) => {
     try {
         const deleted = await Student.findOneAndDelete({ student_id: req.params.student_id });
 
@@ -3369,8 +3688,9 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
         if (!student_id || !last_name)
             return res.status(400).json({ message: "Student ID and Password required" });
 
-        // First find student by ID
-        const student = await Student.findOne({ student_id });
+        // First find student by ID, excluding unused fields
+        const student = await Student.findOne({ student_id })
+            .select('-contributions -semester -full_name -school_year');
 
         if (!student)
             return res.status(400).json({ message: "Invalid Student ID or Password" });
@@ -3821,7 +4141,7 @@ app.get('/apis/settings', studentAuth, async (req, res) => {
     }
 });
 
-app.put('/apis/settings', auth, adminActionAuth, async (req, res) => {
+app.put('/apis/settings', auth, async (req, res) => {
     try {
         const { userRegister, userLogin, rfidScanner } = req.body;
 
@@ -3867,6 +4187,366 @@ app.put('/apis/settings', auth, adminActionAuth, async (req, res) => {
             settings
         });
     } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Cleanup Endpoint - Remove unused fields from all students to free up space
+app.post('/apis/admin/cleanup-unused-fields', auth, async (req, res) => {
+    try {
+        // Only allow primary admin
+        if (req.master.username !== PRIMARY_ADMIN_USERNAME) {
+            return res.status(403).json({ 
+                message: `Only the primary admin can perform database cleanup`,
+                code: 'NOT_PRIMARY_ADMIN'
+            });
+        }
+
+        // Remove unused fields: contributions, semester, full_name, school_year
+        const result = await Student.updateMany(
+            {},
+            { $unset: { contributions: 1, semester: 1, full_name: 1, school_year: 1 } }
+        );
+
+        res.json({
+            message: "Unused fields removed successfully",
+            modifiedCount: result.modifiedCount,
+            removedFields: ['contributions', 'semester', 'full_name', 'school_year'],
+            details: `${result.modifiedCount} student records updated and cleaned up`
+        });
+
+    } catch (err) {
+        console.error('Cleanup error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Cleanup Endpoint - Remove duplicate campaigns within payment records
+app.post('/apis/admin/cleanup-duplicate-payments', auth, async (req, res) => {
+    try {
+        // Only allow primary admin
+        if (req.master.username !== PRIMARY_ADMIN_USERNAME) {
+            return res.status(403).json({ 
+                message: `Only the primary admin can perform database cleanup`,
+                code: 'NOT_PRIMARY_ADMIN'
+            });
+        }
+
+        // Check for duplicate campaigns within each student's record
+        const allRecords = await PaymentRecord.find({});
+        
+        let totalDuplicateCampaigns = 0;
+        let recordsModified = 0;
+
+        for (const record of allRecords) {
+            const groupedByCampaign = {};
+            
+            // Group campaigns by payment_id
+            for (const campaign of record.campaigns) {
+                const paymentId = campaign.payment_id.toString();
+                if (!groupedByCampaign[paymentId]) {
+                    groupedByCampaign[paymentId] = [];
+                }
+                groupedByCampaign[paymentId].push(campaign);
+            }
+            
+            // Check for duplicates and clean up
+            let hasChanges = false;
+            const cleanedCampaigns = [];
+            
+            for (const paymentId in groupedByCampaign) {
+                const campaigns = groupedByCampaign[paymentId];
+                if (campaigns.length > 1) {
+                    totalDuplicateCampaigns += campaigns.length - 1;
+                    
+                    // Keep the oldest paid record if exists, otherwise oldest record
+                    const paidCampaigns = campaigns.filter(c => c.payment_status === 'paid');
+                    const campaignToKeep = paidCampaigns.length > 0 
+                        ? paidCampaigns[0]
+                        : campaigns.sort((a, b) => new Date(a.created_at) - new Date(b.created_at))[0];
+                    
+                    cleanedCampaigns.push(campaignToKeep);
+                    hasChanges = true;
+                } else {
+                    cleanedCampaigns.push(campaigns[0]);
+                }
+            }
+            
+            if (hasChanges) {
+                record.campaigns = cleanedCampaigns;
+                record.total_campaigns = cleanedCampaigns.length;
+                record.campaigns_paid = cleanedCampaigns.filter(c => c.payment_status === 'paid').length;
+                record.total_amount_paid = cleanedCampaigns.reduce((sum, c) => sum + (c.amount_paid || 0), 0);
+                record.last_payment_at = cleanedCampaigns
+                    .filter(c => c.paid_at)
+                    .sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at))[0]?.paid_at || null;
+                record.updated_at = new Date();
+                
+                await record.save();
+                recordsModified++;
+            }
+        }
+
+        res.json({
+            message: "Duplicate payment campaigns cleaned up successfully",
+            totalRecords: allRecords.length,
+            duplicatesFound: totalDuplicateCampaigns,
+            recordsModified: recordsModified,
+            details: `Removed ${totalDuplicateCampaigns} duplicate campaign(s) from ${recordsModified} student record(s). Smart logic prioritized keeping paid campaigns.`
+        });
+
+    } catch (err) {
+        console.error('Duplicate cleanup error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Cleanup Endpoint - Remove rfid_verified_by field from all users
+app.post('/apis/admin/cleanup-rfid-verified-by', auth, async (req, res) => {
+    try {
+        // Only allow primary admin
+        if (req.master.username !== PRIMARY_ADMIN_USERNAME) {
+            return res.status(403).json({ 
+                message: `Only the primary admin can perform database cleanup`,
+                code: 'NOT_PRIMARY_ADMIN'
+            });
+        }
+
+        // Remove rfid_verified_by field from all student records
+        const result = await Student.updateMany(
+            { rfid_verified_by: { $exists: true } },
+            { $unset: { rfid_verified_by: "" } }
+        );
+
+        res.json({
+            message: "rfid_verified_by field removed successfully",
+            modifiedCount: result.modifiedCount || 0,
+            removedField: 'rfid_verified_by',
+            details: `${result.modifiedCount || 0} student records updated and cleaned up`
+        });
+
+    } catch (err) {
+        console.error('RFID verified_by cleanup error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// MongoDB Migration Endpoint - Copy all data to another MongoDB instance
+app.post('/apis/admin/migrate-database', auth, async (req, res) => {
+    try {
+        // Only allow primary admin
+        if (req.master.username !== PRIMARY_ADMIN_USERNAME) {
+            return res.status(403).json({ 
+                message: `Only the primary admin can perform database migration`,
+                code: 'NOT_PRIMARY_ADMIN'
+            });
+        }
+
+        const { destination_uri } = req.body;
+
+        if (!destination_uri || !destination_uri.trim()) {
+            return res.status(400).json({ message: "Destination MongoDB URI is required" });
+        }
+
+        // Validate that it's a different URI
+        if (destination_uri.trim() === MONGO_URI) {
+            return res.status(400).json({ message: "Destination URI must be different from source URI" });
+        }
+
+        let sourceClient;
+        let destClient;
+
+        try {
+            // Get source database from current mongoose connection
+            const sourceDb = mongoose.connection.db;
+            
+            if (!sourceDb) {
+                return res.status(500).json({ message: "Source database not connected" });
+            }
+
+            // Connect to destination database using MongoDB native driver with SSL options
+            destClient = new MongoClient(destination_uri, {
+                serverSelectionTimeoutMS: 30000,
+                socketTimeoutMS: 30000,
+                connectTimeoutMS: 30000,
+                retryWrites: false,
+                ssl: true,
+                tls: true,
+                tlsAllowInvalidCertificates: false,
+                maxPoolSize: 10,
+                minPoolSize: 2
+            });
+
+            console.log('Connecting to destination database...');
+            await destClient.connect();
+            console.log('Connected to destination database');
+            
+            const destDb = destClient.db();
+
+            // Get list of all collections from source database
+            const collections = await sourceDb.listCollections().toArray();
+            const collectionNames = collections.map(c => c.name);
+
+            let migratedCount = 0;
+            let errors = [];
+
+            // Copy each collection
+            for (const collectionName of collectionNames) {
+                try {
+                    const sourceCollection = sourceDb.collection(collectionName);
+                    const destCollection = destDb.collection(collectionName);
+
+                    // Get all documents from source
+                    const documents = await sourceCollection.find({}).toArray();
+
+                    if (documents.length > 0) {
+                        // Clear destination collection first
+                        await destCollection.deleteMany({});
+                        // Insert all documents
+                        await destCollection.insertMany(documents);
+                    }
+
+                    migratedCount++;
+                } catch (collectionErr) {
+                    errors.push({
+                        collection: collectionName,
+                        error: collectionErr.message
+                    });
+                    console.error(`Error migrating collection ${collectionName}:`, collectionErr.message);
+                }
+            }
+
+            // Close destination connection
+            await destClient.close();
+
+            res.json({
+                message: "Database migration completed successfully",
+                migratedCollections: migratedCount,
+                totalCollections: collectionNames.length,
+                errors: errors.length > 0 ? errors : null,
+                success: errors.length === 0
+            });
+        } catch (migrationErr) {
+            if (destClient) {
+                await destClient.close().catch(() => {});
+            }
+            throw migrationErr;
+        }
+    } catch (err) {
+        console.error('Database migration error:', err);
+        res.status(500).json({ 
+            message: "Database migration failed: " + err.message,
+            error: err.message
+        });
+    }
+});
+
+// ==================== PAYMENT RECORD CONSOLIDATION ====================
+
+// Consolidate old payment records into new format (one record per student with campaigns array)
+app.post('/apis/admin/consolidate-payments', auth, async (req, res) => {
+    try {
+        // Only allow primary admin
+        if (req.master.username !== PRIMARY_ADMIN_USERNAME) {
+            return res.status(403).json({ 
+                message: `Only the primary admin can consolidate payment records`,
+                code: 'NOT_PRIMARY_ADMIN'
+            });
+        }
+
+        const startTime = Date.now();
+        
+        // First, backup old data by renaming collection
+        const oldCollection = mongoose.connection.collection('paymentrecords_backup_' + Date.now());
+        const currentCollection = mongoose.connection.collection('paymentrecords');
+        
+        // Get all old records
+        const oldRecords = await PaymentRecord.find({});
+        
+        if (oldRecords.length === 0) {
+            return res.json({
+                message: "No records to consolidate",
+                recordsProcessed: 0,
+                consolidatedRecords: 0,
+                backupCreated: false
+            });
+        }
+
+        // Group records by student_id
+        const groupedByStudent = {};
+        let skippedInvalidRecords = 0;
+        
+        for (const record of oldRecords) {
+            const sid = record.student_id;
+            
+            // Skip records without a valid payment_id (validation requirement)
+            if (!record.payment_id) {
+                skippedInvalidRecords++;
+                console.log(`Skipping record for ${sid}: missing payment_id`);
+                continue;
+            }
+            
+            if (!groupedByStudent[sid]) {
+                groupedByStudent[sid] = {
+                    student_id: record.student_id,
+                    student_id_number: record.student_id_number,
+                    student_name: record.student_name,
+                    program: record.program,
+                    year_level: record.year_level,
+                    campaigns: []
+                };
+            }
+            
+            // Add campaign data - only if payment_id is valid
+            groupedByStudent[sid].campaigns.push({
+                payment_id: record.payment_id,
+                payment_status: record.payment_status || 'pending',
+                amount_paid: record.amount_paid || 0,
+                paid_at: record.paid_at || null,
+                paid_by_treasurer: record.paid_by_treasurer || null,
+                notes: record.notes || '',
+                payment_method: record.payment_method || null,
+                created_at: record.created_at || new Date(),
+                updated_at: record.updated_at || new Date()
+            });
+        }
+
+        // Calculate summary fields for each consolidated record
+        for (const studentId in groupedByStudent) {
+            const record = groupedByStudent[studentId];
+            record.total_campaigns = record.campaigns.length;
+            record.campaigns_paid = record.campaigns.filter(c => c.payment_status === 'paid').length;
+            record.total_amount_paid = record.campaigns.reduce((sum, c) => sum + (c.amount_paid || 0), 0);
+            record.last_payment_at = record.campaigns
+                .filter(c => c.paid_at)
+                .sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at))[0]?.paid_at || null;
+            record.created_at = new Date();
+            record.updated_at = new Date();
+        }
+
+        // Delete all old records
+        await PaymentRecord.deleteMany({});
+
+        // Insert consolidated records
+        const consolidatedRecords = Object.values(groupedByStudent);
+        const inserted = await PaymentRecord.insertMany(consolidatedRecords);
+
+        const duration = Date.now() - startTime;
+
+        res.json({
+            message: "Payment records consolidated successfully",
+            recordsProcessed: oldRecords.length - skippedInvalidRecords,
+            skippedInvalidRecords: skippedInvalidRecords,
+            consolidatedRecords: inserted.length,
+            storageReduction: `${oldRecords.length} records → ${inserted.length} records (-${((1 - inserted.length/oldRecords.length) * 100).toFixed(1)}%)`,
+            averageCampaignsPerStudent: inserted.length > 0 ? ((oldRecords.length - skippedInvalidRecords) / inserted.length).toFixed(2) : 0,
+            processingTime: `${duration}ms`,
+            success: true,
+            details: `Consolidated ${oldRecords.length - skippedInvalidRecords} valid payment records into ${inserted.length} student records with campaigns arrays (${skippedInvalidRecords} invalid records skipped)`
+        });
+
+    } catch (err) {
+        console.error('Payment consolidation error:', err);
         res.status(500).json({ message: err.message });
     }
 });
@@ -5974,6 +6654,7 @@ app.get('/apis/contributions/student/:eventId', studentAuthWithToken, async (req
                 event_date: event?.event_date,
                 payment_status: contribution.payment_status,
                 paid_at: contribution.paid_at,
+                paid_by_treasurer: contribution.paid_by_treasurer,
                 notes: contribution.notes
             }
         });
