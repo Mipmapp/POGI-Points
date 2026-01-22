@@ -913,6 +913,15 @@
           <div class="bg-white rounded-lg shadow-lg p-4 md:p-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
               <h2 class="text-2xl font-bold text-purple-900">Contribution Management</h2>
+              <button 
+                @click="refreshContributions" 
+                :disabled="paymentsLoading"
+                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 flex items-center gap-2 font-medium"
+              >
+                <svg v-if="paymentsLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                {{ paymentsLoading ? 'Refreshing...' : 'Refresh' }}
+              </button>
             </div>
 
             <!-- Payments Tab (replaces General Contributions) -->
@@ -1517,7 +1526,7 @@
         <div v-if="currentPage === 'settings' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h2 class="text-xl md:text-2xl font-bold text-purple-900">Access Control Settings</h2>
-            <button @click="fetchSettings" :disabled="settingsLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+            <button @click="refreshSettingsSection" :disabled="settingsLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
               <svg v-if="settingsLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               {{ settingsLoading ? 'Loading...' : 'Refresh' }}
@@ -2033,7 +2042,7 @@
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <h2 class="text-lg sm:text-xl font-bold text-purple-900">Attendance Events</h2>
                 <div class="flex gap-2 flex-wrap sm:flex-nowrap">
-                  <button @click="refreshAttendanceData" :disabled="attendanceLoading" class="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 text-sm" title="Refresh">
+                  <button @click="refreshAttendanceSection" :disabled="attendanceLoading" class="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 text-sm" title="Refresh">
                     <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     <span>Refresh</span>
                   </button>
@@ -2468,7 +2477,7 @@
           <div v-else class="bg-white rounded-lg shadow-lg p-4 md:p-6">
             <div class="flex items-center justify-between mb-6">
               <h2 class="text-xl font-bold text-purple-900">My Attendance</h2>
-              <button @click="fetchAttendanceData" :disabled="attendanceLoading" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200 transition flex items-center gap-2">
+              <button @click="refreshAttendanceData" :disabled="attendanceLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center gap-2 disabled:opacity-70">
                 <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 Refresh
               </button>
@@ -3162,7 +3171,7 @@
         <div v-if="currentPage === 'pending' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h2 class="text-xl md:text-2xl font-bold text-purple-900">Pending Student Approvals</h2>
-            <button @click="fetchPendingStudents" :disabled="pendingLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" title="Refresh Pending List">
+            <button @click="refreshPendingSection" :disabled="pendingLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" title="Refresh Pending List">
               <svg :class="{'animate-spin': pendingLoading}" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               Refresh
             </button>
@@ -4840,6 +4849,100 @@ const loggingOut = ref(false)
 const isPageLoading = ref(false)
 const statsLoading = ref(false)
 
+// ============================================
+// SIDEBAR SECTION CACHE TRACKING
+// Track whether data has been fetched for each sidebar section
+// to implement fetch-once-only behavior
+// ============================================
+const sectionDataCache = ref({
+  contributions: {
+    fetched: false,
+    lastFetch: null
+  },
+  manage: {
+    fetched: false,
+    lastFetch: null
+  },
+  settings: {
+    fetched: false,
+    lastFetch: null
+  },
+  pending: {
+    fetched: false,
+    lastFetch: null
+  },
+  attendance: {
+    fetched: false,
+    lastFetch: null
+  },
+  notifications: {
+    fetched: false,
+    lastFetch: null
+  }
+})
+
+// Function to reset cache for a specific section (called when refresh button is clicked)
+const clearSectionCache = (sectionName) => {
+  if (sectionDataCache.value[sectionName]) {
+    sectionDataCache.value[sectionName].fetched = false
+    sectionDataCache.value[sectionName].lastFetch = null
+  }
+}
+
+// Function to check if a section's data has already been cached
+const isSectionCached = (sectionName) => {
+  return sectionDataCache.value[sectionName] && sectionDataCache.value[sectionName].fetched
+}
+
+// Function to mark a section as cached
+const markSectionAsCached = (sectionName) => {
+  if (sectionDataCache.value[sectionName]) {
+    sectionDataCache.value[sectionName].fetched = true
+    sectionDataCache.value[sectionName].lastFetch = new Date().getTime()
+  }
+}
+
+// ============================================
+// REFRESH WRAPPER FUNCTIONS - Clear cache and re-fetch
+// These functions are called when refresh buttons are clicked
+// ============================================
+
+// Refresh Contributions section (clears cache and re-fetches)
+const refreshContributions = async () => {
+  clearSectionCache('contributions')
+  await fetchPayments(true) // Pass true to force refresh
+}
+
+// Refresh Manage section (clears cache and re-fetches)
+const refreshManageSection = async () => {
+  clearSectionCache('manage')
+  await handleManageClick()
+}
+
+// Refresh Pending section (clears cache and re-fetches)
+const refreshPendingSection = async () => {
+  clearSectionCache('pending')
+  await fetchPendingStudents()
+}
+
+// Refresh Settings section (clears cache and re-fetches)
+const refreshSettingsSection = async () => {
+  clearSectionCache('settings')
+  await fetchSettings()
+}
+
+// Refresh Attendance section (clears cache and re-fetches)
+const refreshAttendanceSection = async () => {
+  clearSectionCache('attendance')
+  await fetchAttendanceData()
+}
+
+// Refresh Notifications section (clears cache and re-fetches)
+const refreshNotificationsSection = async () => {
+  clearSectionCache('notifications')
+  await goToNotifications()
+}
+
 // Contributions modal state
 const showContributionsModal = ref(false)
 const selectedEventForContributions = ref(null)
@@ -4959,8 +5062,13 @@ const fetchTransparencyBoard = async () => {
 // Fetch all payments
 const fetchPayments = async (skipAutoSync = false) => {
   // Only admin/treasurer should fetch all payments; regular students should use fetchMyPayments
-  if (currentUser.value.role !== 'admin' && !currentUser.value.isMaster) {
+  if (currentUser.value.role !== 'admin' && !currentUser.value.isMaster && currentUser.value.role !== 'treasurer') {
     // Skip payment list fetch for students - they use My Payments instead
+    return
+  }
+  
+  // Check cache first - only fetch if not already fetched or if forced refresh
+  if (isSectionCached('contributions') && !skipAutoSync) {
     return
   }
   
@@ -4985,6 +5093,9 @@ const fetchPayments = async (skipAutoSync = false) => {
           selectedPayment.value = updatedPayment
         }
       }
+      
+      // Mark section as cached
+      markSectionAsCached('contributions')
       
       // Auto-sync all active payments (skip if explicitly requested to avoid recursion)
       if (!skipAutoSync) {
@@ -5026,7 +5137,7 @@ const fetchMyPayments = async () => {
 const refreshAllData = async () => {
   paymentsLoading.value = true
   try {
-    const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster
+    const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster || currentUser.value.role === 'treasurer'
     
     if (isAdmin) {
       // ADMIN: Fetch all payments for management
@@ -6682,6 +6793,7 @@ const attendanceLogs = ref([])
 const attendanceLogsPagination = ref({ page: 1, limit: 50, total: 0, hasMore: false })
 const loadingMoreLogs = ref(false)
 const studentPhotoCache = ref({})
+const attendanceDataFetched = ref(false) // Track if attendance section has been fetched
 
 // Helper to derive a stable student key from log or student object
 const deriveStudentKey = (obj) => {
@@ -7339,7 +7451,12 @@ const unreadNotificationCount = computed(() => {
 const goToNotifications = async () => {
   currentPage.value = 'notifications'
   showMobileMenu.value = false
-  await fetchNotifications()
+  
+  // Check cache first - only fetch if not already fetched
+  if (!isSectionCached('notifications')) {
+    await fetchNotifications()
+    markSectionAsCached('notifications')
+  }
   
   const unseenIds = notifications.value
     .filter(n => !seenNotificationIds.value.has(n._id))
@@ -7530,10 +7647,15 @@ onMounted(async () => {
   // Start auto-refresh for attendance and event timers
   startAttendanceAutoRefresh()
   
-  // Start auto-refresh for stats (admin only)
+  // Start auto-refresh for stats (admin only) - REMOVED: Stats should not auto-refresh
+  // if (user.role === 'admin' || user.isMaster) {
+  //   startStatsAutoRefresh()
+  //   // Start sidebar logo flip animation for admin users
+  //   startSidebarLogoFlipAnimation()
+  // }
+  
+  // Start sidebar logo flip animation for admin users
   if (user.role === 'admin' || user.isMaster) {
-    startStatsAutoRefresh()
-    // Start sidebar logo flip animation for admin users
     startSidebarLogoFlipAnimation()
   }
   
@@ -7752,15 +7874,28 @@ const toggleRfidList = async (type) => {
 const handleManageClick = async () => {
   currentPage.value = 'manage'
   showMobileMenu.value = false
-  // Call refresh on the Manage component after it's rendered
-  await nextTick()
-  if (manageComponent.value) {
-    await manageComponent.value.refreshData()
+  
+  // Check cache - only fetch if not already fetched
+  if (!isSectionCached('manage')) {
+    // Call refresh on the Manage component after it's rendered
+    await nextTick()
+    if (manageComponent.value) {
+      await manageComponent.value.refreshData()
+    }
+    markSectionAsCached('manage')
+  } else {
+    // Just render without fetching
+    await nextTick()
   }
 }
 
 // Fetch pending students for approval (fetch all by using high limit)
 const fetchPendingStudents = async () => {
+  // Check cache first - only fetch if not already fetched
+  if (isSectionCached('pending')) {
+    return
+  }
+  
   pendingLoading.value = true
   try {
     const response = await fetch(buildAPIUrl(`/apis/students/pending?limit=1000`), {
@@ -7773,6 +7908,9 @@ const fetchPendingStudents = async () => {
     if (response.ok) {
       pendingStudents.value = result.data || result
       pendingCount.value = pendingStudents.value.length
+      
+      // Mark section as cached
+      markSectionAsCached('pending')
     }
   } catch (error) {
     console.error('Failed to fetch pending students:', error)
@@ -8033,6 +8171,11 @@ const refreshStudents = async () => {
 
 // Fetch settings from API
 const fetchSettings = async () => {
+  // Check cache first - only fetch if not already fetched
+  if (isSectionCached('settings')) {
+    return
+  }
+  
   settingsLoading.value = true
   try {
     const response = await fetch(buildAPIUrl(`/apis/settings`), {
@@ -8062,6 +8205,9 @@ const fetchSettings = async () => {
       if (appSettings.value.rfidScanner.lateThresholdMinutes) {
         lateThresholdMinutes.value = appSettings.value.rfidScanner.lateThresholdMinutes
       }
+      
+      // Mark section as cached
+      markSectionAsCached('settings')
     }
   } catch (error) {
     console.error('Failed to fetch settings:', error)
@@ -9277,6 +9423,17 @@ const fetchNotifications = async () => {
 const attendanceFetching = ref(false)
 
 const fetchAttendanceData = async () => {
+  // Check cache first - only fetch if not already fetched
+  if (isSectionCached('attendance') && !attendanceFetching.value) {
+    // Data already fetched, skip initial fetch
+    // But still update event timers
+    nextTick(() => {
+      updateEventTimeRemaining()
+      checkAndNotifyEndedEvents()
+    })
+    return
+  }
+
   if (attendanceFetching.value) return
   attendanceFetching.value = true
   attendanceLoading.value = true
@@ -9309,99 +9466,23 @@ const fetchAttendanceData = async () => {
         console.log('Admin attendance events data:', result)
         attendanceEvents.value = result.data || result || []
         console.log('Attendance events loaded:', attendanceEvents.value.length)
+        
+        // Mark section as cached
+        markSectionAsCached('attendance')
       } else {
         const errorText = await response.text()
         console.error('Admin attendance events fetch error:', response.status, errorText)
         showNotification(`Failed to load attendance events: ${response.status}`, 'error')
       }
     } else {
-      console.log('Fetching student attendance records...')
-      const [eventsRes, upcomingRes, myRecordsRes] = await Promise.all([
-        fetch(buildAPIUrl('/apis/attendance/events/active'), {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'X-SSAAM-TS': encodeTimestamp()
-          }
-        }),
-        fetch(buildAPIUrl('/apis/attendance/events/upcoming'), {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'X-SSAAM-TS': encodeTimestamp()
-          }
-        }),
-        fetch(buildAPIUrl('/apis/attendance/my-records'), {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'X-SSAAM-TS': encodeTimestamp()
-          }
-        })
-      ])
+      console.log('Fetching student attendance records on first click...')
+      // Fetch all three sections on initial load
+      await fetchActiveEvents()
+      await fetchUpcomingEvents()
+      await fetchMyRecords()
       
-      console.log('Student fetch statuses:', {
-        events: eventsRes.status,
-        upcoming: upcomingRes.status,
-        myRecords: myRecordsRes.status
-      })
-
-      if (eventsRes.status === 401 || upcomingRes.status === 401 || myRecordsRes.status === 401) {
-        showSessionExpiredModal.value = true
-        return
-      }
-
-      if (!eventsRes.ok) {
-        const errorText = await eventsRes.text()
-        console.error('Active events fetch error:', eventsRes.status, errorText)
-        showNotification(`Failed to load active events: ${eventsRes.status}`, 'error')
-      } else {
-        const eventsResult = await eventsRes.json()
-        attendanceEvents.value = eventsResult.data || eventsResult || []
-        console.log('Active attendance events loaded:', attendanceEvents.value.length)
-      }
-
-      if (!upcomingRes.ok) {
-        const errorText = await upcomingRes.text()
-        console.error('Upcoming events fetch error:', upcomingRes.status, errorText)
-      } else {
-        const upcomingResult = await upcomingRes.json()
-        upcomingEventsData.value = upcomingResult.data || upcomingResult || []
-        console.log('Upcoming attendance events loaded:', upcomingEventsData.value.length)
-      }
-      
-      if (!myRecordsRes.ok) {
-        const errorText = await myRecordsRes.text()
-        console.error('My records fetch error:', myRecordsRes.status, errorText)
-      } else {
-        const recordsResult = await myRecordsRes.json()
-        const records = recordsResult.data || recordsResult || []
-        console.log('My attendance records loaded:', records.length)
-        myAttendanceRecords.value = records.map((r, idx) => {
-          const eventId = r.event?._id || r.event_id || `record-${idx}`
-          return {
-            ...r,
-            _id: eventId,
-            event_id: eventId,
-            event_title: r.event?.title,
-            sessions: (r.sessions || []).map((s, sIdx) => ({
-              ...s,
-              session: s.session || {},
-              session_id: s.session?._id || `session-${sIdx}`,
-              attendance: s.attendance || { check_in_at: null, check_out_at: null, status: 'absent' }
-            })),
-            overall_status: r.overall_status || 'absent',
-            check_in_at: r.attendance?.check_in_at,
-            check_out_at: r.attendance?.check_out_at,
-            morning_check_in_at: r.attendance?.morning_check_in_at,
-            morning_check_out_at: r.attendance?.morning_check_out_at,
-            afternoon_check_in_at: r.attendance?.afternoon_check_in_at,
-            afternoon_check_out_at: r.attendance?.afternoon_check_out_at,
-            is_late: r.attendance?.is_late,
-            status: r.attendance?.status || r.overall_status || 'absent'
-          }
-        })
-      }
+      // Mark section as cached
+      markSectionAsCached('attendance')
     }
   } catch (error) {
     console.error('Failed to fetch attendance data:', error)
@@ -9414,6 +9495,135 @@ const fetchAttendanceData = async () => {
       updateEventTimeRemaining()
       checkAndNotifyEndedEvents()
     })
+  }
+}
+
+// Fetch only active events (can be called to refresh)
+const fetchActiveEvents = async () => {
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  try {
+    if (!token) return
+    
+    const response = await fetch(buildAPIUrl('/apis/attendance/events/active'), {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      attendanceEvents.value = result.data || result || []
+      console.log('Active events refreshed:', attendanceEvents.value.length)
+    }
+  } catch (error) {
+    console.error('Failed to fetch active events:', error)
+  }
+}
+
+// Fetch only upcoming events (can be called to refresh)
+const fetchUpcomingEvents = async () => {
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  try {
+    if (!token) return
+    
+    const response = await fetch(buildAPIUrl('/apis/attendance/events/upcoming'), {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      upcomingEventsData.value = result.data || result || []
+      console.log('Upcoming events refreshed:', upcomingEventsData.value.length)
+    }
+  } catch (error) {
+    console.error('Failed to fetch upcoming events:', error)
+  }
+}
+
+// Fetch only my attendance records (can be called to refresh)
+const fetchMyRecords = async () => {
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  try {
+    if (!token) return
+    
+    const response = await fetch(buildAPIUrl('/apis/attendance/my-records'), {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      const records = result.data || result || []
+      console.log('My records refreshed:', records.length)
+      myAttendanceRecords.value = records.map((r, idx) => {
+        const eventId = r.event?._id || r.event_id || `record-${idx}`
+        return {
+          ...r,
+          _id: eventId,
+          event_id: eventId,
+          event_title: r.event?.title,
+          sessions: (r.sessions || []).map((s, sIdx) => ({
+            ...s,
+            session: s.session || {},
+            session_id: s.session?._id || `session-${sIdx}`,
+            attendance: s.attendance || { check_in_at: null, check_out_at: null, status: 'absent' }
+          })),
+          overall_status: r.overall_status || 'absent',
+          check_in_at: r.attendance?.check_in_at,
+          check_out_at: r.attendance?.check_out_at,
+          morning_check_in_at: r.attendance?.morning_check_in_at,
+          morning_check_out_at: r.attendance?.morning_check_out_at,
+          afternoon_check_in_at: r.attendance?.afternoon_check_in_at,
+          afternoon_check_out_at: r.attendance?.afternoon_check_out_at,
+          is_late: r.attendance?.is_late,
+          status: r.attendance?.status || r.overall_status || 'absent'
+        }
+      })
+    }
+  } catch (error) {
+    console.error('Failed to fetch my records:', error)
+  }
+}
+
+// Refresh only active events (for Active section)
+const refreshActiveEvents = async () => {
+  try {
+    await fetchActiveEvents()
+    showNotification('Active events refreshed!', 'success')
+  } catch (error) {
+    console.error('Failed to refresh active events:', error)
+    showNotification('Failed to refresh active events', 'error')
+  }
+}
+
+// Refresh only upcoming events (for Upcoming section)
+const refreshUpcomingEvents = async () => {
+  try {
+    await fetchUpcomingEvents()
+    showNotification('Upcoming events refreshed!', 'success')
+  } catch (error) {
+    console.error('Failed to refresh upcoming events:', error)
+    showNotification('Failed to refresh upcoming events', 'error')
+  }
+}
+
+// Refresh only my records (for My Records section)
+const refreshMyRecords = async () => {
+  try {
+    await fetchMyRecords()
+    showNotification('My records refreshed!', 'success')
+  } catch (error) {
+    console.error('Failed to refresh my records:', error)
+    showNotification('Failed to refresh my records', 'error')
   }
 }
 

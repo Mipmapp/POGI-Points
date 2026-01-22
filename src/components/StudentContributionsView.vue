@@ -57,9 +57,20 @@
 
           <!-- Action Button -->
           <div v-if="event.isPaid" class="mt-4 pt-4 border-t border-gray-200">
-            <p class="text-sm text-green-600 text-center font-semibold">
+            <p class="text-sm text-green-600 text-center font-semibold mb-3">
               ✓ Your payment has been recorded
             </p>
+            <ContributionReceipt
+              :student-name="currentUserName"
+              :student-id="currentUserId"
+              :event-title="event.eventTitle"
+              :event-date="formatDate(event.eventDate)"
+              :paid-at="formatDateTime(event.paidAt)"
+              :paid-by-treasurer="event.paidByTreasurer"
+              :notes="event.notes"
+              :year-level="currentUserYearLevel"
+              :program="currentUserProgram"
+            />
           </div>
           <div v-else-if="event.isOverdue" class="mt-4 pt-4 border-t border-gray-200">
             <p class="text-sm text-red-600 text-center font-bold">
@@ -79,19 +90,39 @@
 
 <script>
 import API_BASE_URL from '../config/api'
+import ContributionReceipt from './ContributionReceipt.vue'
 
 export default {
   name: 'StudentContributionsView',
+  components: {
+    ContributionReceipt
+  },
   data() {
     return {
       events: [],
-      loadingEvents: false
+      loadingEvents: false,
+      currentUserName: '',
+      currentUserId: '',
+      currentUserYearLevel: '',
+      currentUserProgram: ''
     }
   },
   async mounted() {
+    this.loadUserData()
     await this.loadEvents()
   },
   methods: {
+    loadUserData() {
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}')
+        this.currentUserName = userData.full_name || userData.name || 'Student'
+        this.currentUserId = userData.student_id || userData._id || 'N/A'
+        this.currentUserYearLevel = userData.year_level || userData.yearLevel || ''
+        this.currentUserProgram = userData.program || userData.course || ''
+      } catch (err) {
+        console.error('Error loading user data:', err)
+      }
+    },
     async loadEvents() {
       this.loadingEvents = true
       try {

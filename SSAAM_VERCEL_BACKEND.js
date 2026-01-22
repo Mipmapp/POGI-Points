@@ -3667,6 +3667,9 @@ app.delete('/apis/students/:student_id', auth, async (req, res) => {
             { is_revoked: true }
         );
 
+        // Clean up: Remove all contribution records for this student
+        await EventContribution.deleteMany({ student_id: deleted._id });
+
         res.json({ message: "Student deleted successfully." });
     } catch (err) {
         res.status(500).json({ message: err.message });

@@ -1565,10 +1565,13 @@ export default {
     }
   },
   mounted() {
-    this.isLoading = true
-    this.fetchAllUsers().finally(() => {
-      this.isLoading = false
-    })
+    // Skip loading if data is already populated (prevents duplicate fetch)
+    if (!this.allUsers || this.allUsers.length === 0) {
+      this.isLoading = true
+      this.fetchAllUsers().finally(() => {
+        this.isLoading = false
+      })
+    }
   }
 }
 </script>
