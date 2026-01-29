@@ -5646,7 +5646,7 @@ app.get('/apis/attendance/events/active', studentAuthWithToken, async (req, res)
             status: 'active',
             $or: [
                 { is_custom: false },
-                { is_custom: true, assigned_users: studentId }
+                { is_custom: true, assigned_users: { $in: [studentId] } }
             ]
         })
             .populate('assigned_users', 'full_name name student_id')
@@ -5670,7 +5670,7 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
             status: 'draft',
             $or: [
                 { is_custom: false },
-                { is_custom: true, assigned_users: studentId }
+                { is_custom: true, assigned_users: { $in: [studentId] } }
             ]
         })
             .populate('assigned_users', 'full_name name student_id')
@@ -6640,9 +6640,14 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
         const events = await AttendanceEvent.find({
             $or: [
                 { is_custom: false },  // All regular events visible to everyone
-                { is_custom: true, assigned_users: student._id }  // Custom events only for assigned students
+                { is_custom: true, assigned_users: { $in: [student._id] } }  // Custom events only for assigned students
             ]
         }).sort({ event_date: -1 });
+        
+        // Debug logging
+        console.log(`[My Records] Student ${student.student_id} (${student._id}) requested records`);
+        console.log(`[My Records] Query found ${events.length} total events - regular: ${events.filter(e => !e.is_custom).length}, custom: ${events.filter(e => e.is_custom).length}`);
+        console.log(`[My Records] Sample events:`, events.slice(0, 3).map(e => ({ title: e.title, is_custom: e.is_custom, assigned: e.assigned_users.some(u => u.toString() === student._id.toString()) })));
 
         const records = await Promise.all(events.map(async (event) => {
             // Note: Previously filtered out events where student was registered after activation.
