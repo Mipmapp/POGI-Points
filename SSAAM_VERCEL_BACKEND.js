@@ -5646,6 +5646,8 @@ app.get('/apis/attendance/events/active', studentAuthWithToken, async (req, res)
             status: 'active',
             $or: [
                 { is_custom: false },
+                { is_custom: { $exists: false } },  // Events created before is_custom field
+                { is_custom: null },  // Events with null is_custom
                 { is_custom: true, assigned_users: { $in: [studentId] } }
             ]
         })
@@ -5670,6 +5672,8 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
             status: 'draft',
             $or: [
                 { is_custom: false },
+                { is_custom: { $exists: false } },  // Events created before is_custom field
+                { is_custom: null },  // Events with null is_custom
                 { is_custom: true, assigned_users: { $in: [studentId] } }
             ]
         })
@@ -6640,6 +6644,8 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
         const events = await AttendanceEvent.find({
             $or: [
                 { is_custom: false },  // All regular events visible to everyone
+                { is_custom: { $exists: false } },  // Events created before is_custom field existed
+                { is_custom: null },  // Events with null is_custom
                 { is_custom: true, assigned_users: { $in: [student._id] } }  // Custom events only for assigned students
             ]
         }).sort({ event_date: -1 });
