@@ -11610,7 +11610,13 @@ const getSmartRecordStatus = (record) => {
   const event = record.event || attendanceEvents.value.find(e => e._id === record.event_id)
   const originalStatus = record.overall_status || record.status
   
-  // If event exists, check if it has started yet
+  // PRIORITY: If event is closed, always trust the backend status
+  // Closed events can show absent, present, or late - don't recalculate
+  if (event && event.status === 'closed') {
+    return originalStatus || 'absent'
+  }
+  
+  // If event exists, check if it has started yet (only for active/draft events)
   if (event) {
     const eventStarted = hasEventStartedPH(event)
     const eventEnded = hasEventEndedPH(event)
@@ -11631,6 +11637,27 @@ const getSmartRecordStatus = (record) => {
 }
 
 const getSessionAttendanceLabel = (attendance, session = null, event = null) => {
+  // PRIORITY: If event is closed, show the actual status from attendance data
+  if (event && event.status === 'closed') {
+    if (!attendance || (!attendance.check_in_at && !attendance.check_in_time)) {
+      return 'Absent'  // No check-in/out and event is closed = Absent
+    }
+    
+    const status = attendance.status
+    if (status === 'present') return 'Present'
+    if (status === 'late') return 'Present (Late)'
+    if (status === 'incomplete') return attendance.is_late ? 'Incomplete (Late)' : 'Incomplete'
+    if (status === 'absent') return 'Absent'
+    
+    if (attendance.check_in_at && attendance.check_out_at) {
+      return attendance.is_late ? 'Present (Late)' : 'Present'
+    }
+    if (attendance.check_in_at && !attendance.check_out_at) {
+      return attendance.is_late ? 'Incomplete (Late)' : 'Incomplete'
+    }
+    return 'Absent'
+  }
+  
   // Check if the session/event hasn't started yet
   if (event && !hasEventStartedPH(event)) {
     return 'Upcoming'
