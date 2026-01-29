@@ -6716,8 +6716,12 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                 if (completedSessions.length === sessions.length) {
                     overallStatus = lateSessions.length > 0 ? 'late' : 'present';
                 } else if (completedSessions.length > 0 || incompleteSessions.length > 0) {
-                    overallStatus = 'incomplete';
+                    // If event is already closed/ended, mark as absent (not incomplete)
+                    overallStatus = event.status === 'closed' ? 'absent' : 'incomplete';
                 }
+            } else if (event.status === 'closed') {
+                // Event is closed and student has no attendance records → absent
+                overallStatus = 'absent';
             }
 
             // Show all active events and closed events (with or without attendance records)
