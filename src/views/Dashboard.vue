@@ -7552,6 +7552,11 @@ const calculateEventStatus = (eventDate, startTime, endTime) => {
 }
 
 const getSessionDisplayStatus = (session, event) => {
+  // If event is closed, always return 'closed' regardless of time
+  if (event?.status === 'closed') {
+    return 'closed'
+  }
+  
   if (!session || !session.start_time || !session.end_time) return session?.status || 'draft'
   
   const eventDate = event?.date || event?.event_date
