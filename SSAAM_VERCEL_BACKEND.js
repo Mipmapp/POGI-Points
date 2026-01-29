@@ -708,6 +708,18 @@ app.get('/apis/payments', auth, async (req, res) => {
         // Get all records once for efficiency
         const allRecords = await PaymentRecord.find({});
         
+        // Get all students for enrichment
+        const allStudents = await Student.find({}, 'student_id program year_level');
+        const studentMap = {};
+        for (const student of allStudents) {
+            if (student.student_id) {
+                studentMap[student.student_id] = {
+                    program: student.program || '',
+                    year_level: student.year_level || ''
+                };
+            }
+        }
+        
         // Get statistics and records for each payment
         const paymentsWithStats = payments.map((payment) => {
             const paymentRecords = [];
@@ -716,13 +728,18 @@ app.get('/apis/payments', auth, async (req, res) => {
             for (const record of allRecords) {
                 const campaign = record.campaigns.find(c => c.payment_id.toString() === payment._id.toString());
                 if (campaign) {
+                    // Enrich with latest student data
+                    const studentData = studentMap[record.student_id] || {};
+                    const program = studentData.program || record.program || 'N/A';
+                    const year_level = studentData.year_level || record.year_level || 'N/A';
+                    
                     paymentRecords.push({
                         _id: record._id,
                         student_id: record.student_id,
                         student_id_number: record.student_id_number || record.student_id,
                         student_name: record.student_name,
-                        program: record.program,
-                        year_level: record.year_level,
+                        program: program,
+                        year_level: year_level,
                         payment_status: campaign.payment_status,
                         is_paid: campaign.payment_status === 'paid',
                         paid_by_treasurer: campaign.paid_by_treasurer || null,
@@ -828,16 +845,36 @@ app.get('/apis/payments/:id', auth, async (req, res) => {
         
         // Get all consolidated records and extract this payment's data
         const allRecords = await PaymentRecord.find({});
+        
+        // Get all students for enrichment
+        const allStudents = await Student.find({}, 'student_id program year_level');
+        const studentMap = {};
+        for (const student of allStudents) {
+            if (student.student_id) {
+                studentMap[student.student_id] = {
+                    program: student.program || '',
+                    year_level: student.year_level || ''
+                };
+            }
+        }
+        
         const paymentRecords = [];
         let paid = 0, unpaid = 0, pending = 0;
         
         for (const record of allRecords) {
             const campaign = record.campaigns.find(c => c.payment_id.toString() === payment._id.toString());
             if (campaign) {
+                // Enrich with latest student data
+                const studentData = studentMap[record.student_id] || {};
+                const program = studentData.program || record.program || 'N/A';
+                const year_level = studentData.year_level || record.year_level || 'N/A';
+                
                 paymentRecords.push({
                     _id: record._id,
                     student_id: record.student_id,
                     student_name: record.student_name,
+                    program: program,
+                    year_level: year_level,
                     payment_status: campaign.payment_status,
                     is_paid: campaign.payment_status === 'paid',
                     paid_by_treasurer: campaign.paid_by_treasurer || null,
@@ -903,10 +940,15 @@ app.put('/apis/payments/:paymentId/mark-paid', adminOrTreasurerAuth, async (req,
                 student_id: student.student_id,
                 student_id_number: student.student_id,
                 student_name: student.full_name || `${student.first_name} ${student.last_name}`,
-                program: student.program,
-                year_level: student.year_level,
+                program: student.program || '',
+                year_level: student.year_level || '',
                 campaigns: []
             });
+        } else {
+            // Always update program and year_level to latest student info
+            paymentRecord.program = student.program || paymentRecord.program || '';
+            paymentRecord.year_level = student.year_level || paymentRecord.year_level || '';
+            paymentRecord.student_name = student.full_name || `${student.first_name} ${student.last_name}`;
         }
         
         // Check if campaign already exists
@@ -990,6 +1032,11 @@ app.put('/apis/payments/:paymentId/mark-unpaid', adminOrTreasurerAuth, async (re
         if (!paymentRecord) {
             return res.status(404).json({ message: 'Payment record not found' });
         }
+        
+        // Always update program and year_level to latest student info
+        paymentRecord.program = student.program || paymentRecord.program || '';
+        paymentRecord.year_level = student.year_level || paymentRecord.year_level || '';
+        paymentRecord.student_name = student.full_name || `${student.first_name} ${student.last_name}`;
         
         // Find and update campaign
         const campaignIndex = paymentRecord.campaigns.findIndex(c => c.payment_id.toString() === paymentId);
@@ -1795,6 +1842,8 @@ const attendanceEventSchema = new mongoose.Schema({
         enum: ['draft', 'active', 'closed'],
         default: 'draft'
     },
+    is_custom: { type: Boolean, default: false }, // Whether this is a custom event for specific users
+    assigned_users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }], // Specific users for custom events
     created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'Master', required: true },
     created_by_name: { type: String, required: true },
     created_at: { type: Date, default: Date.now },
@@ -1892,6 +1941,10 @@ const eventContributionSchema = new mongoose.Schema({
         enum: ['unpaid', 'paid'],
         default: 'unpaid'
     },
+    original_amount: { type: Number, default: 0 },
+    discount_type: { type: String, enum: ['amount', 'percentage'], default: null },
+    discount_value: { type: Number, default: 0 },
+    target_amount: { type: Number, default: 0 },
     paid_at: { type: Date, default: null },
     paid_by_treasurer: { type: String, default: null }, // Username of treasurer who recorded payment
     notes: { type: String, default: "" },
@@ -4334,6 +4387,85 @@ app.post('/apis/admin/cleanup-rfid-verified-by', auth, async (req, res) => {
     }
 });
 
+// DEBUG Endpoint - Add program and year_level to payment records
+app.post('/apis/debug/enrich-payment-records', auth, async (req, res) => {
+    try {
+        // Only allow admin
+        if (req.master.role !== 'admin' && req.master.username !== PRIMARY_ADMIN_USERNAME) {
+            return res.status(403).json({ 
+                message: 'Only admin users can use this debug endpoint',
+                code: 'INSUFFICIENT_PERMISSIONS'
+            });
+        }
+
+        const { paymentId } = req.body;
+        
+        if (!paymentId) {
+            return res.status(400).json({ message: 'paymentId is required in request body' });
+        }
+
+        // Find the payment
+        const payment = await Payment.findById(paymentId);
+        if (!payment) {
+            return res.status(404).json({ message: 'Payment not found' });
+        }
+
+        // Get all payment records
+        const paymentRecords = await PaymentRecord.find({});
+        let updatedCount = 0;
+        const enrichmentLog = [];
+
+        for (const record of paymentRecords) {
+            // Find the campaign for this payment
+            const campaign = record.campaigns.find(c => c.payment_id.toString() === paymentId);
+            if (!campaign) {
+                continue;
+            }
+
+            // Find the student to get program and year_level
+            const student = await Student.findOne({ student_id: record.student_id });
+            
+            if (student) {
+                const oldProgram = campaign.program;
+                const oldYearLevel = campaign.year_level;
+                
+                // Update campaign with student's program and year_level
+                campaign.program = student.program || 'N/A';
+                campaign.year_level = student.year_level || 'N/A';
+                
+                await record.save();
+                updatedCount++;
+                
+                enrichmentLog.push({
+                    student_id: record.student_id,
+                    student_name: record.student_name,
+                    program: campaign.program,
+                    year_level: campaign.year_level,
+                    status: 'updated'
+                });
+            } else {
+                enrichmentLog.push({
+                    student_id: record.student_id,
+                    student_name: record.student_name,
+                    status: 'student_not_found'
+                });
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Enriched ${updatedCount} payment records with program and year_level data`,
+            paymentId,
+            updatedCount,
+            enrichmentLog: enrichmentLog.slice(0, 10) // Return first 10 for brevity
+        });
+
+    } catch (err) {
+        console.error('Error enriching payment records:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // MongoDB Migration Endpoint - Copy all data to another MongoDB instance
 app.post('/apis/admin/migrate-database', auth, async (req, res) => {
     try {
@@ -5456,20 +5588,36 @@ function getEventAutoStatus(eventDate) {
     }
 }
 
-// Get all attendance events (admin only)
+// Get all attendance events (admin only) - returns ALL events regardless of is_custom
 app.get('/apis/attendance/events', auth, async (req, res) => {
     try {
-        const { status, page = 1, limit = 20 } = req.query;
+        const { status, page = 1, limit = 100 } = req.query;
         const filter = {};
+        // Only filter by status if provided in query params
         if (status) filter.status = status;
+        // DO NOT filter by is_custom - admin should see all events
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
+        
+        // Get all events matching the filter (no is_custom filtering)
         const events = await AttendanceEvent.find(filter)
+            .populate('assigned_users', 'full_name name student_id program year_level')
             .sort({ event_date: -1, created_at: -1 })
             .skip(skip)
             .limit(parseInt(limit));
 
         const total = await AttendanceEvent.countDocuments(filter);
+
+        // Log for debugging - show breakdown of event types
+        const customCount = events.filter(e => e.is_custom === true).length;
+        const regularCount = events.filter(e => e.is_custom !== true).length;
+        const unknownCount = events.filter(e => e.is_custom === undefined || e.is_custom === null).length;
+        
+        console.log(`[Attendance Events] Admin request - filter: ${JSON.stringify(filter)}`);
+        console.log(`[Attendance Events] Returned: ${customCount} custom, ${regularCount} regular, ${unknownCount} unknown | Total returned: ${events.length}/${total}`);
+        if (events.length > 0) {
+            console.log(`[Attendance Events] Sample events:`, events.slice(0, 3).map(e => ({ title: e.title, is_custom: e.is_custom, status: e.status, created_at: e.created_at })));
+        }
 
         res.json({
             data: events,
@@ -5481,6 +5629,7 @@ app.get('/apis/attendance/events', auth, async (req, res) => {
             }
         });
     } catch (err) {
+        console.error('[Attendance Events] Error:', err.message);
         res.status(500).json({ message: err.message });
     }
 });
@@ -5488,8 +5637,21 @@ app.get('/apis/attendance/events', auth, async (req, res) => {
 // Get active attendance events (for students)
 app.get('/apis/attendance/events/active', studentAuthWithToken, async (req, res) => {
     try {
-        const events = await AttendanceEvent.find({ status: 'active' })
+        const studentId = req.student._id;
+        
+        // Get active events that are either:
+        // 1. Not custom (for all students)
+        // 2. Custom and this student is assigned
+        const events = await AttendanceEvent.find({
+            status: 'active',
+            $or: [
+                { is_custom: false },
+                { is_custom: true, assigned_users: studentId }
+            ]
+        })
+            .populate('assigned_users', 'full_name name student_id')
             .sort({ event_date: -1 });
+        
         res.json({ data: events });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -5499,8 +5661,21 @@ app.get('/apis/attendance/events/active', studentAuthWithToken, async (req, res)
 // Get upcoming (draft) attendance events (for students)
 app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, res) => {
     try {
-        const events = await AttendanceEvent.find({ status: 'draft' })
+        const studentId = req.student._id;
+        
+        // Get draft events that are either:
+        // 1. Not custom (for all students)
+        // 2. Custom and this student is assigned
+        const events = await AttendanceEvent.find({
+            status: 'draft',
+            $or: [
+                { is_custom: false },
+                { is_custom: true, assigned_users: studentId }
+            ]
+        })
+            .populate('assigned_users', 'full_name name student_id')
             .sort({ event_date: 1 });
+        
         res.json({ data: events });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -5510,7 +5685,8 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
 // Get single attendance event (admin or student with JWT)
 app.get('/apis/attendance/events/:id', auth, async (req, res) => {
     try {
-        const event = await AttendanceEvent.findById(req.params.id);
+        const event = await AttendanceEvent.findById(req.params.id)
+            .populate('assigned_users', 'full_name name student_id program year_level');
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
@@ -5523,7 +5699,7 @@ app.get('/apis/attendance/events/:id', auth, async (req, res) => {
 // Create attendance event (admin only)
 app.post('/apis/attendance/events', auth, async (req, res) => {
     try {
-        const { title, description, location, event_date, year_level, status, start_time, end_time } = req.body;
+        const { title, description, location, event_date, year_level, status, start_time, end_time, is_custom, assigned_users } = req.body;
 
         if (!title || !event_date) {
             return res.status(400).json({ message: "Title and event date are required" });
@@ -5546,7 +5722,9 @@ app.post('/apis/attendance/events', auth, async (req, res) => {
             status: eventStatus,
             created_by: req.master.id,
             created_by_name: req.master.username,
-            activated_at: eventStatus === 'active' ? new Date() : null
+            activated_at: eventStatus === 'active' ? new Date() : null,
+            is_custom: is_custom || false,
+            assigned_users: assigned_users && Array.isArray(assigned_users) ? assigned_users : []
         });
 
         const saved = await event.save();
@@ -5616,6 +5794,123 @@ app.delete('/apis/attendance/events/:id', auth, async (req, res) => {
         await AttendanceEvent.deleteOne({ _id: req.params.id });
 
         res.json({ message: "Event, sessions, and all related attendance logs deleted successfully" });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Create custom event for specific users
+app.post('/apis/attendance/events/custom/create', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { title, event_date, date, start_time, end_time, description, location, assigned_users } = req.body;
+        
+        const eventDate = event_date || date;
+        if (!title || !eventDate || !assigned_users || assigned_users.length === 0) {
+            return res.status(400).json({ message: "Missing required fields: title, date, and assigned_users" });
+        }
+
+        const customEvent = new AttendanceEvent({
+            title,
+            description: description || "",
+            location: location || "",
+            event_date: new Date(eventDate),
+            start_time: start_time || null,
+            end_time: end_time || null,
+            is_custom: true,
+            assigned_users: assigned_users.map(u => u._id || u.id),
+            status: 'active',
+            created_by: req.master ? req.master.id : req.student._id,
+            created_by_name: req.master ? req.master.username : req.student.full_name,
+            activated_at: new Date()
+        });
+
+        await customEvent.save();
+
+        // Automatically create a default session for custom events so students can check-in
+        const defaultSession = new AttendanceSession({
+            event_id: customEvent._id,
+            label: 'Event Attendance',
+            start_time: start_time || '08:00',
+            end_time: end_time || '17:00',
+            late_timer_minutes: 30,
+            status: 'active'
+        });
+
+        await defaultSession.save();
+
+        await customEvent.populate('assigned_users', 'full_name name student_id program year_level');
+
+        res.json({
+            success: true,
+            message: "Custom event created successfully",
+            data: customEvent
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update custom event
+app.put('/apis/attendance/events/custom/:id', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { title, event_date, date, start_time, end_time, description, location, assigned_users } = req.body;
+        
+        const eventDate = event_date || date;
+        const event = await AttendanceEvent.findByIdAndUpdate(
+            req.params.id,
+            {
+                title,
+                description: description || "",
+                location: location || "",
+                event_date: new Date(eventDate),
+                start_time: start_time || null,
+                end_time: end_time || null,
+                assigned_users: assigned_users.map(u => u._id || u.id),
+                updated_at: new Date()
+            },
+            { new: true }
+        ).populate('assigned_users', 'full_name name student_id program year_level');
+
+        // Also update the default session if it exists
+        const session = await AttendanceSession.findOne({ event_id: req.params.id });
+        if (session) {
+            session.start_time = start_time || '08:00';
+            session.end_time = end_time || '17:00';
+            await session.save();
+        }
+
+        res.json({
+            success: true,
+            message: "Custom event updated successfully",
+            data: event
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get attendance export as Excel with custom columns
+app.get('/apis/attendance/events/:eventId/export-excel', treasurerAuth, async (req, res) => {
+    try {
+        const logs = await AttendanceLog.find({ event_id: req.params.eventId })
+            .populate('student_id', 'full_name student_id')
+            .sort({ check_in_at: -1 });
+
+        const data = logs.map(log => ({
+            'Name': log.student_id?.full_name || log.student_name,
+            'Student ID': log.student_id?.student_id || log.student_id_number,
+            'Status': log.is_late || !log.check_in_at ? 'Absent' : log.check_out_at ? 'Present' : 'Incomplete'
+        }));
+
+        // Create CSV
+        const headers = Object.keys(data[0] || {});
+        const csv = [headers, ...data.map(row => headers.map(h => row[h]))].map(row => 
+            row.map(cell => `"${cell || ''}"`).join(',')
+        ).join('\n');
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="attendance-${new Date().toISOString().split('T')[0]}.csv"`);
+        res.send(csv);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -6170,10 +6465,26 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
             }
         }
 
+        // Calculate student full name
+        const studentFullName = `${student.first_name} ${student.middle_name || ''} ${student.last_name}`.replace(/\s+/g, ' ').trim();
+
+        // Validate if event is custom - only assigned users can check in
+        if (event.is_custom && event.assigned_users && Array.isArray(event.assigned_users)) {
+            const isUserAssigned = event.assigned_users.some(userId => 
+                userId.toString() === student._id.toString()
+            );
+            
+            if (!isUserAssigned) {
+                return res.status(403).json({ 
+                    message: "You are not assigned to this custom event. Only assigned students can check in.",
+                    student_name: studentFullName,
+                    error: 'not_assigned_to_custom_event'
+                });
+            }
+        }
+
         // Note: Previously blocked students registered after event activation.
         // Removed this restriction to allow all approved students to attend any active event.
-
-        const studentFullName = `${student.first_name} ${student.middle_name || ''} ${student.last_name}`.replace(/\s+/g, ' ').trim();
 
         // Calculate late threshold - prioritize session's late_timer_minutes over global setting
         const lateThreshold = session.late_timer_minutes !== undefined && session.late_timer_minutes !== null
@@ -6323,9 +6634,14 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
             return res.status(404).json({ message: "Student not found" });
         }
 
-        // Fetch all active and closed events - students can view any event they attended
-        const events = await AttendanceEvent.find({ 
-            status: { $in: ['active', 'closed'] }
+        // Fetch all events - students can view all regular events, but only assigned custom events
+        // Regular events: visible to all students
+        // Custom events: only visible to assigned students
+        const events = await AttendanceEvent.find({
+            $or: [
+                { is_custom: false },  // All regular events visible to everyone
+                { is_custom: true, assigned_users: student._id }  // Custom events only for assigned students
+            ]
         }).sort({ event_date: -1 });
 
         const records = await Promise.all(events.map(async (event) => {
@@ -6391,9 +6707,8 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                 }
             }
 
-            if (event.status === 'closed' && logs.length === 0) {
-                return null;
-            }
+            // Show all active events and closed events (with or without attendance records)
+            // Students should see the full history of events available to them
 
             return {
                 event: {
@@ -6403,7 +6718,8 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                     location: event.location,
                     event_date: event.event_date,
                     year_level: event.year_level,
-                    status: event.status
+                    status: event.status,
+                    is_custom: event.is_custom
                 },
                 sessions: sessionRecords,
                 overall_status: overallStatus
@@ -6716,6 +7032,164 @@ app.get('/apis/contributions/event/:eventId/export', treasurerAuth, async (req, 
                 data: contributions
             });
         }
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Apply discount to contribution
+app.post('/apis/contributions/event/:eventId/apply-discount', treasurerAuth, async (req, res) => {
+    try {
+        const { student_id_number, discount_type, discount_value, original_amount } = req.body;
+        
+        if (!student_id_number || !discount_type || discount_value === undefined) {
+            return res.status(400).json({ message: "Missing required fields" });
+        }
+
+        const student = await Student.findOne({ student_id: student_id_number });
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
+
+        let finalDiscountValue = 0;
+        let targetAmount = original_amount;
+
+        if (discount_type === 'percentage') {
+            finalDiscountValue = (original_amount * discount_value) / 100;
+            targetAmount = original_amount - finalDiscountValue;
+        } else if (discount_type === 'amount') {
+            finalDiscountValue = Math.min(discount_value, original_amount);
+            targetAmount = original_amount - finalDiscountValue;
+        }
+
+        const contribution = await EventContribution.findOneAndUpdate(
+            { 
+                event_id: new mongoose.Types.ObjectId(req.params.eventId),
+                student_id_number: student_id_number
+            },
+            {
+                original_amount,
+                discount_type,
+                discount_value: finalDiscountValue,
+                target_amount: Math.max(0, targetAmount),
+                updated_at: new Date()
+            },
+            { new: true }
+        );
+
+        if (!contribution) {
+            return res.status(404).json({ message: "Contribution record not found" });
+        }
+
+        res.json({
+            success: true,
+            message: "Discount applied successfully",
+            data: contribution
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Enhanced search for contributions with RFID support
+app.get('/apis/contributions/search', treasurerAuth, async (req, res) => {
+    try {
+        const { query, year_level, program, status, limit = 50, page = 1 } = req.query;
+        
+        const filter = {};
+        if (year_level) filter.year_level = year_level;
+        if (program) filter.program = program;
+        if (status) filter.payment_status = status;
+
+        if (query) {
+            const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            filter.$or = [
+                { student_id_number: { $regex: escapedQuery, $options: 'i' } },
+                { student_name: { $regex: escapedQuery, $options: 'i' } }
+            ];
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const total = await EventContribution.countDocuments(filter);
+        const contributions = await EventContribution.find(filter)
+            .sort({ created_at: -1 })
+            .skip(skip)
+            .limit(parseInt(limit));
+
+        res.json({
+            success: true,
+            data: contributions,
+            pagination: {
+                total,
+                page: parseInt(page),
+                limit: parseInt(limit),
+                totalPages: Math.ceil(total / parseInt(limit))
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Download payment records as Excel
+app.get('/apis/contributions/download/excel', treasurerAuth, async (req, res) => {
+    try {
+        const { status = 'paid', year_level = '', program = '' } = req.query;
+        
+        const filter = { payment_status: status };
+        if (year_level) filter.year_level = year_level;
+        if (program) filter.program = program;
+
+        const contributions = await EventContribution.find(filter)
+            .sort({ student_name: 1 })
+            .select('student_id_number student_name program year_level payment_status original_amount discount_value target_amount paid_at');
+
+        // Format data for Excel
+        const data = contributions.map(c => ({
+            'Student ID': c.student_id_number,
+            'Name': c.student_name,
+            'Program': c.program,
+            'Year Level': c.year_level,
+            'Original Amount': c.original_amount || 0,
+            'Discount': c.discount_value || 0,
+            'Final Amount': c.target_amount || c.original_amount || 0,
+            'Status': c.payment_status.toUpperCase(),
+            'Date Paid': c.paid_at ? new Date(c.paid_at).toLocaleDateString('en-PH') : ''
+        }));
+
+        // Create CSV
+        const headers = Object.keys(data[0] || {});
+        const csv = [headers, ...data.map(row => headers.map(h => row[h]))].map(row => 
+            row.map(cell => `"${cell || ''}"`).join(',')
+        ).join('\n');
+
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', `attachment; filename="payment-records-${new Date().toISOString().split('T')[0]}.csv"`);
+        res.send(csv);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get contribution statistics by level and program
+app.get('/apis/contributions/stats', treasurerAuth, async (req, res) => {
+    try {
+        const stats = await EventContribution.aggregate([
+            {
+                $group: {
+                    _id: {
+                        year_level: '$year_level',
+                        program: '$program',
+                        status: '$payment_status'
+                    },
+                    count: { $sum: 1 },
+                    total_amount: { $sum: '$target_amount' }
+                }
+            },
+            { $sort: { '_id.year_level': 1, '_id.program': 1 } }
+        ]);
+
+        res.json({ success: true, data: stats });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

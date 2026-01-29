@@ -623,7 +623,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
         </button>
-        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'settings'; fetchSettings()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'settings' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'settings'; fetchSettings(); fetchAvailablePayments()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'settings' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
           <span>Settings</span>
         </button>
@@ -752,7 +752,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
           </button>
-          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'settings'; showMobileMenu = false; fetchSettings()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'settings' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'settings'; showMobileMenu = false; fetchSettings(); fetchAvailablePayments()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'settings' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             <span>Settings</span>
           </button>
@@ -1010,7 +1010,7 @@
 
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" ref="activePaymentsCarouselRef">
                     <transition-group :name="carouselSlideDirection === 'right' ? 'carouselSlide-right' : 'carouselSlide-left'">
-                    <div v-for="(payment, index) in paymentsList.filter(p => p.status === 'active').slice(activePaymentsCarouselPosition * getCardsPerPage(), activePaymentsCarouselPosition * getCardsPerPage() + getCardsPerPage())" :key="payment._id" class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 md:p-6 border-2 border-purple-200 hover:border-purple-400 hover:shadow-xl hover:-translate-y-1">
+                    <div v-for="payment in paymentsList.filter(p => p.status === 'active').slice(activePaymentsCarouselPosition * getCardsPerPage(), activePaymentsCarouselPosition * getCardsPerPage() + getCardsPerPage())" :key="payment._id" class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 md:p-6 border-2 border-purple-200 hover:border-purple-400 hover:shadow-xl hover:-translate-y-1">
                       <div class="flex justify-between items-start mb-3">
                         <h4 class="font-bold text-lg text-gray-900">{{ payment.title }}</h4>
                         <div class="flex gap-2">
@@ -1208,41 +1208,19 @@
               <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
                 <!-- Search and Verification Combined -->
                 <div class="md:col-span-2 lg:col-span-2">
-                  <div class="bg-gradient-to-br from-purple-100 to-purple-50 rounded-xl p-4 md:p-5 border-2 border-purple-300 shadow-md">
-                    <label class="block text-xs sm:text-sm md:text-base font-bold text-purple-900 mb-3 md:mb-4 flex items-center gap-2">
-                      🔍 Search & Verify Student
+                  <div class="bg-white rounded-xl p-4 md:p-5 border-2 border-gray-300 shadow-md">
+                    <label class="block text-xs sm:text-sm md:text-base font-bold text-gray-900 mb-3 md:mb-4">
+                      Search & Verify Student
                     </label>
                     
-                    <!-- Tabs for Student ID vs RFID -->
-                    <div class="flex gap-1 mb-3 md:mb-4 bg-white rounded-lg p-1 border border-purple-200">
-                      <button 
-                        @click="paymentSearchMode = 'id'"
-                        :class="['flex-1 px-2 sm:px-3 md:px-4 py-2 text-xs sm:text-sm md:text-base font-semibold rounded-lg transition flex items-center justify-center gap-1', paymentSearchMode === 'id' ? 'bg-purple-600 text-white shadow-md' : 'text-gray-600 hover:text-gray-900']"
-                      >
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                        </svg>
-                        <span class="hidden sm:inline">Student ID</span>
-                      </button>
-                      <button 
-                        @click="paymentSearchMode = 'rfid'"
-                        :class="['flex-1 px-2 sm:px-3 md:px-4 py-2 text-xs sm:text-sm md:text-base font-semibold rounded-lg transition flex items-center justify-center gap-1', paymentSearchMode === 'rfid' ? 'bg-purple-600 text-white shadow-md' : 'text-gray-600 hover:text-gray-900']"
-                      >
-                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                          <path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/>
-                        </svg>
-                        <span class="hidden sm:inline">RFID Scan</span>
-                      </button>
-                    </div>
-
-                    <!-- Student ID Search -->
-                    <div v-if="paymentSearchMode === 'id'" class="flex gap-2 mb-3 md:mb-4">
+                    <!-- Combined Search Input (accepts both Student ID and RFID) -->
+                    <div class="flex gap-2 mb-3 md:mb-4">
                       <input 
                         v-model="paymentSearchQuery" 
                         type="text" 
-                        placeholder="e.g., 25-A-01207"
+                        placeholder="Enter Student ID or scan RFID"
                         @keydown.enter="searchStudentForPayment"
-                        class="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-white border-2 border-purple-300 rounded-lg text-xs sm:text-sm font-mono focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
+                        class="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-white border-2 border-gray-300 rounded-lg text-xs sm:text-sm font-mono focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
                       />
                       <button 
                         @click="searchStudentForPayment"
@@ -1251,27 +1229,6 @@
                       >
                         <svg v-if="searchingPaymentStudent" class="animate-spin h-4 sm:h-5 w-4 sm:w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                         <svg v-else class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                      </button>
-                    </div>
-
-                    <!-- RFID Search -->
-                    <div v-else class="flex gap-2 mb-3 md:mb-4">
-                      <input 
-                        v-model="paymentSearchQuery" 
-                        type="text" 
-                        placeholder="Scan RFID code..."
-                        @keydown.enter="searchStudentForPayment"
-                        @input="handleRfidInput"
-                        class="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-white border-2 border-purple-300 rounded-lg text-xs sm:text-sm font-mono focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
-                        autofocus
-                      />
-                      <button 
-                        @click="searchStudentForPayment"
-                        :disabled="!paymentSearchQuery.trim()"
-                        class="px-3 sm:px-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition disabled:opacity-50 flex items-center justify-center shadow-md hover:shadow-lg font-semibold"
-                      >
-                        <svg v-if="searchingPaymentStudent" class="animate-spin h-4 sm:h-5 w-4 sm:w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                        <svg v-else class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.658 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
                       </button>
                     </div>
 
@@ -1366,39 +1323,61 @@
                 </div>
 
                 <!-- Filters for Selected Campaign -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
                   <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Status</label>
-                    <div class="flex gap-1 flex-wrap">
-                      <button 
-                        @click="paymentRecordsFilter.status = 'all'"
-                        :class="['px-2 py-1 rounded text-xs font-medium transition', paymentRecordsFilter.status === 'all' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 border border-gray-300']"
-                      >
-                        All
-                      </button>
-                      <button 
-                        @click="paymentRecordsFilter.status = 'paid'"
-                        :class="['px-2 py-1 rounded text-xs font-medium transition', paymentRecordsFilter.status === 'paid' ? 'bg-green-600 text-white' : 'bg-white text-gray-700 border border-gray-300']"
-                      >
-                        Paid
-                      </button>
-                      <button 
-                        @click="paymentRecordsFilter.status = 'unpaid'"
-                        :class="['px-2 py-1 rounded text-xs font-medium transition', paymentRecordsFilter.status === 'unpaid' ? 'bg-red-600 text-white' : 'bg-white text-gray-700 border border-gray-300']"
-                      >
-                        Unpaid
-                      </button>
-                    </div>
+                    <select 
+                      v-model="paymentRecordsFilter.status"
+                      class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                    >
+                      <option value="all">All</option>
+                      <option value="paid">Paid</option>
+                      <option value="unpaid">Unpaid</option>
+                    </select>
                   </div>
 
                   <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Search Student</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Year Level</label>
+                    <select 
+                      v-model="paymentRecordsFilter.yearLevel"
+                      class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                    >
+                      <option value="">All Levels</option>
+                      <option value="1st Year">1st Year</option>
+                      <option value="2nd Year">2nd Year</option>
+                      <option value="3rd Year">3rd Year</option>
+                      <option value="4th Year">4th Year</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Program</label>
+                    <select 
+                      v-model="paymentRecordsFilter.program"
+                      class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                    >
+                      <option value="">All Programs</option>
+                      <option value="BSCS">BSCS</option>
+                      <option value="BSIT">BSIT</option>
+                      <option value="BSIS">BSIS</option>
+                    </select>
+                  </div>
+
+                  <div class="flex gap-1">
                     <input 
                       v-model="paymentRecordsFilter.searchQuery"
                       type="text"
-                      placeholder="Name or ID"
-                      class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                      placeholder="Search name/ID"
+                      class="flex-1 px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none"
                     />
+                    <button 
+                      @click="downloadPaidRecordsExcel(selectedPayment)"
+                      class="px-2 py-1 bg-green-600 text-white rounded text-xs font-semibold hover:bg-green-700 transition flex items-center gap-1 whitespace-nowrap"
+                      title="Download paid records as Excel"
+                    >
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                      Download
+                    </button>
                   </div>
                 </div>
 
@@ -1406,15 +1385,17 @@
                   <p class="text-gray-500">No payment records for this campaign yet</p>
                 </div>
 
-                <div v-else class="overflow-x-auto">
+                <div v-else class="overflow-x-auto hidden md:block">
                   <table class="w-full text-sm">
                     <thead class="bg-gray-50 border-b">
                       <tr>
                         <th class="px-4 py-3 text-left font-semibold text-gray-700">Student Name</th>
-                        <th class="hidden md:table-cell px-4 py-3 text-left font-semibold text-gray-700">Student ID</th>
-                        <th class="hidden lg:table-cell px-4 py-3 text-left font-semibold text-gray-700">Paid By</th>
+                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Student ID</th>
+                        <th class="hidden lg:table-cell px-4 py-3 text-left font-semibold text-gray-700">Program</th>
+                        <th class="hidden lg:table-cell px-4 py-3 text-left font-semibold text-gray-700">Year Level</th>
+                        <th class="hidden xl:table-cell px-4 py-3 text-left font-semibold text-gray-700">Paid By</th>
                         <th class="hidden sm:table-cell px-4 py-3 text-left font-semibold text-gray-700">Date</th>
-                        <th class="px-4 py-3 text-left font-semibold text-gray-700">Action</th>
+                        <th class="px-4 py-3 text-center font-semibold text-gray-700">Action</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y">
@@ -1430,14 +1411,16 @@
                               <span v-else class="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-semibold">{{ record.payment_status }}</span>
                             </div>
                           </td>
-                          <td class="hidden md:table-cell px-4 py-3 font-mono text-xs hover:bg-gray-50">{{ record.student_id }}</td>
-                          <td class="hidden lg:table-cell px-4 py-3 text-xs hover:bg-gray-50">
+                          <td class="px-4 py-3 font-mono text-xs hover:bg-gray-50">{{ record.student_id }}</td>
+                          <td class="hidden lg:table-cell px-4 py-3 text-xs hover:bg-gray-50">{{ record.program || 'N/A' }}</td>
+                          <td class="hidden lg:table-cell px-4 py-3 text-xs hover:bg-gray-50">{{ record.year_level || 'N/A' }}</td>
+                          <td class="hidden xl:table-cell px-4 py-3 text-xs hover:bg-gray-50">
                             {{ formatPaidByName(record) }}
                           </td>
                           <td class="hidden sm:table-cell px-4 py-3 text-xs text-gray-500 hover:bg-gray-50">
                             {{ record.payment_status === 'paid' && record.paid_date ? new Date(record.paid_date).toLocaleString() : 'N/A' }}
                           </td>
-                          <td class="px-4 py-3 hover:bg-gray-50">
+                          <td class="px-4 py-3 hover:bg-gray-50 text-center">
                             <button 
                               @click="confirmDeletePayment(selectedPayment._id, record.student_id, record.student_name)"
                               class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition"
@@ -1477,6 +1460,57 @@
                       </button>
                     </div>
                   </div>
+                </div>
+
+                <!-- Mobile Card View -->
+                <div class="md:hidden space-y-3">
+                  <div v-if="!selectedPayment.payment_records || selectedPayment.payment_records.length === 0" class="text-center py-12">
+                    <p class="text-gray-500">No payment records for this campaign yet</p>
+                  </div>
+                  <template v-else>
+                    <div v-for="record in getSortedPaymentRecords(selectedPayment)" :key="`${selectedPayment._id}-${record.student_id}`">
+                    <template v-if="shouldShowRecord(selectedPayment, record)">
+                      <div class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition">
+                        <div class="flex justify-between items-start gap-3 mb-3">
+                          <div class="flex-1 min-w-0">
+                            <h3 class="font-semibold text-gray-900 truncate">{{ record.student_name || 'N/A' }}</h3>
+                            <p class="text-xs text-gray-600 font-mono mt-1">{{ record.student_id }}</p>
+                          </div>
+                          <span v-if="record.payment_status === 'paid'" class="flex-shrink-0 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full font-semibold whitespace-nowrap">Paid</span>
+                          <span v-else-if="record.payment_status === 'pending'" class="flex-shrink-0 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded-full font-semibold whitespace-nowrap">Pending</span>
+                          <span v-else-if="record.payment_status === 'unpaid'" class="flex-shrink-0 px-2 py-1 bg-red-100 text-red-700 text-xs rounded-full font-semibold whitespace-nowrap">Unpaid</span>
+                          <span v-else class="flex-shrink-0 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-semibold whitespace-nowrap">{{ record.payment_status }}</span>
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-3 mb-3 text-xs">
+                          <div class="bg-gray-50 rounded p-2">
+                            <p class="text-gray-600 font-medium">Program</p>
+                            <p class="text-gray-900 font-semibold">{{ record.program || 'N/A' }}</p>
+                          </div>
+                          <div class="bg-gray-50 rounded p-2">
+                            <p class="text-gray-600 font-medium">Year Level</p>
+                            <p class="text-gray-900 font-semibold">{{ record.year_level || 'N/A' }}</p>
+                          </div>
+                        </div>
+
+                        <div v-if="record.payment_status === 'paid' && record.paid_date" class="text-xs text-gray-600 mb-3">
+                          <p class="font-medium text-gray-700">Paid Date</p>
+                          <p>{{ new Date(record.paid_date).toLocaleString() }}</p>
+                        </div>
+
+                        <div class="flex justify-end">
+                          <button 
+                            @click="confirmDeletePayment(selectedPayment._id, record.student_id, record.student_name)"
+                            class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition"
+                            title="Delete record"
+                          >
+                            <img src="/delete.svg" alt="Delete" class="w-4 h-4">
+                          </button>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                  </template>
                 </div>
 
                 <!-- Summary Stats for Selected Campaign -->
@@ -1970,6 +2004,60 @@
               </div>
             </div>
 
+            <!-- Data Enrichment Section -->
+            <div class="border border-cyan-200 rounded-xl p-6 bg-cyan-50">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                <div>
+                  <h3 class="text-lg font-semibold text-cyan-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    Data Enrichment
+                  </h3>
+                  <p class="text-sm text-cyan-700 mt-1">Enrich payment records with missing program and year level data</p>
+                </div>
+              </div>
+              <div class="bg-white rounded-lg p-4 border border-cyan-200 space-y-4">
+                <div class="bg-cyan-50 rounded p-3 border border-cyan-200">
+                  <p class="text-xs text-cyan-700"><strong>ℹ️ Info:</strong> This will update all payment records for a selected campaign with program and year level data from the student database. Records without matching students will be skipped.</p>
+                </div>
+                
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Select Payment Campaign</label>
+                  <select 
+                    v-model="enrichmentSelectedPaymentId"
+                    class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-600 outline-none transition-all"
+                  >
+                    <option value="">-- Choose a campaign --</option>
+                    <option v-for="payment in availablePayments" :key="payment._id" :value="payment._id">
+                      {{ payment.title }} ({{ payment.description || 'No description' }})
+                    </option>
+                  </select>
+                  <p class="text-xs text-gray-500 mt-1">Select the payment campaign to enrich with student data</p>
+                </div>
+
+                <button 
+                  @click="enrichPaymentRecords" 
+                  :disabled="enrichmentLoading || !enrichmentSelectedPaymentId"
+                  class="w-full bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-6 py-3 rounded-lg font-medium hover:from-cyan-700 hover:to-blue-700 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg v-if="enrichmentLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                  {{ enrichmentLoading ? 'Enriching Records...' : 'Enrich Payment Records' }}
+                </button>
+
+                <div v-if="enrichmentResult" :class="['p-4 rounded-lg border', enrichmentResult.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200']">
+                  <p :class="['text-sm font-semibold mb-2', enrichmentResult.success ? 'text-green-800' : 'text-red-800']">
+                    {{ enrichmentResult.success ? 'Success!' : 'Error!' }}
+                  </p>
+                  <p :class="['text-sm mb-3', enrichmentResult.success ? 'text-green-700' : 'text-red-700']">
+                    {{ enrichmentResult.message }}
+                  </p>
+                  <p v-if="enrichmentResult.updatedCount" :class="['text-sm font-medium', enrichmentResult.success ? 'text-green-700' : 'text-red-700']">
+                    Records Updated: {{ enrichmentResult.updatedCount }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <!-- Save Button -->
             <div class="flex justify-end pt-4">
               <button 
@@ -2035,6 +2123,7 @@
           </div>
         </div>
 
+        <!-- Attendance Page -->
         <div v-if="currentPage === 'attendance'" class="space-y-6">
           <!-- Admin Attendance Management -->
           <div v-if="currentUser.role === 'admin' || currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-6">
@@ -3432,6 +3521,10 @@
           </div>
         </div>
 
+        <!-- Admin Contribution Panel (New Advanced Features) -->
+        <!-- New Admin Contribution Panel (HIDDEN) -->
+        <AdminContributionPanel v-if="false" />
+
         <!-- Manage Page (Roles & Users) -->
         <Manage ref="manageComponent" v-if="currentPage === 'manage' && (currentUser.role === 'admin' || currentUser.isMaster)" />
 
@@ -4372,8 +4465,107 @@
             <span class="font-medium">Note:</span> Session times must fall within the event time range ({{ formatDisplayTime(newEvent.start_time) }} - {{ formatDisplayTime(newEvent.end_time) }}).
           </p>
         </div>
+
+        <!-- Custom Event Toggle -->
+        <div class="flex items-center gap-3 bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <input type="checkbox" v-model="newEvent.is_custom" id="customEventToggle" class="w-4 h-4 text-purple-600 rounded cursor-pointer" />
+          <label for="customEventToggle" class="flex-1 cursor-pointer">
+            <p class="font-medium text-purple-900">Custom Event (Select Specific Students)</p>
+            <p class="text-xs text-purple-700 mt-0.5">Enable this to assign this event to specific students from the complete student list</p>
+          </label>
+        </div>
+
+        <!-- User Selection Section -->
+        <div v-if="newEvent.is_custom" class="border-2 border-purple-300 rounded-lg p-4 bg-purple-50 space-y-4">
+          <label class="block text-sm font-medium text-purple-900">Select Students to Assign to This Event</label>
+          
+          <!-- Filter Section -->
+          <div class="bg-white border border-purple-200 rounded-lg p-4 space-y-3">
+            <p class="text-xs font-semibold text-purple-700 mb-2">Filter Students</p>
+            
+            <!-- Name/Student ID Filter -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Name or Student ID</label>
+              <input 
+                v-model="eventUserFilters.name" 
+                type="text" 
+                placeholder="Search by name or student ID..." 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
+              />
+            </div>
+            
+            <!-- Program Filter -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
+              <input 
+                v-model="eventUserFilters.program" 
+                type="text" 
+                placeholder="Filter by program (e.g., BSCS, BSIT)..." 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
+              />
+            </div>
+            
+            <!-- Year Level Filter -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Year Level</label>
+              <select 
+                v-model="eventUserFilters.yearLevel" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
+              >
+                <option value="">All Year Levels</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+            </div>
+            
+            <!-- Clear Filters Button -->
+            <button 
+              @click="eventUserFilters = { name: '', program: '', yearLevel: '' }" 
+              type="button" 
+              class="text-xs text-purple-600 hover:text-purple-800 font-medium"
+            >
+              Clear All Filters
+            </button>
+          </div>
+
+          <!-- Selected Users Pills -->
+          <div v-if="newEvent.assigned_users.length > 0" class="mb-3 pb-3 border-b border-purple-300">
+            <p class="text-xs font-semibold text-purple-700 mb-2">Selected: {{ newEvent.assigned_users.length }} student(s)</p>
+            <div class="flex flex-wrap gap-2">
+              <div v-for="userId in newEvent.assigned_users" :key="userId" class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2">
+                <span>{{ getUserDisplayName(users.find(u => u._id === userId)) }}</span>
+                <button @click="newEvent.assigned_users = newEvent.assigned_users.filter(id => id !== userId)" type="button" class="hover:text-purple-900">×</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- User List -->
+          <div class="max-h-48 overflow-y-auto border border-purple-200 rounded-lg bg-white">
+            <div v-if="filteredEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
+              No students found
+            </div>
+            <label v-for="user in filteredEventUsers" :key="user._id" class="flex items-start gap-3 p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer last:border-b-0">
+              <input 
+                type="checkbox" 
+                :checked="newEvent.assigned_users.includes(user._id)"
+                @change="toggleEventUser(user._id)"
+                class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-2 focus:ring-purple-600"
+              />
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-gray-900 text-sm">{{ user.full_name || user.name || 'N/A' }}</p>
+                <p class="text-xs text-gray-600 mt-0.5">{{ user.student_id }} • {{ user.program }} • {{ user.year_level }}</p>
+              </div>
+            </label>
+          </div>
+
+          <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-xs text-blue-700">
+            <strong>{{ newEvent.assigned_users.length }}</strong> student(s) will be able to see this event
+          </div>
+        </div>
         <div class="flex gap-3 mt-6">
-          <button @click="showCreateEventModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
+          <button @click="showCreateEventModal = false; eventUserFilters = { name: '', program: '', yearLevel: '' }" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
           <button @click="createAttendanceEvent" :disabled="!newEvent.title || !newEvent.date" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Create Event</button>
         </div>
       </div>
@@ -4490,6 +4682,7 @@
         
         <div class="flex gap-3 mt-6">
           <button @click="showEditEventModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
+          <button @click="openEventLogs(selectedEvent)" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition">View Logs</button>
           <button @click="updateAttendanceEvent" :disabled="!selectedEvent.title || !selectedEvent.date" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Save Changes</button>
         </div>
       </div>
@@ -4838,6 +5031,7 @@ import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 import SessionExpiredModal from '../components/SessionExpiredModal.vue'
 import ContributionsModal from '../components/ContributionsModal.vue'
 import StudentContributionsView from '../components/StudentContributionsView.vue'
+import AdminContributionPanel from '../components/AdminContributionPanel.vue'
 import Manage from '../components/Manage.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
@@ -4997,6 +5191,8 @@ const syncingPaymentStudents = ref(false)
 const paymentRecordsFilter = ref({
   status: 'all', // all, paid, unpaid
   paymentId: '', // filter by payment campaign
+  yearLevel: '', // filter by year level
+  program: '', // filter by program
   searchQuery: '', // search by name or ID
   currentPage: 1, // pagination
   recordsPerPage: 20 // show 20 records per page
@@ -5759,6 +5955,16 @@ const shouldShowRecord = (payment, record) => {
     return false
   }
 
+  // Filter by year level
+  if (paymentRecordsFilter.value.yearLevel && record.year_level !== paymentRecordsFilter.value.yearLevel) {
+    return false
+  }
+
+  // Filter by program
+  if (paymentRecordsFilter.value.program && record.program !== paymentRecordsFilter.value.program) {
+    return false
+  }
+
   // Filter by search query (name or ID)
   if (paymentRecordsFilter.value.searchQuery.trim()) {
     const query = paymentRecordsFilter.value.searchQuery.toLowerCase()
@@ -6497,6 +6703,56 @@ const exportToExcel = async (event) => {
   }
 }
 
+// Download paid payment records as Excel
+const downloadPaidRecordsExcel = (payment) => {
+  try {
+    if (!payment || !payment.payment_records) {
+      showNotification('No payment records available', 'warning')
+      return
+    }
+
+    // Filter only paid records
+    const paidRecords = payment.payment_records.filter(record => record.payment_status === 'paid')
+    
+    if (paidRecords.length === 0) {
+      showNotification('No paid records to download', 'warning')
+      return
+    }
+
+    // Prepare data with Name, Student ID, Year Level, Program
+    const data = paidRecords.map(record => ({
+      'Name': record.student_name || 'N/A',
+      'Student ID': record.student_id || 'N/A',
+      'Year Level': record.year_level || 'N/A',
+      'Program': record.program || 'N/A'
+    }))
+
+    // Create workbook and worksheet
+    const worksheet = XLSX.utils.json_to_sheet(data)
+    const workbook = XLSX.utils.book_new()
+    
+    // Set column widths
+    const columnWidths = [
+      { wch: 25 }, // Name
+      { wch: 15 }, // Student ID
+      { wch: 12 }, // Year Level
+      { wch: 10 }  // Program
+    ]
+    worksheet['!cols'] = columnWidths
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Paid Records')
+    
+    const paymentTitle = (payment.title || 'Payment').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)
+    const filename = `Paid_Records_${paymentTitle}_${new Date().toISOString().split('T')[0]}.xlsx`
+    
+    XLSX.writeFile(workbook, filename)
+    showNotification('Paid records downloaded successfully!', 'success')
+  } catch (error) {
+    console.error('Error downloading paid records:', error)
+    showNotification('Failed to download records', 'error')
+  }
+}
+
 // Settings management
 const settingsLoading = ref(false)
 const settingsSaving = ref(false)
@@ -6527,6 +6783,12 @@ const lateThresholdMinutes = ref(30)
 // Clear sessions management
 const showClearSessionsConfirm = ref(false)
 const clearingSessionTokens = ref(false)
+
+// Data enrichment management
+const enrichmentLoading = ref(false)
+const enrichmentSelectedPaymentId = ref('')
+const enrichmentResult = ref(null)
+const availablePayments = ref([])
 
 // Database migration management
 const migrationDestinationUri = ref('')
@@ -6833,6 +7095,41 @@ const showEditEventModal = ref(false)
 
 // Open create event modal with admin action verification
 const openCreateEventModalImpl = async () => {
+  // Fetch all registered students for custom event selection
+  try {
+    const response = await fetch(buildAPIUrl('/apis/students?limit=10000'), {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer SSAAMStudents`
+      }
+    })
+    
+    if (response.ok) {
+      const result = await response.json()
+      const allStudents = result.data || result
+      if (Array.isArray(allStudents)) {
+        users.value = allStudents.map(s => {
+          // Construct full name from components if not available
+          const fullName = s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim()
+          return {
+            ...s,
+            full_name: fullName,
+            studentId: s.student_id,
+            firstName: s.first_name,
+            middleName: s.middle_name || '',
+            lastName: s.last_name,
+            yearLevel: s.year_level,
+            rfidCode: s.rfid_code || 'N/A',
+            schoolYear: s.school_year,
+            image: s.photo || s.image || ''
+          }
+        })
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch all students for event creation:', error)
+  }
+  
   showCreateEventModal.value = true
 }
 const openCreateEventModal = () => withAdminAction(openCreateEventModalImpl)()
@@ -6914,7 +7211,14 @@ const newEvent = ref({
   date: '',
   year_level: '',
   start_time: '07:00',
-  end_time: '17:00'
+  end_time: '17:00',
+  assigned_users: [],
+  is_custom: false
+})
+const eventUserFilters = ref({
+  name: '',
+  program: '',
+  yearLevel: ''
 })
 const eventLogsFilter = ref({
   yearLevel: '',
@@ -6922,6 +7226,29 @@ const eventLogsFilter = ref({
   search: '',
   status: ''
 })
+const eventUserSearch = ref('')
+const filteredEventUsers = computed(() => {
+  return users.value.filter(user => {
+    const nameMatch = (user.full_name || user.name || '').toLowerCase().includes(eventUserFilters.value.name.toLowerCase()) ||
+                     (user.student_id || '').toLowerCase().includes(eventUserFilters.value.name.toLowerCase())
+    const programMatch = !eventUserFilters.value.program || (user.program || '').toLowerCase().includes(eventUserFilters.value.program.toLowerCase())
+    const yearLevelMatch = !eventUserFilters.value.yearLevel || (user.year_level || '').toLowerCase().includes(eventUserFilters.value.yearLevel.toLowerCase())
+    
+    return nameMatch && programMatch && yearLevelMatch
+  })
+})
+const toggleEventUser = (userId) => {
+  const index = newEvent.value.assigned_users.indexOf(userId)
+  if (index > -1) {
+    newEvent.value.assigned_users.splice(index, 1)
+  } else {
+    newEvent.value.assigned_users.push(userId)
+  }
+}
+const getUserDisplayName = (user) => {
+  if (!user) return 'Unknown'
+  return user.full_name || user.name || user.student_id
+}
 const rfidInput = ref('')
 const rfidInputRef = ref(null)
 const announcementTextareaRef = ref(null)
@@ -8592,6 +8919,86 @@ const consolidatePayments = async () => {
   }
 }
 
+// Fetch available payment campaigns for enrichment
+const fetchAvailablePayments = async () => {
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch(buildAPIUrl('/apis/payments'), {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      }
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      availablePayments.value = data.data || []
+    }
+  } catch (error) {
+    console.error('Error fetching available payments:', error)
+  }
+}
+
+// Enrich payment records with program and year_level data
+const enrichPaymentRecords = async () => {
+  if (!enrichmentSelectedPaymentId.value) {
+    showNotification('Please select a payment campaign', 'error')
+    return
+  }
+  
+  enrichmentLoading.value = true
+  enrichmentResult.value = null
+  
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch(buildAPIUrl('/apis/debug/enrich-payment-records'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      },
+      body: JSON.stringify({
+        paymentId: enrichmentSelectedPaymentId.value
+      })
+    })
+    
+    const data = await response.json()
+    
+    if (response.ok) {
+      enrichmentResult.value = {
+        success: true,
+        message: data.message,
+        updatedCount: data.updatedCount
+      }
+      showNotification(`Successfully enriched ${data.updatedCount} payment records!`, 'success')
+      
+      // Clear result after 5 seconds
+      setTimeout(() => {
+        enrichmentResult.value = null
+        enrichmentSelectedPaymentId.value = ''
+      }, 5000)
+    } else {
+      enrichmentResult.value = {
+        success: false,
+        message: data.message || 'Failed to enrich records'
+      }
+      showNotification(data.message || 'Enrichment failed', 'error')
+    }
+  } catch (error) {
+    console.error('Enrichment error:', error)
+    enrichmentResult.value = {
+      success: false,
+      message: error.message
+    }
+    showNotification('Failed to enrich records: ' + error.message, 'error')
+  } finally {
+    enrichmentLoading.value = false
+  }
+}
+
 // Search for duplicate records (RFID, Student ID, Email)
 // This finds all students matching the query to help admins identify duplicates
 const searchForDuplicates = async () => {
@@ -9464,6 +9871,8 @@ const fetchAttendanceData = async () => {
       if (response.ok) {
         const result = await response.json()
         console.log('Admin attendance events data:', result)
+        console.log('Events breakdown - custom:', result.data?.filter(e => e.is_custom).length, '| regular:', result.data?.filter(e => !e.is_custom).length)
+        console.log('Sample events:', result.data?.slice(0, 3).map(e => ({ title: e.title, is_custom: e.is_custom, status: e.status })))
         attendanceEvents.value = result.data || result || []
         console.log('Attendance events loaded:', attendanceEvents.value.length)
         
@@ -9637,7 +10046,9 @@ const createAttendanceEvent = async () => {
       event_date: newEvent.value.date,
       year_level: newEvent.value.year_level || '',
       start_time: newEvent.value.start_time || '07:00',
-      end_time: newEvent.value.end_time || '17:00'
+      end_time: newEvent.value.end_time || '17:00',
+      is_custom: newEvent.value.is_custom || false,
+      assigned_users: newEvent.value.assigned_users || []
     }
     const response = await fetch('https://ssaam-api.vercel.app/apis/attendance/events', {
       method: 'POST',
@@ -9660,7 +10071,9 @@ const createAttendanceEvent = async () => {
       const createdEventDate = newEvent.value.date
       
       // Reset the form
-      newEvent.value = { title: '', description: '', location: '', date: '', year_level: '', start_time: '07:00', end_time: '17:00' }
+      newEvent.value = { title: '', description: '', location: '', date: '', year_level: '', start_time: '07:00', end_time: '17:00', assigned_users: [], is_custom: false }
+      eventUserSearch.value = ''
+      eventUserFilters.value = { name: '', program: '', yearLevel: '' }
       
       // Fetch updated data and then open the edit modal for the newly created event
       await fetchAttendanceData()
