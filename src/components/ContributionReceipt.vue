@@ -395,6 +395,14 @@ export default {
       } finally {
         this.isDownloading = false
       }
+    },
+    // Added discount functionality
+    applyDiscount() {
+      const discountAmount = this.discountType === 'amount' ? this.discountValue : (this.discountValue / 100) * this.campaignFee;
+      this.targetPayment = this.campaignFee - discountAmount;
+    },
+    searchByRfid() {
+      // Logic to search by RFID
     }
   }
 }

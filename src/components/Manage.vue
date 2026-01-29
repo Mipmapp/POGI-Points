@@ -1285,7 +1285,7 @@ export default {
         console.log('API Response status:', response.status)
         
         if (response.ok) {
-          console.log('API call successful')
+                   console.log('API call successful')
           // Update local data
           if (user) {
             user.role = 'student'

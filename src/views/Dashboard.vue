@@ -11430,7 +11430,15 @@ const hasEventStartedPH = (event) => {
 }
 
 const getAttendanceStatus = (eventId) => {
+  // PRIORITY: Use backend-provided overall_status from API response
   const record = myAttendanceRecords.value.find(r => r.event_id === eventId || r.event?._id === eventId)
+  
+  if (record && record.overall_status) {
+    // Trust the backend's status calculation - it already handled closed events correctly
+    return record.overall_status
+  }
+  
+  // Fallback to time-based calculation if no record
   const event = attendanceEvents.value.find(e => e._id === eventId || e.event_id === eventId)
   
   // Check if event has actually ended using Philippine time
@@ -11460,15 +11468,8 @@ const getAttendanceStatus = (eventId) => {
     return 'ongoing'  // Default to ongoing if event status unclear
   }
   
-  // Has a record - check attendance status
-  if (record.check_out_at || record.check_out_time) return 'present'  // Complete attendance (both check-in and check-out)
-  if (record.check_in_at || record.check_in_time) {
-    // Checked in but not checked out
-    return eventEnded ? 'incomplete' : 'incomplete'
-  }
-  
-  // Has record but no check-in/out (shouldn't happen normally)
-  return eventEnded ? 'absent' : 'ongoing'
+  // Has a record but no overall_status field - shouldn't happen, default to ongoing
+  return 'ongoing'
 }
 
 const getStatusBadgeClass = (status) => {
