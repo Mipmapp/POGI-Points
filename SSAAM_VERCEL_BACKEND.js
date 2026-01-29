@@ -6683,6 +6683,12 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                         status = 'incomplete';
                     }
                 }
+                
+                // If event is closed and student didn't complete attendance, override session status to 'closed'
+                let sessionStatus = session.status;
+                if (event.status === 'closed' && (status === 'absent' || status === 'incomplete')) {
+                    sessionStatus = 'closed';
+                }
 
                 return {
                     session: {
@@ -6690,7 +6696,7 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                         label: session.label,
                         start_time: session.start_time,
                         end_time: session.end_time,
-                        status: session.status,
+                        status: sessionStatus,
                         late_timer_minutes: session.late_timer_minutes || 0
                     },
                     attendance: log ? {
