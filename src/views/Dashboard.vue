@@ -1015,7 +1015,7 @@
                         <h4 class="font-bold text-lg text-gray-900">{{ payment.title }}</h4>
                         <div class="flex gap-2">
                           <span class="text-xs font-bold px-3 py-1 bg-gradient-to-r from-green-200 to-green-300 text-green-900 rounded-full shadow-sm animate-pulse">Active</span>
-                          <span class="text-xs font-bold px-3 py-1 bg-gradient-to-r from-blue-200 to-blue-300 text-blue-900 rounded-full shadow-sm">{{ payment.type.charAt(0).toUpperCase() + payment.type.slice(1) }}</span>
+                          <span class="text-xs font-bold px-3 py-1 bg-gradient-to-r from-blue-200 to-blue-300 text-blue-900 rounded-full shadow-sm">{{ (payment.type || 'fee').charAt(0).toUpperCase() + (payment.type || 'fee').slice(1) }}</span>
                         </div>
                       </div>
                       <p class="text-sm text-gray-600 mb-4">{{ payment.description || 'No description' }}</p>
@@ -2907,7 +2907,7 @@
                 <div v-for="payment in paymentsList.filter(p => p.status === 'active')" :key="payment._id" class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border border-purple-200 hover:shadow-lg transition">
                   <div class="flex justify-between items-start mb-2">
                     <h4 class="font-bold text-gray-900">{{ payment.title }}</h4>
-                    <span class="text-xs font-semibold px-2 py-1 bg-blue-200 text-blue-800 rounded-full">{{ payment.type.charAt(0).toUpperCase() + payment.type.slice(1) }}</span>
+                    <span class="text-xs font-semibold px-2 py-1 bg-blue-200 text-blue-800 rounded-full">{{ (payment.type || 'fee').charAt(0).toUpperCase() + (payment.type || 'fee').slice(1) }}</span>
                   </div>
                   <p class="text-sm text-gray-600 mb-3">{{ payment.description }}</p>
                   
