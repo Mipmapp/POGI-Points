@@ -6662,6 +6662,8 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                 event_id: event._id,
                 student_id: student._id
             });
+            
+            console.log(`[My Records] Processing event "${event.title}" - is_custom: ${event.is_custom}, sessions: ${sessions.length}, logs: ${logs.length}`);
 
             // Map sessions with their attendance status
             const sessionRecords = sessions.map(session => {
@@ -6732,6 +6734,8 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
         }));
 
         const filteredRecords = records.filter(r => r !== null);
+        
+        console.log(`[My Records] Final result: returning ${filteredRecords.length}/${records.length} records to student ${student.student_id}`);
 
         res.json({ data: filteredRecords });
     } catch (err) {
