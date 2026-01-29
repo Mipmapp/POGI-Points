@@ -4153,7 +4153,7 @@
         <p class="text-sm text-gray-700 mb-3"><strong>Type:</strong> {{ deletePaymentCampaignConfirm.payment?.type }}</p>
         <p class="text-sm text-gray-700"><strong>Total Records:</strong> {{ deletePaymentCampaignConfirm.payment?.payment_records?.length || 0 }} students</p>
       </div>
-      <p class="text-gray-600 mb-6 font-semibold text-red-700">⚠️ This will delete the entire payment campaign and all associated student records. This action cannot be undone.</p>
+      <p class="mb-6 font-semibold text-red-600">⚠️ This will delete the entire payment campaign and all associated student records. This action cannot be undone.</p>
       
       <!-- Countdown Timer -->
       <div v-if="deletePaymentCampaignConfirm.countdownActive" class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">

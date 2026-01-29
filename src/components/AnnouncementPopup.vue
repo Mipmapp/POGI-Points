@@ -36,7 +36,7 @@
             :style="{ transform: `translateX(calc(-${currentIndex * 100}% + ${swipeOffset}px))` }"
           >
             <div 
-              v-for="(announcement, index) in announcements" 
+              v-for="announcement in announcements" 
               :key="announcement._id"
               class="w-full flex-shrink-0 p-5 sm:p-7 overflow-y-auto"
               style="min-height: 150px; max-height: 65vh;"
