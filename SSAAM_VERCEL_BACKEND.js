@@ -1954,7 +1954,7 @@ const eventContributionSchema = new mongoose.Schema({
     year_level: { type: String },
     payment_status: { 
         type: String, 
-        enum: ['unpaid', 'paid'],
+        enum: ['unpaid', 'pending', 'paid'], // include 'pending' to match UI status
         default: 'unpaid'
     },
     original_amount: { type: Number, default: 0 },
@@ -7140,14 +7140,31 @@ app.get('/apis/contributions/search', treasurerAuth, async (req, res) => {
         const filter = {};
         if (year_level) filter.year_level = year_level;
         if (program) filter.program = program;
-        if (status) filter.payment_status = status;
+
+        // Build clauses to combine status and query without overwriting
+        const clauses = [];
+        if (status) {
+            const s = String(status).toLowerCase();
+            if (s === 'unpaid') {
+                clauses.push({ $or: [
+                    { payment_status: { $regex: '^unpaid$', $options: 'i' } },
+                    { payment_status: { $regex: '^pending$', $options: 'i' } }
+                ]});
+            } else {
+                clauses.push({ payment_status: { $regex: `^${s}$`, $options: 'i' } });
+            }
+        }
 
         if (query) {
             const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            filter.$or = [
+            clauses.push({ $or: [
                 { student_id_number: { $regex: escapedQuery, $options: 'i' } },
                 { student_name: { $regex: escapedQuery, $options: 'i' } }
-            ];
+            ]});
+        }
+
+        if (clauses.length) {
+            filter.$and = clauses;
         }
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -7175,9 +7192,20 @@ app.get('/apis/contributions/search', treasurerAuth, async (req, res) => {
 // Download payment records as Excel
 app.get('/apis/contributions/download/excel', treasurerAuth, async (req, res) => {
     try {
-        const { status = 'paid', year_level = '', program = '' } = req.query;
+        const { status, year_level = '', program = '' } = req.query;
         
-        const filter = { payment_status: status };
+        const filter = {};
+        if (status) {
+            const s = String(status).toLowerCase();
+            if (s === 'unpaid') {
+                filter.$or = [
+                    { payment_status: { $regex: '^unpaid$', $options: 'i' } },
+                    { payment_status: { $regex: '^pending$', $options: 'i' } }
+                ];
+            } else {
+                filter.payment_status = { $regex: `^${s}$`, $options: 'i' };
+            }
+        }
         if (year_level) filter.year_level = year_level;
         if (program) filter.program = program;
 
@@ -7185,28 +7213,32 @@ app.get('/apis/contributions/download/excel', treasurerAuth, async (req, res) =>
             .sort({ student_name: 1 })
             .select('student_id_number student_name program year_level payment_status original_amount discount_value target_amount paid_at');
 
-        // Format data for Excel
+        // Format data for Excel - ensure headers even when empty
         const data = contributions.map(c => ({
-            'Student ID': c.student_id_number,
-            'Name': c.student_name,
-            'Program': c.program,
-            'Year Level': c.year_level,
-            'Original Amount': c.original_amount || 0,
-            'Discount': c.discount_value || 0,
-            'Final Amount': c.target_amount || c.original_amount || 0,
-            'Status': c.payment_status.toUpperCase(),
+            'Student ID': c.student_id_number || '',
+            'Name': c.student_name || '',
+            'Program': c.program || '',
+            'Year Level': c.year_level || '',
+            'Original Amount': typeof c.original_amount === 'number' ? c.original_amount : 0,
+            'Discount': typeof c.discount_value === 'number' ? c.discount_value : 0,
+            'Final Amount': typeof c.target_amount === 'number' ? c.target_amount : (typeof c.original_amount === 'number' ? c.original_amount : 0),
+            'Status': (c.payment_status || '').toString().toUpperCase(),
             'Date Paid': c.paid_at ? new Date(c.paid_at).toLocaleDateString('en-PH') : ''
         }));
 
+        const exportHeaders = ['Student ID','Name','Program','Year Level','Original Amount','Discount','Final Amount','Status','Date Paid'];
+        const exportRows = data.length ? data.map(row => exportHeaders.map(h => row[h] || '')) : [];
+
         // Create CSV
-        const headers = Object.keys(data[0] || {});
-        const csv = [headers, ...data.map(row => headers.map(h => row[h]))].map(row => 
-            row.map(cell => `"${cell || ''}"`).join(',')
+        const exportCsv = [exportHeaders, ...exportRows].map(row => 
+            row.map(cell => `"${String(cell || '')}"`).join(',')
         ).join('\n');
+
+        // Use exportCsv for response below
 
         res.setHeader('Content-Type', 'text/csv; charset=utf-8');
         res.setHeader('Content-Disposition', `attachment; filename="payment-records-${new Date().toISOString().split('T')[0]}.csv"`);
-        res.send(csv);
+        res.send(exportCsv);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

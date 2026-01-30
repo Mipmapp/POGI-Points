@@ -17,7 +17,7 @@
           </svg>
           {{ isDownloading ? 'Downloading...' : 'Download Excel' }}
         </button>
-        <div class="text-sm text-gray-700 px-2 py-1 bg-white rounded border">{{ filteredCount }} matched</div>
+        <div class="text-sm text-gray-700 px-2 py-1 bg-white rounded border">{{ serverFilteredCount !== null ? serverFilteredCount : filteredCount }} matched</div>
       </div>
     </div>
 
@@ -289,7 +289,7 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="(c, idx) in filteredContributions.slice(0, downloadPreviewLimit)" :key="c._id || idx" class="border-t">
+                    <tr v-for="(c, idx) in downloadPreviewRecords" :key="c._id || idx" class="border-t">
                       <td class="px-3 py-2">{{ c.student_name }}</td>
                       <td class="px-3 py-2">{{ c.student_id }}</td>
                       <td class="px-3 py-2">{{ c.program || 'N/A' }}</td>
@@ -307,7 +307,7 @@
               <button @click="showDownloadConfirm = false" class="px-4 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200">Cancel</button>
               <button @click="confirmAndExportFilteredExcel" :disabled="isDownloading" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 flex items-center gap-2">
                 <svg v-if="isDownloading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                <span>{{ isDownloading ? 'Exporting...' : `Export ${filteredCount} records` }}</span>
+                <span>{{ isDownloading ? 'Exporting...' : `Export ${serverFilteredCount !== null ? serverFilteredCount : filteredCount} records` }}</span>
               </button>
             </div>
           </div>
@@ -339,6 +339,9 @@ export default {
       showDownloadConfirm: false,
       downloadPreviewLimit: 5,
       downloadFormat: 'xlsx',
+      // Server-assisted download preview
+      downloadPreviewRecords: [],
+      serverFilteredCount: null,
       // Payment processing states
       isProcessingPaymentGlobal: false,
       processingPaymentId: null
@@ -358,7 +361,15 @@ export default {
       return this.contributions.filter(c => {
         const matchesLevel = !this.filterYearLevel || c.year_level === this.filterYearLevel;
         const matchesProgram = !this.filterProgram || c.program === this.filterProgram;
-        const matchesStatus = !this.filterStatus || c.payment_status === this.filterStatus;
+        let matchesStatus = true;
+        if (this.filterStatus) {
+          if (this.filterStatus === 'unpaid') {
+            // treat 'unpaid' as any non-paid status (including 'pending')
+            matchesStatus = c.payment_status !== 'paid';
+          } else {
+            matchesStatus = c.payment_status === this.filterStatus;
+          }
+        }
         return matchesLevel && matchesProgram && matchesStatus;
       });
     },
@@ -374,6 +385,17 @@ export default {
       }
     }
   },
+  watch: {
+    filterStatus() {
+      this.loadAllContributions();
+    },
+    filterProgram() {
+      this.loadAllContributions();
+    },
+    filterYearLevel() {
+      this.loadAllContributions();
+    }
+  },
   mounted() {
     this.loadAllContributions();
   },
@@ -381,8 +403,17 @@ export default {
     async loadAllContributions() {
       try {
         const token = localStorage.getItem('authToken');
-        // Try to fetch contribution records from events
-        const response = await fetch(`${API_BASE_URL}/apis/contributions/search?limit=1000&status=paid`, {
+
+        // Build query params based on selected filters
+        const params = new URLSearchParams();
+        params.set('limit', '1000');
+        if (this.filterStatus) params.set('status', this.filterStatus);
+        if (this.filterYearLevel) params.set('year_level', this.filterYearLevel);
+        if (this.filterProgram) params.set('program', this.filterProgram);
+        if (this.searchQuery) params.set('query', this.searchQuery);
+
+        const url = `${API_BASE_URL}/apis/contributions/search?${params.toString()}`;
+        const response = await fetch(url, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -390,7 +421,7 @@ export default {
           const data = await response.json();
           this.contributions = data.data || [];
         } else {
-          // If endpoint doesn't exist, load sample data for demonstration
+          // If endpoint doesn't exist or returns error, load sample data for demonstration
           this.loadSampleData();
         }
       } catch (error) {
@@ -549,79 +580,88 @@ export default {
       }
     },
     async downloadPaymentExcel() {
-      // Open confirmation modal showing filters and count
-      if (this.filteredCount === 0) {
-        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'No records match the selected filters', type: 'warning' } }));
-        return;
+      // Fetch server-side preview and counts for the current filters (authoritative)
+      try {
+        const token = localStorage.getItem('authToken');
+        const params = new URLSearchParams();
+        params.set('limit', String(this.downloadPreviewLimit));
+        if (this.filterStatus) params.set('status', this.filterStatus);
+        if (this.filterYearLevel) params.set('year_level', this.filterYearLevel);
+        if (this.filterProgram) params.set('program', this.filterProgram);
+        if (this.searchQuery) params.set('query', this.searchQuery);
+
+        const response = await fetch(`${API_BASE_URL}/apis/contributions/search?${params.toString()}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (!response.ok) {
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Failed to fetch export preview from server', type: 'error' } }));
+          return;
+        }
+
+        const data = await response.json();
+        this.downloadPreviewRecords = data.data || [];
+        this.serverFilteredCount = data.pagination ? data.pagination.total : (data.data || []).length;
+
+        if (!this.serverFilteredCount || this.serverFilteredCount === 0) {
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'No records match the selected filters', type: 'warning' } }));
+          return;
+        }
+
+        this.showDownloadConfirm = true;
+      } catch (err) {
+        console.error('Error fetching download preview:', err);
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Failed to fetch export preview', type: 'error' } }));
       }
-      this.showDownloadConfirm = true;
     },
 
     async confirmAndExportFilteredExcel() {
       if (this.isDownloading) return;
       this.isDownloading = true;
       try {
-        const records = this.filteredContributions.map(c => ({
-          'Student Name': c.student_name,
-          'Student ID': c.student_id,
-          'Program': c.program || 'N/A',
-          'Year Level': c.year_level || 'N/A',
-          'Amount': c.amount_paid ? c.amount_paid : (c.original_amount || this.campaignFee),
-          'Status': c.payment_status === 'paid' ? 'Paid' : 'Unpaid'
-        }));
+        // Build server params for export
+        const params = new URLSearchParams();
+        if (this.filterStatus) params.set('status', this.filterStatus);
+        if (this.filterYearLevel) params.set('year_level', this.filterYearLevel);
+        if (this.filterProgram) params.set('program', this.filterProgram);
 
         const filtersSafe = `${this.downloadFiltersSummary.status}_${this.downloadFiltersSummary.year}_${this.downloadFiltersSummary.program}`.replace(/\s+/g, '')
         const dateSuffix = new Date().toISOString().split('T')[0]
 
-        if (this.downloadFormat === 'csv') {
-          const headers = Object.keys(records[0] || {})
-          const csvRows = [headers.join(',')]
-          records.forEach(r => {
-            csvRows.push(headers.map(h => `"${String(r[h] || '')}"`).join(','))
-          })
-          const csvContent = csvRows.join('\n')
-          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
-          const a = document.createElement('a')
-          const url = URL.createObjectURL(blob)
-          a.href = url
-          a.download = `Payments_${filtersSafe}_${dateSuffix}.csv`
-          document.body.appendChild(a)
-          a.click()
-          document.body.removeChild(a)
+        const token = localStorage.getItem('authToken');
+        const url = `${API_BASE_URL}/apis/contributions/download/excel?${params.toString()}`;
+        const response = await fetch(url, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
-          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${this.filteredCount} payment record(s) (CSV)`, type: 'success' } }));
+        if (!response.ok) {
+          throw new Error('Server export failed');
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+
+        if (this.downloadFormat === 'csv' || contentType.includes('text/csv')) {
+          // Download CSV directly
+          const blob = await response.blob();
+          const a = document.createElement('a');
+          const urlObj = URL.createObjectURL(blob);
+          a.href = urlObj;
+          a.download = `Payments_${filtersSafe}_${dateSuffix}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${this.serverFilteredCount || this.filteredCount} payment record(s) (CSV)`, type: 'success' } }));
           this.showDownloadConfirm = false;
         } else {
-          // Build workbook (single sheet)
-          const workbook = XLSX.utils.book_new();
-          const headerRow = [
-            { 'Report': 'Payment Records Export' },
-            { 'Report': `Filters - Status: ${this.downloadFiltersSummary.status} | Year: ${this.downloadFiltersSummary.year} | Program: ${this.downloadFiltersSummary.program}` },
-            { 'Report': `Total Records: ${this.filteredCount}` },
-            { 'Report': `Exported: ${new Date().toLocaleString('en-PH')}` },
-            { 'Report': '' }
-          ];
-
-          const wsHeader = XLSX.utils.json_to_sheet(headerRow, { header: ['Report'] });
-          const dataStartRow = headerRow.length + 1;
-          XLSX.utils.sheet_add_json(wsHeader, records, { origin: `A${dataStartRow}` });
-
-          // Explicit column widths to reduce empty space
-          wsHeader['!cols'] = [
-            { wch: 25 }, // Student Name
-            { wch: 9 },  // Student ID
-            { wch: 7 },  // Program
-            { wch: 8 },  // Year Level
-            { wch: 7 },  // Amount
-            { wch: 6 }   // Status
-          ];
-
-          XLSX.utils.book_append_sheet(workbook, wsHeader, 'Payments');
-
+          // Convert CSV text to XLSX workbook
+          const csvText = await response.text();
+          const workbook = XLSX.read(csvText, { type: 'string' });
+          // Ensure filename ends with .xlsx
           const filename = `Payments_${filtersSafe}_${dateSuffix}.xlsx`;
           XLSX.writeFile(workbook, filename);
 
-          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${this.filteredCount} payment record(s)`, type: 'success' } }));
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${this.serverFilteredCount || this.filteredCount} payment record(s)`, type: 'success' } }));
           this.showDownloadConfirm = false;
         }
       } catch (error) {
