@@ -6,16 +6,19 @@
         <h2 class="text-2xl font-bold text-purple-900">Contribution Management</h2>
         <p class="text-gray-600 text-sm mt-1">Track and manage student contributions</p>
       </div>
-      <button 
-        @click="downloadPaymentExcel"
-        :disabled="isDownloading"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all font-medium disabled:opacity-70"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19v-7m0 0V5m0 7H5m7 0h7"></path>
-        </svg>
-        {{ isDownloading ? 'Downloading...' : 'Download Excel' }}
-      </button>
+      <div class="flex items-center gap-3">
+        <button 
+          @click="downloadPaymentExcel"
+          :disabled="isDownloading"
+          class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition-all font-medium disabled:opacity-70"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19v-7m0 0V5m0 7H5m7 0h7"></path>
+          </svg>
+          {{ isDownloading ? 'Downloading...' : 'Download Excel' }}
+        </button>
+        <div class="text-sm text-gray-700 px-2 py-1 bg-white rounded border">{{ filteredCount }} matched</div>
+      </div>
     </div>
 
     <!-- Search and Filters Section -->
@@ -161,10 +164,12 @@
         <!-- Payment Action -->
         <button 
           @click="markAsPayment"
-          :disabled="!selectedStudent"
-          class="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition font-bold disabled:opacity-50 text-center"
+          :disabled="!selectedStudent || isProcessingPaymentGlobal"
+          class="w-full px-4 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 transition font-bold disabled:opacity-50 text-center flex items-center justify-center gap-2"
         >
-          Record Payment
+          <svg v-if="isProcessingPaymentGlobal" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.581M20 20v-5h-.581M4 20h16M4 4h16"></path></svg>
+          <span v-if="!isProcessingPaymentGlobal">Record Payment</span>
+          <span v-else>Processing...</span>
         </button>
       </div>
     </div>
@@ -205,9 +210,12 @@
               <button 
                 @click="markAsPayment(contribution)"
                 v-if="contribution.payment_status !== 'paid'"
-                class="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition"
+                :disabled="processingPaymentId === (contribution._id || contribution.student_id)"
+                class="px-2 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700 transition flex items-center justify-center gap-2 disabled:opacity-60"
               >
-                Mark Paid
+                <svg v-if="processingPaymentId === (contribution._id || contribution.student_id)" class="w-3 h-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.581M20 20v-5h-.581M4 20h16M4 4h16"></path></svg>
+                <span v-if="processingPaymentId !== (contribution._id || contribution.student_id)">Mark Paid</span>
+                <span v-else>Processing</span>
               </button>
               <button 
                 @click="applyDiscount(contribution)"
@@ -224,10 +232,93 @@
     <div v-if="contributions.length === 0" class="text-center py-12 text-gray-500">
       <p>No payment records found. Create a payment first or search for a student.</p>
     </div>
+
+    <!-- Download Confirmation Modal -->
+    <transition name="fade">
+      <div v-if="showDownloadConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+        <div class="absolute inset-0 bg-black bg-opacity-40" @click="showDownloadConfirm = false"></div>
+        <div class="relative z-60 w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+          <div class="p-5 sm:p-6 lg:p-8">
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <h3 class="text-lg sm:text-xl font-bold text-gray-900">Confirm Export</h3>
+                <p class="text-sm text-gray-600 mt-1">You are exporting the payment records that match the currently applied filters. Review the summary below and confirm to download.</p>
+              </div>
+              <button @click="showDownloadConfirm = false" class="text-gray-400 hover:text-gray-600">✕</button>
+            </div>
+
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-3 items-center">
+              <div class="bg-gray-50 rounded-lg p-3 text-sm">
+                <div class="text-xs text-gray-500">Status</div>
+                <div class="font-semibold text-gray-900">{{ downloadFiltersSummary.status }}</div>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3 text-sm">
+                <div class="text-xs text-gray-500">Year</div>
+                <div class="font-semibold text-gray-900">{{ downloadFiltersSummary.year }}</div>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3 text-sm">
+                <div class="text-xs text-gray-500">Program</div>
+                <div class="font-semibold text-gray-900">{{ downloadFiltersSummary.program }}</div>
+              </div>
+              <div class="bg-gray-50 rounded-lg p-3 text-sm flex flex-col">
+                <div class="text-xs text-gray-500">Format</div>
+                <div class="mt-1 flex items-center gap-3">
+                  <label class="inline-flex items-center text-sm">
+                    <input type="radio" v-model="downloadFormat" value="xlsx" class="mr-2" /> XLSX
+                  </label>
+                  <label class="inline-flex items-center text-sm">
+                    <input type="radio" v-model="downloadFormat" value="csv" class="mr-2" /> CSV
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <div class="text-sm text-gray-500">Preview (first {{ downloadPreviewLimit }} records)</div>
+              <div class="mt-2 bg-white border rounded-lg overflow-auto max-h-48">
+                <table class="w-full text-sm">
+                  <thead class="bg-gray-100">
+                    <tr>
+                      <th class="px-3 py-2 text-left">Student</th>
+                      <th class="px-3 py-2 text-left">ID</th>
+                      <th class="px-3 py-2 text-left">Program</th>
+                      <th class="px-3 py-2 text-left">Year</th>
+                      <th class="px-3 py-2 text-left">Amount</th>
+                      <th class="px-3 py-2 text-left">Paid By</th>
+                      <th class="px-3 py-2 text-left">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="(c, idx) in filteredContributions.slice(0, downloadPreviewLimit)" :key="c._id || idx" class="border-t">
+                      <td class="px-3 py-2">{{ c.student_name }}</td>
+                      <td class="px-3 py-2">{{ c.student_id }}</td>
+                      <td class="px-3 py-2">{{ c.program || 'N/A' }}</td>
+                      <td class="px-3 py-2">{{ c.year_level || 'N/A' }}</td>
+                      <td class="px-3 py-2">{{ c.amount_paid ? `₱${c.amount_paid.toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : (c.original_amount ? `₱${c.original_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '-') }}</td>
+                      <td class="px-3 py-2">{{ c.paid_by_treasurer ? (typeof c.paid_by_treasurer === 'string' ? c.paid_by_treasurer : (c.paid_by_treasurer?.first_name || '') + ' ' + (c.paid_by_treasurer?.last_name || '')) : 'Treasurer' }}</td>
+                      <td class="px-3 py-2">{{ c.payment_status === 'paid' && c.paid_at ? new Date(c.paid_at).toLocaleString() : 'N/A' }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="mt-5 flex items-center gap-3 justify-end">
+              <button @click="showDownloadConfirm = false" class="px-4 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200">Cancel</button>
+              <button @click="confirmAndExportFilteredExcel" :disabled="isDownloading" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 flex items-center gap-2">
+                <svg v-if="isDownloading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <span>{{ isDownloading ? 'Exporting...' : `Export ${filteredCount} records` }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
+import * as XLSX from 'xlsx'
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ssaam-api.vercel.app';
 
 export default {
@@ -243,7 +334,14 @@ export default {
       filterYearLevel: '',
       filterProgram: '',
       filterStatus: '',
-      isDownloading: false
+      isDownloading: false,
+      // Download confirmation modal
+      showDownloadConfirm: false,
+      downloadPreviewLimit: 5,
+      downloadFormat: 'xlsx',
+      // Payment processing states
+      isProcessingPaymentGlobal: false,
+      processingPaymentId: null
     };
   },
   computed: {
@@ -263,6 +361,17 @@ export default {
         const matchesStatus = !this.filterStatus || c.payment_status === this.filterStatus;
         return matchesLevel && matchesProgram && matchesStatus;
       });
+    },
+    // Number of filtered records
+    filteredCount() {
+      return this.filteredContributions.length;
+    },
+    downloadFiltersSummary() {
+      return {
+        status: this.filterStatus || 'All',
+        year: this.filterYearLevel || 'All',
+        program: this.filterProgram || 'All'
+      }
     }
   },
   mounted() {
@@ -374,12 +483,12 @@ export default {
           this.selectedStudent = data.student;
           this.discountValue = 0;
         } else {
-          alert('Student not found');
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Student not found', type: 'warning' } }));
           this.selectedStudent = null;
         }
       } catch (error) {
         console.error('Error searching student:', error);
-        alert('Error searching student');
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Error searching student', type: 'error' } }));
       }
     },
     applyDiscount(contribution) {
@@ -390,7 +499,17 @@ export default {
     async markAsPayment(contribution) {
       if (!this.selectedStudent && !contribution) return;
 
+      // Determine id for row-processing or global processing
+      const isRow = !!contribution;
+      const processingId = isRow ? (contribution._id || contribution.student_id) : 'global';
+
       try {
+        if (isRow) {
+          this.processingPaymentId = processingId;
+        } else {
+          this.isProcessingPaymentGlobal = true;
+        }
+
         const token = localStorage.getItem('authToken');
         const studentId = this.selectedStudent?.student_id || contribution.student_id;
         
@@ -410,53 +529,104 @@ export default {
         });
 
         if (response.ok) {
-          alert('Payment recorded successfully');
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Payment recorded successfully', type: 'success' } }));
           this.discountValue = 0;
           this.selectedStudent = null;
           // Refresh list
+          await this.loadAllContributions();
+        } else {
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Error recording payment', type: 'error' } }));
         }
       } catch (error) {
         console.error('Error recording payment:', error);
-        alert('Error recording payment');
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Error recording payment', type: 'error' } }));
+      } finally {
+        if (isRow) {
+          this.processingPaymentId = null;
+        } else {
+          this.isProcessingPaymentGlobal = false;
+        }
       }
     },
     async downloadPaymentExcel() {
+      // Open confirmation modal showing filters and count
+      if (this.filteredCount === 0) {
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'No records match the selected filters', type: 'warning' } }));
+        return;
+      }
+      this.showDownloadConfirm = true;
+    },
+
+    async confirmAndExportFilteredExcel() {
+      if (this.isDownloading) return;
       this.isDownloading = true;
       try {
-        // Filter paid contributions only
-        const paidContributions = this.filteredContributions.filter(c => c.payment_status === 'paid');
-        
-        const data = paidContributions.map(c => ({
+        const records = this.filteredContributions.map(c => ({
+          'Student Name': c.student_name,
           'Student ID': c.student_id,
-          'Name': c.student_name,
-          'Year Level': c.year_level,
-          'Program': c.program,
-          'Original Amount': c.original_amount || this.campaignFee,
-          'Discount': c.discount_value || 0,
-          'Amount Paid': c.target_amount || this.campaignFee,
-          'Date Paid': new Date(c.paid_at).toLocaleDateString('en-PH') || new Date().toLocaleDateString('en-PH')
+          'Program': c.program || 'N/A',
+          'Year Level': c.year_level || 'N/A',
+          'Amount': c.amount_paid ? c.amount_paid : (c.original_amount || this.campaignFee),
+          'Status': c.payment_status === 'paid' ? 'Paid' : 'Unpaid'
         }));
 
-        // Create CSV manually since we may not have XLSX library
-        const headers = Object.keys(data[0] || {});
-        const csv = [
-          headers.map(h => `"${h}"`).join(','),
-          ...data.map(row => headers.map(h => `"${row[h] || ''}"`).join(','))
-        ].join('\n');
+        const filtersSafe = `${this.downloadFiltersSummary.status}_${this.downloadFiltersSummary.year}_${this.downloadFiltersSummary.program}`.replace(/\s+/g, '')
+        const dateSuffix = new Date().toISOString().split('T')[0]
 
-        // Create blob and download
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `Payment_Records_${new Date().toISOString().split('T')[0]}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        if (this.downloadFormat === 'csv') {
+          const headers = Object.keys(records[0] || {})
+          const csvRows = [headers.join(',')]
+          records.forEach(r => {
+            csvRows.push(headers.map(h => `"${String(r[h] || '')}"`).join(','))
+          })
+          const csvContent = csvRows.join('\n')
+          const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+          const a = document.createElement('a')
+          const url = URL.createObjectURL(blob)
+          a.href = url
+          a.download = `Payments_${filtersSafe}_${dateSuffix}.csv`
+          document.body.appendChild(a)
+          a.click()
+          document.body.removeChild(a)
+
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${this.filteredCount} payment record(s) (CSV)`, type: 'success' } }));
+          this.showDownloadConfirm = false;
+        } else {
+          // Build workbook (single sheet)
+          const workbook = XLSX.utils.book_new();
+          const headerRow = [
+            { 'Report': 'Payment Records Export' },
+            { 'Report': `Filters - Status: ${this.downloadFiltersSummary.status} | Year: ${this.downloadFiltersSummary.year} | Program: ${this.downloadFiltersSummary.program}` },
+            { 'Report': `Total Records: ${this.filteredCount}` },
+            { 'Report': `Exported: ${new Date().toLocaleString('en-PH')}` },
+            { 'Report': '' }
+          ];
+
+          const wsHeader = XLSX.utils.json_to_sheet(headerRow, { header: ['Report'] });
+          const dataStartRow = headerRow.length + 1;
+          XLSX.utils.sheet_add_json(wsHeader, records, { origin: `A${dataStartRow}` });
+
+          // Explicit column widths to reduce empty space
+          wsHeader['!cols'] = [
+            { wch: 25 }, // Student Name
+            { wch: 9 },  // Student ID
+            { wch: 7 },  // Program
+            { wch: 8 },  // Year Level
+            { wch: 7 },  // Amount
+            { wch: 6 }   // Status
+          ];
+
+          XLSX.utils.book_append_sheet(workbook, wsHeader, 'Payments');
+
+          const filename = `Payments_${filtersSafe}_${dateSuffix}.xlsx`;
+          XLSX.writeFile(workbook, filename);
+
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${this.filteredCount} payment record(s)`, type: 'success' } }));
+          this.showDownloadConfirm = false;
+        }
       } catch (error) {
-        console.error('Error downloading Excel:', error);
-        alert('Error downloading Excel file');
+        console.error('Error exporting payments:', error);
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Failed to export payment records', type: 'error' } }));
       } finally {
         this.isDownloading = false;
       }
@@ -472,5 +642,14 @@ table {
 
 th, td {
   border: 1px solid #e5e7eb;
+}
+.modal-slide-enter-active, .modal-slide-leave-active { transition: all 0.22s ease; }
+.modal-slide-enter-from { opacity: 0; transform: translateY(6px) scale(0.98); }
+.modal-slide-enter-to { opacity: 1; transform: translateY(0) scale(1); }
+.modal-slide-leave-from { opacity: 1; transform: translateY(0) scale(1); }
+.modal-slide-leave-to { opacity: 0; transform: translateY(6px) scale(0.98); }
+
+@media (max-width: 640px) {
+  .max-w-2xl { max-width: 92% !important; }
 }
 </style>

@@ -952,16 +952,9 @@
                       <option value="other">Other</option>
                     </select>
                   </div>
-                  <div>
+                  <div class="md:col-span-2">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Amount Due (₱)</label>
                     <input v-model.number="newPaymentData.amount_due" type="number" placeholder="0.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Campaign Status</label>
-                    <select v-model="newPaymentData.status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none">
-                      <option value="active">Active</option>
-                      <option value="closed">Closed</option>
-                    </select>
                   </div>
                   <div class="md:col-span-2">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
@@ -1010,7 +1003,20 @@
 
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" ref="activePaymentsCarouselRef">
                     <transition-group :name="carouselSlideDirection === 'right' ? 'carouselSlide-right' : 'carouselSlide-left'">
-                    <div v-for="payment in paymentsList.filter(p => p.status === 'active').slice(activePaymentsCarouselPosition * getCardsPerPage(), activePaymentsCarouselPosition * getCardsPerPage() + getCardsPerPage())" :key="payment._id" class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 md:p-6 border-2 border-purple-200 hover:border-purple-400 hover:shadow-xl hover:-translate-y-1">
+                    <div v-for="payment in paymentsList.filter(p => p.status === 'active').slice(activePaymentsCarouselPosition * getCardsPerPage(), activePaymentsCarouselPosition * getCardsPerPage() + getCardsPerPage())" :key="payment._id" class="relative bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 md:p-6 border-2 border-purple-200 hover:border-purple-400 hover:shadow-xl hover:-translate-y-1">
+
+                      <!-- Card-level overlay for Manage Payments (fade + pop) -->
+                      <transition name="card-overlay">
+                        <div v-if="activeCardLoadingId === payment._id" class="absolute inset-0 z-30 flex items-center justify-center rounded-xl">
+                          <div class="absolute inset-0 bg-black bg-opacity-30 backdrop-blur-sm transition-opacity"></div>
+                          <transition name="modal-bounce">
+                            <div class="relative z-40 bg-white rounded-xl px-5 py-4 shadow-2xl flex items-center gap-3">
+                              <svg class="animate-spin h-6 w-6 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                              <div class="text-sm font-medium text-gray-700">Loading payment details...</div>
+                            </div>
+                          </transition>
+                        </div>
+                      </transition>
                       <div class="flex justify-between items-start mb-3">
                         <h4 class="font-bold text-lg text-gray-900">{{ payment.title }}</h4>
                         <div class="flex gap-2">
@@ -1045,7 +1051,7 @@
                       </div>
 
                       <button 
-                        @click="selectPaymentForMarking(payment)"
+                        @click="handleManagePaymentFromCard(payment)"
                         class="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg text-sm md:text-base hover:from-purple-700 hover:to-purple-800 transition font-bold shadow-md hover:shadow-lg"
                       >
                         Manage Payments
@@ -1078,8 +1084,9 @@
               </div>
             </div>
 
+
             <!-- Payment Scanner with Student Verification -->
-            <div v-if="selectedPayment && contributionTabMode === 'payments'" class="bg-gradient-to-b from-purple-50 to-white rounded-xl shadow-xl p-3 sm:p-4 md:p-8 mt-6 border border-purple-100">
+            <div v-if="selectedPayment && contributionTabMode === 'payments'" class="bg-gradient-to-b from-purple-50 to-white rounded-xl shadow-md p-3 sm:p-4 md:p-8 mt-6 border border-purple-50">
               <!-- Header with Campaign Info -->
               <div class="mb-6 md:mb-8">
                 <div class="flex flex-col md:flex-row justify-between items-start gap-3 md:gap-4 mb-6 md:mb-8">
@@ -1126,7 +1133,7 @@
                 </div>
 
                 <!-- Editable Payment Details Card -->
-                <div class="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 rounded-2xl p-6 md:p-8 border-2 border-purple-200 shadow-lg hover:shadow-xl transition-all duration-300">
+                <div class="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 rounded-2xl p-6 md:p-8 border border-purple-100 shadow-md hover:shadow-lg transition-all duration-300">
                   <div class="mb-6">
                     <label class="text-xs font-bold uppercase tracking-widest text-purple-700 block mb-2">Campaign Title</label>
                     <input 
@@ -1323,12 +1330,12 @@
                 </div>
 
                 <!-- Filters for Selected Campaign -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 mb-4 p-3 bg-gray-50 rounded-lg">
                   <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Status</label>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Status</label>
                     <select 
                       v-model="paymentRecordsFilter.status"
-                      class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                      class="w-full px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:ring-2 focus:ring-purple-500 outline-none"
                     >
                       <option value="all">All</option>
                       <option value="paid">Paid</option>
@@ -1337,10 +1344,10 @@
                   </div>
 
                   <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Year Level</label>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Year Level</label>
                     <select 
                       v-model="paymentRecordsFilter.yearLevel"
-                      class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                      class="w-full px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:ring-2 focus:ring-purple-500 outline-none"
                     >
                       <option value="">All Levels</option>
                       <option value="1st Year">1st Year</option>
@@ -1351,10 +1358,10 @@
                   </div>
 
                   <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Program</label>
+                    <label class="block text-xs sm:text-sm font-semibold text-gray-700 mb-1">Program</label>
                     <select 
                       v-model="paymentRecordsFilter.program"
-                      class="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                      class="w-full px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:ring-2 focus:ring-purple-500 outline-none"
                     >
                       <option value="">All Programs</option>
                       <option value="BSCS">BSCS</option>
@@ -1363,21 +1370,24 @@
                     </select>
                   </div>
 
-                  <div class="flex gap-1">
+                  <div class="col-span-1 sm:col-span-2 md:col-span-3 flex flex-col sm:flex-row gap-1 sm:gap-2">
                     <input 
                       v-model="paymentRecordsFilter.searchQuery"
                       type="text"
                       placeholder="Search name/ID"
-                      class="flex-1 px-2 py-1 border border-gray-300 rounded text-xs focus:ring-2 focus:ring-purple-500 outline-none"
+                      class="flex-1 px-2 sm:px-3 py-1 sm:py-2 border border-gray-300 rounded text-xs sm:text-sm focus:ring-2 focus:ring-purple-500 outline-none"
                     />
-                    <button 
-                      @click="downloadPaidRecordsExcel(selectedPayment)"
-                      class="px-2 py-1 bg-green-600 text-white rounded text-xs font-semibold hover:bg-green-700 transition flex items-center gap-1 whitespace-nowrap"
-                      title="Download paid records as Excel"
-                    >
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                      Download
-                    </button>
+                    <div class="flex items-center gap-2">
+                      <button 
+                        @click="handleDownloadClickForSelectedPayment"
+                        class="px-3 sm:px-4 py-1 sm:py-2 bg-green-600 text-white rounded text-xs sm:text-sm font-semibold hover:bg-green-700 transition flex items-center justify-center gap-1 whitespace-nowrap shadow-md hover:shadow-lg"
+                        title="Download paid records as Excel"
+                      >
+                        <svg class="w-3 sm:w-4 h-3 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Download
+                      </button>
+                      <div class="text-xs text-gray-700 px-2 py-1 bg-white rounded border">{{ getSelectedFilteredCount() }} matched</div>
+                    </div>
                   </div>
                 </div>
 
@@ -2299,7 +2309,7 @@
                       </span>
                       <button 
                         @click="toggleCheckIn" 
-                        :disabled="rfidScannerSaving"
+                        :disabled="rfidScannerSaving || checkToggleCooldown"
                         :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', appSettings.rfidScanner.checkInEnabled ? 'bg-green-500' : 'bg-gray-300']"
                       >
                         <span :class="['inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300', appSettings.rfidScanner.checkInEnabled ? 'translate-x-7' : 'translate-x-1']"></span>
@@ -2319,7 +2329,7 @@
                       </span>
                       <button 
                         @click="toggleCheckOut" 
-                        :disabled="rfidScannerSaving"
+                        :disabled="rfidScannerSaving || checkToggleCooldown"
                         :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', appSettings.rfidScanner.checkOutEnabled ? 'bg-blue-500' : 'bg-gray-300']"
                       >
                         <span :class="['inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300', appSettings.rfidScanner.checkOutEnabled ? 'translate-x-7' : 'translate-x-1']"></span>
@@ -2331,44 +2341,24 @@
                   </div>
                 </div>
                 
-                <!-- Late Threshold Setting -->
-                <div v-if="appSettings.rfidScanner.checkInEnabled" class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div class="flex items-center gap-2 mb-2">
-                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span class="font-medium text-yellow-800">Late Threshold</span>
-                  </div>
-                  <p class="text-xs text-yellow-700 mb-2">Students checking in after this time from the event start will be marked as late.</p>
-                  <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-sm text-yellow-800">Mark as late after:</span>
-                    <input 
-                      v-model.number="lateThresholdMinutes" 
-                      type="number" 
-                      min="0" 
-                      max="120"
-                      class="w-20 px-2 py-1 text-sm border border-yellow-300 rounded focus:ring-1 focus:ring-yellow-500 outline-none bg-white"
-                    />
-                    <span class="text-sm text-yellow-800">minutes after event start time</span>
-                    <button 
-                      @click="saveLateThreshold" 
-                      :disabled="rfidScannerSaving"
-                      class="px-3 py-1 text-xs bg-yellow-200 text-yellow-800 rounded hover:bg-yellow-300 transition"
-                    >
-                      Save
-                    </button>
-                  </div>
-                  <p class="text-xs text-yellow-600 mt-2">Example: If event starts at 7:00 AM and threshold is 30 minutes, students checking in after 7:30 AM will be marked as late.</p>
+                <!-- Auto-switch notice & cooldown UI -->
+                <div class="mt-4">
+                  <p v-if="lastAutoSwitchedFromCheckIn" class="text-sm text-blue-800 bg-blue-50 border border-blue-100 px-3 py-2 rounded-lg">Check-In was turned off — automatically switched to Check-Out.</p>
+                  <p v-if="checkToggleCooldown" class="text-xs text-gray-500 mt-2">Switch cooldown: {{ cooldownSeconds }}s</p>
                 </div>
                 
                 <p class="text-xs text-gray-500 mt-3 text-center">Only one mode can be active at a time. Enable check-in when attendance starts, then switch to check-out mode for dismissal.</p>
               </div>
 
               <div v-if="!selectedEvent" class="text-center py-8">
+                <div class="mb-4">
+                  <select v-model="selectedEvent" @change="onEventSelectForScanner" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none w-full max-w-md">
+                    <option :value="null">-- Select Event --</option>
+                    <option v-for="event in attendanceEvents.filter(e => getEventDisplayStatus(e).status === 'active')" :key="event._id" :value="event">{{ event.title }} ({{ formatEventDate(event.date || event.event_date) }})</option>
+                  </select>
+                </div>
                 <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
                 <p class="text-gray-500 mb-4">Select an event to start scanning RFID cards</p>
-                <select v-model="selectedEvent" @change="onEventSelectForScanner" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
-                  <option :value="null">-- Select Event --</option>
-                  <option v-for="event in attendanceEvents.filter(e => getEventDisplayStatus(e).status === 'active')" :key="event._id" :value="event">{{ event.title }} ({{ formatEventDate(event.date || event.event_date) }})</option>
-                </select>
               </div>
               <div v-else-if="!selectedSession" class="text-center py-8">
                 <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -2860,16 +2850,9 @@
                     <option value="other">Other</option>
                   </select>
                 </div>
-                <div>
+                <div class="md:col-span-2">
                   <label class="block text-sm font-semibold text-gray-700 mb-2">Amount Due (₱)</label>
                   <input v-model.number="newPaymentData.amount_due" type="number" placeholder="0.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
-                </div>
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">Campaign Status</label>
-                  <select v-model="newPaymentData.status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none">
-                    <option value="active">Active</option>
-                    <option value="closed">Closed</option>
-                  </select>
                 </div>
                 <div class="md:col-span-2">
                   <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
@@ -2904,7 +2887,19 @@
               </div>
 
               <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div v-for="payment in paymentsList.filter(p => p.status === 'active')" :key="payment._id" class="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border border-purple-200 hover:shadow-lg transition">
+                <div v-for="payment in paymentsList.filter(p => p.status === 'active')" :key="payment._id" class="relative bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border border-purple-200 hover:shadow-lg transition">
+                  <!-- Card-level overlay for Manage Payments (fade + pop) -->
+                  <transition name="card-overlay">
+                    <div v-if="activeCardLoadingId === payment._id" class="absolute inset-0 z-30 flex items-center justify-center rounded-lg">
+                      <div class="absolute inset-0 bg-black bg-opacity-30 backdrop-blur-sm transition-opacity"></div>
+                      <transition name="modal-bounce">
+                        <div class="relative z-40 bg-white rounded-xl px-5 py-4 shadow-2xl flex items-center gap-3">
+                          <svg class="animate-spin h-6 w-6 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                          <div class="text-sm font-medium text-gray-700">Loading payment details...</div>
+                        </div>
+                      </transition>
+                    </div>
+                  </transition>
                   <div class="flex justify-between items-start mb-2">
                     <h4 class="font-bold text-gray-900">{{ payment.title }}</h4>
                     <span class="text-xs font-semibold px-2 py-1 bg-blue-200 text-blue-800 rounded-full">{{ (payment.type || 'fee').charAt(0).toUpperCase() + (payment.type || 'fee').slice(1) }}</span>
@@ -2935,7 +2930,7 @@
                   </div>
 
                   <button 
-                    @click="selectPaymentForMarking(payment)"
+                    @click="handleManagePaymentFromCard(payment)"
                     class="w-full px-3 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition font-medium"
                   >
                     Manage Payments
@@ -2945,7 +2940,89 @@
             </div>
           </div>
 
-          <!-- Payment Scanner -->
+          <!-- Payment Download Confirmation Modal -->
+  <transition name="fade">
+    <div v-if="showPaymentDownloadConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6">
+      <div class="absolute inset-0 bg-black bg-opacity-40" @click="(showPaymentDownloadConfirm = false, paymentToExport = null)"></div>
+      <div class="relative z-60 w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div class="p-5 sm:p-6 lg:p-8">
+          <div class="flex items-start justify-between gap-4">
+            <div>
+              <h3 class="text-lg sm:text-xl font-bold text-gray-900">Confirm Download</h3>
+              <p class="text-sm text-gray-600 mt-1">You are exporting payment records using the filters currently applied. Review summary and confirm.</p>
+            </div>
+            <button @click="(showPaymentDownloadConfirm = false, paymentToExport = null)" class="text-gray-400 hover:text-gray-600">✕</button>
+          </div>
+
+          <div class="mt-4 grid grid-cols-1 sm:grid-cols-4 gap-3 items-center">
+            <div class="bg-gray-50 rounded-lg p-3 text-sm">
+              <div class="text-xs text-gray-500">Status</div>
+              <div class="font-semibold text-gray-900">{{ paymentRecordsFilter.status || 'All' }}</div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3 text-sm">
+              <div class="text-xs text-gray-500">Year</div>
+              <div class="font-semibold text-gray-900">{{ paymentRecordsFilter.yearLevel || 'All' }}</div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3 text-sm">
+              <div class="text-xs text-gray-500">Program</div>
+              <div class="font-semibold text-gray-900">{{ paymentRecordsFilter.program || 'All' }}</div>
+            </div>
+            <div class="bg-gray-50 rounded-lg p-3 text-sm flex flex-col">
+              <div class="text-xs text-gray-500">Format</div>
+              <div class="mt-1 flex items-center gap-3">
+                <label class="inline-flex items-center text-sm">
+                  <input type="radio" v-model="paymentExportFormat" value="xlsx" class="mr-2" /> XLSX
+                </label>
+                <label class="inline-flex items-center text-sm">
+                  <input type="radio" v-model="paymentExportFormat" value="csv" class="mr-2" /> CSV
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <div class="text-sm text-gray-500">Preview (first {{ paymentDownloadPreviewLimit }} records)</div>
+            <div class="mt-2 bg-white border rounded-lg overflow-auto max-h-48">
+              <table class="w-full text-sm">
+                <thead class="bg-gray-100">
+                  <tr>
+                    <th class="px-3 py-2 text-left">Student</th>
+                    <th class="px-3 py-2 text-left">ID</th>
+                    <th class="hidden sm:table-cell px-3 py-2 text-left">Program</th>
+                    <th class="hidden lg:table-cell px-3 py-2 text-left">Year</th>
+                    <th class="px-3 py-2 text-left">Amount</th>
+                    <th class="px-3 py-2 text-left">Paid By</th>
+                    <th class="px-3 py-2 text-left">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(r, idx) in getFilteredPaymentRecords(paymentToExport).slice(0, paymentDownloadPreviewLimit)" :key="r._id || idx" class="border-t">
+                    <td class="px-3 py-2">{{ r.student_name }}</td>
+                    <td class="px-3 py-2">{{ r.student_id }}</td>
+                    <td class="hidden sm:table-cell px-3 py-2">{{ r.program || 'N/A' }}</td>
+                    <td class="hidden lg:table-cell px-3 py-2">{{ r.year_level || 'N/A' }}</td>
+                    <td class="px-3 py-2">{{ (r.amount_paid || r.amount || paymentToExport.amount_due || '') ? `₱${(r.amount_paid || r.amount || paymentToExport.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '-' }}</td>
+                    <td class="px-3 py-2">{{ r.paid_by_treasurer ? (typeof r.paid_by_treasurer === 'string' ? r.paid_by_treasurer : (r.paid_by_treasurer?.first_name || '') + ' ' + (r.paid_by_treasurer?.last_name || '') ) : formatPaidByName(r) }}</td>
+                    <td class="px-3 py-2">{{ r.payment_status === 'paid' && r.paid_date ? new Date(r.paid_date).toLocaleString() : 'N/A' }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="mt-5 flex items-center gap-3 justify-end">
+            <button @click="(showPaymentDownloadConfirm = false, paymentToExport = null)" class="px-4 py-2 bg-gray-100 rounded-lg text-sm hover:bg-gray-200">Cancel</button>
+            <button @click="confirmAndExportPaymentRecords" class="px-4 py-2 bg-green-600 text-white rounded-lg text-sm hover:bg-green-700 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+              <span>Export {{ getFilteredPaymentRecordCount(paymentToExport) }} records</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- Payment Scanner -->
           <div v-if="selectedPayment" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
             <div class="flex justify-between items-center mb-6">
               <h3 class="text-xl font-bold text-gray-900">{{ selectedPayment.title }} - Student Scanner</h3>
@@ -4854,54 +4931,72 @@
       </div>
 
       <!-- Quick Download by Year Level -->
-      <div class="mb-6">
-        <p class="text-sm font-medium text-gray-700 mb-3">Download Excel by Year Level:</p>
-        <div class="flex flex-wrap gap-2">
-          <button 
-            @click="exportToExcelByYear(selectedEvent, '1st Year')" 
-            :disabled="exportingExcelByYear === '1st Year' || getLogCountByYear('1st Year') === 0"
-            class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg v-if="exportingExcelByYear === '1st Year'" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            1st Year ({{ getLogCountByYear('1st Year') }})
-          </button>
-          <button 
-            @click="exportToExcelByYear(selectedEvent, '2nd Year')" 
-            :disabled="exportingExcelByYear === '2nd Year' || getLogCountByYear('2nd Year') === 0"
-            class="px-4 py-2 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg v-if="exportingExcelByYear === '2nd Year'" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            2nd Year ({{ getLogCountByYear('2nd Year') }})
-          </button>
-          <button 
-            @click="exportToExcelByYear(selectedEvent, '3rd Year')" 
-            :disabled="exportingExcelByYear === '3rd Year' || getLogCountByYear('3rd Year') === 0"
-            class="px-4 py-2 bg-yellow-100 text-yellow-700 rounded-lg hover:bg-yellow-200 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg v-if="exportingExcelByYear === '3rd Year'" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            3rd Year ({{ getLogCountByYear('3rd Year') }})
-          </button>
-          <button 
-            @click="exportToExcelByYear(selectedEvent, '4th Year')" 
-            :disabled="exportingExcelByYear === '4th Year' || getLogCountByYear('4th Year') === 0"
-            class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg v-if="exportingExcelByYear === '4th Year'" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            4th Year ({{ getLogCountByYear('4th Year') }})
-          </button>
-          <button 
-            @click="exportToExcel(selectedEvent)" 
-            :disabled="exportingExcel || sessionStats.total === 0"
-            class="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:from-purple-700 hover:to-pink-600 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg v-if="exportingExcel" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            All Years ({{ sessionStats.total }})
-          </button>
+      <div class="mb-6 bg-gray-50 p-4 rounded-lg">
+        <!-- Year Filter -->
+        <div class="mb-4">
+          <p class="text-sm font-medium text-gray-700 mb-2">Year Filter:</p>
+          <div class="flex flex-wrap gap-2">
+            <button @click="selectAllYears()" :class="selectedYearFilters.length === 0 ? 'px-3 py-1 rounded-lg bg-purple-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">All</button>
+            <button @click="toggleYearFilter('1st Year')" :class="yearFilterActive('1st Year') ? 'px-3 py-1 rounded-lg bg-blue-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">1st</button>
+            <button @click="toggleYearFilter('2nd Year')" :class="yearFilterActive('2nd Year') ? 'px-3 py-1 rounded-lg bg-green-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">2nd</button>
+            <button @click="toggleYearFilter('3rd Year')" :class="yearFilterActive('3rd Year') ? 'px-3 py-1 rounded-lg bg-yellow-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">3rd</button>
+            <button @click="toggleYearFilter('4th Year')" :class="yearFilterActive('4th Year') ? 'px-3 py-1 rounded-lg bg-purple-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">4th</button>
+          </div>
+        </div>
+
+        <!-- Status Filter -->
+        <div class="mb-4">
+          <p class="text-sm font-medium text-gray-700 mb-2">Status Filter:</p>
+          <div class="flex flex-wrap gap-2">
+            <button @click="selectAllStatuses()" :class="selectedStatusFilters.length === 0 ? 'px-3 py-1 rounded-lg bg-purple-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">All</button>
+            <button @click="toggleStatusFilter('Present')" :class="statusFilterActive('Present') ? 'px-3 py-1 rounded-lg bg-green-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">Present</button>
+            <button @click="toggleStatusFilter('Incomplete')" :class="statusFilterActive('Incomplete') ? 'px-3 py-1 rounded-lg bg-yellow-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">Incomplete</button>
+            <button @click="toggleStatusFilter('Late')" :class="statusFilterActive('Late') ? 'px-3 py-1 rounded-lg bg-orange-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">Late</button>
+            <button @click="toggleStatusFilter('Absent')" :class="statusFilterActive('Absent') ? 'px-3 py-1 rounded-lg bg-red-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">Absent</button>
+          </div>
+        </div>
+
+        <!-- Program Filter -->
+        <div class="mb-4">
+          <p class="text-sm font-medium text-gray-700 mb-2">Program Filter:</p>
+          <div class="flex flex-wrap gap-2">
+            <button @click="selectAllPrograms()" :class="selectedProgramFilters.length === 0 ? 'px-3 py-1 rounded-lg bg-purple-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">All</button>
+            <button @click="toggleProgramFilter('BSCS')" :class="programFilterActive('BSCS') ? 'px-3 py-1 rounded-lg bg-indigo-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">BSCS</button>
+            <button @click="toggleProgramFilter('BSIT')" :class="programFilterActive('BSIT') ? 'px-3 py-1 rounded-lg bg-cyan-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">BSIT</button>
+            <button @click="toggleProgramFilter('BSIS')" :class="programFilterActive('BSIS') ? 'px-3 py-1 rounded-lg bg-rose-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">BSIS</button>
+          </div>
+        </div>
+
+        <!-- Download Excel -->
+        <div>
+          <p class="text-sm font-medium text-gray-700 mb-2">Download Excel:</p>
+          <div class="relative inline-block w-full sm:w-auto">
+            <button
+              @click="showExportMenu = !showExportMenu"
+              class="w-full sm:w-auto px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-lg hover:from-indigo-700 hover:to-indigo-600 transition inline-flex items-center justify-center sm:justify-start gap-2"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <span class="flex-1 sm:flex-none">Export</span>
+              <svg class="w-3 h-3 opacity-80 transform" :class="showExportMenu ? 'rotate-180' : ''" viewBox="0 0 20 20" fill="currentColor"><path d="M5.23 7.21a.75.75 0 011.06.02L10 11.584l3.71-4.354a.75.75 0 111.14.976l-4.25 5a.75.75 0 01-1.14 0l-4.25-5a.75.75 0 01.02-1.06z"/></svg>
+            </button>
+
+            <transition name="fade-scale">
+              <div v-if="showExportMenu" class="absolute z-40 mt-2 left-0 w-full sm:w-64 bg-white rounded-lg shadow-lg ring-1 ring-black ring-opacity-5 overflow-hidden">
+                <button @click="(exportToExcel(selectedEvent), showExportMenu=false)" :disabled="exportingExcel || sessionStats.total === 0" class="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed">
+                  <span class="text-sm">Export All Years</span>
+                  <span class="text-xs text-gray-500">{{ sessionStats.total }}</span>
+                </button>
+                <button @click="(exportFilteredToExcel(selectedEvent), showExportMenu=false)" :disabled="exportingFiltered || getFilteredLogsCount(selectedEvent) === 0" class="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed border-t border-gray-100">
+                  <span class="text-sm">Export Filtered</span>
+                  <span class="text-xs text-gray-500">{{ getFilteredLogsCount(selectedEvent) }}</span>
+                </button>
+                <button @click="(exportAbsentToExcel(selectedEvent), showExportMenu=false)" :disabled="exportingAbsent || sessionStats.absent === 0" class="w-full text-left px-4 py-3 hover:bg-gray-50 flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed border-t border-gray-100">
+                  <span class="text-sm">Export Absent Only</span>
+                  <span class="text-xs text-gray-500">{{ sessionStats.absent }}</span>
+                </button>
+              </div>
+            </transition>
+          </div>
         </div>
       </div>
 
@@ -4936,10 +5031,10 @@
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 flex items-center justify-center text-white text-xs overflow-hidden">
                     <img v-if="log.student_image" :src="log.student_image" class="w-full h-full object-cover" />
-                    <span v-else>{{ log.student_name?.charAt(0) || '?' }}</span>
+                    <span v-else>{{ (log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim())?.charAt(0) || '?' }}</span>
                   </div>
                   <div>
-                    <p class="font-medium text-gray-900">{{ log.student_name }}</p>
+                    <p class="font-medium text-gray-900">{{ log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim() || 'N/A' }}</p>
                     <p class="text-xs text-gray-500">{{ log.student_id_number || log.student_id }}</p>
                   </div>
                 </div>
@@ -5198,6 +5293,17 @@ const paymentRecordsFilter = ref({
   recordsPerPage: 20 // show 20 records per page
 })
 
+// Payment export modal state
+const showPaymentDownloadConfirm = ref(false)
+const paymentDownloadPreviewLimit = ref(5)
+const paymentToExport = ref(null)
+const paymentExportFormat = ref('xlsx') // 'xlsx' or 'csv'
+
+// Per-card loading overlay state (for Manage Payments card button)
+const activeCardLoadingId = ref(null)
+let activeCardLoadingTimer = null
+let activeCardMinVisibleTimer = null
+
 // Active payments carousel state
 const activePaymentsCarouselPosition = ref(0)
 const activePaymentsCarouselRef = ref(null)
@@ -5280,7 +5386,11 @@ const fetchPayments = async (skipAutoSync = false) => {
     ])
     const result = await response.json()
     if (response.ok) {
-      paymentsList.value = result.data || []
+      // Filter out invalid payments: those with no amount_due and empty/unknown title
+      const validPayments = (result.data || []).filter(payment => 
+        payment.amount_due > 0 && payment.title && payment.title.trim() && payment.title.toLowerCase() !== 'unknown payment'
+      )
+      paymentsList.value = validPayments
       
       // If a payment is currently selected, update it with fresh data
       if (selectedPayment.value && selectedPayment.value._id) {
@@ -5318,7 +5428,11 @@ const fetchMyPayments = async () => {
     })
     const result = await response.json()
     if (response.ok) {
-      myPayments.value = result.data || []
+      // Filter out invalid payments: those with no amount_due and empty/unknown title
+      const validPayments = (result.data || []).filter(payment => 
+        payment.amount_due > 0 && payment.title && payment.title.trim() && payment.title.toLowerCase() !== 'unknown payment'
+      )
+      myPayments.value = validPayments
     } else {
       console.error('Failed to fetch my payments:', result.message)
     }
@@ -5611,7 +5725,49 @@ const selectPaymentForMarking = async (payment) => {
     selectedPayment.value = payment
   }
   clearPaymentStudent()
-}
+} 
+
+// Wrapper: open contributions page and load payments + payment details while keeping overlay
+const handleManagePaymentFromCard = async (payment) => {
+  try {
+    // Start a short timer before showing the card-level overlay to avoid flicker on fast responses
+    if (activeCardLoadingTimer) {
+      clearTimeout(activeCardLoadingTimer)
+      activeCardLoadingTimer = null
+    }
+    activeCardLoadingTimer = setTimeout(() => {
+      activeCardLoadingId.value = payment._id
+    }, 120) // show overlay after 120ms
+
+    // Navigate to contributions tab
+    currentPage.value = 'contributions'
+    contributionTabMode.value = 'payments'
+    showMobileMenu.value = false
+
+    // Fetch payments list first (force refresh)
+    await fetchPayments(true)
+
+    // Fetch specific payment details
+    await selectPaymentForMarking(payment)
+  } catch (error) {
+    console.error('Error handling Manage Payments from card:', error)
+  } finally {
+    // Clear pending timer and ensure the overlay remains visible a short time if it was shown
+    if (activeCardLoadingTimer) {
+      clearTimeout(activeCardLoadingTimer)
+      activeCardLoadingTimer = null
+    }
+
+    if (activeCardLoadingId.value === payment._id) {
+      // Ensure a minimum visible time so the overlay doesn't flash
+      if (activeCardMinVisibleTimer) clearTimeout(activeCardMinVisibleTimer)
+      activeCardMinVisibleTimer = setTimeout(() => {
+        activeCardLoadingId.value = null
+        activeCardMinVisibleTimer = null
+      }, 220)
+    }
+  }
+} 
 
 // Confirm and mark payment as paid
 const confirmMarkPaymentAsPaid = async () => {
@@ -6406,6 +6562,13 @@ const statsRefreshInterval = ref(null)
 // Excel export state
 const exportingExcel = ref(false)
 const exportingExcelByYear = ref(null)
+// Filter + export state
+const selectedYearFilters = ref([]) // empty => all years
+const selectedStatusFilters = ref([]) // empty => all statuses
+const selectedProgramFilters = ref([]) // empty => all programs
+const exportingFiltered = ref(false)
+const exportingAbsent = ref(false)
+const showExportMenu = ref(false)
 
 const getLogCountByYear = (yearLevel) => {
   return allSessionLogs.value.filter(log => {
@@ -6432,19 +6595,38 @@ const computeLogStatus = (log) => {
 const filteredAttendanceLogs = computed(() => {
   let logs = [...attendanceLogs.value]
   
-  // Sort logs: Present -> Late -> Incomplete -> Absent
-  logs.sort((a, b) => {
-    const statusA = computeLogStatus(a)
-    const statusB = computeLogStatus(b)
-    return getStatusWeight(statusA) - getStatusWeight(statusB)
-  })
+  // Apply year filters
+  if (selectedYearFilters.value.length > 0) {
+    logs = logs.filter(log => selectedYearFilters.value.includes(log.student?.year_level || log.year_level || ''))
+  }
   
+  // Apply status filters (normalize to lowercase for comparison)
+  if (selectedStatusFilters.value.length > 0) {
+    logs = logs.filter(log => selectedStatusFilters.value.map(s => s.toLowerCase()).includes(computeLogStatus(log)))
+  }
+  
+  // Apply program filters
+  if (selectedProgramFilters.value.length > 0) {
+    logs = logs.filter(log => {
+      const logProgram = log.program || log.student?.program || ''
+      return selectedProgramFilters.value.includes(logProgram)
+    })
+  }
+  
+  // Apply eventLogsFilter if set (backward compatibility)
   if (eventLogsFilter.value.status) {
     logs = logs.filter(log => {
       const logStatus = computeLogStatus(log)
       return logStatus === eventLogsFilter.value.status
     })
   }
+  
+  // Sort logs: Present -> Late -> Incomplete -> Absent
+  logs.sort((a, b) => {
+    const statusA = computeLogStatus(a)
+    const statusB = computeLogStatus(b)
+    return getStatusWeight(statusA) - getStatusWeight(statusB)
+  })
   
   return logs
 })
@@ -6463,6 +6645,68 @@ const getStatusWeight = (status) => {
     default: return 5
   }
 }
+
+// Helpers for filter UI state
+const normalizeStatusLabel = (label) => {
+  if (!label) return ''
+  return label.toString().toLowerCase()
+}
+
+const toggleYearFilter = (year) => {
+  const idx = selectedYearFilters.value.indexOf(year)
+  if (idx === -1) selectedYearFilters.value.push(year)
+  else selectedYearFilters.value.splice(idx, 1)
+}
+
+const yearFilterActive = (year) => selectedYearFilters.value.includes(year)
+
+const selectAllYears = () => {
+  selectedYearFilters.value = []
+}
+
+const toggleStatusFilter = (statusLabel) => {
+  const s = normalizeStatusLabel(statusLabel)
+  const idx = selectedStatusFilters.value.indexOf(s)
+  if (idx === -1) selectedStatusFilters.value.push(s)
+  else selectedStatusFilters.value.splice(idx, 1)
+}
+
+const statusFilterActive = (statusLabel) => selectedStatusFilters.value.includes(normalizeStatusLabel(statusLabel))
+
+const selectAllStatuses = () => {
+  selectedStatusFilters.value = []
+}
+
+const toggleProgramFilter = (program) => {
+  const idx = selectedProgramFilters.value.indexOf(program)
+  if (idx === -1) selectedProgramFilters.value.push(program)
+  else selectedProgramFilters.value.splice(idx, 1)
+}
+
+const programFilterActive = (program) => selectedProgramFilters.value.includes(program)
+
+const selectAllPrograms = () => {
+  selectedProgramFilters.value = []
+}
+
+const getFilteredLogs = (event) => {
+  let logs = [...attendanceLogs.value]
+  if (selectedYearFilters.value.length > 0) {
+    logs = logs.filter(log => selectedYearFilters.value.includes(log.student?.year_level || log.year_level || ''))
+  }
+  if (selectedStatusFilters.value.length > 0) {
+    logs = logs.filter(log => selectedStatusFilters.value.map(s => s.toLowerCase()).includes(computeLogStatus(log)))
+  }
+  if (selectedProgramFilters.value.length > 0) {
+    logs = logs.filter(log => {
+      const logProgram = log.program || log.student?.program || ''
+      return selectedProgramFilters.value.includes(logProgram)
+    })
+  }
+  return logs
+}
+
+const getFilteredLogsCount = (event) => getFilteredLogs(event).length
 
 const applyStatusFilter = () => {
 }
@@ -6523,8 +6767,6 @@ const exportToExcelByYear = async (event, yearLevel) => {
         'Name': studentName,
         'Program': program,
         'Year Level': yearLevel,
-        'Check-In': checkIn ? new Date(checkIn).toLocaleString('en-PH') : '-',
-        'Check-Out': checkOut ? new Date(checkOut).toLocaleString('en-PH') : '-',
         'Status': status
       }
     })
@@ -6535,7 +6777,7 @@ const exportToExcelByYear = async (event, yearLevel) => {
     
     const columnWidths = [
       { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
-      { wch: 20 }, { wch: 20 }, { wch: 12 }
+      { wch: 12 }
     ]
     headerSheet['!cols'] = columnWidths
     
@@ -6624,8 +6866,6 @@ const exportToExcel = async (event) => {
           'Name': studentName,
           'Program': program,
           'Year Level': yearLevel,
-          'Check-In': checkIn ? new Date(checkIn).toLocaleString('en-PH') : '-',
-          'Check-Out': checkOut ? new Date(checkOut).toLocaleString('en-PH') : '-',
           'Status': status
         }
       })
@@ -6636,7 +6876,7 @@ const exportToExcel = async (event) => {
       
       const columnWidths = [
         { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
-        { wch: 20 }, { wch: 20 }, { wch: 12 }
+        { wch: 12 }
       ]
       headerSheet['!cols'] = columnWidths
       
@@ -6703,53 +6943,368 @@ const exportToExcel = async (event) => {
   }
 }
 
-// Download paid payment records as Excel
-const downloadPaidRecordsExcel = (payment) => {
+const exportAbsentToExcel = async (event) => {
+  if (!event || exportingAbsent.value) return
+  
+  exportingAbsent.value = true
+  
   try {
-    if (!payment || !payment.payment_records) {
-      showNotification('No payment records available', 'warning')
-      return
-    }
-
-    // Filter only paid records
-    const paidRecords = payment.payment_records.filter(record => record.payment_status === 'paid')
+    // Filter only absent users (those without check-in) from ALL attendance logs
+    const absentLogs = attendanceLogs.value.filter(log => {
+      const checkIn = log.check_in_at || log.check_in_time
+      return !checkIn
+    })
     
-    if (paidRecords.length === 0) {
-      showNotification('No paid records to download', 'warning')
+    if (absentLogs.length === 0) {
+      showNotification('No absent records found to export', 'warning')
       return
     }
-
-    // Prepare data with Name, Student ID, Year Level, Program
-    const data = paidRecords.map(record => ({
-      'Name': record.student_name || 'N/A',
-      'Student ID': record.student_id || 'N/A',
-      'Year Level': record.year_level || 'N/A',
-      'Program': record.program || 'N/A'
-    }))
-
-    // Create workbook and worksheet
-    const worksheet = XLSX.utils.json_to_sheet(data)
+    
     const workbook = XLSX.utils.book_new()
     
-    // Set column widths
-    const columnWidths = [
-      { wch: 25 }, // Name
-      { wch: 15 }, // Student ID
-      { wch: 12 }, // Year Level
-      { wch: 10 }  // Program
-    ]
-    worksheet['!cols'] = columnWidths
-
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Paid Records')
+    const eventDateFormatted = formatEventDate(event.date || event.event_date)
+    const eventLocation = event.location || ''
+    const uniqueSessions = [...new Set(absentLogs.map(log => log.session_label || log.session?.label || 'Session').filter(Boolean))]
+    const sessionsLabel = selectedSessionForLogs.value?.label || (uniqueSessions.length > 0 ? uniqueSessions.join(', ') : 'All Sessions')
     
-    const paymentTitle = (payment.title || 'Payment').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)
-    const filename = `Paid_Records_${paymentTitle}_${new Date().toISOString().split('T')[0]}.xlsx`
+    const yearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
+    
+    yearLevels.forEach(yearLevel => {
+      const yearLogs = absentLogs.filter(log => {
+        const studentYearLevel = log.student?.year_level || log.year_level || ''
+        return studentYearLevel === yearLevel
+      })
+      
+      if (yearLogs.length === 0) return
+      
+      yearLogs.sort((a, b) => {
+        const nameA = (a.student?.full_name || a.student_name || a.full_name || '').toLowerCase()
+        const nameB = (b.student?.full_name || b.student_name || b.full_name || '').toLowerCase()
+        return nameA.localeCompare(nameB)
+      })
+      
+      const headerRows = [
+        { 'Event': event.title || 'Attendance Event' },
+        { 'Event': `Date: ${eventDateFormatted}` },
+        { 'Event': `Session: ${sessionsLabel}` },
+        ...(eventLocation ? [{ 'Event': `Location: ${eventLocation}` }] : []),
+        { 'Event': `Year Level: ${yearLevel}` },
+        { 'Event': 'STATUS: ABSENT' },
+        { 'Event': '' }
+      ]
+      
+      const worksheetData = yearLogs.map((log, index) => {
+        const studentName = log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim() || '-'
+        const studentId = log.student_id_number || log.student?.student_id || log.student_id || ''
+        const program = log.student?.program || log.program || ''
+        
+        return {
+          '#': index + 1,
+          'Student ID': studentId,
+          'Name': studentName,
+          'Program': program,
+          'Year Level': yearLevel,
+          'Status': 'Absent'
+        }
+      })
+      
+      const headerSheet = XLSX.utils.json_to_sheet(headerRows)
+      const dataStartRow = headerRows.length + 1
+      XLSX.utils.sheet_add_json(headerSheet, worksheetData, { origin: `A${dataStartRow}` })
+      
+      const columnWidths = [
+        { wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 },
+        { wch: 12 }
+      ]
+      headerSheet['!cols'] = columnWidths
+      
+      // Apply print formatting
+      applyPrintFormatting(headerSheet, headerRows.length)
+      
+      XLSX.utils.book_append_sheet(workbook, headerSheet, yearLevel.replace(' ', '_'))
+    })
+    
+    const eventDate = formatEventDate(event.date || event.event_date).replace(/[^a-zA-Z0-9]/g, '_')
+    const eventTitle = (event.title || 'Event').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)
+    const filename = `Attendance_${eventTitle}_ABSENT_${eventDate}.xlsx`
     
     XLSX.writeFile(workbook, filename)
-    showNotification('Paid records downloaded successfully!', 'success')
+    
+    showNotification(`Absent attendees exported successfully! (${absentLogs.length} users)`, 'success')
   } catch (error) {
-    console.error('Error downloading paid records:', error)
-    showNotification('Failed to download records', 'error')
+    console.error('Error exporting absent to Excel:', error)
+    showNotification('Failed to export absent users Excel file', 'error')
+  } finally {
+    exportingAbsent.value = false
+  }
+}
+
+// Export logs by selected year/status/program filters
+const exportFilteredToExcel = async (event) => {
+  if (!event || exportingFiltered.value) return
+  exportingFiltered.value = true
+  try {
+    let logs = [...attendanceLogs.value]
+
+    // Apply year filters if set
+    if (selectedYearFilters.value.length > 0) {
+      logs = logs.filter(log => selectedYearFilters.value.includes(log.student?.year_level || log.year_level || ''))
+    }
+
+    // Apply status filters if set
+    if (selectedStatusFilters.value.length > 0) {
+      logs = logs.filter(log => {
+        const s = computeLogStatus(log) // returns lowercase
+        return selectedStatusFilters.value.includes(s)
+      })
+    }
+
+    // Apply program filters if set
+    if (selectedProgramFilters.value.length > 0) {
+      logs = logs.filter(log => {
+        const logProgram = log.program || log.student?.program || ''
+        return selectedProgramFilters.value.includes(logProgram)
+      })
+    }
+
+    if (logs.length === 0) {
+      showNotification('No attendance records found for selected filters', 'warning')
+      return
+    }
+
+    const workbook = XLSX.utils.book_new()
+
+    const eventDateFormatted = formatEventDate(event.date || event.event_date)
+    const eventLocation = event.location || ''
+    const uniqueSessions = [...new Set(logs.map(log => log.session_label || log.session?.label || 'Session').filter(Boolean))]
+    const sessionsLabel = selectedSessionForLogs.value?.label || (uniqueSessions.length > 0 ? uniqueSessions.join(', ') : 'All Sessions')
+
+    // Determine which year sheets to create
+    const yearLevels = selectedYearFilters.value.length > 0 ? selectedYearFilters.value : ['1st Year','2nd Year','3rd Year','4th Year']
+
+    yearLevels.forEach(yearLevel => {
+      const yearLogs = logs.filter(log => (log.student?.year_level || log.year_level || '') === yearLevel)
+      if (yearLogs.length === 0) return
+
+      yearLogs.sort((a, b) => {
+        const nameA = (a.student?.full_name || a.student_name || a.full_name || '').toLowerCase()
+        const nameB = (b.student?.full_name || b.student_name || b.full_name || '').toLowerCase()
+        return nameA.localeCompare(nameB)
+      })
+
+      const headerRows = [
+        { 'Event': event.title || 'Attendance Event' },
+        { 'Event': `Date: ${eventDateFormatted}` },
+        { 'Event': `Session: ${sessionsLabel}` },
+        ...(eventLocation ? [{ 'Event': `Location: ${eventLocation}` }] : []),
+        { 'Event': `Year Level: ${yearLevel}` },
+        { 'Event': `Filters: Status: ${selectedStatusFilters.value.length > 0 ? selectedStatusFilters.value.join(', ') : 'All'} | Program: ${selectedProgramFilters.value.length > 0 ? selectedProgramFilters.value.join(', ') : 'All'}` },
+        { 'Event': '' }
+      ]
+
+      const worksheetData = yearLogs.map((log, index) => {
+        const studentName = log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim() || '-'
+        const studentId = log.student_id_number || log.student?.student_id || log.student_id || ''
+        const program = log.student?.program || log.program || ''
+        const status = computeLogStatus(log)
+
+        return {
+          '#': index + 1,
+          'Student ID': studentId,
+          'Name': studentName,
+          'Program': program,
+          'Year Level': yearLevel,
+          'Status': status
+        }
+      })
+
+      const headerSheet = XLSX.utils.json_to_sheet(headerRows)
+      const dataStartRow = headerRows.length + 1
+      XLSX.utils.sheet_add_json(headerSheet, worksheetData, { origin: `A${dataStartRow}` })
+
+      headerSheet['!cols'] = [{ wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 }, { wch: 12 }]
+      applyPrintFormatting(headerSheet, headerRows.length)
+      XLSX.utils.book_append_sheet(workbook, headerSheet, yearLevel.replace(' ', '_'))
+    })
+
+    const eventDate = formatEventDate(event.date || event.event_date).replace(/[^a-zA-Z0-9]/g, '_')
+    const eventTitle = (event.title || 'Event').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)
+    const filtersLabel = `${selectedYearFilters.value.length > 0 ? selectedYearFilters.value.join('-') : 'AllYears'}_${selectedStatusFilters.value.length > 0 ? selectedStatusFilters.value.join('-') : 'AllStatuses'}_${selectedProgramFilters.value.length > 0 ? selectedProgramFilters.value.join('-') : 'AllPrograms'}`
+    const filename = `Attendance_${eventTitle}_${filtersLabel}_${eventDate}.xlsx`
+
+    XLSX.writeFile(workbook, filename)
+    showNotification('Filtered attendance exported successfully!', 'success')
+  } catch (error) {
+    console.error('Error exporting filtered Excel:', error)
+    showNotification('Failed to export filtered Excel file', 'error')
+  } finally {
+    exportingFiltered.value = false
+  }
+}
+
+// Download paid payment records as Excel (open confirmation modal and respect filters)
+const downloadPaidRecordsExcel = (payment) => {
+  if (!payment || !payment.payment_records) {
+    showNotification('No payment records available', 'warning')
+    return
+  }
+  paymentToExport.value = payment
+
+  // Quick check: if filters lead to no records, warn
+  const count = getFilteredPaymentRecordCount(payment)
+  if (count === 0) {
+    showNotification('No records match the selected filters', 'warning')
+    return
+  }
+
+  showPaymentDownloadConfirm.value = true
+}
+
+// Helper: return filtered records for a given payment based on current paymentRecordsFilter
+const getFilteredPaymentRecords = (payment) => {
+  if (!payment || !payment.payment_records) return []
+  const f = paymentRecordsFilter.value
+  const q = (f.searchQuery || '').trim().toLowerCase()
+
+  return (payment.payment_records || []).filter(r => {
+    // Status
+    if (f.status && f.status !== 'all') {
+      if ((r.payment_status || '').toLowerCase() !== f.status.toLowerCase()) return false
+    }
+    // Year
+    if (f.yearLevel && f.yearLevel !== '') {
+      if ((r.year_level || '') !== f.yearLevel) return false
+    }
+    // Program
+    if (f.program && f.program !== '') {
+      if ((r.program || '') !== f.program) return false
+    }
+    // Search query (student name or ID)
+    if (q) {
+      const name = (r.student_name || '').toLowerCase()
+      const id = (r.student_id || '').toLowerCase()
+      if (!name.includes(q) && !id.includes(q)) return false
+    }
+    return true
+  })
+}
+
+// Return just the count for templates and button disabling
+const getFilteredPaymentRecordCount = (payment) => {
+  const recs = getFilteredPaymentRecords(payment)
+  return recs.length
+}
+
+// Helper to get count for the currently selected payment (used in template)
+const getSelectedFilteredCount = () => {
+  return selectedPayment.value ? getFilteredPaymentRecordCount(selectedPayment.value) : 0
+}
+
+// Handle click on Download button — fast export (immediate XLSX) when clicked
+const handleDownloadClickForSelectedPayment = async () => {
+  const count = getSelectedFilteredCount()
+  if (count === 0) {
+    showNotification('No records match the selected filters', 'warning')
+    return
+  }
+
+  // Immediate feedback and start export (defaults to XLSX)
+  showNotification('Starting download (XLSX)...', 'info')
+  console.log('[Export] Fast export triggered for payment:', selectedPayment.value && selectedPayment.value._id)
+
+  // Prepare and call the exporter directly
+  paymentToExport.value = selectedPayment.value
+  paymentExportFormat.value = 'xlsx'
+
+  try {
+    confirmAndExportPaymentRecords()
+  } catch (err) {
+    console.error('Immediate export failed:', err)
+    showNotification('Failed to start download', 'error')
+  }
+}
+
+// Confirm and export the currently prepared paymentToExport (XLSX or CSV)
+const confirmAndExportPaymentRecords = () => {
+  try {
+    const payment = paymentToExport.value
+    if (!payment) return
+    const records = getFilteredPaymentRecords(payment)
+    if (!records || records.length === 0) {
+      showNotification('No records to export', 'warning')
+      showPaymentDownloadConfirm.value = false
+      paymentToExport.value = null
+      return
+    }
+
+    // Normalize rows (removed 'Paid By' and 'Date Paid' to tighten layout)
+    const rows = records.map(r => ({
+      'Student Name': r.student_name || 'N/A',
+      'Student ID': r.student_id || 'N/A',
+      'Program': r.program || 'N/A',
+      'Year Level': r.year_level || 'N/A',
+      'Status': r.payment_status || 'N/A',
+      'Amount': r.amount_paid || r.amount || payment.amount_due || ''
+    }))
+
+    const safeTitle = (payment.title || 'Payment').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 24)
+    const dateSuffix = new Date().toISOString().split('T')[0]
+
+    if (paymentExportFormat.value === 'csv') {
+      // CSV export
+      const headers = Object.keys(rows[0] || {})
+      const csvRows = [headers.join(',')]
+      rows.forEach(r => {
+        csvRows.push(headers.map(h => `"${String(r[h] || '')}"`).join(','))
+      })
+      const csvContent = csvRows.join('\n')
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const a = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      a.href = url
+      a.download = `PaymentRecords_${safeTitle}_${dateSuffix}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+
+      showNotification(`Exported ${rows.length} records (CSV)`, 'success')
+    } else {
+      // Default XLSX export
+      const workbook = XLSX.utils.book_new()
+      const headerRows = [
+        { 'Payment': payment.title || 'Payment' },
+        { 'Filters': `Status: ${paymentRecordsFilter.status || 'All'} | Year: ${paymentRecordsFilter.yearLevel || 'All'} | Program: ${paymentRecordsFilter.program || 'All'}` },
+        { 'Exported': new Date().toLocaleString() },
+        { 'Total Records': rows.length },
+        { '': '' }
+      ]
+
+      const wsHeader = XLSX.utils.json_to_sheet(headerRows, { header: ['Payment'] })
+      const dataStartRow = headerRows.length + 1
+      const wsData = XLSX.utils.json_to_sheet(rows)
+      XLSX.utils.sheet_add_json(wsHeader, XLSX.utils.sheet_to_json(wsData), { origin: `A${dataStartRow}` })
+
+      // Explicit widths to reduce free space
+      wsHeader['!cols'] = [
+        { wch: 25 }, // Student Name
+        { wch: 9 },  // Student ID
+        { wch: 7 },  // Program
+        { wch: 8 },  // Year Level
+        { wch: 6 },  // Status
+        { wch: 7 }   // Amount
+      ]
+
+      XLSX.utils.book_append_sheet(workbook, wsHeader, 'Payment Records')
+      const filename = `PaymentRecords_${safeTitle}_${dateSuffix}.xlsx`
+      XLSX.writeFile(workbook, filename)
+      showNotification(`Exported ${rows.length} records (XLSX)`, 'success')
+    }
+  } catch (error) {
+    console.error('Error exporting payment records:', error)
+    showNotification('Failed to export records', 'error')
+  } finally {
+    showPaymentDownloadConfirm.value = false
+    paymentToExport.value = null
   }
 }
 
@@ -6779,6 +7334,13 @@ const rfidScannerSaving = ref(false)
 const checkInTimerMinutes = ref(30)
 const checkOutTimerMinutes = ref(30)
 const lateThresholdMinutes = ref(30)
+
+// Toggle cooldown and UI helpers
+const checkToggleCooldown = ref(false)
+const cooldownSeconds = ref(0)
+const lastAutoSwitchedFromCheckIn = ref(false)
+let toggleCooldownTimer = null
+
 
 // Clear sessions management
 const showClearSessionsConfirm = ref(false)
@@ -8002,10 +8564,21 @@ onMounted(async () => {
   isPageLoading.value = false
 })
 
+const handleAppNotification = (e) => {
+  const d = e && e.detail ? e.detail : {}
+  showNotification(d.message || 'Notification', d.type || 'info')
+}
+
+onMounted(() => {
+  // listen for cross-component notifications
+  window.addEventListener('app-notification', handleAppNotification)
+})
+
 onUnmounted(() => {
   stopStatsAutoRefresh()
   stopLogoFlipAnimation()
   stopSidebarLogoFlipAnimation()
+  window.removeEventListener('app-notification', handleAppNotification)
 })
 
 // Reset pagination when filters change
@@ -8632,30 +9205,55 @@ const saveRfidScannerSettings = async () => {
   }
 }
 
+const startToggleCooldown = (seconds = 3) => {
+  if (toggleCooldownTimer) clearInterval(toggleCooldownTimer)
+  checkToggleCooldown.value = true
+  cooldownSeconds.value = seconds
+  toggleCooldownTimer = setInterval(() => {
+    cooldownSeconds.value -= 1
+    if (cooldownSeconds.value <= 0) {
+      clearInterval(toggleCooldownTimer)
+      toggleCooldownTimer = null
+      checkToggleCooldown.value = false
+    }
+  }, 1000)
+}
+
 const toggleCheckIn = async () => {
+  if (checkToggleCooldown.value) return
   const newValue = !appSettings.value.rfidScanner.checkInEnabled
   appSettings.value.rfidScanner.checkInEnabled = newValue
-  
-  // Mutually exclusive: disable check-out when enabling check-in
+
+  // If enabling check-in, disable check-out and set operation
   if (newValue) {
     appSettings.value.rfidScanner.checkOutEnabled = false
     setRfidOperation('in')
+  } else {
+    // When turning OFF check-in, automatically enable check-out
+    appSettings.value.rfidScanner.checkOutEnabled = true
+    setRfidOperation('out')
+    lastAutoSwitchedFromCheckIn.value = true
+    // auto-clear message after 5s
+    setTimeout(() => { lastAutoSwitchedFromCheckIn.value = false }, 5000)
   }
-  
+
   await saveRfidScannerSettings()
+  startToggleCooldown(3)
 }
 
 const toggleCheckOut = async () => {
+  if (checkToggleCooldown.value) return
   const newValue = !appSettings.value.rfidScanner.checkOutEnabled
   appSettings.value.rfidScanner.checkOutEnabled = newValue
-  
-  // Mutually exclusive: disable check-in when enabling check-out
+
+  // If enabling check-out, disable check-in and set operation
   if (newValue) {
     appSettings.value.rfidScanner.checkInEnabled = false
     setRfidOperation('out')
   }
-  
+
   await saveRfidScannerSettings()
+  startToggleCooldown(3)
 }
 
 const setCheckInTimer = async () => {
@@ -12831,6 +13429,19 @@ onUnmounted(() => {
 @keyframes bounce-in {
   0% { transform: scale(0.7); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+/* Card-level overlay transition: fade & pop */
+.card-overlay-enter-active, .card-overlay-leave-active {
+  transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-overlay-enter-from, .card-overlay-leave-to {
+  opacity: 0;
+  transform: scale(0.97) translateY(6px);
+}
+.card-overlay-enter-to, .card-overlay-leave-from {
+  opacity: 1;
+  transform: scale(1) translateY(0);
 }
 
 @keyframes sweep-4s {

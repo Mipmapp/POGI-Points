@@ -703,7 +703,12 @@ app.get('/apis/payments', auth, async (req, res) => {
         const { status } = req.query;
         const query = status ? { status } : {};
         
-        const payments = await Payment.find(query).sort({ created_at: -1 });
+        // Filter out invalid payments: amount_due 0, empty title, "Unknown Payment"
+        const payments = await Payment.find({
+            ...query,
+            amount_due: { $gt: 0 },
+            title: { $ne: '', $regex: /^.+$/, $not: /^Unknown Payment$/i }
+        }).sort({ created_at: -1 });
 
         // Get all records once for efficiency
         const allRecords = await PaymentRecord.find({});
@@ -1467,21 +1472,32 @@ app.get('/apis/my-payments', auth, async (req, res) => {
         }
         
         // Format the response as a receipt-style list from campaigns array
-        const formattedRecords = paymentRecord.campaigns.map(campaign => ({
-            _id: campaign._id,
-            title: campaign.payment_id?.title || 'Unknown Payment',
-            description: campaign.payment_id?.description || '',
-            type: campaign.payment_id?.type || 'fee',
-            amount_due: campaign.payment_id?.amount_due || 0,
-            deadline: campaign.payment_id?.deadline,
-            is_paid: campaign.payment_status === 'paid',
-            payment_status: campaign.payment_status,
-            paid_date: campaign.paid_at,
-            amount_paid: campaign.amount_paid || 0,
-            payment_method: campaign.payment_method,
-            notes: campaign.notes,
-            created_at: campaign.created_at
-        }));
+        // Filter out invalid payments: null payment_id, amount_due 0, empty title
+        const formattedRecords = paymentRecord.campaigns
+            .filter(campaign => {
+                const payment = campaign.payment_id;
+                // Only include if payment exists, has amount_due > 0, and has a valid title
+                return payment && 
+                       payment.amount_due > 0 && 
+                       payment.title && 
+                       payment.title.trim() && 
+                       payment.title.toLowerCase() !== 'unknown payment';
+            })
+            .map(campaign => ({
+                _id: campaign._id,
+                title: campaign.payment_id?.title || 'Unknown Payment',
+                description: campaign.payment_id?.description || '',
+                type: campaign.payment_id?.type || 'fee',
+                amount_due: campaign.payment_id?.amount_due || 0,
+                deadline: campaign.payment_id?.deadline,
+                is_paid: campaign.payment_status === 'paid',
+                payment_status: campaign.payment_status,
+                paid_date: campaign.paid_at,
+                amount_paid: campaign.amount_paid || 0,
+                payment_method: campaign.payment_method,
+                notes: campaign.notes,
+                created_at: campaign.created_at
+            }));
         
         // Sort by date, most recent first
         formattedRecords.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));

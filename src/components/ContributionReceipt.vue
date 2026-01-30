@@ -371,7 +371,7 @@ export default {
     },
     async downloadReceipt() {
       if (!this.html2pdf) {
-        alert('PDF library is still loading. Please try again in a moment.')
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { type: 'warning', message: 'PDF library is still loading. Please try again in a moment.' } }))
         return
       }
 
@@ -391,7 +391,7 @@ export default {
         this.html2pdf().set(opt).from(element).save()
       } catch (error) {
         console.error('Error downloading receipt:', error)
-        alert('Failed to download receipt. Please try again.')
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { type: 'error', message: 'Failed to download receipt. Please try again.' } }))
       } finally {
         this.isDownloading = false
       }

@@ -24,17 +24,6 @@
         <!-- Tab Navigation -->
         <div class="flex gap-2 border-b-2 border-gray-200">
           <button
-            @click="activeTab = 'roles'"
-            :class="[
-              'px-3 md:px-4 py-2 font-medium transition-all duration-200 border-b-2 text-sm md:text-base',
-              activeTab === 'roles'
-                ? 'text-purple-600 border-purple-600'
-                : 'text-gray-600 border-transparent hover:text-purple-600'
-            ]"
-          >
-            Roles
-          </button>
-          <button
             @click="activeTab = 'users'"
             :class="[
               'px-3 md:px-4 py-2 font-medium transition-all duration-200 border-b-2 text-sm md:text-base',
@@ -45,88 +34,17 @@
           >
             Users
           </button>
-        </div>
-      </div>
-
-      <!-- ROLES TAB -->
-      <div v-if="activeTab === 'roles'" class="space-y-6">
-        <!-- Roles Grid -->
-        <div class="flex justify-center">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-4xl">
-          <!-- Medpub Card -->
-          <div 
-            class="relative bg-gradient-to-br from-yellow-50 via-orange-50 to-yellow-50 border-2 border-yellow-300 rounded-xl md:rounded-2xl p-5 md:p-8 hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 group overflow-hidden"
-            @click="viewRoleMembers('Medpub')"
+          <button
+            @click="activeTab = 'roles'"
+            :class="[
+              'px-3 md:px-4 py-2 font-medium transition-all duration-200 border-b-2 text-sm md:text-base',
+              activeTab === 'roles'
+                ? 'text-purple-600 border-purple-600'
+                : 'text-gray-600 border-transparent hover:text-purple-600'
+            ]"
           >
-            <!-- Light sweep effect -->
-            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-40 animate-sweep pointer-events-none rounded-xl md:rounded-2xl"></div>
-            
-            <!-- Icon -->
-            <div class="flex justify-center mb-4 md:mb-6 relative z-10">
-              <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full p-3 md:p-4 shadow-lg group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
-                <img src="/medpub.svg" alt="Medpub" class="w-8 md:w-12 h-8 md:h-12 text-white" />
-              </div>
-            </div>
-
-            <!-- Role Header -->
-            <div class="text-center mb-4 md:mb-6 relative z-10">
-              <h3 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-500 bg-clip-text text-transparent mb-1 md:mb-2">Medpub</h3>
-              <p class="text-xs md:text-sm text-gray-600">{{ getRoleDescription('Medpub') }}</p>
-            </div>
-
-            <!-- Members Count -->
-            <div class="bg-white bg-opacity-70 rounded-lg md:rounded-xl p-3 md:p-4 mb-4 md:mb-6 border border-yellow-200 relative z-10">
-              <div class="flex items-center justify-center">
-                <span class="text-gray-700 font-medium text-sm md:text-base mr-2 md:mr-3">Members</span>
-                <span class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-600 to-orange-500 bg-clip-text text-transparent">{{ getRoleMemberCount('Medpub') }}</span>
-              </div>
-            </div>
-
-            <!-- Manage Members Button -->
-            <button 
-              class="w-full relative z-10 bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 rounded-lg md:rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 font-bold text-sm md:text-base shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
-            >
-              Manage Members
-            </button>
-          </div>
-
-          <!-- Treasurer Card -->
-          <div 
-            class="relative bg-gradient-to-br from-cyan-50 via-teal-50 to-cyan-50 border-2 border-cyan-300 rounded-xl md:rounded-2xl p-5 md:p-8 hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 group overflow-hidden"
-            @click="viewRoleMembers('Treasurer')"
-          >
-            <!-- Light sweep effect -->
-            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-40 animate-sweep pointer-events-none rounded-xl md:rounded-2xl"></div>
-            
-            <!-- Icon -->
-            <div class="flex justify-center mb-4 md:mb-6 relative z-10">
-              <div class="bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full p-3 md:p-4 shadow-lg group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
-                <img src="/treasurer.svg" alt="Treasurer" class="w-8 md:w-12 h-8 md:h-12 text-white" />
-              </div>
-            </div>
-
-            <!-- Role Header -->
-            <div class="text-center mb-4 md:mb-6 relative z-10">
-              <h3 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent mb-1 md:mb-2">Treasurer</h3>
-              <p class="text-xs md:text-sm text-gray-600">{{ getRoleDescription('Treasurer') }}</p>
-            </div>
-
-            <!-- Members Count -->
-            <div class="bg-white bg-opacity-70 rounded-lg md:rounded-xl p-3 md:p-4 mb-4 md:mb-6 border border-cyan-200 relative z-10">
-              <div class="flex items-center justify-center">
-                <span class="text-gray-700 font-medium text-sm md:text-base mr-2 md:mr-3">Members</span>
-                <span class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">{{ getRoleMemberCount('Treasurer') }}</span>
-              </div>
-            </div>
-
-            <!-- Manage Members Button -->
-            <button 
-              class="w-full relative z-10 bg-gradient-to-r from-cyan-600 to-teal-600 text-white py-2 md:py-3 px-4 rounded-lg md:rounded-xl hover:from-cyan-700 hover:to-teal-700 transition-all duration-300 font-bold text-sm md:text-base shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
-            >
-              Manage Members
-            </button>
-          </div>
-        </div>
+            Roles
+          </button>
         </div>
       </div>
 
@@ -217,8 +135,39 @@
             </div>
           </div>
 
-          <!-- Filter by Verification Status -->
+          <!-- Filter by Program -->
           <div class="space-y-3 animate-fade-in-delay-2">
+            <p class="text-xs font-bold text-gray-600 uppercase tracking-wider">Program</p>
+            <div class="flex gap-2 flex-wrap">
+              <button
+                @click="userProgramFilter = null"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === null ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-indigo-300 hover:shadow-md']"
+              >
+                All Programs
+              </button>
+              <button
+                @click="userProgramFilter = 'BSCS'"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSCS' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-indigo-300 hover:shadow-md']"
+              >
+                BSCS
+              </button>
+              <button
+                @click="userProgramFilter = 'BSIT'"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSIT' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-indigo-300 hover:shadow-md']"
+              >
+                BSIT
+              </button>
+              <button
+                @click="userProgramFilter = 'BSIS'"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSIS' ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-indigo-300 hover:shadow-md']"
+              >
+                BSIS
+              </button>
+            </div>
+          </div>
+
+          <!-- Filter by Verification Status -->
+          <div class="space-y-3 animate-fade-in-delay-3">
             <p class="text-xs font-bold text-gray-600 uppercase tracking-wider">Verification Status</p>
             <div class="flex gap-2 flex-wrap">
               <button
@@ -445,6 +394,88 @@
         </div>
         <div v-else class="text-center py-12 text-gray-600">
           <p>No users found matching your search</p>
+        </div>
+      </div>
+
+      <!-- ROLES TAB -->
+      <div v-if="activeTab === 'roles'" class="space-y-6">
+        <!-- Roles Grid -->
+        <div class="flex justify-center">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-4xl">
+          <!-- Medpub Card -->
+          <div 
+            class="relative bg-gradient-to-br from-yellow-50 via-orange-50 to-yellow-50 border-2 border-yellow-300 rounded-xl md:rounded-2xl p-5 md:p-8 hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 group overflow-hidden"
+            @click="viewRoleMembers('Medpub')"
+          >
+            <!-- Light sweep effect -->
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-40 animate-sweep pointer-events-none rounded-xl md:rounded-2xl"></div>
+            
+            <!-- Icon -->
+            <div class="flex justify-center mb-4 md:mb-6 relative z-10">
+              <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full p-3 md:p-4 shadow-lg group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
+                <img src="/medpub.svg" alt="Medpub" class="w-8 md:w-12 h-8 md:h-12 text-white" />
+              </div>
+            </div>
+
+            <!-- Role Header -->
+            <div class="text-center mb-4 md:mb-6 relative z-10">
+              <h3 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-500 bg-clip-text text-transparent mb-1 md:mb-2">Medpub</h3>
+              <p class="text-xs md:text-sm text-gray-600">{{ getRoleDescription('Medpub') }}</p>
+            </div>
+
+            <!-- Members Count -->
+            <div class="bg-white bg-opacity-70 rounded-lg md:rounded-xl p-3 md:p-4 mb-4 md:mb-6 border border-yellow-200 relative z-10">
+              <div class="flex items-center justify-center">
+                <span class="text-gray-700 font-medium text-sm md:text-base mr-2 md:mr-3">Members</span>
+                <span class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-600 to-orange-500 bg-clip-text text-transparent">{{ getRoleMemberCount('Medpub') }}</span>
+              </div>
+            </div>
+
+            <!-- Manage Members Button -->
+            <button 
+              class="w-full relative z-10 bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 rounded-lg md:rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 font-bold text-sm md:text-base shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+            >
+              Manage Members
+            </button>
+          </div>
+
+          <!-- Treasurer Card -->
+          <div 
+            class="relative bg-gradient-to-br from-cyan-50 via-teal-50 to-cyan-50 border-2 border-cyan-300 rounded-xl md:rounded-2xl p-5 md:p-8 hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 group overflow-hidden"
+            @click="viewRoleMembers('Treasurer')"
+          >
+            <!-- Light sweep effect -->
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-40 animate-sweep pointer-events-none rounded-xl md:rounded-2xl"></div>
+            
+            <!-- Icon -->
+            <div class="flex justify-center mb-4 md:mb-6 relative z-10">
+              <div class="bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full p-3 md:p-4 shadow-lg group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
+                <img src="/treasurer.svg" alt="Treasurer" class="w-8 md:w-12 h-8 md:h-12 text-white" />
+              </div>
+            </div>
+
+            <!-- Role Header -->
+            <div class="text-center mb-4 md:mb-6 relative z-10">
+              <h3 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent mb-1 md:mb-2">Treasurer</h3>
+              <p class="text-xs md:text-sm text-gray-600">{{ getRoleDescription('Treasurer') }}</p>
+            </div>
+
+            <!-- Members Count -->
+            <div class="bg-white bg-opacity-70 rounded-lg md:rounded-xl p-3 md:p-4 mb-4 md:mb-6 border border-cyan-200 relative z-10">
+              <div class="flex items-center justify-center">
+                <span class="text-gray-700 font-medium text-sm md:text-base mr-2 md:mr-3">Members</span>
+                <span class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">{{ getRoleMemberCount('Treasurer') }}</span>
+              </div>
+            </div>
+
+            <!-- Manage Members Button -->
+            <button 
+              class="w-full relative z-10 bg-gradient-to-r from-cyan-600 to-teal-600 text-white py-2 md:py-3 px-4 rounded-lg md:rounded-xl hover:from-cyan-700 hover:to-teal-700 transition-all duration-300 font-bold text-sm md:text-base shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
+            >
+              Manage Members
+            </button>
+          </div>
+        </div>
         </div>
       </div>
     </div>
@@ -891,7 +922,7 @@ export default {
   name: 'Manage',
   data() {
     return {
-      activeTab: 'roles',
+      activeTab: 'users',
       roles: ['Medpub', 'Treasurer'],
       roleMembers: [],
       allUsers: [],
@@ -904,6 +935,7 @@ export default {
       userSearchQuery: '',
       userRoleFilter: null,
       userYearFilter: null,
+      userProgramFilter: null,
       userStatusFilter: null,
       showEditUserModal: false,
       editingUser: null,
@@ -975,6 +1007,14 @@ export default {
           if (this.userStatusFilter === 'unverified') return status === false
           if (this.userStatusFilter === 'unreadable') return status === 'unreadable'
           return true
+        })
+      }
+
+      // Apply program filter
+      if (this.userProgramFilter !== null) {
+        filtered = filtered.filter(user => {
+          const userProgram = (user.program || '').toUpperCase()
+          return userProgram === this.userProgramFilter.toUpperCase()
         })
       }
 
@@ -1054,6 +1094,9 @@ export default {
       this.currentPage = 1
     },
     userStatusFilter() {
+      this.currentPage = 1
+    },
+    userProgramFilter() {
       this.currentPage = 1
     }
   },
