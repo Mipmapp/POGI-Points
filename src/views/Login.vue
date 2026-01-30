@@ -157,8 +157,9 @@
     <div class="w-2/5 desktop-bg-panel flex-shrink-0">
       <div class="relative z-10 text-center">
         <div class="mb-4">
-          <div class="w-40 h-40 mx-auto flex items-center justify-center">
-            <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl" />
+          <div class="w-40 h-40 mx-auto flex items-center justify-center logo-sweep" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
+            <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
           </div>
         </div>
         <h1 class="text-4xl font-bold mb-2">SSAAM</h1>
@@ -233,8 +234,9 @@
   <div class="mobile-bg-panel md:hidden min-h-screen flex flex-col w-full">
 
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
-      <div class="w-32 h-32 mx-auto mb-4">
-        <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl" />
+      <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
+        <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
       </div>
       <h1 class="text-4xl font-bold mb-2">SSAAM</h1>
       <p class="text-lg mb-8">Let's Get Started!</p>
@@ -908,4 +910,5 @@ const verifyAdminCode = () => {
 .desktop-bg-panel, .mobile-bg-panel {
   transition: all 0.5s ease-in-out;
 }
+
 </style> 

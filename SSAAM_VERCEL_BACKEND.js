@@ -7146,9 +7146,12 @@ app.get('/apis/contributions/search', treasurerAuth, async (req, res) => {
         if (status) {
             const s = String(status).toLowerCase();
             if (s === 'unpaid') {
+                // Include unpaid, pending, and records with missing/null payment_status
                 clauses.push({ $or: [
                     { payment_status: { $regex: '^unpaid$', $options: 'i' } },
-                    { payment_status: { $regex: '^pending$', $options: 'i' } }
+                    { payment_status: { $regex: '^pending$', $options: 'i' } },
+                    { payment_status: { $exists: false } },
+                    { payment_status: null }
                 ]});
             } else {
                 clauses.push({ payment_status: { $regex: `^${s}$`, $options: 'i' } });
@@ -7166,9 +7169,12 @@ app.get('/apis/contributions/search', treasurerAuth, async (req, res) => {
         if (clauses.length) {
             filter.$and = clauses;
         }
+        // Log computed filter for debugging export/search mismatches
+        console.log('[CONTRIB SEARCH] computed filter:', JSON.stringify(filter), 'page:', page, 'limit:', limit);
 
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const total = await EventContribution.countDocuments(filter);
+        console.log('[CONTRIB SEARCH] matched total:', total);
         const contributions = await EventContribution.find(filter)
             .sort({ created_at: -1 })
             .skip(skip)
@@ -7198,9 +7204,12 @@ app.get('/apis/contributions/download/excel', treasurerAuth, async (req, res) =>
         if (status) {
             const s = String(status).toLowerCase();
             if (s === 'unpaid') {
+                // Include unpaid, pending, and records with missing/null payment_status
                 filter.$or = [
                     { payment_status: { $regex: '^unpaid$', $options: 'i' } },
-                    { payment_status: { $regex: '^pending$', $options: 'i' } }
+                    { payment_status: { $regex: '^pending$', $options: 'i' } },
+                    { payment_status: { $exists: false } },
+                    { payment_status: null }
                 ];
             } else {
                 filter.payment_status = { $regex: `^${s}$`, $options: 'i' };
@@ -7209,9 +7218,14 @@ app.get('/apis/contributions/download/excel', treasurerAuth, async (req, res) =>
         if (year_level) filter.year_level = year_level;
         if (program) filter.program = program;
 
+        // Log computed filter for download debug
+        console.log('[CONTRIB DOWNLOAD] computed filter:', JSON.stringify(filter));
+
         const contributions = await EventContribution.find(filter)
             .sort({ student_name: 1 })
             .select('student_id_number student_name program year_level payment_status original_amount discount_value target_amount paid_at');
+
+        console.log('[CONTRIB DOWNLOAD] found records:', contributions.length);
 
         // Format data for Excel - ensure headers even when empty
         const data = contributions.map(c => ({

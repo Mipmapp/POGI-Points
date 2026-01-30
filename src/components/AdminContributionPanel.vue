@@ -83,6 +83,7 @@
             <option value="">All Status</option>
             <option value="paid">Paid</option>
             <option value="unpaid">Unpaid</option>
+            <option value="pending">Pending</option>
           </select>
         </div>
       </div>
@@ -358,18 +359,25 @@ export default {
       return Math.max(0, this.campaignFee - this.calculatedDiscount);
     },
     filteredContributions() {
+      const fs = (this.filterStatus || '').toString().toLowerCase();
+      const fy = this.filterYearLevel;
+      const fp = this.filterProgram;
+
       return this.contributions.filter(c => {
-        const matchesLevel = !this.filterYearLevel || c.year_level === this.filterYearLevel;
-        const matchesProgram = !this.filterProgram || c.program === this.filterProgram;
+        const cStatus = (c.payment_status || '').toString().toLowerCase();
+        const matchesLevel = !fy || c.year_level === fy;
+        const matchesProgram = !fp || (c.program || '').toString() === fp;
+
         let matchesStatus = true;
-        if (this.filterStatus) {
-          if (this.filterStatus === 'unpaid') {
-            // treat 'unpaid' as any non-paid status (including 'pending')
-            matchesStatus = c.payment_status !== 'paid';
+        if (fs) {
+          if (fs === 'unpaid') {
+            // treat 'unpaid' as any non-paid status (including 'pending' or missing/null)
+            matchesStatus = !cStatus || cStatus !== 'paid';
           } else {
-            matchesStatus = c.payment_status === this.filterStatus;
+            matchesStatus = cStatus === fs;
           }
         }
+
         return matchesLevel && matchesProgram && matchesStatus;
       });
     },

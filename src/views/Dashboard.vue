@@ -5130,6 +5130,7 @@ import AdminContributionPanel from '../components/AdminContributionPanel.vue'
 import Manage from '../components/Manage.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
+import { handleTokenError, setTokenExpiredCallback } from '../utils/tokenHandler.js'
 
 const router = useRouter()
 const currentUser = ref({})
@@ -5427,6 +5428,12 @@ const fetchMyPayments = async () => {
       headers: { 'Authorization': `Bearer ${getSessionToken()}` }
     })
     const result = await response.json()
+    
+    // Check for token-related errors and auto-logout if needed
+    if (handleTokenError(response, result)) {
+      return
+    }
+    
     if (response.ok) {
       // Filter out invalid payments: those with no amount_due and empty/unknown title
       const validPayments = (result.data || []).filter(payment => 
@@ -7169,7 +7176,15 @@ const getFilteredPaymentRecords = (payment) => {
   return (payment.payment_records || []).filter(r => {
     // Status
     if (f.status && f.status !== 'all') {
-      if ((r.payment_status || '').toLowerCase() !== f.status.toLowerCase()) return false
+      const desired = (f.status || '').toString().toLowerCase()
+      const rstatus = (r.payment_status || '').toString().toLowerCase()
+
+      if (desired === 'unpaid') {
+        // Treat 'unpaid' as any non-paid state: include 'unpaid', 'pending', or missing/null statuses
+        if (!(rstatus === 'unpaid' || rstatus === 'pending' || !r.payment_status)) return false
+      } else {
+        if (rstatus !== desired) return false
+      }
     }
     // Year
     if (f.yearLevel && f.yearLevel !== '') {
@@ -8305,8 +8320,15 @@ const fetchSeenNotifications = async () => {
         'Authorization': `Bearer ${token}`
       }
     })
+    
+    const data = await response.json()
+    
+    // Check for token-related errors and auto-logout if needed
+    if (handleTokenError(response, data)) {
+      return
+    }
+    
     if (response.ok) {
-      const data = await response.json()
       seenNotificationIds.value = new Set(data.seen_notification_ids || [])
     }
   } catch (error) {
@@ -8403,6 +8425,12 @@ const displayName = computed(() => {
 })
 
 onMounted(async () => {
+  // Set up automatic logout callback for token errors
+  setTokenExpiredCallback(() => {
+    console.warn('Token expired, showing session expired modal')
+    showSessionExpiredModal.value = true
+  })
+  
   // Add ESC key listener for fullscreen mode
   document.addEventListener('keydown', handleEscKey)
   

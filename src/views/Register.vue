@@ -89,8 +89,9 @@
     <div class="desktop-bg-panel">
       <div class="relative z-10 text-center">
         <div class="mb-4">
-          <div class="w-40 h-40 mx-auto flex items-center justify-center">
-            <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl" />
+          <div class="w-40 h-40 mx-auto flex items-center justify-center" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
+            <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
           </div>
         </div>
         <h1 class="text-4xl font-bold mb-2">SSAAM</h1>
@@ -424,7 +425,11 @@
   <div class="mobile-bg-panel md:hidden min-h-screen flex flex-col">
 
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
-      <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="w-16 h-16 mx-auto mb-4 rounded-full bg-white bg-opacity-20 flex items-center justify-center">
+      <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
+        <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
+        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
+      </div>
+      <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center shadow-lg">
         <img src="/user_plus.svg" alt="Register" class="w-10 h-10" style="filter: brightness(0) invert(1);" />
       </div>
       <h1 class="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Let's Create</h1>
@@ -1142,6 +1147,11 @@ const handleNext = async () => {
       showErrorNotification.value = true
       return
     }
+    if (formData.middle_name && formData.middle_name.trim().length < 3) {
+      errorMessage.value = "Middle name must be at least 3 characters long."
+      showErrorNotification.value = true
+      return
+    }
     if (!formData.last_name || !formData.last_name.trim()) {
       errorMessage.value = "Please provide your last name to proceed."
       showErrorNotification.value = true
@@ -1323,7 +1333,7 @@ const goToLogin = () => {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(135deg, rgba(109, 40, 217, 0.9) 0%, rgba(219, 39, 119, 0.9) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, rgba(109, 40, 217, 0.95) 0%, rgba(219, 39, 119, 0.95) 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   width: 40%;
@@ -1338,7 +1348,7 @@ const goToLogin = () => {
 }
 
 .mobile-bg-panel {
-  background: linear-gradient(135deg, rgba(109, 40, 217, 0.9) 0%, rgba(219, 39, 119, 0.9) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, rgba(109, 40, 217, 0.95) 0%, rgba(219, 39, 119, 0.95) 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
 }
