@@ -4574,12 +4574,15 @@
             <!-- Program Filter -->
             <div>
               <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
-              <input 
+              <select 
                 v-model="eventUserFilters.program" 
-                type="text" 
-                placeholder="Filter by program (e.g., BSCS, BSIT)..." 
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
-              />
+              >
+                <option value="">All Programs</option>
+                <option value="BSIT">BSIT</option>
+                <option value="BSCS">BSCS</option>
+                <option value="BSIS">BSIS</option>
+              </select>
             </div>
             
             <!-- Year Level Filter -->
@@ -4625,18 +4628,7 @@
             </div>
           </div>
 
-          <!-- Selected Users Pills -->
-          <div v-if="newEvent.assigned_users.length > 0" class="mb-3 pb-3 border-b border-purple-300">
-            <p class="text-xs font-semibold text-purple-700 mb-2">Selected: {{ newEvent.assigned_users.length }} student(s)</p>
-            <div class="flex flex-wrap gap-2">
-              <div v-for="userId in newEvent.assigned_users" :key="userId" class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2">
-                <span>{{ getUserDisplayName(users.find(u => u._id === userId)) }}</span>
-                <button @click="newEvent.assigned_users = newEvent.assigned_users.filter(id => id !== userId)" type="button" class="hover:text-purple-900">×</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- User List -->
+          <!-- User List (Search Results) -->
           <div class="max-h-48 overflow-y-auto border border-purple-200 rounded-lg bg-white">
             <div v-if="filteredEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
               No students found
@@ -4653,6 +4645,17 @@
                 <p class="text-xs text-gray-600 mt-0.5">{{ user.student_id }} • {{ user.program }} • {{ user.year_level }}</p>
               </div>
             </label>
+          </div>
+
+          <!-- Selected Users Pills -->
+          <div v-if="newEvent.assigned_users.length > 0" class="mb-3 pb-3 border-b border-purple-300">
+            <p class="text-xs font-semibold text-purple-700 mb-2">Selected: {{ newEvent.assigned_users.length }} student(s)</p>
+            <div class="flex flex-wrap gap-2">
+              <div v-for="userId in newEvent.assigned_users" :key="userId" class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2">
+                <span>{{ getUserDisplayName(users.find(u => u._id === userId)) }}</span>
+                <button @click="newEvent.assigned_users = newEvent.assigned_users.filter(id => id !== userId)" type="button" class="hover:text-purple-900">×</button>
+              </div>
+            </div>
           </div>
 
           <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-xs text-blue-700">
@@ -4766,12 +4769,15 @@
             <!-- Program Filter -->
             <div>
               <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
-              <input 
+              <select 
                 v-model="editEventUserFilters.program" 
-                type="text" 
-                placeholder="Filter by program (e.g., BSCS, BSIT)..." 
                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
-              />
+              >
+                <option value="">All Programs</option>
+                <option value="BSIT">BSIT</option>
+                <option value="BSCS">BSCS</option>
+                <option value="BSIS">BSIS</option>
+              </select>
             </div>
             
             <!-- Year Level Filter -->
@@ -4816,17 +4822,8 @@
               </button>
             </div>
           </div>
-          <div v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0" class="mb-3 pb-3 border-b border-purple-300">
-            <p class="text-xs font-semibold text-purple-700 mb-2">Selected: {{ selectedEvent.assigned_users.length }} student(s)</p>
-            <div class="flex flex-wrap gap-2">
-              <div v-for="userId in selectedEvent.assigned_users" :key="userId" class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2">
-                <span>{{ getUserDisplayName(users.find(u => u._id === userId)) }}</span>
-                <button @click="selectedEvent.assigned_users = selectedEvent.assigned_users.filter(id => id !== userId)" type="button" class="hover:text-purple-900">×</button>
-              </div>
-            </div>
-          </div>
 
-          <!-- User List -->
+          <!-- User List (Search Results) -->
           <div class="max-h-48 overflow-y-auto border border-purple-200 rounded-lg bg-white">
             <div v-if="filteredEditEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
               No students found
@@ -4843,6 +4840,17 @@
                 <p class="text-xs text-gray-600 mt-0.5">{{ user.student_id }} • {{ user.program }} • {{ user.year_level }}</p>
               </div>
             </label>
+          </div>
+
+          <!-- Selected Users Pills -->
+          <div v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0" class="mb-3 pb-3 border-b border-purple-300">
+            <p class="text-xs font-semibold text-purple-700 mb-2">Selected: {{ selectedEvent.assigned_users.length }} student(s)</p>
+            <div class="flex flex-wrap gap-2">
+              <div v-for="userId in selectedEvent.assigned_users" :key="userId" class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2">
+                <span>{{ getUserDisplayName(users.find(u => u._id === userId)) }}</span>
+                <button @click="selectedEvent.assigned_users = selectedEvent.assigned_users.filter(id => id !== userId)" type="button" class="hover:text-purple-900">×</button>
+              </div>
+            </div>
           </div>
 
           <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-xs text-blue-700">
