@@ -2832,113 +2832,176 @@
 
         <!-- Payments Page -->
         <div v-if="currentPage === 'payments'" class="space-y-6">
-          <div v-if="currentUser.role === 'admin' || currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
-            <!-- Create Payment Section -->
-            <div class="mb-8 pb-8 border-b">
-              <h2 class="text-2xl font-bold text-purple-900 mb-6">Create New Payment</h2>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Title</label>
-                  <input v-model="newPaymentData.title" type="text" placeholder="e.g., Membership Fee Q1 2026" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
-                </div>
-                <div>
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Type</label>
-                  <select v-model="newPaymentData.type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none">
-                    <option value="membership">Membership</option>
-                    <option value="donation">Donation</option>
-                    <option value="fee">Fee</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div class="md:col-span-2">
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">Amount Due (₱)</label>
-                  <input v-model.number="newPaymentData.amount_due" type="number" placeholder="0.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
-                </div>
-                <div class="md:col-span-2">
-                  <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                  <textarea v-model="newPaymentData.description" placeholder="Add notes or details..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" rows="3"></textarea>
-                </div>
+          <div v-if="currentUser.role === 'admin' || currentUser.isMaster" class="space-y-6">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
+              <div>
+                <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Payment Management</h1>
+                <p class="text-gray-600 mt-1">Create and manage payment campaigns for students</p>
               </div>
               <button 
-                @click="createPayment" 
-                :disabled="creatingPayment || !newPaymentData.title.trim()"
-                class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 flex items-center gap-2"
+                @click="refreshAllData()"
+                :disabled="paymentsLoading"
+                class="px-4 py-2 bg-white border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition disabled:opacity-50 flex items-center gap-2 self-start md:self-auto"
               >
-                <svg v-if="creatingPayment" class="animate-spin h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                {{ creatingPayment ? 'Creating...' : 'Create Payment' }}
+                <svg class="w-4 h-4" :class="paymentsLoading && 'animate-spin'" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                {{ paymentsLoading ? 'Refreshing...' : 'Refresh' }}
               </button>
+            </div>
+
+            <!-- Create Payment Section -->
+            <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-6 border border-purple-100 shadow-sm">
+              <div class="flex items-center gap-3 mb-5">
+                <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                </div>
+                <h2 class="text-xl font-bold text-gray-900">Create New Payment Campaign</h2>
+              </div>
+              
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <!-- Left Column: Form Fields -->
+                <div class="md:col-span-1 space-y-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Campaign Title</label>
+                    <input v-model="newPaymentData.title" type="text" placeholder="e.g., Membership Fee Q1 2026" class="w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Type</label>
+                    <select v-model="newPaymentData.type" class="w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition">
+                      <option value="fee">Fee</option>
+                      <option value="membership">Membership</option>
+                      <option value="donation">Donation</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Amount Due (₱)</label>
+                    <input v-model.number="newPaymentData.amount_due" type="number" placeholder="0.00" class="w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition" />
+                  </div>
+                  <button 
+                    @click="createPayment" 
+                    :disabled="creatingPayment || !newPaymentData.title.trim()"
+                    class="w-full px-4 py-2.5 text-sm font-semibold bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl hover:from-purple-700 hover:to-pink-700 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    <svg v-if="creatingPayment" class="animate-spin h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    {{ creatingPayment ? 'Creating...' : 'Create Payment' }}
+                  </button>
+                </div>
+
+                <!-- Right Column: Description -->
+                <div class="md:col-span-2">
+                  <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Description (Optional)</label>
+                  <textarea v-model="newPaymentData.description" placeholder="Add notes, details, or instructions..." class="w-full h-full min-h-48 px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition resize-none" rows="4"></textarea>
+                </div>
+              </div>
             </div>
 
             <!-- Payments List -->
             <div>
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="text-xl font-bold text-gray-900">Active Payments</h3>
-                <button 
-                  @click="refreshAllData()"
-                  :disabled="paymentsLoading"
-                  class="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm hover:bg-blue-200 transition disabled:opacity-50"
-                >
-                  {{ paymentsLoading ? 'Loading...' : 'Refresh' }}
-                </button>
+              <h3 class="text-lg font-bold text-gray-900 mb-4">Active Campaigns</h3>
+
+              <div v-if="paymentsList.length === 0" class="text-center py-12">
+                <div class="w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center mx-auto mb-4">
+                  <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <p class="text-gray-600 font-medium">No payment campaigns yet</p>
+                <p class="text-gray-500 text-sm mt-1">Create your first payment campaign above</p>
               </div>
 
-              <div v-if="paymentsList.length === 0" class="text-center py-8 text-gray-500">
-                <p>No payments created yet</p>
-              </div>
-
-              <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div v-for="payment in paymentsList.filter(p => p.status === 'active')" :key="payment._id" class="relative bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 border border-purple-200 hover:shadow-lg transition">
-                  <!-- Card-level overlay for Manage Payments (fade + pop) -->
+              <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <div v-for="payment in paymentsList.filter(p => p.status === 'active')" :key="payment._id" class="relative bg-white rounded-2xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                  <!-- Gradient accent bar -->
+                  <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                  
+                  <!-- Loading overlay -->
                   <transition name="card-overlay">
-                    <div v-if="activeCardLoadingId === payment._id" class="absolute inset-0 z-30 flex items-center justify-center rounded-lg">
-                      <div class="absolute inset-0 bg-black bg-opacity-30 backdrop-blur-sm transition-opacity"></div>
-                      <transition name="modal-bounce">
-                        <div class="relative z-40 bg-white rounded-xl px-5 py-4 shadow-2xl flex items-center gap-3">
-                          <svg class="animate-spin h-6 w-6 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                          <div class="text-sm font-medium text-gray-700">Loading payment details...</div>
-                        </div>
-                      </transition>
+                    <div v-if="activeCardLoadingId === payment._id" class="absolute inset-0 z-30 flex items-center justify-center">
+                      <div class="absolute inset-0 bg-black bg-opacity-20 backdrop-blur-sm"></div>
+                      <div class="relative z-40 bg-white rounded-xl px-5 py-4 shadow-2xl flex items-center gap-3">
+                        <svg class="animate-spin h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                        <span class="text-sm font-medium text-gray-700">Loading...</span>
+                      </div>
                     </div>
                   </transition>
-                  <div class="flex justify-between items-start mb-2">
-                    <h4 class="font-bold text-gray-900">{{ payment.title }}</h4>
-                    <span class="text-xs font-semibold px-2 py-1 bg-blue-200 text-blue-800 rounded-full">{{ (payment.type || 'fee').charAt(0).toUpperCase() + (payment.type || 'fee').slice(1) }}</span>
-                  </div>
-                  <p class="text-sm text-gray-600 mb-3">{{ payment.description }}</p>
-                  
-                  <div class="bg-white rounded-lg p-3 mb-3 space-y-1 text-sm">
-                    <div class="flex justify-between">
-                      <span class="text-gray-600">Students:</span>
-                      <span class="font-bold">{{ payment.stats.total_students }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                      <span class="text-gray-600">Paid:</span>
-                      <span class="font-bold text-green-600">{{ payment.stats.paid_count }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                      <span class="text-gray-600">Unpaid:</span>
-                      <span class="font-bold text-red-600">{{ payment.stats.unpaid_count }}</span>
-                    </div>
-                    <div class="flex justify-between pt-1 border-t">
-                      <span class="text-gray-600">Progress:</span>
-                      <span class="font-bold text-blue-600">{{ payment.stats.completion_percentage }}%</span>
-                    </div>
-                  </div>
 
-                  <div class="w-full bg-gray-200 rounded-full h-2 mb-3">
-                    <div class="bg-green-500 h-2 rounded-full transition-all" :style="{ width: payment.stats.completion_percentage + '%' }"></div>
-                  </div>
+                  <div class="p-5">
+                    <!-- Header -->
+                    <div class="flex items-start justify-between gap-3 mb-4">
+                      <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-gray-900 line-clamp-2">{{ payment.title }}</h4>
+                        <p class="text-sm text-gray-600 line-clamp-1 mt-0.5">{{ payment.description }}</p>
+                      </div>
+                      <span :class="[
+                        'text-xs font-bold px-3 py-1 rounded-lg whitespace-nowrap',
+                        payment.type === 'fee' && 'bg-blue-100 text-blue-700',
+                        payment.type === 'membership' && 'bg-purple-100 text-purple-700',
+                        payment.type === 'donation' && 'bg-green-100 text-green-700',
+                        !['fee', 'membership', 'donation'].includes(payment.type) && 'bg-gray-100 text-gray-700'
+                      ]">{{ (payment.type || 'fee').charAt(0).toUpperCase() + (payment.type || 'fee').slice(1) }}</span>
+                    </div>
 
-                  <button 
-                    @click="handleManagePaymentFromCard(payment)"
-                    class="w-full px-3 py-2 bg-purple-600 text-white rounded-lg text-sm hover:bg-purple-700 transition font-medium"
-                  >
-                    Manage Payments
-                  </button>
+                    <!-- Stats Grid -->
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                      <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-3 border border-blue-200">
+                        <div class="text-xs text-blue-600 font-semibold uppercase">Total Students</div>
+                        <div class="text-2xl font-bold text-blue-900 mt-1">{{ payment.stats.total_students }}</div>
+                      </div>
+                      <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-3 border border-purple-200">
+                        <div class="text-xs text-purple-600 font-semibold uppercase">Progress</div>
+                        <div class="text-2xl font-bold text-purple-900 mt-1">{{ payment.stats.completion_percentage }}%</div>
+                      </div>
+                    </div>
+
+                    <!-- Stats Details -->
+                    <div class="space-y-2 mb-4 pb-4 border-b border-gray-100">
+                      <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Paid</span>
+                        <span class="font-bold text-green-600">{{ payment.stats.paid_count }}</span>
+                      </div>
+                      <div class="flex items-center justify-between text-sm">
+                        <span class="text-gray-600">Unpaid</span>
+                        <span class="font-bold text-red-600">{{ payment.stats.unpaid_count }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="mb-4">
+                      <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                        <div class="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300" :style="{ width: payment.stats.completion_percentage + '%' }"></div>
+                      </div>
+                    </div>
+
+                    <!-- Action Button -->
+                    <button 
+                      @click="handleManagePaymentFromCard(payment)"
+                      class="w-full px-4 py-2.5 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 text-purple-700 rounded-xl text-sm font-semibold hover:from-purple-100 hover:to-pink-100 hover:border-purple-400 transition group-hover:shadow-md"
+                    >
+                      Manage Campaign
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+
+          <!-- Full Screen Payment Loading Modal -->
+          <transition name="fade">
+            <div v-if="activeCardLoadingId" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div class="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm rounded-3xl"></div>
+              <div class="bg-white rounded-3xl shadow-2xl px-6 py-8 sm:px-8 sm:py-10 flex flex-col items-center gap-4 max-w-sm w-full relative z-10">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
+                  <svg class="animate-spin h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  </svg>
+                </div>
+                <div class="text-center">
+                  <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Loading Payment Details</h3>
+                  <p class="text-sm text-gray-600">Please wait while we fetch the payment information...</p>
+                </div>
+              </div>
+            </div>
+          </transition>
 
           <!-- Payment Download Confirmation Modal -->
   <transition name="fade">
@@ -3390,7 +3453,7 @@
                 <div class="flex-1">
                   <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
                     <div>
-                      <h3 class="text-lg font-semibold text-purple-900">{{ student.first_name }} {{ student.middle_name || '' }} {{ student.last_name }} {{ student.suffix ? student.suffix : 'N/A' }}</h3>
+                      <h3 class="text-lg font-semibold text-purple-900">{{ student.first_name }} {{ student.middle_name || '' }} {{ student.last_name }} {{ student.suffix || '' }}</h3>
                       <p class="text-sm text-gray-500">{{ student.student_id }}</p>
                     </div>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 w-fit">

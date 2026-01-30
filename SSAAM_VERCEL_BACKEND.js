@@ -2948,11 +2948,9 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
             const rfidStatus = student.rfid_status;
             if (rfidStatus === 'verified') {
                 verifiedCount++;
-            } else if (rfidStatus === 'unverified') {
-                unverifiedCount++;
-            } else if (rfidStatus && rfidStatus !== '' && rfidStatus !== null && rfidStatus !== undefined) {
+            } else if (rfidStatus === 'Unreadable') {
                 unreadableCount++;
-            } else {
+            } else if (rfidStatus === 'unverified' || !rfidStatus || rfidStatus === '' || rfidStatus === null) {
                 unverifiedCount++;
             }
         });
@@ -3688,6 +3686,14 @@ app.put('/apis/students/:student_id', auth, timestampAuth, async (req, res) => {
 
         if (updates.program && !VALID_PROGRAMS.includes(updates.program)) {
             return res.status(400).json({ message: "Program must be one of: BSCS, BSIT, or BSIS" });
+        }
+
+        // If rfid_code is being set and it's not an UNREADABLE code, and rfid_status is not explicitly set, mark as verified
+        if (updates.rfid_code) {
+            const isUnreadable = typeof updates.rfid_code === 'string' && updates.rfid_code.toUpperCase().startsWith('UNREADABLE');
+            if (!isUnreadable && !updates.rfid_status) {
+                updates.rfid_status = 'verified';
+            }
         }
 
         if (updates.first_name || updates.middle_name !== undefined || updates.last_name || updates.suffix !== undefined) {
