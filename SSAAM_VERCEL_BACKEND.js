@@ -5757,7 +5757,9 @@ app.post('/apis/attendance/events', auth, async (req, res) => {
 // Update attendance event (admin only)
 app.put('/apis/attendance/events/:id', auth, async (req, res) => {
     try {
-        const { title, description, location, event_date, year_level, status, start_time, end_time } = req.body;
+        const { title, description, location, event_date, year_level, status, start_time, end_time, is_custom, assigned_users } = req.body;
+
+        console.log(`[Event Update] ID: ${req.params.id}, assigned_users received:`, assigned_users);
 
         const event = await AttendanceEvent.findById(req.params.id);
         if (!event) {
@@ -5771,6 +5773,12 @@ app.put('/apis/attendance/events/:id', auth, async (req, res) => {
         if (year_level !== undefined) event.year_level = year_level;
         if (start_time !== undefined) event.start_time = start_time;
         if (end_time !== undefined) event.end_time = end_time;
+        if (is_custom !== undefined) event.is_custom = is_custom;
+        if (assigned_users !== undefined) {
+            console.log(`[Event Update] Before save - assigned_users:`, event.assigned_users);
+            event.assigned_users = assigned_users || [];
+            console.log(`[Event Update] After assignment - assigned_users:`, event.assigned_users);
+        }
 
         if (status && status !== event.status) {
             event.status = status;
@@ -5794,8 +5802,16 @@ app.put('/apis/attendance/events/:id', auth, async (req, res) => {
         event.updated_at = new Date();
         const updated = await event.save();
 
+        console.log(`[Event Update] After save - assigned_users:`, updated.assigned_users);
+
+        // Populate assigned_users before returning
+        await updated.populate('assigned_users', 'full_name name student_id program year_level');
+
+        console.log(`[Event Update] After populate - assigned_users:`, updated.assigned_users);
+
         res.json({ message: "Event updated successfully", event: updated });
     } catch (err) {
+        console.error(`[Event Update] Error:`, err.message);
         res.status(500).json({ message: err.message });
     }
 });

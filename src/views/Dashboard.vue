@@ -4598,13 +4598,31 @@
             </div>
             
             <!-- Clear Filters Button -->
-            <button 
-              @click="eventUserFilters = { name: '', program: '', yearLevel: '' }" 
-              type="button" 
-              class="text-xs text-purple-600 hover:text-purple-800 font-medium"
-            >
-              Clear All Filters
-            </button>
+            <div class="flex items-center gap-2 flex-wrap">
+              <button 
+                @click="eventUserFilters = { name: '', program: '', yearLevel: '' }" 
+                type="button" 
+                class="text-xs text-purple-600 hover:text-purple-800 font-medium"
+              >
+                Clear All Filters
+              </button>
+              <span class="text-xs text-gray-400">•</span>
+              <button 
+                @click="newEvent.assigned_users = filteredEventUsers.map(u => u._id)" 
+                type="button" 
+                class="text-xs text-green-600 hover:text-green-800 font-medium"
+              >
+                Select All
+              </button>
+              <button 
+                v-if="newEvent.assigned_users.length > 0"
+                @click="newEvent.assigned_users = []" 
+                type="button" 
+                class="text-xs text-red-600 hover:text-red-800 font-medium"
+              >
+                Deselect All
+              </button>
+            </div>
           </div>
 
           <!-- Selected Users Pills -->
@@ -4631,7 +4649,7 @@
                 class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-2 focus:ring-purple-600"
               />
               <div class="flex-1 min-w-0">
-                <p class="font-semibold text-gray-900 text-sm">{{ user.full_name || user.name || 'N/A' }}</p>
+                <p class="font-semibold text-gray-900 text-sm">{{ getUserDisplayName(user) }}</p>
                 <p class="text-xs text-gray-600 mt-0.5">{{ user.student_id }} • {{ user.program }} • {{ user.year_level }}</p>
               </div>
             </label>
@@ -4715,6 +4733,121 @@
             </span>
           </div>
           <p class="text-xs text-blue-700">Status is updated automatically based on the event date and session times.</p>
+        </div>
+
+        <!-- Custom Event Toggle (Edit) -->
+        <div class="flex items-center gap-3 bg-purple-50 border border-purple-200 rounded-lg p-4">
+          <input type="checkbox" v-model="selectedEvent.is_custom" id="editCustomEventToggle" class="w-4 h-4 text-purple-600 rounded cursor-pointer" />
+          <label for="editCustomEventToggle" class="flex-1 cursor-pointer">
+            <p class="font-medium text-purple-900">Custom Event (Select Specific Students)</p>
+            <p class="text-xs text-purple-700 mt-0.5">Enable this to assign this event to specific students from the complete student list</p>
+          </label>
+        </div>
+
+        <!-- User Selection Section (Edit) -->
+        <div v-if="selectedEvent.is_custom" class="border-2 border-purple-300 rounded-lg p-4 bg-purple-50 space-y-4">
+          <label class="block text-sm font-medium text-purple-900">Select Students to Assign to This Event</label>
+          
+          <!-- Filter Section -->
+          <div class="bg-white border border-purple-200 rounded-lg p-4 space-y-3">
+            <p class="text-xs font-semibold text-purple-700 mb-2">Filter Students</p>
+            
+            <!-- Name/Student ID Filter -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Name or Student ID</label>
+              <input 
+                v-model="editEventUserFilters.name" 
+                type="text" 
+                placeholder="Search by name or student ID..." 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
+              />
+            </div>
+            
+            <!-- Program Filter -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
+              <input 
+                v-model="editEventUserFilters.program" 
+                type="text" 
+                placeholder="Filter by program (e.g., BSCS, BSIT)..." 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
+              />
+            </div>
+            
+            <!-- Year Level Filter -->
+            <div>
+              <label class="block text-xs font-medium text-gray-700 mb-1">Year Level</label>
+              <select 
+                v-model="editEventUserFilters.yearLevel" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
+              >
+                <option value="">All Year Levels</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+            </div>
+            
+            <!-- Clear Filters Button -->
+            <div class="flex items-center gap-2 flex-wrap">
+              <button 
+                @click="editEventUserFilters = { name: '', program: '', yearLevel: '' }" 
+                type="button" 
+                class="text-xs text-purple-600 hover:text-purple-800 font-medium"
+              >
+                Clear All Filters
+              </button>
+              <span class="text-xs text-gray-400">•</span>
+              <button 
+                @click="selectedEvent.assigned_users = filteredEditEventUsers.map(u => u._id)" 
+                type="button" 
+                class="text-xs text-green-600 hover:text-green-800 font-medium"
+              >
+                Select All
+              </button>
+              <button 
+                v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0"
+                @click="selectedEvent.assigned_users = []" 
+                type="button" 
+                class="text-xs text-red-600 hover:text-red-800 font-medium"
+              >
+                Deselect All
+              </button>
+            </div>
+          </div>
+          <div v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0" class="mb-3 pb-3 border-b border-purple-300">
+            <p class="text-xs font-semibold text-purple-700 mb-2">Selected: {{ selectedEvent.assigned_users.length }} student(s)</p>
+            <div class="flex flex-wrap gap-2">
+              <div v-for="userId in selectedEvent.assigned_users" :key="userId" class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2">
+                <span>{{ getUserDisplayName(users.find(u => u._id === userId)) }}</span>
+                <button @click="selectedEvent.assigned_users = selectedEvent.assigned_users.filter(id => id !== userId)" type="button" class="hover:text-purple-900">×</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- User List -->
+          <div class="max-h-48 overflow-y-auto border border-purple-200 rounded-lg bg-white">
+            <div v-if="filteredEditEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
+              No students found
+            </div>
+            <label v-for="user in filteredEditEventUsers" :key="user._id" class="flex items-start gap-3 p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer last:border-b-0">
+              <input 
+                type="checkbox" 
+                :checked="selectedEvent.assigned_users && selectedEvent.assigned_users.includes(user._id)"
+                @change="toggleEditEventUser(user._id)"
+                class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-2 focus:ring-purple-600"
+              />
+              <div class="flex-1 min-w-0">
+                <p class="font-semibold text-gray-900 text-sm">{{ getUserDisplayName(user) }}</p>
+                <p class="text-xs text-gray-600 mt-0.5">{{ user.student_id }} • {{ user.program }} • {{ user.year_level }}</p>
+              </div>
+            </label>
+          </div>
+
+          <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-xs text-blue-700">
+            <strong>{{ selectedEvent.assigned_users ? selectedEvent.assigned_users.length : 0 }}</strong> student(s) can see this event
+          </div>
         </div>
         
         <!-- Sessions Management Section -->
@@ -7797,6 +7930,11 @@ const eventUserFilters = ref({
   program: '',
   yearLevel: ''
 })
+const editEventUserFilters = ref({
+  name: '',
+  program: '',
+  yearLevel: ''
+})
 const eventLogsFilter = ref({
   yearLevel: '',
   program: '',
@@ -7814,17 +7952,62 @@ const filteredEventUsers = computed(() => {
     return nameMatch && programMatch && yearLevelMatch
   })
 })
+const filteredEditEventUsers = computed(() => {
+  return users.value.filter(user => {
+    const nameMatch = (user.full_name || user.name || '').toLowerCase().includes(editEventUserFilters.value.name.toLowerCase()) ||
+                     (user.student_id || '').toLowerCase().includes(editEventUserFilters.value.name.toLowerCase())
+    const programMatch = !editEventUserFilters.value.program || (user.program || '').toLowerCase().includes(editEventUserFilters.value.program.toLowerCase())
+    const yearLevelMatch = !editEventUserFilters.value.yearLevel || (user.year_level || '').toLowerCase().includes(editEventUserFilters.value.yearLevel.toLowerCase())
+    
+    return nameMatch && programMatch && yearLevelMatch
+  })
+})
 const toggleEventUser = (userId) => {
-  const index = newEvent.value.assigned_users.indexOf(userId)
-  if (index > -1) {
-    newEvent.value.assigned_users.splice(index, 1)
-  } else {
-    newEvent.value.assigned_users.push(userId)
+  if (!newEvent.value.assigned_users) {
+    newEvent.value.assigned_users = []
   }
+  const currentUsers = newEvent.value.assigned_users
+  const index = currentUsers.indexOf(userId)
+  if (index > -1) {
+    // Remove user
+    currentUsers.splice(index, 1)
+  } else {
+    // Add user
+    currentUsers.push(userId)
+  }
+  // Force Vue reactivity by reassigning the entire array
+  newEvent.value = { ...newEvent.value, assigned_users: [...currentUsers] }
+}
+const toggleEditEventUser = (userId) => {
+  if (!selectedEvent.value.assigned_users) {
+    selectedEvent.value.assigned_users = []
+  }
+  const currentUsers = selectedEvent.value.assigned_users
+  const index = currentUsers.indexOf(userId)
+  if (index > -1) {
+    // Remove user
+    currentUsers.splice(index, 1)
+  } else {
+    // Add user
+    currentUsers.push(userId)
+  }
+  // Force Vue reactivity by reassigning the entire array
+  selectedEvent.value = { ...selectedEvent.value, assigned_users: [...currentUsers] }
 }
 const getUserDisplayName = (user) => {
   if (!user) return 'Unknown'
-  return user.full_name || user.name || user.student_id
+  
+  // Try full_name first
+  if (user.full_name && user.full_name.trim() !== '') return user.full_name
+  
+  // Try constructed name from parts
+  if (user.first_name || user.last_name) {
+    const parts = [user.first_name, user.middle_name, user.last_name].filter(p => p && p.trim() !== '')
+    if (parts.length > 0) return parts.join(' ')
+  }
+  
+  // Fall back to name or student_id
+  return user.name || user.student_id || 'Unknown'
 }
 const rfidInput = ref('')
 const rfidInputRef = ref(null)
@@ -10715,7 +10898,8 @@ const createAttendanceEvent = async () => {
           ...result.event,
           date: createdEventDate,
           start_time: createdEventStartTime,
-          end_time: createdEventEndTime
+          end_time: createdEventEndTime,
+          assigned_users: Array.isArray(result.event.assigned_users) ? result.event.assigned_users.map(u => typeof u === 'string' ? u : u._id) : []
         }
         eventSessions.value = []
         fetchEventSessions(result.event._id)
@@ -10748,8 +10932,17 @@ const updateAttendanceEvent = async () => {
       event_date: eventDate,
       year_level: selectedEvent.value.year_level || '',
       start_time: selectedEvent.value.start_time || selectedEvent.value.startTime || '07:00',
-      end_time: selectedEvent.value.end_time || selectedEvent.value.endTime || '17:00'
+      end_time: selectedEvent.value.end_time || selectedEvent.value.endTime || '17:00',
+      is_custom: selectedEvent.value.is_custom || false,
+      assigned_users: selectedEvent.value.assigned_users || []
     }
+    
+    console.log('[Frontend Update] Sending event payload:', {
+      id: selectedEvent.value._id,
+      is_custom: eventPayload.is_custom,
+      assigned_users: eventPayload.assigned_users,
+      assigned_users_count: (eventPayload.assigned_users || []).length
+    })
     
     const response = await fetch(buildAPIUrl(`/apis/attendance/events/${selectedEvent.value._id}`), {
       method: 'PUT',
@@ -10762,6 +10955,12 @@ const updateAttendanceEvent = async () => {
     })
     
     if (response.ok) {
+      const responseData = await response.json()
+      console.log('[Frontend Update] Response received:', {
+        is_custom: responseData.event?.is_custom,
+        assigned_users: responseData.event?.assigned_users,
+        assigned_users_count: (responseData.event?.assigned_users || []).length
+      })
       showNotification('Event updated successfully', 'success')
       showEditEventModal.value = false
       fetchAttendanceData()
@@ -11809,12 +12008,72 @@ const openSessionLogs = (session, event) => {
 }
 
 const openEditEvent = (event) => {
+  // Fetch all registered students before opening edit modal
+  const fetchStudentsForEdit = async () => {
+    try {
+      const response = await fetch(buildAPIUrl('/apis/students?limit=10000'), {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer SSAAMStudents`
+        }
+      })
+      
+      if (response.ok) {
+        const result = await response.json()
+        const allStudents = result.data || result
+        if (Array.isArray(allStudents)) {
+          users.value = allStudents.map(s => {
+            // Construct full name from components if not available
+            const fullName = s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim()
+            return {
+              ...s,
+              full_name: fullName,
+              studentId: s.student_id,
+              firstName: s.first_name,
+              middleName: s.middle_name || '',
+              lastName: s.last_name,
+              yearLevel: s.year_level,
+              rfidCode: s.rfid_code || 'N/A',
+              schoolYear: s.school_year,
+              image: s.photo || s.image || ''
+            }
+          })
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching students for edit:', error)
+    }
+  }
+  
+  // Fetch students
+  fetchStudentsForEdit()
+  
+  console.log('[openEditEvent] Event received:', {
+    title: event.title,
+    is_custom: event.is_custom,
+    assigned_users_raw: event.assigned_users,
+    assigned_users_type: typeof event.assigned_users,
+    assigned_users_isArray: Array.isArray(event.assigned_users),
+    assigned_users_length: event.assigned_users?.length
+  })
+  
+  const mappedUsers = Array.isArray(event.assigned_users) ? event.assigned_users.map(u => {
+    const id = typeof u === 'string' ? u : u._id
+    console.log('[openEditEvent] Mapping user:', { original: u, mapped_id: id })
+    return id
+  }) : []
+  
+  console.log('[openEditEvent] Mapped assigned_users:', mappedUsers)
+  
   selectedEvent.value = { 
     ...event,
     date: event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : event.date,
     start_time: event.start_time || event.startTime || '07:00',
-    end_time: event.end_time || event.endTime || '17:00'
+    end_time: event.end_time || event.endTime || '17:00',
+    assigned_users: mappedUsers,
+    is_custom: event.is_custom || false
   }
+  editEventUserFilters.value = { name: '', program: '', yearLevel: '' }
   eventSessions.value = []
   fetchEventSessions(event._id)
   showEditEventModal.value = true
