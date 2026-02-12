@@ -6861,7 +6861,14 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
                     success: true,
                     student_name: log.student_name,
                     cooldown_remaining: remainingSeconds,
-                    warning: 'duplicate_check_in_attempt'
+                    warning: 'duplicate_check_in_attempt',
+                    student: {
+                        full_name: log.student_name,
+                        photo: student.photo,
+                        student_id: student.student_id,
+                        program: log.program || student.program,
+                        year_level: log.year_level || student.year_level
+                    }
                 });
             }
             
@@ -6871,7 +6878,14 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
                 return res.status(403).json({ 
                     message: `${session.label} Already checked-in and check-out is currently disabled.`,
                     student_name: log.student_name,
-                    locked: 'check_out'
+                    locked: 'check_out',
+                    student: {
+                        full_name: log.student_name,
+                        photo: student.photo,
+                        student_id: student.student_id,
+                        program: log.program || student.program,
+                        year_level: log.year_level || student.year_level
+                    }
                 });
             }
 
@@ -6886,14 +6900,30 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
                 return res.status(429).json({ 
                     message: `Already completed for this session.`,
                     student_name: log.student_name,
-                    cooldown_remaining: remainingSeconds
+                    cooldown_remaining: remainingSeconds,
+                    action: 'already_checked_out',
+                    student: {
+                        full_name: log.student_name,
+                        photo: student.photo,
+                        student_id: student.student_id,
+                        program: log.program || student.program,
+                        year_level: log.year_level || student.year_level
+                    }
                 });
             }
             return res.status(400).json({ 
                 message: `Student already completed ${session.label} session attendance`,
                 student_name: log.student_name,
                 check_in_at: log.check_in_at,
-                check_out_at: log.check_out_at
+                check_out_at: log.check_out_at,
+                action: 'already_completed',
+                student: {
+                    full_name: log.student_name,
+                    photo: student.photo,
+                    student_id: student.student_id,
+                    program: log.program || student.program,
+                    year_level: log.year_level || student.year_level
+                }
             });
         }
 

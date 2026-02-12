@@ -237,18 +237,6 @@
             <div class="bg-white bg-opacity-15 backdrop-blur-lg rounded-2xl p-6 lg:p-8 border-2 border-green-400 border-opacity-50 shadow-2xl">
               <div class="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
                 <!-- Large Student Photo -->
-                <div class="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full flex-shrink-0 ring-4 ring-green-400 ring-opacity-60 shadow-xl">
-                  <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-3xl lg:text-4xl font-bold text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
-                    {{ getInitials(rfidResult.student?.full_name || rfidResult.student_name) }}
-                  </div>
-                  <img 
-                    v-if="rfidResult.student?.photo" 
-                    :src="rfidResult.student.photo" 
-                    class="absolute inset-0 w-full h-full rounded-full object-cover" 
-                    @error="$event.target.style.display='none'" 
-                  />
-                </div>
-                
                 <!-- Student Details -->
                 <div class="flex-1 text-center lg:text-left">
                   <div class="flex items-center justify-center lg:justify-start gap-2 mb-2">
@@ -283,19 +271,17 @@
           <div v-if="rfidResult && (rfidResult.action === 'already_checked_in' || (rfidResult.message && /already/i.test(rfidResult.message)))" class="mb-4 lg:mb-6">
             <div class="bg-yellow-500 bg-opacity-20 backdrop-blur-lg rounded-2xl p-8 lg:p-12 border-2 border-yellow-400 border-opacity-70 shadow-2xl">
               <div class="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
-                <div class="relative w-32 h-32 lg:w-40 lg:h-40 rounded-full flex-shrink-0 ring-4 ring-yellow-400 ring-opacity-70 shadow-xl">
-                  <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-4xl lg:text-5xl font-bold text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
-                    {{ getInitials(rfidResult.student?.full_name || rfidResult.student_name || (rfidResult.message || '').split(' ')[0]) }}
-                  </div>
-                  <img v-if="rfidResult.student?.photo" :src="rfidResult.student.photo" class="absolute inset-0 w-full h-full rounded-full object-cover" @error="$event.target.style.display='none'" />
-                </div>
-
                 <div class="flex-1 text-center lg:text-left">
                   <div class="flex items-center justify-center lg:justify-start gap-3 mb-3">
                     <svg class="w-8 h-8 lg:w-10 lg:h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span class="text-2xl lg:text-3xl font-bold text-yellow-300">{{ rfidOperationType === 'out' ? 'Already Logged Out' : 'Already Logged In' }}</span>
                   </div>
                   <p class="text-2xl lg:text-3xl font-bold text-white mb-2">{{ rfidResult.student?.full_name || rfidResult.student_name }}</p>
+                  <div v-if="rfidResult.student?.program || rfidResult.student?.year_level" class="text-lg lg:text-xl text-white text-opacity-90 mb-3">
+                    <span v-if="rfidResult.student?.program">{{ rfidResult.student.program }}</span>
+                    <span v-if="rfidResult.student?.program && rfidResult.student?.year_level"> • </span>
+                    <span v-if="rfidResult.student?.year_level">{{ rfidResult.student.year_level }}</span>
+                  </div>
                   <div class="flex flex-wrap justify-center lg:justify-start gap-2 mt-3">
                     <span v-if="rfidResult.student?.student_id" class="px-4 py-1 bg-white bg-opacity-20 rounded-full text-sm text-white">ID: {{ rfidResult.student.student_id }}</span>
                     <span v-if="rfidResult.student?.program" class="px-4 py-1 bg-yellow-500 bg-opacity-40 rounded-full text-sm text-white">{{ rfidResult.student.program }}</span>
@@ -429,12 +415,6 @@
               <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-xl sm:text-2xl font-bold text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
                 {{ getInitials(rfidResult.student?.full_name || rfidResult.student_name) }}
               </div>
-              <img 
-                v-if="rfidResult.student?.photo" 
-                :src="rfidResult.student.photo" 
-                class="absolute inset-0 w-full h-full rounded-full object-cover" 
-                @error="$event.target.style.display='none'" 
-              />
             </div>
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-2 mb-1">
@@ -9491,6 +9471,7 @@ const scanMode = ref('rfid') // 'rfid' or 'student_id'
 const recentlyScannedStudents = ref(new Set()) // Track recently scanned to avoid re-fetching photos
 const inFlightPhotoRequests = new Map() // Deduplicate concurrent photo fetches
 const attemptedPhotoFetches = new Set() // Track which students we've already attempted to fetch (never retry)
+const bulkRfidQueue = ref([]) // Queue for processing multiple IDs pasted at once
 
 // Computed property to filter out ended events for student view
 const activeNonEndedEvents = computed(() => {
@@ -13717,10 +13698,35 @@ const launchFullscreenScanner = () => {
   }
 }
 
-const manualRfidSubmit = () => {
+const manualRfidSubmit = async () => {
   if (!rfidInput.value.trim() || rfidProcessing.value) return
-  processRfidScan(rfidInput.value.trim())
+  
+  const input = rfidInput.value.trim()
   rfidInput.value = ''
+  
+  // Check if input contains multiple space-separated IDs
+  const ids = input.split(/\s+/).filter(id => id.length > 0)
+  
+  if (ids.length > 1) {
+    // Multiple IDs - add to queue and process
+    bulkRfidQueue.value.push(...ids)
+    showNotification(`Queued ${ids.length} ID(s) for processing...`, 'info')
+    
+    // Start processing the queue
+    await processBulkRfidQueue()
+  } else if (ids.length === 1) {
+    // Single ID - process normally
+    await processRfidScan(ids[0])
+  }
+}
+
+const processBulkRfidQueue = async () => {
+  while (bulkRfidQueue.value.length > 0) {
+    const code = bulkRfidQueue.value.shift()
+    await processRfidScan(code)
+    // Add small delay between each scan to allow UI updates
+    await new Promise(resolve => setTimeout(resolve, 500))
+  }
 }
 
 // Fetch and cache student photo from public endpoint (disabled - use fallback images)
@@ -13734,6 +13740,11 @@ const processRfidScan = async (inputCode) => {
   
   rfidProcessing.value = true
   rfidResult.value = null
+  
+  // If there are queued items and this is the first one, show queue info
+  if (bulkRfidQueue.value.length > 0) {
+    showNotification(`Processing... (${bulkRfidQueue.value.length} remaining in queue)`, 'info')
+  }
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   
   try {
