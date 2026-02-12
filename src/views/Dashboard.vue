@@ -8805,6 +8805,20 @@ const openCreateEventModalImpl = async () => {
   
   showCreateEventModal.value = true
 }
+// Ensure withAdminAction helper exists; if not, provide a simple passthrough wrapper
+const withAdminAction = (impl) => {
+  if (typeof impl !== 'function') return () => { console.warn('withAdminAction: impl is not a function'); }
+  return (...args) => {
+    try {
+      // Default behavior: just execute the implementation. More advanced admin verification
+      // can be added later (e.g., require a second verification step for sensitive actions).
+      return impl(...args)
+    } catch (err) {
+      console.error('withAdminAction wrapper caught error:', err)
+    }
+  }
+}
+
 const openCreateEventModal = () => withAdminAction(openCreateEventModalImpl)()
 const showEventLogsModal = ref(false)
 const selectedEvent = ref(null)
