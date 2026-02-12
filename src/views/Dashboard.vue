@@ -13780,14 +13780,14 @@ const processRfidScan = async (inputCode) => {
       if (studentPhoto) {
         cacheStudentPhoto(result.log, studentPhoto)
         cacheStudentPhoto(result.student, studentPhoto)
-      }
-      
-      // Also try to fetch and cache from the public endpoint for future displays
-      // This works even if user logs out later
-      const studentId = result.student?.student_id || result.student_id
-      const studentName = result.student?.full_name || result.student_name
-      if (studentId) {
-        fetchAndCacheStudentPhoto(studentId, studentName)
+      } else {
+        // Only fetch photo if not already provided in response
+        // This reduces unnecessary API calls
+        const studentId = result.student?.student_id || result.student_id
+        const studentName = result.student?.full_name || result.student_name
+        if (studentId) {
+          fetchAndCacheStudentPhoto(studentId, studentName)
+        }
       }
       
       fetchEventLogs(selectedEvent.value._id)
