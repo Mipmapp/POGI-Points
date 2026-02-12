@@ -2,7 +2,7 @@
   <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg shadow-lg p-3 md:p-8 min-h-screen">
     <!-- Loading State -->
     <div v-if="isLoading" class="flex items-center justify-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <div :class="['animate-spin rounded-full h-12 w-12 border-b-2', isCOE ? 'border-orange-600' : 'border-purple-600']"></div>
     </div>
 
     <!-- Main Content -->
@@ -10,7 +10,7 @@
       <!-- Header -->
       <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 class="text-2xl md:text-3xl font-bold text-purple-900">Attendance Management</h2>
+          <h2 :class="['text-2xl md:text-3xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Attendance Management</h2>
           <p class="text-gray-600 mt-1">Create and manage attendance events</p>
         </div>
 
@@ -20,7 +20,7 @@
       <div class="flex gap-2 border-b border-gray-200 overflow-x-auto">
         <button 
           @click="activeTab = 'all'"
-          :class="['px-4 py-2 font-medium whitespace-nowrap border-b-2 transition', activeTab === 'all' ? 'text-purple-600 border-purple-600' : 'text-gray-600 border-transparent hover:text-purple-600']"
+          :class="['px-4 py-2 font-medium whitespace-nowrap border-b-2 transition', activeTab === 'all' ? (isCOE ? 'text-orange-600 border-orange-600' : 'text-purple-600 border-purple-600') : 'text-gray-600 border-transparent hover:text-opacity-90']"
         >
           All Events ({{ events.length }})
         </button>
@@ -41,7 +41,7 @@
           v-for="event in filteredEvents" 
           :key="event._id"
           class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border-l-4"
-          :class="event.is_custom ? 'border-l-purple-600' : 'border-l-blue-600'"
+          :class="event.is_custom ? (isCOE ? 'border-l-orange-600' : 'border-l-purple-600') : 'border-l-blue-600'"
         >
           <!-- Event Header -->
           <div class="p-5 border-b border-gray-200">
@@ -50,7 +50,7 @@
                 <h3 class="text-lg font-bold text-gray-900">{{ event.title }}</h3>
                 <p class="text-sm text-gray-600 mt-1">{{ formatEventDate(event.event_date) }}</p>
               </div>
-              <span :class="['px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap', event.is_custom ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800']">
+              <span :class="['px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap', event.is_custom ? (isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800') : 'bg-blue-100 text-blue-800']">
                 {{ event.is_custom ? '✓ Custom' : 'Regular' }}
               </span>
             </div>
@@ -79,7 +79,7 @@
           <div class="p-5 flex flex-col sm:flex-row gap-2">
             <button 
               @click="viewEventDetails(event)"
-              class="flex-1 bg-blue-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-blue-700 transition font-medium"
+              :class="['flex-1 px-3 py-2 rounded-lg text-sm transition font-medium', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600' : 'bg-blue-600 text-white hover:bg-blue-700']"
             >
               Details
             </button>
@@ -91,7 +91,7 @@
 </template>
 
 <script>
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ssaam-api.vercel.app';
+import { buildAPIUrl } from '../config/api.js'
 
 export default {
   name: 'Attendance',
@@ -104,6 +104,20 @@ export default {
     };
   },
   computed: {
+    isCOE() {
+      try {
+        const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
+        const user = userJson ? JSON.parse(userJson) : {}
+        const userProgram = user.program
+        if (userProgram) {
+          const departments = require('../config/departments').default
+          for (const dept of departments) {
+            if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'COE'
+          }
+        }
+      } catch (e) {}
+      return false
+    },
     filteredEvents() {
       return this.events;
     }
@@ -117,7 +131,7 @@ export default {
       this.isLoading = true;
       try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`${API_BASE_URL}/apis/attendance/events`, {
+        const response = await fetch(buildAPIUrl('/apis/attendance/events'), {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {
@@ -133,7 +147,7 @@ export default {
     async loadAllUsers() {
       try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`${API_BASE_URL}/apis/students?limit=1000`, {
+        const response = await fetch(buildAPIUrl('/apis/students?limit=1000'), {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         if (response.ok) {

@@ -4,30 +4,30 @@
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-purple-900">Need Help?</h3>
+            <h3 class="text-2xl font-bold text-blue-900">Need Help?</h3>
             <button @click="showContactModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
           </div>
           
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            <div class="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
+            <div class="flex flex-col items-center text-center p-4 bg-blue-50 rounded-lg">
               <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
-              <p class="font-semibold text-purple-900 text-sm">Email Support</p>
+              <p class="font-semibold text-blue-900 text-sm">Email Support</p>
               <p class="text-xs text-gray-600 mt-2">ssaamjrmsu@gmail.com</p>
               <p class="text-xs text-gray-500 mt-1">For general inquiries</p>
             </div>
 
             <div class="flex flex-col items-center text-center p-4 bg-pink-50 rounded-lg">
               <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat;"></div>
-              <p class="font-semibold text-purple-900 text-sm">JRMSU CCS Office</p>
-              <p class="text-xs text-gray-600 mt-2">College of Computer Studies</p>
+              <p class="font-semibold text-blue-900 text-sm">JRMSU CCS Office</p>
+              <p class="text-xs text-gray-600 mt-2">College of Computing Studies</p>
               <p class="text-xs text-gray-500 mt-1">Visit during office hours</p>
             </div>
 
-            <div class="flex flex-col items-center text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
+            <div class="flex flex-col items-center text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
               <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat;"></div>
-              <p class="font-semibold text-purple-900 text-sm">Meet Our Developers</p>
+              <p class="font-semibold text-blue-900 text-sm">Meet Our Developers</p>
               <p class="text-xs text-gray-600 mt-2">CCS - Creatives Committee</p>
-              <button @click="showDevelopersPopup = true; showContactModal = false" class="text-xs text-purple-600 hover:text-purple-800 font-medium mt-2 underline">View Team →</button>
+              <button @click="showDevelopersPopup = true; showContactModal = false" class="text-xs text-blue-600 hover:text-blue-800 font-medium mt-2 underline">View Team →</button>
             </div>
           </div>
 
@@ -41,7 +41,7 @@
             </ul>
           </div>
 
-          <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
+          <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition">
             Close
           </button>
         </div>
@@ -50,22 +50,22 @@
   </transition>
 
   <transition name="fade">
-    <div v-if="showVerificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[120]">
+    <div v-if="showVerificationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[120]" @click.self="showVerificationModal = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
-          <div class="w-20 h-20 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-            <svg class="w-12 h-12 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-sm w-[calc(100%-2rem)] text-center">
+          <div class="w-20 h-20 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+            <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
             </svg>
           </div>
-          <h3 class="text-2xl font-bold text-purple-900 mb-2">2nd Verification</h3>
+          <h3 class="text-2xl font-bold mb-2 text-blue-900">2nd Verification</h3>
           <p class="text-gray-600 mb-6 text-sm">Please enter the daily verification code to access the Admin Dashboard.</p>
           
           <div v-if="verificationError" class="mb-4 p-3 bg-red-100 border border-red-200 rounded-lg text-red-700 text-sm font-medium animate-shake">
             {{ verificationErrorMessage }}
           </div>
 
-          <div class="flex justify-center gap-2 mb-8">
+          <div class="flex justify-center gap-2 mb-8 mx-4 w-full max-w-[320px] px-4 sm:px-6">
             <input 
               v-for="(digit, index) in 6" 
               :key="index"
@@ -73,7 +73,7 @@
               v-model="verificationDigits[index]"
               type="password"
               maxlength="1"
-              class="w-10 h-12 md:w-12 md:h-14 border-2 border-gray-300 rounded-lg text-center text-xl font-bold focus:border-purple-600 focus:ring-2 focus:ring-purple-200 outline-none transition-all"
+              class="w-9 h-10 sm:w-10 sm:h-12 md:w-12 md:h-14 border-2 border-blue-300 rounded-lg text-center text-lg sm:text-xl font-bold focus:border-blue-600 focus:ring-2 focus:ring-blue-200 outline-none transition-all"
               @input="handleDigitInput(index, $event)"
               @keydown.delete="handleDigitDelete(index, $event)"
               inputmode="numeric"
@@ -84,7 +84,7 @@
             <button @click="showVerificationModal = false; isLoading = false" class="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition duration-300">
               Cancel
             </button>
-            <button @click="verifyAdminCode" class="flex-1 px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300">
+            <button @click="verifyAdminCode" class="flex-1 px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300">
               Verify
             </button>
           </div>
@@ -125,26 +125,44 @@
   <transition name="fade">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
-            <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full mx-2 max-h-[80vh] overflow-y-auto transform transition-all duration-300">
+          <div class="relative mb-4">
+            <h3 class="text-2xl font-bold text-blue-900 text-center mx-auto">Meet Our Developers</h3>
+            <button @click="showDevelopersPopup = false" class="absolute right-0 top-0 text-gray-500 hover:text-gray-700 text-2xl -mt-1">&times;</button>
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-6">
-            <a v-for="(dev, index) in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" 
-               class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
-               :style="{ transitionDelay: `${index * 50}ms` }">
-              <div class="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-pink-400 flex items-center justify-center text-white text-2xl shadow-lg mb-3 overflow-hidden flex-shrink-0 ring-2 ring-purple-100">
-                <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
-                <span v-else>{{ dev.initials }}</span>
-              </div>
-              <p class="text-xs font-semibold text-purple-600 hover:text-purple-800 text-center line-clamp-2 min-h-[2rem] flex items-center">{{ dev.name }}</p>
-              <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-              <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
-            </a>
+          <div class="space-y-3 mb-4">
+            <!-- Top row: first 2 developers centered -->
+            <div class="flex justify-center gap-6">
+              <a v-for="(dev, index) in developers.slice(0,2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
+                 class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
+                 :style="{ transitionDelay: `${index * 50}ms` }">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white text-2xl shadow-lg mb-2 overflow-hidden flex-shrink-0 ring-2 ring-purple-100">
+                  <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
+                  <span v-else>{{ dev.initials }}</span>
+                </div>
+                <p class="text-sm font-semibold text-blue-600 hover:text-blue-800 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
+                <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
+                <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+              </a>
+            </div>
+
+            <!-- Bottom row: remaining developers in 3 columns -->
+            <div class="grid grid-cols-3 gap-6 justify-items-center">
+              <a v-for="(dev, idx) in developers.slice(2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
+                 class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
+                 :style="{ transitionDelay: `${(idx + 2) * 50}ms` }">
+                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white text-2xl shadow-lg mb-2 overflow-hidden flex-shrink-0 ring-2 ring-purple-100">
+                  <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
+                  <span v-else>{{ dev.initials }}</span>
+                </div>
+                <p class="text-sm font-semibold text-blue-600 hover:text-blue-800 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
+                <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
+                <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+              </a>
+            </div>
           </div>
           <div class="text-center text-sm text-gray-600">
-            <p class="font-medium text-purple-900">CCS - Creatives Committee</p>
+            <p class="font-medium text-blue-900">CCS - Creatives Committee</p>
             <p>Chairperson: Sheen Lee</p>
           </div>
         </div>
@@ -152,7 +170,102 @@
     </div>
   </transition>
 
-  <ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" @complete="handleLoadingComplete" />
+  <!-- Department Selector Modal -->
+  <transition name="fade">
+    <div v-if="showDepartmentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDepartmentModal = false">
+      <transition name="slide-up" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+          <!-- Programs Detail View with Slide Transition -->
+          <transition name="slide-left" mode="out-in">
+            <div v-if="selectedDepartment" :key="selectedDepartment.id" class="space-y-4 sm:space-y-6">
+              <!-- Profile-like Header -->
+              <div>
+                <button @click="selectedDepartment = null" class="mb-3 sm:mb-4 flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors text-sm sm:text-base">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5 transform -rotate-90">
+                    <path fill="currentColor" d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                  Back to Departments
+                </button>
+                
+                <!-- Profile Card Style -->
+                <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-blue-200">
+                  <div class="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
+                    <div class="flex-shrink-0">
+                      <img :src="selectedDepartment.logo" :alt="selectedDepartment.name" class="w-16 h-16 sm:w-24 sm:h-24 object-contain rounded-lg p-2 shadow-md" />
+                    </div>
+                    <div class="flex-1 text-center sm:text-left">
+                      <h2 class="text-lg sm:text-2xl font-bold text-blue-900 mb-1">{{ selectedDepartment.name }}</h2>
+                      <p class="text-xs sm:text-sm text-gray-600 font-medium">{{ selectedDepartment.programs.length }} programs available</p>
+                      <div class="mt-2 sm:mt-3 flex justify-center sm:justify-start">
+                        <span class="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">Department Selected</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Programs List -->
+              <div class="space-y-3 sm:space-y-4">
+                <h3 class="text-base sm:text-lg font-bold text-gray-900">Available Programs</h3>
+                <div class="bg-blue-50 p-3 sm:p-5 rounded-lg border border-blue-150">
+                  <ul class="list-disc pl-5 space-y-2">
+                    <li v-for="(program, idx) in selectedDepartment.programs" :key="idx" class="bg-white rounded-md p-3 border border-blue-100 hover:border-blue-300 transition-colors">
+                      <p class="text-sm font-semibold text-gray-900">{{ program.fullName }}</p>
+                      <p class="text-xs text-gray-500 mt-1">Code: <span class="font-mono font-bold">{{ program.shortName }}</span></p>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-200">
+                <button @click="confirmDepartment" class="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm sm:text-base rounded-lg font-semibold hover:from-blue-700 hover:to-blue-600 transition-all shadow-md hover:shadow-lg">
+                  Confirm
+                </button>
+                <button @click="selectedDepartment = null" class="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-gray-200 text-gray-800 text-sm sm:text-base rounded-lg font-medium hover:bg-gray-300 transition">
+                  Back
+                </button>
+              </div>
+            </div>
+            <!-- Departments Grid -->
+            <div v-else :key="'departments'" class="space-y-3 sm:space-y-4">
+              <h2 class="text-xl sm:text-2xl font-bold text-blue-900 mb-4 sm:mb-6">Select College</h2>
+              <button 
+                v-for="dept in departments" 
+                :key="dept.id"
+                @click="selectedDepartment = dept"
+                class="w-full group p-4 sm:p-6 bg-white border-2 border-blue-200 rounded-lg sm:rounded-xl hover:shadow-xl transition-all duration-300 hover:border-blue-400 text-left"
+              >
+                <div class="flex items-center gap-3 sm:gap-5">
+                  <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md flex items-center justify-center transition-shadow group-hover:shadow-lg bg-white">
+                    <img :src="dept.logo" :alt="dept.name" class="w-full h-full object-cover" />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <h3 class="text-sm sm:text-base font-bold text-blue-900 group-hover:text-blue-600 transition-colors truncate">{{ dept.name }}</h3>
+                    <div class="mt-1.5 sm:mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
+                      <span class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs font-bold rounded-full shadow-sm">{{ dept.label }}</span>
+                      <span class="text-xs text-gray-500 font-medium">{{ dept.programs.length }} program<span v-if="dept.programs.length !== 1">s</span></span>
+                    </div>
+                  </div>
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0">
+                    <path fill="currentColor" d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
+                  </svg>
+                </div>
+              </button>
+
+              <div class="flex gap-2 sm:gap-3 pt-3 sm:pt-4">
+                <button @click="showDepartmentModal = false; selectedDepartment = null" class="w-full px-4 sm:px-6 py-2 sm:py-2 bg-gray-200 text-gray-800 text-sm sm:text-base rounded-lg font-medium hover:bg-gray-300 transition">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </transition>
+        </div>
+      </transition>
+    </div>
+  </transition>
+
+  <ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" :theme="chosenDepartment ? chosenDepartment.label : ''" @complete="handleLoadingComplete" />
   <div class="hidden md:flex min-h-screen bg-white w-full">
     <div class="w-2/5 desktop-bg-panel flex-shrink-0">
       <div class="relative z-10 text-center">
@@ -173,18 +286,18 @@
     <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50">
       <div class="w-full max-w-md">
         <div class="mb-8 text-center">
-          <h2 class="text-3xl font-bold text-purple-900 mb-4">Let's Get Started!</h2>
+          <h2 class="text-3xl font-bold text-blue-900 mb-4">Let's Get Started!</h2>
           <p class="text-gray-600 text-sm mb-2">You are a few clicks away from your profile.</p>
-          <p class="text-gray-600 text-sm">Input your JRMSU Student ID to continue.</p>
+          <p class="text-gray-600 text-sm mb-6">Input your JRMSU Student ID to continue.</p>
         </div>
 
         <div class="bg-white rounded-2xl shadow-lg p-8">
           <div class="flex mb-6 border-b border-gray-200">
-            <button class="flex-1 py-3 px-4 text-center font-medium border-b-2 border-purple-600 text-purple-600">
+            <button class="flex-1 py-3 px-4 text-center font-medium border-b-2 border-blue-600 text-blue-600">
               Log In
             </button>
             <button @click="goToRegister" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
-              <img src="/register_user.svg" alt="Register" class="w-5 h-5" /> Register
+              <span class="icon-mask" aria-hidden="true"></span> Register
             </button>
           </div>
 
@@ -193,7 +306,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
               <div class="relative">
                 <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input ref="studentIdInput" v-model="studentId" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" @keydown.enter.prevent="focusPassword" required />
+                <input ref="studentIdInput" v-model="studentId" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" @keydown.enter.prevent="focusPassword" required />
               </div>
             </div>
 
@@ -201,22 +314,35 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div class="relative">
                 <img src="/key.svg" alt="Password" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input ref="passwordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
+                <input ref="passwordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
                 <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
               </div>
             </div>
 
-            <button type="submit" :disabled="isLoading" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
+            <button type="button" @click="showDepartmentModal = true" class="w-full py-3 px-6 bg-white border-2 border-blue-600 text-blue-900 rounded-lg font-medium hover:bg-blue-50 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl mb-4">
+              <template v-if="chosenDepartment">
+                <img :src="chosenDepartment.logo" :alt="chosenDepartment.name" class="w-8 h-8 object-contain rounded-md p-1" />
+                <div class="text-left">
+                  <div class="font-semibold">{{ chosenDepartment.name }}</div>
+                </div>
+              </template>
+              <template v-else>
+                <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain" style="filter: invert(27%) sepia(51%) saturate(2478%) hue-rotate(216deg) brightness(104%) contrast(97%);" />
+                <span>Select College</span>
+              </template>
+            </button>
+
+            <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
               <span class="flex items-center">
                 {{ isLoading ? 'Logging in...' : 'Login' }} <span v-if="!isLoading" class="ml-2">→</span>
               </span>
             </button>
 
             <div class="flex items-center justify-between text-sm">
-              <button type="button" @click="showForgotPasswordModal = true" class="text-purple-600 hover:text-purple-700 font-medium">
+              <button type="button" @click="showForgotPasswordModal = true" class="text-yellow-500 hover:text-yellow-600 font-medium">
                 Forgot Password?
               </button>
-              <button type="button" @click="showContactModal = true" class="text-purple-600 hover:text-purple-700 inline-flex items-center gap-1 font-medium">
+              <button type="button" @click="showContactModal = true" class="text-yellow-500 hover:text-yellow-600 inline-flex items-center gap-1 font-medium">
                 <img src="/help.svg" alt="Help" class="w-4 h-4" />
                 Need help?
               </button>
@@ -248,11 +374,11 @@
       <div class="max-w-md mx-auto">
 
         <div class="flex mb-8 bg-gray-100 rounded-lg p-1">
-          <button class="flex-1 py-3 px-4 text-center font-medium rounded-md bg-white text-purple-600 shadow-sm">
+          <button class="flex-1 py-3 px-4 text-center font-medium rounded-md bg-white text-blue-600 shadow-sm">
             Log In
           </button>
           <button @click="goToRegister" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
-            <img src="/register_user.svg" alt="Register" class="w-5 h-5" /> Register
+            <span class="icon-mask" aria-hidden="true"></span> Register
           </button>
         </div>
 
@@ -261,7 +387,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
               <div class="relative">
                 <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input ref="mobileStudentIdInput" v-model="studentId" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" @keydown.enter.prevent="focusMobilePassword" required />
+                <input ref="mobileStudentIdInput" v-model="studentId" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" @keydown.enter.prevent="focusMobilePassword" required />
               </div>
             </div>
 
@@ -269,22 +395,35 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div class="relative">
                 <img src="/key.svg" alt="Password" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input ref="mobilePasswordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+                <input ref="mobilePasswordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" required />
                 <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
               </div>
             </div>
 
-          <button type="submit" :disabled="isLoading" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
+            <button type="button" @click="showDepartmentModal = true" class="w-full py-3 px-6 bg-white border-2 border-blue-600 text-blue-900 rounded-lg font-medium hover:bg-blue-50 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl">
+              <template v-if="chosenDepartment">
+                <img :src="chosenDepartment.logo" :alt="chosenDepartment.name" class="w-8 h-8 object-contain rounded-md p-1" />
+                <div class="text-left">
+                  <div class="font-semibold text-sm">{{ chosenDepartment.name }}</div>
+                </div>
+              </template>
+              <template v-else>
+                <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain" style="filter: invert(27%) sepia(51%) saturate(2478%) hue-rotate(216deg) brightness(104%) contrast(97%);" />
+                <span class="text-sm">Select College</span>
+              </template>
+            </button>
+
+          <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
             <span class="flex items-center">
               {{ isLoading ? 'Logging in...' : 'Login' }} <span v-if="!isLoading" class="ml-2">→</span>
             </span>
           </button>
 
           <div class="flex items-center justify-between text-sm">
-            <button type="button" @click="showForgotPasswordModal = true" class="text-purple-600 hover:text-purple-700 font-medium">
+            <button type="button" @click="showForgotPasswordModal = true" class="text-yellow-500 hover:text-yellow-600 font-medium">
               Forgot Password?
             </button>
-            <button type="button" @click="showContactModal = true" class="text-purple-600 hover:text-purple-700 inline-flex items-center gap-1 font-medium">
+            <button type="button" @click="showContactModal = true" class="text-yellow-500 hover:text-yellow-600 inline-flex items-center gap-1 font-medium">
               <img src="/help.svg" alt="Help" class="w-4 h-4" />
               Need help?
             </button>
@@ -308,7 +447,7 @@
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-purple-900">Reset Password</h3>
+            <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Reset Password</h3>
             <button @click="closeForgotPasswordModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
           </div>
 
@@ -317,13 +456,13 @@
             <p class="text-gray-600 text-sm">Enter your Student ID and registered email to receive a verification code.</p>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
-              <input v-model="resetStudentId" type="text" placeholder="25-A-12345" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+              <input v-model="resetStudentId" type="text" placeholder="25-A-12345" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-              <input v-model="resetEmail" type="email" placeholder="your.email@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+              <input v-model="resetEmail" type="email" placeholder="your.email@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
             </div>
-            <button @click="requestResetCode" :disabled="resetLoading || !resetStudentId.trim() || !resetEmail.trim()" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <button @click="requestResetCode" :disabled="resetLoading || !resetStudentId.trim() || !resetEmail.trim()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
               <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ resetLoading ? 'Sending...' : 'Send Code' }}
             </button>
@@ -335,13 +474,13 @@
             <p class="text-gray-600 text-sm">Enter the 6-digit verification code sent to your email.</p>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
-              <input v-model="resetCode" type="text" placeholder="123456" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-center text-2xl tracking-widest" />
+              <input v-model="resetCode" type="text" placeholder="123456" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-center text-2xl tracking-widest" />
             </div>
-            <button @click="verifyResetCode" :disabled="resetLoading || resetCode.length !== 6" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <button @click="verifyResetCode" :disabled="resetLoading || resetCode.length !== 6" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
               <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ resetLoading ? 'Verifying...' : 'Verify Code' }}
             </button>
-            <button @click="resetStep = 1" class="w-full text-purple-600 hover:text-purple-700 text-sm font-medium">Back to Step 1</button>
+            <button @click="resetStep = 1" :class="['w-full text-sm font-medium', isCOE ? 'text-orange-600 hover:text-orange-800' : 'text-purple-600 hover:text-purple-700']">Back to Step 1</button>
             <p v-if="resetMessage" :class="['text-sm text-center', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
           </div>
 
@@ -350,13 +489,13 @@
             <p class="text-gray-600 text-sm">Create a new password for your account.</p>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-              <input v-model="newPassword" type="password" placeholder="Enter new password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+              <input v-model="newPassword" type="password" placeholder="Enter new password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-              <input v-model="confirmNewPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+              <input v-model="confirmNewPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
             </div>
-            <button @click="completePasswordReset" :disabled="resetLoading || !newPassword || newPassword !== confirmNewPassword" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <button @click="completePasswordReset" :disabled="resetLoading || !newPassword || newPassword !== confirmNewPassword" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
               <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ resetLoading ? 'Resetting...' : 'Reset Password' }}
             </button>
@@ -370,12 +509,27 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
-import API_BASE_URL, { buildAPIUrl } from '../config/api.js'
+import { buildAPIUrl } from '../config/api.js'
+import departments from '../config/departments.js'
+
+const isCOE = computed(() => {
+  try {
+    const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
+    const user = userJson ? JSON.parse(userJson) : {}
+    const userProgram = user.program
+    if (userProgram) {
+      for (const dept of departments) {
+        if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'COE'
+      }
+    }
+  } catch (e) {}
+  return false
+})
 
 const router = useRouter()
 const studentId = ref('')
@@ -436,6 +590,48 @@ const confirmNewPassword = ref('')
 const resetLoading = ref(false)
 const resetMessage = ref('')
 const resetSuccess = ref(false)
+
+// Department Selector
+const showDepartmentModal = ref(false)
+const selectedDepartment = ref(null)
+
+// chosen selections to show on main UI
+const chosenDepartment = ref(null)
+const chosenProgram = ref(null)
+
+const chooseDepartment = (dept) => {
+  // choose the department and auto-select the first program
+  chosenDepartment.value = dept
+  chosenProgram.value = (dept.programs && dept.programs.length) ? dept.programs[0] : null
+  showDepartmentModal.value = false
+  // clear any transient selection state
+  selectedDepartment.value = null
+  // persist selection so API module can pick COE endpoint pre-login
+  try { localStorage.setItem('loginChosenDepartment', dept.label) } catch (e) {}
+  if (chosenProgram.value) try { localStorage.setItem('loginChosenProgram', chosenProgram.value.shortName) } catch (e) {}
+}
+
+const selectProgram = (program) => {
+  console.log('Selected program:', program)
+  // set chosen program and close modal
+  chosenProgram.value = program
+  // ensure chosenDepartment is set (in case user navigated to programs)
+  if (selectedDepartment.value) chosenDepartment.value = selectedDepartment.value
+  showDepartmentModal.value = false
+  selectedDepartment.value = null
+  try { localStorage.setItem('loginChosenProgram', program.shortName) } catch (e) {}
+  if (chosenDepartment.value) try { localStorage.setItem('loginChosenDepartment', chosenDepartment.value.label) } catch (e) {}
+}
+
+const confirmDepartment = () => {
+  // set the chosen department only, no program selection
+  chosenDepartment.value = selectedDepartment.value
+  chosenProgram.value = null
+  showDepartmentModal.value = false
+  selectedDepartment.value = null
+  try { localStorage.setItem('loginChosenDepartment', chosenDepartment.value ? chosenDepartment.value.label : '') } catch (e) {}
+  try { localStorage.removeItem('loginChosenProgram') } catch (e) {}
+}
 
 const closeForgotPasswordModal = () => {
   showForgotPasswordModal.value = false
@@ -590,9 +786,9 @@ const togglePasswordVisibility = () => {
 }
 
 const developers = [
+  { name: 'Kenzen Miñao', initials: 'KM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
   { name: 'Jullan Maglinte', initials: 'JM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
   { name: 'Keith Laranjo', initials: 'KL', role: 'Backend Dev', year_level: '2nd year', program: 'CS', facebook: 'https://facebook.com/kei.takun.5070', image: '/team/keith.jpg' },
-  { name: 'Kenzen Miñao', initials: 'KM', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
   { name: 'Christoph Bagabuyo', initials: 'CB', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/christoph.bagabuyo', image: '/team/christoph.jpg' },
   { name: 'Mischi Jeda Elumba', initials: 'MJ', role: 'UI/UX Designer', year_level: '2nd year', program: 'IS', facebook: 'https://facebook.com/mischijeda.elumba.1', image: '/team/mischi.jpg' }
 ]
@@ -626,6 +822,13 @@ onMounted(async () => {
 })
 
 const handleLogin = async () => {
+  // Check if department is selected
+  if (!chosenDepartment.value) {
+    errorMessage.value = "Please select a department to continue."
+    showErrorNotification.value = true
+    return
+  }
+
   // Check if login is disabled (for students only)
   const enteredId = studentId.value.trim();
   const startsWithLetter = /^[a-zA-Z]/.test(enteredId);
@@ -667,7 +870,7 @@ const handleLogin = async () => {
     
     if (startsWithLetter) {
       // Use masters login API with POST
-      const response = await fetch(`${API_BASE_URL}/apis/masters/login`, {
+      const response = await fetch(buildAPIUrl('/apis/masters/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -693,7 +896,7 @@ const handleLogin = async () => {
       }
     } else {
       // Use POST login endpoint for students
-      const response = await fetch(`${API_BASE_URL}/apis/students/login`, {
+      const response = await fetch(buildAPIUrl('/apis/students/login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -743,7 +946,8 @@ const handleLogin = async () => {
         image: user.photo || user.image || '',
         isMaster: startsWithLetter,
         token: user.token || '',
-        requiresPasswordUpdate: user.requiresPasswordUpdate || false
+        requiresPasswordUpdate: user.requiresPasswordUpdate || false,
+        selectedDepartment: chosenDepartment.value
       };
       localStorage.removeItem('likeActionTimestamps')
       localStorage.removeItem('likeBanUntil')
@@ -770,6 +974,9 @@ const handleLogin = async () => {
 
       localStorage.setItem("currentUser", JSON.stringify(normalizedUser));
       localStorage.setItem("authToken", normalizedUser.token);
+      // clear pre-login department/program hints
+      try { localStorage.removeItem('loginChosenDepartment') } catch (e) {}
+      try { localStorage.removeItem('loginChosenProgram') } catch (e) {}
       console.log("Navigating to dashboard...");
       isNavigationPending.value = true;
       return;
@@ -859,7 +1066,7 @@ const verifyAdminCode = () => {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(135deg, rgba(109, 40, 217, 0.9) 0%, rgba(219, 39, 119, 0.9) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.9) 0%, rgba(59, 130, 246, 0.9) 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -872,7 +1079,7 @@ const verifyAdminCode = () => {
 }
 
 .mobile-bg-panel {
-  background: linear-gradient(135deg, rgba(109, 40, 217, 0.9) 0%, rgba(219, 39, 119, 0.9) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.9) 0%, rgba(59, 130, 246, 0.9) 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
 }
@@ -894,6 +1101,46 @@ const verifyAdminCode = () => {
 @keyframes bounce-in {
   0% { transform: scale(0.7); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
+}
+
+.slide-up-enter-active {
+  animation: slide-up-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.slide-up-leave-active {
+  animation: slide-up-out 0.3s cubic-bezier(0.34, 0.44, 0.64, 0);
+}
+@keyframes slide-up-in {
+  0% { 
+    transform: translateY(2rem);
+    opacity: 0;
+  }
+  100% { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes slide-up-out {
+  0% { 
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% { 
+    transform: translateY(2rem);
+    opacity: 0;
+  }
+}
+
+.slide-left-enter-active,
+.slide-left-leave-active {
+  transition: all 0.3s ease;
+}
+.slide-left-enter-from {
+  transform: translateX(2rem);
+  opacity: 0;
+}
+.slide-left-leave-to {
+  transform: translateX(-2rem);
+  opacity: 0;
 }
 
 .fade-scale-enter-active,

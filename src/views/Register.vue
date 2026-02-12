@@ -1,27 +1,45 @@
-<template>
+﻿<template>
   <transition name="fade">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 transform transition-all duration-300">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
-            <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full mx-2 max-h-[80vh] overflow-y-auto transform transition-all duration-300">
+          <div class="relative mb-3">
+            <h3 class="text-2xl font-bold text-blue-900 text-center mx-auto">Meet Our Developers</h3>
+            <button @click="showDevelopersPopup = false" class="absolute right-0 top-0 text-gray-500 hover:text-gray-700 text-2xl -mt-1">&times;</button>
           </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6">
-            <a v-for="(dev, index) in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" 
-               class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
-               :style="{ transitionDelay: `${index * 50}ms` }">
-              <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-400 flex items-center justify-center text-white text-2xl shadow-lg mb-2 overflow-hidden ring-2 ring-purple-100">
-                <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
-                <span v-else>{{ dev.initials }}</span>
-              </div>
-              <p class="text-xs font-semibold text-purple-600 hover:text-purple-800 text-center">{{ dev.name }}</p>
-              <p class="text-xs text-gray-600 text-center font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-              <p class="text-xs text-gray-500 text-center">{{ dev.role }}</p>
-            </a>
+          <div class="space-y-3 mb-4">
+            <!-- Top row: first 2 developers centered -->
+            <div class="flex justify-center gap-6">
+              <a v-for="(dev, index) in developers.slice(0,2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
+                 class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
+                 :style="{ transitionDelay: `${index * 50}ms` }">
+                <div class="w-16 h-16 rounded-full overflow-hidden shadow-md flex items-center justify-center mb-2 flex-shrink-0 transition-shadow group-hover:shadow-lg bg-white">
+                  <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
+                  <span v-else>{{ dev.initials }}</span>
+                </div>
+                <p class="text-sm font-semibold text-blue-600 hover:text-blue-800 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
+                <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
+                <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+              </a>
+            </div>
+
+            <!-- Bottom row: remaining developers in 3 columns -->
+            <div class="grid grid-cols-3 gap-6 justify-items-center">
+              <a v-for="(dev, idx) in developers.slice(2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
+                 class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
+                 :style="{ transitionDelay: `${(idx + 2) * 50}ms` }">
+                <div class="w-16 h-16 rounded-full overflow-hidden shadow-md flex items-center justify-center mb-2 flex-shrink-0 transition-shadow group-hover:shadow-lg bg-white">
+                  <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
+                  <span v-else>{{ dev.initials }}</span>
+                </div>
+                <p class="text-sm font-semibold text-blue-600 hover:text-blue-800 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
+                <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
+                <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+              </a>
+            </div>
           </div>
           <div class="text-center text-sm text-gray-600">
-            <p class="font-medium text-purple-900">CCS - Creatives Committee</p>
+            <p class="font-medium text-blue-900">CCS - Creatives Committee</p>
             <p>Chairperson: Sheen Lee</p>
           </div>
         </div>
@@ -31,11 +49,11 @@
 
   <div v-if="isRegistering" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
-      <svg class="animate-spin h-16 w-16 mx-auto mb-4 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+      <svg class="animate-spin h-16 w-16 mx-auto mb-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
       </svg>
-      <p class="text-xl font-semibold text-purple-900">{{ loadingMessage }}</p>
+      <p class="text-xl font-semibold text-blue-900">{{ loadingMessage }}</p>
       <p class="text-sm text-gray-600 mt-2">{{ loadingSubMessage }}</p>
     </div>
   </div>
@@ -49,7 +67,7 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
             </svg>
           </div>
-          <h3 class="text-2xl font-bold text-purple-900 mb-2">Success!</h3>
+          <h3 class="text-2xl font-bold text-blue-900 mb-2">Success!</h3>
           <p class="text-gray-600">{{ notificationMessage }}</p>
           <p class="text-sm text-gray-500 mt-4">Redirecting to login...</p>
         </div>
@@ -87,16 +105,24 @@
 
   <div class="hidden md:flex min-h-screen bg-white">
     <div class="desktop-bg-panel">
-      <div class="relative z-10 text-center">
+      <div class="relative z-10 text-center px-6 py-8">
         <div class="mb-4">
           <div class="w-40 h-40 mx-auto flex items-center justify-center" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
             <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
           </div>
         </div>
-        <h1 class="text-4xl font-bold mb-2">SSAAM</h1>
-        <p class="text-sm">Student School Activities Attendance Monitoring</p>
+
+        <div class="space-y-1">
+          <h1 class="text-3xl sm:text-4xl font-bold mb-0">SSAAM</h1>
+          <p class="text-sm text-white/90">Student School Activities Attendance Monitoring</p>
+          <div v-if="programDepartment" class="mt-3 text-sm text-white/90">
+            <div class="font-semibold">{{ programDepartment.departmentName }} <span class="text-xs text-white/80">({{ programDepartment.departmentLabel }})</span></div>
+            <div class="text-xs mt-1">Selected program: <strong>{{ formData.program }}</strong></div>
+          </div>
+        </div>
       </div>
+
       <div class="absolute bottom-4 left-4 right-4 text-center text-xs text-white opacity-75">
         Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
       </div>
@@ -105,16 +131,16 @@
       <div class="w-full max-w-md">
         <div class="text-center mb-8">
           <div class="flex items-center justify-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-600 to-pink-400 flex items-center justify-center flex-shrink-0">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center flex-shrink-0">
               <img src="/user_plus.svg" alt="Register" class="w-7 h-7" style="filter: brightness(0) invert(1);" />
             </div>
             <div class="text-left">
-              <h2 class="text-2xl font-bold text-purple-900">Let's Create</h2>
-              <h2 class="text-2xl font-bold text-purple-900">Your Profile!</h2>
+              <h2 class="text-2xl font-bold text-blue-900">Let's Create</h2>
+              <h2 class="text-2xl font-bold text-blue-900">Your Profile!</h2>
             </div>
           </div>
           <p class="text-gray-600 text-sm italic mb-4">Please provide your basic information.</p>
-          <p class="text-sm font-semibold text-purple-900">
+          <p class="text-sm font-semibold text-blue-900">
             {{ stepTitle }}
           </p>
         </div>
@@ -124,8 +150,8 @@
             <button @click="goToLogin" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700">
               Log In
             </button>
-            <button class="flex-1 py-3 px-4 text-center font-medium border-b-2 border-purple-600 text-purple-600 flex items-center justify-center gap-1">
-              <img src="/register_user.svg" alt="Register" class="w-5 h-5" /> Register
+            <button class="flex-1 py-3 px-4 text-center font-medium border-b-2 border-blue-600 text-blue-600 flex items-center justify-center gap-1">
+              <span class="icon-mask w-5 h-5" aria-hidden="true"></span> Register
             </button>
           </div>
 
@@ -136,27 +162,27 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
                 <div class="relative">
                   <img src="/user.svg" alt="First Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input ref="firstNameInput" v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('middleNameInput')" type="text" placeholder="JUAN" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
+                  <input ref="firstNameInput" v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('middleNameInput')" type="text" placeholder="JUAN" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" required />
                 </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Middle Name <span class="text-gray-500 text-xs">(optional)</span></label>
                 <div class="relative">
                   <img src="/user.svg" alt="Middle Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input ref="middleNameInput" v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('lastNameInput')" type="text" placeholder="DELA" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" />
+                  <input ref="middleNameInput" v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('lastNameInput')" type="text" placeholder="DELA" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" />
                 </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
                 <div class="relative">
                   <img src="/user.svg" alt="Last Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input ref="lastNameInput" v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('emailInput')" type="text" placeholder="CRUZ" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+                  <input ref="lastNameInput" v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('emailInput')" type="text" placeholder="CRUZ" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" required />
                 </div>
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Suffix <span class="text-gray-500 text-xs">(optional)</span></label>
                 <div class="relative">
-                  <select v-model="formData.suffix" class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white">
+                  <select v-model="formData.suffix" class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none appearance-none bg-white">
                     <option value="">Select Suffix</option>
                     <option value="Jr.">Jr.</option>
                     <option value="Sr.">Sr.</option>
@@ -178,18 +204,18 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
                 <div class="relative">
                   <img src="/mail.svg" alt="Email" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input ref="emailInput" v-model="formData.email" @keydown.enter.prevent="() => handleNext()" type="email" placeholder="juandelacruz@gmail.com" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+                  <input ref="emailInput" v-model="formData.email" @keydown.enter.prevent="() => handleNext()" type="email" placeholder="juandelacruz@gmail.com" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" required />
                 </div>
               </div>
               <div class="flex items-center justify-center pt-4">
                 <div class="flex space-x-2">
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
                   <div class="w-12 h-1 bg-gray-300 rounded"></div>
                   <div class="w-12 h-1 bg-gray-300 rounded"></div>
                   <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 </div>
               </div>
-              <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
+              <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
                 Next <span class="ml-2">→</span>
               </button>
             </div>
@@ -199,7 +225,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
                 <div class="relative">
                   <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="00-A-00000" maxlength="10" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
+                  <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="00-A-00000" maxlength="10" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" required />
                 </div>
                 <p class="text-xs text-gray-400 mt-1 pl-10">Format: 00-A-00000</p>
               </div>
@@ -207,7 +233,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
                 <div class="relative">
                   <img src="/book.svg" alt="Year Level" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <select v-model="formData.year_level" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white" required>
+                  <select v-model="formData.year_level" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none appearance-none bg-white" required>
                     <option value="" disabled>Select Year Level</option>
                     <option value="1st Year">1st Year</option>
                     <option value="2nd Year">2nd Year</option>
@@ -218,29 +244,50 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Program</label>
-                <div class="relative">
-                  <img src="/course.svg" alt="Program" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <select v-model="formData.program" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white" required>
-                    <option value="" disabled>Select Program</option>
-                    <option value="BSCS">BSCS</option>
-                    <option value="BSIS">BSIS</option>
-                    <option value="BSIT">BSIT</option>
-                  </select>
+                <div class="relative" ref="programDropdownDesktopRef">
+                  <img src="/course.svg" alt="Course" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+
+                  <button type="button" @click="toggleProgramMenu('desktop')" class="w-full text-left pl-14 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none bg-white flex items-center justify-between">
+                    <span class="truncate">
+                      <template v-if="selectedProgramItem">
+                        {{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}
+                      </template>
+                      <template v-else>
+                        Select Program
+                      </template>
+                    </span>
+                    <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-60" />
+                  </button>
+
+                  <ul v-if="showProgramMenu" :class="showMenuAboveDesktop ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-auto' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-auto'">
+                    <li v-for="p in flattenedPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer">
+                      <img :src="p.departmentLogo" :alt="p.departmentLabel" class="w-8 h-8 object-contain rounded bg-white flex-shrink-0" />
+                      <div class="min-w-0">
+                        <div class="text-sm font-medium text-gray-800">{{ p.shortName }}</div>
+                        <div class="text-xs text-gray-500 whitespace-normal break-words">{{ p.fullName }}</div>
+                        <div class="text-xs text-gray-400 mt-1">{{ p.departmentLabel }}</div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+                <div v-if="programDepartment" class="mt-2 flex items-center gap-2">
+                  <img :src="programDepartment.departmentLogo" :alt="programDepartment.departmentLabel" class="w-6 h-6 object-contain rounded" />
+                  <span class="text-xs text-gray-600">Department: <strong class="text-blue-800">{{ programDepartment.departmentName }} ({{ programDepartment.departmentLabel }})</strong></span>
                 </div>
               </div>
               <div class="flex items-center justify-center pt-4">
                 <div class="flex space-x-2">
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
                   <div class="w-12 h-1 bg-gray-300 rounded"></div>
                   <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 </div>
               </div>
               <div class="flex gap-4">
-                <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+                <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
                   <span class="mr-2">←</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
                   Next <span class="ml-2">→</span>
                 </button>
               </div>
@@ -265,17 +312,17 @@
               </div>
               <div class="flex items-center justify-center pt-4">
                 <div class="flex space-x-2">
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
                   <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 </div>
               </div>
               <div class="flex gap-4">
-                <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+                <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
                   <span class="mr-2">←</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
                   Next <span class="ml-2">→</span>
                 </button>
               </div>
@@ -284,9 +331,9 @@
             <div v-if="currentStep === 3.5" class="space-y-4">
               <div class="text-center mb-4">
                 <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-                  <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
-                <h3 class="text-lg font-semibold text-purple-900 mb-2">Review Your Information</h3>
+                <h3 class="text-lg font-semibold text-blue-900 mb-2">Review Your Information</h3>
                 <p class="text-sm text-gray-600">Please verify all details are correct before proceeding.</p>
               </div>
               
@@ -299,7 +346,7 @@
                     </div>
                   </div>
                   <div>
-                    <p class="font-bold text-purple-900">{{ formData.first_name }} {{ formData.middle_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
+                    <p class="font-bold text-blue-900">{{ formData.first_name }} {{ formData.middle_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
                     <p class="text-sm text-gray-600">{{ formData.student_id }}</p>
                   </div>
                 </div>
@@ -331,17 +378,17 @@
               
               <div class="flex items-center justify-center pt-4">
                 <div class="flex space-x-2">
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
                   <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 </div>
               </div>
               <div class="flex gap-4">
-                <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+                <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
                   <span class="mr-2">←</span>Back
                 </button>
-                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600']">
+                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600']">
                   {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-2">→</span>
                 </button>
               </div>
@@ -352,13 +399,13 @@
                 <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
                   <img src="/mail-gradient.svg" alt="Email" class="w-8 h-8" />
                 </div>
-                <h3 class="text-lg font-semibold text-purple-900 mb-2">Verify Your Email</h3>
+                <h3 class="text-lg font-semibold text-blue-900 mb-2">Verify Your Email</h3>
                 <p class="text-sm text-gray-600">We've sent a 6-digit verification code to:</p>
-                <p class="text-sm font-medium text-purple-600 mt-1">{{ formData.email }}</p>
+                <p class="text-sm font-medium text-blue-600 mt-1">{{ formData.email }}</p>
               </div>
-              <div>
+            <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2 text-center">Enter Verification Code</label>
-                <p class="text-xs text-purple-600 mb-3 text-center font-medium">You can copy the code from your email and paste it here</p>
+                <p class="text-xs text-blue-600 mb-3 text-center font-medium">You can copy the code from your email and paste it here</p>
                 <div class="flex justify-center gap-2">
                   <input 
                     v-for="(digit, index) in verificationCode" 
@@ -372,7 +419,7 @@
                     @keydown="handleCodeKeydown(index, $event)"
                     @paste="handleCodePaste($event)"
                     :ref="el => codeInputs[index] = el"
-                    class="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none"
+                    class="w-12 h-14 text-center text-2xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none"
                   />
                 </div>
                 <p class="text-xs text-gray-500 mt-3 text-center">Code expires in 30 minutes</p>
@@ -391,23 +438,23 @@
               </div>
               
               <div class="flex items-center justify-center pt-2">
-                <button type="button" @click="resendCode" :disabled="resendCooldown > 0" class="text-sm text-purple-600 hover:text-purple-800 disabled:text-gray-400 disabled:cursor-not-allowed">
+                <button type="button" @click="resendCode" :disabled="resendCooldown > 0" class="text-sm text-blue-600 hover:text-purple-800 disabled:text-gray-400 disabled:cursor-not-allowed">
                   {{ resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code' }}
                 </button>
               </div>
               <div class="flex items-center justify-center pt-4">
                 <div class="flex space-x-2">
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                  <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
+                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
                 </div>
               </div>
               <div class="flex gap-4">
-                <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+                <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
                   <span class="mr-2">←</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
                   Register <span class="ml-2">→</span>
                 </button>
               </div>
@@ -429,7 +476,7 @@
         <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
       </div>
-      <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center shadow-lg">
+      <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="hidden sm:w-16 sm:h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center shadow-lg">
         <img src="/user_plus.svg" alt="Register" class="w-10 h-10" style="filter: brightness(0) invert(1);" />
       </div>
       <h1 class="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Let's Create</h1>
@@ -447,8 +494,8 @@
           <button @click="goToLogin" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700">
             Log In
           </button>
-          <button class="flex-1 py-3 px-4 text-center font-medium rounded-md bg-white text-purple-600 shadow-sm flex items-center justify-center gap-1">
-            <img src="/register_user.svg" alt="Register" class="w-5 h-5" /> Register
+          <button class="flex-1 py-3 px-4 text-center font-medium rounded-md bg-white text-blue-600 shadow-sm flex items-center justify-center gap-1">
+            <span class="icon-mask w-5 h-5" aria-hidden="true"></span> Register
           </button>
         </div>
 
@@ -459,27 +506,27 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
               <div class="relative">
                 <img src="/user.svg" alt="First Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="JUAN" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
+                <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="JUAN" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" required />
               </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Middle Name <span class="text-gray-500 text-xs">(optional)</span></label>
               <div class="relative">
                 <img src="/user.svg" alt="Middle Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="DELA" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" />
+                <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="DELA" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" />
               </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
               <div class="relative">
                 <img src="/user.svg" alt="Last Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" type="text" placeholder="CRUZ" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
+                <input v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" type="text" placeholder="CRUZ" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" required />
               </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Suffix <span class="text-gray-500 text-xs">(optional)</span></label>
               <div class="relative">
-                <select v-model="formData.suffix" class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white">
+                <select v-model="formData.suffix" class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none appearance-none bg-white">
                   <option value="">Select Suffix</option>
                   <option value="Jr.">Jr.</option>
                   <option value="Sr.">Sr.</option>
@@ -494,18 +541,18 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
               <div class="relative">
                 <img src="/mail.svg" alt="Email" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.email" type="email" placeholder="juandelacruz@gmail.com" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" required />
+                <input v-model="formData.email" type="email" placeholder="juandelacruz@gmail.com" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" required />
               </div>
             </div>
             <div class="flex items-center justify-center pt-4">
               <div class="flex space-x-2">
-                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-blue-600 rounded"></div>
                 <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 <div class="w-12 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
-            <button type="submit" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
               Next <span class="ml-2">→</span>
             </button>
           </div>
@@ -515,7 +562,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
               <div class="relative">
                 <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="00-A-00000" maxlength="10" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none uppercase" required />
+                <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="00-A-00000" maxlength="10" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" required />
               </div>
               <p class="text-xs text-gray-400 mt-1">Format: 00-A-00000</p>
             </div>
@@ -523,7 +570,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
               <div class="relative">
                 <img src="/book.svg" alt="Year Level" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <select v-model="formData.year_level" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white" required>
+                <select v-model="formData.year_level" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none appearance-none bg-white" required>
                   <option value="" disabled>Select Year Level</option>
                   <option value="1st Year">1st Year</option>
                   <option value="2nd Year">2nd Year</option>
@@ -534,29 +581,49 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Program</label>
-              <div class="relative">
-                <img src="/course.svg" alt="Program" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <select v-model="formData.program" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white" required>
-                  <option value="" disabled>Select Program</option>
-                  <option value="BSCS">BSCS</option>
-                  <option value="BSIS">BSIS</option>
-                  <option value="BSIT">BSIT</option>
-                </select>
+              <div class="relative" ref="programDropdownMobileRef">
+                <img src="/course.svg" alt="Course" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+
+                <button type="button" @click="toggleProgramMenu('mobile')" class="w-full text-left pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none bg-white flex items-center justify-between">
+                  <span class="truncate">
+                    <template v-if="selectedProgramItem">
+                      {{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}
+                    </template>
+                    <template v-else>
+                      Select Program
+                    </template>
+                  </span>
+                  <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-60" />
+                </button>
+
+                <ul v-if="showProgramMenu" :class="showMenuAboveMobile ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-auto' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-auto'">
+                  <li v-for="p in flattenedPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer">
+                    <img :src="p.departmentLogo" :alt="p.departmentLabel" class="w-6 h-6 object-contain rounded bg-white flex-shrink-0" />
+                    <div class="min-w-0">
+                      <div class="text-sm font-medium text-gray-800">{{ p.shortName }}</div>
+                      <div class="text-xs text-gray-500 whitespace-normal break-words">{{ p.fullName }}</div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+              <div v-if="programDepartment" class="mt-2 flex items-center gap-2">
+                <img :src="programDepartment.departmentLogo" :alt="programDepartment.departmentLabel" class="w-6 h-6 object-contain rounded" />
+                <span class="text-xs text-gray-600">Department: <strong class="text-blue-800">{{ programDepartment.departmentName }} ({{ programDepartment.departmentLabel }})</strong></span>
               </div>
             </div>
             <div class="flex items-center justify-center pt-4">
               <div class="flex space-x-2">
-                <div class="w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-12 h-1 bg-blue-600 rounded"></div>
+                <div class="w-12 h-1 bg-blue-600 rounded"></div>
                 <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 <div class="w-12 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
             <div class="flex gap-4">
-              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
                 <span class="mr-2">←</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center">
+              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
                 Next <span class="ml-2">→</span>
               </button>
             </div>
@@ -581,18 +648,18 @@
             </div>
             <div class="flex items-center justify-center pt-4">
               <div class="flex space-x-2">
-                <div class="w-10 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 h-1 bg-purple-600 rounded"></div>
+                <div class="w-10 h-1 bg-blue-600 rounded"></div>
+                <div class="w-10 h-1 bg-blue-600 rounded"></div>
+                <div class="w-10 h-1 bg-blue-600 rounded"></div>
                 <div class="w-10 h-1 bg-gray-300 rounded"></div>
                 <div class="w-10 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
             <div class="flex gap-4">
-              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-3 px-4 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm sm:text-base">
+              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-4 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm sm:text-base">
                 <span class="mr-2">←</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 sm:px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center text-sm sm:text-base">
+              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-4 sm:px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center text-sm sm:text-base">
                 Next <span class="ml-2">→</span>
               </button>
             </div>
@@ -601,9 +668,9 @@
           <div v-if="currentStep === 3.5" class="space-y-4">
             <div class="text-center mb-3">
               <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-purple-100 rounded-full flex items-center justify-center">
-                <svg class="w-7 h-7 sm:w-8 sm:h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <svg class="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
-              <h3 class="text-base sm:text-lg font-semibold text-purple-900 mb-1 sm:mb-2">Review Your Information</h3>
+              <h3 class="text-base sm:text-lg font-semibold text-blue-900 mb-1 sm:mb-2">Review Your Information</h3>
               <p class="text-xs sm:text-sm text-gray-600">Please verify all details are correct.</p>
             </div>
             
@@ -616,7 +683,7 @@
                   </div>
                 </div>
                 <div class="min-w-0">
-                  <p class="font-bold text-purple-900 text-sm sm:text-base">{{ formData.first_name }} {{ formData.middle_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
+                  <p class="font-bold text-blue-900 text-sm sm:text-base">{{ formData.first_name }} {{ formData.middle_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
                   <p class="text-xs sm:text-sm text-gray-600">{{ formData.student_id }}</p>
                 </div>
               </div>
@@ -654,17 +721,17 @@
             
             <div class="flex items-center justify-center pt-3 sm:pt-4">
               <div class="flex space-x-2">
-                <div class="w-10 sm:w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 sm:w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 sm:w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
+                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
+                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
                 <div class="w-10 sm:w-12 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
             <div class="flex gap-3 sm:gap-4">
-              <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
+              <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
                 <span class="mr-1 sm:mr-2">←</span>Back
               </button>
-              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center text-sm', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600']">
+              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center text-sm', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600']">
                 {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1 sm:ml-2">→</span>
               </button>
             </div>
@@ -675,13 +742,13 @@
               <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-purple-100 rounded-full flex items-center justify-center">
                 <img src="/mail-gradient.svg" alt="Email" class="w-7 h-7 sm:w-8 sm:h-8" />
               </div>
-              <h3 class="text-base sm:text-lg font-semibold text-purple-900 mb-1 sm:mb-2">Verify Your Email</h3>
+              <h3 class="text-base sm:text-lg font-semibold text-blue-900 mb-1 sm:mb-2">Verify Your Email</h3>
               <p class="text-xs sm:text-sm text-gray-600">We've sent a 6-digit verification code to:</p>
-              <p class="text-xs sm:text-sm font-medium text-purple-600 mt-1 break-all px-2">{{ formData.email }}</p>
+              <p class="text-xs sm:text-sm font-medium text-blue-600 mt-1 break-all px-2">{{ formData.email }}</p>
             </div>
             <div>
               <label class="block text-xs sm:text-sm font-medium text-gray-700 mb-2 text-center">Enter Verification Code</label>
-              <p class="text-[10px] sm:text-xs text-purple-600 mb-2 sm:mb-3 text-center font-medium">Copy the code from your email and paste it here</p>
+              <p class="text-[10px] sm:text-xs text-blue-600 mb-2 sm:mb-3 text-center font-medium">Copy the code from your email and paste it here</p>
               <div class="flex justify-center gap-1.5 sm:gap-2">
                 <input 
                   v-for="(digit, index) in verificationCode" 
@@ -695,7 +762,7 @@
                   @keydown="handleCodeKeydown(index, $event)"
                   @paste="handleCodePaste($event)"
                   :ref="el => codeInputsMobile[index] = el"
-                  class="w-9 h-11 sm:w-10 sm:h-12 text-center text-lg sm:text-xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-purple-600 outline-none"
+                  class="w-9 h-11 sm:w-10 sm:h-12 text-center text-lg sm:text-xl font-bold border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none"
                 />
               </div>
               <p class="text-[10px] sm:text-xs text-gray-500 mt-2 sm:mt-3 text-center">Code expires in 30 minutes</p>
@@ -714,23 +781,23 @@
             </div>
             
             <div class="flex items-center justify-center pt-1 sm:pt-2">
-              <button type="button" @click="resendCode" :disabled="resendCooldown > 0" class="text-xs sm:text-sm text-purple-600 hover:text-purple-800 disabled:text-gray-400 disabled:cursor-not-allowed">
+              <button type="button" @click="resendCode" :disabled="resendCooldown > 0" class="text-xs sm:text-sm text-blue-600 hover:text-purple-800 disabled:text-gray-400 disabled:cursor-not-allowed">
                 {{ resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code' }}
               </button>
             </div>
             <div class="flex items-center justify-center pt-3 sm:pt-4">
               <div class="flex space-x-2">
-                <div class="w-10 sm:w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 sm:w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 sm:w-12 h-1 bg-purple-600 rounded"></div>
-                <div class="w-10 sm:w-12 h-1 bg-purple-600 rounded"></div>
+                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
+                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
+                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
+                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
               </div>
             </div>
             <div class="flex gap-3 sm:gap-4">
-              <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-purple-600 text-purple-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
+              <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
                 <span class="mr-1 sm:mr-2">←</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center text-sm">
+              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center text-sm">
                 Register <span class="ml-1 sm:ml-2">→</span>
               </button>
             </div>
@@ -750,11 +817,12 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
+import departments from '../config/departments.js'
 
 const router = useRouter()
 const currentStep = ref(1)
@@ -833,9 +901,9 @@ onMounted(async () => {
 })
 
 const developers = [
+  { name: 'Kenzen Miñao', initials: 'KM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
   { name: 'Jullan Maglinte', initials: 'JM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
   { name: 'Keith Laranjo', initials: 'KL', role: 'Backend Dev', year_level: '2nd year', program: 'CS', facebook: 'https://facebook.com/kei.takun.5070', image: '/team/keith.jpg' },
-  { name: 'Kenzen Miñao', initials: 'KM', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
   { name: 'Christoph Bagabuyo', initials: 'CB', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/christoph.bagabuyo', image: '/team/christoph.jpg' },
   { name: 'Mischi Jeda Elumba', initials: 'MJ', role: 'UI/UX Designer', year_level: '2nd year', program: 'IS', facebook: 'https://facebook.com/mischijeda.elumba.1', image: '/team/mischi.jpg' }
 ]
@@ -851,6 +919,100 @@ const formData = reactive({
   photo: '',
   email: ''
 })
+
+const flattenedPrograms = computed(() => {
+  const list = []
+  departments.forEach(dept => {
+    if (dept && Array.isArray(dept.programs)) {
+      dept.programs.forEach(p => {
+        list.push({
+          shortName: p.shortName,
+          fullName: p.fullName,
+          departmentId: dept.id,
+          departmentName: dept.name,
+          departmentLogo: dept.logo,
+          departmentLabel: dept.label
+        })
+      })
+    }
+  })
+  return list
+})
+
+const programDepartment = computed(() => {
+  if (!formData.program) return null
+  return flattenedPrograms.value.find(p => p.shortName === formData.program) || null
+})
+
+// Program dropdown state for custom select with logos
+const showProgramMenu = ref(false)
+const programDropdownDesktopRef = ref(null)
+const programDropdownMobileRef = ref(null)
+const showMenuAboveDesktop = ref(false)
+const showMenuAboveMobile = ref(false)
+const selectedProgramItem = computed(() => {
+  return flattenedPrograms.value.find(p => p.shortName === formData.program) || null
+})
+
+const handleOutsideClick = (e) => {
+  const desktopEl = programDropdownDesktopRef.value
+  const mobileEl = programDropdownMobileRef.value
+  const clickedInsideDesktop = desktopEl && desktopEl.contains(e.target)
+  const clickedInsideMobile = mobileEl && mobileEl.contains(e.target)
+  if (!clickedInsideDesktop && !clickedInsideMobile) showProgramMenu.value = false
+}
+
+const updateProgramMenuPlacement = (which) => {
+  try {
+    const menuNeeded = 240 // approximate menu height in px
+    if (which === 'desktop') {
+      const el = programDropdownDesktopRef.value
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      const spaceAbove = rect.top
+      showMenuAboveDesktop.value = (spaceBelow < menuNeeded && spaceAbove > menuNeeded)
+    } else if (which === 'mobile') {
+      const el = programDropdownMobileRef.value
+      if (!el) return
+      const rect = el.getBoundingClientRect()
+      const spaceBelow = window.innerHeight - rect.bottom
+      const spaceAbove = rect.top
+      showMenuAboveMobile.value = (spaceBelow < menuNeeded && spaceAbove > menuNeeded)
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+const onWindowChange = () => {
+  if (showProgramMenu.value) {
+    updateProgramMenuPlacement('desktop')
+    updateProgramMenuPlacement('mobile')
+  }
+}
+
+const toggleProgramMenu = (which) => {
+  showProgramMenu.value = !showProgramMenu.value
+  if (showProgramMenu.value) updateProgramMenuPlacement(which)
+}
+
+onMounted(() => {
+  document.addEventListener('click', handleOutsideClick)
+  window.addEventListener('resize', onWindowChange)
+  window.addEventListener('scroll', onWindowChange, true)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleOutsideClick)
+  window.removeEventListener('resize', onWindowChange)
+  window.removeEventListener('scroll', onWindowChange, true)
+})
+
+const chooseProgram = (p) => {
+  formData.program = p.shortName
+  showProgramMenu.value = false
+}
 
 const isUploading = ref(false)
 const previousStudentIdLength = ref(0)
@@ -1201,8 +1363,9 @@ const handleNext = async () => {
       showErrorNotification.value = true
       return
     }
-    if (!['BSCS', 'BSIT', 'BSIS'].includes(formData.program)) {
-      errorMessage.value = "Program must be BSCS, BSIT, or BSIS."
+    const allowedPrograms = flattenedPrograms.value.map(p => p.shortName)
+    if (!allowedPrograms.includes(formData.program)) {
+      errorMessage.value = `Program must be one of: ${allowedPrograms.join(', ')}.`
       showErrorNotification.value = true
       return
     }
@@ -1348,11 +1511,14 @@ const goToLogin = () => {
 }
 
 .mobile-bg-panel {
-  background: linear-gradient(135deg, rgba(109, 40, 217, 0.95) 0%, rgba(219, 39, 119, 0.95) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.95) 0%, rgba(59, 130, 246, 0.95) 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
 }
 .desktop-bg-panel {
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.95) 0%, rgba(59, 130, 246, 0.95) 100%), url('/classroom-bg.jpg');
+  background-size: cover;
+  background-position: center;
   transition: all 0.5s ease-in-out;
 }
 

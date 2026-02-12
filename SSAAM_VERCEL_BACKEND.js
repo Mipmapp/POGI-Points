@@ -51,7 +51,7 @@ const corsOptions = {
     }
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-SSAAM-TS', 'X-Admin-Action-Token'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-SSAAM-TS'],
   credentials: true,
   maxAge: 86400 // Cache preflight for 24 hours
 };
@@ -751,7 +751,14 @@ app.get('/apis/payments', auth, async (req, res) => {
                         marked_by_first_name: campaign.marked_by_first_name || null,
                         paid_date: campaign.paid_at || null,
                         amount_paid: campaign.amount_paid || 0,
-                        notes: campaign.notes || ''
+                        notes: campaign.notes || '',
+                        // Include discount fields from campaign
+                        discount_type: campaign.discount_type || '',
+                        discount_percentage: campaign.discount_percentage || 0,
+                        discount_fixed_amount: campaign.discount_fixed_amount || 0,
+                        discount_reason: campaign.discount_reason || '',
+                        discount_applied_at: campaign.discount_applied_at || null,
+                        discount_applied_by: campaign.discount_applied_by || null
                     });
                     
                     if (campaign.payment_status === 'paid') paid++;
@@ -885,7 +892,14 @@ app.get('/apis/payments/:id', auth, async (req, res) => {
                     paid_by_treasurer: campaign.paid_by_treasurer || null,
                     paid_date: campaign.paid_at || null,
                     amount_paid: campaign.amount_paid || 0,
-                    notes: campaign.notes || ''
+                    notes: campaign.notes || '',
+                    // Include discount fields from campaign
+                    discount_type: campaign.discount_type || '',
+                    discount_percentage: campaign.discount_percentage || 0,
+                    discount_fixed_amount: campaign.discount_fixed_amount || 0,
+                    discount_reason: campaign.discount_reason || '',
+                    discount_applied_at: campaign.discount_applied_at || null,
+                    discount_applied_by: campaign.discount_applied_by || null
                 });
                 
                 if (campaign.payment_status === 'paid') paid++;
@@ -1097,6 +1111,74 @@ app.get('/apis/payments/:paymentId/student/:studentId', async (req, res) => {
         
         res.json({ success: true, data: paymentRecord });
     } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Apply discount to payment record
+app.put('/apis/payments/:paymentId/apply-discount', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        const { studentId, discountType, discountPercentage, discountFixedAmount, discountReason } = req.body;
+        const adminUser = req.user; // From auth middleware
+        
+        // Validate input
+        if (!paymentId || !studentId) {
+            return res.status(400).json({ message: 'Payment ID and Student ID are required' });
+        }
+        
+        const dType = discountType || 'percentage';
+        
+        // Validate discount based on type
+        if (dType === 'percentage') {
+            const discountPct = parseFloat(discountPercentage) || 0;
+            if (discountPct < 0 || discountPct > 100) {
+                return res.status(400).json({ message: 'Discount percentage must be between 0 and 100' });
+            }
+        } else if (dType === 'fixed') {
+            const discountAmount = parseFloat(discountFixedAmount) || 0;
+            if (discountAmount < 0) {
+                return res.status(400).json({ message: 'Fixed discount amount cannot be negative' });
+            }
+        } else {
+            return res.status(400).json({ message: 'Invalid discount type. Use "percentage" or "fixed"' });
+        }
+        
+        // Find the payment record
+        const paymentRecord = await PaymentRecord.findOne({ student_id: studentId });
+        if (!paymentRecord) {
+            return res.status(404).json({ message: 'Payment record not found' });
+        }
+        
+        // Find the campaign to update
+        const campaign = paymentRecord.campaigns.find(c => c.payment_id.toString() === paymentId);
+        if (!campaign) {
+            return res.status(404).json({ message: 'Payment campaign not found for this student' });
+        }
+        
+        // Update discount fields based on type
+        campaign.discount_type = dType;
+        if (dType === 'percentage') {
+            campaign.discount_percentage = parseFloat(discountPercentage) || 0;
+            campaign.discount_fixed_amount = 0; // Clear fixed amount
+        } else {
+            campaign.discount_fixed_amount = parseFloat(discountFixedAmount) || 0;
+            campaign.discount_percentage = 0; // Clear percentage
+        }
+        campaign.discount_reason = discountReason || '';
+        campaign.discount_applied_at = new Date();
+        campaign.discount_applied_by = adminUser?.username || adminUser?.email || 'admin';
+        campaign.updated_at = new Date();
+        
+        // Save the updated record
+        await paymentRecord.save();
+        
+        res.status(200).json({ 
+            message: 'Discount applied successfully',
+            campaign: campaign 
+        });
+    } catch (err) {
+        console.error('Error applying discount:', err);
         res.status(500).json({ message: err.message });
     }
 });
@@ -1496,7 +1578,14 @@ app.get('/apis/my-payments', auth, async (req, res) => {
                 amount_paid: campaign.amount_paid || 0,
                 payment_method: campaign.payment_method,
                 notes: campaign.notes,
-                created_at: campaign.created_at
+                created_at: campaign.created_at,
+                // Include discount fields from campaign
+                discount_type: campaign.discount_type || '',
+                discount_percentage: campaign.discount_percentage || 0,
+                discount_fixed_amount: campaign.discount_fixed_amount || 0,
+                discount_reason: campaign.discount_reason || '',
+                discount_applied_at: campaign.discount_applied_at || null,
+                discount_applied_by: campaign.discount_applied_by || null
             }));
         
         // Sort by date, most recent first
@@ -1616,22 +1705,6 @@ async function cleanupInactiveSessionTokens() {
 
 setInterval(cleanupInactiveSessionTokens, 60 * 60 * 1000);
 
-const adminActionTokenSchema = new mongoose.Schema({
-    token_hash: { type: String, required: true, unique: true },
-    admin_id: { type: mongoose.Schema.Types.ObjectId, required: true },
-    admin_username: { type: String, required: true },
-    created_at: { type: Date, default: Date.now },
-    expires_at: { type: Date, required: true },
-    used_count: { type: Number, default: 0 },
-    max_uses: { type: Number, default: 50 },
-    is_revoked: { type: Boolean, default: false }
-});
-
-adminActionTokenSchema.index({ expires_at: 1 }, { expireAfterSeconds: 0 });
-adminActionTokenSchema.index({ admin_id: 1 });
-
-const AdminActionToken = mongoose.model("AdminActionToken", adminActionTokenSchema);
-
 const studentSchema = new mongoose.Schema({
     student_id: {
         type: String,
@@ -1737,6 +1810,16 @@ const studentSchema = new mongoose.Schema({
     }]
 });
 
+// Pre-save middleware to auto-generate full_name from parts
+// Use synchronous middleware (no `next`) to avoid runtime `next is not a function` errors
+studentSchema.pre('save', function() {
+    if (!this.full_name || this.full_name.trim() === '') {
+        const parts = [this.first_name, this.middle_name, this.last_name, this.suffix]
+            .filter(p => p && p.trim() !== '');
+        this.full_name = parts.join(' ').replace(/\s+/g, ' ').trim();
+    }
+});
+
 const Student = mongoose.model("Student", studentSchema);
 
 const verificationCodeSchema = new mongoose.Schema({
@@ -1753,6 +1836,7 @@ const VerificationCode = mongoose.model("VerificationCode", verificationCodeSche
 
 const masterSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
+    email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     created_at: { type: Date, default: Date.now }
 });
@@ -1892,6 +1976,7 @@ const attendanceSessionSchema = new mongoose.Schema({
     check_in_locked: { type: Boolean, default: false },
     check_out_locked: { type: Boolean, default: false },
     late_timer_minutes: { type: Number, default: 0 },
+    rfidScanner: { type: mongoose.Schema.Types.Mixed, default: {} },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
 });
@@ -1916,6 +2001,13 @@ const attendanceLogSchema = new mongoose.Schema({
     check_in_at: { type: Date, default: null },
     check_out_at: { type: Date, default: null },
     is_late: { type: Boolean, default: false },
+    // Excused flag and reason (optional)
+    excused: { type: Boolean, default: false },
+    excuse_reason: { type: String, default: null },
+    excused_by: { type: String, default: null },
+    // Optional reference to who excused (Student or Master)
+    excused_by_id: { type: mongoose.Schema.Types.ObjectId, default: null },
+    excused_by_model: { type: String, enum: ['Student', 'Master', null], default: null },
     source: { type: String, enum: ['rfid', 'manual'], default: 'rfid' },
     input_method: { type: String, enum: ['rfid', 'manual_student_id'], default: 'rfid' },
     created_at: { type: Date, default: Date.now },
@@ -1929,6 +2021,8 @@ attendanceLogSchema.index({ session_id: 1, check_in_at: -1 });
 
 // Virtual for attendance status (present, late, incomplete, absent)
 attendanceLogSchema.virtual('attendance_status').get(function() {
+    // Excused has priority over other statuses
+    if (this.excused) return 'excused';
     if (this.check_in_at && this.check_out_at) {
         return this.is_late ? 'late' : 'present';
     }
@@ -2024,6 +2118,13 @@ const paymentRecordSchema = new mongoose.Schema({
         paid_by_treasurer: { type: String, default: null },
         notes: { type: String, default: "" },
         payment_method: { type: String, default: null },
+        // Discount fields
+        discount_type: { type: String, enum: ['percentage', 'fixed'], default: 'percentage' }, // Type of discount
+        discount_percentage: { type: Number, default: 0, min: 0, max: 100 }, // 0-100% (for percentage discount)
+        discount_fixed_amount: { type: Number, default: 0, min: 0 }, // Fixed amount discount in peso
+        discount_reason: { type: String, default: "" },
+        discount_applied_at: { type: Date, default: null },
+        discount_applied_by: { type: String, default: null }, // Admin username who applied discount
         created_at: { type: Date, default: Date.now },
         updated_at: { type: Date, default: Date.now }
     }],
@@ -2038,7 +2139,6 @@ const paymentRecordSchema = new mongoose.Schema({
     updated_at: { type: Date, default: Date.now }
 });
 
-paymentRecordSchema.index({ student_id: 1 });
 paymentRecordSchema.index({ 'campaigns.payment_id': 1 });
 paymentRecordSchema.index({ 'campaigns.payment_status': 1 });
 
@@ -2265,63 +2365,7 @@ async function requireMaster(req, res, next) {
     next();
 }
 
-async function adminActionAuth(req, res, next) {
-    if (!req.master) {
-        return res.status(401).json({ message: "Authentication required" });
-    }
 
-    // First verify this is actually an admin token
-    if (!req.master.isMaster) {
-        return res.status(403).json({ 
-            message: "Access denied. Admin privileges required.",
-            code: 'NOT_ADMIN'
-        });
-    }
-
-    if (req.master.username !== PRIMARY_ADMIN_USERNAME) {
-        return res.status(403).json({ 
-            message: `Only the primary admin (${PRIMARY_ADMIN_USERNAME}) can perform this action`,
-            code: 'NOT_PRIMARY_ADMIN'
-        });
-    }
-
-    const actionToken = req.headers['x-admin-action-token'];
-
-    if (!actionToken) {
-        return res.status(403).json({ 
-            message: "Admin action token required. Please verify your admin key first.",
-            code: 'ACTION_TOKEN_REQUIRED'
-        });
-    }
-
-    try {
-        const tokenHash = hashToken(actionToken);
-        const adminActionRecord = await AdminActionToken.findOneAndUpdate(
-            {
-                token_hash: tokenHash,
-                admin_id: req.master.id,
-                is_revoked: false,
-                expires_at: { $gt: new Date() },
-                $expr: { $lt: ['$used_count', '$max_uses'] }
-            },
-            { $inc: { used_count: 1 } },
-            { new: true }
-        );
-
-        if (!adminActionRecord) {
-            return res.status(403).json({ 
-                message: "Invalid or expired admin action token. Please verify your admin key again.",
-                code: 'INVALID_ACTION_TOKEN'
-            });
-        }
-
-        req.adminActionToken = adminActionRecord;
-        next();
-    } catch (err) {
-        console.error("Admin action auth error:", err);
-        return res.status(500).json({ message: "Authentication error" });
-    }
-}
 
 // Middleware for treasurer role authorization
 async function treasurerAuth(req, res, next) {
@@ -2797,44 +2841,6 @@ app.get('/apis/debug/session-tokens', auth, async (req, res) => {
     }
 });
 
-app.delete('/apis/debug/session-tokens/clear', auth, adminActionAuth, async (req, res) => {
-    try {
-        const { type } = req.query;
-        let result;
-
-        if (type === 'all') {
-            result = await SessionToken.deleteMany({});
-        } else if (type === 'inactive') {
-            const cutoffTime = new Date(Date.now() - SESSION_INACTIVITY_MS);
-            result = await SessionToken.deleteMany({
-                $or: [
-                    { last_used_at: { $lt: cutoffTime } },
-                    { last_used_at: null, created_at: { $lt: cutoffTime } }
-                ]
-            });
-        } else if (type === 'expired') {
-            result = await SessionToken.deleteMany({
-                $or: [
-                    { expires_at: { $lte: new Date() } },
-                    { is_revoked: true }
-                ]
-            });
-        } else {
-            return res.status(400).json({ 
-                message: "Invalid type. Use: 'all', 'inactive', or 'expired'" 
-            });
-        }
-
-        res.json({
-            message: `Cleared ${result.deletedCount} session tokens`,
-            type,
-            deletedCount: result.deletedCount
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
 // Debug endpoint to check all students in database regardless of status
 app.get('/apis/debug/students', async (req, res) => {
     try {
@@ -2964,6 +2970,37 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
             verifiedCount,
             unverifiedCount,
             unreadableCount
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get all students with full names for custom event selection
+app.get('/apis/students/list/all', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const students = await Student.find({ status: 'approved' })
+            .select('student_id first_name middle_name last_name suffix program year_level photo email rfid_status rfid_code')
+            .sort({ first_name: 1, last_name: 1 });
+
+        const formattedStudents = students.map(s => ({
+            _id: s._id,
+            student_id: s.student_id,
+            first_name: s.first_name || '',
+            middle_name: s.middle_name || '',
+            last_name: s.last_name || '',
+            full_name: `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+            program: s.program || '',
+            year_level: s.year_level || '',
+            photo: s.photo || '',
+            email: s.email || '',
+            rfid_status: s.rfid_status || 'unverified',
+            rfid_code: s.rfid_code || 'N/A'
+        }));
+
+        res.json({
+            data: formattedStudents,
+            total: formattedStudents.length
         });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -3262,12 +3299,15 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
         const middleName = data.middle_name ? data.middle_name.toUpperCase().trim() : "";
         const lastName = lastNameValidation.value;
 
+        const fullName = `${firstName} ${middleName} ${lastName} ${suffixValidation.value}`.replace(/\s+/g, " ").trim();
+
         const studentData = {
             student_id: data.student_id,
             first_name: firstName,
             middle_name: middleName,
             last_name: lastName,
             suffix: suffixValidation.value,
+            full_name: fullName,
             email: data.email,
             year_level: yearLevelValidation.value,
             program: data.program,
@@ -3513,31 +3553,7 @@ app.put('/apis/students/:student_id/rfid', auth, timestampAuth, async (req, res)
     }
 });
 
-app.delete('/apis/students/:student_id/rfid', auth, adminActionAuth, timestampAuth, async (req, res) => {
-    try {
-        const updated = await Student.findOneAndUpdate(
-            { student_id: req.params.student_id },
-            { 
-                rfid_code: null,
-                rfid_status: "unverified",
-                rfid_verified_at: null,
-                admin_verification_token: null
-            },
-            { new: true }
-        );
 
-        if (!updated) {
-            return res.status(404).json({ message: "Student not found" });
-        }
-
-        res.json({
-            message: "RFID code removed successfully",
-            student: updated
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
 
 app.put('/apis/students/:student_id/role', auth, timestampAuth, async (req, res) => {
     try {
@@ -3616,6 +3632,23 @@ app.put('/apis/students/:student_id/photo', studentAuthWithToken, async (req, re
     } catch (err) {
         console.error('Photo update error:', err);
         res.status(500).json({ message: err.message });
+    }
+});
+
+// Get student photo - works with or without authentication (for displaying cached photos)
+app.get('/apis/students/:student_id/photo', async (req, res) => {
+    try {
+        const student = await Student.findOne({ student_id: req.params.student_id });
+        
+        if (!student || !student.photo) {
+            return res.status(404).json({ message: 'Photo not found' });
+        }
+        
+        // Return photo directly - can be URL or base64
+        res.json({ photo: student.photo, student_id: student.student_id });
+    } catch (err) {
+        console.error('Photo retrieval error:', err);
+        res.status(500).json({ message: 'Error retrieving photo' });
     }
 });
 
@@ -3919,9 +3952,9 @@ app.post('/apis/students/change-password', async (req, res) => {
     }
 });
 
-app.post('/apis/masters', auth, timestampAuth, async (req, res) => {
+app.post('/apis/masters', auth, async (req, res) => {
     try {
-        const { username, password, admin_creation_secret } = req.body;
+        const { username, email, password, admin_creation_secret } = req.body;
 
         const MASTER_CREATION_SECRET = process.env.MASTER_CREATION_SECRET;
         if (!MASTER_CREATION_SECRET) {
@@ -3932,8 +3965,8 @@ app.post('/apis/masters', auth, timestampAuth, async (req, res) => {
             return res.status(403).json({ message: "Invalid admin creation secret" });
         }
 
-        if (!username || !password)
-            return res.status(400).json({ message: "Username and password required" });
+        if (!username || !email || !password)
+            return res.status(400).json({ message: "Username, email, and password required" });
 
         if (username.length < 4 || username.length > 32) {
             return res.status(400).json({ message: "Username must be 4-32 characters" });
@@ -3943,18 +3976,24 @@ app.post('/apis/masters', auth, timestampAuth, async (req, res) => {
             return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
         }
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: "Valid email address required" });
+        }
+
         if (password.length < 12) {
             return res.status(400).json({ message: "Password must be at least 12 characters" });
         }
 
-        const existing = await Master.findOne({ username });
+        const existing = await Master.findOne({ $or: [{ username }, { email }] });
         if (existing)
-            return res.status(400).json({ message: "Username already exists" });
+            return res.status(400).json({ message: "Username or email already exists" });
 
         const hashedPassword = await bcrypt.hash(password, 12);
 
         const master = await Master.create({
             username,
+            email,
             password: hashedPassword
         });
 
@@ -4020,105 +4059,11 @@ app.post('/apis/masters/logout', auth, async (req, res) => {
     }
 });
 
-app.post('/apis/admin-actions/token', auth, timestampAuth, async (req, res) => {
-    try {
-        const { admin_key } = req.body;
 
-        if (!ADMIN_ACTION_KEY) {
-            return res.status(500).json({ message: "Admin action key is not configured on this server" });
-        }
 
-        if (req.master.username !== PRIMARY_ADMIN_USERNAME) {
-            return res.status(403).json({ 
-                message: `Only the primary admin (${PRIMARY_ADMIN_USERNAME}) can request action tokens`,
-                code: 'NOT_PRIMARY_ADMIN'
-            });
-        }
 
-        if (!admin_key) {
-            return res.status(400).json({ message: "Admin key is required" });
-        }
 
-        if (!timingSafeCompare(admin_key, ADMIN_ACTION_KEY)) {
-            return res.status(403).json({ message: "Invalid admin key" });
-        }
 
-        await AdminActionToken.updateMany(
-            { admin_id: req.master.id, is_revoked: false },
-            { is_revoked: true }
-        );
-
-        const actionToken = generateSecureToken();
-        const tokenHash = hashToken(actionToken);
-        const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-
-        await AdminActionToken.create({
-            token_hash: tokenHash,
-            admin_id: req.master.id,
-            admin_username: req.master.username,
-            expires_at: expiresAt,
-            max_uses: 50
-        });
-
-        res.json({
-            message: "Admin action token generated successfully",
-            action_token: actionToken,
-            expires_at: expiresAt,
-            expires_in_seconds: 300
-        });
-
-    } catch (err) {
-        console.error("Admin action token error:", err);
-        res.status(500).json({ message: err.message });
-    }
-});
-
-app.post('/apis/admin-actions/revoke', auth, async (req, res) => {
-    try {
-        if (req.master.username !== PRIMARY_ADMIN_USERNAME) {
-            return res.status(403).json({ message: "Only the primary admin can revoke action tokens" });
-        }
-
-        const result = await AdminActionToken.updateMany(
-            { admin_id: req.master.id, is_revoked: false },
-            { is_revoked: true }
-        );
-
-        res.json({ 
-            message: "All action tokens revoked",
-            revoked_count: result.modifiedCount
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
-
-app.get('/apis/admin-actions/status', auth, async (req, res) => {
-    try {
-        if (req.master.username !== PRIMARY_ADMIN_USERNAME) {
-            return res.status(403).json({ 
-                message: "Only the primary admin can check action token status",
-                is_primary_admin: false
-            });
-        }
-
-        const activeToken = await AdminActionToken.findOne({
-            admin_id: req.master.id,
-            is_revoked: false,
-            expires_at: { $gt: new Date() },
-            $expr: { $lt: ['$used_count', '$max_uses'] }
-        });
-
-        res.json({
-            is_primary_admin: true,
-            has_active_token: !!activeToken,
-            token_expires_at: activeToken?.expires_at || null,
-            uses_remaining: activeToken ? (activeToken.max_uses - activeToken.used_count) : 0
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
 
 app.get('/apis/masters', auth, requireMaster, async (req, res) => {
     try {
@@ -4195,20 +4140,7 @@ app.post('/apis/admin/verify', auth, async (req, res) => {
     }
 });
 
-app.delete('/apis/students/cleanup-invalid-programs', auth, adminActionAuth, async (req, res) => {
-    try {
-        const result = await Student.deleteMany({
-            program: { $nin: VALID_PROGRAMS }
-        });
 
-        res.json({
-            message: `Deleted ${result.deletedCount} students with invalid programs`,
-            deletedCount: result.deletedCount
-        });
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-});
 
 app.get('/apis/settings', studentAuth, async (req, res) => {
     try {
@@ -5641,6 +5573,67 @@ app.get('/apis/attendance/events', auth, async (req, res) => {
             console.log(`[Attendance Events] Sample events:`, events.slice(0, 3).map(e => ({ title: e.title, is_custom: e.is_custom, status: e.status, created_at: e.created_at })));
         }
 
+        // Ensure assigned_users are consistently full objects with names
+        try {
+            // Collect all student ids that need enrichment
+            const idsToFetch = new Set();
+            events.forEach(ev => {
+                if (Array.isArray(ev.assigned_users)) {
+                    ev.assigned_users.forEach(u => {
+                        if (!u) return;
+                        if (typeof u === 'string') idsToFetch.add(u);
+                        else if (u._id && !u.full_name) idsToFetch.add(u._id.toString());
+                    })
+                }
+            })
+
+            if (idsToFetch.size > 0) {
+                const students = await Student.find({ _id: { $in: Array.from(idsToFetch) } })
+                    .select('first_name middle_name last_name student_id program year_level photo full_name');
+                const studentMap = {};
+                students.forEach(s => {
+                    studentMap[s._id.toString()] = s;
+                });
+
+                // Merge/enrich assigned_users
+                events.forEach(ev => {
+                    if (Array.isArray(ev.assigned_users)) {
+                        ev.assigned_users = ev.assigned_users.map(u => {
+                            if (!u) return null;
+                            if (typeof u === 'string') {
+                                const s = studentMap[u];
+                                if (s) return {
+                                    _id: s._id,
+                                    student_id: s.student_id,
+                                    full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                    program: s.program || '',
+                                    year_level: s.year_level || '',
+                                    photo: s.photo || ''
+                                };
+                                return { _id: u };
+                            } else if (u._id) {
+                                const sid = u._id.toString();
+                                const s = studentMap[sid];
+                                if (s) return {
+                                    _id: s._id,
+                                    student_id: s.student_id,
+                                    full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                    program: s.program || u.program || '',
+                                    year_level: s.year_level || u.year_level || '',
+                                    photo: s.photo || u.photo || ''
+                                };
+                                // If no student found, keep original object but ensure _id
+                                return { _id: u._id, student_id: u.student_id, program: u.program, year_level: u.year_level };
+                            }
+                            return u;
+                        }).filter(Boolean);
+                    }
+                });
+            }
+        } catch (enrichErr) {
+            console.error('[Attendance Events] enrichment error:', enrichErr.message);
+        }
+
         res.json({
             data: events,
             pagination: {
@@ -5702,6 +5695,62 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
             .populate('assigned_users', 'full_name name student_id')
             .sort({ event_date: 1 });
         
+        // Enrich assigned_users objects for consistent full_name
+        try {
+            const idsToFetch = new Set();
+            events.forEach(ev => {
+                if (Array.isArray(ev.assigned_users)) {
+                    ev.assigned_users.forEach(u => {
+                        if (!u) return;
+                        if (typeof u === 'string') idsToFetch.add(u);
+                        else if (u._id && !u.full_name) idsToFetch.add(u._id.toString());
+                    });
+                }
+            });
+
+            if (idsToFetch.size > 0) {
+                const students = await Student.find({ _id: { $in: Array.from(idsToFetch) } })
+                    .select('first_name middle_name last_name student_id program year_level photo full_name');
+                const studentMap = {};
+                students.forEach(s => { studentMap[s._id.toString()] = s; });
+
+                events.forEach(ev => {
+                    if (Array.isArray(ev.assigned_users)) {
+                        ev.assigned_users = ev.assigned_users.map(u => {
+                            if (!u) return null;
+                            if (typeof u === 'string') {
+                                const s = studentMap[u];
+                                if (s) return {
+                                    _id: s._id,
+                                    student_id: s.student_id,
+                                    full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                    program: s.program || '',
+                                    year_level: s.year_level || '',
+                                    photo: s.photo || ''
+                                };
+                                return { _id: u };
+                            } else if (u._id) {
+                                const sid = u._id.toString();
+                                const s = studentMap[sid];
+                                if (s) return {
+                                    _id: s._id,
+                                    student_id: s.student_id,
+                                    full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                    program: s.program || u.program || '',
+                                    year_level: s.year_level || u.year_level || '',
+                                    photo: s.photo || u.photo || ''
+                                };
+                                return { _id: u._id, student_id: u.student_id, program: u.program, year_level: u.year_level };
+                            }
+                            return u;
+                        }).filter(Boolean);
+                    }
+                });
+            }
+        } catch (err) {
+            console.error('[Draft Events] enrichment error:', err.message);
+        }
+
         res.json({ data: events });
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -5716,6 +5765,56 @@ app.get('/apis/attendance/events/:id', auth, async (req, res) => {
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
+        // Enrich assigned_users to ensure consistent object shape (in case some are IDs)
+        try {
+            if (Array.isArray(event.assigned_users)) {
+                const idsToFetch = [];
+                event.assigned_users.forEach(u => {
+                    if (!u) return;
+                    if (typeof u === 'string') idsToFetch.push(u);
+                    else if (u._id && !u.full_name) idsToFetch.push(u._id.toString());
+                });
+
+                if (idsToFetch.length > 0) {
+                    const students = await Student.find({ _id: { $in: idsToFetch } })
+                        .select('first_name middle_name last_name student_id program year_level photo full_name');
+                    const studentMap = {};
+                    students.forEach(s => { studentMap[s._id.toString()] = s; });
+
+                    event.assigned_users = event.assigned_users.map(u => {
+                        if (!u) return null;
+                        if (typeof u === 'string') {
+                            const s = studentMap[u];
+                            if (s) return {
+                                _id: s._id,
+                                student_id: s.student_id,
+                                full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                program: s.program || '',
+                                year_level: s.year_level || '',
+                                photo: s.photo || ''
+                            };
+                            return { _id: u };
+                        } else if (u._id) {
+                            const sid = u._id.toString();
+                            const s = studentMap[sid];
+                            if (s) return {
+                                _id: s._id,
+                                student_id: s.student_id,
+                                full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                program: s.program || u.program || '',
+                                year_level: s.year_level || u.year_level || '',
+                                photo: s.photo || u.photo || ''
+                            };
+                            return { _id: u._id, student_id: u.student_id, program: u.program, year_level: u.year_level };
+                        }
+                        return u;
+                    }).filter(Boolean);
+                }
+            }
+        } catch (enrichErr) {
+            console.error('[Single Event] enrichment error:', enrichErr.message);
+        }
+
         res.json(event);
     } catch (err) {
         res.status(500).json({ message: err.message });
@@ -5931,6 +6030,29 @@ app.put('/apis/attendance/events/custom/:id', adminOrTreasurerAuth, async (req, 
     }
 });
 
+// Get event statistics including total assigned students
+app.get('/apis/events/:id/stats', auth, async (req, res) => {
+    try {
+        const event = await AttendanceEvent.findById(req.params.id);
+        if (!event) {
+            return res.status(404).json({ message: "Event not found" });
+        }
+        
+        const totalAssignedStudents = Array.isArray(event.assigned_users) ? event.assigned_users.length : 0;
+        const totalLogs = await AttendanceLog.countDocuments({ event_id: req.params.id });
+        const uniqueStudents = await AttendanceLog.distinct('student_id', { event_id: req.params.id });
+        
+        res.json({
+            totalAssignedStudents,
+            totalLogs,
+            uniqueStudentsAttended: uniqueStudents.length
+        });
+    } catch (err) {
+        console.error('[Event Stats] Error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Get attendance export as Excel with custom columns
 app.get('/apis/attendance/events/:eventId/export-excel', treasurerAuth, async (req, res) => {
     try {
@@ -6013,7 +6135,7 @@ app.get('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
 // Update session (admin only)
 app.put('/apis/attendance/sessions/:id', auth, async (req, res) => {
     try {
-        const { label, start_time, end_time, status, check_in_locked, check_out_locked, late_timer_minutes } = req.body;
+        const { label, start_time, end_time, status, check_in_locked, check_out_locked, late_timer_minutes, rfidScanner } = req.body;
 
         const session = await AttendanceSession.findById(req.params.id);
         if (!session) {
@@ -6038,9 +6160,12 @@ app.put('/apis/attendance/sessions/:id', auth, async (req, res) => {
         if (check_in_locked !== undefined) session.check_in_locked = check_in_locked;
         if (check_out_locked !== undefined) session.check_out_locked = check_out_locked;
         if (late_timer_minutes !== undefined) session.late_timer_minutes = late_timer_minutes;
+        if (rfidScanner !== undefined) session.rfidScanner = rfidScanner;
 
         session.updated_at = new Date();
         const updated = await session.save();
+
+        console.log('[SESSION UPDATE] saved session', updated._id ? updated._id.toString() : 'unknown', 'rfidScanner=', updated.rfidScanner);
 
         res.json({ message: "Session updated successfully", session: updated });
     } catch (err) {
@@ -6070,7 +6195,20 @@ app.delete('/apis/attendance/sessions/:id', auth, async (req, res) => {
 app.get('/apis/attendance/sessions/:id/logs', auth, async (req, res) => {
     try {
         const { search, yearLevel, program, page = 1, limit = 50 } = req.query;
-        const filter = { session_id: req.params.id };
+        let sessionObjectId;
+        
+        try {
+            sessionObjectId = new mongoose.Types.ObjectId(req.params.id);
+        } catch (e) {
+            console.error(`[Session Logs] INVALID SESSION ID: ${req.params.id}`)
+            return res.status(400).json({ message: "Invalid session ID format" });
+        }
+        
+        console.log(`[Session Logs] Fetching logs for session: ${req.params.id}`)
+        console.log(`[Session Logs] Converted ObjectId: ${sessionObjectId}`)
+        console.log(`[Session Logs] Query: yearLevel=${yearLevel}, program=${program}, search=${search}, page=${page}, limit=${limit}`)
+        
+        const filter = { session_id: sessionObjectId };
 
         if (yearLevel) filter.year_level = yearLevel;
         if (program) filter.program = program;
@@ -6084,14 +6222,41 @@ app.get('/apis/attendance/sessions/:id/logs', auth, async (req, res) => {
             ];
         }
 
+        console.log(`[Session Logs] Filter: ${JSON.stringify(filter)}`)
+
         const skip = (parseInt(page) - 1) * parseInt(limit);
 
-        const logs = await AttendanceLog.find(filter)
+        let logs = await AttendanceLog.find(filter)
             .sort({ check_in_at: -1, created_at: -1 })
             .skip(skip)
             .limit(parseInt(limit));
 
+        // Populate excused_by_name from referenced Student or Master when available
+        const refIds = [...new Set(logs.filter(l => l.excused_by_id).map(l => l.excused_by_id.toString()))]
+        if (refIds.length > 0) {
+            const students = await Student.find({ _id: { $in: refIds } }, 'full_name')
+            const masters = await Master.find({ _id: { $in: refIds } }, 'username')
+            const refMap = {}
+            students.forEach(s => { refMap[s._id.toString()] = s.full_name })
+            masters.forEach(m => { refMap[m._id.toString()] = m.username })
+            logs = logs.map(l => {
+                const obj = l.toObject ? l.toObject() : { ...l }
+                obj.excused_by_name = refMap[(l.excused_by_id || '')?.toString()] || l.excused_by || null
+                return obj
+            })
+        } else {
+            logs = logs.map(l => {
+                const obj = l.toObject ? l.toObject() : { ...l }
+                obj.excused_by_name = l.excused_by || null
+                return obj
+            })
+        }
+
+        console.log(`[Session Logs] Found ${logs.length} logs`)
+        console.log(`[Session Logs] First log sample:`, logs[0] || 'NO LOGS')
+
         const total = await AttendanceLog.countDocuments(filter);
+        console.log(`[Session Logs] Total count: ${total}`)
 
         // Stats for this session
         const stats = await AttendanceLog.aggregate([
@@ -6107,7 +6272,9 @@ app.get('/apis/attendance/sessions/:id/logs', auth, async (req, res) => {
             }
         ]);
 
-        res.json({
+        console.log(`[Session Logs] Stats:`, stats[0])
+
+        const responseData = {
             data: logs,
             stats: stats[0] || { total: 0, present: 0, late: 0, incomplete: 0 },
             pagination: {
@@ -6116,8 +6283,11 @@ app.get('/apis/attendance/sessions/:id/logs', auth, async (req, res) => {
                 total,
                 totalPages: Math.ceil(total / parseInt(limit))
             }
-        });
+        }
+        console.log(`[Session Logs] Sending response:`, JSON.stringify(responseData).substring(0, 200))
+        res.json(responseData);
     } catch (err) {
+        console.error(`[Session Logs] ERROR:`, err)
         res.status(500).json({ message: err.message });
     }
 });
@@ -6155,10 +6325,31 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
             }
 
             const skip = (parseInt(page) - 1) * parseInt(limit);
-            const logs = await AttendanceLog.find(sessionFilter)
+            let logs = await AttendanceLog.find(sessionFilter)
                 .sort({ check_in_at: -1, created_at: -1 })
                 .skip(skip)
                 .limit(parseInt(limit));
+
+            // Populate excused_by_name from referenced Student or Master when available
+            const refIds = [...new Set(logs.filter(l => l.excused_by_id).map(l => l.excused_by_id.toString()))]
+            if (refIds.length > 0) {
+                const students = await Student.find({ _id: { $in: refIds } }, 'full_name')
+                const masters = await Master.find({ _id: { $in: refIds } }, 'username')
+                const refMap = {}
+                students.forEach(s => { refMap[s._id.toString()] = s.full_name })
+                masters.forEach(m => { refMap[m._id.toString()] = m.username })
+                logs = logs.map(l => {
+                    const obj = l.toObject ? l.toObject() : { ...l }
+                    obj.excused_by_name = refMap[(l.excused_by_id || '')?.toString()] || l.excused_by || null
+                    return obj
+                })
+            } else {
+                logs = logs.map(l => {
+                    const obj = l.toObject ? l.toObject() : { ...l }
+                    obj.excused_by_name = l.excused_by || null
+                    return obj
+                })
+            }
 
             const total = await AttendanceLog.countDocuments(sessionFilter);
 
@@ -6379,19 +6570,59 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
     }
 });
 
-// PATCH endpoint to update individual attendance log (e.g., for late threshold recalculation)
+// PATCH endpoint to update individual attendance log (supports is_late, excused, excuse_reason)
 app.patch('/apis/attendance/logs/:id', auth, async (req, res) => {
     try {
-        const { is_late } = req.body;
+        const { is_late, excused, excuse_reason, excused_by, excused_by_id, excused_by_model } = req.body;
         
         const log = await AttendanceLog.findById(req.params.id);
         if (!log) {
             return res.status(404).json({ message: "Attendance log not found" });
         }
 
-        // Only allow updating is_late field for now
+        let changed = false
         if (typeof is_late === 'boolean') {
             log.is_late = is_late;
+            changed = true
+        }
+
+        if (typeof excused === 'boolean') {
+            log.excused = excused;
+            // if excused, clear check-in/check-out to avoid contradictions (optional)
+            if (excused) {
+                // keep existing check-in/out but excused takes precedence in status
+            }
+            changed = true
+        }
+
+        if (typeof excuse_reason === 'string') {
+            log.excuse_reason = excuse_reason || null
+            changed = true
+        }
+
+        if (typeof excused_by === 'string') {
+            log.excused_by = excused_by || null
+            changed = true
+        }
+
+        if (excused_by_id) {
+            try {
+                log.excused_by_id = mongoose.Types.ObjectId(excused_by_id)
+                changed = true
+            } catch (e) {
+                // ignore invalid id
+            }
+        } else if (excused_by_id === null) {
+            log.excused_by_id = null
+            changed = true
+        }
+
+        if (typeof excused_by_model === 'string') {
+            log.excused_by_model = excused_by_model || null
+            changed = true
+        }
+
+        if (changed) {
             log.updated_at = new Date();
             await log.save();
         }
@@ -6405,8 +6636,8 @@ app.patch('/apis/attendance/logs/:id', auth, async (req, res) => {
     }
 });
 
-// RFID Check-in/Check-out endpoint with 5-minute duplicate prevention
-const DUPLICATE_PREVENTION_MS = 5 * 60 * 1000; // 5 minutes in milliseconds
+// RFID Check-in/Check-out endpoint with 1-minute duplicate prevention
+const DUPLICATE_PREVENTION_MS = 1 * 60 * 1000; // 1 minute in milliseconds
 
 // Session-based RFID Check-in/Check-out endpoint
 app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) => {
@@ -6420,13 +6651,13 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
             return res.status(400).json({ message: isManualStudentId ? "Student ID is required" : "RFID code is required" });
         }
 
-        // Get global RFID scanner settings
+        // Get global RFID scanner settings (default)
         let settings = await Settings.findOne();
         if (!settings) {
             settings = new Settings();
             await settings.save();
         }
-        const rfidSettings = settings.rfidScanner || { checkInEnabled: true, checkOutEnabled: true };
+        const globalRfidSettings = settings.rfidScanner || { checkInEnabled: true, checkOutEnabled: true };
 
         const now = new Date();
 
@@ -6440,6 +6671,31 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
+
+        // Resolve effective RFID settings with the following priority:
+        // session.rfidScanner (highest) -> event.rfidScanner -> global settings (fallback)
+        let rfidSettings = Object.assign({}, globalRfidSettings);
+        try {
+            if (event && event.rfidScanner && typeof event.rfidScanner === 'object') {
+                rfidSettings = Object.assign({}, rfidSettings, event.rfidScanner);
+            }
+        } catch (e) {
+            console.warn('[RFID] malformed event.rfidScanner settings, falling back to global', e);
+        }
+        try {
+            if (session && session.rfidScanner && typeof session.rfidScanner === 'object') {
+                rfidSettings = Object.assign({}, rfidSettings, session.rfidScanner);
+            }
+        } catch (e) {
+            console.warn('[RFID] malformed session.rfidScanner settings, falling back to higher-level settings', e);
+        }
+
+        // Ensure boolean flags default to enabled when missing (avoid undefined blocking scans)
+        const checkInEnabled = (typeof rfidSettings.checkInEnabled === 'boolean') ? rfidSettings.checkInEnabled : true;
+        const checkOutEnabled = (typeof rfidSettings.checkOutEnabled === 'boolean') ? rfidSettings.checkOutEnabled : true;
+
+        // Debug log to help trace settings during scans
+        console.log('[RFID CHECK] session=', session._id ? session._id.toString() : req.params.sessionId, 'event=', event._id ? event._id.toString() : 'unknown', 'rfidSettings=', rfidSettings, 'computed=', { checkInEnabled, checkOutEnabled });
 
         // Fix: Be more lenient with status check or log the actual status for debugging
         if (event.status !== 'active' && event.status !== 'upcoming' && event.status !== 'draft') {
@@ -6590,25 +6846,29 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
             });
             action = 'check_in';
         } else if (!log.check_out_at) {
-            // Check-out
-            // Global checkOutEnabled must be true for check-out to work
-            if (!rfidSettings.checkOutEnabled) {
-                return res.status(403).json({ 
-                    message: `${session.label} check-out is currently disabled.`,
-                    student_name: log.student_name,
-                    locked: 'check_out'
-                });
-            }
-
+            // Already checked in - user scanned again while in check-in mode
             const timeSinceCheckIn = now - new Date(log.check_in_at);
+            
+            // Duplicate check-in attempt within cooldown period
             if (timeSinceCheckIn < DUPLICATE_PREVENTION_MS) {
                 const remainingSeconds = Math.ceil((DUPLICATE_PREVENTION_MS - timeSinceCheckIn) / 1000);
                 return res.status(200).json({ 
-                    message: `Already checked in! Wait ${Math.floor(remainingSeconds / 60)}m ${remainingSeconds % 60}s before checking out.`,
+                    message: `You have already checked in. Please check out first. Wait ${Math.floor(remainingSeconds / 60)}m ${remainingSeconds % 60}s before checking out.`,
                     action: 'already_checked_in',
                     success: true,
                     student_name: log.student_name,
-                    cooldown_remaining: remainingSeconds
+                    cooldown_remaining: remainingSeconds,
+                    warning: 'duplicate_check_in_attempt'
+                });
+            }
+            
+            // Check-out
+            // Global checkOutEnabled must be true for check-out to work
+            if (!checkOutEnabled) {
+                return res.status(403).json({ 
+                    message: `${session.label} Already checked-in and check-out is currently disabled.`,
+                    student_name: log.student_name,
+                    locked: 'check_out'
                 });
             }
 
@@ -6702,10 +6962,31 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                 .sort({ start_time: 1 });
 
             // Get all logs for this student in this event
-            const logs = await AttendanceLog.find({
+            let logs = await AttendanceLog.find({
                 event_id: event._id,
                 student_id: student._id
             });
+
+            // Populate excused_by_name if references exist
+            const refIds = [...new Set(logs.filter(l => l.excused_by_id).map(l => l.excused_by_id.toString()))]
+            if (refIds.length > 0) {
+                const studentsMap = await Student.find({ _id: { $in: refIds } }, 'full_name')
+                const mastersMap = await Master.find({ _id: { $in: refIds } }, 'username')
+                const refMap = {}
+                studentsMap.forEach(s => { refMap[s._id.toString()] = s.full_name })
+                mastersMap.forEach(m => { refMap[m._id.toString()] = m.username })
+                logs = logs.map(l => {
+                    const obj = l.toObject ? l.toObject() : { ...l }
+                    obj.excused_by_name = refMap[(l.excused_by_id || '')?.toString()] || l.excused_by || null
+                    return obj
+                })
+            } else {
+                logs = logs.map(l => {
+                    const obj = l.toObject ? l.toObject() : { ...l }
+                    obj.excused_by_name = l.excused_by || null
+                    return obj
+                })
+            }
             
             console.log(`[My Records] Processing event "${event.title}" - is_custom: ${event.is_custom}, sessions: ${sessions.length}, logs: ${logs.length}`);
 
@@ -6715,7 +6996,9 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                 
                 let status = 'absent';
                 if (log) {
-                    if (log.check_in_at && log.check_out_at) {
+                    if (log.excused) {
+                        status = 'excused';
+                    } else if (log.check_in_at && log.check_out_at) {
                         status = log.is_late ? 'late' : 'present';
                     } else if (log.check_in_at) {
                         status = 'incomplete';
@@ -6741,10 +7024,20 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                         check_in_at: log.check_in_at,
                         check_out_at: log.check_out_at,
                         is_late: log.is_late,
+                        excused: log.excused || false,
+                        excuse_reason: log.excuse_reason || null,
+                        excused_by: log.excused_by || null,
+                        excused_by_id: log.excused_by_id || null,
+                        excused_by_model: log.excused_by_model || null,
                         status
                     } : {
                         check_in_at: null,
                         check_out_at: null,
+                        excused: false,
+                        excuse_reason: null,
+                        excused_by: null,
+                        excused_by_id: null,
+                        excused_by_model: null,
                         status: 'absent'
                     }
                 };
@@ -6752,12 +7045,18 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
 
             // Calculate overall event attendance status
             let overallStatus = 'absent';
-            const completedSessions = sessionRecords.filter(s => s.attendance.status === 'present' || s.attendance.status === 'late');
+            let excuseReason = null;
+            const completedSessions = sessionRecords.filter(s => s.attendance.status === 'present' || s.attendance.status === 'late' || s.attendance.status === 'excused');
+            const excusedSessions = sessionRecords.filter(s => s.attendance.status === 'excused');
             const lateSessions = sessionRecords.filter(s => s.attendance.status === 'late');
             const incompleteSessions = sessionRecords.filter(s => s.attendance.status === 'incomplete');
 
             if (sessions.length > 0) {
-                if (completedSessions.length === sessions.length) {
+                // If any session is excused, overall status is excused (with reason from first excused session)
+                if (excusedSessions.length > 0) {
+                    overallStatus = 'excused';
+                    excuseReason = excusedSessions[0].attendance.excuse_reason;
+                } else if (completedSessions.length === sessions.length) {
                     overallStatus = lateSessions.length > 0 ? 'late' : 'present';
                 } else if (completedSessions.length > 0 || incompleteSessions.length > 0) {
                     // If event is already closed/ended, mark as absent (not incomplete)
@@ -6783,7 +7082,8 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                     is_custom: event.is_custom
                 },
                 sessions: sessionRecords,
-                overall_status: overallStatus
+                overall_status: overallStatus,
+                excuse_reason: excuseReason
             };
         }));
 

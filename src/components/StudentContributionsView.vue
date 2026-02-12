@@ -89,7 +89,7 @@
 </template>
 
 <script>
-import API_BASE_URL from '../config/api'
+import { buildAPIUrl } from '../config/api.js'
 import ContributionReceipt from './ContributionReceipt.vue'
 
 export default {
@@ -129,7 +129,7 @@ export default {
         const token = localStorage.getItem('authToken')
         // First get all active events
         const eventsResponse = await fetch(
-          `${API_BASE_URL}/apis/attendance/events/active`,
+          buildAPIUrl('/apis/attendance/events/active'),
           {
             method: 'GET',
             headers: {
@@ -146,7 +146,7 @@ export default {
           this.events = await Promise.all(eventsData.map(async (event) => {
             try {
               const contribResponse = await fetch(
-                `${API_BASE_URL}/apis/contributions/student/${event._id}`,
+                buildAPIUrl(`/apis/contributions/student/${event._id}`),
                 {
                   method: 'GET',
                   headers: {

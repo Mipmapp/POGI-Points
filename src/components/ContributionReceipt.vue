@@ -147,7 +147,7 @@
                   <!-- Footer -->
                   <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; text-align: center; font-size: 10px; color: #999;">
                     <p style="margin: 0;">For inquiries, contact: ssaamjrmsu@gmail.com</p>
-                    <p style="margin: 0.25rem 0 0 0;">Jose Rizal Memorial State University - College of Computer Studies</p>
+                    <p style="margin: 0.25rem 0 0 0;">Jose Rizal Memorial State University - College of Computing Studies</p>
                     <p style="margin: 0.25rem 0 0 0; font-style: italic;">Generated on {{ generatedDate }}</p>
                   </div>
                 </div>
@@ -286,7 +286,7 @@
         <!-- Footer -->
         <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; text-align: center; font-size: 10px; color: #999;">
           <p style="margin: 0;">For inquiries, contact: ssaamjrmsu@gmail.com</p>
-          <p style="margin: 0.25rem 0 0 0;">Jose Rizal Memorial State University - College of Computer Studies</p>
+          <p style="margin: 0.25rem 0 0 0;">Jose Rizal Memorial State University - College of Computing Studies</p>
           <p style="margin: 0.25rem 0 0 0; font-style: italic;">Generated on {{ generatedDate }}</p>
         </div>
       </div>

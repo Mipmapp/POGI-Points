@@ -103,7 +103,7 @@ input, textarea, select {
 /* Background Panel Styles */
 .desktop-bg-panel {
   @apply w-2/5 flex flex-col items-center justify-center text-white p-12 relative overflow-hidden;
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.68) 0%, rgba(219, 88, 153, 0.62) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.8) 0%, rgba(59, 130, 246, 0.75) 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   background-blend-mode: multiply;
@@ -111,7 +111,7 @@ input, textarea, select {
 
 .mobile-bg-panel {
   @apply relative z-10;
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.68) 0%, rgba(219, 88, 153, 0.62) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.8) 0%, rgba(59, 130, 246, 0.75) 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   background-blend-mode: multiply;
@@ -119,7 +119,7 @@ input, textarea, select {
 
 .loading-screen {
   @apply fixed inset-0 z-50 flex items-center justify-center;
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.68) 0%, rgba(219, 88, 153, 0.62) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.8) 0%, rgba(59, 130, 246, 0.75) 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   background-blend-mode: multiply;
@@ -187,7 +187,7 @@ input, textarea, select {
 }
 
 .login-submit-btn {
-  @apply w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition duration-300 flex items-center justify-center;
+  @apply w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center;
 }
 
 .login-help-section {
@@ -388,7 +388,7 @@ input, textarea, select {
 }
 
 .register-button-primary {
-  @apply bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600;
+  @apply bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600;
 }
 
 .register-button-secondary {
@@ -757,7 +757,7 @@ input, textarea, select {
 }
 
 .btn-primary {
-  @apply bg-gradient-to-r from-purple-600 to-pink-500 text-white hover:from-purple-700 hover:to-pink-600;
+  @apply bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600;
 }
 
 .btn-secondary {
@@ -1063,7 +1063,30 @@ input, textarea, select {
 
 /* Gradient Icon for Contact Modal */
 .gradient-icon {
-  background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
+  background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+}
+
+/* Masked icon helper for recoloring SVG icons like register_user.svg */
+.icon-mask {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  vertical-align: middle;
+  background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
+  -webkit-mask: url('/register_user.svg') center/contain no-repeat;
+  mask: url('/register_user.svg') center/contain no-repeat;
+  flex-shrink: 0;
+}
+
+/* Allow Tailwind w-* and h-* to override .icon-mask size */
+.icon-mask.w-5 {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.icon-mask.w-8 {
+  width: 2rem;
+  height: 2rem;
 }
 
 /* Hide browser default password visibility toggle */

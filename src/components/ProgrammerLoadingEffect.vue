@@ -1,6 +1,7 @@
 <template>
   <transition name="terminal-fade">
-    <div v-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 font-mono">
+    <!-- Fancy terminal-style loading for CCS theme -->
+    <div v-if="visible && theme && theme.toUpperCase() === 'CCS'" class="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 font-mono" style="height:100dvh">
       <!-- Animated Background Scanner Lines -->
       <div class="absolute inset-0 overflow-hidden opacity-30 pointer-events-none">
         <div class="scanner-line"></div>
@@ -62,17 +63,33 @@
         </div>
       </div>
     </div>
+
+    <!-- Simple circular spinner overlay for non-CCS themes -->
+    <div v-else-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50" style="height:100dvh">
+      <div class="p-6 bg-white rounded-lg shadow-lg flex flex-col items-center gap-3">
+        <svg class="animate-spin h-12 w-12 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <div class="text-gray-800 font-semibold">{{ message || 'Loading...' }}</div>
+      </div>
+    </div>
   </transition>
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, watch, onUnmounted } from 'vue'
 
 const props = defineProps({
   visible: Boolean,
   message: {
     type: String,
     default: 'SYSTEM INITIALIZING'
+  },
+  // theme can be department label like 'CCS' or 'COE' - when CCS use fancy terminal, otherwise use simple spinner overlay
+  theme: {
+    type: String,
+    default: ''
   }
 })
 
@@ -104,6 +121,10 @@ const runTerminal = async () => {
   }
 }
 
+const isCCSTheme = () => {
+  return (props.theme && props.theme.toUpperCase() === 'CCS')
+}
+
 watch(() => props.visible, (newVal) => {
   if (newVal) {
     runTerminal()
@@ -124,8 +145,27 @@ watch(() => props.visible, (newVal) => {
   }
 })
 
+// Prevent background scrolling / layout shifts on mobile when overlay is visible
+let previousHtmlOverflow = ''
+watch(() => props.visible, (visible) => {
+  try {
+    if (visible) {
+      previousHtmlOverflow = document.documentElement.style.overflow || ''
+      document.documentElement.style.overflow = 'hidden'
+    } else {
+      document.documentElement.style.overflow = previousHtmlOverflow || ''
+    }
+  } catch (e) {
+    // ignore (SSR or non-browser)
+  }
+})
+
 onMounted(() => {
   if (props.visible) runTerminal()
+})
+
+onUnmounted(() => {
+  try { document.documentElement.style.overflow = previousHtmlOverflow || '' } catch (e) {}
 })
 </script>
 

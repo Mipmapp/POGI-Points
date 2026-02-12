@@ -14,7 +14,7 @@
           </div>
           <button 
             @click="handleLogout" 
-            class="w-full bg-gradient-to-r from-red-600 to-purple-700 text-white py-4 px-6 rounded-2xl font-black text-xl hover:from-red-700 hover:to-purple-800 transition-all duration-300 shadow-[0_10px_20px_rgba(220,38,38,0.3)] transform active:scale-95 flex items-center justify-center gap-3"
+            class="w-full px-6 py-4 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-2xl font-black text-xl hover:from-red-700 hover:to-red-600 transition duration-300 shadow-[0_10px_20px_rgba(220,38,38,0.3)] transform active:scale-95 flex items-center justify-center gap-3"
           >
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>

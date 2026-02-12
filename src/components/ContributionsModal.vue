@@ -1,5 +1,13 @@
 <template>
   <div>
+    <!-- Full-page loading overlay (COE-themed when applicable) -->
+    <div v-if="isLoading" class="fixed inset-0 z-60 flex items-center justify-center">
+      <div class="absolute inset-0" :class="isCOE ? 'bg-gradient-to-br from-orange-700 via-orange-500 to-yellow-400 bg-opacity-85' : 'bg-gradient-to-br from-purple-800 via-pink-700 to-pink-500 bg-opacity-85'"></div>
+      <div class="relative z-10 text-center">
+        <div :class="['animate-spin rounded-full', isCOE ? 'h-20 w-20 border-4 border-white border-t-transparent' : 'h-20 w-20 border-4 border-white border-t-transparent']"></div>
+        <p class="mt-4 text-white font-bold">Loading contributions...</p>
+      </div>
+    </div>
     <transition name="fade">
       <div v-if="visible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeModal">
         <transition name="modal-bounce" appear>
@@ -105,13 +113,13 @@
 </template>
 
 <script>
-import API_BASE_URL from '../config/api'
+import { buildAPIUrl } from '../config/api.js'
 
 export default {
   name: 'ContributionsModal',
   props: {
     visible: { type: Boolean, default: false },
-    eventId: { type: String, required: true },
+    eventId: { type: String, default: null },
     eventTitle: { type: String, default: 'Event Contributions' }
   },
   data() {
@@ -135,6 +143,30 @@ export default {
     completionRate() {
       return this.stats.total === 0 ? 0 : Math.round((this.stats.paid / this.stats.total) * 100)
     },
+    currentUser() {
+      try {
+        return JSON.parse(localStorage.getItem('currentUser') || '{}')
+      } catch (e) {
+        return {}
+      }
+    },
+    userDepartment() {
+      if (this.currentUser.selectedDepartment) return this.currentUser.selectedDepartment
+      const userProgram = this.currentUser.program
+      const departments = [
+        { label: 'CCS', programs: [{ shortName: 'BSCS' }, { shortName: 'BSIT' }, { shortName: 'BSIS' }] },
+        { label: 'COE', programs: [{ shortName: 'BSCE' }, { shortName: 'BSME' }] }
+      ]
+      if (userProgram) {
+        for (const dept of departments) {
+          if (dept.programs.some(p => p.shortName === userProgram)) return dept
+        }
+      }
+      return null
+    },
+    isCOE() {
+      return (this.userDepartment && this.userDepartment.label === 'COE')
+    },
     filteredContributions() {
       return this.contributions.filter(c => {
         const matchesSearch = !this.searchQuery || c.student_name.toLowerCase().includes(this.searchQuery.toLowerCase()) || c.student_id_number.includes(this.searchQuery)
@@ -155,7 +187,7 @@ export default {
       try {
         const token = localStorage.getItem('authToken')
         const query = new URLSearchParams({ page: this.currentPage, limit: this.itemsPerPage, paymentStatus: this.filterStatus, search: this.searchQuery })
-        const response = await fetch(`${API_BASE_URL}/apis/contributions/event/${this.eventId}?${query}`, {
+        const response = await fetch(buildAPIUrl(`/apis/contributions/event/${this.eventId}?${query}`), {
           method: 'GET',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
         })
@@ -180,7 +212,7 @@ export default {
     async markAsPaid(contribution) {
       try {
         const token = localStorage.getItem('authToken')
-        const response = await fetch(`${API_BASE_URL}/apis/contributions/event/${this.eventId}/mark-paid`, {
+        const response = await fetch(buildAPIUrl(`/apis/contributions/event/${this.eventId}/mark-paid`), {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ student_id_number: contribution.student_id_number })
@@ -195,7 +227,7 @@ export default {
     async markAsUnpaid(contribution) {
       try {
         const token = localStorage.getItem('authToken')
-        const response = await fetch(`${API_BASE_URL}/apis/contributions/event/${this.eventId}/mark-unpaid`, {
+        const response = await fetch(buildAPIUrl(`/apis/contributions/event/${this.eventId}/mark-unpaid`), {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({ student_id_number: contribution.student_id_number })

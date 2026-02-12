@@ -1,6 +1,6 @@
 <template>
-  <ProgrammerLoadingEffect :visible="isPageLoading" message="AUTHENTICATING" />
-  <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" />
+  <ProgrammerLoadingEffect :visible="isPageLoading" message="AUTHENTICATING" :theme="userDepartment ? userDepartment.label : ''" />
+  <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" :theme="userDepartment ? userDepartment.label : ''" />
   <SessionExpiredModal :visible="showSessionExpiredModal" @logout="confirmLogout" />
   
   <!-- Contributions Modal (Treasurer Only) -->
@@ -8,149 +8,29 @@
     :visible="showContributionsModal"
     :event-id="selectedEventForContributions"
     :event-title="selectedEventTitleForContributions"
-    @close="showContributionsModal = false"
-    @payment-updated="handlePaymentUpdated"
-  />
-  
-  <!-- Announcement Popup for Students -->
-  <AnnouncementPopup 
-    :visible="showAnnouncementPopup" 
-    :announcements="announcementPopupData"
-    :currentUserId="currentUser?._id || currentUser?.student_id || ''"
-    @close="closeAnnouncementPopup"
-    @preview-image="(url) => { imagePreviewUrl = url; showImagePreviewModal = true; }"
-    @toggle-like="handlePopupLike"
-  />
-
-  <transition name="fade">
-    <div v-if="eventEndedModalVisible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeEventEndedModal">
-      <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-          <div class="text-center mb-6">
-            <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-              <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-            <h3 class="text-xl font-bold text-purple-900 mb-2">Event Ended</h3>
-            <p class="text-gray-600">
-              The event "<span class="font-semibold">{{ eventEndedModalEvent?.title }}</span>" has ended.
-            </p>
-          </div>
-          <button @click="closeEventEndedModal" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
-            Got it, don't show again
-          </button>
-        </div>
-      </transition>
-    </div>
-  </transition>
-
-  <!-- Image Preview Modal -->
-  <div v-if="showImagePreviewModal" class="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50" @click.self="showImagePreviewModal = false">
-    <button @click="showImagePreviewModal = false" class="absolute top-4 right-4 text-white text-4xl hover:text-gray-300 z-10">&times;</button>
-    <a :href="imagePreviewUrl" :download="getImageFileName(imagePreviewUrl)" class="absolute top-4 left-4 bg-white bg-opacity-20 hover:bg-opacity-40 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition z-10" @click.stop>
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-      Download
-    </a>
-    <img :src="imagePreviewUrl" alt="Preview" class="max-w-[90vw] max-h-[90vh] object-contain rounded-lg" @click.stop />
-  </div>
-
-  <transition name="fade">
-    <div v-if="showLogoutConfirmation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showLogoutConfirmation = false">
-      <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4">
-          <h3 class="text-2xl font-bold text-purple-900 mb-4">Confirm Logout</h3>
-          <p class="text-gray-600 mb-6">Are you sure you want to exit? You'll be logged out of your account.</p>
-          <div class="flex gap-3">
-            <button @click="showLogoutConfirmation = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">
-              Cancel
-            </button>
-            <button @click="confirmLogout" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
-              Logout
-            </button>
-          </div>
-        </div>
-      </transition>
-    </div>
-  </transition>
-
-  <transition name="fade">
-    <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40" @click.self="showContactModal = false">
-      <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-purple-900">Need Help?</h3>
-            <button @click="showContactModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-          </div>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            <div class="flex flex-col items-center text-center p-4 bg-purple-50 rounded-lg">
-              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
-              <p class="font-semibold text-purple-900 text-sm">Email Support</p>
-              <p class="text-xs text-gray-600 mt-2">ssaamjrmsu@gmail.com</p>
-              <p class="text-xs text-gray-500 mt-1">For general inquiries</p>
-            </div>
-
-            <div class="flex flex-col items-center text-center p-4 bg-pink-50 rounded-lg">
-              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat;"></div>
-              <p class="font-semibold text-purple-900 text-sm">JRMSU CCS Office</p>
-              <p class="text-xs text-gray-600 mt-2">College of Computer Studies</p>
-              <p class="text-xs text-gray-500 mt-1">Visit during office hours</p>
-            </div>
-
-            <div class="flex flex-col items-center text-center p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg">
-              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat;"></div>
-              <p class="font-semibold text-purple-900 text-sm">Meet Our Developers</p>
-              <p class="text-xs text-gray-600 mt-2">CCS - Creatives Committee</p>
-              <button @click="showDevelopersPopup = true; showContactModal = false" class="text-xs text-purple-600 hover:text-purple-800 font-medium mt-2 underline">View Team →</button>
-            </div>
-          </div>
-
-          <div class="bg-blue-50 rounded-lg p-4 mb-6">
-            <p class="text-sm text-blue-900 font-medium mb-3">Quick Help</p>
-            <ul class="text-xs text-blue-800 space-y-2">
-              <li>• Your default password is your Last Name (UPPERCASE)</li>
-              <li>• Use “Forgot Password” if needed</li>
-              <li>• Register your RFID at the CCS office</li>
-              <li>• For profile issues, contact the Developers or visit the CCS office</li>
-            </ul>
-          </div>
-
-          <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition">
-            Close
-          </button>
-        </div>
-      </transition>
-    </div>
-  </transition>
+    @close="showContributionsModal = false" />
 
   <transition name="fade">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
-      <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-purple-900">Meet Our Developers</h3>
-            <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-          </div>
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-6">
-            <a v-for="(dev, index) in developers" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer" 
-               class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
-               :style="{ transitionDelay: `${index * 50}ms` }">
-              <div class="w-20 h-20 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white text-2xl shadow-lg mb-3 overflow-hidden flex-shrink-0 ring-2 ring-purple-100">
-                <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
-                <span v-else>{{ dev.initials }}</span>
-              </div>
-              <p class="text-xs font-semibold text-purple-600 hover:text-purple-800 text-center line-clamp-2 min-h-[2rem] flex items-center">{{ dev.name }}</p>
-              <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-              <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
-            </a>
-          </div>
-          <div class="text-center text-sm text-gray-600">
-            <p class="font-medium text-purple-900">CCS - Creatives Committee</p>
-            <p>Chairperson: Sheen Lee</p>
+      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300">
+        <div class="flex justify-between items-center mb-6">
+          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Meet Our Developers</h3>
+          <button @click="showDevelopersPopup = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 mb-6">
+          <div v-for="(dev, index) in developers" :key="dev.name" class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300" :style="{ transitionDelay: `${index * 50}ms` }">
+            <div :class="['w-20 h-20 rounded-full flex items-center justify-center text-white text-2xl shadow-lg mb-3 overflow-hidden flex-shrink-0 ring-2', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600 ring-orange-100' : 'bg-gradient-to-br from-pink-400 to-purple-600 ring-purple-100']">
+              <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover rounded-full" />
+              <span v-else>{{ dev.initials }}</span>
+            </div>
+            <p :class="['text-xs font-semibold text-center line-clamp-2 min-h-[2rem] flex items-center', isCOE ? 'text-orange-600 hover:text-orange-800' : 'text-purple-600 hover:text-purple-800']">
+              <a :href="dev.facebook" target="_blank" rel="noopener noreferrer" class="underline">{{ dev.name }}</a>
+            </p>
+            <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
+            <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
           </div>
         </div>
-      </transition>
+      </div>
     </div>
   </transition>
 
@@ -216,6 +96,12 @@
         <h3 class="text-2xl font-bold text-red-900">Clear All Sessions</h3>
         <button @click="showClearSessionsConfirm = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
       </div>
+      <!-- Sessions loading bar -->
+      <div v-if="sessionsLoading" class="w-full mb-4">
+        <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+          <div :class="[isCOE ? 'from-orange-600 to-red-500' : 'from-purple-600 to-pink-500','h-2','rounded-full','animate-pulse','bg-gradient-to-r']" style="width:60%"></div>
+        </div>
+      </div>
       
       <div class="mb-6">
         <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mb-4">
@@ -247,19 +133,16 @@
           <svg v-if="clearingSessionTokens" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-          </svg>
-          <span>{{ clearingSessionTokens ? 'Clearing...' : 'Yes, Clear All' }}</span>
-        </button>
+            </svg>
+            Clear All Sessions
+          </button>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- RFID Scanner Fullscreen Modal - Two Column Layout -->
-  <div v-if="rfidFullscreenMode" class="fixed inset-0 bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 z-[70] overflow-hidden">
-    <!-- Unique Programming Loading Effect -->
-    <RFIDLoadingEffect :visible="rfidProcessing" />
-
-    <button @click="rfidFullscreenMode = false" class="absolute top-4 right-4 md:top-6 md:right-6 text-white hover:text-pink-300 transition z-10">
+    <!-- RFID Scanner Fullscreen Modal - Two Column Layout -->
+    <div v-if="rfidFullscreenMode" :class="['fixed inset-0 z-[70] overflow-hidden bg-gradient-to-br', isCOE ? 'from-orange-900 via-orange-800 to-red-900' : 'from-purple-900 via-purple-800 to-pink-900']">
+    <button @click="rfidFullscreenMode = false" :class="['absolute top-4 right-4 md:top-6 md:right-6 text-white transition z-10', isCOE ? 'hover:text-red-300' : 'hover:text-pink-300']">
       <svg class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
     
@@ -270,73 +153,65 @@
           <div class="flex items-center justify-center gap-3 mb-1">
             <div 
               class="relative overflow-hidden group w-10 h-10 lg:w-16 lg:h-16"
-              style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;"
+              :style="{
+                mask: isCOE ? 'url(/icons/coe.svg) no-repeat center / contain' : 'url(/icons/ccs.svg) no-repeat center / contain',
+                webkitMask: isCOE ? 'url(/icons/coe.svg) no-repeat center / contain' : 'url(/icons/ccs.svg) no-repeat center / contain'
+              }"
             >
-              <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-full h-full object-contain relative z-10" />
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
+              <img :src="isCOE ? '/icons/coe.svg' : '/icons/ccs.svg'" :alt="isCOE ? 'COE Logo' : 'CCS Logo'" class="w-full h-full object-contain relative z-10" />
+              <div :class="['absolute inset-0 -translate-x-full animate-sweep z-20 pointer-events-none', isCOE ? 'bg-gradient-to-r from-transparent via-red-300/40 to-transparent' : 'bg-gradient-to-r from-transparent via-purple-300/40 to-transparent']"></div>
             </div>
             <h1 class="text-2xl lg:text-4xl font-bold text-white">SSAAM</h1>
           </div>
-          <p class="text-white text-opacity-80 text-xs lg:text-lg font-medium">{{ selectedEvent?.title || 'Select an Event' }}</p>
+          <p class="text-white text-opacity-80 text-base lg:text-3xl font-medium">{{ selectedEvent?.title || 'Select an Event' }}</p>
           <p v-if="selectedEvent" class="text-white text-opacity-60 text-xs lg:text-sm">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
           <div v-if="selectedSession" class="mt-2">
-            <span class="px-3 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-400 to-pink-400 text-white">
+            <span class="px-3 py-1 rounded-full text-xs font-medium" :class="isCOE ? 'bg-gradient-to-r from-orange-400 to-red-400 text-white' : 'bg-gradient-to-r from-purple-400 to-pink-400 text-white'">
               {{ selectedSession.label }} Session
             </span>
             <p class="text-white text-opacity-60 text-xs mt-1">{{ formatDisplayTime(selectedSession.start_time) }} - {{ formatDisplayTime(selectedSession.end_time) }}</p>
           </div>
         </div>
         
-        <!-- Scan Mode Toggle -->
-        <div class="flex flex-col gap-4 mb-3 lg:mb-4 w-full max-w-md">
-          <div class="flex justify-center">
-            <div class="inline-flex bg-white bg-opacity-20 rounded-lg p-1">
-              <button 
-                @click="scanMode = 'rfid'" 
-                :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition', scanMode === 'rfid' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
-              >
-                RFID Scan
-              </button>
-              <button 
-                @click="scanMode = 'student_id'" 
-                :class="['px-3 lg:px-4 py-1.5 lg:py-2 rounded-lg text-xs lg:text-sm font-medium transition', scanMode === 'student_id' ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-md' : 'text-white text-opacity-70 hover:text-opacity-100']"
-              >
-                Student ID
-              </button>
-            </div>
-          </div>
+        <!-- Input Mode (combined) -->
+        <div v-if="selectedEvent || selectedSession" class="flex flex-col gap-4 mb-3 lg:mb-4 w-full max-w-md">
+          <!-- fullscreen: combined input label removed per request -->
 
         <!-- Operation Mode Label (Display Only) -->
-        <div class="flex justify-center mb-4">
+        <div v-if="selectedEvent || selectedSession" class="flex justify-center mb-4">
           <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white bg-opacity-10 border border-white border-opacity-20 backdrop-blur-md shadow-lg">
             <div 
               class="w-3 h-3 rounded-full animate-pulse" 
-              :class="appSettings.rfidScanner.checkInEnabled ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-pink-400 shadow-[0_0_10px_rgba(244,114,182,0.5)]'"
+              :class="rfidOperationType === 'in' ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : (rfidOperationType === 'out' ? (isCOE ? 'bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)]' : 'bg-pink-400 shadow-[0_0_10px_rgba(244,114,182,0.5)]') : (appSettings.rfidScanner.checkInEnabled ? 'bg-green-400' : (isCOE ? 'bg-red-400' : 'bg-pink-400')))"
             ></div>
             <span class="text-white font-bold tracking-widest uppercase text-sm">
-              {{ appSettings.rfidScanner.checkInEnabled ? 'Check-In Mode' : 'Check-Out Mode' }}
+              {{ rfidOperationType === 'in' ? 'Check-In Mode' : (rfidOperationType === 'out' ? 'Check-Out Mode' : (appSettings.rfidScanner.checkInEnabled ? 'Check-In Mode' : 'Check-Out Mode')) }}
             </span>
           </div>
+        </div>
+        <!-- Helper description about what the scanner does -->
+        <div v-if="selectedEvent || selectedSession" class="flex justify-center mb-4">
+          <p class="text-xs text-white text-opacity-75 max-w-md text-center">This scanner reads RFID cards (preferred). You can also manually type Student ID if cards fail to read.</p>
         </div>
         </div>
         
         <div class="bg-white bg-opacity-10 backdrop-blur-lg rounded-2xl p-4 lg:p-8 w-full max-w-md border border-white border-opacity-20 shadow-2xl">
           <div class="text-center mb-4 lg:mb-6">
-            <svg v-if="scanMode === 'rfid'" class="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-2 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
-            <svg v-else class="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-2 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"></path></svg>
-            <p class="text-sm lg:text-lg font-semibold text-white mb-1">{{ scanMode === 'rfid' ? 'Ready for RFID Scan' : 'Enter Student ID' }}</p>
-            <p class="text-white text-opacity-70 text-xs lg:text-sm">{{ scanMode === 'rfid' ? 'Scan card or type code' : 'Type Student ID manually' }}</p>
+            <svg class="w-12 h-12 lg:w-16 lg:h-16 mx-auto mb-2 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M19 3v4M3 9h18M4 21h16a1 1 0 001-1V9H3v11a1 1 0 001 1zM8 13a2 2 0 100-4 2 2 0 000 4zm8 6v-2a3 3 0 00-3-3H11a3 3 0 00-3 3v2"></path></svg>
+            <p class="text-sm lg:text-lg font-semibold text-white mb-1">Ready for RFID or Student ID</p>
+            <p class="text-white text-opacity-70 text-xs lg:text-sm">Scan card or type Student ID (both accepted)</p>
           </div>
           
           <div class="flex items-center gap-2">
             <input 
               ref="rfidFullscreenInputRef"
               v-model="rfidInput"
+              @input="onRfidInput"
               @keydown.enter="manualRfidSubmit"
               @keydown="handleRfidKeydown"
               type="text"
-              :placeholder="scanMode === 'rfid' ? 'Waiting for RFID scan...' : 'Enter Student ID...'"
-              class="flex-1 px-3 lg:px-4 py-2.5 lg:py-3 text-center text-sm lg:text-lg bg-white bg-opacity-20 border-2 border-white border-opacity-30 rounded-xl focus:border-pink-400 focus:ring-4 focus:ring-pink-300 focus:ring-opacity-50 outline-none text-white placeholder-white placeholder-opacity-50 transition-all"
+              :placeholder="'Scan RFID or enter Student ID...'"
+              :class="['flex-1 px-3 lg:px-4 py-2.5 lg:py-3 text-center text-sm lg:text-lg bg-white bg-opacity-20 border-2 rounded-xl outline-none text-white placeholder-white placeholder-opacity-50 transition-all', isCOE ? 'border-orange-400 focus:border-red-400 focus:ring-4 focus:ring-red-300 focus:ring-opacity-50' : 'border-white border-opacity-30 focus:border-pink-400 focus:ring-4 focus:ring-pink-300 focus:ring-opacity-50']"
               :disabled="rfidProcessing"
               autofocus
             />
@@ -349,11 +224,6 @@
             </button>
           </div>
           
-          <div v-if="rfidProcessing" class="mt-3 lg:mt-4 flex items-center justify-center gap-2 text-white">
-            <svg class="w-5 h-5 lg:w-6 lg:h-6 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <span class="text-sm lg:text-base">Processing...</span>
-          </div>
-          
         </div>
         
         <p class="text-white text-opacity-50 text-xs mt-3 lg:mt-4">Press ESC or click X to exit</p>
@@ -361,14 +231,14 @@
       
       <!-- Right Panel - Check-in Result & Recent Logs -->
       <div class="lg:w-1/2 flex-1 min-h-0 flex flex-col p-4 lg:p-6 overflow-hidden">
-        <!-- Prominent Check-in Result Card with Student Profile -->
+        <!-- Prominent Check-in Success Card with Student Profile -->
         <transition name="slide-down">
-          <div v-if="rfidResult && rfidResult.success && (rfidResult.student || rfidResult.student_name)" class="mb-4 lg:mb-6">
+          <div v-if="rfidResult && rfidResult.success && rfidResult.action !== 'already_checked_in' && (rfidResult.student || rfidResult.student_name)" class="mb-4 lg:mb-6">
             <div class="bg-white bg-opacity-15 backdrop-blur-lg rounded-2xl p-6 lg:p-8 border-2 border-green-400 border-opacity-50 shadow-2xl">
               <div class="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
                 <!-- Large Student Photo -->
                 <div class="relative w-24 h-24 lg:w-32 lg:h-32 rounded-full flex-shrink-0 ring-4 ring-green-400 ring-opacity-60 shadow-xl">
-                  <div class="absolute inset-0 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-3xl lg:text-4xl font-bold text-white">
+                  <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-3xl lg:text-4xl font-bold text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
                     {{ getInitials(rfidResult.student?.full_name || rfidResult.student_name) }}
                   </div>
                   <img 
@@ -384,7 +254,7 @@
                   <div class="flex items-center justify-center lg:justify-start gap-2 mb-2">
                     <svg class="w-6 h-6 lg:w-8 lg:h-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     <span class="text-xl lg:text-2xl font-bold text-green-400">
-                      {{ rfidResult.action === 'check_in' ? 'Check-in Successful!' : rfidResult.action === 'check_out' ? 'Check-out Successful!' : rfidResult.action === 'already_checked_in' ? 'Already Checked In' : 'Success' }}
+                      {{ rfidResult.action === 'check_in' ? 'Check-in Successful!' : rfidResult.action === 'check_out' ? 'Check-out Successful!' : 'Success' }}
                     </span>
                   </div>
                   <p class="text-xl lg:text-2xl font-bold text-white mb-1">{{ rfidResult.student?.full_name || rfidResult.student_name }}</p>
@@ -407,28 +277,87 @@
             </div>
           </div>
         </transition>
-        
-        <!-- Failed Scan Result -->
+
+        <!-- Duplicate / Already Checked In Card (Yellow) -->
         <transition name="slide-down">
-          <div v-if="rfidResult && !rfidResult.success" class="mb-4 lg:mb-6">
-            <div class="bg-red-500 bg-opacity-30 backdrop-blur-lg rounded-2xl p-6 border-2 border-red-400 border-opacity-50">
-              <div class="flex items-center justify-center gap-3">
-                <svg class="w-10 h-10 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <div class="text-center">
-                  <p class="text-xl font-bold text-red-400">Scan Failed</p>
-                  <p class="text-white text-opacity-90">{{ rfidResult.message }}</p>
+          <div v-if="rfidResult && (rfidResult.action === 'already_checked_in' || (rfidResult.message && /already/i.test(rfidResult.message)))" class="mb-4 lg:mb-6">
+            <div class="bg-yellow-500 bg-opacity-20 backdrop-blur-lg rounded-2xl p-8 lg:p-12 border-2 border-yellow-400 border-opacity-70 shadow-2xl">
+              <div class="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+                <div class="relative w-32 h-32 lg:w-40 lg:h-40 rounded-full flex-shrink-0 ring-4 ring-yellow-400 ring-opacity-70 shadow-xl">
+                  <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-4xl lg:text-5xl font-bold text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
+                    {{ getInitials(rfidResult.student?.full_name || rfidResult.student_name || (rfidResult.message || '').split(' ')[0]) }}
+                  </div>
+                  <img v-if="rfidResult.student?.photo" :src="rfidResult.student.photo" class="absolute inset-0 w-full h-full rounded-full object-cover" @error="$event.target.style.display='none'" />
+                </div>
+
+                <div class="flex-1 text-center lg:text-left">
+                  <div class="flex items-center justify-center lg:justify-start gap-3 mb-3">
+                    <svg class="w-8 h-8 lg:w-10 lg:h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="text-2xl lg:text-3xl font-bold text-yellow-300">{{ rfidOperationType === 'out' ? 'Already Logged Out' : 'Already Logged In' }}</span>
+                  </div>
+                  <p class="text-2xl lg:text-3xl font-bold text-white mb-2">{{ rfidResult.student?.full_name || rfidResult.student_name }}</p>
+                  <div class="flex flex-wrap justify-center lg:justify-start gap-2 mt-3">
+                    <span v-if="rfidResult.student?.student_id" class="px-4 py-1 bg-white bg-opacity-20 rounded-full text-sm text-white">ID: {{ rfidResult.student.student_id }}</span>
+                    <span v-if="rfidResult.student?.program" class="px-4 py-1 bg-yellow-500 bg-opacity-40 rounded-full text-sm text-white">{{ rfidResult.student.program }}</span>
+                    <span v-if="rfidResult.student?.year_level" class="px-4 py-1 bg-yellow-500 bg-opacity-40 rounded-full text-sm text-white">{{ rfidResult.student.year_level }}</span>
+                  </div>
+                  <p v-if="rfidResult.cooldown_remaining && rfidOperationType === 'in'" class="text-yellow-200 text-opacity-90 text-sm mt-3 font-semibold">⏱️ Wait {{ Math.floor(rfidResult.cooldown_remaining / 60) }}m {{ rfidResult.cooldown_remaining % 60 }}s before checkout</p>
+                  <p v-if="rfidResult.time" class="text-white text-opacity-70 text-sm mt-2">{{ new Date(rfidResult.time).toLocaleString('en-PH') }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+
+        <!-- Generic Warning Card (glassmorphism with yellow accent) for non-duplicate warnings -->
+        <transition name="slide-down">
+          <div v-if="rfidResult && rfidResult.warning && !(rfidResult.action === 'already_checked_in' || (rfidResult.message && /already/i.test(rfidResult.message)))" class="mb-4 lg:mb-6">
+            <div class="bg-yellow-500 bg-opacity-15 backdrop-blur-lg rounded-2xl p-6 lg:p-8 border-2 border-yellow-400 border-opacity-50 shadow-2xl" style="-webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);">
+              <div class="flex items-center gap-5">
+                <div class="w-16 h-16 rounded-full flex items-center justify-center shrink-0 bg-yellow-400 bg-opacity-25">
+                  <svg class="w-8 h-8 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                </div>
+
+                <div class="flex-1">
+                  <p class="text-lg font-semibold mb-1 text-yellow-100">Warning</p>
+                  <p class="text-white text-opacity-90 leading-snug text-base">{{ rfidResult.message }}</p>
                 </div>
               </div>
             </div>
           </div>
         </transition>
         
-        <h2 class="text-lg lg:text-xl font-bold text-white mb-3 lg:mb-4 flex items-center gap-2">
-          <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-          Recent Logs
-        </h2>
+        <!-- Error / Scan Failed Card - Red -->
+        <transition name="slide-down">
+          <div v-if="rfidResult && rfidResult.error" class="mb-4 lg:mb-6">
+            <div class="bg-gradient-to-r from-red-900 to-red-800 backdrop-blur-lg rounded-2xl p-6 lg:p-8 border-2 border-red-400 border-opacity-70 shadow-2xl">
+              <div class="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
+                <!-- Error Icon -->
+                <div class="w-20 h-20 lg:w-28 lg:h-28 rounded-full flex-shrink-0 ring-4 ring-red-400 ring-opacity-70 shadow-xl flex items-center justify-center bg-red-500 bg-opacity-30">
+                  <svg class="w-10 h-10 lg:w-16 lg:h-16 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                
+                <!-- Error Details -->
+                <div class="flex-1 text-center lg:text-left">
+                  <div class="flex items-center justify-center lg:justify-start gap-2 mb-3">
+                    <span class="text-2xl lg:text-3xl font-bold text-red-300">Scan Failed</span>
+                  </div>
+                  <p class="text-lg lg:text-xl font-semibold text-white mb-2">{{ rfidResult.message }}</p>
+                  <!-- removed explicit 'Reason:' box; message already shown above -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
         
-        <div class="flex-1 overflow-hidden">
+        <!-- Recent Logs - Hide on mobile fullscreen, show on desktop fullscreen -->
+        <div class="hidden lg:flex flex-col flex-1 min-h-0">
+          <h2 :class="['text-lg lg:text-xl font-bold mb-3 lg:mb-4 flex items-center gap-2', isCOE ? 'text-orange-300' : 'text-purple-300']">
+            <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+            Recent Logs
+          </h2>
+          
+          <div class="flex-1 overflow-hidden">
           <div v-if="sortedAttendanceLogs.length === 0" class="flex flex-col items-center justify-center h-full text-white text-opacity-60">
             <svg class="w-12 h-12 lg:w-16 lg:h-16 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
             <p class="text-sm">No attendance records yet</p>
@@ -437,12 +366,14 @@
             <div 
               v-for="(log, index) in sortedAttendanceLogs.slice(0, 15)" 
               :key="log._id" 
-              :class="['bg-white bg-opacity-10 backdrop-blur-sm rounded-xl p-3 lg:p-4 border border-white border-opacity-10 transition-all duration-300', index === 0 && isRecentCheckIn(log) ? 'ring-2 ring-pink-400 bg-opacity-20 animate-pulse' : '']"
+              :class="['backdrop-blur-sm rounded-xl p-3 lg:p-4 border transition-all duration-300', 
+                isCOE ? 'bg-orange-500 bg-opacity-10 border-orange-400/30' : 'bg-purple-500 bg-opacity-10 border-purple-400/30',
+                index === 0 && isRecentCheckIn(log) ? (isCOE ? 'ring-2 ring-orange-400 bg-opacity-20 animate-pulse' : 'ring-2 ring-pink-400 bg-opacity-20 animate-pulse') : '']"
             >
               <div class="flex items-center gap-3 lg:gap-4">
                 <!-- Photo with Initials Fallback -->
                 <div class="relative w-10 h-10 lg:w-12 lg:h-12 rounded-full flex-shrink-0">
-                  <div class="absolute inset-0 rounded-full bg-gradient-to-br from-pink-400 to-purple-600 flex items-center justify-center text-white text-xs lg:text-sm font-bold">
+                  <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-white text-xs lg:text-sm font-bold', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
                     {{ getInitials(log.student?.full_name || log.student_name) }}
                   </div>
                   <img 
@@ -456,24 +387,24 @@
                 <!-- Name and Details -->
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-white text-sm lg:text-base truncate">{{ log.student?.full_name || log.student_name }}</p>
-                  <p class="text-white text-opacity-60 text-xs">{{ log.program || log.student?.program || '' }}</p>
+                  <p :class="['text-xs', isCOE ? 'text-orange-200/70' : 'text-purple-200/70']">{{ log.program || log.student?.program || '' }}</p>
                 </div>
                 
                 <!-- Check In/Out Times -->
                 <div class="text-right flex-shrink-0">
                   <div class="text-xs lg:text-sm">
-                    <span class="text-green-400">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-' }}</span>
+                    <span :class="isCOE ? 'text-orange-300' : 'text-green-400'">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-' }}</span>
                   </div>
                   <div class="text-xs lg:text-sm">
-                    <span class="text-blue-400">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-' }}</span>
+                    <span :class="isCOE ? 'text-red-300' : 'text-blue-400'">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-' }}</span>
                   </div>
                 </div>
                 
                 <!-- Status -->
                 <div class="flex-shrink-0">
                   <span :class="['px-2 py-1 rounded-full text-xs font-medium', 
-                    log.is_late ? 'bg-orange-500 bg-opacity-30 text-orange-300' : 
-                    (log.check_out_at || log.check_out_time) ? 'bg-green-500 bg-opacity-30 text-green-300' : 
+                    log.is_late ? (isCOE ? 'bg-red-500 bg-opacity-30 text-red-300' : 'bg-orange-500 bg-opacity-30 text-orange-300') : 
+                    (log.check_out_at || log.check_out_time) ? (isCOE ? 'bg-orange-500 bg-opacity-30 text-orange-300' : 'bg-green-500 bg-opacity-30 text-green-300') : 
                     'bg-yellow-500 bg-opacity-30 text-yellow-300']">
                     {{ log.is_late ? ((log.check_out_at || log.check_out_time) ? 'Late' : 'Late (In)') : ((log.check_out_at || log.check_out_time) ? 'Present' : 'In') }}
                   </span>
@@ -481,13 +412,45 @@
               </div>
             </div>
           </div>
+          </div>
         </div>
       </div>
     </div>
+
+    <!-- RFID Loading Effect (Fullscreen with Flipping Logo) -->
+    <RFIDLoadingEffect :visible="rfidFullscreenMode && rfidProcessing" :is-coe="isCOE" />
+
+    <!-- Mobile Fullscreen Slide-Down Notification (Top, Above Everything) -->
+    <transition name="slide-down">
+      <div v-if="rfidFullscreenMode && rfidResult && rfidResult.success && rfidResult.action !== 'already_checked_in' && (rfidResult.student || rfidResult.student_name) && window.innerWidth < 1024" class="fixed inset-x-0 top-0 z-50 p-2 sm:p-4">
+        <div class="bg-white bg-opacity-15 backdrop-blur-lg rounded-2xl p-4 sm:p-6 border-2 border-green-400 border-opacity-50 shadow-2xl mx-auto max-w-sm mt-2">
+          <div class="flex items-center gap-3 sm:gap-4">
+            <div class="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex-shrink-0 ring-4 ring-green-400 ring-opacity-60">
+              <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-xl sm:text-2xl font-bold text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
+                {{ getInitials(rfidResult.student?.full_name || rfidResult.student_name) }}
+              </div>
+              <img 
+                v-if="rfidResult.student?.photo" 
+                :src="rfidResult.student.photo" 
+                class="absolute inset-0 w-full h-full rounded-full object-cover" 
+                @error="$event.target.style.display='none'" 
+              />
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 mb-1">
+                <svg class="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span class="text-sm sm:text-lg font-bold text-green-400">{{ rfidResult.action === 'check_in' ? 'Check-in!' : 'Check-out!' }}</span>
+              </div>
+              <p class="text-white font-semibold text-xs sm:text-sm truncate">{{ rfidResult.student?.full_name || rfidResult.student_name }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 
   <!-- Admin Key Modal - Always on top -->
-  <div v-if="isPageLoading" class="fixed inset-0 bg-gradient-to-b from-purple-600 to-pink-400 flex items-center justify-center z-50">
+  <div v-if="isPageLoading" :class="pageLoadingBgClass">
     <div class="text-center text-white">
       <svg class="animate-spin h-16 w-16 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -498,9 +461,36 @@
     </div>
   </div>
 
+  <!-- Logout Confirmation Modal -->
+  <transition name="fade">
+    <div v-if="showLogoutConfirmation" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showLogoutConfirmation = false">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center">
+          <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+            <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold text-gray-900 mb-2">Confirm Logout</h3>
+          <p class="text-gray-600 mb-6">Are you sure you want to logout?</p>
+          
+          <div class="flex gap-3">
+            <button @click="showLogoutConfirmation = false" class="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition duration-300">
+              Cancel
+            </button>
+            <button @click="confirmLogout" class="flex-1 px-6 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg font-medium hover:from-red-700 hover:to-red-600 transition duration-300 flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+              Logout
+            </button>
+          </div>
+        </div>
+      </transition>
+    </div>
+  </transition>
+
   <!-- Logout Animation -->
   <transition name="fade">
-    <div v-if="showLogoutAnimation" class="fixed inset-0 bg-gradient-to-b from-purple-600 to-pink-400 flex items-center justify-center z-50">
+    <div v-if="showLogoutAnimation" :class="logoutBgClass">
       <div class="text-center text-white">
         <svg class="animate-spin h-16 w-16 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -512,6 +502,48 @@
     </div>
   </transition>
 
+  <!-- Edit Attendance (Excuse) Modal -->
+  <transition name="fade">
+    <div v-if="showEditAttendanceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showEditAttendanceModal = false">
+      <div class="bg-white rounded-lg p-4 w-full max-w-md mx-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold">Edit Attendance (Excuse)</h3>
+          <button @click="showEditAttendanceModal = false" class="text-gray-500 hover:text-gray-700">&times;</button>
+        </div>
+          <div class="space-y-3">
+          <div>
+            <label class="flex items-center gap-2">
+              <input type="checkbox" v-model="editExcused" class="form-checkbox" />
+              <span class="text-sm">Mark as Excused</span>
+            </label>
+          </div>
+          <div>
+            <label class="text-sm block mb-1">Excused by (student name or admin)</label>
+            <div class="flex gap-2">
+              <input v-model="editExcusedBy" type="text" class="flex-1 border rounded-md px-3 py-2 text-sm" placeholder="Name who provided the excuse (optional)" />
+              <button type="button" @click="fetchExcuseStudentOptions" class="px-3 py-2 bg-gray-100 rounded text-sm">Choose...</button>
+            </div>
+            <div v-if="excuseStudentOptionsVisible" class="mt-2">
+              <select v-model="editExcusedById" @change="onExcuseStudentSelected" class="w-full border rounded-md px-3 py-2 text-sm">
+                <option :value="null">-- Select student (or leave blank) --</option>
+                <option v-for="s in excuseStudentOptions" :key="s._id" :value="s._id">{{ s.full_name }} — {{ s.student_id }}</option>
+              </select>
+              <div class="text-xs text-gray-500 mt-1">Selecting a student will set the excused-by reference; you can still type a manual name.</div>
+            </div>
+          </div>
+          <div>
+            <label class="text-sm block mb-1">Reason (optional)</label>
+            <textarea v-model="editExcuseReason" rows="3" class="w-full border rounded-md px-3 py-2 text-sm" placeholder="Enter reason for excuse"></textarea>
+          </div>
+          <div class="flex justify-end gap-2">
+            <button @click="showEditAttendanceModal = false" class="px-4 py-2 rounded-lg border text-sm">Cancel</button>
+            <button @click="saveEditAttendance" class="px-4 py-2 rounded-lg bg-green-600 text-white text-sm">Save</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </transition>
+
   <!-- Mobile Menu Overlay with Animation -->
   <transition name="fade">
     <div v-if="showMobileMenu" class="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" @click="showMobileMenu = false"></div>
@@ -519,10 +551,10 @@
 
   <div class="flex h-screen flex-col md:flex-row">
     <!-- Sidebar (Hidden on mobile, visible on desktop) -->
-    <div class="hidden md:flex w-64 bg-gradient-to-b from-purple-600 to-pink-400 text-white flex-col order-1 border-r-2 border-white border-opacity-20 h-screen">
+    <div :class="[ 'hidden md:flex w-64 bg-gradient-to-b text-white flex-col order-1 border-r-2 border-white border-opacity-20 h-screen', sidebarGradient ]">
       <div class="p-4 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex items-center justify-center mb-1">
-          <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-20 h-20 object-contain drop-shadow-xl" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
+          <img :src="userDepartmentLogo" alt="Department Logo" class="w-20 h-20 object-contain drop-shadow-xl" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
         </div>
         <h1 class="text-lg font-bold text-center">SSAAM</h1>
       </div>
@@ -530,7 +562,7 @@
       <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex flex-col items-center">
           <!-- Profile Picture Container (Hidden for Admins) -->
-          <div class="w-16 h-16 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600 mb-3 relative" :style="{ background: profileGradient }" v-if="currentUser.role !== 'admin' && !currentUser.isMaster">
+          <div :class="['w-16 h-16 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden mb-3 relative', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']" :style="{ background: profileGradient }" v-if="currentUser.role !== 'admin' && !currentUser.isMaster">
             <!-- Initials as Background/Placeholder -->
             <div class="absolute inset-0 flex items-center justify-center text-white font-bold">
               {{ getInitials(displayName) }}
@@ -638,7 +670,11 @@
         </button>
         <button 
           @click="handleLogoutWithAnimation"
-          :class="['flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 w-full text-left mt-2 transition-all duration-300', isLoggingOut ? 'scale-95 opacity-70' : '']"
+          :class="[
+            'flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2 transition-all duration-300',
+            isLoggingOut ? 'scale-95 opacity-70' : '',
+            'hover:bg-white hover:bg-opacity-10'
+          ]"
         >
           <img src="/logout.svg" alt="Log Out" :class="['w-5 h-5 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1);" />
           <span>Log Out</span>
@@ -653,12 +689,12 @@
 
     <!-- Mobile Sidebar (Slide-in menu for mobile) with Animation -->
     <transition name="slide-in">
-      <div v-if="showMobileMenu" class="fixed left-0 top-0 h-screen w-64 bg-gradient-to-b from-purple-600 to-pink-400 text-white flex flex-col z-40 md:hidden shadow-2xl">
+      <div v-if="showMobileMenu" :class="[ 'fixed left-0 top-0 h-screen w-64 bg-gradient-to-b text-white flex flex-col z-40 md:hidden shadow-2xl', sidebarGradient ]">
         <button @click="showMobileMenu = false" class="p-4 text-right text-2xl hover:text-gray-200 flex-shrink-0">×</button>
         
         <div class="p-4 md:p-6 border-b border-white border-opacity-20 flex-shrink-0 flex flex-col items-center text-center">
-          <div v-if="currentUser.role !== 'admin' && !currentUser.isMaster" class="mb-4">
-            <div class="w-16 h-16 md:w-20 md:h-20 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600 relative" :style="{ background: profileGradient }">
+            <div v-if="currentUser.role !== 'admin' && !currentUser.isMaster" class="mb-4">
+            <div :class="['w-16 h-16 md:w-20 md:h-20 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden relative', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']" :style="{ background: profileGradient }">
               <!-- Initials as Background/Placeholder -->
               <div class="absolute inset-0 flex items-center justify-center text-white font-bold">
                 {{ getInitials(displayName) }}
@@ -776,7 +812,11 @@
           </button>
           <button 
             @click="handleLogoutWithAnimation"
-            :class="['flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-white hover:bg-opacity-10 w-full text-left mt-2 transition-all duration-300', isLoggingOut ? 'scale-95 opacity-70' : '']"
+            :class="[
+              'flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2 transition-all duration-300',
+              isLoggingOut ? 'scale-95 opacity-70' : '',
+              'hover:bg-white hover:bg-opacity-10'
+            ]"
           >
             <img src="/logout.svg" alt="Log Out" :class="['w-5 h-5 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1);" />
             <span>Log Out</span>
@@ -794,24 +834,24 @@
     <div class="flex-1 bg-gray-100 overflow-auto order-2 md:order-2">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-20 shadow">
-        <h1 class="text-xl font-bold text-purple-900">SSAAM</h1>
+        <h1 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">SSAAM</h1>
         <div class="flex items-center gap-2">
-          <button @click="showContactModal = true" class="p-2 hover:bg-purple-100 rounded-lg transition">
-            <img src="/help.svg" alt="Help" class="w-5 h-5 text-purple-600" />
+          <button @click="showContactModal = true" :class="['p-2 rounded-lg transition', isCOE ? 'hover:bg-orange-100' : 'hover:bg-purple-100']">
+            <img src="/help.svg" alt="Help" :class="['w-5 h-5', isCOE ? 'text-orange-600' : 'text-purple-600']" />
           </button>
-          <button @click="showMobileMenu = true" class="text-2xl text-purple-900 hover:text-purple-700">☰</button>
+          <button @click="showMobileMenu = true" :class="['text-2xl', isCOE ? 'text-orange-900 hover:text-orange-700' : 'text-purple-900 hover:text-purple-700']">☰</button>
         </div>
       </div>
 
-      <!-- Desktop Help Button (bottom right, with spacing from scrollbar) -->
-      <div class="hidden md:block fixed bottom-8 right-8 z-20">
-        <button @click="showContactModal = true" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-full w-14 h-14 flex items-center justify-center hover:from-purple-700 hover:to-pink-600 transition-all duration-300 shadow-lg hover:scale-110 active:scale-95 hover:shadow-xl">
-          <img src="/help.svg" alt="Help" class="w-6 h-6" style="filter: brightness(0) invert(1);" />
+      <!-- Floating Help Button (visible on mobile and desktop) -->
+      <div class="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-20">
+        <button @click="showContactModal = true" :class="['text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-all duration-300 shadow-lg hover:scale-110 active:scale-95 hover:shadow-xl bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : 'from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600']">
+          <img src="/help.svg" alt="Help" class="w-5 h-5 md:w-6 md:h-6" style="filter: brightness(0) invert(1);" />
         </button>
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 class="hidden md:block text-2xl md:text-4xl font-bold text-purple-900 mb-8 pb-4 border-b-2 border-purple-900">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'notifications' ? 'Notifications' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'payments' ? 'Payments' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-2xl md:text-4xl font-bold mb-8 pb-4 border-b-2', isCOE ? 'text-orange-900 border-orange-900' : 'text-purple-900 border-purple-900']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'notifications' ? 'Notifications' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'payments' ? 'Payments' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg shadow-sm">
@@ -840,18 +880,18 @@
           <div class="bg-white rounded-lg shadow-lg p-4 md:p-8">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
               <div>
-                <h2 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">My Payment Status</h2>
+                <h2 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2', isCOE ? 'from-orange-600 via-red-600 to-orange-600' : 'from-purple-600 via-pink-600 to-purple-600']">My Payment Status</h2>
                 <p class="text-gray-500">Track your contribution payments and receipts</p>
               </div>
-              <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-200">
+              <div :class="['rounded-lg p-4 border', isCOE ? 'bg-gradient-to-br from-orange-50 to-red-50 border-orange-200' : 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200']">
                 <p class="text-sm text-gray-600 mb-1">Total Paid</p>
-                <p class="text-3xl font-bold text-purple-600">{{ myPayments.filter(p => p.is_paid).length }}/{{ myPayments.length }}</p>
+                <p :class="['text-3xl font-bold', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ myPayments.filter(p => p.is_paid).length }}/{{ myPayments.length }}</p>
               </div>
             </div>
             
             <div v-if="loadingMyPayments" class="flex items-center justify-center h-64">
               <div class="text-center">
-                <svg class="animate-spin h-12 w-12 text-purple-600 mx-auto mb-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <svg :class="['animate-spin h-12 w-12 mx-auto mb-4', isCOE ? 'text-orange-600' : 'text-purple-600']" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 <p class="text-gray-600">Loading your payments...</p>
               </div>
             </div>
@@ -880,16 +920,43 @@
                     </div>
                   </div>
                   
-                  <!-- Amount section -->
+                  <!-- Amount section with discount calculation -->
                   <div v-if="payment.amount_due" class="bg-white/60 rounded-lg p-3 mb-4 border border-gray-100">
-                    <p class="text-xs text-gray-600 font-medium mb-1">Amount Due</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ typeof payment.amount_due === 'number' ? '₱' + payment.amount_due.toFixed(2) : payment.amount_due }}</p>
+                    <div class="flex items-center justify-between mb-2">
+                      <p class="text-xs text-gray-600 font-medium">Amount Due</p>
+                      <p v-if="payment.discount_percentage > 0 || payment.discount_fixed_amount > 0" class="text-xs font-semibold text-green-600">Discounted</p>
+                    </div>
+                    <!-- Original amount (if discount applied) -->
+                    <p v-if="payment.discount_percentage > 0 || payment.discount_fixed_amount > 0" class="text-sm text-gray-500 line-through mb-1">
+                      ₱{{ (typeof payment.amount_due === 'number' ? payment.amount_due : 0).toFixed(2) }}
+                    </p>
+                    <!-- Final amount (discounted or original) -->
+                    <p class="text-2xl font-bold text-gray-900">
+                      ₱{{ calculateDiscountedAmount(payment).toFixed(2) }}
+                    </p>
+                  </div>
+                  
+                  <!-- Discount Display Section (Conditional) -->
+                  <div v-if="payment.discount_percentage > 0 || payment.discount_fixed_amount > 0" class="bg-green-50 rounded-lg p-3 mb-4 border border-green-200">
+                    <div class="flex items-center gap-2 mb-2">
+                      <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4z"></path></svg>
+                      <p class="text-xs font-bold text-green-900">Discount Applied</p>
+                    </div>
+                    <p v-if="payment.discount_type === 'percentage'" class="text-lg font-bold text-green-700 mb-1">
+                      {{ payment.discount_percentage }}% OFF
+                    </p>
+                    <p v-else class="text-lg font-bold text-green-700 mb-1">
+                      {{ (payment.discount_fixed_amount || 0).toFixed(2) }} OFF
+                    </p>
+                    <p v-if="payment.discount_reason" class="text-xs text-gray-700 mt-2">
+                      <span class="font-semibold">Reason:</span> {{ payment.discount_reason }}
+                    </p>
                   </div>
                   
                   <!-- Footer with date and deadline -->
                   <div class="space-y-2 pt-4 border-t border-gray-200">
                     <div v-if="payment.paid_date" class="flex items-center gap-2 text-xs">
-                      <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v2h16V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h12a1 1 0 100-2H6z" clip-rule="evenodd"></path></svg>
+                      <img src="/public/calendar.svg" alt="Calendar" class="w-4 h-4" style="filter: invert(48%) sepia(73%) saturate(1500%) hue-rotate(87deg) brightness(100%)" />
                       <span class="text-gray-700">Paid on <span class="font-bold">{{ new Date(payment.paid_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span></span>
                     </div>
                     <div v-if="payment.deadline && !payment.is_paid" class="flex items-center gap-2 text-xs">
@@ -912,11 +979,11 @@
           <!-- Tabs for Different Contribution Types -->
           <div class="bg-white rounded-lg shadow-lg p-4 md:p-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-              <h2 class="text-2xl font-bold text-purple-900">Contribution Management</h2>
+              <h2 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Contribution Management</h2>
               <button 
                 @click="refreshContributions" 
                 :disabled="paymentsLoading"
-                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 flex items-center gap-2 font-medium"
+                :class="['px-4 py-2 text-white rounded-lg transition disabled:opacity-50 flex items-center gap-2 font-medium bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
               >
                 <svg v-if="paymentsLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -927,7 +994,7 @@
             <!-- Payments Tab (replaces General Contributions) -->
             <div v-if="contributionTabMode === 'payments'" class="space-y-6">
               <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
-                <p class="text-sm text-purple-800">
+                <p :class="['text-sm', isCOE ? 'text-orange-800' : 'text-purple-800']">
                   <strong>Payments:</strong> Create and manage payment campaigns. Treasurer can mark students as paid, track completion rates, and generate transparency records.
                 </p>
               </div>
@@ -935,17 +1002,17 @@
               <!-- Create Payment Form -->
               <div class="bg-white rounded-lg p-6 border border-gray-200">
                 <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                   Create New Payment
                 </h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Title</label>
-                    <input v-model="newPaymentData.title" type="text" placeholder="e.g., Membership Fee Q1 2026" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
+                    <input v-model="newPaymentData.title" type="text" placeholder="e.g., Membership Fee Q1 2026" :class="['w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-500' : 'focus:ring-purple-500']" />
                   </div>
                   <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Payment Type</label>
-                    <select v-model="newPaymentData.type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none">
+                    <select v-model="newPaymentData.type" :class="['w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-500' : 'focus:ring-purple-500']">
                       <option value="membership">Membership</option>
                       <option value="donation">Donation</option>
                       <option value="fee">Fee</option>
@@ -954,17 +1021,17 @@
                   </div>
                   <div class="md:col-span-2">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Amount Due (₱)</label>
-                    <input v-model.number="newPaymentData.amount_due" type="number" placeholder="0.00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" />
+                    <input v-model.number="newPaymentData.amount_due" type="number" placeholder="0.00" :class="['w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-500' : 'focus:ring-purple-500']" />
                   </div>
                   <div class="md:col-span-2">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Description</label>
-                    <textarea v-model="newPaymentData.description" placeholder="Add notes or details..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none" rows="3"></textarea>
+                    <textarea v-model="newPaymentData.description" placeholder="Add notes or details..." :class="['w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-500' : 'focus:ring-purple-500']" rows="3"></textarea>
                   </div>
                 </div>
                 <button 
                   @click="createPayment" 
                   :disabled="creatingPayment || !newPaymentData.title.trim()"
-                  class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 flex items-center gap-2"
+                  :class="['mt-4 px-6 py-2 text-white rounded-lg transition disabled:opacity-50 flex items-center gap-2 bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
                 >
                   <svg v-if="creatingPayment" class="animate-spin h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                   {{ creatingPayment ? 'Creating...' : 'Create Payment' }}
@@ -994,7 +1061,7 @@
                     v-if="paymentsList.filter(p => p.status === 'active').length > 1"
                     @click="prevActivePayment()"
                     :disabled="activePaymentsCarouselPosition === 0"
-                    class="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 sm:p-2 md:p-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
+                    :class="['absolute left-0 top-1/2 -translate-y-1/2 z-10 p-1.5 sm:p-2 md:p-3 text-white rounded-full hover:transition disabled:opacity-40 disabled:cursor-not-allowed shadow-lg bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
                   >
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -1003,7 +1070,7 @@
 
                   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6" ref="activePaymentsCarouselRef">
                     <transition-group :name="carouselSlideDirection === 'right' ? 'carouselSlide-right' : 'carouselSlide-left'">
-                    <div v-for="payment in paymentsList.filter(p => p.status === 'active').slice(activePaymentsCarouselPosition * getCardsPerPage(), activePaymentsCarouselPosition * getCardsPerPage() + getCardsPerPage())" :key="payment._id" class="relative bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 md:p-6 border-2 border-purple-200 hover:border-purple-400 hover:shadow-xl hover:-translate-y-1">
+                    <div v-for="payment in paymentsList.filter(p => p.status === 'active').slice(activePaymentsCarouselPosition * getCardsPerPage(), activePaymentsCarouselPosition * getCardsPerPage() + getCardsPerPage())" :key="payment._id" :class="['relative bg-gradient-to-br from-white to-gray-50 rounded-xl p-5 md:p-6 border-2 hover:border-opacity-100 hover:shadow-xl hover:-translate-y-1', isCOE ? 'border-orange-200 hover:border-orange-400' : 'border-purple-200 hover:border-purple-400']">
 
                       <!-- Card-level overlay for Manage Payments (fade + pop) -->
                       <transition name="card-overlay">
@@ -1052,7 +1119,7 @@
 
                       <button 
                         @click="handleManagePaymentFromCard(payment)"
-                        class="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg text-sm md:text-base hover:from-purple-700 hover:to-purple-800 transition font-bold shadow-md hover:shadow-lg"
+                        :class="['w-full px-4 py-3 text-white rounded-lg text-sm md:text-base transition font-bold shadow-md hover:shadow-lg bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
                       >
                         Manage Payments
                       </button>
@@ -1064,7 +1131,7 @@
                     v-if="paymentsList.filter(p => p.status === 'active').length > 1"
                     @click="nextActivePayment()"
                     :disabled="activePaymentsCarouselPosition >= (paymentsList.filter(p => p.status === 'active').length - getCardsPerPage())"
-                    class="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1.5 sm:p-2 md:p-3 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
+                    :class="['absolute right-0 top-1/2 -translate-y-1/2 z-10 p-1.5 sm:p-2 md:p-3 text-white rounded-full hover:transition disabled:opacity-40 disabled:cursor-not-allowed shadow-lg bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
                   >
                     <svg class="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -1077,7 +1144,7 @@
                       v-for="(_, index) in Math.ceil((paymentsList.filter(p => p.status === 'active').length) / getCardsPerPage())"
                       :key="index"
                       @click="activePaymentsCarouselPosition = index"
-                      :class="['h-2 rounded-full transition-all', activePaymentsCarouselPosition === index ? 'w-6 bg-purple-600' : 'w-2 bg-gray-300 hover:bg-gray-400']"
+                      :class="['h-2 rounded-full transition-all', activePaymentsCarouselPosition === index ? (isCOE ? 'w-6 bg-orange-600' : 'w-6 bg-purple-600') : 'w-2 bg-gray-300 hover:bg-gray-400']"
                     ></button>
                   </div>
                 </div>
@@ -1086,7 +1153,7 @@
 
 
             <!-- Payment Scanner with Student Verification -->
-            <div v-if="selectedPayment && contributionTabMode === 'payments'" class="bg-gradient-to-b from-purple-50 to-white rounded-xl shadow-md p-3 sm:p-4 md:p-8 mt-6 border border-purple-50">
+            <div v-if="selectedPayment && contributionTabMode === 'payments'" :class="['bg-gradient-to-b rounded-xl shadow-md p-3 sm:p-4 md:p-8 mt-6 border', isCOE ? 'from-orange-50 to-white border-orange-50' : 'from-purple-50 to-white border-purple-50']">
               <!-- Header with Campaign Info -->
               <div class="mb-6 md:mb-8">
                 <div class="flex flex-col md:flex-row justify-between items-start gap-3 md:gap-4 mb-6 md:mb-8">
@@ -1133,13 +1200,13 @@
                 </div>
 
                 <!-- Editable Payment Details Card -->
-                <div class="bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 rounded-2xl p-6 md:p-8 border border-purple-100 shadow-md hover:shadow-lg transition-all duration-300">
+                <div :class="['rounded-2xl p-6 md:p-8 shadow-md hover:shadow-lg transition-all duration-300', isCOE ? 'bg-gradient-to-br from-orange-50 via-orange-50 to-orange-50 border border-orange-100' : 'bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-50 border border-purple-100']">
                   <div class="mb-6">
-                    <label class="text-xs font-bold uppercase tracking-widest text-purple-700 block mb-2">Campaign Title</label>
+                    <label :class="['text-xs font-bold uppercase tracking-widest block mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Campaign Title</label>
                     <input 
                       v-model="selectedPayment.title" 
                       type="text" 
-                      class="w-full px-4 py-3 text-lg font-bold bg-white border-2 border-purple-300 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition-all duration-200 placeholder-gray-400 overflow-hidden text-ellipsis break-words" 
+                      :class="['w-full px-4 py-3 text-lg font-bold bg-white rounded-xl focus:ring-2 outline-none transition-all duration-200 placeholder-gray-400 overflow-hidden text-ellipsis break-words border-2', isCOE ? 'border-orange-300 focus:border-orange-500 focus:ring-orange-200' : 'border-purple-300 focus:border-purple-500 focus:ring-purple-200']" 
                       placeholder="Enter campaign title..." 
                     />
                   </div>
@@ -1152,7 +1219,7 @@
                         <textarea 
                           v-model="selectedPayment.description" 
                           maxlength="200"
-                          class="w-full pl-10 pr-4 py-3 bg-white border-2 border-blue-300 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 outline-none transition-all duration-200 placeholder-gray-400 resize-none min-h-24 font-normal whitespace-normal break-words" 
+                          :class="['w-full pl-10 pr-4 py-3 bg-white rounded-xl focus:ring-2 outline-none transition-all duration-200 placeholder-gray-400 resize-none min-h-24 font-normal whitespace-normal break-words border-2', isCOE ? 'border-blue-300 focus:border-blue-500 focus:ring-blue-200' : 'border-blue-300 focus:border-blue-500 focus:ring-blue-200']" 
                           placeholder="Enter description..." 
                           rows="3"
                         ></textarea>
@@ -1168,7 +1235,7 @@
                           v-model.number="selectedPayment.amount_due" 
                           type="number" 
                           step="0.01" 
-                          class="w-full pl-10 pr-4 py-3 bg-white border-2 border-green-300 rounded-xl focus:border-green-500 focus:ring-2 focus:ring-green-200 outline-none transition-all duration-200 placeholder-gray-400 font-semibold" 
+                          :class="['w-full pl-10 pr-4 py-3 bg-white rounded-xl focus:ring-2 outline-none transition-all duration-200 placeholder-gray-400 font-semibold border-2', isCOE ? 'border-green-300 focus:border-green-500 focus:ring-green-200' : 'border-green-300 focus:border-green-500 focus:ring-green-200']" 
                           placeholder="0.00" 
                         />
                       </div>
@@ -1227,12 +1294,12 @@
                         type="text" 
                         placeholder="Enter Student ID or scan RFID"
                         @keydown.enter="searchStudentForPayment"
-                        class="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-white border-2 border-gray-300 rounded-lg text-xs sm:text-sm font-mono focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none transition"
+                        :class="['flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-white rounded-lg text-xs sm:text-sm font-mono outline-none transition', isCOE ? 'border-2 border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : 'border-2 border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200']"
                       />
                       <button 
                         @click="searchStudentForPayment"
                         :disabled="!paymentSearchQuery.trim()"
-                        class="px-3 sm:px-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition disabled:opacity-50 flex items-center justify-center shadow-md hover:shadow-lg font-semibold"
+                        :class="['px-3 sm:px-4 text-white rounded-lg transition disabled:opacity-50 flex items-center justify-center shadow-md hover:shadow-lg font-semibold bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
                       >
                         <svg v-if="searchingPaymentStudent" class="animate-spin h-4 sm:h-5 w-4 sm:w-5" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                         <svg v-else class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -1298,11 +1365,11 @@
                   <div class="grid grid-cols-2 gap-2 pt-3 sm:pt-4 border-t border-purple-100">
                     <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg p-2 sm:p-3 text-center border border-emerald-300 shadow-sm">
                       <p class="text-xs text-emerald-700 font-semibold uppercase">Collected</p>
-                      <p class="text-lg sm:text-xl font-bold text-emerald-600">₱{{ (selectedPayment.amount_due * selectedPayment.stats.paid_count).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
+                      <p class="text-lg sm:text-xl font-bold text-emerald-600">₱{{ calculateCollectedAmount(selectedPayment).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
                     </div>
                     <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-2 sm:p-3 text-center border border-orange-300 shadow-sm">
                       <p class="text-xs text-orange-700 font-semibold uppercase">Target</p>
-                      <p class="text-lg sm:text-xl font-bold text-orange-600">₱{{ (selectedPayment.amount_due * selectedPayment.stats.total_students).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
+                      <p class="text-lg sm:text-xl font-bold text-orange-600">₱{{ calculateTargetAmount(selectedPayment).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</p>
                     </div>
                   </div>
                 </div>
@@ -1321,7 +1388,7 @@
                   <button 
                     @click="refreshAllData"
                     :disabled="paymentsLoading"
-                    class="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 font-medium text-xs"
+                    :class="['flex items-center gap-2 px-3 py-2 text-white rounded-lg transition disabled:opacity-50 font-medium text-xs bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
                   >
                     <svg v-if="paymentsLoading" class="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                     <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -1395,7 +1462,7 @@
                   <p class="text-gray-500">No payment records for this campaign yet</p>
                 </div>
 
-                <div v-else class="overflow-x-auto hidden md:block">
+                <div v-else class="overflow-x-auto hidden md:block rounded-lg border border-gray-200 shadow-sm">
                   <table class="w-full text-sm">
                     <thead class="bg-gray-50 border-b">
                       <tr>
@@ -1405,6 +1472,8 @@
                         <th class="hidden lg:table-cell px-4 py-3 text-left font-semibold text-gray-700">Year Level</th>
                         <th class="hidden xl:table-cell px-4 py-3 text-left font-semibold text-gray-700">Paid By</th>
                         <th class="hidden sm:table-cell px-4 py-3 text-left font-semibold text-gray-700">Date</th>
+                        <th class="hidden md:table-cell px-4 py-3 text-right font-semibold text-gray-700">Amount</th>
+                        <th class="px-4 py-3 text-center font-semibold text-gray-700">Discount</th>
                         <th class="px-4 py-3 text-center font-semibold text-gray-700">Action</th>
                       </tr>
                     </thead>
@@ -1430,6 +1499,36 @@
                           <td class="hidden sm:table-cell px-4 py-3 text-xs text-gray-500 hover:bg-gray-50">
                             {{ record.payment_status === 'paid' && record.paid_date ? new Date(record.paid_date).toLocaleString() : 'N/A' }}
                           </td>
+                          <td class="hidden md:table-cell px-4 py-3 text-right hover:bg-gray-50">
+                            <div class="flex flex-col items-end gap-1">
+                              <span v-if="record.discount_percentage > 0 || record.discount_fixed_amount > 0" class="text-xs text-gray-500 line-through">₱{{ selectedPayment.amount_due.toFixed(2) }}</span>
+                              <span class="text-sm font-semibold text-gray-900">₱{{ calculatePaymentAmount(selectedPayment.amount_due, record).toFixed(2) }}</span>
+                            </div>
+                          </td>
+                          <td class="px-4 py-3 hover:bg-gray-50 text-center">
+                            <div v-if="record.discount_percentage > 0 || record.discount_fixed_amount > 0" class="flex flex-col items-center gap-1.5">
+                              <button 
+                                @click="openDiscountModal(selectedPayment._id, record.student_id, record.student_name, record)"
+                                :class="['inline-flex items-center justify-center px-3 py-1.5 rounded-lg transition text-xs font-medium bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 hover:from-green-200 hover:to-emerald-200 ring-1 ring-green-300']"
+                                :title="`Edit Discount${record.discount_percentage > 0 ? ` (${record.discount_percentage}%)` : ''} ${record.discount_fixed_amount > 0 ? ` (${record.discount_fixed_amount.toFixed(2)})` : ''}`"
+                              >
+                                <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                                {{ record.discount_type === 'percentage' ? `${record.discount_percentage}%` : `${record.discount_fixed_amount.toFixed(2)}` }}
+                              </button>
+                              <p v-if="record.discount_reason" class="text-xs text-gray-600 italic max-w-xs truncate" :title="record.discount_reason">
+                                {{ record.discount_reason }}
+                              </p>
+                            </div>
+                            <button 
+                              v-else
+                              @click="openDiscountModal(selectedPayment._id, record.student_id, record.student_name, record)"
+                              class="inline-flex items-center justify-center px-3 py-1.5 rounded-lg transition text-xs font-medium bg-gray-100 text-gray-600 hover:bg-gray-200"
+                              title="Apply Discount"
+                            >
+                              <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                              Add
+                            </button>
+                          </td>
                           <td class="px-4 py-3 hover:bg-gray-50 text-center">
                             <button 
                               @click="confirmDeletePayment(selectedPayment._id, record.student_id, record.student_name)"
@@ -1449,22 +1548,22 @@
                   </div>
 
                   <!-- Pagination Controls -->
-                  <div v-if="getPaymentRecordsTotalPages(selectedPayment) > 1" class="flex items-center justify-between mt-4 px-4 py-3 border-t">
-                    <div class="text-xs text-gray-600">
+                  <div v-if="getPaymentRecordsTotalPages(selectedPayment) > 1" class="flex flex-col xs:flex-row items-center justify-between gap-3 mt-4 px-3 xs:px-4 py-3 border-t bg-gray-50 rounded-b-lg">
+                    <div class="text-xs xs:text-sm text-gray-600 order-2 xs:order-1">
                       Page {{ paymentRecordsFilter.currentPage }} of {{ getPaymentRecordsTotalPages(selectedPayment) }}
                     </div>
-                    <div class="flex gap-2">
+                    <div class="flex gap-2 order-1 xs:order-2">
                       <button 
                         @click="paymentRecordsFilter.currentPage = Math.max(1, paymentRecordsFilter.currentPage - 1)"
                         :disabled="paymentRecordsFilter.currentPage === 1"
-                        class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-xs hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="px-2 xs:px-3 py-1 xs:py-2 bg-white text-gray-700 border border-gray-300 rounded text-xs xs:text-sm hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        ← Previous
+                        ← Prev
                       </button>
                       <button 
                         @click="paymentRecordsFilter.currentPage = Math.min(getPaymentRecordsTotalPages(selectedPayment), paymentRecordsFilter.currentPage + 1)"
                         :disabled="paymentRecordsFilter.currentPage === getPaymentRecordsTotalPages(selectedPayment)"
-                        class="px-3 py-1 bg-gray-200 text-gray-700 rounded text-xs hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="px-2 xs:px-3 py-1 xs:py-2 bg-white text-gray-700 border border-gray-300 rounded text-xs xs:text-sm hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         Next →
                       </button>
@@ -1480,8 +1579,9 @@
                   <template v-else>
                     <div v-for="record in getSortedPaymentRecords(selectedPayment)" :key="`${selectedPayment._id}-${record.student_id}`">
                     <template v-if="shouldShowRecord(selectedPayment, record)">
-                      <div class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition">
-                        <div class="flex justify-between items-start gap-3 mb-3">
+                      <div class="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md transition space-y-3">
+                        <!-- Header: Name and Status -->
+                        <div class="flex justify-between items-start gap-3 mb-0">
                           <div class="flex-1 min-w-0">
                             <h3 class="font-semibold text-gray-900 truncate">{{ record.student_name || 'N/A' }}</h3>
                             <p class="text-xs text-gray-600 font-mono mt-1">{{ record.student_id }}</p>
@@ -1492,6 +1592,7 @@
                           <span v-else class="flex-shrink-0 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-semibold whitespace-nowrap">{{ record.payment_status }}</span>
                         </div>
                         
+                        <!-- Program and Year Info -->
                         <div class="grid grid-cols-2 gap-3 mb-3 text-xs">
                           <div class="bg-gray-50 rounded p-2">
                             <p class="text-gray-600 font-medium">Program</p>
@@ -1503,24 +1604,74 @@
                           </div>
                         </div>
 
-                        <div v-if="record.payment_status === 'paid' && record.paid_date" class="text-xs text-gray-600 mb-3">
-                          <p class="font-medium text-gray-700">Paid Date</p>
-                          <p>{{ new Date(record.paid_date).toLocaleString() }}</p>
+                        <!-- Amount Section for Mobile -->
+                        <div class="grid grid-cols-2 gap-3 mb-3 text-xs">
+                          <div class="bg-blue-50 rounded p-2">
+                            <p class="text-gray-600 font-medium">Amount Due</p>
+                            <div class="flex flex-col gap-1">
+                              <p v-if="record.discount_percentage > 0 || record.discount_fixed_amount > 0" class="text-gray-500 line-through text-xs">₱{{ selectedPayment.amount_due.toFixed(2) }}</p>
+                              <p class="text-gray-900 font-semibold">₱{{ calculatePaymentAmount(selectedPayment.amount_due, record).toFixed(2) }}</p>
+                            </div>
+                          </div>
+                          <div class="bg-gray-50 rounded p-2">
+                            <p class="text-gray-600 font-medium">Paid Date</p>
+                            <p class="text-gray-900 font-semibold">{{ record.payment_status === 'paid' && record.paid_date ? new Date(record.paid_date).toLocaleDateString() : 'N/A' }}</p>
+                          </div>
                         </div>
 
-                        <div class="flex justify-end">
+                        <!-- Discount Section for Mobile -->
+                        <div v-if="record.discount_percentage > 0 || record.discount_fixed_amount > 0" class="bg-green-50 border border-green-200 rounded-lg p-3 mb-3">
+                          <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4z"></path></svg>
+                            <p class="text-xs font-bold text-green-900">Discount: {{ record.discount_type === 'percentage' ? `${record.discount_percentage}%` : `${record.discount_fixed_amount.toFixed(2)}` }}</p>
+                          </div>
+                          <p v-if="record.discount_reason" class="text-xs text-gray-700">{{ record.discount_reason }}</p>
+                        </div>
+
+                        <!-- Action Buttons for Mobile -->
+                        <div class="flex gap-2 justify-between items-center pt-3 border-t border-gray-200">
+                          <button 
+                            @click="openDiscountModal(selectedPayment._id, record.student_id, record.student_name, record)"
+                            :class="['flex-1 inline-flex items-center justify-center px-3 py-2 rounded-lg transition text-xs font-medium', record.discount_percentage > 0 || record.discount_fixed_amount > 0 ? 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-700 ring-1 ring-green-300 hover:from-green-200 hover:to-emerald-200' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']"
+                            :title="record.discount_percentage > 0 || record.discount_fixed_amount > 0 ? 'Edit Discount' : 'Apply Discount'"
+                          >
+                            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                            {{ record.discount_percentage > 0 || record.discount_fixed_amount > 0 ? 'Edit' : 'Add' }}
+                          </button>
                           <button 
                             @click="confirmDeletePayment(selectedPayment._id, record.student_id, record.student_name)"
-                            class="inline-flex items-center justify-center w-8 h-8 text-gray-400 hover:text-red-600 hover:bg-red-100 rounded-lg transition"
+                            class="inline-flex items-center justify-center px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition text-xs font-medium ring-1 ring-red-200"
                             title="Delete record"
                           >
-                            <img src="/delete.svg" alt="Delete" class="w-4 h-4">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Delete
                           </button>
                         </div>
                       </div>
                     </template>
+                    </div>
+                    </template>
+                  
+                  <!-- Mobile Pagination -->
+                  <div v-if="getPaymentRecordsTotalPages(selectedPayment) > 1 && selectedPayment.payment_records.length > 0" class="flex items-center justify-between gap-3 px-3 py-3 bg-gray-50 rounded-lg border border-gray-200 mt-4">
+                    <button 
+                      @click="paymentRecordsFilter.currentPage = Math.max(1, paymentRecordsFilter.currentPage - 1)"
+                      :disabled="paymentRecordsFilter.currentPage === 1"
+                      class="px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded text-xs font-semibold hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      ← Prev
+                    </button>
+                    <span class="text-xs font-semibold text-gray-600 whitespace-nowrap">
+                      Page {{ paymentRecordsFilter.currentPage }}/{{ getPaymentRecordsTotalPages(selectedPayment) }}
+                    </span>
+                    <button 
+                      @click="paymentRecordsFilter.currentPage = Math.min(getPaymentRecordsTotalPages(selectedPayment), paymentRecordsFilter.currentPage + 1)"
+                      :disabled="paymentRecordsFilter.currentPage === getPaymentRecordsTotalPages(selectedPayment)"
+                      class="px-3 py-2 bg-white text-gray-700 border border-gray-300 rounded text-xs font-semibold hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next →
+                    </button>
                   </div>
-                  </template>
                 </div>
 
                 <!-- Summary Stats for Selected Campaign -->
@@ -1562,6 +1713,144 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- Apply Discount Modal (teleported + responsive) -->
+                <teleport to="body">
+                  <transition name="fade">
+                    <div v-if="discountModal.show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[9998] p-4">
+                      <transition name="modal-bounce" appear>
+                        <div :class="['bg-white rounded-2xl shadow-2xl w-full max-w-full sm:max-w-md md:max-w-lg lg:max-w-2xl p-4 sm:p-6 md:p-8 max-h-[90vh] overflow-y-auto', isCOE ? 'border-l-4 border-orange-500' : 'border-l-4 border-purple-500']">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between mb-6">
+                          <div class="flex items-center gap-3">
+                            <div :class="['w-10 h-10 rounded-lg flex items-center justify-center text-white', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-600' : 'bg-gradient-to-br from-purple-500 to-pink-600']">
+                              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V5a2 2 0 012-2h14a2 2 0 012 2v10a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                            </div>
+                            <div>
+                              <h3 class="font-bold text-gray-900">Apply Discount</h3>
+                              <p class="text-xs text-gray-500">{{ discountModal.studentName }}</p>
+                            </div>
+                          </div>
+                          <button @click="discountModal.show = false" class="text-gray-400 hover:text-gray-600 transition">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                          </button>
+                        </div>
+
+                        <!-- Current Discount Info -->
+                        <div v-if="discountModal.currentDiscount.percentage > 0 || discountModal.currentDiscount.fixedAmount > 0" :class="['mb-6 p-4 rounded-lg border-2 transform transition-all duration-300', isCOE ? 'bg-green-50 border-green-300' : 'bg-green-50 border-green-300']">
+                          <p class="text-xs font-semibold text-green-700 mb-2">Current Discount</p>
+                          <div class="flex items-center justify-between mb-2">
+                            <span v-if="discountModal.currentDiscount.type === 'percentage'" class="text-2xl font-bold text-green-600">{{ discountModal.currentDiscount.percentage }}%</span>
+                            <span v-else class="text-2xl font-bold text-green-600">₱{{ discountModal.currentDiscount.fixedAmount?.toFixed(2) || '0.00' }}</span>
+                            <span class="text-xs text-green-600">{{ discountModal.currentDiscount.type === 'percentage' ? 'Off' : 'Fixed' }}</span>
+                          </div>
+                          <p v-if="discountModal.currentDiscount.reason" class="text-xs text-gray-600 mb-1"><strong>Reason:</strong> {{ discountModal.currentDiscount.reason }}</p>
+                          <p v-if="discountModal.currentDiscount.appliedAt" class="text-xs text-gray-500">Applied {{ new Date(discountModal.currentDiscount.appliedAt).toLocaleDateString() }} by {{ discountModal.currentDiscount.appliedBy }}</p>
+                        </div>
+
+                        <!-- Form -->
+                        <div class="space-y-4">
+                          <!-- Discount Type Toggle -->
+                          <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-3">Discount Type</label>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                              <button
+                                @click="discountModal.form.type = 'percentage'; discountModal.form.fixedAmount = 0"
+                                :class="['flex-1 py-2.5 px-3 rounded-lg font-semibold transition-all', discountModal.form.type === 'percentage' ? (isCOE ? 'bg-orange-500 text-white shadow-lg' : 'bg-purple-500 text-white shadow-lg') : 'bg-gray-100 text-gray-700 hover:bg-gray-200']"
+                              >
+                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Percentage
+                              </button>
+                              <button
+                                @click="discountModal.form.type = 'fixed'; discountModal.form.percentage = 0"
+                                :class="['flex-1 py-2.5 px-3 rounded-lg font-semibold transition-all', discountModal.form.type === 'fixed' ? (isCOE ? 'bg-orange-500 text-white shadow-lg' : 'bg-purple-500 text-white shadow-lg') : 'bg-gray-100 text-gray-700 hover:bg-gray-200']"
+                              >
+                                <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Fixed Amount
+                              </button>
+                            </div>
+                          </div>
+
+                          <!-- Discount Percentage -->
+                          <div v-if="discountModal.form.type === 'percentage'">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Discount Percentage (%)</label>
+                            <div class="flex flex-col sm:flex-row items-center gap-3">
+                              <input 
+                                v-model.number="discountModal.form.percentage" 
+                                type="number" 
+                                min="0" 
+                                max="100" 
+                                :class="['flex-1 px-4 py-2.5 border-2 rounded-lg outline-none transition-all', isCOE ? 'border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : 'border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200']" 
+                                placeholder="Enter discount %"
+                              />
+                              <span class="text-2xl font-bold text-gray-400">%</span>
+                            </div>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                              <button @click="discountModal.form.percentage = 0" class="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition">Clear</button>
+                              <button @click="discountModal.form.percentage = 10" class="px-2 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded transition">10%</button>
+                              <button @click="discountModal.form.percentage = 25" class="px-2 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded transition">25%</button>
+                              <button @click="discountModal.form.percentage = 50" class="px-2 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded transition">50%</button>
+                            </div>
+                          </div>
+
+                          <!-- Discount Fixed Amount -->
+                          <div v-if="discountModal.form.type === 'fixed'">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Fixed Discount Amount (₱)</label>
+                            <div class="flex flex-col sm:flex-row items-center gap-3">
+                              <span class="text-2xl font-bold text-gray-400">₱</span>
+                              <input 
+                                v-model.number="discountModal.form.fixedAmount" 
+                                type="number" 
+                                min="0" 
+                                step="0.01"
+                                :class="['flex-1 px-4 py-2.5 border-2 rounded-lg outline-none transition-all', isCOE ? 'border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : 'border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200']" 
+                                placeholder="Enter fixed amount"
+                              />
+                            </div>
+                            <div class="mt-2 flex flex-wrap gap-2">
+                              <button @click="discountModal.form.fixedAmount = 0" class="px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 rounded transition">Clear</button>
+                              <button @click="discountModal.form.fixedAmount = 100" class="px-2 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded transition">₱100</button>
+                              <button @click="discountModal.form.fixedAmount = 250" class="px-2 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded transition">₱250</button>
+                              <button @click="discountModal.form.fixedAmount = 500" class="px-2 py-1 text-xs bg-blue-100 text-blue-700 hover:bg-blue-200 rounded transition">₱500</button>
+                            </div>
+                          </div>
+
+                          <!-- Discount Reason -->
+                          <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Reason for Discount</label>
+                            <textarea 
+                              v-model="discountModal.form.reason" 
+                              :class="['w-full px-4 py-2.5 border-2 rounded-lg outline-none resize-none transition-all', isCOE ? 'border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : 'border-gray-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200']" 
+                              placeholder="e.g., Financial hardship, Scholarship holder, etc."
+                              rows="3"
+                            ></textarea>
+                            <p class="text-xs text-gray-500 mt-1">{{ discountModal.form.reason.length }}/200</p>
+                          </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="flex flex-col sm:flex-row gap-3 mt-6">
+                          <button 
+                            @click="discountModal.show = false"
+                            class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition"
+                          >
+                            Cancel
+                          </button>
+                          <button 
+                            @click="applyDiscount"
+                            :disabled="discountModal.loading || (discountModal.form.type === 'percentage' && discountModal.form.percentage === 0 && discountModal.currentDiscount.percentage === 0) || (discountModal.form.type === 'fixed' && discountModal.form.fixedAmount === 0 && discountModal.currentDiscount.fixedAmount === 0)"
+                            :class="['flex-1 px-4 py-2.5 rounded-lg text-white font-medium transition flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600 disabled:opacity-50' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600 disabled:opacity-50']"
+                          >
+                            <svg v-if="discountModal.loading" class="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            {{ discountModal.loading ? 'Applying...' : 'Apply Discount' }}
+                          </button>
+                        </div>
+                      </div>
+                    </transition>
+                  </div>
+                </transition>
+                </teleport>
               </div>
             </div>
           </div>
@@ -1569,8 +1858,8 @@
 
         <div v-if="currentPage === 'settings' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h2 class="text-xl md:text-2xl font-bold text-purple-900">Access Control Settings</h2>
-            <button @click="refreshSettingsSection" :disabled="settingsLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Access Control Settings</h2>
+            <button @click="refreshSettingsSection" :disabled="settingsLoading" :class="['px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
               <svg v-if="settingsLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               {{ settingsLoading ? 'Loading...' : 'Refresh' }}
@@ -1578,7 +1867,7 @@
           </div>
 
           <div v-if="settingsLoading" class="flex items-center justify-center py-12">
-            <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : 'text-purple-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -1589,8 +1878,8 @@
             <div class="border border-gray-200 rounded-xl p-6">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
-                  <h3 class="text-lg font-semibold text-purple-900 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                  <h3 :class="['text-lg font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : 'text-purple-900']">
+                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
                     User Registration
                   </h3>
                   <p class="text-sm text-gray-500 mt-1">Allow new students to create accounts</p>
@@ -1607,12 +1896,12 @@
                   {{ appSettings.userRegister.register ? 'Enabled' : 'Disabled' }}
                 </span>
               </div>
-              <div v-if="!appSettings.userRegister.register" class="mt-4">
+                <div v-if="!appSettings.userRegister.register" class="mt-4">
                 <label class="block text-sm font-medium text-gray-700 mb-2">Message to display when registration is disabled:</label>
                 <textarea 
                   v-model="appSettings.userRegister.message" 
                   placeholder="Enter a message to show users when registration is disabled..."
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none resize-none"
+                  :class="['w-full px-4 py-3 border rounded-lg outline-none resize-none', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200 focus:border-transparent' : 'border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
                   rows="3"
                 ></textarea>
               </div>
@@ -1622,8 +1911,8 @@
             <div class="border border-gray-200 rounded-xl p-6">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
-                  <h3 class="text-lg font-semibold text-purple-900 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                  <h3 :class="['text-lg font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : 'text-purple-900']">
+                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
                     User Login
                   </h3>
                   <p class="text-sm text-gray-500 mt-1">Allow students to log into their accounts</p>
@@ -1645,18 +1934,18 @@
                 <textarea 
                   v-model="appSettings.userLogin.message" 
                   placeholder="Enter a message to show users when login is disabled..."
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none resize-none"
+                  :class="['w-full px-4 py-3 border rounded-lg outline-none resize-none', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200 focus:border-transparent' : 'border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
                   rows="3"
                 ></textarea>
               </div>
             </div>
 
             <!-- Academic Term Settings -->
-            <div class="border border-gray-200 rounded-xl p-6 bg-purple-50/30">
+            <div :class="['border border-gray-200 rounded-xl p-6', isCOE ? 'bg-orange-50/30' : 'bg-purple-50/30']">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
-                  <h3 class="text-lg font-semibold text-purple-900 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <h3 :class="['text-lg font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : 'text-purple-900']">
+                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Academic Term Settings
                   </h3>
                   <p class="text-sm text-gray-500 mt-1">Global semester and school year configuration</p>
@@ -1667,7 +1956,7 @@
                   <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
                   <select 
                     v-model="appSettings.semester"
-                    class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none transition-all"
+                    :class="['w-full px-4 py-2 bg-white rounded-lg outline-none transition-all', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200' : 'border-gray-300 focus:ring-2 focus:ring-purple-600']"
                   >
                     <option value="1st Sem">1st Semester</option>
                     <option value="2nd Sem">2nd Semester</option>
@@ -1679,7 +1968,7 @@
                     v-model="appSettings.schoolYear"
                     type="text"
                     placeholder="e.g. 2023-2024"
-                    class="w-full px-4 py-2 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none transition-all"
+                    :class="['w-full px-4 py-2 bg-white rounded-lg outline-none transition-all', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200' : 'border-gray-300 focus:ring-2 focus:ring-purple-600']"
                   />
                 </div>
               </div>
@@ -1722,7 +2011,7 @@
                       <div class="space-y-2">
                         <div v-for="student in group.students" :key="student.student_id" class="bg-white p-2 rounded border border-gray-200 flex items-center gap-3">
                           <div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
-                            <img v-if="student.photo" :src="student.photo" class="w-full h-full object-cover" />
+                            <img v-if="student.photo" :src="student.photo" class="w-full h-full object-cover rounded-full" />
                             <span v-else>{{ (student.first_name || '?').charAt(0) }}</span>
                           </div>
                           <div class="flex-1 min-w-0">
@@ -1787,7 +2076,7 @@
                     <div v-for="result in duplicateSearchResults" :key="result.student_id" class="bg-gray-50 p-3 rounded-lg border border-gray-200">
                       <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold overflow-hidden">
-                          <img v-if="result.photo" :src="result.photo" class="w-full h-full object-cover" />
+                          <img v-if="result.photo" :src="result.photo" class="w-full h-full object-cover rounded-full" />
                           <span v-else>{{ (result.first_name || '?').charAt(0) }}</span>
                         </div>
                         <div class="flex-1 min-w-0">
@@ -2073,7 +2362,7 @@
               <button 
                 @click="saveSettings" 
                 :disabled="settingsSaving"
-                class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-8 py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition-all duration-300 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                :class="['px-8 py-3 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
               >
                 <svg v-if="settingsSaving" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
@@ -2139,28 +2428,28 @@
           <div v-if="currentUser.role === 'admin' || currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-6">
             <div class="flex flex-col gap-4 mb-6">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <h2 class="text-lg sm:text-xl font-bold text-purple-900">Attendance Events</h2>
+                <h2 :class="['text-lg sm:text-xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Attendance Events</h2>
                 <div class="flex gap-2 flex-wrap sm:flex-nowrap">
                   <button @click="refreshAttendanceSection" :disabled="attendanceLoading" class="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 text-sm" title="Refresh">
                     <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     <span>Refresh</span>
                   </button>
-                  <button @click="openCreateEventModal" class="flex-1 sm:flex-none bg-gradient-to-r from-purple-600 to-pink-500 text-white px-3 py-2 rounded-lg hover:from-purple-700 hover:to-pink-600 transition flex items-center justify-center gap-2 text-sm" title="Create Event">
+                  <button @click="openCreateEventModal" :class="['flex-1 sm:flex-none px-3 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Create Event">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                     <span>Create Event</span>
                   </button>
                 </div>
               </div>
               <div class="flex gap-2 overflow-x-auto pb-1">
-                <button @click="attendanceTab = 'events'" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'events' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">Events</button>
-                <button @click="switchToScannerTab" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'scanner' ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">RFID Scanner</button>
+                <button @click="attendanceTab = 'events'" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'events' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">Events</button>
+                <button @click="switchToScannerTab" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'scanner' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">RFID Scanner</button>
               </div>
             </div>
 
             <!-- Events List Tab -->
             <div v-if="attendanceTab === 'events'">
               <div v-if="attendanceLoading" class="flex items-center justify-center py-12">
-                <svg class="animate-spin h-10 w-10 text-purple-600" fill="none" viewBox="0 0 24 24">
+                <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -2176,8 +2465,8 @@
                     <div class="flex flex-col gap-3">
                       <div class="flex-1">
                         <div class="flex flex-wrap items-center gap-2 mb-2">
-                          <svg :class="['w-4 h-4 sm:w-5 sm:h-5 text-purple-600 transition-transform flex-shrink-0', expandedEvents[event._id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                          <h3 class="font-semibold text-base sm:text-lg text-purple-900 break-words">{{ event.title }}</h3>
+                          <svg :class="['w-4 h-4 sm:w-5 sm:h-5 transition-transform flex-shrink-0', isCOE ? 'text-orange-600' : 'text-purple-600', expandedEvents[event._id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                          <h3 :class="['font-semibold text-base sm:text-lg break-words', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ event.title }}</h3>
                           <span :class="['px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap', getStatusBadgeClass(getEventDisplayStatus(event).status)]">{{ getEventDisplayStatus(event).label }}</span>
                           <span v-if="event.status === 'active' && getEventTimeRemaining(event._id) && getEventTimeRemaining(event._id) !== 'Ended'" :class="['px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap', 'bg-orange-100 text-orange-800']">
                             {{ getEventTimeRemaining(event._id) }}
@@ -2203,13 +2492,17 @@
                         <button 
                           v-if="currentUser.role === 'treasurer'"
                           @click="openContributionsModal(event._id, event.title)" 
-                          class="bg-purple-100 text-purple-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-purple-200 transition text-xs sm:text-sm flex items-center gap-1" 
+                          :class="['px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition text-xs sm:text-sm flex items-center gap-1', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : 'bg-purple-100 text-purple-700 hover:bg-purple-200']" 
                           title="View Contributions"
                         >
                           <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                           </svg>
                           <span class="not-sr-only sm:block">Contributions</span>
+                        </button>
+                        <button @click="duplicateEvent(event)" class="bg-blue-100 text-blue-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-blue-200 transition text-xs sm:text-sm flex items-center gap-1" title="Duplicate">
+                          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                          <span class="sr-only sm:not-sr-only">Duplicate</span>
                         </button>
                         <button @click="openEditEvent(event)" class="bg-yellow-100 text-yellow-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-yellow-200 transition text-xs sm:text-sm flex items-center gap-1" title="Edit">
                           <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -2222,39 +2515,41 @@
                       </div>
                     </div>
                   </div>
-                  <!-- Sessions Panel - Expandable -->
-                  <div v-if="expandedEvents[event._id]" class="bg-gray-50 border-t border-gray-200 px-3 sm:px-4 py-3">
-                    <div class="ml-0 sm:ml-6">
-                      <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                        Sessions
-                      </h4>
-                      <div v-if="!expandedEventSessions[event._id] || expandedEventSessions[event._id].length === 0" class="text-sm text-gray-500 py-2">
-                        No sessions added yet. Click "Edit" to add sessions.
-                      </div>
-                      <div v-else class="space-y-2">
-                        <div v-for="session in expandedEventSessions[event._id]" :key="session._id" class="flex flex-col sm:flex-row sm:items-center justify-between bg-white rounded-lg px-3 py-2 border border-gray-200 gap-2">
-                          <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                            <span class="font-medium text-gray-800 text-sm">{{ session.label }}</span>
-                            <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
-                            <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', getSessionDisplayStatus(session, event) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, event) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
-                              {{ getSessionDisplayStatus(session, event) === 'active' ? 'Active' : getSessionDisplayStatus(session, event) === 'draft' ? 'Upcoming' : 'Closed' }}
-                            </span>
-                          </div>
-                          <div class="flex items-center gap-2 flex-wrap">
-                            <button @click="openSessionLogs(session, event)" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg hover:bg-blue-200 transition text-xs flex items-center gap-1">
-                              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                              Logs
-                            </button>
-                            <div class="flex items-center gap-1 text-xs text-gray-400">
-                              <span v-if="session.check_in_locked" class="text-red-500">Check-in locked</span>
-                              <span v-if="session.check_out_locked" class="text-red-500">Check-out locked</span>
+                  <!-- Sessions Panel - Expandable with Slide Animation -->
+                  <transition name="slide-down">
+                    <div v-if="expandedEvents[event._id]" class="bg-gray-50 border-t border-gray-200 px-3 sm:px-4 py-3">
+                      <div class="ml-0 sm:ml-6">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                          Sessions
+                        </h4>
+                        <div v-if="!expandedEventSessions[event._id] || expandedEventSessions[event._id].length === 0" class="text-sm text-gray-500 py-2">
+                          No sessions added yet. Click "Edit" to add sessions.
+                        </div>
+                        <div v-else class="space-y-2">
+                          <div v-for="session in expandedEventSessions[event._id]" :key="session._id" @click="selectSession(session, event, $event)" :class="['flex flex-col sm:flex-row sm:items-center justify-between bg-white rounded-lg px-3 py-2 border border-gray-200 gap-2', 'cursor-pointer hover:shadow']">
+                            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                              <span class="font-medium text-gray-800 text-sm">{{ session.label }}</span>
+                              <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
+                              <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', getSessionDisplayStatus(session, event) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, event) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
+                                {{ getSessionDisplayStatus(session, event) === 'active' ? 'Active' : getSessionDisplayStatus(session, event) === 'draft' ? 'Upcoming' : 'Closed' }}
+                              </span>
+                            </div>
+                            <div class="flex items-center gap-2 flex-wrap">
+                              <button @click="openSessionLogs(session, event)" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg hover:bg-blue-200 transition text-xs flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                Logs
+                              </button>
+                              <div class="flex items-center gap-1 text-xs text-gray-400">
+                                <span v-if="session.check_in_locked" class="text-red-500">Check-in locked</span>
+                                <span v-if="session.check_out_locked" class="text-red-500">Check-out locked</span>
+                              </div>
                             </div>
                           </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </transition>
                 </div>
               </div>
             </div>
@@ -2262,46 +2557,46 @@
             <!-- RFID Scanner Tab -->
             <div v-if="attendanceTab === 'scanner'" class="space-y-4">
               <!-- RFID Scanner Lock Controls -->
-              <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-3 sm:p-4 mb-4">
-                <h3 class="font-semibold text-purple-900 mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base">
+              <div v-if="selectedEvent || selectedSession" :class="['bg-gradient-to-r border rounded-lg p-3 sm:p-4 mb-4', isCOE ? 'from-orange-50 to-red-50 border-orange-200' : 'from-purple-50 to-pink-50 border-purple-200']">
+                <h3 :class="['font-semibold mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base', isCOE ? 'text-orange-900' : 'text-purple-900']">
                   <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                   Attendance Mode (Select One)
                 </h3>
                 
                 <!-- Active Mode Indicator -->
                 <div class="mb-4 p-3 rounded-lg" :class="[
-                  appSettings.rfidScanner.checkInEnabled ? 'bg-green-100 border border-green-300' :
-                  appSettings.rfidScanner.checkOutEnabled ? 'bg-blue-100 border border-blue-300' :
+                  effectiveRfid.checkInEnabled ? 'bg-green-100 border border-green-300' :
+                  effectiveRfid.checkOutEnabled ? 'bg-blue-100 border border-blue-300' :
                   'bg-gray-100 border border-gray-300'
                 ]">
                   <div class="flex items-center gap-2">
-                    <svg v-if="appSettings.rfidScanner.checkInEnabled" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                    <svg v-else-if="appSettings.rfidScanner.checkOutEnabled" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    <svg v-if="effectiveRfid.checkInEnabled" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                    <svg v-else-if="effectiveRfid.checkOutEnabled" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                     <svg v-else class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
                     <span class="font-semibold" :class="[
-                      appSettings.rfidScanner.checkInEnabled ? 'text-green-700' :
-                      appSettings.rfidScanner.checkOutEnabled ? 'text-blue-700' :
+                       effectiveRfid.checkInEnabled ? 'text-green-700' :
+                       effectiveRfid.checkOutEnabled ? 'text-blue-700' :
                       'text-gray-600'
                     ]">
-                      {{ appSettings.rfidScanner.checkInEnabled ? 'CHECK-IN MODE ACTIVE' : 
-                         appSettings.rfidScanner.checkOutEnabled ? 'CHECK-OUT MODE ACTIVE' : 
+                       {{ effectiveRfid.checkInEnabled ? 'CHECK-IN MODE ACTIVE' : 
+                         effectiveRfid.checkOutEnabled ? 'CHECK-OUT MODE ACTIVE' : 
                          'NO MODE SELECTED - SCANNING DISABLED' }}
                     </span>
                   </div>
                   <p class="text-xs mt-1" :class="[
-                    appSettings.rfidScanner.checkInEnabled ? 'text-green-600' :
-                    appSettings.rfidScanner.checkOutEnabled ? 'text-blue-600' :
+                    effectiveRfid.checkInEnabled ? 'text-green-600' :
+                    effectiveRfid.checkOutEnabled ? 'text-blue-600' :
                     'text-gray-500'
                   ]">
-                    {{ appSettings.rfidScanner.checkInEnabled ? 'Students will be marked as checked in when scanning. Late threshold applies.' : 
-                       appSettings.rfidScanner.checkOutEnabled ? 'Students will be marked as checked out when scanning.' : 
+                    {{ effectiveRfid.checkInEnabled ? 'Students will be marked as checked in when scanning. Late threshold applies.' : 
+                       effectiveRfid.checkOutEnabled ? 'Students will be marked as checked out when scanning.' : 
                        'Select a mode below to enable RFID scanning.' }}
                   </p>
                 </div>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                   <!-- Check-In Control -->
-                  <div :class="['rounded-lg p-4 shadow-sm transition-all', appSettings.rfidScanner.checkInEnabled ? 'bg-green-50 ring-2 ring-green-400' : 'bg-white']">
+                  <div :class="['rounded-lg p-4 shadow-sm transition-all', effectiveRfid.checkInEnabled ? 'bg-green-50 ring-2 ring-green-400' : 'bg-white']">
                     <div class="flex items-center justify-between mb-3">
                       <span class="font-medium text-gray-700 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
@@ -2309,19 +2604,19 @@
                       </span>
                       <button 
                         @click="toggleCheckIn" 
-                        :disabled="rfidScannerSaving || checkToggleCooldown"
-                        :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', appSettings.rfidScanner.checkInEnabled ? 'bg-green-500' : 'bg-gray-300']"
+                        :disabled="rfidScannerSaving || checkToggleCooldown || (!selectedEvent && !selectedSession)"
+                        :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', effectiveRfid.checkInEnabled ? 'bg-green-500' : 'bg-gray-300']"
                       >
-                        <span :class="['inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300', appSettings.rfidScanner.checkInEnabled ? 'translate-x-7' : 'translate-x-1']"></span>
+                        <span :class="['inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300', effectiveRfid.checkInEnabled ? 'translate-x-7' : 'translate-x-1']"></span>
                       </button>
                     </div>
-                    <span :class="['text-sm font-medium px-3 py-1 rounded-full', appSettings.rfidScanner.checkInEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
-                      {{ appSettings.rfidScanner.checkInEnabled ? 'Active' : 'Inactive' }}
+                    <span :class="['text-sm font-medium px-3 py-1 rounded-full', effectiveRfid.checkInEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                      {{ effectiveRfid.checkInEnabled ? 'Active' : 'Inactive' }}
                     </span>
                   </div>
                   
                   <!-- Check-Out Control -->
-                  <div :class="['rounded-lg p-4 shadow-sm transition-all', appSettings.rfidScanner.checkOutEnabled ? 'bg-blue-50 ring-2 ring-blue-400' : 'bg-white']">
+                  <div :class="['rounded-lg p-4 shadow-sm transition-all', effectiveRfid.checkOutEnabled ? 'bg-blue-50 ring-2 ring-blue-400' : 'bg-white']">
                     <div class="flex items-center justify-between mb-3">
                       <span class="font-medium text-gray-700 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
@@ -2329,14 +2624,14 @@
                       </span>
                       <button 
                         @click="toggleCheckOut" 
-                        :disabled="rfidScannerSaving || checkToggleCooldown"
-                        :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', appSettings.rfidScanner.checkOutEnabled ? 'bg-blue-500' : 'bg-gray-300']"
+                        :disabled="rfidScannerSaving || checkToggleCooldown || (!selectedEvent && !selectedSession)"
+                        :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', effectiveRfid.checkOutEnabled ? 'bg-blue-500' : 'bg-gray-300']"
                       >
-                        <span :class="['inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300', appSettings.rfidScanner.checkOutEnabled ? 'translate-x-7' : 'translate-x-1']"></span>
+                        <span :class="['inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300', effectiveRfid.checkOutEnabled ? 'translate-x-7' : 'translate-x-1']"></span>
                       </button>
                     </div>
-                    <span :class="['text-sm font-medium px-3 py-1 rounded-full', appSettings.rfidScanner.checkOutEnabled ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700']">
-                      {{ appSettings.rfidScanner.checkOutEnabled ? 'Active' : 'Inactive' }}
+                    <span :class="['text-sm font-medium px-3 py-1 rounded-full', effectiveRfid.checkOutEnabled ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700']">
+                      {{ effectiveRfid.checkOutEnabled ? 'Active' : 'Inactive' }}
                     </span>
                   </div>
                 </div>
@@ -2347,12 +2642,12 @@
                   <p v-if="checkToggleCooldown" class="text-xs text-gray-500 mt-2">Switch cooldown: {{ cooldownSeconds }}s</p>
                 </div>
                 
-                <p class="text-xs text-gray-500 mt-3 text-center">Only one mode can be active at a time. Enable check-in when attendance starts, then switch to check-out mode for dismissal.</p>
+                <p class="text-xs text-gray-500 mt-3 text-center">⚙️ Settings apply only to the selected event/session. Select an event or session to configure.</p>
               </div>
 
               <div v-if="!selectedEvent" class="text-center py-8">
                 <div class="mb-4">
-                  <select v-model="selectedEvent" @change="onEventSelectForScanner" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none w-full max-w-md">
+                  <select v-model="selectedEvent" @change="onEventSelectForScanner" :class="['px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none w-full max-w-lg text-sm sm:text-base', isCOE ? 'focus:ring-orange-600' : 'focus:ring-purple-600']">
                     <option :value="null">-- Select Event --</option>
                     <option v-for="event in attendanceEvents.filter(e => getEventDisplayStatus(e).status === 'active')" :key="event._id" :value="event">{{ event.title }} ({{ formatEventDate(event.date || event.event_date) }})</option>
                   </select>
@@ -2362,11 +2657,11 @@
               </div>
               <div v-else-if="!selectedSession" class="text-center py-8">
                 <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p class="text-gray-500 mb-2">Selected: <span class="font-semibold text-purple-700">{{ selectedEvent.title }}</span></p>
+                <p class="text-gray-500 mb-2">Selected: <span :class="['font-semibold', isCOE ? 'text-orange-700' : 'text-purple-700']">{{ selectedEvent.title }}</span></p>
                 <p class="text-gray-500 mb-4">Now select a session for attendance</p>
                 <!-- Sessions Loading Bar -->
                 <div v-if="sessionsLoading" class="max-w-md mx-auto mb-4">
-                  <div class="flex items-center justify-center gap-2 text-purple-600 mb-2">
+                  <div :class="['flex items-center justify-center gap-2 mb-2', isCOE ? 'text-orange-600' : 'text-purple-600']">
                     <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -2374,7 +2669,7 @@
                     <span class="text-sm font-medium">Loading sessions...</span>
                   </div>
                   <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                    <div class="bg-gradient-to-r from-purple-600 to-pink-500 h-2 rounded-full animate-pulse" style="width: 70%"></div>
+                    <div :class="['h-2 rounded-full animate-pulse bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500' : 'from-purple-600 to-pink-500']" style="width: 70%"></div>
                   </div>
                 </div>
                 <div v-else-if="eventSessions.length === 0" class="text-center py-4">
@@ -2383,13 +2678,13 @@
                   <button @click="selectedEvent = null; selectedSession = null" class="mt-3 text-purple-600 hover:text-purple-800 text-sm underline">Select different event</button>
                 </div>
                 <div v-else class="space-y-2 max-w-md mx-auto">
-                  <button v-for="session in eventSessions.filter(s => getSessionDisplayStatus(s, selectedEvent) === 'active')" :key="session._id" @click="selectedSession = session" class="w-full p-3 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg hover:from-purple-100 hover:to-pink-100 transition text-left">
+                  <button v-for="session in eventSessions.filter(s => getSessionDisplayStatus(s, selectedEvent) === 'active')" :key="session._id" @click="selectedSession = session" :class="['w-full p-3 border rounded-lg transition text-left bg-gradient-to-r', isCOE ? 'from-orange-50 to-red-50 border-orange-200 hover:from-orange-100 hover:to-red-100' : 'from-purple-50 to-pink-50 border-purple-200 hover:from-purple-100 hover:to-pink-100']">
                     <div class="flex items-center justify-between">
                       <div>
-                        <span class="font-medium text-purple-800">{{ session.label }}</span>
+                        <span :class="['font-medium', isCOE ? 'text-orange-800' : 'text-purple-800']">{{ session.label }}</span>
                         <span :class="['ml-2 px-2 py-0.5 rounded-full text-xs', getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600']">{{ getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'Active' : 'Not Active' }}</span>
                       </div>
-                      <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                      <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-purple-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </div>
                     <p class="text-xs text-gray-500 mt-1">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
                   </button>
@@ -2397,118 +2692,96 @@
                 </div>
               </div>
               <div v-else class="space-y-4">
-                <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <h3 class="font-semibold text-purple-900">{{ selectedEvent.title }}</h3>
-                      <p class="text-sm text-purple-600">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
-                      <div class="flex items-center gap-2 mt-1">
-                        <span class="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full text-xs font-medium">{{ selectedSession.label }}</span>
-                        <span class="text-xs text-gray-500">{{ formatDisplayTime(selectedSession.start_time) }} - {{ formatDisplayTime(selectedSession.end_time) }}</span>
+                <div :class="['bg-gradient-to-r border rounded-lg p-3 sm:p-4', isCOE ? 'from-orange-50 to-red-50 border-orange-200' : 'from-purple-50 to-pink-50 border-purple-200']">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                    <div class="flex-1 text-left sm:text-left">
+                      <h3 :class="['font-semibold text-sm sm:text-base', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ selectedEvent.title }}</h3>
+                      <p :class="['text-xs sm:text-sm', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
+                      <div class="flex flex-wrap items-center gap-2 mt-1">
+                        <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', isCOE ? 'bg-orange-100 text-orange-700' : 'bg-purple-100 text-purple-700']">{{ selectedSession.label }}</span>
+                        <span class="text-xs text-gray-500 truncate">{{ formatDisplayTime(selectedSession.start_time) }} - {{ formatDisplayTime(selectedSession.end_time) }}</span>
                       </div>
                     </div>
-                    <div class="flex items-center gap-2">
-                      <button @click="enterFullscreenMode" class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-600 transition flex items-center gap-2">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-                        Fullscreen
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                      <button @click="enterFullscreenMode" :class="['text-white px-3 sm:px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 bg-gradient-to-r flex-1 sm:flex-none text-sm sm:text-base', primaryButtonGradient, primaryButtonHover]">
+                        <svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                        <span class="hidden sm:inline">Fullscreen</span>
                       </button>
-                      <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" class="text-purple-600 hover:text-purple-800 p-2">
+                      <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" :class="['p-2 rounded-lg transition', isCOE ? 'text-orange-600 hover:text-orange-800 hover:bg-orange-100' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-100']">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                       </button>
                     </div>
                   </div>
                 </div>
 
-                <div class="bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-dashed border-purple-300 rounded-lg p-8 text-center">
-                  <!-- Scan Mode Toggle -->
-                  <div class="flex justify-center mb-4">
-                    <div class="inline-flex bg-gray-100 rounded-lg p-1">
-                      <button 
-                        @click="scanMode = 'rfid'" 
-                        :class="['px-4 py-2 rounded-lg text-sm font-medium transition', scanMode === 'rfid' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md' : 'text-gray-600 hover:text-purple-600']"
-                      >
-                        <span class="flex items-center gap-2">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
-                          RFID Scan
-                        </span>
-                      </button>
-                      <button 
-                        @click="scanMode = 'student_id'" 
-                        :class="['px-4 py-2 rounded-lg text-sm font-medium transition', scanMode === 'student_id' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-md' : 'text-gray-600 hover:text-purple-600']"
-                      >
-                        <span class="flex items-center gap-2">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"></path></svg>
-                          Student ID
-                        </span>
-                      </button>
+                <div :class="['bg-gradient-to-br border-2 border-dashed rounded-lg p-4 sm:p-8 text-center', isCOE ? 'from-orange-50 to-red-50 border-orange-300' : 'from-purple-50 to-pink-50 border-purple-300']">
+                  <!-- Combined input info -->
+                  <div class="flex justify-center mb-3 sm:mb-4">
+                    <div class="inline-flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg bg-white bg-opacity-10 border border-white border-opacity-10">
+                      <svg class="w-4 h-4 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 1.657-1.343 3-3 3S6 12.657 6 11s1.343-3 3-3 3 1.343 3 3zM18 11c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z"></path></svg>
+                      <span class="text-xs sm:text-sm text-gray-700">Scan RFID or type Student ID</span>
                     </div>
                   </div>
-                  
-                  <svg v-if="scanMode === 'rfid'" class="w-20 h-20 mx-auto mb-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
-                  <svg v-else class="w-20 h-20 mx-auto mb-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"></path></svg>
-                  
-                  <p class="text-lg font-medium bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent mb-2">
-                    {{ scanMode === 'rfid' ? 'Ready for RFID Scan' : 'Enter Student ID' }}
-                  </p>
-                  <p class="text-sm text-gray-500 mb-4">
-                    {{ scanMode === 'rfid' ? 'Scan an RFID card or type the RFID code manually.' : 'Type the Student ID manually to record attendance.' }}
-                  </p>
-                  <div class="flex items-center justify-center gap-2 max-w-md mx-auto">
+                  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-center sm:gap-2 max-w-md mx-auto">
                     <input 
                       ref="rfidInputRef"
                       v-model="rfidInput"
+                      @input="onRfidInput"
                       @keydown="handleRfidKeydown"
                       type="text"
-                      :placeholder="scanMode === 'rfid' ? 'Scan RFID card or type RFID code...' : 'Enter Student ID (e.g., 2023-0001)...'"
-                      class="flex-1 px-4 py-3 text-center text-lg border-2 border-purple-300 rounded-lg focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none uppercase"
+                      :placeholder="'Scan or ID'"
+                      :class="['flex-1 px-2 sm:px-4 py-1.5 sm:py-3 text-center text-xs sm:text-lg border-2 rounded-lg focus:ring-2 outline-none uppercase', isCOE ? 'border-orange-300 focus:border-red-500 focus:ring-red-200' : 'border-purple-300 focus:border-pink-500 focus:ring-pink-200']"
                       :disabled="rfidProcessing"
                     />
                     <button 
                       @click="manualRfidSubmit"
                       :disabled="rfidProcessing || !rfidInput.trim()"
-                      class="px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                      :class="['px-2 sm:px-4 py-1.5 sm:py-3 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 sm:gap-2 bg-gradient-to-r whitespace-nowrap w-full sm:w-auto', primaryButtonGradient, primaryButtonHover]"
                     >
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                      Enter
+                      <svg class="w-3 sm:w-5 h-3 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                      <span class="text-xs sm:text-base">Enter</span>
                     </button>
                   </div>
-                  <div v-if="rfidProcessing" class="mt-4 flex items-center justify-center gap-2 text-purple-600">
-                    <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    Processing...
-                  </div>
+                  <!-- inline loading removed per request -->
                 </div>
 
                 <!-- Recent Logs -->
                 <div class="mt-6">
                   <h4 class="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                     Recent Attendance Logs
-                    <span v-if="selectedEvent?.title" class="text-sm font-normal text-purple-600">- {{ selectedEvent.title }}</span>
+                    <span v-if="selectedEvent?.title" :class="['text-sm font-normal', isCOE ? 'text-orange-600' : 'text-purple-600']">- {{ selectedEvent.title }}</span>
                   </h4>
                   <div v-if="attendanceLogs.length === 0" class="text-center py-4 text-gray-500">
                     No attendance records yet for this event.
                   </div>
                   <!-- Mobile Card View -->
                   <div v-else class="block sm:hidden space-y-3">
-                    <div v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['rounded-lg border p-3 transition-all duration-300', index === 0 && isRecentCheckIn(log) ? 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 ring-2 ring-purple-300 ring-inset animate-pulse' : 'bg-white border-gray-200']">
-                      <div class="flex items-center justify-between mb-2">
-                        <div class="flex items-center gap-2">
-                          <div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 flex items-center justify-center text-white text-xs overflow-hidden flex-shrink-0">
+                    <div v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['rounded-lg border p-4 transition-all duration-300 flex flex-col gap-3', index === 0 && isRecentCheckIn(log) ? (isCOE ? 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-200 ring-2 ring-orange-200 ring-inset animate-pulse' : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 ring-2 ring-purple-300 ring-inset animate-pulse') : 'bg-white border-gray-200']">
+                      <div class="flex items-center justify-between gap-2">
+                        <div class="flex items-center gap-3 min-w-0 flex-1">
+                          <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
                             <img v-if="log.student_image || log.student?.photo" :src="log.student_image || log.student?.photo" class="w-full h-full object-cover" />
                             <span v-else>{{ (log.student?.full_name || log.student_name)?.charAt(0) || '?' }}</span>
                           </div>
-                          <div>
-                            <p class="font-medium text-sm text-gray-900">{{ log.student?.full_name || log.student_name }}</p>
-                            <p class="text-xs text-gray-500">{{ log.program || log.student?.program || '-' }}</p>
+                          <div class="min-w-0 flex-1">
+                            <p class="font-semibold text-sm text-gray-900 truncate">{{ log.student?.full_name || log.student_name }}</p>
+                            <p class="text-xs text-gray-500 truncate">{{ log.program || log.student?.program || '-' }}</p>
                           </div>
                         </div>
-                        <span :class="['px-2 py-1 rounded-full text-xs font-medium', getAttendanceLogStatusClass(log)]">
+                        <span :class="['px-2 py-1 rounded-full text-xs font-semibold flex-shrink-0 whitespace-nowrap', getAttendanceLogStatusClass(log)]">
                           {{ getAttendanceLogStatusLabel(log) }}
                         </span>
                       </div>
-                      <div class="flex justify-between text-xs text-gray-600">
-                        <span>In: {{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString() : '-' }}</span>
-                        <span>Out: {{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</span>
+                      <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 bg-gray-50 rounded p-2">
+                        <div>
+                          <span class="text-gray-500 font-medium block">In:</span>
+                          <span class="font-semibold">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-' }}</span>
+                        </div>
+                        <div>
+                          <span class="text-gray-500 font-medium block">Out:</span>
+                          <span class="font-semibold">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-' }}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2517,19 +2790,19 @@
                     <table class="w-full text-sm">
                       <thead class="bg-gray-50">
                         <tr>
-                          <th class="px-3 py-2 text-left text-xs">Student</th>
-                          <th class="px-3 py-2 text-left text-xs">Program</th>
-                          <th class="px-3 py-2 text-left text-xs">Check-in</th>
-                          <th class="px-3 py-2 text-left text-xs">Check-out</th>
-                          <th class="px-3 py-2 text-left text-xs">Status</th>
+                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : 'text-purple-800']">Student</th>
+                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : 'text-purple-800']">Program</th>
+                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : 'text-purple-800']">Check-in</th>
+                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : 'text-purple-800']">Check-out</th>
+                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : 'text-purple-800']">Status</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['border-b transition-all duration-300', index === 0 && isRecentCheckIn(log) ? 'bg-gradient-to-r from-purple-50 to-pink-50 ring-2 ring-purple-300 ring-inset animate-pulse' : 'hover:bg-gray-50']">
+                        <tr v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['border-b transition-all duration-300', index === 0 && isRecentCheckIn(log) ? (isCOE ? 'bg-gradient-to-r from-orange-50 to-red-50 ring-2 ring-orange-200 ring-inset animate-pulse' : 'bg-gradient-to-r from-purple-50 to-pink-50 ring-2 ring-purple-300 ring-inset animate-pulse') : 'hover:bg-gray-50']">
                           <td class="px-3 py-2">
                             <div class="flex items-center gap-2">
-                              <div class="w-7 h-7 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 flex items-center justify-center text-white text-xs overflow-hidden flex-shrink-0">
-                                <img v-if="log.student_image || log.student?.photo" :src="log.student_image || log.student?.photo" class="w-full h-full object-cover" />
+                              <div :class="['w-7 h-7 rounded-full flex items-center justify-center text-white text-xs overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+                                <img v-if="log.student_image || log.student?.photo" :src="log.student_image || log.student?.photo" class="w-full h-full object-cover rounded-full" />
                                 <span v-else>{{ (log.student?.full_name || log.student_name)?.charAt(0) || '?' }}</span>
                               </div>
                               <span class="font-medium text-xs">{{ log.student?.full_name || log.student_name }}</span>
@@ -2555,15 +2828,15 @@
           <!-- Student Attendance View -->
           <div v-else class="bg-white rounded-lg shadow-lg p-4 md:p-6">
             <div class="flex items-center justify-between mb-6">
-              <h2 class="text-xl font-bold text-purple-900">My Attendance</h2>
-              <button @click="refreshAttendanceData" :disabled="attendanceLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition flex items-center gap-2 disabled:opacity-70">
+              <h2 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">My Attendance</h2>
+              <button @click="refreshAttendanceData" :disabled="attendanceLoading" :class="['px-4 py-2 rounded-lg transition flex items-center gap-2 disabled:opacity-70 text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
                 <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 Refresh
               </button>
             </div>
 
             <div v-if="attendanceLoading" class="flex items-center justify-center py-12">
-              <svg class="animate-spin h-10 w-10 text-purple-600" fill="none" viewBox="0 0 24 24">
+              <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -2580,13 +2853,13 @@
                   Active Events
                 </h3>
                 <div class="space-y-4">
-                  <div v-for="event in activeNonEndedEvents" :key="event._id || event.event_id" class="bg-gradient-to-br from-white to-purple-50 rounded-2xl shadow-sm border border-purple-100 overflow-hidden">
+                  <div v-for="event in activeNonEndedEvents" :key="event._id || event.event_id" :class="['rounded-2xl shadow-sm border overflow-hidden bg-gradient-to-br', isCOE ? 'from-white to-orange-50 border-orange-100' : 'from-white to-purple-50 border-purple-100']">
                     <!-- Header with status badges - Clickable to expand -->
                     <div class="px-4 pt-4 pb-2 cursor-pointer" @click="toggleEventExpansion(event._id || event.event_id)">
                       <div class="flex flex-wrap items-center gap-2 mb-3">
-                        <svg :class="['w-4 h-4 text-purple-600 transition-transform', expandedEvents[event._id || event.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                        <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getStatusBadgeClass(getAttendanceStatus(event._id || event.event_id))]">
-                          {{ getAttendanceStatus(event._id || event.event_id) === 'present' ? 'Present' : getAttendanceStatus(event._id || event.event_id) === 'incomplete' ? 'Incomplete' : getAttendanceStatus(event._id || event.event_id) === 'ongoing' ? 'Ongoing' : getAttendanceStatus(event._id || event.event_id) === 'upcoming' ? 'Upcoming' : getAttendanceStatus(event._id || event.event_id) === 'absent' ? 'Absent' : 'Ongoing' }}
+                        <svg :class="['w-4 h-4 transition-transform', isCOE ? 'text-orange-600' : 'text-purple-600', expandedEvents[event._id || event.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getOverallStatusClass(getSmartRecordStatus((myAttendanceRecords.value && myAttendanceRecords.value.find(r => r.event_id === (event._id || event.event_id))) || { event_id: event._id || event.event_id, event, overall_status: 'ongoing' }))]">
+                          {{ getOverallStatusLabel(getSmartRecordStatus((myAttendanceRecords.value && myAttendanceRecords.value.find(r => r.event_id === (event._id || event.event_id))) || { event_id: event._id || event.event_id, event, overall_status: 'ongoing' })) }}
                         </span>
                         <span v-if="event.status === 'active' && getEventTimeRemaining(event._id || event.event_id)" :class="['px-3 py-1 rounded-full text-xs font-semibold', getEventTimeRemaining(event._id || event.event_id) === 'Ended' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700']">
                           {{ getEventTimeRemaining(event._id || event.event_id) }}
@@ -2598,25 +2871,26 @@
                       <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3">{{ event.description }}</p>
                     </div>
                     <!-- Event Details Footer -->
-                    <div class="bg-white bg-opacity-60 px-4 py-3 border-t border-purple-100">
+                    <div :class="['bg-white bg-opacity-60 px-4 py-3 border-t', isCOE ? 'border-orange-100' : 'border-purple-100']">
                       <div class="flex flex-col gap-2 text-xs text-gray-600">
                         <div class="flex items-center gap-2">
-                          <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-purple-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                           <span class="font-medium">{{ formatEventDate(event.date || event.event_date) }}</span>
                         </div>
                         <div class="flex items-center gap-2">
-                          <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-purple-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                           <span class="font-medium">{{ formatEventTime(event.start_time || event.startTime || '07:00') }} - {{ formatEventTime(event.end_time || event.endTime || '17:00') }}</span>
                         </div>
                         <div v-if="event.location" class="flex items-center gap-2">
-                          <svg class="w-4 h-4 text-purple-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-purple-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                           <span class="font-medium">{{ event.location }}</span>
                         </div>
                       </div>
                     </div>
-                    <!-- Sessions Panel - Expandable -->
-                    <div v-if="expandedEvents[event._id || event.event_id]" class="bg-purple-50 border-t border-purple-100 px-4 py-3">
-                      <h4 class="text-sm font-semibold text-purple-700 mb-2 flex items-center gap-2">
+                    <!-- Sessions Panel - Expandable with Slide Animation -->
+                    <transition name="slide-down">
+                      <div v-if="expandedEvents[event._id || event.event_id]" :class="['border-t px-4 py-3', isCOE ? 'bg-orange-50 border-orange-100' : 'bg-purple-50 border-purple-100']">
+                        <h4 :class="['text-sm font-semibold mb-2 flex items-center gap-2', isCOE ? 'text-orange-700' : 'text-purple-700']"]>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                         Sessions
                       </h4>
@@ -2624,7 +2898,7 @@
                         No sessions available for this event.
                       </div>
                       <div v-else class="space-y-2">
-                        <div v-for="session in expandedEventSessions[event._id || event.event_id]" :key="session._id" class="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-purple-200">
+                        <div v-for="session in expandedEventSessions[event._id || event.event_id]" :key="session._id" @click="selectSession(session, event, $event)" :class="['flex items-center justify-between bg-white rounded-lg px-3 py-2 border cursor-pointer hover:shadow', isCOE ? 'border-orange-200' : 'border-purple-200']">
                           <div class="flex items-center gap-3">
                             <span class="font-medium text-gray-800">{{ session.label }}</span>
                             <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
@@ -2635,6 +2909,7 @@
                         </div>
                       </div>
                     </div>
+                    </transition>
                   </div>
                 </div>
               </div>
@@ -2656,7 +2931,7 @@
                         </span>
                       </div>
                       <!-- Event Title -->
-                      <h3 class="font-bold text-base md:text-lg text-purple-900 leading-tight mb-2">{{ event.title }}</h3>
+                      <h3 :class="['font-bold text-base md:text-lg leading-tight mb-2', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ event.title }}</h3>
                       <!-- Description -->
                       <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3">{{ event.description }}</p>
                     </div>
@@ -2677,9 +2952,10 @@
                         </div>
                       </div>
                     </div>
-                    <!-- Sessions Panel - Expandable -->
-                    <div v-if="expandedEvents[event._id || event.event_id]" class="bg-blue-50 border-t border-blue-100 px-4 py-3">
-                      <h4 class="text-sm font-semibold text-blue-700 mb-2 flex items-center gap-2">
+                    <!-- Sessions Panel - Expandable with Slide Animation -->
+                    <transition name="slide-down">
+                      <div v-if="expandedEvents[event._id || event.event_id]" class="bg-blue-50 border-t border-blue-100 px-4 py-3">
+                        <h4 class="text-sm font-semibold text-blue-700 mb-2 flex items-center gap-2">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                         Sessions
                       </h4>
@@ -2687,7 +2963,7 @@
                         No sessions available for this event.
                       </div>
                       <div v-else class="space-y-2">
-                        <div v-for="session in expandedEventSessions[event._id || event.event_id]" :key="session._id" class="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-200">
+                        <div v-for="session in expandedEventSessions[event._id || event.event_id]" :key="session._id" @click="selectSession(session, event, $event)" class="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-200 cursor-pointer hover:shadow">
                           <div class="flex items-center gap-3">
                             <span class="font-medium text-gray-800">{{ session.label }}</span>
                             <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
@@ -2698,6 +2974,7 @@
                         </div>
                       </div>
                     </div>
+                    </transition>
                   </div>
                 </div>
               </div>
@@ -2746,71 +3023,83 @@
                         </div>
                       </div>
                       <!-- Overall Status Badge -->
-                      <div class="flex-shrink-0">
+                      <div class="flex-shrink-0 flex flex-col items-end gap-1">
                         <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getOverallStatusClass(getSmartRecordStatus(record))]">
                           {{ getOverallStatusLabel(getSmartRecordStatus(record)) }}
+                        </span>
+                        <!-- Show excuse reason if applicable -->
+                        <span v-if="record.overall_status === 'excused' && record.excuse_reason" class="text-xs text-gray-600 italic max-w-xs text-right">
+                          Reason: {{ record.excuse_reason }}
                         </span>
                       </div>
                     </div>
                     
                     <!-- Expanded Sessions Panel -->
                     <transition name="slide-fade">
-                      <div v-if="expandedAttendanceRecords[record.event_id]" class="border-t border-gray-100 bg-gradient-to-b from-purple-50 to-white">
+                      <div v-if="expandedAttendanceRecords[record.event_id]" :class="['border-t bg-gradient-to-b', isCOE ? 'border-orange-100 from-orange-50 to-white' : 'border-gray-100 from-purple-50 to-white']">
                         <!-- Event Description if available -->
                         <div v-if="record.event?.description" class="px-4 py-2 text-sm text-gray-600 border-b border-gray-100">
                           {{ record.event.description }}
                         </div>
                         
                         <!-- Sessions List -->
-                        <div v-if="record.sessions && record.sessions.length > 0" class="p-4 space-y-2">
+                        <div v-if="record.sessions && record.sessions.length > 0" class="p-4 space-y-3">
                           <div 
                             v-for="(sessionData, idx) in record.sessions" 
                             :key="sessionData.session_id || idx"
-                            class="bg-white rounded-lg border border-gray-200 p-3 shadow-sm"
+                            class="bg-gradient-to-br from-white to-gray-50 rounded-xl border-2 border-gray-100 p-4 shadow-sm hover:shadow-md transition-all"
                           >
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                              <!-- Session Label and Time -->
-                              <div class="flex items-center gap-3">
-                                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                                  {{ (sessionData.session?.label || 'S').charAt(0) }}
-                                </div>
-                                <div>
-                                  <h5 class="font-medium text-gray-900">{{ sessionData.session?.label || 'Session' }}</h5>
-                                  <p class="text-xs text-gray-500">
-                                    {{ formatEventTime(sessionData.session?.start_time) }} - {{ formatEventTime(sessionData.session?.end_time) }}
-                                  </p>
-                                  <p v-if="sessionData.session?.start_time" class="text-xs text-orange-600 flex items-center gap-1 mt-0.5">
-                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    Late after {{ calculateLateThreshold(sessionData.session.start_time, sessionData.session.late_timer_minutes || 60) }}
-                                  </p>
+                            <div class="flex flex-col gap-3">
+                              <!-- Session Header with Badge -->
+                              <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                                <!-- Session Badge and Info -->
+                                <div class="flex items-start gap-3 flex-1">
+                                  <div :class="['w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md overflow-hidden', getSessionBadgeStyle(sessionData.session?.label).bgGradient]">
+                                    <img 
+                                      :src="getSessionBadgeStyle(sessionData.session?.label).icon" 
+                                      :alt="getSessionBadgeStyle(sessionData.session?.label).displayText"
+                                      class="w-8 h-8 object-contain"
+                                      style="filter: brightness(0) invert(1) drop-shadow(0 0 1px rgba(0,0,0,0.1)); mix-blend-mode: lighten;"
+                                    />
+                                  </div>
+                                  <div class="flex-1 min-w-0">
+                                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                                      <h5 class="font-bold text-gray-900 text-sm">{{ getSessionBadgeStyle(sessionData.session?.label).displayText }}</h5>
+                                      <span :class="['px-2 py-0.5 rounded-full text-xs font-semibold', getSessionAttendanceClass(sessionData.attendance, sessionData.session, record.event)]">
+                                        {{ getSessionAttendanceLabel(sessionData.attendance, sessionData.session, record.event) }}
+                                      </span>
+                                    </div>
+                                    <p class="text-xs text-gray-600 font-medium">
+                                      {{ formatEventTime(sessionData.session?.start_time) }} - {{ formatEventTime(sessionData.session?.end_time) }}
+                                    </p>
+                                    <p v-if="sessionData.session?.start_time" class="text-xs text-orange-600 flex items-center gap-1 mt-1.5">
+                                      <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                      <span>Late after {{ calculateLateThreshold(sessionData.session.start_time, sessionData.session.late_timer_minutes || 60) }}</span>
+                                    </p>
+                                  </div>
                                 </div>
                               </div>
                               
-                              <!-- Session Status Badge -->
-                              <span :class="['px-2.5 py-1 rounded-full text-xs font-medium', getSessionAttendanceClass(sessionData.attendance, sessionData.session, record.event)]">
-                                {{ getSessionAttendanceLabel(sessionData.attendance, sessionData.session, record.event) }}
-                              </span>
-                            </div>
-                            
-                            <!-- Check-in/Check-out Times -->
-                            <div class="mt-3 grid grid-cols-2 gap-3 text-sm">
-                              <div class="bg-green-50 rounded-lg p-2">
-                                <div class="flex items-center gap-2 text-green-700">
-                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                                  <span class="font-medium text-xs">Check-in</span>
+                              <!-- Check-in/Check-out Times Grid -->
+                              <div class="grid grid-cols-2 gap-3 text-sm">
+                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-3 border border-green-100">
+                                  <div class="flex items-center gap-2 text-green-700 mb-2">
+                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                                    <span class="font-semibold text-xs">Check-in</span>
+                                  </div>
+                                  <p class="font-bold text-lg text-green-800 tabular-nums">
+                                    {{ sessionData.attendance?.check_in_at ? new Date(sessionData.attendance.check_in_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
+                                  </p>
                                 </div>
-                                <p class="mt-1 font-semibold text-green-800">
-                                  {{ sessionData.attendance?.check_in_at ? new Date(sessionData.attendance.check_in_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
-                                </p>
-                              </div>
-                              <div class="bg-blue-50 rounded-lg p-2">
-                                <div class="flex items-center gap-2 text-blue-700">
-                                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                                  <span class="font-medium text-xs">Check-out</span>
+                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-3 border border-blue-100">
+                                  <div class="flex items-center gap-2 text-blue-700 mb-2">
+                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                    <span class="font-semibold text-xs">Check-out</span>
+                                  </div>
+                                  <p class="font-bold text-lg text-blue-800 tabular-nums">
+                                    {{ sessionData.attendance?.check_out_at ? new Date(sessionData.attendance.check_out_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
+                                  </p>
                                 </div>
-                                <p class="mt-1 font-semibold text-blue-800">
-                                  {{ sessionData.attendance?.check_out_at ? new Date(sessionData.attendance.check_out_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
-                                </p>
                               </div>
                             </div>
                           </div>
@@ -2836,7 +3125,7 @@
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div>
-                <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Payment Management</h1>
+                <h1 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-600' : 'from-purple-600 to-pink-600']">Payment Management</h1>
                 <p class="text-gray-600 mt-1">Create and manage payment campaigns for students</p>
               </div>
               <button 
@@ -2984,24 +3273,26 @@
             </div>
           </div>
 
-          <!-- Full Screen Payment Loading Modal -->
-          <transition name="fade">
-            <div v-if="activeCardLoadingId" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-              <div class="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm rounded-3xl"></div>
-              <div class="bg-white rounded-3xl shadow-2xl px-6 py-8 sm:px-8 sm:py-10 flex flex-col items-center gap-4 max-w-sm w-full relative z-10">
-                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <svg class="animate-spin h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                  </svg>
-                </div>
-                <div class="text-center">
-                  <h3 class="text-lg sm:text-xl font-bold text-gray-900 mb-2">Loading Payment Details</h3>
-                  <p class="text-sm text-gray-600">Please wait while we fetch the payment information...</p>
+          <!-- Full Screen Payment Loading Modal (teleported to body to ensure full-page coverage) -->
+          <teleport to="body">
+            <transition name="fade">
+              <div v-if="activeCardLoadingId" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+                <div class="absolute inset-0 bg-black bg-opacity-40 backdrop-blur-sm"></div>
+                <div :class="['bg-white rounded-3xl shadow-2xl px-6 py-8 sm:px-8 sm:py-10 flex flex-col items-center gap-4 max-w-sm w-full relative z-10', isCOE ? 'border-2 border-orange-200' : 'border-2 border-purple-200']">
+                  <div :class="['w-16 h-16 rounded-full flex items-center justify-center', isCOE ? 'bg-gradient-to-br from-orange-700 to-red-600' : 'bg-gradient-to-br from-purple-500 to-pink-500']">
+                    <svg class="animate-spin h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                  </div>
+                  <div class="text-center">
+                    <h3 :class="['text-lg sm:text-xl font-bold mb-2', isCOE ? 'text-orange-900' : 'text-gray-900']">Loading Payment Details</h3>
+                    <p :class="['text-sm', isCOE ? 'text-orange-800' : 'text-gray-600']">Please wait while we fetch the payment information...</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </transition>
+            </transition>
+          </teleport>
 
           <!-- Payment Download Confirmation Modal -->
   <transition name="fade">
@@ -3061,7 +3352,7 @@
                 <tbody>
                   <tr v-for="(r, idx) in getFilteredPaymentRecords(paymentToExport).slice(0, paymentDownloadPreviewLimit)" :key="r._id || idx" class="border-t">
                     <td class="px-3 py-2">{{ r.student_name }}</td>
-                    <td class="px-3 py-2">{{ r.student_id }}</td>
+                    <td class="px-3 py-2 text-xs font-mono">{{ r.student_id }}</td>
                     <td class="hidden sm:table-cell px-3 py-2">{{ r.program || 'N/A' }}</td>
                     <td class="hidden lg:table-cell px-3 py-2">{{ r.year_level || 'N/A' }}</td>
                     <td class="px-3 py-2">{{ (r.amount_paid || r.amount || paymentToExport.amount_due || '') ? `₱${(r.amount_paid || r.amount || paymentToExport.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '-' }}</td>
@@ -3155,14 +3446,14 @@
         <!-- Notifications Page -->
         <div v-if="currentPage === 'notifications'" class="space-y-6">
           <div v-if="currentUser.role === 'admin' || currentUser.isMaster || currentUser.role === 'medpub'" class="bg-white rounded-2xl shadow-sm border border-purple-100 overflow-hidden mb-8">
-            <div class="p-4 border-b border-purple-50 bg-purple-50/30 flex items-center justify-between">
+            <div :class="['p-4 border-b flex items-center justify-between', isCOE ? 'border-orange-50 bg-orange-50/30' : 'border-purple-50 bg-purple-50/30']">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center text-white shadow-sm">
+                <div :class="['w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm', isCOE ? 'bg-orange-600' : 'bg-purple-600']">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
                   </svg>
                 </div>
-                <h2 class="text-md font-bold text-purple-900 uppercase tracking-wide">New Announcement</h2>
+                <h2 :class="['text-md font-bold uppercase tracking-wide', isCOE ? 'text-orange-900' : 'text-purple-900']">New Announcement</h2>
               </div>
             </div>
             
@@ -3174,7 +3465,7 @@
                       v-model="newNotification.title" 
                       type="text" 
                       placeholder="Announcement Title"
-                      class="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all placeholder-gray-400 font-medium"
+                      :class="['w-full px-4 py-2.5 bg-gray-50 border rounded-xl outline-none transition-all placeholder-gray-400 font-medium', isCOE ? 'border-orange-200 focus:ring-2 focus:ring-orange-200 focus:border-transparent' : 'border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent']"
                       maxlength="200"
                     />
                   </div>
@@ -3185,7 +3476,7 @@
                       v-model="newNotification.content" 
                       rows="8" 
                       placeholder="What's happening? Write your announcement here..."
-                      class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all placeholder-gray-400 resize-none"
+                      :class="['w-full px-4 py-3 bg-gray-50 border rounded-xl outline-none transition-all placeholder-gray-400 resize-none', isCOE ? 'border-orange-200 focus:ring-2 focus:ring-orange-200 focus:border-transparent' : 'border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-transparent']"
                       maxlength="2000"
                     ></textarea>
                     
@@ -3207,7 +3498,7 @@
                               v-model="socialInputData.name"
                               type="text" 
                               :placeholder="'Enter ' + platform + ' name...'"
-                              class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                              :class="['w-full px-3 py-1.5 text-xs rounded-lg outline-none', isCOE ? 'border-orange-200 focus:ring-2 focus:ring-orange-200' : 'border-gray-200 focus:ring-2 focus:ring-purple-600']"
                               @keyup.enter="confirmSocialInsert"
                               ref="socialNameInputRef"
                             />
@@ -3215,11 +3506,11 @@
                               v-model="socialInputData.link"
                               type="text" 
                               :placeholder="'Enter ' + platform + ' link...'"
-                              class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none"
+                              :class="['w-full px-3 py-1.5 text-xs rounded-lg outline-none', isCOE ? 'border-orange-200 focus:ring-2 focus:ring-orange-200' : 'border-gray-200 focus:ring-2 focus:ring-purple-600']"
                               @keyup.enter="confirmSocialInsert"
                             />
                             <div class="flex gap-2">
-                              <button @click="confirmSocialInsert" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition">Confirm</button>
+                              <button @click="confirmSocialInsert" :class="['flex-1 py-1.5 rounded-lg text-xs font-bold shadow-sm hover:opacity-90 transition text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">Confirm</button>
                               <button @click="activeSocialInput = null" class="px-3 bg-gray-100 text-gray-600 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition">Cancel</button>
                             </div>
                           </div>
@@ -3235,8 +3526,8 @@
                 <div class="flex-1 min-w-0">
                   <div 
                     @click="$refs.imageFileInput.click()"
-                    class="relative flex items-center justify-center gap-3 p-3 border-2 border-dashed border-gray-200 rounded-xl hover:border-purple-300 hover:bg-purple-50/30 transition-all cursor-pointer group"
-                    :class="{'border-purple-500 bg-purple-50': notificationImagePreview}"
+                    :class="['relative flex items-center justify-center gap-3 p-3 border-2 border-dashed rounded-xl transition-all cursor-pointer group', isCOE ? 'border-orange-200 hover:border-orange-300 hover:bg-orange-50/30' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50/30']"
+                    :style="notificationImagePreview ? (isCOE ? {'borderColor': '#F6AD55', 'backgroundColor': '#FFF7ED'} : {'borderColor': ''}) : {}"
                   >
                     <input 
                       type="file" 
@@ -3251,8 +3542,8 @@
                       </svg>
                       <span class="text-sm font-medium">Add Image</span>
                     </div>
-                    <div v-else class="flex items-center gap-3 w-full overflow-hidden">
-                      <img :src="notificationImagePreview" class="w-10 h-10 rounded-lg object-cover border border-purple-100 flex-shrink-0" />
+                      <div v-else class="flex items-center gap-3 w-full overflow-hidden">
+                      <img :src="notificationImagePreview" :class="['w-10 h-10 rounded-lg object-cover flex-shrink-0', isCOE ? 'border-orange-100' : 'border-purple-100']" />
                       <span class="text-xs text-gray-600 truncate flex-1 min-w-0">Image selected</span>
                       <button @click.stop="clearNotificationImage" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors flex-shrink-0">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3266,7 +3557,7 @@
                 <button 
                   @click="postNotification"
                   :disabled="postingNotification || uploadingImage || !newNotification.title.trim() || !newNotification.content.trim()"
-                  class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 w-full md:w-auto md:min-w-[160px]"
+                  :class="['px-6 py-2.5 text-white rounded-xl font-bold shadow-md disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 w-full md:w-auto md:min-w-[160px] bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
                 >
                   <span v-if="postingNotification || uploadingImage" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin flex-shrink-0"></span>
                   <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3280,14 +3571,14 @@
 
           <div class="bg-white rounded-lg shadow-lg p-4 md:p-6">
             <div class="flex items-center justify-between mb-6">
-              <h2 class="text-lg font-bold text-purple-900">Announcements Feed</h2>
-              <button @click="fetchNotifications" :disabled="notificationsLoading" class="text-purple-600 hover:text-purple-800 p-2 rounded-lg hover:bg-purple-50 transition">
-                <svg :class="{'animate-spin': notificationsLoading}" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              <h2 :class="['text-lg font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Announcements Feed</h2>
+              <button @click="fetchNotifications" :disabled="notificationsLoading" :class="['p-2 rounded-lg transition', isCOE ? 'text-orange-600 hover:text-orange-800 hover:bg-orange-50' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-50']">
+                <svg :class="[{'animate-spin': notificationsLoading}, isCOE ? 'w-5 h-5 text-orange-600' : 'w-5 h-5']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               </button>
             </div>
 
             <div v-if="notificationsLoading" class="flex items-center justify-center py-12">
-              <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : 'text-purple-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -3306,9 +3597,11 @@
                 <div class="flex flex-col">
                   <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-2.5 min-w-0">
-                      <!-- Admin: JRMSU Logo -->
-                      <div v-if="notif.posted_by === 'admin'" class="w-9 h-9 md:w-10 md:h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-pink-500 to-purple-600 p-1.5 border border-pink-400">
-                        <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU" class="w-full h-full object-contain" />
+                      <!-- Admin: SSAAM Admin PFP with sweep animation -->
+                      <div v-if="notif.posted_by === 'admin'" class="w-9 h-9 md:w-10 md:h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-pink-500 to-purple-600 border border-pink-400 relative group">
+                        <img src="/assets/ssaam_admin.jpg" alt="SSAAM Admin" class="w-full h-full object-cover" />
+                        <!-- Light sweep effect -->
+                        <div class="admin-pfp-sweep absolute inset-0 rounded-xl"></div>
                       </div>
                       <!-- MedPub: Media and Publication Logo -->
                       <div v-else class="w-9 h-9 md:w-10 md:h-10 rounded-xl flex-shrink-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-orange-500 to-amber-500 p-1.5 border border-orange-400">
@@ -3399,8 +3692,8 @@
         <!-- Pending Approvals Page -->
         <div v-if="currentPage === 'pending' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h2 class="text-xl md:text-2xl font-bold text-purple-900">Pending Student Approvals</h2>
-            <button @click="refreshPendingSection" :disabled="pendingLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" title="Refresh Pending List">
+            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Pending Student Approvals</h2>
+            <button @click="refreshPendingSection" :disabled="pendingLoading" :class="['text-white px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Refresh Pending List">
               <svg :class="{'animate-spin': pendingLoading}" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               Refresh
             </button>
@@ -3410,13 +3703,13 @@
           <div class="mb-4">
             <div class="relative">
               <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-              <input v-model="pendingSearchQuery" @input="filterPendingStudents" type="text" placeholder="Search by name, email, student ID, or RFID..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none" />
+              <input v-model="pendingSearchQuery" @input="filterPendingStudents" type="text" placeholder="Search by name, email, student ID, or RFID..." :class="['w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600 focus:border-transparent' : 'focus:ring-purple-600 focus:border-transparent']" />
             </div>
             <p class="text-xs text-gray-500 mt-1">Search across name, email, student ID, and RFID code</p>
           </div>
 
           <div v-if="pendingLoading" class="flex items-center justify-center py-12">
-            <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : 'text-purple-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -3442,18 +3735,18 @@
             <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
               <span>Showing {{ paginatedPendingStudents.length }} of {{ filteredPendingStudents.length }} pending student{{ filteredPendingStudents.length === 1 ? '' : 's' }}</span>
             </div>
-            <div v-for="student in paginatedPendingStudents" :key="student.student_id" class="border border-gray-200 rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow">
+            <div v-for="student in paginatedPendingStudents" :key="student.student_id" :class="['border rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow', isCOE ? 'border-orange-200' : 'border-gray-200']">
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-shrink-0">
-                  <div class="w-20 h-20 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
-                    <img v-if="student.photo" :src="student.photo" alt="Student Photo" class="w-full h-full object-cover" />
+                  <div :class="['w-20 h-20 rounded-full flex items-center justify-center overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']" :style="{ background: profileGradient }">
+                    <img v-if="student.photo" :src="student.photo" alt="Student Photo" class="w-full h-full object-cover rounded-full" />
                     <img v-else src="/user.svg" alt="No Photo" class="w-10 h-10 brightness-0 invert" />
                   </div>
                 </div>
                 <div class="flex-1">
                   <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
                     <div>
-                      <h3 class="text-lg font-semibold text-purple-900">{{ student.first_name }} {{ student.middle_name || '' }} {{ student.last_name }} {{ student.suffix || '' }}</h3>
+                      <h3 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ student.first_name }} {{ student.middle_name || '' }} {{ student.last_name }} {{ student.suffix || '' }}</h3>
                       <p class="text-sm text-gray-500">{{ student.student_id }}</p>
                     </div>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 w-fit">
@@ -3480,12 +3773,12 @@
                     </div>
                   </div>
                   <div class="flex flex-wrap gap-2">
-                    <button @click="approveStudent(student)" :disabled="approvingStudent === student.student_id" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed">
+                    <button @click="approveStudent(student)" :disabled="approvingStudent === student.student_id" :class="['bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed']">
                       <svg v-if="approvingStudent === student.student_id" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
                       <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                       {{ approvingStudent === student.student_id ? 'Approving...' : 'Approve' }}
                     </button>
-                    <button @click="openRejectModal(student)" class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200 font-medium text-sm flex items-center gap-2">
+                    <button @click="openRejectModal(student)" :class="['bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200 font-medium text-sm flex items-center gap-2']">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                       Reject
                     </button>
@@ -3587,8 +3880,8 @@
             <table class="w-full border-collapse text-sm">
               <thead>
                 <tr class="bg-purple-100">
-                  <th class="border border-purple-300 px-4 py-3 text-left font-semibold text-purple-900">Student ID</th>
                   <th class="border border-purple-300 px-4 py-3 text-left font-semibold text-purple-900">Name</th>
+                  <th class="border border-purple-300 px-4 py-3 text-left font-semibold text-purple-900">Student ID</th>
                   <th class="border border-purple-300 px-4 py-3 text-left font-semibold text-purple-900">Email</th>
                   <th class="border border-purple-300 px-4 py-3 text-center font-semibold text-purple-900">RFID Code</th>
                   <th class="border border-purple-300 px-4 py-3 text-center font-semibold text-purple-900">RFID Status</th>
@@ -3602,8 +3895,8 @@
                   <td colspan="8" class="border border-purple-300 px-4 py-8 text-center text-gray-600">No users found matching your search.</td>
                 </tr>
                 <tr v-for="user in filteredUsers" :key="user.studentId || user.student_id" class="hover:bg-gray-50">
-                  <td class="border border-purple-300 px-4 py-3 text-gray-700">{{ user.studentId || user.student_id }}</td>
                   <td class="border border-purple-300 px-4 py-3 text-gray-700">{{ (user.firstName || user.first_name) }} {{ (user.lastName || user.last_name) }}</td>
+                  <td class="border border-purple-300 px-4 py-3 text-gray-700 text-xs font-mono">{{ user.studentId || user.student_id }}</td>
                   <td class="border border-purple-300 px-4 py-3 text-gray-700">{{ user.email }}</td>
                   <td class="border border-purple-300 px-4 py-3 text-center text-gray-700">{{ user.rfidCode || user.rfid_code || '—' }}</td>
                   <td class="border border-purple-300 px-4 py-3 text-center">
@@ -3670,7 +3963,7 @@
 
         <!-- Active Attendance Event Banner for Students -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster && activeUnattendedEvents.length > 0" class="mb-4">
-          <div v-for="event in activeUnattendedEvents" :key="event._id" class="rounded-lg shadow-lg p-4 mb-3 text-white bg-gradient-to-br from-pink-400 to-purple-600" :style="{ background: profileGradient }">
+          <div v-for="event in activeUnattendedEvents" :key="event._id" :class="['rounded-lg shadow-lg p-4 mb-3 text-white', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']" :style="{ background: profileGradient }">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
               <div class="flex items-start gap-3">
                 <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -3719,7 +4012,7 @@
         <!-- Dashboard Page -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
           <!-- Profile Header -->
-          <div class="relative h-40 overflow-hidden bg-gradient-to-br from-pink-400 to-purple-600">
+          <div :class="['relative h-40 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
             <!-- Artistic Blurred Background -->
             <div 
               v-if="currentUser.image || currentUser.photo"
@@ -3729,13 +4022,13 @@
                 filter: 'blur(30px) saturate(1.8) brightness(0.8)'
               }"
             ></div>
-            <div v-else class="absolute inset-0 w-full h-full bg-gradient-to-br from-purple-900 via-purple-600 to-pink-600 animate-gradient-slow"></div>
+            <div v-else :class="[isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : 'bg-gradient-to-br from-purple-900 via-purple-600 to-pink-600', 'absolute inset-0 w-full h-full animate-gradient-slow']"></div>
             
             <!-- Artistic Overlays -->
             <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
             <div class="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-            <div class="absolute -top-20 -right-20 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-            <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-pink-500/20 rounded-full blur-3xl animate-pulse-slow"></div>
+            <div :class="[isCOE ? 'bg-orange-500/20' : 'bg-purple-500/20', 'absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl animate-pulse']"></div>
+            <div :class="[isCOE ? 'bg-red-500/20' : 'bg-pink-500/20', 'absolute -bottom-20 -left-20 w-64 h-64 rounded-full blur-3xl animate-pulse-slow']"></div>
             
             <div class="light-sweep"></div>
             <button @click="refreshCurrentUser" :disabled="refreshingUserData" class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition-all backdrop-blur-md z-10 border border-white/20 shadow-lg" title="Refresh Profile">
@@ -3746,9 +4039,9 @@
           <div class="px-8 pb-8">
             <div class="relative -mt-16 mb-6">
               <div class="inline-block relative">
-                <div class="w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl bg-gradient-to-br from-purple-100 to-purple-200 flex items-center justify-center">
+                <div :class="[isCOE ? 'bg-gradient-to-br from-orange-100 to-orange-200' : 'bg-gradient-to-br from-purple-100 to-purple-200', 'w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center']">
                   <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
-                    <svg class="animate-spin h-10 w-10 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg :class="[isCOE ? 'text-orange-600' : 'text-purple-600', 'animate-spin h-10 w-10']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -3762,14 +4055,14 @@
                     @load="onProfileImageLoad" 
                     @error="handleProfileImageError" 
                   />
-                  <div v-else class="w-full h-full flex items-center justify-center text-4xl font-bold text-purple-300">
+                  <div v-else :class="[isCOE ? 'text-orange-300' : 'text-purple-300', 'w-full h-full flex items-center justify-center text-4xl font-bold']">
                     {{ getInitials(currentUser?.full_name || displayName || '') }}
                   </div>
                 </div>
                 <button 
                   v-if="currentUser.role !== 'admin' && !currentUser.isMaster"
                   @click="$refs.studentPhotoInput.click()" 
-                  class="absolute -bottom-2 -right-2 p-2.5 bg-white text-purple-600 rounded-2xl shadow-lg hover:scale-110 transition-transform border border-gray-100"
+                  :class="[isCOE ? 'text-orange-600' : 'text-purple-600', 'absolute -bottom-2 -right-2 p-2.5 bg-white rounded-2xl shadow-lg hover:scale-110 transition-transform border border-gray-100']"
                   title="Change Photo"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -3786,20 +4079,20 @@
 
             <div class="mb-8">
               <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">{{ displayName }}</h1>
-              <p class="text-lg font-medium text-purple-600">ID: {{ currentUser.studentId || currentUser.student_id }}</p>
-              <p v-if="studentPhotoUploading" class="text-xs text-purple-600 mt-2 font-medium">Uploading photo...</p>
+              <p :class="[isCOE ? 'text-orange-600' : 'text-purple-600', 'text-lg font-medium']">ID: {{ currentUser.studentId || currentUser.student_id }}</p>
+              <p v-if="studentPhotoUploading" :class="[isCOE ? 'text-orange-600' : 'text-purple-600', 'text-xs mt-2 font-medium']">Uploading photo...</p>
             </div>
 
             <!-- Info Grid -->
             <div class="space-y-8">
               <section>
                 <div class="flex items-center gap-2 mb-4">
-                  <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
+                  <div :class="[isCOE ? 'bg-orange-600' : 'bg-purple-600', 'w-1 h-6 rounded-full']"></div>
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Personal Information</h3>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div v-for="(val, label) in { 'First Name': currentUser.firstName || currentUser.first_name, 'Middle Name': currentUser.middleName || currentUser.middle_name || 'N/A', 'Last Name': currentUser.lastName || currentUser.last_name, 'Suffix': currentUser.suffix || 'N/A' }" :key="label" 
-                       class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-colors">
+                       :class="[isCOE ? 'hover:border-orange-200' : 'hover:border-purple-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ label }}</p>
                     <p class="text-gray-900 font-semibold truncate">{{ val }}</p>
                   </div>
@@ -3809,11 +4102,11 @@
 
               <section>
                 <div class="flex items-center gap-2 mb-4">
-                  <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
+                  <div :class="[isCOE ? 'bg-orange-600' : 'bg-purple-600', 'w-1 h-6 rounded-full']"></div>
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Contact & Identification</h3>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-colors">
+                  <div :class="[isCOE ? 'hover:border-orange-200' : 'hover:border-purple-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email Address</p>
                     <p class="text-gray-900 font-semibold truncate">{{ currentUser.email || 'Not provided' }}</p>
                   </div>
@@ -3825,8 +4118,8 @@
                     </div>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">RFID STATUS</p>
                     <div v-if="currentUser.rfid_status === 'verified'" class="flex items-center gap-2 mb-2">
-                      <p class="text-lg font-mono font-bold text-purple-900 tracking-tight">{{ currentUser.rfidCode || currentUser.rfid_code }}</p>
-                      <button @click="copyRfidToClipboard(currentUser.rfidCode || currentUser.rfid_code)" class="p-1 hover:bg-purple-50 rounded text-purple-400 transition-colors">
+                      <p :class="[isCOE ? 'text-orange-900' : 'text-purple-900', 'text-lg font-mono font-bold tracking-tight']">{{ currentUser.rfidCode || currentUser.rfid_code }}</p>
+                      <button @click="copyRfidToClipboard(currentUser.rfidCode || currentUser.rfid_code)" :class="[isCOE ? 'hover:bg-orange-50 text-orange-400' : 'hover:bg-purple-50 text-purple-400', 'p-1 rounded transition-colors']">
                         <svg v-if="!rfidCopied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         <svg v-else class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                       </button>
@@ -3845,7 +4138,7 @@
 
               <section>
                 <div class="flex items-center gap-2 mb-4">
-                  <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
+                  <div :class="[isCOE ? 'bg-orange-600' : 'bg-purple-600', 'w-1 h-6 rounded-full']"></div>
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Academic Information</h3>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -3855,7 +4148,7 @@
                     'Semester': appSettings.semester || 'N/A', 
                     'School Year': appSettings.schoolYear || 'N/A' 
                   }" :key="label" 
-                       class="p-4 bg-gray-50 rounded-2xl border border-gray-100 hover:border-purple-200 transition-colors">
+                       :class="[isCOE ? 'hover:border-orange-200' : 'hover:border-purple-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ label }}</p>
                     <p class="text-gray-900 font-bold">{{ val }}</p>
                   </div>
@@ -3864,7 +4157,7 @@
 
               <section>
                 <div class="flex items-center gap-2 mb-4">
-                  <div class="w-1 h-6 bg-purple-600 rounded-full"></div>
+                  <div :class="[isCOE ? 'bg-orange-600' : 'bg-purple-600', 'w-1 h-6 rounded-full']"></div>
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Account Security</h3>
                 </div>
                 <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-4">
@@ -3872,7 +4165,7 @@
                     <h4 class="font-bold text-gray-900 mb-1">Password</h4>
                     <p class="text-xs text-gray-500">Keep your account secure by updating your password regularly.</p>
                   </div>
-                  <button @click="showPasswordChangeModal = true" class="px-6 py-2.5 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-bold text-sm shadow-lg shadow-purple-200 hover:scale-105 transition-transform flex items-center justify-center md:justify-start gap-2 whitespace-nowrap">
+                  <button @click="showPasswordChangeModal = true" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 shadow-lg shadow-orange-200 hover:from-orange-700 hover:to-red-600' : 'bg-gradient-to-r from-purple-600 to-pink-500 shadow-lg shadow-purple-200 hover:from-purple-700 hover:to-pink-600', 'px-6 py-2.5 text-white rounded-xl font-bold text-sm hover:scale-105 transition-transform flex items-center justify-center md:justify-start gap-2 whitespace-nowrap']">
                     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
                     Change Password
                   </button>
@@ -3883,9 +4176,9 @@
         </div>
 
         <div v-if="currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8 mb-8">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h2 class="text-xl md:text-2xl font-bold text-purple-900">Registered Students</h2>
-            <button @click="handleStatsRefresh" :disabled="statsLoading" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" title="Refresh Statistics">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Registered Students</h2>
+            <button @click="handleStatsRefresh" :disabled="statsLoading" :class="['w-full sm:w-auto text-white px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shrink-0', isCOE ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600' : primaryButtonGradient, isCOE ? 'hover:from-orange-700 hover:to-orange-600' : primaryButtonHover]" title="Refresh Statistics">
               <svg v-if="statsLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               {{ statsLoading ? 'Refreshing...' : 'Refresh' }}
@@ -3895,56 +4188,56 @@
           <div class="overflow-x-auto text-sm md:text-base">
             <table class="w-full border-collapse">
               <thead>
-                <tr class="bg-purple-100">
-                  <th class="border border-purple-300 px-6 py-3 text-left font-semibold text-purple-900"></th>
-                  <th class="border border-purple-300 px-6 py-3 text-center font-semibold text-purple-900">BSCS</th>
-                  <th class="border border-purple-300 px-6 py-3 text-center font-semibold text-purple-900">BSIS</th>
-                  <th class="border border-purple-300 px-6 py-3 text-center font-semibold text-purple-900">BSIT</th>
-                  <th class="border border-purple-300 px-6 py-3 text-center font-semibold text-purple-900">Total</th>
+                <tr :class="[isCOE ? 'bg-orange-100' : 'bg-purple-100']">
+                  <th :class="['border px-6 py-3 text-left font-semibold', isCOE ? 'border-orange-300 text-orange-900' : 'border-purple-300 text-purple-900']"></th>
+                  <th :class="['border px-6 py-3 text-center font-semibold', isCOE ? 'border-orange-300 text-orange-900' : 'border-purple-300 text-purple-900']">BSCS</th>
+                  <th :class="['border px-6 py-3 text-center font-semibold', isCOE ? 'border-orange-300 text-orange-900' : 'border-purple-300 text-purple-900']">BSIS</th>
+                  <th :class="['border px-6 py-3 text-center font-semibold', isCOE ? 'border-orange-300 text-orange-900' : 'border-purple-300 text-purple-900']">BSIT</th>
+                  <th :class="['border px-6 py-3 text-center font-semibold', isCOE ? 'border-orange-300 text-orange-900' : 'border-purple-300 text-purple-900']">Total</th>
                 </tr>
               </thead>
               <tbody>
                 <tr class="hover:bg-gray-50">
-                  <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">1st years</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['1st Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['1st Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['1st Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center font-bold text-purple-700">{{ (stats.BSCS['1st Year'] || 0) + (stats.BSIS['1st Year'] || 0) + (stats.BSIT['1st Year'] || 0) }}</td>
+                  <td :class="['border px-6 py-4 font-medium text-gray-700', isCOE ? 'border-orange-300' : 'border-purple-300']">1st years</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSCS['1st Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIS['1st Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIT['1st Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center font-bold', isCOE ? 'border-orange-300 text-orange-700' : 'border-purple-300 text-purple-700']">{{ (stats.BSCS['1st Year'] || 0) + (stats.BSIS['1st Year'] || 0) + (stats.BSIT['1st Year'] || 0) }}</td>
                 </tr>
                 <tr class="hover:bg-gray-50">
-                  <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">2nd years</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['2nd Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['2nd Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['2nd Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center font-bold text-purple-700">{{ (stats.BSCS['2nd Year'] || 0) + (stats.BSIS['2nd Year'] || 0) + (stats.BSIT['2nd Year'] || 0) }}</td>
+                  <td :class="['border px-6 py-4 font-medium text-gray-700', isCOE ? 'border-orange-300' : 'border-purple-300']">2nd years</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSCS['2nd Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIS['2nd Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIT['2nd Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center font-bold', isCOE ? 'border-orange-300 text-orange-700' : 'border-purple-300 text-purple-700']">{{ (stats.BSCS['2nd Year'] || 0) + (stats.BSIS['2nd Year'] || 0) + (stats.BSIT['2nd Year'] || 0) }}</td>
                 </tr>
                 <tr class="hover:bg-gray-50">
-                  <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">3rd years</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['3rd Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['3rd Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['3rd Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center font-bold text-purple-700">{{ (stats.BSCS['3rd Year'] || 0) + (stats.BSIS['3rd Year'] || 0) + (stats.BSIT['3rd Year'] || 0) }}</td>
+                  <td :class="['border px-6 py-4 font-medium text-gray-700', isCOE ? 'border-orange-300' : 'border-purple-300']">3rd years</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSCS['3rd Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIS['3rd Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIT['3rd Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center font-bold', isCOE ? 'border-orange-300 text-orange-700' : 'border-purple-300 text-purple-700']">{{ (stats.BSCS['3rd Year'] || 0) + (stats.BSIS['3rd Year'] || 0) + (stats.BSIT['3rd Year'] || 0) }}</td>
                 </tr>
                 <tr class="hover:bg-gray-50">
-                  <td class="border border-purple-300 px-6 py-4 font-medium text-gray-700">4th years</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS['4th Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS['4th Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT['4th Year'] || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center font-bold text-purple-700">{{ (stats.BSCS['4th Year'] || 0) + (stats.BSIS['4th Year'] || 0) + (stats.BSIT['4th Year'] || 0) }}</td>
+                  <td :class="['border px-6 py-4 font-medium text-gray-700', isCOE ? 'border-orange-300' : 'border-purple-300']">4th years</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSCS['4th Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIS['4th Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIT['4th Year'] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center font-bold', isCOE ? 'border-orange-300 text-orange-700' : 'border-purple-300 text-purple-700']">{{ (stats.BSCS['4th Year'] || 0) + (stats.BSIS['4th Year'] || 0) + (stats.BSIT['4th Year'] || 0) }}</td>
                 </tr>
-                <tr class="bg-purple-50 font-bold">
-                  <td class="border border-purple-300 px-6 py-4 font-bold text-gray-900">All year levels</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSCS.total || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIS.total || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center">{{ stats.BSIT.total || 0 }}</td>
-                  <td class="border border-purple-300 px-6 py-4 text-center bg-purple-200">{{ (stats.BSCS.total || 0) + (stats.BSIS.total || 0) + (stats.BSIT.total || 0) }}</td>
+                <tr :class="[isCOE ? 'bg-orange-50 font-bold' : 'bg-purple-50 font-bold']">
+                  <td :class="['border px-6 py-4 font-bold text-gray-900', isCOE ? 'border-orange-300' : 'border-purple-300']">All year levels</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSCS.total || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIS.total || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIT.total || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300 bg-orange-200' : 'border-purple-300 bg-purple-200']">{{ (stats.BSCS.total || 0) + (stats.BSIS.total || 0) + (stats.BSIT.total || 0) }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
 
           <div class="mt-6 text-center">
-            <p class="text-lg font-semibold text-purple-900">
+            <p :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : 'text-purple-900']">
               Total Registered Students: <span class="text-2xl">{{ totalStudents }}</span>
             </p>
           </div>
@@ -3985,9 +4278,9 @@
             </div>
           </div>
           
-          <div v-if="showRfidList" class="mt-6 bg-white border border-purple-200 rounded-lg p-4">
+          <div v-if="showRfidList" :class="['mt-6 bg-white rounded-lg p-4 border', isCOE ? 'border-orange-200' : 'border-purple-200']">
             <div class="flex items-center justify-between mb-4">
-              <h4 class="text-lg font-semibold text-purple-900">
+              <h4 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : 'text-purple-900']">
                 {{ rfidListType === 'verified' ? 'Verified Users' : rfidListType === 'unverified' ? 'Unverified Users' : 'Unreadable Status Users' }}
                 <span class="text-sm font-normal text-gray-500 ml-2">({{ rfidListDisplayUsers.length }} of {{ rfidListFilteredUsers.length }})</span>
               </h4>
@@ -3998,14 +4291,14 @@
             
             <!-- Filters -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <input v-model="rfidListSearch" type="text" placeholder="Search by name..." class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-600 outline-none" />
-              <select v-model="rfidListFilterProgram" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-600 outline-none">
+              <input v-model="rfidListSearch" type="text" placeholder="Search by name..." :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']" />
+              <select v-model="rfidListFilterProgram" :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']">
                 <option value="">All Programs</option>
                 <option value="BSCS">BSCS</option>
                 <option value="BSIS">BSIS</option>
                 <option value="BSIT">BSIT</option>
               </select>
-              <select v-model="rfidListFilterYear" class="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-600 outline-none">
+              <select v-model="rfidListFilterYear" :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']">
                 <option value="">All Year Levels</option>
                 <option value="1st Year">1st Year</option>
                 <option value="2nd Year">2nd Year</option>
@@ -4015,7 +4308,7 @@
             </div>
             
             <div v-if="rfidListLoading" class="flex items-center justify-center py-8">
-              <svg class="animate-spin h-8 w-8 text-purple-600" fill="none" viewBox="0 0 24 24">
+              <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
@@ -4025,18 +4318,18 @@
             </div>
             <div v-else class="max-h-96 overflow-y-auto">
               <table class="w-full text-sm">
-                <thead class="bg-purple-50 sticky top-0">
+                <thead :class="['sticky top-0', isCOE ? 'bg-orange-50' : 'bg-purple-50']">
                   <tr>
-                    <th class="text-left px-3 py-2 font-medium text-purple-900">Student ID</th>
-                    <th class="text-left px-3 py-2 font-medium text-purple-900 cursor-pointer hover:text-purple-700" @click="toggleRfidListSort">
+                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : 'text-purple-900']">Student ID</th>
+                    <th :class="['text-left px-3 py-2 font-medium cursor-pointer', isCOE ? 'text-orange-900 hover:text-orange-700' : 'text-purple-900 hover:text-purple-700']" @click="toggleRfidListSort">
                       Name
                       <span v-if="rfidListSortAsc">↑</span>
                       <span v-else>↓</span>
                     </th>
-                    <th class="text-left px-3 py-2 font-medium text-purple-900">Program</th>
-                    <th class="text-left px-3 py-2 font-medium text-purple-900">Year</th>
-                    <th class="text-left px-3 py-2 font-medium text-purple-900">RFID Code</th>
-                    <th class="text-left px-3 py-2 font-medium text-purple-900">Status</th>
+                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : 'text-purple-900']">Program</th>
+                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : 'text-purple-900']">Year</th>
+                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : 'text-purple-900']">RFID Code</th>
+                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : 'text-purple-900']">Status</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -4060,7 +4353,7 @@
               
               <!-- Load More Button -->
               <div v-if="rfidListDisplayUsers.length < rfidListFilteredUsers.length" class="mt-4 text-center">
-                <button @click="loadMoreRfidUsers" class="px-6 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition font-medium text-sm">
+                <button @click="loadMoreRfidUsers" :class="['px-6 py-2 rounded-lg transition font-medium text-sm', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : 'bg-purple-100 text-purple-700 hover:bg-purple-200']">
                   Load More ({{ rfidListFilteredUsers.length - rfidListDisplayUsers.length }} remaining)
                 </button>
               </div>
@@ -4079,7 +4372,7 @@
       <div v-if="editingUser" class="space-y-4">
         <div class="flex flex-col items-center mb-6">
           <div class="relative">
-            <div class="w-24 h-24 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 overflow-hidden mb-3 shadow-lg flex items-center justify-center relative">
+            <div :class="['w-24 h-24 rounded-full overflow-hidden mb-3 shadow-lg flex items-center justify-center relative', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
               <div v-if="editImageLoading" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
                 <svg class="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -4091,7 +4384,7 @@
             </div>
             <button 
               @click="$refs.photoInput.click()" 
-              class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center shadow-lg hover:from-pink-600 hover:to-purple-700 transition-all duration-200 hover:scale-110"
+              :class="['absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600' : 'bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700']"
               title="Change Photo"
             >
               <img src="/change_photo.svg" alt="Change Photo" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
@@ -4175,11 +4468,27 @@
           <p v-else-if="editingUser.role === 'treasurer'" class="text-xs text-blue-600 mt-1">Treasurer users can manage payments and contributions.</p>
         </div>
         <div class="flex gap-3 mt-6">
-          <button @click="closeEditModal" :disabled="savingUser" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
-          <button @click="saveUser" :disabled="savingUser" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
-            <svg v-if="savingUser" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            {{ savingUser ? 'Saving...' : 'Save' }}
-          </button>
+          <div class="flex-1">
+            <button @click="closeEditModal" :disabled="savingUser" class="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed">Cancel</button>
+          </div>
+          <div class="flex-1">
+            <template v-if="editingUser && editingUser.isDuplicate">
+              <div class="mb-2 flex items-center gap-2">
+                <input id="confirmDuplicate" type="checkbox" v-model="confirmDuplicate" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500" />
+                <label for="confirmDuplicate" class="text-sm text-gray-700">I confirm I want to duplicate this record</label>
+              </div>
+              <button @click="duplicateUser" :disabled="savingUser || !confirmDuplicate" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg v-if="savingUser" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                {{ savingUser ? 'Duplicating...' : 'Duplicate' }}
+              </button>
+            </template>
+            <template v-else>
+              <button @click="saveUser" :disabled="savingUser" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                <svg v-if="savingUser" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                {{ savingUser ? 'Saving...' : 'Save' }}
+              </button>
+            </template>
+          </div>
         </div>
       </div>
     </div>
@@ -4318,7 +4627,7 @@
       <transition name="modal-bounce" appear>
         <div v-if="showPasswordChangeModal" class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-purple-900">Change Password</h3>
+            <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Change Password</h3>
             <button @click="closePasswordChangeModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
           </div>
 
@@ -4332,9 +4641,9 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Your Email Address</label>
-              <input v-model="pwChangeEmail" type="email" :placeholder="currentUser.email || 'your.email@example.com'" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+              <input v-model="pwChangeEmail" type="email" :placeholder="currentUser.email || 'your.email@example.com'" :class="['w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : 'focus:ring-purple-600']" />
             </div>
-            <button @click="requestPasswordChangeCode" :disabled="changingPassword || !pwChangeEmail.trim()" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <button @click="requestPasswordChangeCode" :disabled="changingPassword || !pwChangeEmail.trim()" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
               <svg v-if="changingPassword" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ changingPassword ? 'Sending...' : 'Send Verification Code' }}
             </button>
@@ -4351,29 +4660,29 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
-              <input v-model="pwChangeCode" type="text" placeholder="123456" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-center text-2xl tracking-widest" />
+              <input v-model="pwChangeCode" type="text" placeholder="123456" maxlength="6" :class="['w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none text-center text-2xl tracking-widest', isCOE ? 'focus:ring-orange-600' : 'focus:ring-purple-600']" />
             </div>
-            <button @click="verifyPasswordChangeCode" :disabled="changingPassword || pwChangeCode.length !== 6" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <button @click="verifyPasswordChangeCode" :disabled="changingPassword || pwChangeCode.length !== 6" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
               <svg v-if="changingPassword" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ changingPassword ? 'Verifying...' : 'Verify Code' }}
             </button>
-            <button @click="pwChangeStep = 1" class="w-full text-purple-600 hover:text-purple-700 text-sm font-medium">Back to Step 1</button>
+            <button @click="pwChangeStep = 1" :class="[isCOE ? 'text-orange-600 hover:text-orange-700' : 'text-purple-600 hover:text-purple-700', 'w-full text-sm font-medium']">Back to Step 1</button>
             <p v-if="pwChangeMessage" :class="['text-sm text-center', pwChangeSuccess ? 'text-green-600' : 'text-red-600']">{{ pwChangeMessage }}</p>
           </div>
 
           <!-- Step 3: Enter New Password -->
           <div v-if="pwChangeStep === 3" class="space-y-4">
-            <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+            <div :class="[isCOE ? 'bg-orange-50 border-orange-200' : 'bg-purple-50 border-purple-200', 'border rounded-lg p-4 mb-4']">
               <div class="flex items-start gap-3">
-                <svg class="w-5 h-5 text-purple-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p class="text-sm text-purple-800">Email verified! Now create your new secure password.</p>
+                <svg :class="[isCOE ? 'text-orange-500' : 'text-purple-500', 'w-5 h-5 mt-0.5 flex-shrink-0']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p :class="[isCOE ? 'text-orange-800' : 'text-purple-800', 'text-sm']">Email verified! Now create your new secure password.</p>
               </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
               <div class="relative">
-                <input v-model="passwordForm.newPassword" :type="showNewPassword ? 'text' : 'password'" placeholder="Enter new password (min 6 characters)" class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-                <button type="button" @click="showNewPassword = !showNewPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600 transition">
+                <input v-model="passwordForm.newPassword" :type="showNewPassword ? 'text' : 'password'" placeholder="Enter new password (min 6 characters)" :class="['w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : 'focus:ring-purple-600']" />
+                <button type="button" @click="showNewPassword = !showNewPassword" :class="[isCOE ? 'hover:text-orange-600' : 'hover:text-purple-600', 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition']">
                   <svg v-if="showNewPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                   <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
                 </button>
@@ -4383,15 +4692,15 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
               <div class="relative">
-                <input v-model="passwordForm.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" placeholder="Confirm new password" class="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-                <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-purple-600 transition">
+                <input v-model="passwordForm.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" placeholder="Confirm new password" :class="['w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : 'focus:ring-purple-600']" />
+                <button type="button" @click="showConfirmPassword = !showConfirmPassword" :class="[isCOE ? 'hover:text-orange-600' : 'hover:text-purple-600', 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition']">
                   <svg v-if="showConfirmPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                   <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
                 </button>
               </div>
               <p v-if="passwordErrors.confirmPassword" class="text-red-500 text-xs mt-1">{{ passwordErrors.confirmPassword }}</p>
             </div>
-            <button @click="completePasswordChange" :disabled="changingPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-6 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <button @click="completePasswordChange" :disabled="changingPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
               <svg v-if="changingPassword" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ changingPassword ? 'Changing Password...' : 'Change Password' }}
             </button>
@@ -4404,29 +4713,35 @@
   </transition>
 
   <!-- Custom Calendar Picker Modal -->
-  <div v-if="showCalendarPicker" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60] p-2 sm:p-4 overflow-y-auto" @click.self="showCalendarPicker = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-6 w-full max-w-[calc(100vw-1rem)] sm:max-w-sm mx-auto my-auto">
+  <!-- Backdrop Fade Only -->
+  <transition name="fade">
+    <div v-if="showCalendarPicker" class="fixed inset-0 bg-black bg-opacity-50"></div>
+  </transition>
+  <!-- Modal Pop -->
+  <transition name="fade-scale">
+    <div v-if="showCalendarPicker" class="fixed inset-0 flex items-center justify-center z-[60] p-2 sm:p-4" @click.self="showCalendarPicker = false">
+      <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-5 w-full max-w-sm">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Select Date</h3>
-        <button @click="showCalendarPicker = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <h3 :class="['text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : 'from-purple-600 to-pink-500']">Select Date</h3>
+        <button @click="showCalendarPicker = false" :class="['text-2xl transition', isCOE ? 'text-orange-500 hover:text-orange-700' : 'text-gray-500 hover:text-gray-700']">×</button>
       </div>
       
       <!-- Calendar Header -->
       <div class="flex items-center justify-between mb-3 sm:mb-4 gap-2">
-        <button @click="changeCalendarMonth(-1)" class="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700 transition">
+        <button @click="changeCalendarMonth(-1)" :class="['w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full transition', isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 hover:from-orange-200 hover:to-red-200 text-orange-700' : 'bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700']">
           <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         </button>
         <div class="text-center flex-1 min-w-0">
-          <span class="text-sm sm:text-lg font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">{{ calendarMonthName }} {{ calendarYear }}</span>
+          <span :class="['text-sm sm:text-lg font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : 'from-purple-600 to-pink-500']">{{ calendarMonthName }} {{ calendarYear }}</span>
         </div>
-        <button @click="changeCalendarMonth(1)" class="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700 transition">
+        <button @click="changeCalendarMonth(1)" :class="['w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full transition', isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 hover:from-orange-200 hover:to-red-200 text-orange-700' : 'bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700']">
           <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
         </button>
       </div>
       
       <!-- Day Headers -->
       <div class="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1 sm:mb-2">
-        <div v-for="day in ['S', 'M', 'T', 'W', 'T', 'F', 'S']" :key="day" class="text-center text-[10px] sm:text-xs font-semibold text-purple-600 py-1 sm:py-2">{{ day }}</div>
+        <div v-for="day in ['S', 'M', 'T', 'W', 'T', 'F', 'S']" :key="day" :class="['text-center py-1 sm:py-2 text-[10px] sm:text-xs font-semibold', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ day }}</div>
       </div>
       
       <!-- Calendar Grid -->
@@ -4437,9 +4752,9 @@
             @click="selectCalendarDate(day.date)"
             :class="[
               'w-full h-full rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-center',
-              day.isToday && !day.isSelected ? 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 ring-1 sm:ring-2 ring-purple-400' : '',
-              day.isSelected ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg scale-105 sm:scale-110' : '',
-              !day.isToday && !day.isSelected && day.isCurrentMonth ? 'text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:text-purple-700' : '',
+              day.isToday && !day.isSelected ? (isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 ring-1 sm:ring-2 ring-orange-400' : 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 ring-1 sm:ring-2 ring-purple-400') : '',
+              day.isSelected ? (isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white shadow-lg scale-105 sm:scale-110' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg scale-105 sm:scale-110') : '',
+              !day.isToday && !day.isSelected && day.isCurrentMonth ? (isCOE ? 'text-gray-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 hover:text-orange-700' : 'text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:text-purple-700') : '',
               !day.isCurrentMonth ? 'text-gray-300' : ''
             ]"
           >
@@ -4450,46 +4765,53 @@
       
       <!-- Quick Actions -->
       <div class="flex gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
-        <button @click="selectToday" class="flex-1 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 transition">Today</button>
+        <button @click="selectToday" :class="['flex-1 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition', isCOE ? 'text-orange-600 bg-orange-50 hover:bg-orange-100' : 'text-purple-600 bg-purple-50 hover:bg-purple-100']">Today</button>
         <button @click="clearCalendarDate" class="flex-1 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition">Clear</button>
       </div>
       
       <!-- Selected Date Display -->
-      <div class="mt-3 sm:mt-4 p-2 sm:p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg sm:rounded-xl">
+      <div :class="['mt-3 sm:mt-4 p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-r', isCOE ? 'from-orange-50 to-red-50' : 'from-purple-50 to-pink-50']">
         <p class="text-xs sm:text-sm text-center">
           <span class="text-gray-500">Selected: </span>
-          <span class="font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">{{ selectedCalendarDateDisplay || 'No date selected' }}</span>
+          <span :class="['font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : 'from-purple-600 to-pink-500']">{{ selectedCalendarDateDisplay || 'No date selected' }}</span>
         </p>
       </div>
       
       <div class="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
         <button @click="showCalendarPicker = false" class="flex-1 bg-gray-200 text-gray-800 py-2 sm:py-3 px-3 sm:px-4 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-300 transition">Cancel</button>
-        <button @click="confirmCalendarDate" :disabled="!calendarSelectedDate" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 sm:py-3 px-3 sm:px-4 rounded-lg text-sm sm:text-base font-medium hover:from-purple-700 hover:to-pink-600 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">Confirm</button>
+        <button @click="confirmCalendarDate" :disabled="!calendarSelectedDate" :class="['flex-1 text-white py-2 sm:py-3 px-3 sm:px-4 rounded-lg text-sm sm:text-base font-medium transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : 'from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600']">Confirm</button>
+      </div>
       </div>
     </div>
-  </div>
+  </transition>
 
   <!-- Time Picker Modal - Clock Design -->
-  <div v-if="showTimePicker" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[70]" @click.self="showTimePicker = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
+  <!-- Backdrop Fade Only -->
+  <transition name="fade">
+    <div v-if="showTimePicker" class="fixed inset-0 bg-black bg-opacity-50"></div>
+  </transition>
+  <!-- Modal Pop -->
+  <transition name="fade-scale">
+    <div v-if="showTimePicker" class="fixed inset-0 flex items-center justify-center z-[70]" @click.self="showTimePicker = false">
+      <div class="bg-white rounded-2xl shadow-2xl p-5 max-w-sm w-full mx-4">
       <div class="flex justify-between items-center mb-6">
-        <h3 class="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">Select Time</h3>
-        <button @click="showTimePicker = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <h3 :class="['text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : 'from-purple-600 to-pink-500']">Select Time</h3>
+        <button @click="showTimePicker = false" :class="['text-2xl transition', isCOE ? 'text-orange-500 hover:text-orange-700' : 'text-gray-500 hover:text-gray-700']">&times;</button>
       </div>
       
       <!-- Clock Face Design -->
       <div class="relative w-48 h-48 mx-auto mb-6">
-        <div class="absolute inset-0 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 shadow-inner"></div>
+        <div :class="['absolute inset-0 rounded-full bg-gradient-to-br shadow-inner', isCOE ? 'from-orange-100 to-red-100' : 'from-purple-100 to-pink-100']"></div>
         <div class="absolute inset-2 rounded-full bg-white shadow-lg flex items-center justify-center">
           <div class="text-center">
-            <div class="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent">
+            <div :class="['text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : 'from-purple-600 to-pink-500']">
               {{ timePickerHour.toString().padStart(2, '0') }}:{{ timePickerMinute.toString().padStart(2, '0') }}
             </div>
-            <div class="text-lg font-semibold text-purple-600 mt-1">{{ timePickerPeriod }}</div>
+            <div :class="['text-lg font-semibold mt-1', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ timePickerPeriod }}</div>
           </div>
         </div>
         <!-- Clock hour markers -->
-        <div v-for="i in 12" :key="i" class="absolute w-1.5 h-1.5 bg-purple-300 rounded-full" :style="{ top: `${50 - 42 * Math.cos((i * 30 - 90) * Math.PI / 180)}%`, left: `${50 + 42 * Math.sin((i * 30 - 90) * Math.PI / 180)}%` }"></div>
+        <div v-for="i in 12" :key="i" :class="['absolute w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-300' : 'bg-purple-300']" :style="{ top: `${50 - 42 * Math.cos((i * 30 - 90) * Math.PI / 180)}%`, left: `${50 + 42 * Math.sin((i * 30 - 90) * Math.PI / 180)}%` }"></div>
       </div>
       
       <!-- Time Input Controls -->
@@ -4498,31 +4820,31 @@
         <div class="flex flex-col items-center">
           <label class="text-xs text-gray-500 mb-1 font-medium">Hour</label>
           <div class="flex flex-col items-center">
-            <button @click="timePickerHour = timePickerHour < 12 ? timePickerHour + 1 : 1" class="text-purple-600 hover:text-pink-500 p-1 transition">
+            <button @click="timePickerHour = timePickerHour < 12 ? timePickerHour + 1 : 1" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : 'text-purple-600 hover:text-pink-500']">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
             </button>
-            <div class="w-16 h-16 flex items-center justify-center text-2xl font-bold bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-xl shadow-lg">
+            <div :class="['w-16 h-16 flex items-center justify-center text-2xl font-bold text-white rounded-xl shadow-lg bg-gradient-to-br', isCOE ? 'from-orange-500 to-red-500' : 'from-purple-500 to-pink-500']">
               {{ timePickerHour.toString().padStart(2, '0') }}
             </div>
-            <button @click="timePickerHour = timePickerHour > 1 ? timePickerHour - 1 : 12" class="text-purple-600 hover:text-pink-500 p-1 transition">
+            <button @click="timePickerHour = timePickerHour > 1 ? timePickerHour - 1 : 12" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : 'text-purple-600 hover:text-pink-500']">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
           </div>
         </div>
         
-        <span class="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-500 bg-clip-text text-transparent mt-5">:</span>
+        <span :class="['text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent mt-5', isCOE ? 'from-orange-600 to-red-500' : 'from-purple-600 to-pink-500']">:</span>
         
         <!-- Minute Control (any minute 0-59) -->
         <div class="flex flex-col items-center">
           <label class="text-xs text-gray-500 mb-1 font-medium">Minute</label>
           <div class="flex flex-col items-center">
-            <button @click="timePickerMinute = timePickerMinute < 59 ? timePickerMinute + 1 : 0" class="text-purple-600 hover:text-pink-500 p-1 transition">
+            <button @click="timePickerMinute = timePickerMinute < 59 ? timePickerMinute + 1 : 0" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : 'text-purple-600 hover:text-pink-500']">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
             </button>
-            <div class="w-16 h-16 flex items-center justify-center text-2xl font-bold bg-gradient-to-br from-purple-500 to-pink-500 text-white rounded-xl shadow-lg">
+            <div :class="['w-16 h-16 flex items-center justify-center text-2xl font-bold text-white rounded-xl shadow-lg bg-gradient-to-br', isCOE ? 'from-orange-500 to-red-500' : 'from-purple-500 to-pink-500']">
               {{ timePickerMinute.toString().padStart(2, '0') }}
             </div>
-            <button @click="timePickerMinute = timePickerMinute > 0 ? timePickerMinute - 1 : 59" class="text-purple-600 hover:text-pink-500 p-1 transition">
+            <button @click="timePickerMinute = timePickerMinute > 0 ? timePickerMinute - 1 : 59" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : 'text-purple-600 hover:text-pink-500']">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
           </div>
@@ -4532,471 +4854,538 @@
         <div class="flex flex-col items-center ml-2">
           <label class="text-xs text-gray-500 mb-1 font-medium">Period</label>
           <div class="flex flex-col gap-2 mt-1">
-            <button @click="timePickerPeriod = 'AM'" :class="['px-4 py-3 rounded-xl text-sm font-bold transition shadow-md', timePickerPeriod === 'AM' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">AM</button>
-            <button @click="timePickerPeriod = 'PM'" :class="['px-4 py-3 rounded-xl text-sm font-bold transition shadow-md', timePickerPeriod === 'PM' ? 'bg-gradient-to-r from-purple-600 to-pink-500 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">PM</button>
+            <button @click="timePickerPeriod = 'AM'" :class="['px-4 py-3 rounded-xl text-sm font-bold transition shadow-md', timePickerPeriod === 'AM' ? (isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white') : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">AM</button>
+            <button @click="timePickerPeriod = 'PM'" :class="['px-4 py-3 rounded-xl text-sm font-bold transition shadow-md', timePickerPeriod === 'PM' ? (isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white') : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">PM</button>
           </div>
         </div>
       </div>
       
       <div class="flex gap-3">
         <button @click="showTimePicker = false" class="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-        <button @click="confirmTimePicker" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-3 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition shadow-lg">Confirm</button>
+        <button @click="confirmTimePicker" :class="['flex-1 text-white py-3 px-4 rounded-lg font-medium transition shadow-lg bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : 'from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600']">Confirm</button>
+      </div>
       </div>
     </div>
-  </div>
+  </transition>
 
-  <!-- Create Attendance Event Modal -->
-  <div v-if="showCreateEventModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showCreateEventModal = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-purple-900">Create Attendance Event</h3>
-        <button @click="showCreateEventModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-      </div>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Event Title *</label>
-          <input v-model="newEvent.title" type="text" placeholder="e.g., CCS General Assembly" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-          <textarea v-model="newEvent.description" placeholder="Event description..." rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none resize-none"></textarea>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-          <input v-model="newEvent.location" type="text" placeholder="e.g., CCS AVR" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-            <button @click="openCalendarPicker('newEvent')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-              <span :class="newEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(newEvent.date) }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-            </button>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
-            <select v-model="newEvent.year_level" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
-              <option value="">All Year Levels</option>
-              <option value="1st Year">1st Year</option>
-              <option value="2nd Year">2nd Year</option>
-              <option value="3rd Year">3rd Year</option>
-              <option value="4th Year">4th Year</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Event Start Time *</label>
-            <button @click="openTimePicker('event_start_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-              <span :class="newEvent.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.start_time) || 'Select time' }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </button>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Event End Time *</label>
-            <button @click="openTimePicker('event_end_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-              <span :class="newEvent.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.end_time) || 'Select time' }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </button>
-          </div>
-        </div>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <p class="text-sm text-blue-800">
-            <span class="font-medium">Note:</span> Session times must fall within the event time range ({{ formatDisplayTime(newEvent.start_time) }} - {{ formatDisplayTime(newEvent.end_time) }}).
-          </p>
-        </div>
-
-        <!-- Custom Event Toggle -->
-        <div class="flex items-center gap-3 bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <input type="checkbox" v-model="newEvent.is_custom" id="customEventToggle" class="w-4 h-4 text-purple-600 rounded cursor-pointer" />
-          <label for="customEventToggle" class="flex-1 cursor-pointer">
-            <p class="font-medium text-purple-900">Custom Event (Select Specific Students)</p>
-            <p class="text-xs text-purple-700 mt-0.5">Enable this to assign this event to specific students from the complete student list</p>
-          </label>
-        </div>
-
-        <!-- User Selection Section -->
-        <div v-if="newEvent.is_custom" class="border-2 border-purple-300 rounded-lg p-4 bg-purple-50 space-y-4">
-          <label class="block text-sm font-medium text-purple-900">Select Students to Assign to This Event</label>
-          
-          <!-- Filter Section -->
-          <div class="bg-white border border-purple-200 rounded-lg p-4 space-y-3">
-            <p class="text-xs font-semibold text-purple-700 mb-2">Filter Students</p>
-            
-            <!-- Name/Student ID Filter -->
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Name or Student ID</label>
-              <input 
-                v-model="eventUserFilters.name" 
-                type="text" 
-                placeholder="Search by name or student ID..." 
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
-              />
-            </div>
-            
-            <!-- Program Filter -->
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
-              <select 
-                v-model="eventUserFilters.program" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
-              >
-                <option value="">All Programs</option>
-                <option value="BSIT">BSIT</option>
-                <option value="BSCS">BSCS</option>
-                <option value="BSIS">BSIS</option>
-              </select>
-            </div>
-            
-            <!-- Year Level Filter -->
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Year Level</label>
-              <select 
-                v-model="eventUserFilters.yearLevel" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
-              >
-                <option value="">All Year Levels</option>
-                <option value="1st Year">1st Year</option>
-                <option value="2nd Year">2nd Year</option>
-                <option value="3rd Year">3rd Year</option>
-                <option value="4th Year">4th Year</option>
-              </select>
-            </div>
-            
-            <!-- Clear Filters Button -->
-            <div class="flex items-center gap-2 flex-wrap">
-              <button 
-                @click="eventUserFilters = { name: '', program: '', yearLevel: '' }" 
-                type="button" 
-                class="text-xs text-purple-600 hover:text-purple-800 font-medium"
-              >
-                Clear All Filters
-              </button>
-              <span class="text-xs text-gray-400">•</span>
-              <button 
-                @click="newEvent.assigned_users = filteredEventUsers.map(u => u._id)" 
-                type="button" 
-                class="text-xs text-green-600 hover:text-green-800 font-medium"
-              >
-                Select All
-              </button>
-              <button 
-                v-if="newEvent.assigned_users.length > 0"
-                @click="newEvent.assigned_users = []" 
-                type="button" 
-                class="text-xs text-red-600 hover:text-red-800 font-medium"
-              >
-                Deselect All
-              </button>
-            </div>
-          </div>
-
-          <!-- User List (Search Results) -->
-          <div class="max-h-48 overflow-y-auto border border-purple-200 rounded-lg bg-white">
-            <div v-if="filteredEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
-              No students found
-            </div>
-            <label v-for="user in filteredEventUsers" :key="user._id" class="flex items-start gap-3 p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer last:border-b-0">
-              <input 
-                type="checkbox" 
-                :checked="newEvent.assigned_users.includes(user._id)"
-                @change="toggleEventUser(user._id)"
-                class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-2 focus:ring-purple-600"
-              />
-              <div class="flex-1 min-w-0">
-                <p class="font-semibold text-gray-900 text-sm">{{ getUserDisplayName(user) }}</p>
-                <p class="text-xs text-gray-600 mt-0.5">{{ user.student_id }} • {{ user.program }} • {{ user.year_level }}</p>
-              </div>
-            </label>
-          </div>
-
-          <!-- Selected Users Pills -->
-          <div v-if="newEvent.assigned_users.length > 0" class="mb-3 pb-3 border-b border-purple-300">
-            <p class="text-xs font-semibold text-purple-700 mb-2">Selected: {{ newEvent.assigned_users.length }} student(s)</p>
-            <div class="flex flex-wrap gap-2">
-              <div v-for="userId in newEvent.assigned_users" :key="userId" class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2">
-                <span>{{ getUserDisplayName(users.find(u => u._id === userId)) }}</span>
-                <button @click="newEvent.assigned_users = newEvent.assigned_users.filter(id => id !== userId)" type="button" class="hover:text-purple-900">×</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-xs text-blue-700">
-            <strong>{{ newEvent.assigned_users.length }}</strong> student(s) will be able to see this event
-          </div>
-        </div>
-        <div class="flex gap-3 mt-6">
-          <button @click="showCreateEventModal = false; eventUserFilters = { name: '', program: '', yearLevel: '' }" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-          <button @click="createAttendanceEvent" :disabled="!newEvent.title || !newEvent.date" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Create Event</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Edit Attendance Event Modal -->
-  <div v-if="showEditEventModal && selectedEvent" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showEditEventModal = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full mx-4 max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-6">
-        <h3 class="text-2xl font-bold text-purple-900">Edit Attendance Event</h3>
-        <button @click="showEditEventModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-      </div>
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Event Title *</label>
-          <input v-model="selectedEvent.title" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
-          <textarea v-model="selectedEvent.description" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none resize-none"></textarea>
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Location</label>
-          <input v-model="selectedEvent.location" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-            <button @click="openCalendarPicker('editEvent')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-              <span :class="selectedEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(selectedEvent.date) }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-            </button>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
-            <select v-model="selectedEvent.year_level" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
-              <option value="">All Year Levels</option>
-              <option value="1st Year">1st Year</option>
-              <option value="2nd Year">2nd Year</option>
-              <option value="3rd Year">3rd Year</option>
-              <option value="4th Year">4th Year</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Event Start Time *</label>
-            <button @click="openTimePicker('edit_start_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-              <span :class="selectedEvent.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.start_time || selectedEvent.startTime) || 'Select time' }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </button>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Event End Time *</label>
-            <button @click="openTimePicker('edit_end_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
-              <span :class="selectedEvent.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.end_time || selectedEvent.endTime) || 'Select time' }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </button>
-          </div>
-        </div>
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <div class="flex items-center gap-2 mb-1">
-            <span class="text-sm font-medium text-blue-800">Current Status:</span>
-            <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', 
-              selectedEvent.status === 'active' ? 'bg-green-100 text-green-800' : 
-              selectedEvent.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 
-              'bg-gray-100 text-gray-800']">
-              {{ selectedEvent.status === 'active' ? 'Active' : selectedEvent.status === 'draft' ? 'Upcoming' : 'Closed' }}
-            </span>
-          </div>
-          <p class="text-xs text-blue-700">Status is updated automatically based on the event date and session times.</p>
-        </div>
-
-        <!-- Custom Event Toggle (Edit) -->
-        <div class="flex items-center gap-3 bg-purple-50 border border-purple-200 rounded-lg p-4">
-          <input type="checkbox" v-model="selectedEvent.is_custom" id="editCustomEventToggle" class="w-4 h-4 text-purple-600 rounded cursor-pointer" />
-          <label for="editCustomEventToggle" class="flex-1 cursor-pointer">
-            <p class="font-medium text-purple-900">Custom Event (Select Specific Students)</p>
-            <p class="text-xs text-purple-700 mt-0.5">Enable this to assign this event to specific students from the complete student list</p>
-          </label>
-        </div>
-
-        <!-- User Selection Section (Edit) -->
-        <div v-if="selectedEvent.is_custom" class="border-2 border-purple-300 rounded-lg p-4 bg-purple-50 space-y-4">
-          <label class="block text-sm font-medium text-purple-900">Select Students to Assign to This Event</label>
-          
-          <!-- Filter Section -->
-          <div class="bg-white border border-purple-200 rounded-lg p-4 space-y-3">
-            <p class="text-xs font-semibold text-purple-700 mb-2">Filter Students</p>
-            
-            <!-- Name/Student ID Filter -->
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Name or Student ID</label>
-              <input 
-                v-model="editEventUserFilters.name" 
-                type="text" 
-                placeholder="Search by name or student ID..." 
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
-              />
-            </div>
-            
-            <!-- Program Filter -->
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
-              <select 
-                v-model="editEventUserFilters.program" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
-              >
-                <option value="">All Programs</option>
-                <option value="BSIT">BSIT</option>
-                <option value="BSCS">BSCS</option>
-                <option value="BSIS">BSIS</option>
-              </select>
-            </div>
-            
-            <!-- Year Level Filter -->
-            <div>
-              <label class="block text-xs font-medium text-gray-700 mb-1">Year Level</label>
-              <select 
-                v-model="editEventUserFilters.yearLevel" 
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-sm"
-              >
-                <option value="">All Year Levels</option>
-                <option value="1st Year">1st Year</option>
-                <option value="2nd Year">2nd Year</option>
-                <option value="3rd Year">3rd Year</option>
-                <option value="4th Year">4th Year</option>
-              </select>
-            </div>
-            
-            <!-- Clear Filters Button -->
-            <div class="flex items-center gap-2 flex-wrap">
-              <button 
-                @click="editEventUserFilters = { name: '', program: '', yearLevel: '' }" 
-                type="button" 
-                class="text-xs text-purple-600 hover:text-purple-800 font-medium"
-              >
-                Clear All Filters
-              </button>
-              <span class="text-xs text-gray-400">•</span>
-              <button 
-                @click="selectedEvent.assigned_users = filteredEditEventUsers.map(u => u._id)" 
-                type="button" 
-                class="text-xs text-green-600 hover:text-green-800 font-medium"
-              >
-                Select All
-              </button>
-              <button 
-                v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0"
-                @click="selectedEvent.assigned_users = []" 
-                type="button" 
-                class="text-xs text-red-600 hover:text-red-800 font-medium"
-              >
-                Deselect All
-              </button>
-            </div>
-          </div>
-
-          <!-- User List (Search Results) -->
-          <div class="max-h-48 overflow-y-auto border border-purple-200 rounded-lg bg-white">
-            <div v-if="filteredEditEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
-              No students found
-            </div>
-            <label v-for="user in filteredEditEventUsers" :key="user._id" class="flex items-start gap-3 p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer last:border-b-0">
-              <input 
-                type="checkbox" 
-                :checked="selectedEvent.assigned_users && selectedEvent.assigned_users.includes(user._id)"
-                @change="toggleEditEventUser(user._id)"
-                class="mt-1 w-4 h-4 text-purple-600 rounded focus:ring-2 focus:ring-purple-600"
-              />
-              <div class="flex-1 min-w-0">
-                <p class="font-semibold text-gray-900 text-sm">{{ getUserDisplayName(user) }}</p>
-                <p class="text-xs text-gray-600 mt-0.5">{{ user.student_id }} • {{ user.program }} • {{ user.year_level }}</p>
-              </div>
-            </label>
-          </div>
-
-          <!-- Selected Users Pills -->
-          <div v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0" class="mb-3 pb-3 border-b border-purple-300">
-            <p class="text-xs font-semibold text-purple-700 mb-2">Selected: {{ selectedEvent.assigned_users.length }} student(s)</p>
-            <div class="flex flex-wrap gap-2">
-              <div v-for="userId in selectedEvent.assigned_users" :key="userId" class="bg-purple-200 text-purple-800 px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2">
-                <span>{{ getUserDisplayName(users.find(u => u._id === userId)) }}</span>
-                <button @click="selectedEvent.assigned_users = selectedEvent.assigned_users.filter(id => id !== userId)" type="button" class="hover:text-purple-900">×</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-xs text-blue-700">
-            <strong>{{ selectedEvent.assigned_users ? selectedEvent.assigned_users.length : 0 }}</strong> student(s) can see this event
+  <!-- Loading Screen Modal for Events (Both Create and Edit) -->
+  <transition name="fade">
+    <div v-if="loadingStudentsForEvent" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60]">
+      <div :class="['rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center transform transition-all duration-300', isCOE ? 'bg-gradient-to-br from-orange-50 to-orange-100' : 'bg-gradient-to-br from-purple-50 to-purple-100']">
+        <!-- Animated Spinner -->
+        <div class="flex justify-center mb-6">
+          <div :class="['relative w-20 h-20 flex items-center justify-center', isCOE ? 'bg-orange-200 rounded-full' : 'bg-purple-200 rounded-full']">
+            <svg :class="['w-12 h-12 animate-spin', isCOE ? 'text-orange-700' : 'text-purple-700']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
           </div>
         </div>
         
-        <!-- Sessions Management Section -->
-        <div class="border-t pt-4 mt-4">
-          <div class="flex items-center justify-between mb-3">
-            <label class="block text-sm font-medium text-gray-700">Sessions</label>
-            <button @click="openAddSessionModal" type="button" class="text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-lg hover:bg-purple-200 transition flex items-center gap-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-              Add Session
-            </button>
+        <!-- Loading Text -->
+        <h3 :class="['text-xl font-bold mb-2', isCOE ? 'text-orange-900' : 'text-purple-900']">Preparing Event</h3>
+        <p :class="['text-sm mb-6', isCOE ? 'text-orange-700' : 'text-purple-700']">Loading students and data...</p>
+        
+        <!-- Progress Bar -->
+        <div class="mb-4">
+          <div :class="['w-full rounded-full h-2 overflow-hidden', isCOE ? 'bg-orange-300' : 'bg-purple-300']">
+            <div :class="['h-full rounded-full transition-all duration-500 ease-out', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600' : 'bg-gradient-to-r from-purple-500 to-purple-600']" :style="{ width: totalStudentCount > 0 ? (loadedStudentCount / totalStudentCount * 100) + '%' : '0%' }"></div>
           </div>
-          <div v-if="eventSessions.length === 0" class="text-center py-4 bg-gray-50 rounded-lg">
-            <p class="text-sm text-gray-500">No sessions added yet. Add sessions to enable check-in/check-out.</p>
+        </div>
+        
+        <!-- Progress Text -->
+        <p :class="['text-xs font-medium', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ loadedStudentCount }} / {{ totalStudentCount }} students loaded</p>
+      </div>
+    </div>
+  </transition>
+
+  <!-- Create Attendance Event Modal -->
+  <!-- Backdrop Fade Only -->
+  <transition name="fade">
+    <div v-if="showCreateEventModal" class="fixed inset-0 bg-black bg-opacity-50"></div>
+  </transition>
+  <!-- Modal Pop -->
+  <transition name="fade-scale">
+    <div v-if="showCreateEventModal" class="fixed inset-0 flex items-center justify-center z-50" @click.self="showCreateEventModal = false">
+      <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-2xl w-full mx-4 max-h-[95vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Create Attendance Event</h3>
+          <button @click="showCreateEventModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+        
+        <!-- Loading Progress Indicator -->
+        <div v-if="loadingStudentsForEvent" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-sm font-medium text-blue-900">Loading students...</p>
+            <span class="text-xs text-blue-700">{{ loadedStudentCount }} / {{ totalStudentCount }}</span>
           </div>
-          <div v-else class="space-y-2">
-            <div v-for="session in eventSessions" :key="session._id" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-              <div class="flex-1">
-                <div class="flex items-center gap-2">
-                  <span class="font-medium text-gray-800">{{ session.label }}</span>
-                  <span :class="['px-2 py-0.5 rounded-full text-xs', getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, selectedEvent) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
-                    {{ getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'Active' : getSessionDisplayStatus(session, selectedEvent) === 'draft' ? 'Upcoming' : 'Closed' }}
-                  </span>
-                </div>
-                <p class="text-xs text-gray-500">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
-                <div class="flex flex-wrap gap-2 mt-1">
-                  <span class="text-xs text-orange-600">Late after {{ session.late_timer_minutes || 60 }} mins</span>
-                  <span v-if="session.check_in_locked" class="text-xs text-red-600">Check-in locked</span>
-                  <span v-if="session.check_out_locked" class="text-xs text-red-600">Check-out locked</span>
-                </div>
+          <div class="w-full bg-blue-200 rounded-full h-2">
+            <div :style="{ width: totalStudentCount > 0 ? (loadedStudentCount / totalStudentCount * 100) + '%' : '0%' }" class="bg-blue-600 h-2 rounded-full transition-all duration-200"></div>
+          </div>
+        </div>
+        
+        <div class="space-y-5">
+          <!-- Basic Event Info Section -->
+          <div :class="['p-5 rounded-xl border-2', isCOE ? 'bg-orange-50 border-orange-100' : 'bg-purple-50 border-purple-100']">
+            <h4 :class="['text-sm font-semibold mb-4', isCOE ? 'text-orange-900' : 'text-purple-900']">Basic Information</h4>
+            <div class="space-y-4">
+              <!-- Title -->
+              <div>
+                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Event Title *</label>
+                <input v-model="newEvent.title" type="text" placeholder="e.g., CCS General Assembly" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition font-medium', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']" />
               </div>
-              <div class="flex items-center gap-2">
-                <button @click="openEditSessionModal(session)" type="button" class="text-purple-600 hover:text-purple-800 p-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                </button>
-                <button @click="deleteSession(session._id)" type="button" class="text-red-500 hover:text-red-700 p-1">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
+              <!-- Location -->
+              <div>
+                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Location</label>
+                <input v-model="newEvent.location" type="text" placeholder="e.g., CCS AVR" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']" />
+              </div>
+              <!-- Description -->
+              <div>
+                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Description</label>
+                <textarea v-model="newEvent.description" placeholder="Event description..." rows="2" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none resize-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']"></textarea>
               </div>
             </div>
           </div>
+
+          <!-- Schedule Section -->
+          <div :class="['p-5 rounded-xl border-2', isCOE ? 'bg-orange-50 border-orange-100' : 'bg-purple-50 border-purple-100']">
+            <h4 :class="['text-sm font-semibold mb-4', isCOE ? 'text-orange-900' : 'text-purple-900']">Schedule</h4>
+            <div class="space-y-4">
+              <!-- Date -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+                <button @click="openCalendarPicker('newEvent')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']">
+                  <span :class="newEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(newEvent.date) }}</span>
+                  <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </button>
+              </div>
+              <!-- Times -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
+                  <button @click="openTimePicker('event_start_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']">
+                    <span :class="newEvent.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.start_time) || 'Select time' }}</span>
+                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  </button>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-2">End Time *</label>
+                  <button @click="openTimePicker('event_end_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']">
+                    <span :class="newEvent.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.end_time) || 'Select time' }}</span>
+                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  </button>
+                </div>
+              </div>
+              <div :class="['p-3 rounded-lg text-sm', isCOE ? 'bg-orange-100 text-orange-800 border border-orange-200' : 'bg-purple-100 text-purple-800 border border-purple-200']">
+                <span class="font-medium">Tip:</span> Session times must fall within the event time range.
+              </div>
+            </div>
+          </div>
+          
+          <!-- Custom Event Toggle -->
+          <div :class="['flex items-center gap-3 border-2 rounded-xl p-4 transition cursor-pointer', isCOE ? 'bg-orange-50 border-orange-200 hover:bg-orange-100' : 'bg-purple-50 border-purple-200 hover:bg-purple-100']" @click="newEvent.is_custom = !newEvent.is_custom">
+            <input type="checkbox" v-model="newEvent.is_custom" id="customEventToggle" :class="['w-5 h-5 rounded cursor-pointer', isCOE ? 'text-orange-600' : 'text-purple-600']" />
+            <label for="customEventToggle" class="flex-1 cursor-pointer">
+              <p :class="['font-semibold', isCOE ? 'text-orange-900' : 'text-purple-900']">Assign to Specific Students</p>
+              <p :class="['text-xs mt-1', isCOE ? 'text-orange-700' : 'text-purple-700']">Select individual students from the complete student list</p>
+            </label>
+          </div>
+
+          <!-- User Selection Section -->
+          <div v-if="newEvent.is_custom" :class="['border-2 rounded-xl p-5 space-y-4', isCOE ? 'bg-orange-50 border-orange-100' : 'bg-purple-50 border-purple-100']">
+            <h4 :class="['text-sm font-semibold', isCOE ? 'text-orange-900' : 'text-purple-900']">Select Students to Assign to This Event</h4>
+            
+            <!-- Filter Section -->
+            <div :class="['bg-white border rounded-lg p-4 space-y-3', isCOE ? 'border-orange-200' : 'border-purple-200']">
+              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Filter Students</p>
+              
+              <!-- Name/Student ID Filter -->
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Name or Student ID</label>
+                <input 
+                  v-model="eventUserFilters.name" 
+                  type="text" 
+                  placeholder="Search by name or student ID..." 
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-purple-300 focus:ring-purple-600']"
+                />
+              </div>
+              
+              <!-- Program Filter -->
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
+                <select 
+                  v-model="eventUserFilters.program" 
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-purple-300 focus:ring-purple-600']"
+                >
+                  <option value="">All Programs</option>
+                  <option value="BSIT">BSIT</option>
+                  <option value="BSCS">BSCS</option>
+                  <option value="BSIS">BSIS</option>
+                </select>
+              </div>
+              
+              <!-- Year Level Filter -->
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Year Level</label>
+                <select 
+                  v-model="eventUserFilters.yearLevel" 
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-purple-300 focus:ring-purple-600']"
+                >
+                  <option value="">All Year Levels</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                </select>
+              </div>
+              
+              <!-- Clear Filters Button -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <button 
+                  @click="eventUserFilters = { name: '', program: '', yearLevel: '' }" 
+                  type="button" 
+                  :class="['text-xs font-medium hover:opacity-80', isCOE ? 'text-orange-600' : 'text-purple-600']"
+                >
+                  Clear All Filters
+                </button>
+                <span class="text-xs text-gray-400">•</span>
+                <button 
+                  @click="newEvent.assigned_users = filteredEventUsers.map(u => u._id)" 
+                  type="button" 
+                  class="text-xs text-green-600 hover:text-green-800 font-medium"
+                >
+                  Select All
+                </button>
+                <button 
+                  v-if="newEvent.assigned_users.length > 0"
+                  @click="newEvent.assigned_users = []" 
+                  type="button" 
+                  class="text-xs text-red-600 hover:text-red-800 font-medium"
+                >
+                  Deselect All
+                </button>
+              </div>
+            </div>
+
+            <!-- User List (Search Results) -->
+            <div :class="['max-h-48 overflow-y-auto border rounded-lg bg-white', isCOE ? 'border-orange-200' : 'border-purple-200']">
+              <div v-if="filteredEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
+                No students found
+              </div>
+              <label v-for="user in filteredEventUsers" :key="user._id" class="flex items-start gap-3 p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer last:border-b-0">
+                <input 
+                  type="checkbox" 
+                  :checked="newEvent.assigned_users && (newEvent.assigned_users.includes(user._id) || newEvent.assigned_users.some(u => (typeof u === 'object' ? u._id : u) === user._id))"
+                  @change="toggleEventUser(user._id)"
+                  :class="['mt-1 w-4 h-4 rounded focus:ring-2', isCOE ? 'text-orange-600 focus:ring-orange-600' : 'text-purple-600 focus:ring-purple-600']"
+                />
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-gray-900 text-sm">{{ getUserDisplayName(user) }}</p>
+                  <p class="text-xs text-gray-600 mt-0.5">{{ user.student_id }} • {{ user.program }} • {{ user.year_level }}</p>
+                </div>
+              </label>
+            </div>
+
+            <!-- Selected Users Pills -->
+            <div v-if="newEvent.assigned_users && newEvent.assigned_users.length > 0" :class="['mb-3 pb-3 border-b', isCOE ? 'border-orange-300' : 'border-purple-300']">
+              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Selected: {{ newEvent.assigned_users.length }} student(s)</p>
+              <div class="flex flex-wrap gap-2">
+                <div v-for="userItem in newEventDisplayUsers" :key="typeof userItem === 'string' ? userItem : userItem._id" :class="['text-xs font-medium flex items-center gap-2 px-3 py-1 rounded-full', isCOE ? 'bg-orange-200 text-orange-800' : 'bg-purple-200 text-purple-800']">
+                  <span>{{ getSelectedEventUserName(userItem) }}</span>
+                  <button @click="newEvent.assigned_users = newEvent.assigned_users.filter(id => (typeof id === 'string' ? id : id._id) !== (typeof userItem === 'string' ? userItem : userItem._id))" type="button" :class="['hover:opacity-80', isCOE ? 'hover:text-orange-900' : 'hover:text-purple-900']">×</button>
+                </div>
+              </div>
+            </div>
+
+            <div :class="['border-l-4 p-3 rounded text-xs', isCOE ? 'bg-orange-50 border-orange-500 text-orange-700' : 'bg-blue-50 border-blue-500 text-blue-700']">
+              <strong>{{ newEvent.assigned_users.length }}</strong> student(s) will be able to see this event
+            </div>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button @click="showCreateEventModal = false; eventUserFilters = { name: '', program: '', yearLevel: '' }" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
+            <button @click="createAttendanceEvent" :disabled="!newEvent.title || !newEvent.date" :class="['flex-1 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600']">Create Event</button>
+          </div>
         </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- Edit Attendance Event Modal -->
+  <!-- Backdrop Fade Only -->
+  <transition name="fade">
+    <div v-if="showEditEventModal && selectedEvent" class="fixed inset-0 bg-black bg-opacity-50"></div>
+  </transition>
+  <!-- Modal Pop -->
+  <transition name="fade-scale">
+    <div v-if="showEditEventModal && selectedEvent" class="fixed inset-0 flex items-center justify-center z-50" @click.self="showEditEventModal = false">
+      <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-2xl w-full mx-4 max-h-[95vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Edit Attendance Event</h3>
+          <button @click="showEditEventModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+        
+        <!-- Loading Progress Indicator -->
+        <div v-if="loadingStudentsForEvent" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div class="flex items-center justify-between mb-2">
+            <p class="text-sm font-medium text-blue-900">Loading students...</p>
+            <span class="text-xs text-blue-700">{{ loadedStudentCount }} / {{ totalStudentCount }}</span>
+          </div>
+          <div class="w-full bg-blue-200 rounded-full h-2">
+            <div :style="{ width: totalStudentCount > 0 ? (loadedStudentCount / totalStudentCount * 100) + '%' : '0%' }" class="bg-blue-600 h-2 rounded-full transition-all duration-200"></div>
+          </div>
+        </div>
+        
+        <div class="space-y-4">
+          <div>
+            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Event Title *</label>
+            <input v-model="selectedEvent.title" type="text" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none font-medium transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']" />
+          </div>
+          <div>
+            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Description</label>
+            <textarea v-model="selectedEvent.description" rows="3" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none resize-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']"></textarea>
+          </div>
+          <div>
+            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Location</label>
+            <input v-model="selectedEvent.location" type="text" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
+            <button @click="openCalendarPicker('editEvent')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']">
+              <span :class="selectedEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(selectedEvent.date) }}</span>
+              <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </button>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Event Start Time *</label>
+              <button @click="openTimePicker('edit_start_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']">
+                <span :class="selectedEvent.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.start_time || selectedEvent.startTime) || 'Select time' }}</span>
+                <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              </button>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Event End Time *</label>
+              <button @click="openTimePicker('edit_end_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']">
+                <span :class="selectedEvent.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.end_time || selectedEvent.endTime) || 'Select time' }}</span>
+                <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              </button>
+            </div>
+          </div>
+          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-sm font-medium text-blue-800">Current Status:</span>
+              <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', 
+                selectedEvent.status === 'active' ? 'bg-green-100 text-green-800' : 
+                selectedEvent.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 
+                'bg-gray-100 text-gray-800']">
+                {{ selectedEvent.status === 'active' ? 'Active' : selectedEvent.status === 'draft' ? 'Upcoming' : 'Closed' }}
+              </span>
+            </div>
+            <p class="text-xs text-blue-700">Status is updated automatically based on the event date and session times.</p>
+          </div>
+
+          <!-- Custom Event Toggle (Edit) -->
+          <div :class="['flex items-center gap-3 border rounded-lg p-4', isCOE ? 'bg-orange-50 border-orange-200' : 'bg-purple-50 border-purple-200']">
+            <input type="checkbox" v-model="selectedEvent.is_custom" id="editCustomEventToggle" :class="['w-4 h-4 rounded cursor-pointer', isCOE ? 'text-orange-600' : 'text-purple-600']" />
+            <label for="editCustomEventToggle" class="flex-1 cursor-pointer">
+              <p :class="['font-medium', isCOE ? 'text-orange-900' : 'text-purple-900']">Custom Event (Select Specific Students)</p>
+              <p :class="['text-xs mt-0.5', isCOE ? 'text-orange-700' : 'text-purple-700']">Enable this to assign this event to specific students from the complete student list</p>
+            </label>
+          </div>
+
+          <!-- User Selection Section (Edit) -->
+          <div v-if="selectedEvent.is_custom" :class="['border-2 rounded-xl p-5 space-y-4', isCOE ? 'bg-orange-50 border-orange-100' : 'bg-purple-50 border-purple-100']">
+            <h4 :class="['text-sm font-semibold', isCOE ? 'text-orange-900' : 'text-purple-900']">Select Students to Assign to This Event</h4>
+            
+            <!-- Filter Section -->
+            <div :class="['bg-white border rounded-lg p-4 space-y-3', isCOE ? 'border-orange-200' : 'border-purple-200']">
+              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Filter Students</p>
+              
+              <!-- Name/Student ID Filter -->
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Name or Student ID</label>
+                <input 
+                  v-model="editEventUserFilters.name" 
+                  type="text" 
+                  placeholder="Search by name or student ID..." 
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-purple-300 focus:ring-purple-600']"
+                />
+              </div>
+              
+              <!-- Program Filter -->
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
+                <select 
+                  v-model="editEventUserFilters.program" 
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-purple-300 focus:ring-purple-600']"
+                >
+                  <option value="">All Programs</option>
+                  <option value="BSIT">BSIT</option>
+                  <option value="BSCS">BSCS</option>
+                  <option value="BSIS">BSIS</option>
+                </select>
+              </div>
+              
+              <!-- Year Level Filter -->
+              <div>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Year Level</label>
+                <select 
+                  v-model="editEventUserFilters.yearLevel" 
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-purple-300 focus:ring-purple-600']"
+                >
+                  <option value="">All Year Levels</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                </select>
+              </div>
+              
+              <!-- Clear Filters Button -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <button 
+                  @click="editEventUserFilters = { name: '', program: '', yearLevel: '' }" 
+                  type="button" 
+                  :class="['text-xs font-medium hover:opacity-80', isCOE ? 'text-orange-600' : 'text-purple-600']"
+                >
+                  Clear All Filters
+                </button>
+                <span class="text-xs text-gray-400">•</span>
+                <button 
+                  @click="selectedEvent.assigned_users = filteredEditEventUsers.map(u => u._id)" 
+                  type="button" 
+                  class="text-xs text-green-600 hover:text-green-800 font-medium"
+                >
+                  Select All
+                </button>
+                <button 
+                  v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0"
+                  @click="selectedEvent.assigned_users = []" 
+                  type="button" 
+                  class="text-xs text-red-600 hover:text-red-800 font-medium"
+                >
+                  Deselect All
+                </button>
+              </div>
+            </div>
+
+            <!-- User List (Search Results) -->
+            <div :class="['max-h-48 overflow-y-auto border rounded-lg bg-white', isCOE ? 'border-orange-200' : 'border-purple-200']">
+              <div v-if="filteredEditEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
+                No students found
+              </div>
+              <label v-for="user in filteredEditEventUsers" :key="user._id" class="flex items-start gap-3 p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer last:border-b-0">
+                <input 
+                  type="checkbox" 
+                  :checked="selectedEvent.assigned_users && (selectedEvent.assigned_users.includes(user._id) || selectedEvent.assigned_users.some(u => (typeof u === 'object' ? u._id : u) === user._id))"
+                  @change="toggleEditEventUser(user._id)"
+                  :class="['mt-1 w-4 h-4 rounded focus:ring-2', isCOE ? 'text-orange-600 focus:ring-orange-600' : 'text-purple-600 focus:ring-purple-600']"
+                />
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-gray-900 text-sm">{{ getUserDisplayName(user) }}</p>
+                  <p class="text-xs text-gray-600 mt-0.5">{{ user.student_id }} • {{ user.program }} • {{ user.year_level }}</p>
+                </div>
+              </label>
+            </div>
+
+            <!-- Selected Users Pills -->
+            <div v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0" :class="['mb-3 pb-3 border-b', isCOE ? 'border-orange-300' : 'border-purple-300']">
+              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Selected: {{ selectedEvent.assigned_users.length }} student(s)</p>
+              <div class="flex flex-wrap gap-2">
+                <div v-for="userItem in selectedEventDisplayUsers" :key="typeof userItem === 'string' ? userItem : userItem._id" :class="['text-xs font-medium flex items-center gap-2 px-3 py-1 rounded-full', isCOE ? 'bg-orange-200 text-orange-800' : 'bg-purple-200 text-purple-800']">
+                  <span>{{ getSelectedEventUserName(userItem) }}</span>
+                  <button @click="selectedEvent.assigned_users = selectedEvent.assigned_users.filter(id => (typeof id === 'string' ? id : id._id) !== (typeof userItem === 'string' ? userItem : userItem._id))" type="button" :class="['hover:opacity-80', isCOE ? 'hover:text-orange-900' : 'hover:text-purple-900']">×</button>
+                </div>
+              </div>
+            </div>
+
+            <div :class="['border-l-4 p-3 rounded text-xs', isCOE ? 'bg-orange-50 border-orange-500 text-orange-700' : 'bg-blue-50 border-blue-500 text-blue-700']">
+              <strong>{{ selectedEvent.assigned_users ? selectedEvent.assigned_users.length : 0 }}</strong> student(s) can see this event
+            </div>
+          </div>
+          
+          <!-- Sessions Management Section -->
+          <div class="border-t pt-4 mt-4">
+            <div class="flex items-center justify-between mb-3">
+              <label class="block text-sm font-medium text-gray-700">Sessions</label>
+              <button @click="openAddSessionModal" type="button" :class="['text-xs px-3 py-1 rounded-lg transition flex items-center gap-1 font-medium', addSessionButtonAnimating ? 'bg-purple-500 text-white scale-105 animate-pulse' : 'bg-purple-100 text-purple-700 hover:bg-purple-200']">
+                <svg :class="['w-4 h-4 transition-transform', addSessionButtonAnimating ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                {{ addSessionButtonAnimating ? 'Opening...' : 'Add Session' }}
+              </button>
+            </div>
+            <div v-if="eventSessions.length === 0" class="text-center py-4 bg-gray-50 rounded-lg">
+              <p class="text-sm text-gray-500">No sessions added yet. Add sessions to enable check-in/check-out.</p>
+            </div>
+            <div v-else class="space-y-2">
+              <div v-for="session in eventSessions" :key="session._id" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium text-gray-800">{{ session.label }}</span>
+                    <span :class="['px-2 py-0.5 rounded-full text-xs', getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, selectedEvent) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
+                      {{ getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'Active' : getSessionDisplayStatus(session, selectedEvent) === 'draft' ? 'Upcoming' : 'Closed' }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-gray-500">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
+                  <div class="flex flex-wrap gap-2 mt-1">
+                    <span class="text-xs text-orange-600">Late after {{ session.late_timer_minutes || 60 }} mins</span>
+                    <span v-if="session.check_in_locked" class="text-xs text-red-600">Check-in locked</span>
+                    <span v-if="session.check_out_locked" class="text-xs text-red-600">Check-out locked</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button @click="openEditSessionModal(session)" type="button" class="text-purple-600 hover:text-purple-800 p-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                  </button>
+                  <button @click="deleteSession(session._id)" type="button" class="text-red-500 hover:text-red-700 p-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         
         <div class="flex gap-3 mt-6">
           <button @click="showEditEventModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-          <button @click="openEventLogs(selectedEvent)" class="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition">View Logs</button>
-          <button @click="updateAttendanceEvent" :disabled="!selectedEvent.title || !selectedEvent.date" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed">Save Changes</button>
+          <button @click="updateAttendanceEvent" :disabled="!selectedEvent.title || !selectedEvent.date" :class="['flex-1 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">Save Changes</button>
+        </div>
         </div>
       </div>
     </div>
-  </div>
+  </transition>
 
   <!-- Add/Edit Session Modal -->
-  <div v-if="showSessionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]" @click.self="showSessionModal = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
+  <!-- Backdrop Fade Only -->
+  <transition name="fade">
+    <div v-if="showSessionModal" class="fixed inset-0 bg-black bg-opacity-50"></div>
+  </transition>
+  <!-- Modal Pop -->
+  <transition name="fade-scale">
+    <div v-if="showSessionModal" class="fixed inset-0 flex items-center justify-center z-[60]" @click.self="showSessionModal = false">
+      <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold text-purple-900">{{ editingSession ? 'Edit Session' : 'Add Session' }}</h3>
-        <button @click="showSessionModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <h3 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ editingSession ? 'Edit Session' : 'Add Session' }}</h3>
+        <button @click="showSessionModal = false" :class="['text-2xl transition', isCOE ? 'text-orange-500 hover:text-orange-700' : 'text-gray-500 hover:text-gray-700']">&times;</button>
       </div>
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Session Label *</label>
-          <select v-model="newSession.label" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
+          <select v-model="newSession.label" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']">
             <option v-for="label in sessionLabels" :key="label" :value="label">{{ label }}</option>
           </select>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
-            <button @click="openTimePicker('session_start_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
+            <button @click="openTimePicker('session_start_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']">
               <span :class="newSession.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newSession.start_time) || 'Select time' }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </button>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">End Time *</label>
-            <button @click="openTimePicker('session_end_time')" type="button" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none text-left flex items-center justify-between hover:bg-gray-50 transition">
+            <button @click="openTimePicker('session_end_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : 'border-gray-300 focus:ring-purple-600']">
               <span :class="newSession.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newSession.end_time) || 'Select time' }}</span>
-              <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </button>
           </div>
         </div>
@@ -5020,7 +5409,7 @@
         </div>
         <div class="flex gap-3 mt-6">
           <button @click="showSessionModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition" :disabled="savingSession">Cancel</button>
-          <button @click="saveSession" :disabled="!newSession.label || !newSession.start_time || !newSession.end_time || savingSession || !!sessionTimeError" class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+          <button @click="saveSession" :disabled="!newSession.label || !newSession.start_time || !newSession.end_time || savingSession || !!sessionTimeError" :class="['flex-1 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : 'from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600']">
             <svg v-if="savingSession" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -5029,17 +5418,24 @@
           </button>
         </div>
       </div>
+      </div>
     </div>
-  </div>
+  </transition>
 
   <!-- Event Attendance Logs Modal -->
-  <div v-if="showEventLogsModal && selectedEvent" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showEventLogsModal = false">
-    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+  <!-- Backdrop Fade Only -->
+  <transition name="fade">
+    <div v-if="showEventLogsModal && selectedEvent" class="fixed inset-0 bg-black bg-opacity-50"></div>
+  </transition>
+  <!-- Modal Pop with fade-scale -->
+  <transition name="fade-scale">
+    <div v-if="showEventLogsModal && selectedEvent" class="fixed inset-0 flex items-center justify-center z-50" @click.self="showEventLogsModal = false">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-6">
         <div>
-          <h3 class="text-2xl font-bold text-purple-900">
+          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">
             {{ selectedEvent.title }}
-            <span v-if="selectedSessionForLogs" class="text-lg font-medium text-purple-600"> - {{ selectedSessionForLogs.label }} Session</span>
+            <span v-if="selectedSessionForLogs" :class="['text-lg font-medium', isCOE ? 'text-orange-600' : 'text-purple-600']"> - {{ selectedSessionForLogs.label }} Session</span>
           </h3>
           <p class="text-gray-500 text-sm">
             Attendance Logs - {{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}
@@ -5049,52 +5445,48 @@
         <button @click="showEventLogsModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
       </div>
       
+      <div class="space-y-6">
+        <!-- Panel switcher: Logs | Excused -->
+        <div class="mb-4">
+          <div class="inline-flex bg-gray-100 rounded-lg p-1">
+            <button @click="selectedPanel = 'logs'" :class="['px-3 py-1 rounded-lg text-sm', selectedPanel === 'logs' ? 'bg-white shadow' : 'text-gray-600']">Logs</button>
+            <button @click="selectedPanel = 'excused'" :class="['px-3 py-1 rounded-lg text-sm', selectedPanel === 'excused' ? 'bg-white shadow' : 'text-gray-600']">Excused</button>
+          </div>
+        </div>
+        <!-- Left column: Filters, Stats, Logs -->
+        <transition enter-active-class="transition-opacity duration-300" enter-from-class="opacity-0" enter-to-class="opacity-100" leave-active-class="transition-opacity duration-200" leave-from-class="opacity-100" leave-to-class="opacity-0">
+          <div class="flex-1" v-if="selectedPanel === 'logs'">
       <!-- Filters -->
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
-        <input v-model="eventLogsFilter.search" type="text" placeholder="Search by name or ID..." class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" @input="selectedSessionForLogs ? fetchSessionLogs(selectedSessionForLogs._id) : fetchEventLogs(selectedEvent._id)" />
-        <select v-model="eventLogsFilter.yearLevel" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" @change="selectedSessionForLogs ? fetchSessionLogs(selectedSessionForLogs._id) : fetchEventLogs(selectedEvent._id)">
-          <option value="">All Year Levels</option>
-          <option value="1st Year">1st Year</option>
-          <option value="2nd Year">2nd Year</option>
-          <option value="3rd Year">3rd Year</option>
-          <option value="4th Year">4th Year</option>
-        </select>
-        <select v-model="eventLogsFilter.program" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" @change="selectedSessionForLogs ? fetchSessionLogs(selectedSessionForLogs._id) : fetchEventLogs(selectedEvent._id)">
-          <option value="">All Programs</option>
-          <option value="BSCS">BSCS</option>
-          <option value="BSIS">BSIS</option>
-          <option value="BSIT">BSIT</option>
-        </select>
-        <select v-model="eventLogsFilter.status" class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" @change="applyStatusFilter()">
-          <option value="">All Statuses</option>
-          <option value="present">Present</option>
-          <option value="incomplete">Incomplete</option>
-          <option value="late">Late</option>
-          <option value="absent">Absent</option>
-        </select>
+      <div class="mb-6">
+        <input v-model="eventLogsFilter.search" type="text" placeholder="Search by name or ID..." :class="['w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : 'focus:ring-purple-600']" @input="selectedSessionForLogs ? fetchSessionLogs(selectedSessionForLogs._id) : fetchEventLogs(selectedEvent._id)" />
       </div>
 
-      <!-- Stats Summary -->
-      <div class="grid grid-cols-5 gap-4 mb-6">
-        <div class="bg-green-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-green-600">{{ sessionStats.present }}</p>
-          <p class="text-sm text-green-700">Present</p>
+      <!-- Stats Summary (responsive) -->
+      <div class="mb-6">
+        <div v-if="attendanceLoading" class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div v-for="n in 5" :key="n" class="p-3 sm:p-4 rounded-lg bg-gray-100 animate-pulse" style="height:64px"></div>
         </div>
-        <div class="bg-yellow-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-yellow-600">{{ sessionStats.incomplete }}</p>
-          <p class="text-sm text-yellow-700">Incomplete</p>
-        </div>
-        <div class="bg-orange-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-orange-600">{{ sessionStats.late }}</p>
-          <p class="text-sm text-orange-700">Late</p>
-        </div>
-        <div class="bg-red-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-red-600">{{ sessionStats.absent }}</p>
-          <p class="text-sm text-red-700">Absent</p>
-        </div>
-        <div class="bg-purple-50 p-4 rounded-lg text-center">
-          <p class="text-2xl font-bold text-purple-600">{{ sessionStats.total }}<span v-if="sessionStats.totalStudents > 0" class="text-lg text-purple-400">/{{ sessionStats.totalStudents }}</span></p>
-          <p class="text-sm text-purple-700">Total<span v-if="sessionStats.totalStudents > 0"> Attended</span></p>
+        <div v-else class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
+          <div class="bg-green-50 p-3 sm:p-4 rounded-lg text-center">
+            <p class="text-xl sm:text-2xl font-bold text-green-600">{{ sessionStats.present }}</p>
+            <p class="text-xs sm:text-sm text-green-700">Present</p>
+          </div>
+          <div class="bg-yellow-50 p-3 sm:p-4 rounded-lg text-center">
+            <p class="text-xl sm:text-2xl font-bold text-yellow-600">{{ sessionStats.incomplete }}</p>
+            <p class="text-xs sm:text-sm text-yellow-700">Incomplete</p>
+          </div>
+          <div class="bg-orange-50 p-3 sm:p-4 rounded-lg text-center">
+            <p class="text-xl sm:text-2xl font-bold text-orange-600">{{ sessionStats.late }}</p>
+            <p class="text-xs sm:text-sm text-orange-700">Late</p>
+          </div>
+          <div class="bg-red-50 p-3 sm:p-4 rounded-lg text-center">
+            <p class="text-xl sm:text-2xl font-bold text-red-600">{{ sessionStats.absent }}</p>
+            <p class="text-xs sm:text-sm text-red-700">Absent</p>
+          </div>
+          <div :class="['p-3 sm:p-4 rounded-lg text-center', isCOE ? 'bg-orange-50' : 'bg-purple-50']">
+            <p :class="['text-xl sm:text-2xl font-bold', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ sessionStats.total }}<span v-if="sessionStats.totalStudents > 0" :class="['text-base sm:text-lg', isCOE ? 'text-orange-400' : 'text-purple-400']">/{{ sessionStats.totalStudents }}</span></p>
+            <p :class="['text-xs sm:text-sm', isCOE ? 'text-orange-700' : 'text-purple-700']">Total<span v-if="sessionStats.totalStudents > 0"> Attended</span></p>
+          </div>
         </div>
       </div>
 
@@ -5140,11 +5532,11 @@
         <div class="mb-4">
           <p class="text-sm font-medium text-gray-700 mb-2">Year Filter:</p>
           <div class="flex flex-wrap gap-2">
-            <button @click="selectAllYears()" :class="selectedYearFilters.length === 0 ? 'px-3 py-1 rounded-lg bg-purple-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">All</button>
-            <button @click="toggleYearFilter('1st Year')" :class="yearFilterActive('1st Year') ? 'px-3 py-1 rounded-lg bg-blue-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">1st</button>
-            <button @click="toggleYearFilter('2nd Year')" :class="yearFilterActive('2nd Year') ? 'px-3 py-1 rounded-lg bg-green-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">2nd</button>
-            <button @click="toggleYearFilter('3rd Year')" :class="yearFilterActive('3rd Year') ? 'px-3 py-1 rounded-lg bg-yellow-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">3rd</button>
-            <button @click="toggleYearFilter('4th Year')" :class="yearFilterActive('4th Year') ? 'px-3 py-1 rounded-lg bg-purple-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">4th</button>
+            <button @click="selectAllYears()" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', selectedYearFilters.length === 0 ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border border-gray-200']">All</button>
+            <button @click="toggleYearFilter('1st Year')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', yearFilterActive('1st Year') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-blue-600 text-white') : 'bg-white border border-gray-200']">1st</button>
+            <button @click="toggleYearFilter('2nd Year')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', yearFilterActive('2nd Year') ? 'bg-green-600 text-white' : 'bg-white border border-gray-200']">2nd</button>
+            <button @click="toggleYearFilter('3rd Year')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', yearFilterActive('3rd Year') ? 'bg-yellow-600 text-white' : 'bg-white border border-gray-200']">3rd</button>
+            <button @click="toggleYearFilter('4th Year')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', yearFilterActive('4th Year') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border border-gray-200']">4th</button>
           </div>
         </div>
 
@@ -5152,11 +5544,11 @@
         <div class="mb-4">
           <p class="text-sm font-medium text-gray-700 mb-2">Status Filter:</p>
           <div class="flex flex-wrap gap-2">
-            <button @click="selectAllStatuses()" :class="selectedStatusFilters.length === 0 ? 'px-3 py-1 rounded-lg bg-purple-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">All</button>
-            <button @click="toggleStatusFilter('Present')" :class="statusFilterActive('Present') ? 'px-3 py-1 rounded-lg bg-green-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">Present</button>
-            <button @click="toggleStatusFilter('Incomplete')" :class="statusFilterActive('Incomplete') ? 'px-3 py-1 rounded-lg bg-yellow-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">Incomplete</button>
-            <button @click="toggleStatusFilter('Late')" :class="statusFilterActive('Late') ? 'px-3 py-1 rounded-lg bg-orange-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">Late</button>
-            <button @click="toggleStatusFilter('Absent')" :class="statusFilterActive('Absent') ? 'px-3 py-1 rounded-lg bg-red-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">Absent</button>
+            <button @click="selectAllStatuses()" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', selectedStatusFilters.length === 0 ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border border-gray-200']">All</button>
+            <button @click="toggleStatusFilter('Present')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', statusFilterActive('Present') ? 'bg-green-600 text-white' : 'bg-white border border-gray-200']">Present</button>
+            <button @click="toggleStatusFilter('Incomplete')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', statusFilterActive('Incomplete') ? 'bg-yellow-600 text-white' : 'bg-white border border-gray-200']">Incomplete</button>
+            <button @click="toggleStatusFilter('Late')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', statusFilterActive('Late') ? 'bg-orange-600 text-white' : 'bg-white border border-gray-200']">Late</button>
+            <button @click="toggleStatusFilter('Absent')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', statusFilterActive('Absent') ? 'bg-red-600 text-white' : 'bg-white border border-gray-200']">Absent</button>
           </div>
         </div>
 
@@ -5164,10 +5556,10 @@
         <div class="mb-4">
           <p class="text-sm font-medium text-gray-700 mb-2">Program Filter:</p>
           <div class="flex flex-wrap gap-2">
-            <button @click="selectAllPrograms()" :class="selectedProgramFilters.length === 0 ? 'px-3 py-1 rounded-lg bg-purple-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">All</button>
-            <button @click="toggleProgramFilter('BSCS')" :class="programFilterActive('BSCS') ? 'px-3 py-1 rounded-lg bg-indigo-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">BSCS</button>
-            <button @click="toggleProgramFilter('BSIT')" :class="programFilterActive('BSIT') ? 'px-3 py-1 rounded-lg bg-cyan-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">BSIT</button>
-            <button @click="toggleProgramFilter('BSIS')" :class="programFilterActive('BSIS') ? 'px-3 py-1 rounded-lg bg-rose-600 text-white' : 'px-3 py-1 rounded-lg bg-white border border-gray-200'" class="text-xs sm:text-sm hover:shadow transition">BSIS</button>
+            <button @click="selectAllPrograms()" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', selectedProgramFilters.length === 0 ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border border-gray-200']">All</button>
+            <button @click="toggleProgramFilter('BSCS')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', programFilterActive('BSCS') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-indigo-600 text-white') : 'bg-white border border-gray-200']">BSCS</button>
+            <button @click="toggleProgramFilter('BSIT')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', programFilterActive('BSIT') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-cyan-600 text-white') : 'bg-white border border-gray-200']">BSIT</button>
+            <button @click="toggleProgramFilter('BSIS')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', programFilterActive('BSIS') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-white border border-gray-200']">BSIS</button>
           </div>
         </div>
 
@@ -5208,19 +5600,19 @@
       <div class="overflow-x-auto">
         <table class="w-full border-collapse">
           <thead>
-            <tr class="bg-purple-100 text-purple-900">
-              <th class="border border-purple-300 px-4 py-3 text-left">Student</th>
-              <th class="border border-purple-300 px-4 py-3 text-left">Program</th>
-              <th class="border border-purple-300 px-4 py-3 text-left">Year</th>
-              <th class="border border-purple-300 px-4 py-3 text-center">Check In</th>
-              <th class="border border-purple-300 px-4 py-3 text-center">Check Out</th>
-              <th class="border border-purple-300 px-4 py-3 text-center">Status</th>
+            <tr :class="isCOE ? 'bg-orange-100 text-orange-900' : 'bg-purple-100 text-purple-900'">
+              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-left']">Student</th>
+              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-left']">Program</th>
+              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-left']">Year</th>
+              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">Check In</th>
+              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">Check Out</th>
+              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">Status</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="attendanceLoading" class="text-center">
               <td colspan="6" class="py-8 text-gray-500">
-                <svg class="animate-spin h-8 w-8 mx-auto mb-2 text-purple-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg :class="['animate-spin h-8 w-8 mx-auto mb-2', isCOE ? 'text-orange-600' : 'text-purple-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -5230,40 +5622,190 @@
             <tr v-else-if="filteredAttendanceLogs.length === 0" class="text-center">
               <td colspan="6" class="py-8 text-gray-500">No attendance records found</td>
             </tr>
-            <tr v-else v-for="log in filteredAttendanceLogs.slice(0, sessionLogsDisplayLimit)" :key="log.id" class="hover:bg-gray-50">
-              <td class="border border-purple-300 px-4 py-3">
+            <tr v-else v-for="log in filteredAttendanceLogs.slice(0, sessionLogsDisplayLimit)" :key="log.id" class="hover:shadow-md hover:rounded-lg transition-all duration-150">
+              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3']">
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-r from-pink-400 to-purple-600 flex items-center justify-center text-white text-xs overflow-hidden">
-                    <img v-if="log.student_image" :src="log.student_image" class="w-full h-full object-cover" />
-                    <span v-else>{{ (log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim())?.charAt(0) || '?' }}</span>
+                  <div :class="['w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white text-sm shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+                    <img v-if="(log.student_image || log.student?.image || log.student?.photo || log.student?.avatar)" :src="log.student_image || log.student?.image || log.student?.photo || log.student?.avatar" class="w-full h-full object-cover" />
+                    <span v-else>{{ ((log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || '?').charAt(0) }}</span>
                   </div>
                   <div>
-                    <p class="font-medium text-gray-900">{{ log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`.trim() || 'N/A' }}</p>
+                    <p class="font-medium text-gray-900">{{ (log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || 'N/A' }}</p>
                     <p class="text-xs text-gray-500">{{ log.student_id_number || log.student_id }}</p>
+                    <p v-if="log.excused" class="text-xs text-gray-600 italic">Excused{{ (log.excused_by_name || log.excused_by) ? (' by ' + (log.excused_by_name || log.excused_by)) : '' }}{{ log.excuse_reason ? ' — ' + log.excuse_reason : '' }}</p>
                   </div>
                 </div>
               </td>
-              <td class="border border-purple-300 px-4 py-3">{{ log.program || '-' }}</td>
-              <td class="border border-purple-300 px-4 py-3">{{ log.year_level || '-' }}</td>
-              <td class="border border-purple-300 px-4 py-3 text-center">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString() : '-' }}</td>
-              <td class="border border-purple-300 px-4 py-3 text-center">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</td>
-              <td class="border border-purple-300 px-4 py-3 text-center">
-                <span :class="getAttendanceLogStatusClass(log)" class="px-2 py-1 rounded-full text-xs font-semibold">{{ getAttendanceLogStatusLabel(log) }}</span>
+              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3']">{{ log.program || '-' }}</td>
+              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3']">{{ log.year_level || '-' }}</td>
+              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString() : '-' }}</td>
+              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</td>
+              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">
+                  <div class="flex items-center justify-center gap-2">
+                  <span :class="getAttendanceLogStatusClass(log)" class="px-2 py-1 rounded-full text-xs font-semibold">{{ getAttendanceLogStatusLabel(log) }}</span>
+                  <button
+                    v-if="currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster) && selectedEvent && selectedSessionForLogs && hasEventEndedPH(selectedEvent) && selectedSessionForLogs.status === 'closed'"
+                    @click="openEditAttendanceModal(log)"
+                    class="text-xs text-blue-600 hover:underline ml-2"
+                  >
+                    Edit
+                  </button>
+                  <!-- Excuse button for absent records -->
+                  <button
+                    v-if="getAttendanceLogStatusLabel(log) === 'Absent' && !log.excused && currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster) && selectedEvent && selectedSessionForLogs && hasEventEndedPH(selectedEvent) && selectedSessionForLogs.status === 'closed'"
+                    @click="openExcuseForLog(log)"
+                    class="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded ml-2 hover:bg-yellow-200"
+                  >
+                    Excuse
+                  </button>
+                  <!-- Undo Excuse button when already excused -->
+                  <button
+                    v-if="log.excused && currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster) && selectedEvent && selectedSessionForLogs && hasEventEndedPH(selectedEvent) && selectedSessionForLogs.status === 'closed'"
+                    @click="undoExcuse(log)"
+                    class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded ml-2 hover:bg-red-200"
+                  >
+                    Undo
+                  </button>
+                  <!-- Details button for already-excused records -->
+                  <button
+                    v-if="log.excused && currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster) && selectedEvent && selectedSessionForLogs && hasEventEndedPH(selectedEvent) && selectedSessionForLogs.status === 'closed'"
+                    @click="openEditAttendanceModal(log)"
+                    class="text-xs bg-indigo-100 text-indigo-800 px-2 py-1 rounded ml-2 hover:bg-indigo-200"
+                    title="View / edit excuse details"
+                  >
+                    Details
+                  </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
+        </div>
+      </transition>
+
+          <!-- Excuse Management (separate panel) -->
+        <div v-if="selectedPanel === 'excused'" class="w-full border-t pt-4">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="font-semibold text-gray-800">Excuse Management</h4>
+            <div class="text-xs text-gray-500">Session</div>
+          </div>
+
+          <!-- Tabs -->
+          <div class="mb-3">
+            <div class="inline-flex bg-gray-100 rounded-lg p-1">
+              <button @click="selectedExcuseTab = 'excusable'" :class="['px-3 py-1 rounded-lg text-sm', selectedExcuseTab === 'excusable' ? 'bg-white shadow' : 'text-gray-600']">Excusable</button>
+              <button @click="selectedExcuseTab = 'excused'" :class="['px-3 py-1 rounded-lg text-sm', selectedExcuseTab === 'excused' ? 'bg-white shadow' : 'text-gray-600']">Excused</button>
+            </div>
+          </div>
+
+          <div v-if="selectedExcuseTab === 'excusable'">
+            <p class="text-xs text-gray-500 mb-3">Mark which absent attendees can be excused. You can Apply as Excused or open individual excuse dialog.</p>
+
+            <!-- Search & Filters -->
+            <div class="mb-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <input v-model="excusableSearch" type="text" placeholder="Search name, program, or year..." class="col-span-1 sm:col-span-2 px-3 py-2 border rounded-lg focus:ring-2 outline-none" />
+                <div class="col-span-1 flex items-center justify-end gap-2">
+                  <button @click="clearExcusableFilters" class="px-3 py-2 bg-gray-100 rounded">Clear Filters</button>
+                </div>
+              </div>
+
+              <div class="mt-3 flex flex-wrap gap-2">
+                <div class="text-xs text-gray-600 mr-2 self-center">Programs:</div>
+                <button @click="toggleExcusableProgramFilter('BSCS')" :class="['text-xs px-3 py-1 rounded', excusableProgramFilterActive('BSCS') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-indigo-600 text-white') : 'bg-white border']">BSCS</button>
+                <button @click="toggleExcusableProgramFilter('BSIT')" :class="['text-xs px-3 py-1 rounded', excusableProgramFilterActive('BSIT') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-cyan-600 text-white') : 'bg-white border']">BSIT</button>
+                <button @click="toggleExcusableProgramFilter('BSIS')" :class="['text-xs px-3 py-1 rounded', excusableProgramFilterActive('BSIS') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-white border']">BSIS</button>
+              </div>
+
+              <div class="mt-2 flex flex-wrap gap-2">
+                <div class="text-xs text-gray-600 mr-2 self-center">Year:</div>
+                <button @click="toggleExcusableYearFilter('1st Year')" :class="['text-xs px-3 py-1 rounded', excusableYearFilterActive('1st Year') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border']">1st</button>
+                <button @click="toggleExcusableYearFilter('2nd Year')" :class="['text-xs px-3 py-1 rounded', excusableYearFilterActive('2nd Year') ? 'bg-green-600 text-white' : 'bg-white border']">2nd</button>
+                <button @click="toggleExcusableYearFilter('3rd Year')" :class="['text-xs px-3 py-1 rounded', excusableYearFilterActive('3rd Year') ? 'bg-yellow-600 text-white' : 'bg-white border']">3rd</button>
+                <button @click="toggleExcusableYearFilter('4th Year')" :class="['text-xs px-3 py-1 rounded', excusableYearFilterActive('4th Year') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border']">4th</button>
+              </div>
+
+                <div class="mt-4 flex items-center gap-2">
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <button @click="allowAllAbsent" class="flex-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm shadow-sm hover:shadow-md transition">Mark All as Excusable</button>
+                    <button @click="clearAllExcusable" class="px-3 py-2 bg-gray-100 border rounded-lg text-sm">Clear Selections</button>
+                  </div>
+                </div>
+                <div>
+                  <button @click="applyExcusableAsExcused" :disabled="applyingBulkExcuse" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-lg text-sm shadow-sm hover:from-indigo-700 hover:to-indigo-600 transition flex items-center gap-2">
+                    <svg v-if="applyingBulkExcuse" class="animate-spin h-4 w-4 inline-block mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    Apply Selected as Excused
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <p class="text-xs font-medium text-gray-700 mb-2">Absent Students</p>
+              <div class="max-h-64 overflow-y-auto space-y-2">
+                <transition-group tag="div" enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2" class="max-h-64 overflow-y-auto space-y-2">
+                  <div v-for="log in filteredAbsentLogsForCurrentSession" :key="log._id" class="flex items-center justify-between p-2 bg-white rounded border hover:shadow-sm hover:scale-[1.01] transform-gpu transition-all duration-200">
+                    <div class="flex items-center gap-3">
+                      <div :class="['w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white text-sm', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+                        <img v-if="(log.student_image || log.student?.image || log.student?.photo || log.student?.avatar)" :src="log.student_image || log.student?.image || log.student?.photo || log.student?.avatar" class="w-full h-full object-cover" />
+                        <span v-else>{{ ((log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || '?').charAt(0) }}</span>
+                      </div>
+                      <div class="text-sm">
+                        <div class="font-medium">{{ (log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || 'N/A' }}</div>
+                        <div class="text-xs text-gray-500">{{ log.program || log.student?.program || '-' }} · {{ log.year_level || log.student?.year_level || '-' }}</div>
+                        <div class="text-xs text-gray-400">{{ log.student?.student_id || log.student_id_number || '' }}</div>
+                      </div>
+                    </div>
+                    <div class="flex sm:flex-row flex-col sm:items-center items-stretch gap-2">
+                      <button @click="openExcuseForLog(log)" class="w-full sm:w-auto text-xs px-3 py-2 rounded text-center" :class="isCOE ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'">Excuse</button>
+                    </div>
+                  </div>
+                </transition-group>
+                <div v-if="filteredAbsentLogsForCurrentSession.length === 0" class="text-xs text-gray-500">No absent records.</div>
+              </div>
+            </div>
+          </div>
+
+          <transition name="fade-slide" v-else enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
+            <div>
+              <p class="text-xs text-gray-500 mb-3">Students already excused for this session. Click Details to view or edit the reason.</p>
+              <transition-group tag="div" enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2" class="max-h-72 overflow-y-auto space-y-2">
+                <div v-for="log in excusedLogsForCurrentSession" :key="log._id" class="bg-white rounded-lg border p-3 flex items-start justify-between shadow-sm hover:shadow-md transform-gpu transition-all duration-250">
+                  <div class="flex items-start gap-3">
+                    <div :class="['w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-white text-sm shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+                      <img v-if="(log.student_image || log.student?.image || log.student?.photo || log.student?.avatar)" :src="log.student_image || log.student?.image || log.student?.photo || log.student?.avatar" class="w-full h-full object-cover" />
+                      <span v-else>{{ ((log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || '?').charAt(0) }}</span>
+                    </div>
+                    <div class="text-sm">
+                      <div class="font-semibold text-gray-900">{{ (log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || 'N/A' }}</div>
+                      <div class="text-xs text-gray-500">{{ log.program || log.student?.program || '-' }} · {{ log.year_level || log.student?.year_level || '-' }}</div>
+                      <div class="text-xs text-gray-600 mt-1">{{ log.excuse_reason || 'No reason provided' }}</div>
+                      <div v-if="log.excused_by_name || log.excused_by" class="text-xs text-gray-400 mt-1">Excused by: {{ log.excused_by_name || log.excused_by }}</div>
+                    </div>
+                  </div>
+                  <div class="flex flex-col items-end gap-2">
+                    <button @click="openEditAttendanceModal(log)" class="text-xs px-3 py-1 bg-indigo-50 text-indigo-800 rounded hover:bg-indigo-100 transition">Details</button>
+                    <button @click="undoExcuse(log)" class="text-xs px-3 py-1 bg-red-50 text-red-800 rounded hover:bg-red-100 transition">Revoke</button>
+                  </div>
+                </div>
+              </transition-group>
+              <div v-if="excusedLogsForCurrentSession.length === 0" class="text-xs text-gray-500">No excused records yet.</div>
+            </div>
+          </transition>
+        </div>
+      </div>
       
-      <!-- Total records info and Load More button -->
-      <div v-if="!attendanceLoading && attendanceLogs.length > 0" class="mt-4 text-center">
+      <!-- Total records info and Load More button (logs panel only) -->
+      <div v-if="selectedPanel === 'logs' && !attendanceLoading && attendanceLogs.length > 0" class="mt-4 text-center">
         <p class="text-sm text-gray-500 mb-2">
-          Showing {{ Math.min(sessionLogsDisplayLimit, filteredAttendanceLogs.length) }} of {{ filteredAttendanceLogs.length }} records
+          Showing {{ Math.min(sessionLogsDisplayLimit, attendanceLogs.length) }} of {{ attendanceLogs.length }} records
         </p>
         <button 
-          v-if="filteredAttendanceLogs.length > sessionLogsDisplayLimit"
+          v-if="attendanceLogs.length > sessionLogsDisplayLimit"
           @click="sessionLogsDisplayLimit += 20"
-          class="px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg hover:from-purple-700 hover:to-pink-600 transition font-medium text-sm flex items-center gap-2 mx-auto"
+          :class="['px-6 py-2 text-white rounded-lg transition font-medium text-sm flex items-center gap-2 mx-auto', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600']"
         >
           <span>Show More</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -5272,7 +5814,8 @@
         </button>
       </div>
     </div>
-  </div>
+    </div>
+  </transition>
 
   <!-- Event Deletion Confirmation Modal -->
   <transition name="fade">
@@ -5304,15 +5847,238 @@
     </div>
   </transition>
 
+  <!-- Duplicate Event Confirmation Modal -->
+  <transition name="fade">
+    <div v-if="showDuplicateEventConfirm" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDuplicateEventConfirm = false">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
+          <div class="text-center mb-6">
+            <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+              </svg>
+            </div>
+            <h3 class="text-xl font-bold text-gray-900 mb-2">Duplicate Event</h3>
+            <p class="text-gray-600">
+              Duplicate the event "<span class="font-semibold">{{ eventToDuplicate?.title }}</span>"? You'll be able to edit the date and sessions after duplication.
+            </p>
+          </div>
+          <div class="flex gap-3">
+            <button @click="showDuplicateEventConfirm = false" class="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition">
+              Cancel
+            </button>
+            <button @click="confirmDuplicateEvent" class="flex-1 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition">
+              Duplicate
+            </button>
+          </div>
+        </div>
+      </transition>
+    </div>
+  </transition>
+
   <!-- Notification Toast - Bottom Left, Always in Front -->
   <transition name="slide-up">
-    <div v-if="notification.show" :class="['fixed bottom-4 left-4 px-6 py-3 rounded-lg shadow-2xl text-white font-medium transition-all duration-300 z-[100] max-w-sm', notification.type === 'success' ? 'bg-green-500' : notification.type === 'error' ? 'bg-red-500' : notification.type === 'warning' ? 'bg-yellow-500' : 'bg-blue-500']">
-      <div class="flex items-center gap-2">
-        <svg v-if="notification.type === 'success'" class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-        <svg v-else-if="notification.type === 'error'" class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
-        <svg v-else-if="notification.type === 'warning'" class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
-        <svg v-else class="animate-spin w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-        <span>{{ notification.message }}</span>
+    <div v-if="notification.show" :class="['fixed bottom-4 left-4 px-6 py-4 rounded-lg shadow-2xl font-medium transition-all duration-300 z-[100] max-w-sm',
+      notification.type === 'success' ? 'bg-green-100 text-green-900 border border-green-200' :
+      notification.type === 'error' ? 'bg-red-100 text-red-900 border border-red-200' :
+      notification.type === 'warning' ? 'bg-yellow-50 text-yellow-900 border border-yellow-200' :
+      'bg-blue-100 text-blue-900 border border-blue-200']">
+      <div class="flex items-start gap-3">
+        <svg v-if="notification.type === 'success'" class="w-6 h-6 flex-shrink-0 text-green-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+        <svg v-else-if="notification.type === 'error'" class="w-6 h-6 flex-shrink-0 text-red-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+        <svg v-else-if="notification.type === 'warning'" class="w-6 h-6 flex-shrink-0 text-yellow-700" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+        <svg v-else class="animate-spin w-6 h-6 flex-shrink-0 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <div class="flex-1">
+          <div class="text-lg leading-snug">{{ notification.message }}</div>
+        </div>
+      </div>
+    </div>
+  </transition>
+
+  <!-- Contact/Help Modal -->
+  <transition name="fade">
+    <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showContactModal = false">
+      <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-6">
+          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Help & Support</h3>
+          <button @click="showContactModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex gap-2 mb-6 border-b">
+          <button 
+            @click="helpTab = 'about'"
+            :class="['px-4 py-2 font-medium transition', helpTab === 'about' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-800']"
+          >
+            About
+          </button>
+          <button 
+            @click="helpTab = 'faq'"
+            :class="['px-4 py-2 font-medium transition', helpTab === 'faq' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-800']"
+          >
+            FAQ
+          </button>
+          <button 
+            @click="helpTab = 'contact'"
+            :class="['px-4 py-2 font-medium transition', helpTab === 'contact' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-800']"
+          >
+            Contact
+          </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div v-if="helpTab === 'about'" class="space-y-4">
+          <div>
+            <h4 :class="['font-bold text-lg mb-2', isCOE ? 'text-orange-900' : 'text-purple-900']">SSAAM - Student School Activity Attendance Management</h4>
+            <p class="text-gray-700 text-sm leading-relaxed">
+              SSAAM is a comprehensive attendance management system designed for educational institutions. It provides real-time RFID scanning, automated attendance tracking, and detailed reporting capabilities.
+            </p>
+          </div>
+          <div>
+            <h5 class="font-semibold text-gray-900 mb-1">Key Features:</h5>
+            <ul class="text-gray-700 text-sm space-y-1 list-disc list-inside">
+              <li>RFID-based attendance scanning</li>
+              <li>Real-time session management</li>
+              <li>Student contributions tracking</li>
+              <li>Automated attendance reports</li>
+              <li>Role-based access control</li>
+            </ul>
+          </div>
+        </div>
+
+        <div v-if="helpTab === 'faq'" class="space-y-6">
+          <!-- USER FAQs -->
+          <div>
+            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : 'text-purple-900 border-purple-200']">For Students & General Users</h4>
+            <div class="space-y-3">
+              <div class="border-l-4 border-blue-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">What is SSAAM?</h5>
+                <p class="text-gray-700 text-sm">SSAAM (Student School Activity Attendance Management) is a system designed to track attendance for school activities and events using RFID technology and manual entry options.</p>
+              </div>
+              <div class="border-l-4 border-blue-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I check my attendance records?</h5>
+                <p class="text-gray-700 text-sm">Go to the Attendance page, select an event and session, then view your attendance status (Present, Late, Incomplete, or Absent) in the logs.</p>
+              </div>
+              <div class="border-l-4 border-blue-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">What does each attendance status mean?</h5>
+                <p class="text-gray-700 text-sm"><strong>Present:</strong> Checked in and out on time • <strong>Late:</strong> Checked in after the allowed threshold • <strong>Incomplete:</strong> Only checked in, not checked out • <strong>Absent:</strong> No check-in recorded</p>
+              </div>
+              <div class="border-l-4 border-blue-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I view my contributions?</h5>
+                <p class="text-gray-700 text-sm">Navigate to the Contributions page to see your contribution history, payment status, and any outstanding balances.</p>
+              </div>
+              <div class="border-l-4 border-blue-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I pay my contributions?</h5>
+                <p class="text-gray-700 text-sm">Contact the Treasurer (badge visible in the sidebar) to arrange payment. They will update your payment status in the system.</p>
+              </div>
+              <div class="border-l-4 border-blue-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I register my RFID card?</h5>
+                <p class="text-gray-700 text-sm">Visit the CCS Office with your RFID card. Staff will register it to your account. Your verification status appears as a badge in your profile.</p>
+              </div>
+              <div class="border-l-4 border-blue-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">What if my RFID card is not working?</h5>
+                <p class="text-gray-700 text-sm">If your RFID shows "Unreadable" status, you have two options: (1) Visit the CCS Office for re-registration, or (2) Ask staff to manually enter your Student ID number in the system for check-in/check-out. Staff can type your ID directly during attendance recording.</p>
+              </div>
+              <div class="border-l-4 border-blue-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">Can I change my profile information?</h5>
+                <p class="text-gray-700 text-sm">Contact an administrator to update your profile. Changes may include name, program, year level, or profile photo.</p>
+              </div>
+              <div class="border-l-4 border-blue-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I request an excused absence?</h5>
+                <p class="text-gray-700 text-sm">Contact an administrator or event coordinator. Admins can mark your attendance as excused with a reason note in the Attendance logs.</p>
+              </div>
+              <div class="border-l-4 border-blue-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I check notifications?</h5>
+                <p class="text-gray-700 text-sm">Click the Notifications button in the sidebar to see important updates about events, contributions, and system announcements.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ADMIN FAQs -->
+          <div>
+            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : 'text-purple-900 border-purple-200']">For Administrators</h4>
+            <div class="space-y-3">
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I create a new event?</h5>
+                <p class="text-gray-700 text-sm">Go to Dashboard > Manage Events, click "Create New Event", enter event details (title, date, description), assign students, and configure sessions with start/end times.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I add sessions to an event?</h5>
+                <p class="text-gray-700 text-sm">Edit an event and click "Add Session". Set the session label, start time, end time, and late threshold minutes. Save to apply changes.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I assign students to an event?</h5>
+                <p class="text-gray-700 text-sm">Edit the event and use the student search/assignment panel. Filter by program and year level, then select students to assign. Click "Assign Selected Students".</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I enable/disable RFID scanning?</h5>
+                <p class="text-gray-700 text-sm">Go to Settings > RFID Scanner Controls. Toggle "Check-In Enabled" and "Check-Out Enabled" globally. Individual sessions can also override these settings.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I set the late threshold for a session?</h5>
+                <p class="text-gray-700 text-sm">In Attendance Logs, use the "Late Threshold Editor" to set minutes after session start. Check-ins after this time are marked as late. Click "Apply & Recalculate" to update records.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I mark a student as excused?</h5>
+                <p class="text-gray-700 text-sm">In Attendance Logs, click "Edit" next to a student's record. Check "Mark as Excused" and enter a reason (optional). Save changes.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I export attendance data?</h5>
+                <p class="text-gray-700 text-sm">Open a session's logs modal and click the "Download Excel" button. The file includes all attendance records with timestamps and status information.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I manage user accounts?</h5>
+                <p class="text-gray-700 text-sm">Go to Manage > Users. View all users, edit roles (student, treasurer, medpub, admin), update permissions, and manage RFID verification status.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I manage roles and permissions?</h5>
+                <p class="text-gray-700 text-sm">Go to Manage > Roles. Create or edit roles, assign specific permissions (view attendance, manage events, approve students, etc.), and apply to users.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I handle pending student approvals?</h5>
+                <p class="text-gray-700 text-sm">Go to Pending Approvals. Review pending students, verify their information, then approve or reject their registration. Approved students gain system access.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I clear session tokens?</h5>
+                <p class="text-gray-700 text-sm">Go to Settings > Security. Click "Clear All Sessions" to force logout all users (except you). Useful for security or system maintenance.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I view audit logs?</h5>
+                <p class="text-gray-700 text-sm">System logs track all attendance changes, user actions, and configuration updates. Contact developers for detailed audit trail access if needed.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I create announcements?</h5>
+                <p class="text-gray-700 text-sm">Go to Dashboard and use the Announcement section. Create notifications that broadcast to all users via the notification system.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I manage contribution payment types?</h5>
+                <p class="text-gray-700 text-sm">Go to Settings > Contributions. Add or edit payment types (fees, donations, etc.) that treasurers can use to record student contributions.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-4">
+                <h5 class="font-semibold text-gray-900 mb-1">How do I duplicate or delete an event?</h5>
+                <p class="text-gray-700 text-sm">In the Events list, use the "Duplicate" button to create a copy with the same settings, or "Delete" to permanently remove an event and its logs.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div v-if="helpTab === 'contact'" class="space-y-4">
+          <div :class="[isCOE ? 'bg-orange-50 border-orange-200' : 'bg-purple-50 border-purple-200', 'border rounded-lg p-4 hover:shadow-md transition-shadow duration-200']">
+            <p class="font-semibold text-gray-900 mb-2">Email Support</p>
+            <p class="text-gray-700 text-sm mb-1"><strong>Email:</strong> ssaamjrmsu@gmail.com</p>
+            <p class="text-gray-600 text-xs">For general inquiries, technical issues, and feedback</p>
+          </div>
+          <div :class="[isCOE ? 'bg-red-50 border-red-200' : 'bg-pink-50 border-pink-200', 'border rounded-lg p-4 hover:shadow-md transition-shadow duration-200']">
+            <p :class="['font-semibold mb-2', isCOE ? 'text-red-900' : 'text-pink-900']">JRMSU CCS Office</p>
+            <p class="text-gray-700 text-sm mb-1"><strong>Location:</strong> College of Computing Studies</p>
+            <p class="text-gray-600 text-xs">Visit during office hours for in-person assistance</p>
+          </div>
+          <div :class="['border rounded-lg p-4 hover:shadow-md transition-shadow duration-200', isCOE ? 'bg-gradient-to-br from-orange-50 to-red-50 border-orange-200' : 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200']">
+            <p :class="['font-semibold mb-2', isCOE ? 'text-orange-900' : 'text-purple-900']">Meet Our Developers</p>
+            <p class="text-gray-700 text-sm mb-2">CCS - Creatives Committee</p>
+            <button @click="showDevelopersPopup = true; showContactModal = false" :class="['text-sm font-medium px-3 py-2 rounded-lg transition-all duration-300', isCOE ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-purple-600 hover:bg-purple-700 text-white']">View Development Team →</button>
+          </div>
+        </div>
       </div>
     </div>
   </transition>
@@ -5335,10 +6101,12 @@ import Manage from '../components/Manage.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
 import { handleTokenError, setTokenExpiredCallback } from '../utils/tokenHandler.js'
+import departments from '../config/departments.js'
 
 const router = useRouter()
 const currentUser = ref({})
 const users = ref([])
+const allEventUsers = ref([]) // Store all students loaded for event modals
 const loggingOut = ref(false)
 const isPageLoading = ref(false)
 const statsLoading = ref(false)
@@ -5496,6 +6264,28 @@ const paymentRecordsFilter = ref({
   searchQuery: '', // search by name or ID
   currentPage: 1, // pagination
   recordsPerPage: 20 // show 20 records per page
+})
+
+const discountModal = ref({
+  show: false,
+  paymentId: null,
+  studentId: null,
+  studentName: null,
+  currentDiscount: {
+    type: 'percentage', // 'percentage' or 'fixed'
+    percentage: 0,
+    fixedAmount: 0,
+    reason: '',
+    appliedAt: null,
+    appliedBy: null
+  },
+  form: {
+    type: 'percentage', // 'percentage' or 'fixed'
+    percentage: 0,
+    fixedAmount: 0,
+    reason: ''
+  },
+  loading: false
 })
 
 // Payment export modal state
@@ -6063,6 +6853,78 @@ const deletePaymentRecord = async (paymentId, studentId) => {
   }
 }
 
+// Open discount modal for a payment record
+const openDiscountModal = (paymentId, studentId, studentName, record) => {
+  const discountType = record?.discount_type || 'percentage'
+  discountModal.value = {
+    show: true,
+    paymentId,
+    studentId,
+    studentName,
+    currentDiscount: {
+      type: discountType,
+      percentage: record?.discount_percentage || 0,
+      fixedAmount: record?.discount_fixed_amount || 0,
+      reason: record?.discount_reason || '',
+      appliedAt: record?.discount_applied_at || null,
+      appliedBy: record?.discount_applied_by || null
+    },
+    form: {
+      type: discountType,
+      percentage: discountType === 'percentage' ? (record?.discount_percentage || 0) : 0,
+      fixedAmount: discountType === 'fixed' ? (record?.discount_fixed_amount || 0) : 0,
+      reason: record?.discount_reason || ''
+    },
+    loading: false
+  }
+}
+
+// Apply discount to payment record
+const applyDiscount = async () => {
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  discountModal.value.loading = true
+  
+  try {
+    const discountType = discountModal.value.form.type
+    const discountValue = discountType === 'percentage' ? discountModal.value.form.percentage : discountModal.value.form.fixedAmount
+    const successMessage = discountType === 'percentage' 
+      ? `Discount of ${discountValue}% applied successfully` 
+      : `Fixed discount of ₱${discountValue.toFixed(2)} applied successfully`
+    
+    const response = await fetch(buildAPIUrl(`/apis/payments/${discountModal.value.paymentId}/apply-discount`), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      },
+      body: JSON.stringify({
+        studentId: discountModal.value.studentId,
+        discountType: discountType,
+        discountPercentage: discountType === 'percentage' ? discountModal.value.form.percentage : 0,
+        discountFixedAmount: discountType === 'fixed' ? discountModal.value.form.fixedAmount : 0,
+        discountReason: discountModal.value.form.reason
+      })
+    })
+    
+    const result = await response.json()
+    if (response.ok) {
+      showNotification(successMessage, 'success')
+      discountModal.value.show = false
+      // Refresh payment data with forced cache bypass
+      clearSectionCache('contributions')
+      await fetchPayments(true)
+    } else {
+      showNotification(result.message || 'Failed to apply discount', 'error')
+    }
+  } catch (error) {
+    console.error('Error applying discount:', error)
+    showNotification('Error applying discount', 'error')
+  } finally {
+    discountModal.value.loading = false
+  }
+}
+
 // Carousel navigation functions
 const getCardsPerPage = () => {
   // This is computed based on screen size
@@ -6601,6 +7463,7 @@ const showLogoutConfirmation = ref(false)
 const showSessionExpiredModal = ref(false)
 const showMobileMenu = ref(false)
 const showContactModal = ref(false)
+const helpTab = ref('about')
 const currentPage = ref('dashboard')
 const manageComponent = ref(null)
 const currentPageNum = ref(1)
@@ -6620,6 +7483,7 @@ const showLogoutAnimation = ref(false)
 const editImageUploading = ref(false)
 const editImageLoading = ref(false)
 const savingUser = ref(false)
+const confirmDuplicate = ref(false)
 const pendingEditUser = ref(null)
 const isRefreshing = ref(false)
 const isSearching = ref(false)
@@ -6636,6 +7500,8 @@ const rfidListDisplayLimit = ref(20)
 const notification = ref({ show: false, message: '', type: 'info' })
 const showDeleteEventConfirm = ref(false)
 const eventToDelete = ref(null)
+const showDuplicateEventConfirm = ref(false)
+const eventToDuplicate = ref(null)
 const deleteCooldown = ref(0)
 let cooldownTimer = null
 const profileImageFailed = ref(false)
@@ -6901,23 +7767,11 @@ const selectAllPrograms = () => {
 }
 
 const getFilteredLogs = (event) => {
-  let logs = [...attendanceLogs.value]
-  if (selectedYearFilters.value.length > 0) {
-    logs = logs.filter(log => selectedYearFilters.value.includes(log.student?.year_level || log.year_level || ''))
-  }
-  if (selectedStatusFilters.value.length > 0) {
-    logs = logs.filter(log => selectedStatusFilters.value.map(s => s.toLowerCase()).includes(computeLogStatus(log)))
-  }
-  if (selectedProgramFilters.value.length > 0) {
-    logs = logs.filter(log => {
-      const logProgram = log.program || log.student?.program || ''
-      return selectedProgramFilters.value.includes(logProgram)
-    })
-  }
-  return logs
+  // Return the computed filtered logs (already applies selected filters)
+  return [...filteredAttendanceLogs.value]
 }
 
-const getFilteredLogsCount = (event) => getFilteredLogs(event).length
+const getFilteredLogsCount = (event) => filteredAttendanceLogs.value.length
 
 const applyStatusFilter = () => {
 }
@@ -7255,28 +8109,8 @@ const exportFilteredToExcel = async (event) => {
   if (!event || exportingFiltered.value) return
   exportingFiltered.value = true
   try {
-    let logs = [...attendanceLogs.value]
-
-    // Apply year filters if set
-    if (selectedYearFilters.value.length > 0) {
-      logs = logs.filter(log => selectedYearFilters.value.includes(log.student?.year_level || log.year_level || ''))
-    }
-
-    // Apply status filters if set
-    if (selectedStatusFilters.value.length > 0) {
-      logs = logs.filter(log => {
-        const s = computeLogStatus(log) // returns lowercase
-        return selectedStatusFilters.value.includes(s)
-      })
-    }
-
-    // Apply program filters if set
-    if (selectedProgramFilters.value.length > 0) {
-      logs = logs.filter(log => {
-        const logProgram = log.program || log.student?.program || ''
-        return selectedProgramFilters.value.includes(logProgram)
-      })
-    }
+    // Use the computed filtered logs so filtering logic is consistent with the UI
+    let logs = [...filteredAttendanceLogs.value]
 
     if (logs.length === 0) {
       showNotification('No attendance records found for selected filters', 'warning')
@@ -7856,12 +8690,52 @@ const getAllStudentKeys = (obj) => {
   return [...new Set(keys)] // Remove duplicates
 }
 
-// Cache a photo under all available student identifiers
+// Persistent photo cache in localStorage (survives logout)
+const getPhotoFromStorage = (studentId) => {
+  if (!studentId) return null
+  try {
+    const cached = localStorage.getItem(`photo_${studentId}`)
+    if (cached) {
+      const parsed = JSON.parse(cached)
+      // Check if cache has expired (30 days)
+      if (parsed.expiry && Date.now() < parsed.expiry) {
+        return parsed.data
+      } else {
+        localStorage.removeItem(`photo_${studentId}`)
+      }
+    }
+  } catch (e) {
+    console.warn('Error retrieving photo from storage:', e)
+  }
+  return null
+}
+
+const savePhotoToStorage = (studentId, photoData) => {
+  if (!studentId || !photoData) return
+  try {
+    const cacheData = {
+      data: photoData,
+      expiry: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+    }
+    localStorage.setItem(`photo_${studentId}`, JSON.stringify(cacheData))
+  } catch (e) {
+    console.warn('Error saving photo to storage:', e)
+  }
+}
+
+// Cache a photo under all available student identifiers (both memory and localStorage)
 const cacheStudentPhoto = (obj, photo) => {
   if (!photo) return
   const keys = getAllStudentKeys(obj)
   keys.forEach(key => {
     studentPhotoCache.value[key] = photo
+    // For student_id, also save to localStorage for persistence across sessions
+    if (obj.student_id) {
+      savePhotoToStorage(obj.student_id, photo)
+    }
+    if (obj.student?.student_id) {
+      savePhotoToStorage(obj.student.student_id, photo)
+    }
   })
 }
 const myAttendanceRecords = ref([])
@@ -7873,42 +8747,60 @@ const eventTimeRemaining = ref({})
 const eventEndedNotifications = ref(new Set())
 const showCreateEventModal = ref(false)
 const showEditEventModal = ref(false)
+const loadingStudentsForEvent = ref(false)
+const loadedStudentCount = ref(0)
+const totalStudentCount = ref(0)
 
 // Open create event modal with admin action verification
 const openCreateEventModalImpl = async () => {
-  // Fetch all registered students for custom event selection
+  loadingStudentsForEvent.value = true
+  loadedStudentCount.value = 0
+  totalStudentCount.value = 0
+  // Fetch all registered students for custom event selection with full names
   try {
-    const response = await fetch(buildAPIUrl('/apis/students?limit=10000'), {
+    const response = await fetch(buildAPIUrl('/apis/students/list/all'), {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer SSAAMStudents`
+        'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('adminToken')}`
       }
     })
     
     if (response.ok) {
       const result = await response.json()
       const allStudents = result.data || result
+      totalStudentCount.value = allStudents.length
+      
       if (Array.isArray(allStudents)) {
-        users.value = allStudents.map(s => {
-          // Construct full name from components if not available
-          const fullName = s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim()
-          return {
+        // Load students progressively in batches of 50
+        users.value = []
+        const batchSize = 50
+        
+        for (let i = 0; i < allStudents.length; i += batchSize) {
+          const batch = allStudents.slice(i, i + batchSize)
+          const mappedBatch = batch.map(s => ({
             ...s,
-            full_name: fullName,
             studentId: s.student_id,
             firstName: s.first_name,
             middleName: s.middle_name || '',
             lastName: s.last_name,
             yearLevel: s.year_level,
             rfidCode: s.rfid_code || 'N/A',
-            schoolYear: s.school_year,
             image: s.photo || s.image || ''
-          }
-        })
+          }))
+          users.value.push(...mappedBatch)
+          loadedStudentCount.value += mappedBatch.length
+          // Allow UI to update between batches
+          await new Promise(resolve => setTimeout(resolve, 10))
+        }
+        // Also populate allEventUsers with the mapped students
+        allEventUsers.value = users.value
       }
     }
   } catch (error) {
     console.error('Failed to fetch all students for event creation:', error)
+    showNotification('Failed to load student list', 'error')
+  } finally {
+    loadingStudentsForEvent.value = false
   }
   
   showCreateEventModal.value = true
@@ -7923,9 +8815,10 @@ const sessionsLoading = ref(false)
 const showSessionModal = ref(false)
 const expandedEvents = ref({})
 const expandedEventSessions = ref({})
-const newSession = ref({ label: 'Morning', start_time: '', end_time: '', late_timer_minutes: 60 })
+const newSession = ref({ label: 'Morning', start_time: '', end_time: '', status: 'active', late_timer_minutes: 60 })
 const savingSession = ref(false)
 const editingSession = ref(null)
+const addSessionButtonAnimating = ref(false)
 const sessionLabels = ['Whole Day', 'Morning', 'Afternoon', 'Noon', 'Night', 'Dawn']
 
 const sessionTimeError = computed(() => {
@@ -7958,6 +8851,323 @@ const sessionTimeError = computed(() => {
   }
   return ''
 })
+
+// Edit attendance (Excused) modal state
+const showEditAttendanceModal = ref(false)
+const editingAttendanceLog = ref(null)
+const editExcused = ref(false)
+const editExcuseReason = ref('')
+const editExcusedBy = ref('')
+const editExcusedById = ref(null)
+const editExcusedByModel = ref(null)
+
+const openEditAttendanceModal = (log) => {
+  editingAttendanceLog.value = log
+  editExcused.value = !!(log.excused)
+  editExcuseReason.value = log.excuse_reason || ''
+  editExcusedBy.value = (log.student && (log.student.full_name || log.student.first_name)) || log.student_name || ''
+  editExcusedById.value = log.excused_by_id || null
+  editExcusedByModel.value = log.excused_by_model || null
+  showEditAttendanceModal.value = true
+}
+
+// Shortcut to open the modal specifically for excusing an absent record
+const openExcuseForLog = (log) => {
+  editingAttendanceLog.value = log
+  editExcused.value = true
+  editExcuseReason.value = log.excuse_reason || ''
+  editExcusedBy.value = (log.student && (log.student.full_name || log.student.first_name)) || log.student_name || ''
+  editExcusedById.value = log.excused_by_id || null
+  editExcusedByModel.value = log.excused_by_model || null
+  showEditAttendanceModal.value = true
+}
+
+const saveEditAttendance = async () => {
+  if (!editingAttendanceLog.value) return
+  const id = editingAttendanceLog.value._id || editingAttendanceLog.value.id
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    // Send excused_by separately to backend
+    const body = { 
+      excused: !!editExcused.value, 
+      excuse_reason: editExcuseReason.value || null, 
+      excused_by: editExcusedBy.value || null,
+      excused_by_id: editExcusedById.value || null,
+      excused_by_model: editExcusedByModel.value || null
+    }
+
+    // Optimistic update: apply changes locally immediately and allow undo
+    const prevLog = JSON.parse(JSON.stringify(editingAttendanceLog.value))
+    editingAttendanceLog.value.excused = !!body.excused
+    editingAttendanceLog.value.excuse_reason = body.excuse_reason
+    editingAttendanceLog.value.excused_by = body.excused_by
+    editingAttendanceLog.value.excused_by_id = body.excused_by_id
+    editingAttendanceLog.value.excused_by_model = body.excused_by_model
+
+    attendanceLogs.value = attendanceLogs.value.map(l => {
+      if ((l._id || l.id) === id) {
+        return { ...l, excused: editingAttendanceLog.value.excused, excuse_reason: editingAttendanceLog.value.excuse_reason, excused_by: editingAttendanceLog.value.excused_by, excused_by_id: editingAttendanceLog.value.excused_by_id, excused_by_model: editingAttendanceLog.value.excused_by_model }
+      }
+      return l
+    })
+
+    const response = await fetch(buildAPIUrl(`/apis/attendance/logs/${id}`), {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      },
+      body: JSON.stringify(body)
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      showNotification('Attendance updated — Undo available', 'success')
+      showEditAttendanceModal.value = false
+      // Refresh logs to ensure server-state sync
+      if (selectedSessionForLogs.value) await fetchSessionLogs(selectedSessionForLogs.value._id)
+      await fetchUserAttendanceLogs()
+    } else {
+      // Revert optimistic update on failure
+      editingAttendanceLog.value = prevLog
+      attendanceLogs.value = attendanceLogs.value.map(l => (l._id || l.id) === id ? prevLog : l)
+      showNotification('Failed to update attendance', 'error')
+    }
+  } catch (err) {
+    console.error('Error saving attendance edit:', err)
+    // Revert optimistic update on error
+    if (editingAttendanceLog.value) {
+      attendanceLogs.value = attendanceLogs.value.map(l => (l._id || l.id) === id ? prevLog : l)
+      editingAttendanceLog.value = prevLog
+    }
+    showNotification('Failed to update attendance', 'error')
+  }
+}
+
+// Student options for excused-by select
+const excuseStudentOptions = ref([])
+const excuseStudentOptionsVisible = ref(false)
+
+const fetchExcuseStudentOptions = async () => {
+  if (excuseStudentOptions.value.length > 0) {
+    excuseStudentOptionsVisible.value = !excuseStudentOptionsVisible.value
+    return
+  }
+  try {
+    loadingStudentsForEvent.value = true
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const response = await fetch(buildAPIUrl('/apis/students?limit=1000'), {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if (response.ok) {
+      const data = await response.json()
+      excuseStudentOptions.value = (data.data || data || []).map(s => ({ _id: s._id || s.id, full_name: s.full_name || s.first_name + ' ' + (s.last_name||''), student_id: s.student_id }))
+      excuseStudentOptionsVisible.value = true
+    }
+  } catch (e) {
+    console.error('Failed to fetch students for excuse select', e)
+  } finally {
+    loadingStudentsForEvent.value = false
+  }
+}
+
+const onExcuseStudentSelected = () => {
+  const sel = excuseStudentOptions.value.find(s => s._id === editExcusedById.value)
+  if (sel) {
+    editExcusedBy.value = sel.full_name
+    editExcusedByModel.value = 'Student'
+  } else {
+    editExcusedByModel.value = null
+  }
+}
+
+
+// Excusable list management (persisted per-session in localStorage)
+const excusableBySession = ref({})
+const applyingBulkExcuse = ref(false)
+
+const storageKeyFor = (sessionId) => `ssaam_excusable_${sessionId || 'event_' + (selectedEvent.value?._id || '')}`
+
+const loadExcusableForSession = (sessionId) => {
+  try {
+    const raw = localStorage.getItem(storageKeyFor(sessionId))
+    if (!raw) return []
+    const arr = JSON.parse(raw || '[]') || []
+    excusableBySession.value[sessionId] = Array.from(new Set(arr))
+    return excusableBySession.value[sessionId]
+  } catch (e) {
+    console.error('Failed to load excusable list', e)
+    return []
+  }
+}
+
+const saveExcusableForSession = (sessionId) => {
+  try {
+    const arr = excusableBySession.value[sessionId] || []
+    localStorage.setItem(storageKeyFor(sessionId), JSON.stringify(arr))
+  } catch (e) {
+    console.error('Failed to save excusable list', e)
+  }
+}
+
+const absentLogsForCurrentSession = computed(() => {
+  return filteredAttendanceLogs.value.filter(l => computeLogStatus(l) === 'absent' || computeLogStatus(l) === 'incomplete')
+})
+
+// Search and filters for the Excusable panel
+const excusableSearch = ref('')
+const excusableProgramFilters = ref([])
+const excusableYearFilters = ref([])
+
+const toggleExcusableProgramFilter = (p) => {
+  const i = excusableProgramFilters.value.indexOf(p)
+  if (i === -1) excusableProgramFilters.value.push(p)
+  else excusableProgramFilters.value.splice(i, 1)
+}
+const excusableProgramFilterActive = (p) => excusableProgramFilters.value.includes(p)
+
+const toggleExcusableYearFilter = (y) => {
+  const i = excusableYearFilters.value.indexOf(y)
+  if (i === -1) excusableYearFilters.value.push(y)
+  else excusableYearFilters.value.splice(i, 1)
+}
+const excusableYearFilterActive = (y) => excusableYearFilters.value.includes(y)
+
+const clearExcusableFilters = () => {
+  excusableSearch.value = ''
+  excusableProgramFilters.value = []
+  excusableYearFilters.value = []
+}
+
+const filteredAbsentLogsForCurrentSession = computed(() => {
+  const q = (excusableSearch.value || '').toString().trim().toLowerCase()
+  return absentLogsForCurrentSession.value.filter(l => {
+    if (q) {
+      const name = (l.student?.full_name || l.student_name || '').toString().toLowerCase()
+      const program = (l.program || l.student?.program || '').toString().toLowerCase()
+      const year = (l.year_level || l.student?.year_level || '').toString().toLowerCase()
+      if (!(name.includes(q) || program.includes(q) || year.includes(q))) return false
+    }
+    if (excusableProgramFilters.value.length > 0) {
+      const prog = (l.program || l.student?.program || '').toString()
+      if (!excusableProgramFilters.value.includes(prog)) return false
+    }
+    if (excusableYearFilters.value.length > 0) {
+      const yr = (l.year_level || l.student?.year_level || '').toString()
+      if (!excusableYearFilters.value.includes(yr)) return false
+    }
+    return true
+  })
+})
+
+// Currently excused logs for the current session/event
+const excusedLogsForCurrentSession = computed(() => {
+  return filteredAttendanceLogs.value.filter(l => !!l.excused)
+})
+
+// UI tab for the right panel
+const selectedExcuseTab = ref('excusable')
+
+// Which main panel is visible in the Event Logs modal: 'logs' or 'excused'
+const selectedPanel = ref('logs')
+
+const isExcusable = (logId) => {
+  const sid = selectedSessionForLogs.value?._id || `event_${selectedEvent.value?._id}`
+  const set = new Set(excusableBySession.value[sid] || loadExcusableForSession(sid))
+  return set.has(logId)
+}
+
+const toggleExcusable = (logId) => {
+  const sid = selectedSessionForLogs.value?._id || `event_${selectedEvent.value?._id}`
+  if (!excusableBySession.value[sid]) excusableBySession.value[sid] = loadExcusableForSession(sid)
+  const idx = excusableBySession.value[sid].indexOf(logId)
+  if (idx === -1) excusableBySession.value[sid].push(logId)
+  else excusableBySession.value[sid].splice(idx, 1)
+  saveExcusableForSession(sid)
+}
+
+const allowAllAbsent = () => {
+  const sid = selectedSessionForLogs.value?._id || `event_${selectedEvent.value?._id}`
+  excusableBySession.value[sid] = absentLogsForCurrentSession.value.map(l => l._id || l.id)
+  saveExcusableForSession(sid)
+  showNotification('All absent and incomplete records marked as excusable', 'success')
+}
+
+const clearAllExcusable = () => {
+  const sid = selectedSessionForLogs.value?._id || `event_${selectedEvent.value?._id}`
+  excusableBySession.value[sid] = []
+  saveExcusableForSession(sid)
+}
+
+const applyExcusableAsExcused = async () => {
+  const sid = selectedSessionForLogs.value?._id || `event_${selectedEvent.value?._id}`
+  const list = excusableBySession.value[sid] || loadExcusableForSession(sid)
+  if (!list || list.length === 0) {
+    showNotification('No selected records to apply', 'warning')
+    return
+  }
+
+  applyingBulkExcuse.value = true
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  const actorName = currentUser.value?.full_name || currentUser.value?.name || 'Admin'
+  const actorId = currentUser.value?._id || currentUser.value?.id || null
+  const actorModel = currentUser.value?.isMaster ? 'Master' : (currentUser.value?.role === 'admin' ? 'Admin' : 'Student')
+
+  try {
+    for (const logId of list) {
+      // Only apply to currently-absent logs to be safe
+      const log = filteredAttendanceLogs.value.find(l => (l._id || l.id) === logId)
+      if (!log || computeLogStatus(log) !== 'absent') continue
+
+      const body = { excused: true, excuse_reason: 'Approved by admin', excused_by: actorName, excused_by_id: actorId, excused_by_model: actorModel }
+      try {
+        const res = await fetch(buildAPIUrl(`/apis/attendance/logs/${logId}`), {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() },
+          body: JSON.stringify(body)
+        })
+        if (!res.ok) console.error('Failed to apply excuse for', logId)
+      } catch (e) {
+        console.error('Error applying excuse:', e)
+      }
+    }
+
+    showNotification('Applied excused status to selected records', 'success')
+    // Refresh logs
+    if (selectedSessionForLogs.value) await fetchSessionLogs(selectedSessionForLogs.value._id)
+    else await fetchEventLogs(selectedEvent.value._id)
+  } finally {
+    applyingBulkExcuse.value = false
+  }
+}
+// Undo an excused mark
+const undoExcuse = async (log) => {
+  const id = log._id || log.id
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const response = await fetch(buildAPIUrl(`/apis/attendance/logs/${id}`), {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      },
+      body: JSON.stringify({ excused: false, excuse_reason: null, excused_by: null })
+    })
+
+    if (response.ok) {
+      showNotification('Excuse removed', 'success')
+      if (selectedSessionForLogs.value) await fetchSessionLogs(selectedSessionForLogs.value._id)
+      await fetchUserAttendanceLogs()
+    } else {
+      showNotification('Failed to remove excuse', 'error')
+    }
+  } catch (err) {
+    console.error('Error undoing excuse:', err)
+    showNotification('Failed to remove excuse', 'error')
+  }
+}
 
 watch(() => newSession.value.label, (label) => {
   if (editingSession.value) return
@@ -8033,18 +9243,35 @@ const filteredEditEventUsers = computed(() => {
     return nameMatch && programMatch && yearLevelMatch
   })
 })
+
+// Enrich newEvent assigned_users with full names for display
+const newEventDisplayUsers = computed(() => {
+  return enrichAssignedUsersWithNames(newEvent.value.assigned_users || [])
+})
+
+// Enrich selectedEvent assigned_users with full names for display
+const selectedEventDisplayUsers = computed(() => {
+  return enrichAssignedUsersWithNames(selectedEvent.value?.assigned_users || [])
+})
+
 const toggleEventUser = (userId) => {
   if (!newEvent.value.assigned_users) {
     newEvent.value.assigned_users = []
   }
   const currentUsers = newEvent.value.assigned_users
-  const index = currentUsers.indexOf(userId)
+  
+  // Find the full user object
+  const user = users.value.find(u => u._id === userId)
+  
+  // Check if user is already selected (compare by ID)
+  const index = currentUsers.findIndex(u => (typeof u === 'string' ? u : u._id) === userId)
+  
   if (index > -1) {
     // Remove user
     currentUsers.splice(index, 1)
-  } else {
-    // Add user
-    currentUsers.push(userId)
+  } else if (user) {
+    // Add full user object
+    currentUsers.push(user)
   }
   // Force Vue reactivity by reassigning the entire array
   newEvent.value = { ...newEvent.value, assigned_users: [...currentUsers] }
@@ -8054,13 +9281,19 @@ const toggleEditEventUser = (userId) => {
     selectedEvent.value.assigned_users = []
   }
   const currentUsers = selectedEvent.value.assigned_users
-  const index = currentUsers.indexOf(userId)
+  
+  // Find the full user object
+  const user = users.value.find(u => u._id === userId)
+  
+  // Check if user is already selected (compare by ID)
+  const index = currentUsers.findIndex(u => (typeof u === 'string' ? u : u._id) === userId)
+  
   if (index > -1) {
     // Remove user
     currentUsers.splice(index, 1)
-  } else {
-    // Add user
-    currentUsers.push(userId)
+  } else if (user) {
+    // Add full user object
+    currentUsers.push(user)
   }
   // Force Vue reactivity by reassigning the entire array
   selectedEvent.value = { ...selectedEvent.value, assigned_users: [...currentUsers] }
@@ -8068,17 +9301,79 @@ const toggleEditEventUser = (userId) => {
 const getUserDisplayName = (user) => {
   if (!user) return 'Unknown'
   
-  // Try full_name first
-  if (user.full_name && user.full_name.trim() !== '') return user.full_name
-  
-  // Try constructed name from parts
-  if (user.first_name || user.last_name) {
-    const parts = [user.first_name, user.middle_name, user.last_name].filter(p => p && p.trim() !== '')
-    if (parts.length > 0) return parts.join(' ')
+  // Try full_name first (from backend populate)
+  if (user.full_name && user.full_name.trim() !== '') {
+    return user.full_name.trim().toUpperCase()
   }
   
-  // Fall back to name or student_id
-  return user.name || user.student_id || 'Unknown'
+  // Try constructed name from parts (case-insensitive)
+  if (user.first_name || user.last_name) {
+    const parts = [user.first_name, user.middle_name, user.last_name].filter(p => p && p.trim() !== '')
+    if (parts.length > 0) {
+      return parts.join(' ').trim().toUpperCase()
+    }
+  }
+  
+  // Try 'name' field
+  if (user.name && user.name.trim() !== '') {
+    return user.name.trim().toUpperCase()
+  }
+  
+  // Fall back to student_id only if available
+  if (user.student_id) return user.student_id
+  
+  return 'Unknown'
+}
+
+// Get display name for selected event users (handles both objects and IDs)
+const getSelectedEventUserName = (userItem) => {
+  if (!userItem) return 'Unknown'
+  
+  // If it's an object, use getUserDisplayName directly
+  if (typeof userItem === 'object') {
+    // Try to get display name first
+    const displayName = getUserDisplayName(userItem)
+    if (displayName && displayName !== 'Unknown' && !displayName.includes('student_id')) {
+      return displayName
+    }
+    
+    // If display name is just an ID, try to find full user in users list
+    if (userItem._id) {
+      const found = users.value?.find(u => u._id === userItem._id)
+      if (found) return getUserDisplayName(found)
+    }
+    
+    return displayName
+  }
+  
+  // If it's an ID string, search in users list
+  if (typeof userItem === 'string') {
+    const found = users.value?.find(u => u._id === userItem)
+    if (found) return getUserDisplayName(found)
+    return userItem // fallback to ID
+  }
+  
+  return 'Unknown'
+}
+
+// Enrich assigned_users array by replacing ID strings with full user objects
+const enrichAssignedUsersWithNames = (assignedUsersArray) => {
+  if (!Array.isArray(assignedUsersArray)) return []
+  
+  return assignedUsersArray.map(userItem => {
+    // If already an object, return as is
+    if (typeof userItem === 'object' && userItem._id) {
+      return userItem
+    }
+    
+    // If it's an ID string, look it up and return full object
+    if (typeof userItem === 'string') {
+      const found = users.value?.find(u => u._id === userItem)
+      return found || { _id: userItem } // Return found user or object with ID
+    }
+    
+    return userItem
+  })
 }
 const rfidInput = ref('')
 const rfidInputRef = ref(null)
@@ -8097,6 +9392,13 @@ const socialIconsShort = {
   discord: 'https://cdn-icons-png.flaticon.com/512/3670/3670157.png',
   telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
   whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
+}
+// Student ID detection pattern (example: 25-A-01207)
+const studentIdPattern = /^\d{2}-[A-Z]-\d{5}$/i
+
+const onRfidInput = (e) => {
+  const val = (e && e.target && e.target.value) ? e.target.value.toUpperCase() : ''
+  rfidInput.value = val
 }
 
 const insertSocialTag = (platform) => {
@@ -8538,26 +9840,6 @@ const handlePosterImageError = async (notifId, imageUrl) => {
   }
 }
 
-const isAdminActionTokenValid = () => {
-  return true // Admin actions now use standard auth token only
-}
-
-const checkAdminActionStatus = async () => {
-  // Admin actions now use standard auth token only
-  return
-}
-
-const handleAdminActionError = async (response) => {
-  // Admin actions now use standard auth token only
-  return false
-}
-
-const withAdminAction = (actionFn) => {
-  return async (...args) => {
-    return await actionFn(...args)
-  }
-}
-
 const editNotificationData = ref(null)
 const savingEditedNotification = ref(false)
 
@@ -8661,7 +9943,7 @@ const notificationImageBase64 = ref(null)
 const developers = [
     { name: 'Jullan Maglinte', initials: 'JM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
     { name: 'Keith Laranjo', initials: 'KL', role: 'Backend Dev', year_level: '2nd year', program: 'CS', facebook: 'https://facebook.com/kei.takun.5070', image: '/team/keith.jpg' },
-    { name: 'Kenzen Miñao', initials: 'KM', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
+    { name: 'Kenzen Miñao', initials: 'KM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
     { name: 'Christoph Bagabuyo', initials: 'CB', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/christoph.bagabuyo', image: '/team/christoph.jpg' },
     { name: 'Mischi Jeda Elumba', initials: 'MJ', role: 'UI/UX Designer', year_level: '2nd year', program: 'IS', facebook: 'https://facebook.com/mischijeda.elumba.1', image: '/team/mischi.jpg' }
   ]
@@ -8677,6 +9959,85 @@ const displayName = computed(() => {
   }
   return currentUser.value.name || 'User'
 })
+
+const userDepartmentLogo = computed(() => {
+  // Prefer department chosen during login (admins/masters)
+  if (currentUser.value.selectedDepartment && currentUser.value.selectedDepartment.logo) {
+    return currentUser.value.selectedDepartment.logo
+  }
+
+  // Fall back to program -> department mapping (students)
+  const userProgram = currentUser.value.program
+  if (userProgram) {
+    for (const dept of departments) {
+      const programExists = dept.programs.some(p => p.shortName === userProgram)
+      if (programExists) {
+        return dept.logo
+      }
+    }
+  }
+
+  return '/src/assets/jrmsu-logo.webp'
+})
+
+// Return full department object for theming decisions
+const userDepartment = computed(() => {
+  if (currentUser.value.selectedDepartment) return currentUser.value.selectedDepartment
+  const userProgram = currentUser.value.program
+  if (userProgram) {
+    for (const dept of departments) {
+      if (dept.programs.some(p => p.shortName === userProgram)) return dept
+    }
+  }
+  return null
+})
+
+const isCCS = computed(() => {
+  return (userDepartment.value && userDepartment.value.label === 'CCS')
+})
+
+const isCOE = computed(() => {
+  return (userDepartment.value && userDepartment.value.label === 'COE')
+})
+
+const isCOEorAdmin = computed(() => {
+  return isCOE.value || (currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster))
+})
+
+const sidebarGradient = computed(() => {
+  if (isCOE.value) return 'from-orange-700 to-red-600'
+  // default/CCS
+  return 'from-purple-600 to-pink-400'
+})
+
+const pageLoadingBgClass = computed(() => {
+  // For CCS keep the purple gradient overlay, for others use a neutral translucent overlay
+  if (isCCS.value) return 'fixed inset-0 bg-gradient-to-b from-purple-600 to-pink-400 flex items-center justify-center z-50'
+  return 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+})
+
+const logoutBgClass = computed(() => {
+  if (isCCS.value) return 'fixed inset-0 bg-gradient-to-b from-purple-600 to-pink-400 flex items-center justify-center z-50'
+  return 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+})
+
+const primaryButtonGradient = computed(() => {
+  if (isCOE.value) return 'from-orange-700 to-red-600'
+  return 'from-purple-600 to-pink-500'
+})
+
+const primaryButtonHover = computed(() => {
+  if (isCOE.value) return 'hover:from-orange-800 hover:to-red-700'
+  return 'hover:from-purple-700 hover:to-pink-600'
+})
+
+// Handle user deletion across components
+const handleUserDeleted = (e) => {
+  const userId = e?.detail?.userId
+  if (userId) {
+    users.value = users.value.filter(u => (u.studentId || u.student_id) !== userId)
+  }
+}
 
 onMounted(async () => {
   // Set up automatic logout callback for token errors
@@ -8756,9 +10117,6 @@ onMounted(async () => {
       router.push('/')
       return
     }
-    
-    // Check admin action status for primary admin
-    checkAdminActionStatus()
     
     try {
       // Fetch only current page (10-20 students)
@@ -8843,6 +10201,9 @@ onMounted(async () => {
     await fetchMyPayments()
   }
   
+  // Listen for user deletions from Manage component
+  window.addEventListener('user-deleted', handleUserDeleted)
+  
   isPageLoading.value = false
 })
 
@@ -8861,6 +10222,8 @@ onUnmounted(() => {
   stopLogoFlipAnimation()
   stopSidebarLogoFlipAnimation()
   window.removeEventListener('app-notification', handleAppNotification)
+  // Clean up user-deleted event listener
+  window.removeEventListener('user-deleted', handleUserDeleted)
 })
 
 // Reset pagination when filters change
@@ -9208,6 +10571,54 @@ const formatDateTimeShort = (dateString) => {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' ' + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 }
 
+const calculateDiscountedAmount = (payment) => {
+  const originalAmount = typeof payment.amount_due === 'number' ? payment.amount_due : 0
+  
+  if (payment.discount_percentage > 0) {
+    return originalAmount * (1 - payment.discount_percentage / 100)
+  } else if (payment.discount_fixed_amount > 0) {
+    return Math.max(0, originalAmount - payment.discount_fixed_amount)
+  }
+  
+  return originalAmount
+}
+
+const calculatePaymentAmount = (baseAmount, record) => {
+  const amount = typeof baseAmount === 'number' ? baseAmount : 0
+  
+  if (record.discount_percentage > 0) {
+    return amount * (1 - record.discount_percentage / 100)
+  } else if (record.discount_fixed_amount > 0) {
+    return Math.max(0, amount - record.discount_fixed_amount)
+  }
+  
+  return amount
+}
+
+const calculateCollectedAmount = (payment) => {
+  if (!payment || !payment.payment_records) return 0
+  
+  return payment.payment_records.reduce((total, record) => {
+    // Only count paid records
+    if (record.payment_status === 'paid') {
+      const baseAmount = typeof payment.amount_due === 'number' ? payment.amount_due : 0
+      const discountedAmount = calculatePaymentAmount(baseAmount, record)
+      return total + discountedAmount
+    }
+    return total
+  }, 0)
+}
+
+const calculateTargetAmount = (payment) => {
+  if (!payment || !payment.payment_records) return 0
+  
+  return payment.payment_records.reduce((total, record) => {
+    const baseAmount = typeof payment.amount_due === 'number' ? payment.amount_due : 0
+    const discountedAmount = calculatePaymentAmount(baseAmount, record)
+    return total + discountedAmount
+  }, 0)
+}
+
 const stats = computed(() => {
   // Return stats from backend if available
   if (statsData.value) {
@@ -9305,10 +10716,10 @@ const refreshStudents = async () => {
     const limit = hasFilters ? 100 : itemsPerPage.value
     const page = hasFilters ? 1 : currentPageNum.value
     
-    let url = `https://ssaam-api.vercel.app/apis/students?page=${page}&limit=${limit}`
+    let url = buildAPIUrl(`/apis/students?page=${page}&limit=${limit}`)
     
     if (hasFilters) {
-      url = `https://ssaam-api.vercel.app/apis/students/search?page=${page}&limit=${limit}`
+      url = buildAPIUrl(`/apis/students/search?page=${page}&limit=${limit}`)
       if (searchQuery.value.trim()) {
         url += `&search=${encodeURIComponent(searchQuery.value)}`
       }
@@ -9487,6 +10898,90 @@ const saveRfidScannerSettings = async () => {
   }
 }
 
+// Save event-level RFID scanner settings
+const saveEventRfidSettings = async (eventId, rfidSettings) => {
+  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') return
+  rfidScannerSaving.value = true
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch(buildAPIUrl(`/apis/events/${eventId}`), {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      },
+      body: JSON.stringify({ rfidScanner: rfidSettings })
+    })
+
+    if (response.ok) {
+      showNotification('Event RFID settings saved!', 'success')
+      // update local selectedEvent copy if present
+      if (selectedEvent.value && selectedEvent.value._id === eventId) {
+        selectedEvent.value.rfidScanner = Object.assign({}, selectedEvent.value.rfidScanner || {}, rfidSettings)
+      }
+      return true
+    } else {
+      const err = await response.json()
+      showNotification(err.message || 'Failed to save event RFID settings', 'error')
+      return false
+    }
+  } catch (error) {
+    console.error('Failed to save event RFID settings:', error)
+    showNotification('Failed to save event RFID settings', 'error')
+    return false
+  } finally {
+    rfidScannerSaving.value = false
+  }
+}
+
+// Save session-level RFID scanner settings
+const saveSessionRfidSettings = async (sessionId, rfidSettings) => {
+  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') return
+  rfidScannerSaving.value = true
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${sessionId}`), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      },
+      body: JSON.stringify({ rfidScanner: rfidSettings })
+    })
+
+    if (response.ok) {
+      showNotification('Session RFID settings saved!', 'success')
+      if (selectedSession.value && selectedSession.value._id === sessionId) {
+        selectedSession.value.rfidScanner = Object.assign({}, selectedSession.value.rfidScanner || {}, rfidSettings)
+      }
+      return true
+    } else {
+      const err = await response.json()
+      showNotification(err.message || 'Failed to save session RFID settings', 'error')
+      return false
+    }
+  } catch (error) {
+    console.error('Failed to save session RFID settings:', error)
+    showNotification('Failed to save session RFID settings', 'error')
+    return false
+  } finally {
+    rfidScannerSaving.value = false
+  }
+}
+
+// Effective RFID settings used by the Scanner UI (session -> event -> global)
+const effectiveRfid = computed(() => {
+  if (selectedSession.value && selectedSession.value.rfidScanner && typeof selectedSession.value.rfidScanner === 'object') {
+    return Object.assign({}, appSettings.value.rfidScanner || {}, selectedEvent.value?.rfidScanner || {}, selectedSession.value.rfidScanner)
+  }
+  if (selectedEvent.value && selectedEvent.value.rfidScanner && typeof selectedEvent.value.rfidScanner === 'object') {
+    return Object.assign({}, appSettings.value.rfidScanner || {}, selectedEvent.value.rfidScanner)
+  }
+  return Object.assign({}, appSettings.value.rfidScanner || {})
+})
+
 const startToggleCooldown = (seconds = 3) => {
   if (toggleCooldownTimer) clearInterval(toggleCooldownTimer)
   checkToggleCooldown.value = true
@@ -9503,38 +10998,54 @@ const startToggleCooldown = (seconds = 3) => {
 
 const toggleCheckIn = async () => {
   if (checkToggleCooldown.value) return
-  const newValue = !appSettings.value.rfidScanner.checkInEnabled
-  appSettings.value.rfidScanner.checkInEnabled = newValue
+  if (!selectedSession.value && !selectedEvent.value) {
+    showNotification('Please select an event or session first', 'warning')
+    return
+  }
 
-  // If enabling check-in, disable check-out and set operation
-  if (newValue) {
-    appSettings.value.rfidScanner.checkOutEnabled = false
-    setRfidOperation('in')
-  } else {
-    // When turning OFF check-in, automatically enable check-out
-    appSettings.value.rfidScanner.checkOutEnabled = true
-    setRfidOperation('out')
+  const current = effectiveRfid.value || {}
+  const newValue = !current.checkInEnabled
+
+  const updated = Object.assign({}, current, { checkInEnabled: newValue })
+  updated.checkOutEnabled = newValue ? false : true
+
+  // Only persist to session or event, never global
+  if (selectedSession.value) {
+    await saveSessionRfidSettings(selectedSession.value._id, { checkInEnabled: updated.checkInEnabled, checkOutEnabled: updated.checkOutEnabled })
+  } else if (selectedEvent.value) {
+    await saveEventRfidSettings(selectedEvent.value._id, { checkInEnabled: updated.checkInEnabled, checkOutEnabled: updated.checkOutEnabled })
+  }
+
+  if (updated.checkInEnabled) setRfidOperation('in')
+  else setRfidOperation('out')
+  if (!updated.checkInEnabled) {
     lastAutoSwitchedFromCheckIn.value = true
-    // auto-clear message after 5s
     setTimeout(() => { lastAutoSwitchedFromCheckIn.value = false }, 5000)
   }
 
-  await saveRfidScannerSettings()
   startToggleCooldown(3)
 }
 
 const toggleCheckOut = async () => {
   if (checkToggleCooldown.value) return
-  const newValue = !appSettings.value.rfidScanner.checkOutEnabled
-  appSettings.value.rfidScanner.checkOutEnabled = newValue
-
-  // If enabling check-out, disable check-in and set operation
-  if (newValue) {
-    appSettings.value.rfidScanner.checkInEnabled = false
-    setRfidOperation('out')
+  if (!selectedSession.value && !selectedEvent.value) {
+    showNotification('Please select an event or session first', 'warning')
+    return
   }
 
-  await saveRfidScannerSettings()
+  const current = effectiveRfid.value || {}
+  const newValue = !current.checkOutEnabled
+  const updated = Object.assign({}, current, { checkOutEnabled: newValue })
+  if (newValue) updated.checkInEnabled = false
+
+  // Only persist to session or event, never global
+  if (selectedSession.value) {
+    await saveSessionRfidSettings(selectedSession.value._id, { checkInEnabled: updated.checkInEnabled, checkOutEnabled: updated.checkOutEnabled })
+  } else if (selectedEvent.value) {
+    await saveEventRfidSettings(selectedEvent.value._id, { checkInEnabled: updated.checkInEnabled, checkOutEnabled: updated.checkOutEnabled })
+  }
+
+  if (updated.checkOutEnabled) setRfidOperation('out')
   startToggleCooldown(3)
 }
 
@@ -9899,7 +11410,7 @@ const searchForDuplicates = async () => {
     const lowerQuery = query.toLowerCase()
     
     // Search for matching students by RFID, Student ID, or Email
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/search?search=${encodeURIComponent(query)}&limit=100`, {
+    const response = await fetch(buildAPIUrl(`/apis/students/search?search=${encodeURIComponent(query)}&limit=100`), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -9978,7 +11489,7 @@ const scanAllForDuplicates = async () => {
   
   try {
     // Fetch all students using the student API key
-    const response = await fetch('https://ssaam-api.vercel.app/apis/students?limit=10000', {
+    const response = await fetch(buildAPIUrl('/apis/students?limit=10000'), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -10074,6 +11585,9 @@ const openEditDuplicateStudent = (student) => {
   userCopy.image = userCopy.photo || userCopy.image || ''
   
   editingUser.value = userCopy
+  // Mark this edit modal as coming from duplicate scan flow
+  editingUser.value.isDuplicate = true
+  confirmDuplicate.value = false
   editImageLoading.value = false
   showEditModal.value = true
 }
@@ -10108,7 +11622,7 @@ const confirmDeleteDuplicateStudent = async () => {
 const performDeleteDuplicateStudent = async (studentId, studentName) => {
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}`, {
+    const response = await fetch(buildAPIUrl(`/apis/students/${studentId}`), {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
@@ -10210,6 +11724,7 @@ const openEditModalWithUser = (user) => {
   userCopy.yearLevel = userCopy.yearLevel || userCopy.year_level || ''
   userCopy.rfidCode = userCopy.rfidCode || userCopy.rfid_code || ''
   userCopy.image = userCopy.image || userCopy.photo || ''
+  userCopy.isDuplicate = false
   // Check if RFID is unreadable - either by rfid_status or rfid_code prefix
   userCopy.rfidUnreadable = (userCopy.rfid_status === 'Unreadable') || (userCopy.rfidCode || userCopy.rfid_code || '').startsWith('UNREADABLE:')
   editingUser.value = userCopy
@@ -10249,10 +11764,13 @@ const editUser = (user) => {
 const closeEditModal = () => {
   showEditModal.value = false
   editingUser.value = null
+  confirmDuplicate.value = false
 }
 
 const showNotification = (message, type = 'info') => {
-  notification.value = { show: true, message, type }
+  // Strip common emoji characters so notifications remain professional
+  const sanitized = String(message || '').replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{1F600}-\u{1F64F}\u{2700}-\u{27BF}]/gu, '').trim()
+  notification.value = { show: true, message: sanitized, type }
   setTimeout(() => {
     notification.value.show = false
   }, 3000)
@@ -10441,7 +11959,7 @@ const handleStudentPhotoUpload = async (event) => {
           const photoUrl = data.data.url;
           const studentId = currentUser.value.studentId || currentUser.value.student_id;
           const token = localStorage.getItem('authToken') || localStorage.getItem('studentToken');
-          const updateResponse = await fetch(`https://ssaam-api.vercel.app/apis/students/${studentId}/photo`, {
+          const updateResponse = await fetch(buildAPIUrl(`/apis/students/${studentId}/photo`), {
             method: 'PUT',
             headers: { 
               'Content-Type': 'application/json',
@@ -10534,7 +12052,7 @@ const saveUserImpl = async () => {
       _ssaam_access_token: encodeTimestamp()
     }
     
-    const response = await fetch(`https://ssaam-api.vercel.app/apis/students/${originalStudentId}`, {
+    const response = await fetch(buildAPIUrl(`/apis/students/${originalStudentId}`), {
       method: 'PUT',
       headers: { 
         'Content-Type': 'application/json',
@@ -10628,6 +12146,74 @@ const saveUserImpl = async () => {
   closeEditModal()
 }
 
+const duplicateUserImpl = async () => {
+  if (!editingUser.value) return
+
+  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') {
+    showNotification('Only administrators can duplicate users', 'error')
+    closeEditModal()
+    return
+  }
+
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  if (!token) {
+    showNotification('Admin authentication required', 'error')
+    closeEditModal()
+    return
+  }
+
+  savingUser.value = true
+
+  try {
+    let rfidStatus = editingUser.value.rfid_status || 'unverified'
+    if (editingUser.value.rfidUnreadable) {
+      rfidStatus = 'Unreadable'
+    }
+
+    const createData = {
+      student_id: editingUser.value.studentId || editingUser.value.student_id,
+      first_name: (editingUser.value.firstName || editingUser.value.first_name || '').toUpperCase(),
+      middle_name: (editingUser.value.middleName || editingUser.value.middle_name || '').toUpperCase(),
+      last_name: (editingUser.value.lastName || editingUser.value.last_name || '').toUpperCase(),
+      email: editingUser.value.email,
+      rfid_code: editingUser.value.rfidCode || editingUser.value.rfid_code || 'N/A',
+      rfid_status: rfidStatus,
+      year_level: editingUser.value.yearLevel || editingUser.value.year_level,
+      program: editingUser.value.program,
+      photo: editingUser.value.image || editingUser.value.photo || '',
+      _ssaam_access_token: encodeTimestamp()
+    }
+
+    const response = await fetch(buildAPIUrl('/apis/students'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      },
+      body: JSON.stringify(createData)
+    })
+
+    if (response.ok) {
+      showNotification('Duplicate record created successfully', 'success')
+      await scanAllForDuplicates()
+      await fetchAllUsers()
+    } else {
+      const data = await response.json()
+      showNotification(data.message || 'Failed to create duplicate', 'error')
+    }
+  } catch (error) {
+    console.error('Error creating duplicate:', error)
+    showNotification('Error creating duplicate', 'error')
+  } finally {
+    savingUser.value = false
+  }
+
+  closeEditModal()
+}
+
+const duplicateUser = () => withAdminAction(duplicateUserImpl)()
+
 const saveUser = () => withAdminAction(saveUserImpl)()
 
 const deleteUser = (studentId) => {
@@ -10666,6 +12252,8 @@ const confirmDeleteImpl = async () => {
       
       if (response.ok) {
         users.value = users.value.filter(u => (u.studentId || u.student_id) !== userToDelete.value)
+        // Emit event to sync deletion with other components
+        window.dispatchEvent(new CustomEvent('user-deleted', { detail: { userId: userToDelete.value.studentId || userToDelete.value.student_id } }))
         showNotification('User deleted successfully', 'success')
         fetchStats()
       } else {
@@ -10933,9 +12521,10 @@ const createAttendanceEvent = async () => {
       start_time: newEvent.value.start_time || '07:00',
       end_time: newEvent.value.end_time || '17:00',
       is_custom: newEvent.value.is_custom || false,
-      assigned_users: newEvent.value.assigned_users || []
+      // Extract IDs from assigned_users (can be objects or IDs)
+      assigned_users: (newEvent.value.assigned_users || []).map(u => typeof u === 'string' ? u : u._id || u.id)
     }
-    const response = await fetch('https://ssaam-api.vercel.app/apis/attendance/events', {
+    const response = await fetch(buildAPIUrl('/apis/attendance/events'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -11005,7 +12594,8 @@ const updateAttendanceEvent = async () => {
       start_time: selectedEvent.value.start_time || selectedEvent.value.startTime || '07:00',
       end_time: selectedEvent.value.end_time || selectedEvent.value.endTime || '17:00',
       is_custom: selectedEvent.value.is_custom || false,
-      assigned_users: selectedEvent.value.assigned_users || []
+      // Extract IDs from assigned_users (can be objects or IDs)
+      assigned_users: (selectedEvent.value.assigned_users || []).map(u => typeof u === 'string' ? u : u._id || u.id)
     }
     
     console.log('[Frontend Update] Sending event payload:', {
@@ -11034,7 +12624,7 @@ const updateAttendanceEvent = async () => {
       })
       showNotification('Event updated successfully', 'success')
       showEditEventModal.value = false
-      fetchAttendanceData()
+      await fetchAttendanceData()
     } else {
       if (response.status === 403) {
         const errorData = await response.json()
@@ -11063,6 +12653,77 @@ const requestDeleteEvent = (event) => {
       cooldownTimer = null
     }
   }, 1000)
+}
+
+const duplicateEvent = async (event) => {
+  eventToDuplicate.value = event
+  showDuplicateEventConfirm.value = true
+}
+
+const confirmDuplicateEvent = async () => {
+  if (!eventToDuplicate.value) return
+  
+  const event = eventToDuplicate.value
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  try {
+    // Set future date (tomorrow) for duplicated event to avoid "Closed" status
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const futureDateString = tomorrow.toISOString().split('T')[0]
+    
+    // Create duplicate event with same name, description, and assigned users
+    const duplicatedEvent = {
+      title: `${event.title} (Copy)`,
+      description: event.description || '',
+      event_date: futureDateString,
+      start_time: event.start_time || event.startTime || '07:00',
+      end_time: event.end_time || event.endTime || '17:00',
+      location: event.location || '',
+      year_level: event.year_level || event.yearLevel || '',
+      is_custom: event.is_custom || false,
+      // Extract IDs from assigned_users (can be objects or IDs)
+      assigned_users: (event.assigned_users || []).map(u => typeof u === 'string' ? u : u._id || u.id),
+      status: 'draft'
+    }
+
+    const response = await fetch(buildAPIUrl('/apis/attendance/events'), {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'X-SSAAM-TS': encodeTimestamp()
+      },
+      body: JSON.stringify(duplicatedEvent)
+    })
+
+    if (response.ok) {
+      const result = await response.json()
+      showNotification(`Event duplicated successfully as "${duplicatedEvent.title}"`, 'success')
+      // Refresh events then open edit modal for the duplicated event so admin can set the date/sessions
+      await fetchAttendanceData()
+      if (result.event) {
+        selectedEvent.value = {
+          ...result.event,
+          event_date: duplicatedEvent.event_date,
+          start_time: duplicatedEvent.start_time,
+          end_time: duplicatedEvent.end_time,
+          assigned_users: event.assigned_users || []
+        }
+        eventSessions.value = []
+        fetchEventSessions(result.event._id)
+        showEditEventModal.value = true
+      }
+    } else {
+      const errorData = await response.json()
+      showNotification(errorData.message || 'Failed to duplicate event', 'error')
+    }
+  } catch (err) {
+    console.error('Error duplicating event:', err)
+    showNotification('Error duplicating event', 'error')
+  } finally {
+    showDuplicateEventConfirm.value = false
+    eventToDuplicate.value = null
+  }
 }
 
 const cancelDeleteEvent = () => {
@@ -11096,7 +12757,7 @@ const deleteAttendanceEvent = async (eventId) => {
     
     if (response.ok) {
       showNotification('Event deleted successfully', 'success')
-      fetchAttendanceData()
+      await fetchAttendanceData()
     } else {
       if (response.status === 403) {
         const errorData = await response.json()
@@ -11124,6 +12785,33 @@ const fetchEventSessions = async (eventId) => {
       console.log('Fetched sessions for event:', eventId, 'Response:', result)
       eventSessions.value = result.data || result.sessions || []
       console.log('eventSessions.value set to:', eventSessions.value)
+        // If no session selected yet, auto-select the first active session or the only session
+        if (!selectedSession.value && Array.isArray(eventSessions.value) && eventSessions.value.length > 0) {
+          let pick = eventSessions.value.find(s => getSessionDisplayStatus(s, selectedEvent.value) === 'active')
+          if (!pick && eventSessions.value.length === 1) pick = eventSessions.value[0]
+          if (pick) {
+            selectedSession.value = pick
+            selectedSessionForLogs.value = pick
+            showNotification(`Auto-selected session: ${pick.label}`, 'info')
+            // If session-level rfidScanner flags exist, set operation mode accordingly
+            try {
+              const srf = (pick.rfidScanner && typeof pick.rfidScanner === 'object') ? pick.rfidScanner : null
+              if (srf) {
+                if (srf.checkOutEnabled) setRfidOperation('out')
+                else if (srf.checkInEnabled) setRfidOperation('in')
+              }
+            } catch (e) {
+              console.warn('Failed to apply session rfidScanner operation', e)
+            }
+            // focus scanner input shortly
+            setTimeout(() => {
+              try {
+                if (rfidInputRef && rfidInputRef.value) rfidInputRef.value.focus()
+                if (rfidFullscreenInputRef && rfidFullscreenInputRef.value) rfidFullscreenInputRef.value.focus()
+              } catch (e) {}
+            }, 120)
+          }
+        }
     } else {
       console.error('Failed to fetch sessions, status:', response.status)
     }
@@ -11157,8 +12845,14 @@ const toggleEventExpansion = async (eventId) => {
 }
 
 const openAddSessionModal = () => {
+  // Trigger button animation
+  addSessionButtonAnimating.value = true
+  setTimeout(() => {
+    addSessionButtonAnimating.value = false
+  }, 600)
+  
   editingSession.value = null
-  newSession.value = { label: 'Morning', start_time: '', end_time: '', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60 }
+  newSession.value = { label: 'Morning', start_time: '', end_time: '', status: 'active', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60 }
   showSessionModal.value = true
 }
 
@@ -11309,7 +13003,7 @@ const applyLateThresholdByMinutes = async () => {
     
     // Also update the session's late_threshold_minutes setting
     try {
-      await fetch(`https://ssaam-api.vercel.app/apis/attendance/sessions/${sessionId}`, {
+      await fetch(buildAPIUrl(`/apis/attendance/sessions/${sessionId}`), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -11406,64 +13100,60 @@ const applyLateThreshold = async () => {
 }
 
 const fetchSessionLogs = async (sessionId, loadMore = false) => {
+  console.log('[fetchSessionLogs] START - sessionId:', sessionId, 'loadMore:', loadMore)
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   
-  if (loadMore) {
-    loadingMoreLogs.value = true
-  } else {
+  if (!loadMore) {
     attendanceLoading.value = true
-    attendanceLogsPagination.value.page = 1
     attendanceLogs.value = []
-    allSessionLogs.value = []
+    attendanceLogsPagination.value.page = 1
+    console.log('[fetchSessionLogs] Reset loading=true, logs=[]')
+  } else {
+    loadingMoreLogs.value = true
   }
-  
+
   try {
-    // First, fetch ALL logs for stats calculation (only on initial load)
-    if (!loadMore) {
-      const statsParams = new URLSearchParams()
-      statsParams.append('limit', '10000')
-      if (eventLogsFilter.value.yearLevel) statsParams.append('yearLevel', eventLogsFilter.value.yearLevel)
-      if (eventLogsFilter.value.program) statsParams.append('program', eventLogsFilter.value.program)
-      if (eventLogsFilter.value.search) statsParams.append('search', eventLogsFilter.value.search)
-      
-      const statsResponse = await fetch(buildAPIUrl(`/apis/attendance/sessions/${sessionId}/logs?${statsParams.toString()}`), {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-SSAAM-TS': encodeTimestamp()
-        }
-      })
-      
-      if (statsResponse.ok) {
-        const statsResult = await statsResponse.json()
-        const allLogs = (statsResult.data || []).map(log => ({
-          ...log,
-          session_label: selectedSessionForLogs.value?.label || log.session?.label || log.session_label || 'Session',
-          student_image: log.student_image || log.student?.photo
-        }))
-        
-        allSessionLogs.value = allLogs
-        
-        // Calculate stats from all logs
-        let present = 0, incomplete = 0, late = 0, absent = 0
-        allLogs.forEach(log => {
-          const hasCheckIn = log.check_in_at || log.check_in_time
-          const hasCheckOut = log.check_out_at || log.check_out_time
-          if (hasCheckIn && hasCheckOut) {
-            if (log.is_late) late++
-            else present++
-          } else if (hasCheckIn && !hasCheckOut) {
-            incomplete++
-          } else {
-            absent++
-          }
-        })
-        sessionStats.value = { present, incomplete, late, absent, total: allLogs.length, totalStudents: 0 }
-        
-        // Fetch total students count based on event's target audience
-        const event = selectedEvent.value
+    // Build query params
+    const params = new URLSearchParams()
+    params.append('limit', '10000')
+    params.append('page', attendanceLogsPagination.value.page.toString())
+    if (eventLogsFilter.value?.yearLevel) params.append('yearLevel', eventLogsFilter.value.yearLevel)
+    if (eventLogsFilter.value?.program) params.append('program', eventLogsFilter.value.program)
+    if (eventLogsFilter.value?.search) params.append('search', eventLogsFilter.value.search)
+
+    const url = buildAPIUrl(`/apis/attendance/sessions/${sessionId}/logs?${params.toString()}`)
+    console.log('[fetchSessionLogs] Fetching URL:', url)
+
+    // SINGLE FETCH - get the logs
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      }
+    })
+
+    console.log('[fetchSessionLogs] Response status:', response.status)
+    if (!response.ok) {
+      console.error('[fetchSessionLogs] Failed. Status:', response.status)
+      return
+    }
+
+    const result = await response.json()
+    console.log('[fetchSessionLogs] Got result:', result)
+    const logs = result.data || []
+    console.log('[fetchSessionLogs] Logs array:', logs, 'Length:', logs.length)
+    
+    // ASSIGN DATA TO VIEW
+    if (loadMore) {
+      attendanceLogs.value.push(...logs)
+      console.log('[fetchSessionLogs] Pushed logs, now total:', attendanceLogs.value.length)
+    } else {
+      // Enrich logs with absent entries if event has ended
+      let mergedLogs = logs
+      try {
+        const event = selectedEvent.value || attendanceEvents.value.find(e => e._id === (selectedEvent.value?._id))
         const eventEnded = event ? hasEventEndedPH(event) : false
-        
         if (eventEnded) {
           try {
             const studentsResponse = await fetch(buildAPIUrl(`/apis/students?limit=10000`), {
@@ -11473,170 +13163,152 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
                 'X-SSAAM-TS': encodeTimestamp()
               }
             })
-            
-            if (studentsResponse.ok) {
-              const studentsResult = await studentsResponse.json()
-              const allStudents = studentsResult.students || studentsResult.data || []
-              
-              // Filter students based on event's target audience
-              const eventYearLevel = event?.year_level || ''
-              const validYearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
-              const hasSpecificYearLevel = validYearLevels.includes(eventYearLevel)
-              
-              let targetStudents = allStudents
-              if (hasSpecificYearLevel) {
-                targetStudents = allStudents.filter(s => s.year_level === eventYearLevel)
+
+              if (studentsResponse.ok) {
+                const studentsResult = await studentsResponse.json()
+                const allStudents = studentsResult.students || studentsResult.data || []
+
+                const attendedStudentIds = new Set(logs.map(log => log.student_id_number || log.student?.student_id || log.student_id))
+
+                // If this is a custom event and assigned_users is present, restrict absent synthesis
+                // to only students who were assigned to this event. assigned_users may contain ids
+                // or objects with `_id` properties depending on how the event was created.
+                let studentsPool = allStudents
+                if (selectedEvent.value && selectedEvent.value.is_custom && Array.isArray(selectedEvent.value.assigned_users) && selectedEvent.value.assigned_users.length > 0) {
+                  const assignedSet = new Set(selectedEvent.value.assigned_users.map(u => (typeof u === 'string' ? u : (u._id || u))))
+                  studentsPool = allStudents.filter(s => assignedSet.has(s._id) || assignedSet.has(s.student_id))
+                }
+
+                const eventYearLevel = event?.year_level || ''
+                const validYearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
+                const hasSpecificYearLevel = validYearLevels.includes(eventYearLevel)
+
+                let absentStudents = studentsPool.filter(student => {
+                  if (attendedStudentIds.has(student.student_id)) return false
+                  if (hasSpecificYearLevel && student.year_level !== eventYearLevel) return false
+                  if (eventLogsFilter.value.yearLevel && student.year_level !== eventLogsFilter.value.yearLevel) return false
+                  if (eventLogsFilter.value.program && student.program !== eventLogsFilter.value.program) return false
+                  if (eventLogsFilter.value.search) {
+                    const searchLower = eventLogsFilter.value.search.toLowerCase()
+                    const nameMatch = (student.full_name || '').toLowerCase().includes(searchLower)
+                    const idMatch = (student.student_id || '').toLowerCase().includes(searchLower)
+                    if (!nameMatch && !idMatch) return false
+                  }
+                  return true
+                })
+
+                const absentLogs = absentStudents.map(student => ({
+                  id: `absent_${student.student_id}`,
+                  student_id: student._id,
+                  student_id_number: student.student_id,
+                  student_name: student.full_name,
+                  student_image: student.photo,
+                  program: student.program,
+                  year_level: student.year_level,
+                  check_in_at: null,
+                  check_in_time: null,
+                  check_out_at: null,
+                  check_out_time: null,
+                  is_late: false,
+                  is_absent: true,
+                  event_status: 'absent',
+                  student: student
+                }))
+
+                // Merge and then enrich all logs with available student photos from allStudents
+                mergedLogs = [...logs, ...absentLogs]
+
+                const studentsMap = {}
+                studentsPool.forEach(s => { if (s.student_id) studentsMap[s.student_id] = s })
+
+                mergedLogs = mergedLogs.map(l => {
+                  const sid = l.student_id_number || l.student?.student_id || l.student_id
+                  // prefer existing student_image or nested student.photo
+                  if (!l.student_image) {
+                    if (l.student && (l.student.photo || l.student.image)) l.student_image = l.student.photo || l.student.image
+                    else if (sid && studentsMap[sid]) l.student_image = studentsMap[sid].photo || studentsMap[sid].image || ''
+                  }
+                  // ensure student object exists for uniform access
+                  if (!l.student && sid && studentsMap[sid]) l.student = studentsMap[sid]
+                  return l
+                })
               }
-              
-              sessionStats.value.totalStudents = targetStudents.length
-              // Calculate absent count: total eligible students - students who attended
-              const attendedCount = sessionStats.value.present + sessionStats.value.late + sessionStats.value.incomplete
-              sessionStats.value.absent = Math.max(0, targetStudents.length - attendedCount)
-            }
-          } catch (err) {
-            console.error('Error fetching students count:', err)
+          } catch (studentsError) {
+            console.error('[fetchSessionLogs] Error fetching students for absent list:', studentsError)
           }
         }
+      } catch (e) {
+        console.error('[fetchSessionLogs] error determining eventEnded', e)
       }
-    }
-    
-    // Fetch paginated logs for display
-    const params = new URLSearchParams()
-    params.append('limit', '10000')
-    params.append('page', attendanceLogsPagination.value.page.toString())
-    if (eventLogsFilter.value.yearLevel) params.append('yearLevel', eventLogsFilter.value.yearLevel)
-    if (eventLogsFilter.value.program) params.append('program', eventLogsFilter.value.program)
-    if (eventLogsFilter.value.search) params.append('search', eventLogsFilter.value.search)
-    
-    const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${sessionId}/logs?${params.toString()}`), {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp()
-      }
-    })
-    
-    if (response.ok) {
-      const result = await response.json()
-      let logs = (result.data || []).map(log => {
-        const key = deriveStudentKey(log)
-        const cachedPhoto = key ? studentPhotoCache.value[key] : null
-        const existingPhoto = log.student_image || log.student?.photo
-        
-        if (existingPhoto && !cachedPhoto) {
-          cacheStudentPhoto(log, existingPhoto)
-        }
-        
-        return {
-          ...log,
-          session_label: selectedSessionForLogs.value?.label || log.session?.label || log.session_label || 'Session',
-          student_image: log.student_image || cachedPhoto || log.student?.photo
+
+      attendanceLogs.value = mergedLogs
+      console.log('[fetchSessionLogs] Assigned logs to attendanceLogs:', mergedLogs.length, 'items')
+
+      // Calculate stats from merged logs
+      let present = 0, incomplete = 0, late = 0, absent = 0
+      mergedLogs.forEach(log => {
+        const hasCheckIn = log.check_in_at || log.check_in_time
+        const hasCheckOut = log.check_out_at || log.check_out_time
+        if (hasCheckIn && hasCheckOut) {
+          if (log.is_late) late++
+          else present++
+        } else if (hasCheckIn && !hasCheckOut) {
+          incomplete++
+        } else {
+          absent++
         }
       })
-      
-      if (loadMore) {
-        attendanceLogs.value = [...attendanceLogs.value, ...logs]
-      } else {
-        attendanceLogs.value = logs
-      }
-      
-      const pagination = result.pagination || {}
-      attendanceLogsPagination.value.total = pagination.total || sessionStats.value.total
-      attendanceLogsPagination.value.hasMore = (pagination.currentPage || 1) < (pagination.totalPages || 1)
-      
-      // Check if session's event has ended - if so, fetch students and add absent entries
-      const event = selectedEvent.value
-      const session = selectedSessionForLogs.value
-      const eventEnded = event ? hasEventEndedPH(event) : false
-      
-      if (eventEnded && session) {
+
+      // The "total" shown should be total attended (present + incomplete + late)
+      const totalAttended = present + incomplete + late
+
+      // Fetch total assigned students based on whether event is custom
+      let totalStudents = mergedLogs.length
+      if (selectedEvent.value) {
         try {
-          // Fetch approved students
-          const studentsResponse = await fetch(buildAPIUrl(`/apis/students?limit=10000`), {
-            method: 'GET',
-            headers: {
-              'Authorization': 'Bearer SSAAMStudents',
-              'X-SSAAM-TS': encodeTimestamp()
-            }
-          })
-          
-          if (studentsResponse.ok) {
-            const studentsResult = await studentsResponse.json()
-            const allStudents = studentsResult.students || studentsResult.data || []
-            
-            // Get set of student ID numbers who have attendance logs
-            // Use allSessionLogs.value (all logs) instead of logs (paginated 50) to correctly identify ALL attended students
-            // Use student_id_number (string like "25-A-00546") not student_id (MongoDB ObjectId)
-            const attendedStudentIds = new Set(allSessionLogs.value.map(log => log.student_id_number || log.student?.student_id))
-            
-            // Check if event targets a specific year level
-            const eventYearLevel = event?.year_level || ''
-            const validYearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
-            const hasSpecificYearLevel = validYearLevels.includes(eventYearLevel)
-            
-            // Filter students based on event's target audience
-            let absentStudents = allStudents.filter(student => {
-              // Skip students who already have attendance logs
-              if (attendedStudentIds.has(student.student_id)) return false
-              
-              // If event targets a specific year level, only include those students
-              if (hasSpecificYearLevel && student.year_level !== eventYearLevel) return false
-              
-              // Apply UI year level filter if set
-              if (eventLogsFilter.value.yearLevel && student.year_level !== eventLogsFilter.value.yearLevel) return false
-              
-              // Apply program filter if set
-              if (eventLogsFilter.value.program && student.program !== eventLogsFilter.value.program) return false
-              
-              // Apply search filter if set
-              if (eventLogsFilter.value.search) {
-                const searchLower = eventLogsFilter.value.search.toLowerCase()
-                const nameMatch = (student.full_name || '').toLowerCase().includes(searchLower)
-                const idMatch = (student.student_id || '').toLowerCase().includes(searchLower)
-                if (!nameMatch && !idMatch) return false
+          if (selectedEvent.value.is_custom) {
+            const eventStatsResponse = await fetch(buildAPIUrl(`/apis/events/${selectedEvent.value._id}/stats`), {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${getSessionToken()}`,
+                'X-SSAAM-TS': encodeTimestamp()
               }
-              
-              return true
             })
-            
-            // Create absent log entries for students without attendance
-            const absentLogs = absentStudents.map(student => ({
-              id: `absent_${student.student_id}`,
-              student_id: student.student_id,
-              student_name: student.full_name,
-              student_image: student.photo,
-              program: student.program,
-              year_level: student.year_level,
-              check_in_at: null,
-              check_in_time: null,
-              check_out_at: null,
-              check_out_time: null,
-              is_late: false,
-              is_absent: true,
-              session_label: session.label || 'Session',
-              student: student
-            }))
-            
-            // Combine attendance logs with absent entries
-            logs = [...logs, ...absentLogs]
+            if (eventStatsResponse.ok) {
+              const eventStatsData = await eventStatsResponse.json()
+              totalStudents = eventStatsData.totalAssignedStudents || mergedLogs.length
+            }
+          } else {
+            const studentStatsResponse = await fetch(buildAPIUrl('/apis/students/stats'), {
+              method: 'GET',
+              headers: {
+                'Authorization': 'Bearer SSAAMStudents',
+                'X-SSAAM-TS': encodeTimestamp()
+              }
+            })
+            if (studentStatsResponse.ok) {
+              const studentStatsData = await studentStatsResponse.json()
+              totalStudents = studentStatsData.totalStudents || mergedLogs.length
+            }
           }
-        } catch (studentsError) {
-          console.error('Error fetching students for absent list:', studentsError)
+        } catch (err) {
+          console.log('[fetchSessionLogs] Could not fetch total students:', err.message)
         }
       }
-      
-      attendanceLogs.value = logs
-      
-      attendanceLogsPagination.value.total = logs.length
-      attendanceLogsPagination.value.hasMore = false
-    } else {
-      console.error('Failed to fetch session logs')
+
+      sessionStats.value = { present, incomplete, late, absent, total: totalAttended, totalStudents: totalStudents }
+      console.log('[fetchSessionLogs] Stats calculated:', sessionStats.value)
     }
+
+    console.log('[fetchSessionLogs] SUCCESS! Loaded', logs.length, 'logs. Total in view:', attendanceLogs.value.length)
   } catch (error) {
-    console.error('Error fetching session logs:', error)
+    console.error('[fetchSessionLogs] EXCEPTION:', error)
   } finally {
+    // ALWAYS execute: stop loading
+    console.log('[fetchSessionLogs] Finally block - setting loading=false')
     attendanceLoading.value = false
     loadingMoreLogs.value = false
+    console.log('[fetchSessionLogs] COMPLETE - loading is now:', attendanceLoading.value)
   }
 }
 
@@ -11667,10 +13339,17 @@ const fetchEventLogs = async (eventId) => {
     
     if (response.ok) {
       const result = await response.json()
-      // Enrich logs with cached photos and backfill cache from logs with photos
+      // Enrich logs with cached photos (check localStorage first, then memory cache)
       let logs = (result.data || []).map(log => {
         const key = deriveStudentKey(log)
-        const cachedPhoto = key ? studentPhotoCache.value[key] : null
+        // Priority: localStorage (persistent) → memory cache → API response
+        let cachedPhoto = null
+        const studentId = log.student_id || log.student?.student_id
+        if (studentId) {
+          cachedPhoto = getPhotoFromStorage(studentId) || (key ? studentPhotoCache.value[key] : null)
+        } else {
+          cachedPhoto = key ? studentPhotoCache.value[key] : null
+        }
         const existingPhoto = log.student_image || log.student?.photo
         
         // Backfill cache if log has a photo we haven't cached yet
@@ -11681,6 +13360,22 @@ const fetchEventLogs = async (eventId) => {
         return {
           ...log,
           student_image: log.student_image || cachedPhoto || log.student?.photo
+        }
+      })
+      
+      // Asynchronously fetch missing photos from public endpoint
+      // This ensures photos display even without active auth session
+      logs.forEach(log => {
+        const studentId = log.student_id || log.student?.student_id
+        if (studentId && !log.student_image) {
+          fetchAndCacheStudentPhoto(studentId, log.student_name).then(photo => {
+            if (photo && attendanceLogs.value) {
+              const logEntry = attendanceLogs.value.find(l => (l.student_id || l.student?.student_id) === studentId)
+              if (logEntry && !logEntry.student_image) {
+                logEntry.student_image = photo
+              }
+            }
+          }).catch(err => console.warn(`Failed to fetch photo for ${studentId}:`, err))
         }
       })
       
@@ -11950,10 +13645,14 @@ const handleRfidKeydown = (event) => {
   
   if (timeDiff < SCANNER_THRESHOLD || rfidLastKeyTime.value === 0) {
     if (event.key !== 'Enter') {
-      rfidInputBuffer.value += event.key
+      if (event.key && event.key.length === 1) {
+        rfidInputBuffer.value += event.key.toUpperCase()
+      } else {
+        // ignore non-character keys
+      }
     }
   } else {
-    rfidInputBuffer.value = event.key === 'Enter' ? '' : event.key
+    rfidInputBuffer.value = event.key === 'Enter' ? '' : (event.key && event.key.length === 1 ? event.key.toUpperCase() : '')
   }
   rfidLastKeyTime.value = now
   
@@ -11993,6 +13692,36 @@ const manualRfidSubmit = () => {
   rfidInput.value = ''
 }
 
+// Fetch and cache student photo from public endpoint (doesn't require auth)
+const fetchAndCacheStudentPhoto = async (studentId, fullName) => {
+  if (!studentId) return
+  
+  try {
+    // Check if already in localStorage cache
+    const cachedPhoto = getPhotoFromStorage(studentId)
+    if (cachedPhoto) {
+      return cachedPhoto
+    }
+    
+    // Fetch from public photo endpoint
+    const response = await fetch(buildAPIUrl(`/apis/students/${studentId}/photo`))
+    if (response.ok) {
+      const data = await response.json()
+      if (data.photo) {
+        // Save to localStorage for future displays
+        savePhotoToStorage(studentId, data.photo)
+        // Add to memory cache
+        studentPhotoCache.value[studentId] = data.photo
+        return data.photo
+      }
+    }
+  } catch (error) {
+    console.warn(`Could not fetch photo for ${studentId}:`, error)
+  }
+  
+  return null
+}
+
 const processRfidScan = async (inputCode) => {
   if (!selectedSession.value || rfidProcessing.value) return
   
@@ -12001,22 +13730,20 @@ const processRfidScan = async (inputCode) => {
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   
   try {
-    // Determine the request body based on scan mode
-    const requestBody = scanMode.value === 'student_id' 
-      ? { 
-          student_id: inputCode, 
-          identifier_type: 'student_id', 
-          source: 'manual', 
-          operation_type: rfidOperationType.value,
-          force_mode: true // Tell backend to strictly use the operation_type
-        }
-      : { 
-          rfid_code: inputCode, 
-          identifier_type: 'rfid', 
-          source: 'rfid', 
-          operation_type: rfidOperationType.value,
-          force_mode: true // Tell backend to strictly use the operation_type
-        }
+    // Normalize input and auto-detect student ID pattern
+    const normalized = (inputCode || '').toUpperCase().trim()
+    const isStudentId = studentIdPattern.test(normalized)
+
+    // Backend expects concrete enum values for `source` and `identifier_type`.
+    // Use 'manual' for student ID entries, 'rfid' for card scans.
+    const requestBody = {
+      rfid_code: normalized,
+      student_id: normalized,
+      identifier_type: isStudentId ? 'student_id' : 'rfid',
+      source: isStudentId ? 'manual' : 'rfid',
+      operation_type: rfidOperationType.value,
+      force_mode: true
+    }
     
     const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${selectedSession.value._id}/check`), {
       method: 'POST',
@@ -12034,39 +13761,61 @@ const processRfidScan = async (inputCode) => {
       const actionLabel = result.action === 'check_in' ? 'Check-in' : result.action === 'check_out' ? 'Check-out' : result.action === 'already_checked_in' ? 'Already checked in' : 'Success'
       showNotification(`${actionLabel}: ${result.student?.full_name || result.student_name || 'Student'}`, 'success')
       
-      // Cache student photo for Recent Logs display under all available identifiers
+      // Cache student photo from API response
       const studentPhoto = result.student_photo || result.student?.photo
       if (studentPhoto) {
         cacheStudentPhoto(result.log, studentPhoto)
         cacheStudentPhoto(result.student, studentPhoto)
       }
       
+      // Also try to fetch and cache from the public endpoint for future displays
+      // This works even if user logs out later
+      const studentId = result.student?.student_id || result.student_id
+      const studentName = result.student?.full_name || result.student_name
+      if (studentId) {
+        fetchAndCacheStudentPhoto(studentId, studentName)
+      }
+      
       fetchEventLogs(selectedEvent.value._id)
     } else {
-      rfidResult.value = { success: false, message: result.message }
-      showNotification(result.message || (scanMode.value === 'student_id' ? 'Student ID not found' : 'RFID scan failed'), 'error')
+      // Classify responses:
+      // - already completed/double-scan -> yellow warning
+      // - user/student not found / not registered -> red error
+      // - other failures -> yellow warning
+      const msg = (result && result.message) || ''
+      const alreadyCompleted = /already/i.test(msg) || result.action === 'already_checked_in'
+      // Broaden user-not-found detection to match variations like:
+      // "No verified student found with this RFID code", "student not found", "not registered", etc.
+      const userNotFound = /(?:no\s+.*found|student\s+not\s+found|not\s+found|not\s+registered|user\s+not\s+found|not\s+verified|unknown)/i.test(msg) || ['user_not_found', 'not_registered'].includes(result.action)
+      // Detect assignment-related messages and treat them as errors (red)
+      const notAssigned = /not\s+assigned|only\s+assigned\s+students|not\s+assigned\s+to\s+this/i.test(msg)
+
+      if (alreadyCompleted) {
+        rfidResult.value = { success: false, warning: true, action: result.action || 'already_checked_in', ...result }
+        showNotification(result.message || 'Student already completed session', 'warning')
+      } else if (userNotFound || notAssigned) {
+        rfidResult.value = { success: false, error: true, message: result.message }
+        showNotification(result.message || 'User not found', 'error')
+      } else {
+        rfidResult.value = { success: false, warning: true, message: result.message }
+        showNotification(result.message || 'Warning: check input or try again', 'warning')
+      }
     }
   } catch (error) {
     console.error('Attendance scan error:', error)
-    rfidResult.value = { success: false, message: scanMode.value === 'student_id' ? 'Error processing Student ID' : 'Error processing RFID' }
-    showNotification(scanMode.value === 'student_id' ? 'Error processing Student ID' : 'Error processing RFID scan', 'error')
+    rfidResult.value = { success: false, error: true, message: 'Error processing identifier' }
+    showNotification('Error processing identifier', 'error')
   } finally {
     rfidProcessing.value = false
     setTimeout(() => { rfidResult.value = null }, 3000)
-    // Keep input focused for continuous scanning
+    // Keep input focused for continuous scanning - use correct ref based on mode
     setTimeout(() => {
-      if (rfidInputRef.value) {
-        rfidInputRef.value.focus()
+      const inputRef = rfidFullscreenMode.value ? rfidFullscreenInputRef.value : rfidInputRef.value
+      if (inputRef) {
+        inputRef.focus()
       }
     }, 100)
   }
-}
-
-const openEventLogs = (event) => {
-  selectedEvent.value = event
-  selectedSessionForLogs.value = null
-  showEventLogsModal.value = true
-  fetchEventLogs(event._id)
 }
 
 const openSessionLogs = (session, event) => {
@@ -12078,76 +13827,115 @@ const openSessionLogs = (session, event) => {
   fetchSessionLogs(session._id)
 }
 
+const selectSession = (session, event, ev) => {
+  try {
+    if (ev && ev.stopPropagation) ev.stopPropagation()
+  } catch (e) {
+    // ignore
+  }
+  // Set the selected event and session for scanner
+  selectedEvent.value = event
+  selectedSession.value = session
+  // Also ensure session-for-logs is set for detail views
+  selectedSessionForLogs.value = session
+  // If session contains rfidScanner settings, apply them (check-in / check-out)
+  try {
+    const srf = (session && session.rfidScanner && typeof session.rfidScanner === 'object') ? session.rfidScanner : null
+    if (srf) {
+      if (srf.checkOutEnabled) setRfidOperation('out')
+      else if (srf.checkInEnabled) setRfidOperation('in')
+    }
+    // prefer RFID scanning when selecting a session
+    scanMode.value = 'rfid'
+  } catch (ex) {
+    console.warn('Failed to apply session-level RFID operation in selectSession', ex)
+  }
+  console.log('[UI] selectSession invoked', session._id, 'for event', event?._id)
+  // brief UI notification so selection is obvious
+  showNotification(`Selected session: ${session.label}`, 'info')
+  // Focus the RFID input for quick scanning
+  setTimeout(() => {
+    try {
+      if (rfidInputRef && rfidInputRef.value) rfidInputRef.value.focus()
+      if (rfidFullscreenInputRef && rfidFullscreenInputRef.value) rfidFullscreenInputRef.value.focus()
+    } catch (e) {
+      // ignore
+    }
+  }, 80)
+}
+
 const openEditEvent = (event) => {
   // Fetch all registered students before opening edit modal
   const fetchStudentsForEdit = async () => {
+    loadingStudentsForEvent.value = true
+    loadedStudentCount.value = 0
+    totalStudentCount.value = 0
     try {
-      const response = await fetch(buildAPIUrl('/apis/students?limit=10000'), {
+      const response = await fetch(buildAPIUrl('/apis/students/list/all'), {
         method: 'GET',
         headers: {
-          'Authorization': `Bearer SSAAMStudents`
+          'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('adminToken')}`
         }
       })
       
       if (response.ok) {
         const result = await response.json()
         const allStudents = result.data || result
+        totalStudentCount.value = allStudents.length
+        
         if (Array.isArray(allStudents)) {
-          users.value = allStudents.map(s => {
-            // Construct full name from components if not available
-            const fullName = s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim()
-            return {
+          // Load students progressively in batches of 50
+          users.value = []
+          const batchSize = 50
+          
+          for (let i = 0; i < allStudents.length; i += batchSize) {
+            const batch = allStudents.slice(i, i + batchSize)
+            const mappedBatch = batch.map(s => ({
               ...s,
-              full_name: fullName,
               studentId: s.student_id,
               firstName: s.first_name,
               middleName: s.middle_name || '',
               lastName: s.last_name,
               yearLevel: s.year_level,
               rfidCode: s.rfid_code || 'N/A',
-              schoolYear: s.school_year,
               image: s.photo || s.image || ''
-            }
-          })
+            }))
+            users.value.push(...mappedBatch)
+            loadedStudentCount.value += mappedBatch.length
+            // Allow UI to update between batches
+            await new Promise(resolve => setTimeout(resolve, 10))
+          }
+          // Also populate allEventUsers with the mapped students
+          allEventUsers.value = users.value
+          
+          // Now that students are loaded, enrich and set the event
+          const enrichedAssignedUsers = enrichAssignedUsersWithNames(event.assigned_users)
+          
+          selectedEvent.value = { 
+            ...event,
+            date: event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : event.date,
+            start_time: event.start_time || event.startTime || '07:00',
+            end_time: event.end_time || event.endTime || '17:00',
+            assigned_users: enrichedAssignedUsers,
+            is_custom: event.is_custom || false
+          }
         }
       }
     } catch (error) {
       console.error('Error fetching students for edit:', error)
+      showNotification('Failed to load student list', 'error')
+    } finally {
+      loadingStudentsForEvent.value = false
     }
   }
   
-  // Fetch students
-  fetchStudentsForEdit()
-  
-  console.log('[openEditEvent] Event received:', {
-    title: event.title,
-    is_custom: event.is_custom,
-    assigned_users_raw: event.assigned_users,
-    assigned_users_type: typeof event.assigned_users,
-    assigned_users_isArray: Array.isArray(event.assigned_users),
-    assigned_users_length: event.assigned_users?.length
+  // Fetch students then open modal
+  fetchStudentsForEdit().then(() => {
+    editEventUserFilters.value = { name: '', program: '', yearLevel: '' }
+    eventSessions.value = []
+    fetchEventSessions(event._id)
+    showEditEventModal.value = true
   })
-  
-  const mappedUsers = Array.isArray(event.assigned_users) ? event.assigned_users.map(u => {
-    const id = typeof u === 'string' ? u : u._id
-    console.log('[openEditEvent] Mapping user:', { original: u, mapped_id: id })
-    return id
-  }) : []
-  
-  console.log('[openEditEvent] Mapped assigned_users:', mappedUsers)
-  
-  selectedEvent.value = { 
-    ...event,
-    date: event.event_date ? new Date(event.event_date).toISOString().split('T')[0] : event.date,
-    start_time: event.start_time || event.startTime || '07:00',
-    end_time: event.end_time || event.endTime || '17:00',
-    assigned_users: mappedUsers,
-    is_custom: event.is_custom || false
-  }
-  editEventUserFilters.value = { name: '', program: '', yearLevel: '' }
-  eventSessions.value = []
-  fetchEventSessions(event._id)
-  showEditEventModal.value = true
 }
 
 const formatEventDate = (dateStr) => {
@@ -12210,21 +13998,22 @@ const refreshAttendanceData = async () => {
 
 // Get user log attendance status based on check-in time vs event start time
 const getUserLogStatus = (log) => {
+  if (log && log.excused) return 'Excused'
   if (!log.check_in_time && !log.check_in_at) return 'Absent'
-  
+
   const checkInTime = new Date(log.check_in_time || log.check_in_at)
   const eventStartTime = log.event_start_time || log.event?.start_time
-  
+
   if (!eventStartTime) return 'Present'
-  
+
   // Parse event start time (HH:MM format)
   const [startHours, startMinutes] = eventStartTime.split(':').map(Number)
   const eventDate = new Date(log.event_date || log.event?.event_date || checkInTime)
   eventDate.setHours(startHours, startMinutes, 0, 0)
-  
+
   // Grace period of 15 minutes
   const graceMs = 15 * 60 * 1000
-  
+
   if (checkInTime <= new Date(eventDate.getTime() + graceMs)) {
     return 'Present'
   }
@@ -12236,6 +14025,8 @@ const getUserLogStatusClass = (log) => {
   const status = getUserLogStatus(log)
   switch (status) {
     case 'Present':
+      return 'bg-green-100 text-green-800'
+    case 'Excused':
       return 'bg-green-100 text-green-800'
     case 'Late':
       return 'bg-yellow-100 text-yellow-800'
@@ -12481,10 +14272,11 @@ const getEventDisplayStatus = (event) => {
 }
 
 const getAttendanceLogStatusLabel = (log) => {
+  if (log && log.excused) return 'Excused'
   const hasCheckIn = log.check_in_at || log.check_in_time
   const hasCheckOut = log.check_out_at || log.check_out_time
   const isLate = log.is_late
-  
+
   if (hasCheckIn && hasCheckOut) {
     return isLate ? 'Late' : 'Present'
   }
@@ -12495,10 +14287,11 @@ const getAttendanceLogStatusLabel = (log) => {
 }
 
 const getAttendanceLogStatusClass = (log) => {
+  if (log && log.excused) return 'bg-green-100 text-green-800'
   const hasCheckIn = log.check_in_at || log.check_in_time
   const hasCheckOut = log.check_out_at || log.check_out_time
   const isLate = log.is_late
-  
+
   if (hasCheckIn && hasCheckOut) {
     return isLate ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
   }
@@ -12755,6 +14548,62 @@ const getSessionAttendanceClass = (attendance, session = null, event = null) => 
   return 'bg-gray-100 text-gray-800'
 }
 
+// Get session badge styling based on session label (time-based colors)
+const getSessionBadgeStyle = (sessionLabel) => {
+  const label = (sessionLabel || '').toLowerCase().trim()
+  
+  if (label.includes('morning')) {
+    return {
+      bgGradient: 'bg-gradient-to-br from-yellow-400 to-orange-500',
+      badge: 'bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-800',
+      displayText: 'Morning',
+      icon: '/sessions/morning.svg'
+    }
+  } else if (label.includes('noon') || label.includes('lunch')) {
+    return {
+      bgGradient: 'bg-gradient-to-br from-blue-400 to-cyan-500',
+      badge: 'bg-gradient-to-r from-blue-100 to-cyan-100 text-blue-800',
+      displayText: 'Noon',
+      icon: '/sessions/noon.svg'
+    }
+  } else if (label.includes('afternoon')) {
+    return {
+      bgGradient: 'bg-gradient-to-br from-orange-400 to-red-500',
+      badge: 'bg-gradient-to-r from-orange-100 to-red-100 text-red-800',
+      displayText: 'Afternoon',
+      icon: '/sessions/afternoon.svg'
+    }
+  } else if (label.includes('night') || label.includes('evening')) {
+    return {
+      bgGradient: 'bg-gradient-to-br from-indigo-500 to-purple-600',
+      badge: 'bg-gradient-to-r from-indigo-100 to-purple-100 text-purple-800',
+      displayText: 'Night',
+      icon: '/sessions/night.svg'
+    }
+  } else if (label.includes('dawn') || label.includes('morning twilight')) {
+    return {
+      bgGradient: 'bg-gradient-to-br from-pink-400 to-rose-500',
+      badge: 'bg-gradient-to-r from-pink-100 to-rose-100 text-rose-800',
+      displayText: 'Dawn',
+      icon: '/sessions/dawn.svg'
+    }
+  } else if (label.includes('whole day') || label.includes('all day')) {
+    return {
+      bgGradient: 'bg-gradient-to-br from-green-400 to-emerald-500',
+      badge: 'bg-gradient-to-r from-green-100 to-emerald-100 text-green-800',
+      displayText: 'All Day',
+      icon: '/sessions/whole_day.svg'
+    }
+  }
+  
+  // Default fallback
+  return {
+    bgGradient: 'bg-gradient-to-br from-gray-400 to-gray-600',
+    badge: 'bg-gradient-to-r from-gray-100 to-gray-200 text-gray-800',
+    displayText: sessionLabel || 'Session'
+  }
+}
+
 const getInitials = (name) => {
   if (!name) return '?'
   const parts = name.trim().split(/\s+/)
@@ -12793,8 +14642,9 @@ const activeUnattendedEvents = computed(() => {
 })
 
 // Sort attendance logs by most recent activity (check-out or check-in, whichever is more recent)
+// Use filtered logs so UI filters apply
 const sortedAttendanceLogs = computed(() => {
-  return [...attendanceLogs.value].sort((a, b) => {
+  return [...filteredAttendanceLogs.value].sort((a, b) => {
     // Get the most recent activity time for each log (check-out takes priority if it exists)
     const aCheckOut = a.check_out_at || a.check_out_time
     const aCheckIn = a.check_in_at || a.check_in_time || a.created_at
@@ -13784,6 +15634,34 @@ onUnmounted(() => {
 .modal-bounce-leave-active {
   animation: bounce-in 0.3s reverse;
 }
+
+/* Slide Down Animation for Sessions Panel */
+.slide-down-enter-active,
+.slide-down-leave-active {
+  transition: all 0.4s ease;
+  overflow: hidden;
+}
+.slide-down-enter-from {
+  opacity: 0;
+  transform: translateY(-20px);
+  max-height: 0;
+}
+.slide-down-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 1000px;
+}
+.slide-down-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 1000px;
+}
+.slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-20px);
+  max-height: 0;
+}
+
 @keyframes bounce-in {
   0% { transform: scale(0.7); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
@@ -13868,6 +15746,15 @@ onUnmounted(() => {
   }
 }
 
+@keyframes admin-pfp-sweep {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
 .light-sweep-badge {
   position: absolute;
   top: 0;
@@ -13883,6 +15770,24 @@ onUnmounted(() => {
     transparent 100%
   );
   animation: sweep-badge 7s infinite;
+  pointer-events: none;
+}
+
+.admin-pfp-sweep {
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.4) 25%,
+    rgba(255, 255, 255, 0.7) 50%,
+    rgba(255, 255, 255, 0.4) 75%,
+    transparent 100%
+  );
+  animation: admin-pfp-sweep 2s infinite;
   pointer-events: none;
 }
 

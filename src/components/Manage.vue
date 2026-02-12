@@ -2,7 +2,7 @@
   <div class="bg-white rounded-lg shadow-lg p-3 md:p-8">
     <!-- Loading State -->
     <div v-if="isLoading" class="flex items-center justify-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+      <div :class="['animate-spin rounded-full h-12 w-12 border-b-2', isCOE ? 'border-orange-700' : 'border-purple-600']"></div>
     </div>
 
     <!-- Main Content -->
@@ -10,11 +10,11 @@
       <!-- Header Section with Tabs -->
       <div class="flex flex-col gap-4 mb-6">
         <div class="flex items-center justify-between">
-          <h2 class="text-xl md:text-2xl font-bold text-purple-900">Manage</h2>
+          <h2 :class="['text-xl md:text-2xl font-bold', primaryDarkText]">Manage</h2>
           <button 
             @click="refreshData" 
             :disabled="isRefreshing"
-            class="bg-purple-600 text-white px-4 md:px-6 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium flex items-center gap-2 disabled:opacity-70 text-sm md:text-base"
+            :class="['text-white px-4 md:px-6 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-medium flex items-center gap-2 disabled:opacity-70 text-sm md:text-base', isCOE ? 'bg-orange-700 hover:bg-orange-800' : 'bg-purple-600 hover:bg-purple-700']"
           >
             <svg v-if="isRefreshing" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -28,8 +28,8 @@
             :class="[
               'px-3 md:px-4 py-2 font-medium transition-all duration-200 border-b-2 text-sm md:text-base',
               activeTab === 'users'
-                ? 'text-purple-600 border-purple-600'
-                : 'text-gray-600 border-transparent hover:text-purple-600'
+                ? [primaryTextColor, isCOE ? 'border-orange-700' : 'border-purple-600']
+                : 'text-gray-600 border-transparent hover:text-gray-700'
             ]"
           >
             Users
@@ -39,8 +39,8 @@
             :class="[
               'px-3 md:px-4 py-2 font-medium transition-all duration-200 border-b-2 text-sm md:text-base',
               activeTab === 'roles'
-                ? 'text-purple-600 border-purple-600'
-                : 'text-gray-600 border-transparent hover:text-purple-600'
+                ? [primaryTextColor, isCOE ? 'border-orange-700' : 'border-purple-600']
+                : 'text-gray-600 border-transparent hover:text-gray-700'
             ]"
           >
             Roles
@@ -51,11 +51,11 @@
       <!-- USERS TAB -->
       <div v-if="activeTab === 'users'" class="space-y-6">
         <!-- Users Search and Filter -->
-        <div class="bg-gradient-to-br from-white via-purple-50 to-white rounded-lg md:rounded-xl p-4 md:p-6 mb-6 space-y-4 md:space-y-5 shadow-sm border border-purple-100">
+        <div :class="['rounded-lg md:rounded-xl p-4 md:p-6 mb-6 space-y-4 md:space-y-5 shadow-sm border', isCOE ? 'bg-gradient-to-br from-white via-orange-50 to-white border-orange-100' : 'bg-gradient-to-br from-white via-purple-50 to-white border-purple-100']">
           <!-- Search Input -->
           <div class="relative group">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <svg class="w-4 md:w-5 h-4 md:h-5 text-gray-400 group-focus-within:text-purple-600 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div :class="['absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none', isCOE ? 'text-gray-400 group-focus-within:text-orange-700' : 'text-gray-400 group-focus-within:text-purple-600', 'transition-colors duration-200']">
+              <svg class="w-4 md:w-5 h-4 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
             </div>
@@ -63,7 +63,7 @@
               v-model="userSearchQuery"
               type="text"
               placeholder="Search by name, email, student ID, or RFID..."
-              class="w-full pl-9 md:pl-10 pr-4 py-2 md:py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none bg-white hover:border-purple-300 transition-all duration-300 shadow-sm focus:shadow-md text-sm md:text-base"
+              :class="['w-full pl-9 md:pl-10 pr-4 py-2 md:py-3 border border-gray-200 rounded-lg outline-none bg-white text-sm md:text-base shadow-sm focus:shadow-md transition-all duration-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent hover:border-orange-300' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent hover:border-purple-300']"
             />
           </div>
           
@@ -73,25 +73,25 @@
             <div class="flex gap-2 flex-wrap">
               <button
                 @click="userRoleFilter = null"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === null ? 'bg-purple-600 text-white shadow-lg shadow-purple-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-purple-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === null ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 All Roles
               </button>
               <button
                 @click="userRoleFilter = 'student'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'student' ? 'bg-purple-600 text-white shadow-lg shadow-purple-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-purple-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'student' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 Students
               </button>
               <button
                 @click="userRoleFilter = 'medpub'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'medpub' ? 'bg-purple-600 text-white shadow-lg shadow-purple-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-purple-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'medpub' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 Medpub
               </button>
               <button
                 @click="userRoleFilter = 'treasurer'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'treasurer' ? 'bg-purple-600 text-white shadow-lg shadow-purple-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-purple-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'treasurer' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 Treasurer
               </button>
@@ -226,7 +226,7 @@
                   page === '...'
                     ? 'cursor-default text-gray-400'
                     : currentPage === page
-                    ? 'bg-purple-600 text-white'
+                    ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white']
                     : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                 ]"
               >
@@ -249,14 +249,14 @@
 
         <!-- Users List -->
         <div v-if="filteredUsers.length > 0" class="space-y-3">
-          <div v-for="user in paginatedUsers" :key="user._id || user.id || user.student_id" class="bg-white rounded-xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 overflow-hidden">
+          <div v-for="user in paginatedUsers" :key="user._id || user.id || user.student_id" :class="['bg-white rounded-xl border transition-all duration-300 overflow-hidden', isCOE ? 'hover:border-orange-300 hover:shadow-lg' : 'hover:border-purple-300 hover:shadow-lg']">
             <!-- Card Header with Profile -->
             <div class="p-4 md:p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-transparent">
               <div class="flex items-start justify-between gap-3">
                 <!-- Left: Profile Info -->
                 <div class="flex items-start gap-3 flex-1 min-w-0">
                   <!-- Profile Image -->
-                  <div class="w-12 h-12 md:w-14 md:h-14 rounded-full flex-shrink-0 bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-bold text-sm md:text-base overflow-hidden shadow-md">
+                  <div :class="['w-12 h-12 md:w-14 md:h-14 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm md:text-base overflow-hidden shadow-md', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : 'bg-gradient-to-br from-purple-400 to-pink-400']">
                     <img 
                       v-if="user.photo" 
                       :src="user.photo" 
@@ -272,7 +272,7 @@
                     <p class="text-sm text-gray-600 truncate">{{ user.student_id }}</p>
                     <div class="flex flex-wrap gap-2 mt-2">
                       <!-- Role Badge -->
-                      <span v-if="user.role && user.role !== 'student'" class="px-2 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 rounded-full text-xs font-bold capitalize shadow-sm">
+                      <span v-if="user.role && user.role !== 'student'" :class="['px-2 py-1 rounded-full text-xs font-bold capitalize shadow-sm', isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700' : 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700']">
                         {{ user.role }}
                       </span>
                       <span v-else class="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium capitalize shadow-sm">
@@ -371,7 +371,7 @@
                     page === '...'
                       ? 'cursor-default text-gray-400'
                       : currentPage === page
-                      ? 'bg-purple-600 text-white'
+                      ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white']
                       : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
                   ]"
                 >
@@ -485,31 +485,33 @@
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-lg md:rounded-2xl shadow-2xl p-4 md:p-8 max-w-2xl w-full mx-3 md:mx-4 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-4 md:mb-6">
-            <h3 class="text-lg md:text-2xl font-bold text-purple-900 capitalize">{{ selectedRole }} Members</h3>
+            <h3 :class="['text-lg md:text-2xl font-bold capitalize', primaryDarkText]">{{ selectedRole }} Members</h3>
             <button @click="closeMembersModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
           </div>
 
           <!-- Add Member Section -->
-          <div class="bg-purple-50 rounded-lg p-3 md:p-4 mb-4 md:mb-6">
-            <h4 class="font-semibold text-purple-900 mb-2 md:mb-3 text-sm md:text-base">Add User to {{ selectedRole }} Role</h4>
-            <div class="flex gap-2 flex-col sm:flex-row">
+          <div :class="[isCOE ? 'bg-orange-50' : 'bg-purple-50', 'rounded-lg p-3 md:p-4 mb-4 md:mb-6 border-2', isCOE ? 'border-orange-200' : 'border-purple-200']">
+            <h4 :class="['font-semibold mb-3 md:mb-4 text-sm md:text-base', primaryDarkText]">Add User to {{ selectedRole }} Role</h4>
+            <div class="flex gap-2 flex-col sm:flex-row items-stretch sm:items-center">
               <input
                 v-model="memberToAdd"
                 type="text"
                 placeholder="Search by name, email, student ID, or RFID..."
-                class="flex-1 px-3 md:px-4 py-2 md:py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm md:text-base"
+                :class="['flex-1 px-4 py-2.5 md:py-2.5 border-2 rounded-lg outline-none text-sm md:text-base font-medium', isCOE ? 'border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : 'border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200']"
               />
               <button 
                 @click="addMemberToRole"
                 :disabled="!memberToAdd || isAddingMember"
-                class="bg-gradient-to-r from-purple-600 to-pink-500 text-white px-3 md:px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-70 font-medium whitespace-nowrap text-sm md:text-base"
+                :class="['px-4 md:px-6 py-2.5 md:py-2.5 rounded-lg transition font-bold text-sm md:text-base shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white disabled:from-gray-400 disabled:to-gray-500' : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white disabled:from-gray-400 disabled:to-gray-500', !memberToAdd || isAddingMember ? 'opacity-60 cursor-not-allowed' : '']"
               >
-                {{ isAddingMember ? 'Adding...' : 'Add' }}
+                <svg v-if="isAddingMember" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <span>{{ isAddingMember ? 'Adding...' : 'Add Member' }}</span>
               </button>
             </div>
             
             <!-- Filtered User Suggestions -->
-            <div v-if="memberToAdd && memberSearchResults.length > 0" class="mt-2 border border-gray-200 rounded-lg overflow-y-auto max-h-40 md:max-h-48">
+            <div v-if="memberToAdd && memberSearchResults.length > 0" class="mt-3 border-2 border-gray-300 rounded-lg overflow-y-auto max-h-40 md:max-h-48 z-10 bg-white shadow-lg">
               <div
                 v-for="user in memberSearchResults"
                 :key="user._id || user.id || user.student_id"
@@ -532,7 +534,7 @@
               <!-- Profile Image and Info -->
               <div class="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
                 <!-- Profile Image -->
-                <div class="w-9 md:w-12 h-9 md:h-12 rounded-full flex-shrink-0 bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-semibold text-xs md:text-sm overflow-hidden">
+                <div :class="['w-9 md:w-12 h-9 md:h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-xs md:text-sm overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : 'bg-gradient-to-br from-purple-400 to-pink-400']">
                   <img 
                     v-if="member.photo" 
                     :src="member.photo" 
@@ -580,7 +582,7 @@
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-purple-900">Edit User</h3>
+            <h3 :class="['text-2xl font-bold', primaryDarkText]">Edit User</h3>
             <button @click="closeEditUserModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
           </div>
 
@@ -590,7 +592,7 @@
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
               <div class="flex items-start gap-4">
-                <div class="w-20 h-20 rounded-full flex-shrink-0 bg-gradient-to-br from-purple-400 to-pink-400 flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-300">
+                <div :class="['w-20 h-20 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-300', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : 'bg-gradient-to-br from-purple-400 to-pink-400']">
                   <img 
                     v-if="editingUser.photo" 
                     :src="editingUser.photo" 
@@ -617,7 +619,7 @@
                 <input 
                   v-model="editingUser.student_id"
                   type="text"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
                 />
               </div>
               <div>
@@ -625,7 +627,7 @@
                 <input 
                   v-model="editingUser.rfid_code"
                   type="text"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
                 />
                 <!-- Mark as Unreadable Button aligned under RFID -->
                 <button
@@ -648,7 +650,7 @@
                 <input 
                   v-model="editingUser.first_name"
                   type="text"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
                 />
               </div>
               <div>
@@ -656,7 +658,7 @@
                 <input 
                   v-model="editingUser.middle_name"
                   type="text"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
                 />
               </div>
               <div>
@@ -664,13 +666,13 @@
                 <input 
                   v-model="editingUser.last_name"
                   type="text"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
                 />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Suffix <span class="text-gray-500 text-xs">(optional)</span></label>
                 <div>
-                  <select v-model="editingUser.suffix" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white">
+                  <select v-model="editingUser.suffix" :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none appearance-none bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']">
                     <option value="">None</option>
                     <option value="Jr.">Jr.</option>
                     <option value="Sr.">Sr.</option>
@@ -694,7 +696,7 @@
               <input 
                 v-model="editingUser.email"
                 type="email"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
               />
             </div>
 
@@ -703,7 +705,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Program</label>
                 <select 
                   v-model="editingUser.program"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
                 >
                   <option value="N/A">N/A</option>
                   <option value="BSCS">BSCS</option>
@@ -715,7 +717,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
                 <select 
                   v-model="editingUser.year_level"
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
                 >
                   <option value="N/A">N/A</option>
                   <option value="1st Year">1st Year</option>
@@ -730,7 +732,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Verification Status</label>
               <select 
                 v-model="editingUser.rfid_status"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none"
+                :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
               >
                 <option value="verified">Verified</option>
                 <option value="unverified">Unverified</option>
@@ -750,7 +752,7 @@
             <button 
               @click="saveEditUser"
               :disabled="isSavingUser"
-              class="flex-1 bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-70"
+              :class="['flex-1 bg-gradient-to-r text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-70', primaryButtonGradient, primaryButtonHover]"
             >
               {{ isSavingUser ? 'Saving...' : 'Save Changes' }}
             </button>
@@ -877,35 +879,46 @@
     <transition name="fade">
       <div v-if="notification.show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeNotification">
         <transition name="notification-pop" appear>
-          <div @click.stop class="bg-white rounded-lg shadow-2xl p-6 max-w-sm w-11/12 md:w-96">
+          <div @click.stop :class="['bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-sm w-11/12 md:w-96 border-l-4', isCOE ? 'border-orange-500' : 'border-purple-500']">
+            <!-- Close Button -->
+            <button @click="closeNotification" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+
             <!-- Notification Icon -->
-            <div class="flex justify-center mb-4">
+            <div class="flex justify-center mb-5">
               <div :class="[
-                'w-16 h-16 rounded-full flex items-center justify-center',
-                notification.type === 'success' ? 'bg-green-100' : notification.type === 'error' ? 'bg-red-100' : 'bg-blue-100'
+                'w-16 h-16 rounded-full flex items-center justify-center shadow-lg',
+                notification.type === 'success' ? (isCOE ? 'bg-gradient-to-br from-green-100 to-emerald-100' : 'bg-gradient-to-br from-green-100 to-emerald-100') : 
+                notification.type === 'error' ? (isCOE ? 'bg-gradient-to-br from-red-100 to-orange-100' : 'bg-gradient-to-br from-red-100 to-pink-100') : 
+                (isCOE ? 'bg-gradient-to-br from-orange-100 to-yellow-100' : 'bg-gradient-to-br from-purple-100 to-blue-100')
               ]">
-                <svg v-if="notification.type === 'success'" class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                <svg v-if="notification.type === 'success'" class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                 </svg>
-                <svg v-else-if="notification.type === 'error'" class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                <svg v-else-if="notification.type === 'error'" :class="['w-8 h-8', isCOE ? 'text-red-600' : 'text-red-600']" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
                 </svg>
-                <svg v-else class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <svg v-else :class="['w-8 h-8', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" clip-rule="evenodd"></path>
                 </svg>
               </div>
             </div>
 
             <!-- Notification Message -->
-            <h3 class="text-lg font-bold text-center text-gray-900 mb-2">{{ notification.title }}</h3>
-            <p class="text-center text-gray-600 text-sm mb-6">{{ notification.message }}</p>
+            <h3 :class="['text-lg md:text-xl font-bold text-center mb-2', notification.type === 'success' ? 'text-green-700' : notification.type === 'error' ? 'text-red-700' : (isCOE ? 'text-orange-700' : 'text-purple-700')]">
+              {{ notification.title }}
+            </h3>
+            <p class="text-center text-gray-600 text-sm md:text-base mb-6 leading-relaxed">{{ notification.message }}</p>
 
             <!-- Notification Button -->
             <button 
               @click="closeNotification"
-              class="w-full bg-purple-600 text-white py-2 px-4 rounded-lg hover:bg-purple-700 transition-all duration-200 font-medium"
+              :class="['w-full text-white py-2.5 md:py-3 px-4 rounded-lg transition-all duration-200 font-bold text-sm md:text-base shadow-md hover:shadow-lg active:scale-95', 'bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
             >
-              OK
+              Close
             </button>
           </div>
         </transition>
@@ -958,10 +971,58 @@ export default {
         user: null,
         newRole: null,
         oldRole: null
-      }
+      },
+      handleUserDeletedEvent: null
     }
   },
   computed: {
+    // Theme helpers for department-based coloring
+    currentUser() {
+      return JSON.parse(localStorage.getItem('currentUser') || '{}')
+    },
+    userDepartment() {
+      if (this.currentUser.selectedDepartment) return this.currentUser.selectedDepartment
+      const userProgram = this.currentUser.program
+      // Import departments to match program to department
+      const departments = [
+        { label: 'CCS', programs: [{ shortName: 'BSCS' }, { shortName: 'BSIT' }, { shortName: 'BSIS' }] },
+        { label: 'COE', programs: [{ shortName: 'BSCE' }, { shortName: 'BSME' }] }
+      ]
+      if (userProgram) {
+        for (const dept of departments) {
+          if (dept.programs.some(p => p.shortName === userProgram)) return dept
+        }
+      }
+      return null
+    },
+    isCOE() {
+      return (this.userDepartment && this.userDepartment.label === 'COE')
+    },
+    isCCS() {
+      return (this.userDepartment && this.userDepartment.label === 'CCS')
+    },
+    primaryButtonGradient() {
+      if (this.isCOE) return 'from-orange-700 to-red-600'
+      return 'from-purple-600 to-pink-500'
+    },
+    primaryButtonHover() {
+      if (this.isCOE) return 'hover:from-orange-800 hover:to-red-700'
+      return 'hover:from-purple-700 hover:to-pink-600'
+    },
+    primaryTextColor() {
+      if (this.isCOE) return 'text-orange-700'
+      return 'text-purple-600'
+    },
+    primaryTextHover() {
+      if (this.isCOE) return 'hover:text-orange-800'
+      return 'hover:text-purple-800'
+    },
+    primaryDarkText() {
+      if (this.isCOE) return 'text-orange-900'
+      return 'text-purple-900'
+    },
+    // End theme helpers
+
     availableUsers() {
       // Return users not already in the current role
       if (!this.selectedRole) return this.allUsers
@@ -1593,6 +1654,8 @@ export default {
         if (response.ok) {
           // Remove the user from allUsers
           this.allUsers = this.allUsers.filter(u => (u._id || u.id || u.student_id) !== userId)
+          // Emit event to sync deletion with Contributions view
+          window.dispatchEvent(new CustomEvent('user-deleted', { detail: { userId } }))
           this.showNotification('success', 'Success', 'User deleted successfully')
           this.closeDeleteConfirmModal()
         } else {
@@ -1614,6 +1677,22 @@ export default {
       this.fetchAllUsers().finally(() => {
         this.isLoading = false
       })
+    }
+    // Listen for user deletion from Contributions view
+    if (!this.handleUserDeletedEvent) {
+      this.handleUserDeletedEvent = (e) => {
+        const userId = e?.detail?.userId
+        if (userId) {
+          this.allUsers = this.allUsers.filter(u => (u._id || u.id || u.student_id) !== userId)
+        }
+      }
+    }
+    window.addEventListener('user-deleted', this.handleUserDeletedEvent)
+  },
+  beforeUnmount() {
+    // Clean up event listener
+    if (this.handleUserDeletedEvent) {
+      window.removeEventListener('user-deleted', this.handleUserDeletedEvent)
     }
   }
 }

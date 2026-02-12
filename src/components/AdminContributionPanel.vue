@@ -320,7 +320,7 @@
 
 <script>
 import * as XLSX from 'xlsx'
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://ssaam-api.vercel.app';
+import { buildAPIUrl } from '../config/api.js'
 
 export default {
   name: 'AdminContributionPanel',
@@ -420,7 +420,7 @@ export default {
         if (this.filterProgram) params.set('program', this.filterProgram);
         if (this.searchQuery) params.set('query', this.searchQuery);
 
-        const url = `${API_BASE_URL}/apis/contributions/search?${params.toString()}`;
+        const url = buildAPIUrl(`/apis/contributions/search?${params.toString()}`);
         const response = await fetch(url, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -508,7 +508,7 @@ export default {
 
       try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(`${API_BASE_URL}/apis/students/search`, {
+        const response = await fetch(buildAPIUrl('/apis/students/search'), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -552,7 +552,7 @@ export default {
         const token = localStorage.getItem('authToken');
         const studentId = this.selectedStudent?.student_id || contribution.student_id;
         
-        const response = await fetch(`${API_BASE_URL}/apis/payments/mark-paid`, {
+        const response = await fetch(buildAPIUrl('/apis/payments/mark-paid'), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -598,7 +598,7 @@ export default {
         if (this.filterProgram) params.set('program', this.filterProgram);
         if (this.searchQuery) params.set('query', this.searchQuery);
 
-        const response = await fetch(`${API_BASE_URL}/apis/contributions/search?${params.toString()}`, {
+        const response = await fetch(buildAPIUrl(`/apis/contributions/search?${params.toString()}`), {
           headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -637,7 +637,7 @@ export default {
         const dateSuffix = new Date().toISOString().split('T')[0]
 
         const token = localStorage.getItem('authToken');
-        const url = `${API_BASE_URL}/apis/contributions/download/excel?${params.toString()}`;
+        const url = buildAPIUrl(`/apis/contributions/download/excel?${params.toString()}`);
         const response = await fetch(url, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
