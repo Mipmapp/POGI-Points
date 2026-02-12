@@ -250,12 +250,6 @@
                     <span v-if="rfidResult.student?.student_id" class="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm text-white">
                       ID: {{ rfidResult.student.student_id }}
                     </span>
-                    <span v-if="rfidResult.student?.program" class="px-3 py-1 bg-purple-500 bg-opacity-40 rounded-full text-sm text-white">
-                      {{ rfidResult.student.program }}
-                    </span>
-                    <span v-if="rfidResult.student?.year_level" class="px-3 py-1 bg-pink-500 bg-opacity-40 rounded-full text-sm text-white">
-                      {{ rfidResult.student.year_level }}
-                    </span>
                   </div>
                   <p v-if="rfidResult.time" class="text-white text-opacity-70 text-sm mt-2">
                     {{ new Date(rfidResult.time).toLocaleString('en-PH') }}
@@ -284,8 +278,6 @@
                   </div>
                   <div class="flex flex-wrap justify-center lg:justify-start gap-2 mt-3">
                     <span v-if="rfidResult.student?.student_id" class="px-4 py-1 bg-white bg-opacity-20 rounded-full text-sm text-white">ID: {{ rfidResult.student.student_id }}</span>
-                    <span v-if="rfidResult.student?.program" class="px-4 py-1 bg-yellow-500 bg-opacity-40 rounded-full text-sm text-white">{{ rfidResult.student.program }}</span>
-                    <span v-if="rfidResult.student?.year_level" class="px-4 py-1 bg-yellow-500 bg-opacity-40 rounded-full text-sm text-white">{{ rfidResult.student.year_level }}</span>
                   </div>
                   <p v-if="rfidResult.cooldown_remaining && rfidOperationType === 'in'" class="text-yellow-200 text-opacity-90 text-sm mt-3 font-semibold">⏱️ Wait {{ Math.floor(rfidResult.cooldown_remaining / 60) }}m {{ rfidResult.cooldown_remaining % 60 }}s before checkout</p>
                   <p v-if="rfidResult.time" class="text-white text-opacity-70 text-sm mt-2">{{ new Date(rfidResult.time).toLocaleString('en-PH') }}</p>
@@ -3038,7 +3030,7 @@
                                     <img 
                                       :src="getSessionBadgeStyle(sessionData.session?.label).icon" 
                                       :alt="getSessionBadgeStyle(sessionData.session?.label).displayText"
-                                      class="w-8 h-8 object-contain"
+                                      :class="['w-11 h-11 object-contain', (sessionData.session?.label?.toLowerCase().includes('night') || sessionData.session?.label?.toLowerCase().includes('whole day')) ? 'mt-1' : '']"
                                       style="filter: brightness(0) invert(1) drop-shadow(0 0 1px rgba(0,0,0,0.1)); mix-blend-mode: lighten;"
                                     />
                                   </div>
