@@ -72,19 +72,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware to check MongoDB connection status
-app.use((req, res, next) => {
-  const connectionState = mongoose.connection.readyState;
-  // 0 = disconnected, 1 = connected, 2 = connecting, 3 = disconnecting
-  if (connectionState === 0) {
-    console.warn(`[${new Date().toISOString()}] MongoDB disconnected, attempting reconnect for ${req.method} ${req.path}`);
-    // Try to reconnect if disconnected
-    connectWithRetry(0, 3, 2000).catch(err => console.error('Reconnect failed:', err));
-    // Still try to process request - MongoDB might reconnect
-  }
-  next();
-});
-
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
@@ -1614,35 +1601,20 @@ app.get('/apis/my-payments', auth, async (req, res) => {
 });
 
 const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 5000) => {
-    // Check if already connected
-    if (mongoose.connection.readyState === 1) {
-        console.log('Already connected to MongoDB Atlas');
-        app.listen(PORT, () => {
-            console.log(`Server running on ${PORT}`);
-            if (typeof autoUpdateEventStatuses === 'function') {
-                autoUpdateEventStatuses();
-            }
-        });
-        return;
-    }
-
     try {
         await mongoose.connect(MONGO_URI, { 
-            serverSelectionTimeoutMS: 20000,   // Time to select a server
-            socketTimeoutMS: 60000,            // Socket timeout for operations
-            maxPoolSize: 15,                   // Max connections in pool
-            minPoolSize: 5,                    // Min connections to maintain
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
+            maxPoolSize: 10,
+            minPoolSize: 5,
             retryWrites: true,
-            w: 'majority',
-            tls: true,                         // Use TLS (newer name for ssl)
-            tlsAllowInvalidCertificates: false, // Let the system handle cert validation
-            connectTimeoutMS: 20000,
-            heartbeatFrequencyMS: 10000        // Health check interval
+            w: 'majority'
         });
         console.log('Connected to MongoDB Atlas');
         
         app.listen(PORT, () => {
             console.log(`Server running on ${PORT}`);
+            // Run auto-update after server starts and DB is connected
             if (typeof autoUpdateEventStatuses === 'function') {
                 autoUpdateEventStatuses();
             }
@@ -2203,89 +2175,9 @@ async function sendPasswordResetEmail(toEmail, code, studentName) {
 }
 
 async function getSettings() {
-    try {
-        // Add timeout for this operation
-        const settingsPromise = (async () => {
-            let settings = await Settings.findOne();
-            if (!settings) {
-                settings = await Settings.create({
-                    userRegister: { register: true, message: "" },
-                    userLogin: { login: true, message: "" },
-                    rfidScanner: { 
-                        checkInEnabled: true, 
-                        checkOutEnabled: true,
-                        autoDisableCheckIn: false,
-                        autoDisableCheckOut: false,
-                        checkInDisableAt: null,
-                        checkOutDisableAt: null
-                    },
-                    semester: '1st Sem',
-                    schoolYear: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
-                });
-            } else {
-                let needsSave = false;
-                if (!settings.rfidScanner) {
-                    settings.rfidScanner = { 
-                        checkInEnabled: true, 
-                        checkOutEnabled: true,
-                        autoDisableCheckIn: false,
-                        autoDisableCheckOut: false,
-                        checkInDisableAt: null,
-                        checkOutDisableAt: null
-                    };
-                    needsSave = true;
-                }
-                if (!settings.semester) {
-                    settings.semester = '1st Sem';
-                    needsSave = true;
-                }
-                if (settings.schoolYear === undefined) {
-                    settings.schoolYear = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
-                    needsSave = true;
-                }
-                if (needsSave) {
-                    await settings.save();
-                }
-            }
-
-            // Check auto-disable timers and update if needed
-            const now = new Date();
-            let needsSaveAfterTimer = false;
-
-            if (settings.rfidScanner.autoDisableCheckIn && settings.rfidScanner.checkInDisableAt) {
-                if (new Date(settings.rfidScanner.checkInDisableAt) <= now) {
-                    settings.rfidScanner.checkInEnabled = false;
-                    settings.rfidScanner.autoDisableCheckIn = false;
-                    settings.rfidScanner.checkInDisableAt = null;
-                    needsSaveAfterTimer = true;
-                }
-            }
-
-            if (settings.rfidScanner.autoDisableCheckOut && settings.rfidScanner.checkOutDisableAt) {
-                if (new Date(settings.rfidScanner.checkOutDisableAt) <= now) {
-                    settings.rfidScanner.checkOutEnabled = false;
-                    settings.rfidScanner.autoDisableCheckOut = false;
-                    settings.rfidScanner.checkOutDisableAt = null;
-                    needsSaveAfterTimer = true;
-                }
-            }
-
-            if (needsSaveAfterTimer) {
-                await settings.save();
-            }
-
-            return settings;
-        })();
-
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('getSettings query timeout after 8 seconds')), 8000)
-        );
-
-        return await Promise.race([settingsPromise, timeoutPromise]);
-    } catch (err) {
-        console.error('getSettings error:', err.message);
-        // Return default settings if query fails
-        return {
+    let settings = await Settings.findOne();
+    if (!settings) {
+        settings = await Settings.create({
             userRegister: { register: true, message: "" },
             userLogin: { login: true, message: "" },
             rfidScanner: { 
@@ -2298,8 +2190,60 @@ async function getSettings() {
             },
             semester: '1st Sem',
             schoolYear: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
-        };
+        });
+    } else {
+        let needsSave = false;
+        if (!settings.rfidScanner) {
+            settings.rfidScanner = { 
+                checkInEnabled: true, 
+                checkOutEnabled: true,
+                autoDisableCheckIn: false,
+                autoDisableCheckOut: false,
+                checkInDisableAt: null,
+                checkOutDisableAt: null
+            };
+            needsSave = true;
+        }
+        if (!settings.semester) {
+            settings.semester = '1st Sem';
+            needsSave = true;
+        }
+        if (settings.schoolYear === undefined) {
+            settings.schoolYear = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
+            needsSave = true;
+        }
+        if (needsSave) {
+            await settings.save();
+        }
     }
+
+    // Check auto-disable timers and update if needed
+    const now = new Date();
+    let needsSaveAfterTimer = false;
+
+    if (settings.rfidScanner.autoDisableCheckIn && settings.rfidScanner.checkInDisableAt) {
+        if (new Date(settings.rfidScanner.checkInDisableAt) <= now) {
+            settings.rfidScanner.checkInEnabled = false;
+            settings.rfidScanner.autoDisableCheckIn = false;
+            settings.rfidScanner.checkInDisableAt = null;
+            needsSave = true;
+        }
+    }
+
+    if (settings.rfidScanner.autoDisableCheckOut && settings.rfidScanner.checkOutDisableAt) {
+        if (new Date(settings.rfidScanner.checkOutDisableAt) <= now) {
+            settings.rfidScanner.checkOutEnabled = false;
+            settings.rfidScanner.autoDisableCheckOut = false;
+            settings.rfidScanner.checkOutDisableAt = null;
+            needsSave = true;
+        }
+    }
+
+    if (needsSaveAfterTimer) {
+        await settings.save();
+    }
+
+    return settings;
 }
 
 async function auth(req, res, next) {
@@ -3700,6 +3644,9 @@ app.get('/apis/students/:student_id/photo', async (req, res) => {
             return res.status(404).json({ message: 'Photo not found' });
         }
         
+        // Set cache headers: 1 hour browser cache for photos (they don't change frequently)
+        res.set('Cache-Control', 'public, max-age=3600');
+        
         // Return photo directly - can be URL or base64
         res.json({ photo: student.photo, student_id: student.student_id });
     } catch (err) {
@@ -3842,25 +3789,7 @@ app.delete('/apis/students/:student_id', auth, async (req, res) => {
 
 app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) => {
     try {
-        const { student_id, last_name } = req.body;
-
-        if (!student_id || !last_name)
-            return res.status(400).json({ message: "Student ID and Password required" });
-
-        // Add timeout handling for the database queries
-        const settingsPromise = getSettings();
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Settings query timeout')), 10000)
-        );
-
-        let settings;
-        try {
-            settings = await Promise.race([settingsPromise, timeoutPromise]);
-        } catch (timeoutErr) {
-            console.error('Settings query timeout:', timeoutErr.message);
-            return res.status(503).json({ message: "Database connection timeout. Please try again." });
-        }
-
+        const settings = await getSettings();
         if (!settings.userLogin.login) {
             return res.status(403).json({ 
                 message: settings.userLogin.message || "Login is currently disabled.",
@@ -3868,23 +3797,14 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
             });
         }
 
-        // First find student by ID, excluding unused fields
-        const studentPromise = Student.findOne({ student_id })
-            .select('-contributions -semester -full_name -school_year');
-        const studentTimeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Student query timeout - MongoDB not responding')), 15000)
-        );
+        const { student_id, last_name } = req.body;
 
-        let student;
-        try {
-            student = await Promise.race([studentPromise, studentTimeoutPromise]);
-        } catch (timeoutErr) {
-            console.error('Student findOne timeout:', timeoutErr.message);
-            return res.status(503).json({ 
-                message: "Database connection timeout. Please try again in a moment.",
-                error: timeoutErr.message 
-            });
-        }
+        if (!student_id || !last_name)
+            return res.status(400).json({ message: "Student ID and Password required" });
+
+        // First find student by ID, excluding unused fields
+        const student = await Student.findOne({ student_id })
+            .select('-contributions -semester -full_name -school_year');
 
         if (!student)
             return res.status(400).json({ message: "Invalid Student ID or Password" });
@@ -3945,10 +3865,6 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
         });
 
     } catch (err) {
-        console.error('Student login error:', err.message, err.stack);
-        if (err.message.includes('timeout') || err.message.includes('buffering')) {
-            return res.status(503).json({ message: "Database connection timeout. Please try again." });
-        }
         res.status(500).json({ message: err.message });
     }
 });
@@ -4098,27 +4014,7 @@ app.post("/apis/masters/login", async (req, res) => {
     try {
         const { username, password } = req.body;
 
-        if (!username || !password) {
-            return res.status(400).json({ message: "Username and password are required" });
-        }
-
-        // Add timeout handling for the database query
-        const masterPromise = Master.findOne({ username });
-        const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Master query timeout - MongoDB not responding')), 15000)
-        );
-
-        let master;
-        try {
-            master = await Promise.race([masterPromise, timeoutPromise]);
-        } catch (timeoutErr) {
-            console.error('Master findOne timeout:', timeoutErr.message);
-            return res.status(503).json({ 
-                message: "Database connection timeout. Please try again in a moment.",
-                error: timeoutErr.message 
-            });
-        }
-
+        const master = await Master.findOne({ username });
         if (!master)
             return res.status(400).json({ message: "Invalid username or password" });
 
