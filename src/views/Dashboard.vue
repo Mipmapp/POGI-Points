@@ -9486,6 +9486,7 @@ const attendanceTab = ref('events')
 const rfidScannerVerified = ref(false)
 const rfidCopied = ref(false)
 const scanMode = ref('rfid') // 'rfid' or 'student_id'
+const recentlyScannedStudents = ref(new Set()) // Track recently scanned to avoid re-fetching photos
 
 // Computed property to filter out ended events for student view
 const activeNonEndedEvents = computed(() => {
@@ -13379,9 +13380,10 @@ const fetchEventLogs = async (eventId) => {
       
       // Asynchronously fetch missing photos from public endpoint
       // This ensures photos display even without active auth session
+      // SKIP if student was just scanned (avoid redundant fetch)
       logs.forEach(log => {
         const studentId = log.student_id || log.student?.student_id
-        if (studentId && !log.student_image) {
+        if (studentId && !log.student_image && !recentlyScannedStudents.value.has(studentId)) {
           fetchAndCacheStudentPhoto(studentId, log.student_name).then(photo => {
             if (photo && attendanceLogs.value) {
               const logEntry = attendanceLogs.value.find(l => (l.student_id || l.student?.student_id) === studentId)
@@ -13711,20 +13713,26 @@ const fetchAndCacheStudentPhoto = async (studentId, fullName) => {
   if (!studentId) return
   
   try {
-    // Check if already in localStorage cache
+    // Check memory cache first (fastest)
+    if (studentPhotoCache.value[studentId]) {
+      return studentPhotoCache.value[studentId]
+    }
+    
+    // Check if already in localStorage cache (persistent across sessions)
     const cachedPhoto = getPhotoFromStorage(studentId)
     if (cachedPhoto) {
+      // Repopulate memory cache from localStorage
+      studentPhotoCache.value[studentId] = cachedPhoto
       return cachedPhoto
     }
     
-    // Fetch from public photo endpoint
+    // Only fetch from API if not in any cache
     const response = await fetch(buildAPIUrl(`/apis/students/${studentId}/photo`))
     if (response.ok) {
       const data = await response.json()
       if (data.photo) {
-        // Save to localStorage for future displays
+        // Save to both caches
         savePhotoToStorage(studentId, data.photo)
-        // Add to memory cache
         studentPhotoCache.value[studentId] = data.photo
         return data.photo
       }
@@ -13777,17 +13785,27 @@ const processRfidScan = async (inputCode) => {
       
       // Cache student photo from API response
       const studentPhoto = result.student_photo || result.student?.photo
+      const studentId = result.student?.student_id || result.student_id
+      
       if (studentPhoto) {
         cacheStudentPhoto(result.log, studentPhoto)
         cacheStudentPhoto(result.student, studentPhoto)
       } else {
         // Only fetch photo if not already provided in response
         // This reduces unnecessary API calls
-        const studentId = result.student?.student_id || result.student_id
         const studentName = result.student?.full_name || result.student_name
         if (studentId) {
           fetchAndCacheStudentPhoto(studentId, studentName)
         }
+      }
+      
+      // Mark student as recently scanned to avoid re-fetching photo in fetchEventLogs
+      if (studentId) {
+        recentlyScannedStudents.value.add(studentId)
+        // Remove from set after 10 seconds to avoid permanent blocking
+        setTimeout(() => {
+          recentlyScannedStudents.value.delete(studentId)
+        }, 10000)
       }
       
       fetchEventLogs(selectedEvent.value._id)
