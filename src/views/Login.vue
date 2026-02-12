@@ -514,7 +514,7 @@ import { useRouter } from 'vue-router'
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
-import { buildAPIUrl } from '../config/api.js'
+import API_getBaseURL, { buildAPIUrl } from '../config/api.js'
 import departments from '../config/departments.js'
 
 const isCOE = computed(() => {
@@ -598,6 +598,7 @@ const selectedDepartment = ref(null)
 // chosen selections to show on main UI
 const chosenDepartment = ref(null)
 const chosenProgram = ref(null)
+const apiFallbackUsed = ref(false)
 
 const chooseDepartment = (dept) => {
   // choose the department and auto-select the first program
@@ -852,6 +853,31 @@ const handleLogin = async () => {
   }
 
   isLoading.value = true
+  // safeFetch: try dynamic API first, then fallback to default API if network/SSL fails
+  const safeFetch = async (endpoint, options = {}) => {
+    // endpoint may be full URL or path
+    try {
+      const resp = await fetch(buildAPIUrl(endpoint), options)
+      return resp
+    } catch (err) {
+      console.warn('Primary API fetch failed, attempting fallback:', err)
+      // fallback to main API
+      const fallbackBase = import.meta.env.VITE_API_URL || 'https://ssaam-api.vercel.app'
+      const url = (typeof endpoint === 'string' && endpoint.startsWith('http')) ? endpoint : (endpoint.startsWith('/') ? `${fallbackBase}${endpoint}` : `${fallbackBase}/${endpoint}`)
+      try {
+        // Mark that fallback is used and clear pre-login COE hint so we don't keep trying COE repeatedly
+        try { apiFallbackUsed.value = true } catch (e) {}
+        try { localStorage.removeItem('loginChosenDepartment') } catch (e) {}
+        try { localStorage.removeItem('loginChosenProgram') } catch (e) {}
+        const resp2 = await fetch(url, options)
+        return resp2
+      } catch (err2) {
+        // rethrow the original error for logging
+        console.error('Fallback API fetch also failed:', err2)
+        throw err2
+      }
+    }
+  }
   try {
     const enteredId = studentId.value.trim();
     const startsWithLetter = /^[a-zA-Z]/.test(enteredId);
@@ -869,8 +895,8 @@ const handleLogin = async () => {
     let user;
     
     if (startsWithLetter) {
-      // Use masters login API with POST
-      const response = await fetch(buildAPIUrl('/apis/masters/login'), {
+      // Use masters login API with POST (safeFetch will fallback if COE endpoint fails)
+      const response = await safeFetch('/apis/masters/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -895,8 +921,8 @@ const handleLogin = async () => {
         return;
       }
     } else {
-      // Use POST login endpoint for students
-      const response = await fetch(buildAPIUrl('/apis/students/login'), {
+      // Use POST login endpoint for students (safeFetch will fallback if COE endpoint fails)
+      const response = await safeFetch('/apis/students/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
