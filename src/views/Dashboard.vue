@@ -956,7 +956,7 @@
                   <!-- Footer with date and deadline -->
                   <div class="space-y-2 pt-4 border-t border-gray-200">
                     <div v-if="payment.paid_date" class="flex items-center gap-2 text-xs">
-                      <img src="/public/calendar.svg" alt="Calendar" class="w-4 h-4" style="filter: invert(48%) sepia(73%) saturate(1500%) hue-rotate(87deg) brightness(100%)" />
+                      <img src="/calendar.svg" alt="Calendar" class="w-4 h-4" style="filter: invert(48%) sepia(73%) saturate(1500%) hue-rotate(87deg) brightness(100%)" />
                       <span class="text-gray-700">Paid on <span class="font-bold">{{ new Date(payment.paid_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span></span>
                     </div>
                     <div v-if="payment.deadline && !payment.is_paid" class="flex items-center gap-2 text-xs">

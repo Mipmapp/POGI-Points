@@ -56,14 +56,14 @@ const departmentLogo = computed(() => {
 const loadingScreenStyle = computed(() => {
   if (isCOE.value) {
     return {
-      background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.7) 0%, rgba(220, 38, 38, 0.7) 100%), url(/public/assets/classroom-bg.jpg)',
+      background: 'linear-gradient(135deg, rgba(234, 88, 12, 0.7) 0%, rgba(220, 38, 38, 0.7) 100%), url(/assets/classroom-bg.jpg)',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed'
     }
   }
   return {
-    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%), url(/public/assets/classroom-bg.jpg)',
+    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%), url(/assets/classroom-bg.jpg)',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundAttachment: 'fixed'
