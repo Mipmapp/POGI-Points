@@ -853,7 +853,7 @@ const handleLogin = async () => {
   }
 
   isLoading.value = true
-  // safeFetch: try dynamic API first, then fallback to default API if network/SSL fails
+  // safeFetch: try buildAPIUrl first, then fallback to default API if network/SSL fails
   const safeFetch = async (endpoint, options = {}) => {
     // endpoint may be full URL or path
     try {
@@ -895,7 +895,7 @@ const handleLogin = async () => {
     let user;
     
     if (startsWithLetter) {
-      // Use masters login API with POST (safeFetch will fallback if COE endpoint fails)
+      // Use masters login API with POST (safeFetch will fallback if network fails)
       const response = await safeFetch('/apis/masters/login', {
         method: 'POST',
         headers: {
@@ -921,7 +921,7 @@ const handleLogin = async () => {
         return;
       }
     } else {
-      // Use POST login endpoint for students (safeFetch will fallback if COE endpoint fails)
+      // Use POST login endpoint for students (safeFetch will fallback if network fails)
       const response = await safeFetch('/apis/students/login', {
         method: 'POST',
         headers: {

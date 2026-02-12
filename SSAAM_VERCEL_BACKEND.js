@@ -1608,7 +1608,12 @@ const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 50
             maxPoolSize: 10,
             minPoolSize: 5,
             retryWrites: true,
-            w: 'majority'
+            w: 'majority',
+            ssl: true,
+            sslValidate: false,
+            // For Vercel/Node.js SSL certificate issues
+            tlsAllowInvalidCertificates: true,
+            tlsAllowInvalidHostnames: true
         });
         console.log('Connected to MongoDB Atlas');
         
