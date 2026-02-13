@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <transition name="fade">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
       <transition name="modal-bounce" appear>
@@ -124,7 +124,7 @@
       </div>
 
       <div class="absolute bottom-4 left-4 right-4 text-center text-xs text-white opacity-75">
-        Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+        Copyright � 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
       </div>
     </div>
     <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50">
@@ -215,8 +215,8 @@
                   <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 </div>
               </div>
-              <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-                Next <span class="ml-2">→</span>
+              <button type="submit" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
+                Next <span class="ml-2">?</span>
               </button>
             </div>
 
@@ -285,10 +285,10 @@
               </div>
               <div class="flex gap-4">
                 <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                  <span class="mr-2">←</span>Back
+                  <span class="mr-2">?</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-                  Next <span class="ml-2">→</span>
+                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
+                  Next <span class="ml-2">?</span>
                 </button>
               </div>
             </div>
@@ -306,7 +306,7 @@
                 <div class="relative">
                   <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload" />
                   <label for="file-upload" class="cursor-pointer inline-flex items-center justify-center px-8 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-300">
-                    <span class="mr-2">📷</span>{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
+                    <span class="mr-2">??</span>{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
                   </label>
                 </div>
               </div>
@@ -320,10 +320,10 @@
               </div>
               <div class="flex gap-4">
                 <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                  <span class="mr-2">←</span>Back
+                  <span class="mr-2">?</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-                  Next <span class="ml-2">→</span>
+                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
+                  Next <span class="ml-2">?</span>
                 </button>
               </div>
             </div>
@@ -386,10 +386,10 @@
               </div>
               <div class="flex gap-4">
                 <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                  <span class="mr-2">←</span>Back
+                  <span class="mr-2">?</span>Back
                 </button>
-                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600']">
-                  {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-2">→</span>
+                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600']">
+                  {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-2">?</span>
                 </button>
               </div>
             </div>
@@ -452,10 +452,10 @@
               </div>
               <div class="flex gap-4">
                 <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                  <span class="mr-2">←</span>Back
+                  <span class="mr-2">?</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-                  Register <span class="ml-2">→</span>
+                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
+                  Register <span class="ml-2">?</span>
                 </button>
               </div>
             </div>
@@ -552,8 +552,8 @@
                 <div class="w-12 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
-            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-              Next <span class="ml-2">→</span>
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
+              Next <span class="ml-2">?</span>
             </button>
           </div>
 
@@ -621,10 +621,10 @@
             </div>
             <div class="flex gap-4">
               <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                <span class="mr-2">←</span>Back
+                <span class="mr-2">?</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-                Next <span class="ml-2">→</span>
+              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
+                Next <span class="ml-2">?</span>
               </button>
             </div>
           </div>
@@ -642,7 +642,7 @@
               <div class="relative">
                 <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload-mobile" />
                 <label for="file-upload-mobile" class="cursor-pointer inline-flex items-center justify-center px-6 sm:px-8 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-300">
-                  <span class="mr-2">📷</span>{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
+                  <span class="mr-2">??</span>{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
                 </label>
               </div>
             </div>
@@ -657,10 +657,10 @@
             </div>
             <div class="flex gap-4">
               <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-4 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm sm:text-base">
-                <span class="mr-2">←</span>Back
+                <span class="mr-2">?</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-4 sm:px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center text-sm sm:text-base">
-                Next <span class="ml-2">→</span>
+              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center text-sm sm:text-base">
+                Next <span class="ml-2">?</span>
               </button>
             </div>
           </div>
@@ -729,10 +729,10 @@
             </div>
             <div class="flex gap-3 sm:gap-4">
               <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
-                <span class="mr-1 sm:mr-2">←</span>Back
+                <span class="mr-1 sm:mr-2">?</span>Back
               </button>
-              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center text-sm', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white hover:from-blue-700 hover:to-blue-600']">
-                {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1 sm:ml-2">→</span>
+              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center text-sm', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600']">
+                {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1 sm:ml-2">?</span>
               </button>
             </div>
           </div>
@@ -795,10 +795,10 @@
             </div>
             <div class="flex gap-3 sm:gap-4">
               <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
-                <span class="mr-1 sm:mr-2">←</span>Back
+                <span class="mr-1 sm:mr-2">?</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center text-sm">
-                Register <span class="ml-1 sm:ml-2">→</span>
+              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center text-sm">
+                Register <span class="ml-1 sm:ml-2">?</span>
               </button>
             </div>
           </div>
@@ -809,7 +809,7 @@
         </div>
 
         <div class="mt-4 text-center text-xs text-gray-400">
-          Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+          Copyright � 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
         </div>
       </div>
     </div>
@@ -901,7 +901,7 @@ onMounted(async () => {
 })
 
 const developers = [
-  { name: 'Kenzen Miñao', initials: 'KM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
+  { name: 'Kenzen Mi�ao', initials: 'KM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
   { name: 'Jullan Maglinte', initials: 'JM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
   { name: 'Keith Laranjo', initials: 'KL', role: 'Backend Dev', year_level: '2nd year', program: 'CS', facebook: 'https://facebook.com/kei.takun.5070', image: '/team/keith.jpg' },
   { name: 'Christoph Bagabuyo', initials: 'CB', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/christoph.bagabuyo', image: '/team/christoph.jpg' },
@@ -1496,7 +1496,7 @@ const goToLogin = () => {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(135deg, rgba(109, 40, 217, 0.95) 0%, rgba(219, 39, 119, 0.95) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   width: 40%;
@@ -1511,12 +1511,12 @@ const goToLogin = () => {
 }
 
 .mobile-bg-panel {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.95) 0%, rgba(59, 130, 246, 0.95) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
 }
 .desktop-bg-panel {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.95) 0%, rgba(59, 130, 246, 0.95) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   transition: all 0.5s ease-in-out;

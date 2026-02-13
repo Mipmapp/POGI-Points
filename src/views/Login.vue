@@ -41,7 +41,7 @@
             </ul>
           </div>
 
-          <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition">
+          <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition">
             Close
           </button>
         </div>
@@ -84,7 +84,7 @@
             <button @click="showVerificationModal = false; isLoading = false" class="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition duration-300">
               Cancel
             </button>
-            <button @click="verifyAdminCode" class="flex-1 px-6 py-2 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300">
+            <button @click="verifyAdminCode" class="flex-1 px-6 py-2 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300">
               Verify
             </button>
           </div>
@@ -219,7 +219,7 @@
 
               <!-- Action Buttons -->
               <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-200">
-                <button @click="confirmDepartment" class="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-sm sm:text-base rounded-lg font-semibold hover:from-blue-700 hover:to-blue-600 transition-all shadow-md hover:shadow-lg">
+                <button @click="confirmDepartment" class="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white text-sm sm:text-base rounded-lg font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition-all shadow-md hover:shadow-lg">
                   Confirm
                 </button>
                 <button @click="selectedDepartment = null" class="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-gray-200 text-gray-800 text-sm sm:text-base rounded-lg font-medium hover:bg-gray-300 transition">
@@ -243,7 +243,7 @@
                   <div class="flex-1 min-w-0">
                     <h3 class="text-sm sm:text-base font-bold text-blue-900 group-hover:text-blue-600 transition-colors truncate">{{ dept.name }}</h3>
                     <div class="mt-1.5 sm:mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
-                      <span class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-blue-600 to-blue-500 text-white text-xs font-bold rounded-full shadow-sm">{{ dept.label }}</span>
+                      <span class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white text-xs font-bold rounded-full shadow-sm">{{ dept.label }}</span>
                       <span class="text-xs text-gray-500 font-medium">{{ dept.programs.length }} program<span v-if="dept.programs.length !== 1">s</span></span>
                     </div>
                   </div>
@@ -332,7 +332,7 @@
               </template>
             </button>
 
-            <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
+            <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
               <span class="flex items-center">
                 {{ isLoading ? 'Logging in...' : 'Login' }} <span v-if="!isLoading" class="ml-2">→</span>
               </span>
@@ -413,7 +413,7 @@
               </template>
             </button>
 
-          <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
+          <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
             <span class="flex items-center">
               {{ isLoading ? 'Logging in...' : 'Login' }} <span v-if="!isLoading" class="ml-2">→</span>
             </span>
@@ -462,7 +462,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
               <input v-model="resetEmail" type="email" placeholder="your.email@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
             </div>
-            <button @click="requestResetCode" :disabled="resetLoading || !resetStudentId.trim() || !resetEmail.trim()" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <button @click="requestResetCode" :disabled="resetLoading || !resetStudentId.trim() || !resetEmail.trim()" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
               <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ resetLoading ? 'Sending...' : 'Send Code' }}
             </button>
@@ -476,7 +476,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
               <input v-model="resetCode" type="text" placeholder="123456" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-center text-2xl tracking-widest" />
             </div>
-            <button @click="verifyResetCode" :disabled="resetLoading || resetCode.length !== 6" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <button @click="verifyResetCode" :disabled="resetLoading || resetCode.length !== 6" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
               <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ resetLoading ? 'Verifying...' : 'Verify Code' }}
             </button>
@@ -495,7 +495,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
               <input v-model="confirmNewPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
             </div>
-            <button @click="completePasswordReset" :disabled="resetLoading || !newPassword || newPassword !== confirmNewPassword" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+            <button @click="completePasswordReset" :disabled="resetLoading || !newPassword || newPassword !== confirmNewPassword" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
               <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ resetLoading ? 'Resetting...' : 'Reset Password' }}
             </button>
@@ -1092,7 +1092,7 @@ const verifyAdminCode = () => {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.9) 0%, rgba(59, 130, 246, 0.9) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -1105,7 +1105,7 @@ const verifyAdminCode = () => {
 }
 
 .mobile-bg-panel {
-  background: linear-gradient(135deg, rgba(37, 99, 235, 0.9) 0%, rgba(59, 130, 246, 0.9) 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
 }

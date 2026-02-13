@@ -236,7 +236,14 @@
           <div v-if="rfidResult && rfidResult.success && rfidResult.action !== 'already_checked_in' && (rfidResult.student || rfidResult.student_name)" class="mb-4 lg:mb-6">
             <div class="bg-white bg-opacity-15 backdrop-blur-lg rounded-2xl p-6 lg:p-8 border-2 border-green-400 border-opacity-50 shadow-2xl">
               <div class="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
-                <!-- Large Student Photo -->
+                <!-- Student Avatar -->
+                <div class="w-20 h-20 lg:w-28 lg:h-28 rounded-full overflow-hidden flex-shrink-0 mx-auto lg:mx-0 border-2 border-white shadow-md bg-white bg-opacity-10">
+                  <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="w-full h-full object-cover" />
+                  <div v-else class="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold text-xl">
+                    {{ (rfidResult.student?.full_name || rfidResult.student_name || '?').charAt(0) }}
+                  </div>
+                </div>
+
                 <!-- Student Details -->
                 <div class="flex-1 text-center lg:text-left">
                   <div class="flex items-center justify-center lg:justify-start gap-2 mb-2">
@@ -246,11 +253,17 @@
                     </span>
                   </div>
                   <p class="text-xl lg:text-2xl font-bold text-white mb-1">{{ rfidResult.student?.full_name || rfidResult.student_name }}</p>
-                  <div class="flex flex-wrap justify-center lg:justify-start gap-2 mt-2">
-                    <span v-if="rfidResult.student?.student_id" class="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm text-white">
-                      ID: {{ rfidResult.student.student_id }}
-                    </span>
+
+                  <div v-if="rfidResult.student?.program || rfidResult.student?.year_level" class="text-lg lg:text-xl text-white text-opacity-90 mb-3">
+                    <span v-if="rfidResult.student?.program">{{ rfidResult.student.program }}</span>
+                    <span v-if="rfidResult.student?.program && rfidResult.student?.year_level"> • </span>
+                    <span v-if="rfidResult.student?.year_level">{{ rfidResult.student.year_level }}</span>
                   </div>
+
+                  <div class="flex flex-wrap justify-center lg:justify-start gap-2 mt-2">
+                    <span v-if="rfidResult.student?.student_id" class="px-3 py-1 bg-white bg-opacity-20 rounded-full text-sm text-white">ID: {{ rfidResult.student.student_id }}</span>
+                  </div>
+
                   <p v-if="rfidResult.time" class="text-white text-opacity-70 text-sm mt-2">
                     {{ new Date(rfidResult.time).toLocaleString('en-PH') }}
                   </p>
@@ -263,15 +276,23 @@
         <!-- Duplicate / Already Checked In Card (Yellow) -->
         <transition name="slide-down">
           <div v-if="rfidResult && (rfidResult.action === 'already_checked_in' || (rfidResult.message && /already/i.test(rfidResult.message)))" class="mb-4 lg:mb-6">
-            <div class="bg-yellow-500 bg-opacity-20 backdrop-blur-lg rounded-2xl p-8 lg:p-12 border-2 border-yellow-400 border-opacity-70 shadow-2xl">
-              <div class="flex flex-col lg:flex-row items-center gap-6 lg:gap-8">
+            <div class="bg-yellow-500 bg-opacity-20 backdrop-blur-lg rounded-2xl p-6 lg:p-8 border-2 border-yellow-400 border-opacity-70 shadow-2xl">
+              <div class="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
+                <!-- Student Avatar -->
+                <div class="w-20 h-20 lg:w-28 lg:h-28 rounded-full overflow-hidden flex-shrink-0 mx-auto lg:mx-0 border-2 border-white shadow-md bg-white bg-opacity-10">
+                  <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="w-full h-full object-cover rounded-full" />
+                  <div v-else class="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold text-xl">
+                    {{ (rfidResult.student?.full_name || rfidResult.student_name || '?').charAt(0) }}
+                  </div>
+                </div>
+
                 <div class="flex-1 text-center lg:text-left">
                   <div class="flex items-center justify-center lg:justify-start gap-3 mb-3">
                     <svg class="w-8 h-8 lg:w-10 lg:h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span class="text-2xl lg:text-3xl font-bold text-yellow-300">{{ rfidOperationType === 'out' ? 'Already Logged Out' : 'Already Logged In' }}</span>
+                    <span class="text-xl lg:text-2xl font-bold text-yellow-300">{{ (rfidResult.action === 'check_out' || rfidResult.action === 'already_checked_out') ? 'Already Logged Out' : 'Already Logged In' }}</span>
                   </div>
-                  <p class="text-2xl lg:text-3xl font-bold text-white mb-2">{{ rfidResult.student?.full_name || rfidResult.student_name }}</p>
-                  <div v-if="rfidResult.student?.program || rfidResult.student?.year_level" class="text-lg lg:text-xl text-white text-opacity-90 mb-3">
+                  <p class="text-xl lg:text-2xl font-bold text-white mb-1">{{ rfidResult.student?.full_name || rfidResult.student_name }}</p>
+                  <div v-if="rfidResult.student?.program || rfidResult.student?.year_level" class="text-lg lg:text-xl text-white text-opacity-90 mb-2">
                     <span v-if="rfidResult.student?.program">{{ rfidResult.student.program }}</span>
                     <span v-if="rfidResult.student?.program && rfidResult.student?.year_level"> • </span>
                     <span v-if="rfidResult.student?.year_level">{{ rfidResult.student.year_level }}</span>
@@ -279,7 +300,7 @@
                   <div class="flex flex-wrap justify-center lg:justify-start gap-2 mt-3">
                     <span v-if="rfidResult.student?.student_id" class="px-4 py-1 bg-white bg-opacity-20 rounded-full text-sm text-white">ID: {{ rfidResult.student.student_id }}</span>
                   </div>
-                  <p v-if="rfidResult.cooldown_remaining && rfidOperationType === 'in'" class="text-yellow-200 text-opacity-90 text-sm mt-3 font-semibold">⏱️ Wait {{ Math.floor(rfidResult.cooldown_remaining / 60) }}m {{ rfidResult.cooldown_remaining % 60 }}s before checkout</p>
+                  <p v-if="rfidResult.cooldown_remaining && rfidOperationType === 'in'" class="text-yellow-200 text-opacity-90 text-sm mt-3 font-semibold">⏱️ Wait {{ Math.ceil(rfidResult.cooldown_remaining) }}s before checkout</p>
                   <p v-if="rfidResult.time" class="text-white text-opacity-70 text-sm mt-2">{{ new Date(rfidResult.time).toLocaleString('en-PH') }}</p>
                 </div>
               </div>
@@ -13768,19 +13789,28 @@ const processRfidScan = async (inputCode) => {
     const result = await response.json()
     if (response.ok && result.success !== false) {
       rfidResult.value = { success: true, ...result }
-      const actionLabel = result.action === 'check_in' ? 'Check-in' : result.action === 'check_out' ? 'Check-out' : result.action === 'already_checked_in' ? 'Already checked in' : 'Success'
-      showNotification(`${actionLabel}: ${result.student?.full_name || result.student_name || 'Student'}`, 'success')
-      
-      // Cache student photo from API response
-      const studentPhoto = result.student_photo || result.student?.photo
-      const studentId = result.student?.student_id || result.student_id
-      
+
+      // Ensure rfidResult includes a `student_image` so the UI avatar shows immediately.
+      const studentPhoto = result.student_photo || result.student?.photo || null
+      const studentId = result.student?.student_id || result.student_id || null
       if (studentPhoto) {
+        rfidResult.value.student_image = studentPhoto
         cacheStudentPhoto(result.log, studentPhoto)
         cacheStudentPhoto(result.student, studentPhoto)
+      } else {
+        // try memory cache / localStorage as fallback
+        try {
+          const key = typeof deriveStudentKey === 'function' ? deriveStudentKey(result) : null
+          const cached = (studentId ? getPhotoFromStorage(studentId) : null) || (key ? studentPhotoCache.value[key] : null)
+          if (cached) rfidResult.value.student_image = cached
+        } catch (e) {
+          // silent
+        }
       }
-      // Photo fetching disabled - use fallback images instead
-      
+
+      const actionLabel = result.action === 'check_in' ? 'Check-in' : result.action === 'check_out' ? 'Check-out' : result.action === 'already_checked_in' ? 'Already checked in' : 'Success'
+      showNotification(`${actionLabel}: ${result.student?.full_name || result.student_name || 'Student'}`, 'success')
+
       // Mark student as recently scanned to avoid re-fetching photo in fetchEventLogs
       if (studentId) {
         recentlyScannedStudents.value.add(studentId)
@@ -13789,7 +13819,7 @@ const processRfidScan = async (inputCode) => {
           recentlyScannedStudents.value.delete(studentId)
         }, 10000)
       }
-      
+
       fetchEventLogs(selectedEvent.value._id)
     } else {
       // Classify responses:
