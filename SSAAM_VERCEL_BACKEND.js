@@ -73,7 +73,52 @@ app.use((req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-const MONGO_URI = process.env.MONGO_URI;
+// Dynamic MongoDB URIs for CCS and COE
+const CCS_MONGO_URI = 'mongodb+srv://SSAAM:ssaam.admin.jrmsu@cluster0.bnwy9iy.mongodb.net/dbconnect?retryWrites=true&w=majority';
+const COE_MONGO_URI = 'mongodb+srv://SSAAM:ssaam.admin.jrmsu@cluster0.bnwy9iy.mongodb.net/engineering?retryWrites=true&w=majority';
+
+// Helper to determine department/theme from request
+function getDepartmentFromRequest(req) {
+    // Try header, cookie, or JWT (expand as needed)
+    const theme = req.headers['x-ssaam-theme'] || req.headers['x-ssaam-department'] || req.headers['x-ssaam-college'];
+    if (theme && typeof theme === 'string') {
+        if (theme.toLowerCase().includes('coe')) return 'COE';
+        if (theme.toLowerCase().includes('ccs')) return 'CCS';
+    }
+    // Fallback: try to infer from user JWT or session
+    // (expand as needed)
+    return 'CCS'; // Default to CCS
+}
+
+// Dynamic connection middleware
+async function ensureDepartmentConnection(req, res, next) {
+    const dept = getDepartmentFromRequest(req);
+    const uri = dept === 'COE' ? COE_MONGO_URI : CCS_MONGO_URI;
+    // Only reconnect if URI is different from current
+    if (mongoose.connection.readyState !== 1 || mongoose.connection.client.s.url !== uri) {
+        try {
+            await mongoose.disconnect();
+        } catch (e) {}
+        try {
+            await mongoose.connect(uri, {
+                serverSelectionTimeoutMS: 10000,
+                socketTimeoutMS: 45000,
+                maxPoolSize: 10,
+                minPoolSize: 5,
+                retryWrites: true,
+                w: 'majority'
+            });
+            console.log(`[DB] Connected to ${dept} database`);
+        } catch (err) {
+            console.error(`[DB] Failed to connect to ${dept} database:`, err.message);
+            return res.status(500).json({ message: 'Database connection error' });
+        }
+    }
+    next();
+}
+
+// Apply before all API routes
+app.use('/apis', ensureDepartmentConnection);
 
 if (!process.env.SSAAM_API_KEY || !process.env.SSAAM_CRYPTO_KEY || !process.env.ADMIN_VERIFICATION_SECRET) {
     console.error('CRITICAL: Required security secrets (SSAAM_API_KEY, SSAAM_CRYPTO_KEY, ADMIN_VERIFICATION_SECRET) are not set!');
@@ -1602,7 +1647,7 @@ app.get('/apis/my-payments', auth, async (req, res) => {
 
 const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 5000) => {
     try {
-        await mongoose.connect(MONGO_URI, { 
+        await mongoose.connect(CCS_MONGO_URI, { 
             serverSelectionTimeoutMS: 10000,
             socketTimeoutMS: 45000,
             maxPoolSize: 10,
@@ -4497,8 +4542,9 @@ app.post('/apis/admin/migrate-database', auth, async (req, res) => {
             return res.status(400).json({ message: "Destination MongoDB URI is required" });
         }
 
-        // Validate that it's a different URI
-        if (destination_uri.trim() === MONGO_URI) {
+        // Validate that it's a different URI (compare against known configured URIs)
+        const trimmedDest = destination_uri.trim();
+        if (trimmedDest === CCS_MONGO_URI || trimmedDest === COE_MONGO_URI) {
             return res.status(400).json({ message: "Destination URI must be different from source URI" });
         }
 

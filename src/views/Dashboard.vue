@@ -244,6 +244,51 @@
                   </div>
                 </div>
 
+                <!-- Mobile-only Actions: show immediately under Programs on small screens -->
+                <div class="lg:hidden space-y-3 mt-4">
+                  <div class="space-y-3 pt-4 border-t-2" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                    <button 
+                      @click="applicationAdminTab = 'forms'" 
+                      :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg', 
+                        'border-2', 
+                        isCOE ? 'border-orange-300 text-orange-700 hover:bg-orange-50' : 'border-purple-300 text-purple-700 hover:bg-purple-50']"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 0l-7 7 7 7"></path></svg>
+                      Back to Forms
+                    </button>
+
+                    <button 
+                      @click="resetApplicationCreateForm"
+                      :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg', 
+                        'bg-gray-100 text-gray-700 hover:bg-gray-200']"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                      Clear Form
+                    </button>
+
+                    <button 
+                      @click="createApplicationFormDashboard" 
+                      :disabled="applicationCreateSubmitting || !applicationCreateForm.title.trim()"
+                      :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2', 
+                        'text-white bg-gradient-to-r shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed', 
+                        applicationCreateSubmitting ? 'scale-95' : 'hover:scale-105',
+                        'bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
+                    >
+                      <svg v-if="applicationCreateSubmitting" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                      </svg>
+                      <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                      {{ applicationCreateSubmitting ? 'Creating...' : 'Create Form' }}
+                    </button>
+
+                    <div v-if="!applicationCreateForm.title.trim()" :class="['p-3 rounded-lg text-xs text-center font-medium', isCOE ? 'bg-orange-100 text-orange-700' : 'bg-purple-100 text-purple-700']">
+                      <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                      Form title is required to create
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Student Details -->
                 <div class="flex-1 text-center lg:text-left">
                   <div class="flex items-center justify-center lg:justify-start gap-2 mb-2">
@@ -2712,6 +2757,53 @@
                     <span v-if="!applicationCreateForm.maxApplicants" class="absolute right-3 top-3 text-xs font-semibold text-gray-400">∞</span>
                   </div>
                 </div>
+                
+                <!-- Action Buttons (moved here from right column) -->
+                <div class="hidden lg:block space-y-3 mt-6 pt-6 border-t-2" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                  <!-- Cancel/Back Button -->
+                  <button 
+                    @click="applicationAdminTab = 'forms'" 
+                    :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg', 
+                      'border-2', 
+                      isCOE ? 'border-orange-300 text-orange-700 hover:bg-orange-50' : 'border-purple-300 text-purple-700 hover:bg-purple-50']"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 0l-7 7 7 7"></path></svg>
+                    Back to Forms
+                  </button>
+
+                  <!-- Reset Button -->
+                  <button 
+                    @click="resetApplicationCreateForm"
+                    :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg', 
+                      'bg-gray-100 text-gray-700 hover:bg-gray-200']"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Clear Form
+                  </button>
+
+                  <!-- Create Form Button -->
+                  <button 
+                    @click="createApplicationFormDashboard" 
+                    :disabled="applicationCreateSubmitting || !applicationCreateForm.title.trim()"
+                    :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2', 
+                      'text-white bg-gradient-to-r shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed', 
+                      applicationCreateSubmitting ? 'scale-95' : 'hover:scale-105',
+                      'bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
+                  >
+                    <svg v-if="applicationCreateSubmitting" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    {{ applicationCreateSubmitting ? 'Creating...' : 'Create Form' }}
+                  </button>
+
+                  <!-- Info Message -->
+                  <div v-if="!applicationCreateForm.title.trim()" :class="['p-3 rounded-lg text-xs text-center font-medium', isCOE ? 'bg-orange-100 text-orange-700' : 'bg-purple-100 text-purple-700']">
+                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                    Form title is required to create
+                  </div>
+                </div>
               </div>
 
               <!-- RIGHT COLUMN: Eligibility & Actions -->
@@ -2760,52 +2852,7 @@
                   </div>
                 </div>
 
-                <!-- Action Buttons -->
-                <div class="space-y-3 mt-6 pt-6 border-t-2" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
-                  <!-- Cancel/Back Button -->
-                  <button 
-                    @click="applicationAdminTab = 'forms'" 
-                    :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg', 
-                      'border-2', 
-                      isCOE ? 'border-orange-300 text-orange-700 hover:bg-orange-50' : 'border-purple-300 text-purple-700 hover:bg-purple-50']"
-                  >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 0l-7 7 7 7"></path></svg>
-                    Back to Forms
-                  </button>
-
-                  <!-- Reset Button -->
-                  <button 
-                    @click="resetApplicationCreateForm"
-                    :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg', 
-                      'bg-gray-100 text-gray-700 hover:bg-gray-200']"
-                  >
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    Clear Form
-                  </button>
-
-                  <!-- Create Form Button -->
-                  <button 
-                    @click="createApplicationFormDashboard" 
-                    :disabled="applicationCreateSubmitting || !applicationCreateForm.title.trim()"
-                    :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2', 
-                      'text-white bg-gradient-to-r shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed', 
-                      applicationCreateSubmitting ? 'scale-95' : 'hover:scale-105',
-                      'bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
-                  >
-                    <svg v-if="applicationCreateSubmitting" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    {{ applicationCreateSubmitting ? 'Creating...' : 'Create Form' }}
-                  </button>
-
-                  <!-- Info Message -->
-                  <div v-if="!applicationCreateForm.title.trim()" :class="['p-3 rounded-lg text-xs text-center font-medium', isCOE ? 'bg-orange-100 text-orange-700' : 'bg-purple-100 text-purple-700']">
-                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-                    Form title is required to create
-                  </div>
-                </div>
+                <!-- Actions moved to left column -->
               </div>
 
             </div>
@@ -2864,6 +2911,8 @@
                   </button>
                 </div>
               </div>
+
+                
               <div class="flex gap-2 overflow-x-auto pb-1">
                 <button @click="attendanceTab = 'events'" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'events' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">Events</button>
                 <button @click="switchToScannerTab" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'scanner' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">RFID Scanner</button>
@@ -5780,7 +5829,7 @@
   <!-- Add/Edit Session Modal -->
   <!-- Backdrop Fade Only -->
   <transition name="fade">
-    <div v-if="showSessionModal" class="fixed inset-0 bg-black bg-opacity-50"></div>
+    <div v-if="showSessionModal" class="fixed inset-0 bg-black bg-opacity-50 z-50"></div>
   </transition>
   <!-- Modal Pop -->
   <transition name="fade-scale">
@@ -10922,6 +10971,8 @@ const fetchApplicationsForDashboard = async () => {
 const startApplicationDashboard = (app) => {
   applicationDashboardModal.form.value = app
   applicationDashboardModal.show.value = true
+  // Ensure submitting flag is reset whenever modal is opened
+  applicationDashboardModal.submitting.value = false
 }
 
 const submitApplicationDashboard = async () => {
