@@ -2818,7 +2818,41 @@
           <div v-if="currentUser.role === 'admin' || currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-6">
             <div class="flex flex-col gap-4 mb-6">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <h2 :class="['text-lg sm:text-xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Attendance Events</h2>
+                <div class="flex items-center gap-2">
+                  <h2 :class="['text-lg sm:text-xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Attendance Events</h2>
+                  <div class="group relative">
+                    <button :class="['p-1.5 rounded-full transition-all', isCOE ? 'hover:bg-orange-100 text-orange-600' : 'hover:bg-purple-100 text-purple-600']" title="Information">
+                      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                    </button>
+                    <!-- Tooltip -->
+                    <div :class="['invisible group-hover:visible absolute left-0 top-full mt-2 w-64 p-3 rounded-lg shadow-xl z-40 transition-all', isCOE ? 'bg-orange-50 border border-orange-200 text-orange-900' : 'bg-purple-50 border border-purple-200 text-purple-900']">
+                      <div class="text-xs space-y-2">
+                        <div class="font-bold flex items-center gap-1">
+                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
+                          Attendance Events
+                        </div>
+                        <p>Browse all active and upcoming attendance events. Click an event to select it and view/manage its sessions.</p>
+                        <div class="pt-2 border-t" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                          <p class="font-semibold mb-1">What you can do:</p>
+                          <ul class="space-y-1 text-xs">
+                            <li class="flex gap-1">
+                              <span class="font-bold">✓</span>
+                              <span>Auto-select session (1 active) or choose manually (multiple active)</span>
+                            </li>
+                            <li class="flex gap-1">
+                              <span class="font-bold">✓</span>
+                              <span>View session details and times</span>
+                            </li>
+                            <li class="flex gap-1">
+                              <span class="font-bold">✓</span>
+                              <span>Manage attendance with RFID Scanner</span>
+                            </li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div class="flex gap-2 flex-wrap sm:flex-nowrap">
                   <button @click="refreshAttendanceSection" :disabled="attendanceLoading" class="flex-1 sm:flex-none bg-gray-100 text-gray-700 px-3 py-2 rounded-lg hover:bg-gray-200 transition flex items-center justify-center gap-2 text-sm" title="Refresh">
                     <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -5858,24 +5892,24 @@
         </div>
         <div v-else class="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
           <div class="bg-green-50 p-3 sm:p-4 rounded-lg text-center">
-            <p class="text-xl sm:text-2xl font-bold text-green-600">{{ sessionStats.present }}</p>
+            <p class="text-xl sm:text-2xl font-bold text-green-600">{{ dynamicSessionStats.present }}</p>
             <p class="text-xs sm:text-sm text-green-700">Present</p>
           </div>
           <div class="bg-yellow-50 p-3 sm:p-4 rounded-lg text-center">
-            <p class="text-xl sm:text-2xl font-bold text-yellow-600">{{ sessionStats.incomplete }}</p>
+            <p class="text-xl sm:text-2xl font-bold text-yellow-600">{{ dynamicSessionStats.incomplete }}</p>
             <p class="text-xs sm:text-sm text-yellow-700">Incomplete</p>
           </div>
           <div class="bg-orange-50 p-3 sm:p-4 rounded-lg text-center">
-            <p class="text-xl sm:text-2xl font-bold text-orange-600">{{ sessionStats.late }}</p>
+            <p class="text-xl sm:text-2xl font-bold text-orange-600">{{ dynamicSessionStats.late }}</p>
             <p class="text-xs sm:text-sm text-orange-700">Late</p>
           </div>
           <div class="bg-red-50 p-3 sm:p-4 rounded-lg text-center">
-            <p class="text-xl sm:text-2xl font-bold text-red-600">{{ sessionStats.absent }}</p>
+            <p class="text-xl sm:text-2xl font-bold text-red-600">{{ dynamicSessionStats.absent }}</p>
             <p class="text-xs sm:text-sm text-red-700">Absent</p>
           </div>
           <div :class="['p-3 sm:p-4 rounded-lg text-center', isCOE ? 'bg-orange-50' : 'bg-purple-50']">
-            <p :class="['text-xl sm:text-2xl font-bold', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ sessionStats.total }}<span v-if="sessionStats.totalStudents > 0" :class="['text-base sm:text-lg', isCOE ? 'text-orange-400' : 'text-purple-400']">/{{ sessionStats.totalStudents }}</span></p>
-            <p :class="['text-xs sm:text-sm', isCOE ? 'text-orange-700' : 'text-purple-700']">Total<span v-if="sessionStats.totalStudents > 0"> Attended</span></p>
+            <p :class="['text-xl sm:text-2xl font-bold', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ dynamicSessionStats.total }}<span v-if="dynamicSessionStats.totalStudents > 0" :class="['text-base sm:text-lg', isCOE ? 'text-orange-400' : 'text-purple-400']">/{{ dynamicSessionStats.totalStudents }}</span></p>
+            <p :class="['text-xs sm:text-sm', isCOE ? 'text-orange-700' : 'text-purple-700']">Total<span v-if="dynamicSessionStats.totalStudents > 0"> Attended</span></p>
           </div>
         </div>
       </div>
@@ -5888,6 +5922,10 @@
             <p class="text-xs text-orange-600">
               Session starts at <span class="font-semibold">{{ formatDisplayTime(selectedSessionForLogs.start_time) }}</span>.
               Check-ins after <span class="font-semibold">{{ calculateLateThreshold(selectedSessionForLogs.start_time, selectedLateThresholdMinutes) }}</span> will be marked as late.
+            </p>
+            <p class="text-xs text-orange-700 mt-1.5 p-2 bg-orange-50 rounded-md flex items-start gap-1.5">
+              <svg class="w-4 h-4 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+              <span><span class="font-semibold">Instant Preview:</span> Logs above update immediately. Click "Apply & Recalculate" to save changes permanently to database.</span>
             </p>
           </div>
           <div class="flex items-center gap-2">
@@ -5905,7 +5943,7 @@
             </select>
             <button 
               @click="applyLateThresholdByMinutes"
-              :disabled="applyingLateThreshold || sessionStats.total === 0"
+              :disabled="applyingLateThreshold || dynamicSessionStats.total === 0"
               class="px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <svg v-if="applyingLateThreshold" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
@@ -6082,6 +6120,78 @@
               <div class="flex items-center gap-2">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <h4 class="font-bold text-white text-lg">Excuse Management</h4>
+                <!-- Info Tooltip -->
+                <div class="group relative">
+                  <button class="p-1 rounded-full hover:bg-white hover:bg-opacity-20 transition-all text-white" title="Information">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                  </button>
+                  <!-- Tooltip Content -->
+                  <div class="invisible group-hover:visible absolute left-0 top-full mt-2 w-72 p-4 rounded-lg shadow-xl z-40 transition-all bg-white border-l-4" :class="isCOE ? 'border-orange-500' : 'border-purple-500'">
+                    <div class="space-y-3">
+                      <div>
+                        <p class="text-sm font-bold text-gray-900 flex items-center gap-2">
+                          <svg class="w-5 h-5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0zm3 0a1 1 0 11-2 0 1 1 0 012 0zm3 0a1 1 0 11-2 0 1 1 0 012 0z"></path></svg>
+                          What is Excuse Management?
+                        </p>
+                        <p class="text-xs text-gray-600 mt-1">Mark absent students as excused with reasons and track who approved each excuse.</p>
+                      </div>
+                      
+                      <div class="border-t pt-3" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                        <p class="text-xs font-bold text-gray-900 mb-2">Excusable Tab:</p>
+                        <ul class="space-y-1.5 text-xs text-gray-700">
+                          <li class="flex gap-2">
+                            <span class="font-bold text-blue-600 mt-0.5">1.</span>
+                            <div>
+                              <span class="font-semibold">Search & Filter</span>
+                              <p class="text-gray-600">Find absent students by name, program, or year level</p>
+                            </div>
+                          </li>
+                          <li class="flex gap-2">
+                            <span class="font-bold text-blue-600 mt-0.5">2.</span>
+                            <div>
+                              <span class="font-semibold">Mark/Clear Selections</span>
+                              <p class="text-gray-600">Use "Mark All" to select all absence records, or "Clear" to deselect</p>
+                            </div>
+                          </li>
+                          <li class="flex gap-2">
+                            <span class="font-bold text-blue-600 mt-0.5">3.</span>
+                            <div>
+                              <span class="font-semibold">Apply or Edit</span>
+                              <p class="text-gray-600">Click "Apply" to excuse all selected, or "Excuse" button to edit individual reasons</p>
+                            </div>
+                          </li>
+                        </ul>
+                      </div>
+
+                      <div class="border-t pt-3" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                        <p class="text-xs font-bold text-gray-900 mb-2">Excused Tab:</p>
+                        <ul class="space-y-1.5 text-xs text-gray-700">
+                          <li class="flex gap-2">
+                            <span class="font-bold text-green-600 mt-0.5">✓</span>
+                            <div>
+                              <span class="font-semibold">View Excused Students</span>
+                              <p class="text-gray-600">See all students already excused with their reasons and who approved</p>
+                            </div>
+                          </li>
+                          <li class="flex gap-2">
+                            <span class="font-bold text-blue-600 mt-0.5">📝</span>
+                            <div>
+                              <span class="font-semibold">Details Button</span>
+                              <p class="text-gray-600">Edit reason or excused-by information</p>
+                            </div>
+                          </li>
+                          <li class="flex gap-2">
+                            <span class="font-bold text-red-600 mt-0.5">✕</span>
+                            <div>
+                              <span class="font-semibold">Revoke Button</span>
+                              <p class="text-gray-600">Remove excuse and mark student as still absent</p>
+                            </div>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="text-xs text-white text-opacity-90 font-medium">Session</div>
             </div>
@@ -6110,7 +6220,28 @@
 
             <!-- Search & Filters Card -->
             <div :class="['p-4 rounded-xl shadow-md mb-4', isCOE ? 'bg-orange-50 border border-orange-200' : 'bg-purple-50 border border-purple-200']">
-              <!-- Search Box -->
+              <!-- Header with Info -->
+              <div class="flex items-center justify-between mb-4">
+                <h5 class="font-bold text-sm" :class="isCOE ? 'text-orange-900' : 'text-purple-900'">
+                  <svg class="w-4 h-4 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
+                  Search & Filters
+                </h5>
+                <div class="group relative">
+                  <button class="p-1 rounded-full transition-all" :class="isCOE ? 'hover:bg-orange-200 text-orange-700' : 'hover:bg-purple-200 text-purple-700'" title="Filter Info">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                  </button>
+                  <!-- Tooltip -->
+                  <div class="invisible group-hover:visible absolute right-0 top-full mt-2 w-56 p-3 rounded-lg shadow-xl z-40 transition-all bg-white border-l-4" :class="isCOE ? 'border-orange-500' : 'border-purple-500'">
+                    <p class="text-xs font-bold text-gray-900 mb-2">Filter Options:</p>
+                    <ul class="space-y-1.5 text-xs text-gray-700">
+                      <li><span class="font-semibold">📝 Search Box:</span> Find students by name, year, or program</li>
+                      <li><span class="font-semibold">🏫 Programs:</span> Filter by BSCS, BSIT, or BSIS</li>
+                      <li><span class="font-semibold">📅 Year Level:</span> Filter by 1st, 2nd, 3rd, or 4th year</li>
+                      <li><span class="font-semibold">✕ Clear Filters:</span> Reset all filtering options</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
               <div class="mb-4">
                 <div class="relative">
                   <svg class="absolute left-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -6150,19 +6281,39 @@
 
             <!-- Mark All & Apply Buttons -->
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
-              <button @click="allowAllAbsent" :class="['px-4 py-3 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105', isCOE ? 'bg-gradient-to-r from-emerald-500 to-teal-600' : 'bg-gradient-to-r from-emerald-500 to-green-600']">
-                <svg class="w-4 h-4 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                Mark All
-              </button>
-              <button @click="clearAllExcusable" :class="['px-4 py-3 rounded-xl text-sm font-bold transition-all transform hover:scale-105', isCOE ? 'bg-orange-100 text-orange-800 border border-orange-300 hover:bg-orange-200' : 'bg-purple-100 text-purple-800 border border-purple-300 hover:bg-purple-200']">
-                <svg class="w-4 h-4 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                Clear
-              </button>
-              <button @click="applyExcusableAsExcused" :disabled="applyingBulkExcuse" :class="['col-span-2 sm:col-span-1 px-4 py-3 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 disabled:opacity-50' : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 disabled:opacity-50']">
-                <svg v-if="applyingBulkExcuse" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                Apply
-              </button>
+              <div class="group relative">
+                <button @click="allowAllAbsent" :class="['w-full px-4 py-3 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105', isCOE ? 'bg-gradient-to-r from-emerald-500 to-teal-600' : 'bg-gradient-to-r from-emerald-500 to-green-600']">
+                  <svg class="w-4 h-4 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Mark All
+                </button>
+                <!-- Tooltip -->
+                <div class="invisible group-hover:visible absolute bottom-full mb-2 left-0 w-48 p-2 rounded-lg shadow-lg z-40 transition-all bg-gray-900 text-white text-xs">
+                  Select all absent students in the current list
+                </div>
+              </div>
+              
+              <div class="group relative">
+                <button @click="clearAllExcusable" :class="['w-full px-4 py-3 rounded-xl text-sm font-bold transition-all transform hover:scale-105', isCOE ? 'bg-orange-100 text-orange-800 border border-orange-300 hover:bg-orange-200' : 'bg-purple-100 text-purple-800 border border-purple-300 hover:bg-purple-200']">
+                  <svg class="w-4 h-4 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  Clear
+                </button>
+                <!-- Tooltip -->
+                <div class="invisible group-hover:visible absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 p-2 rounded-lg shadow-lg z-40 transition-all bg-gray-900 text-white text-xs">
+                  Deselect all students
+                </div>
+              </div>
+              
+              <div class="group relative col-span-2 sm:col-span-1">
+                <button @click="applyExcusableAsExcused" :disabled="applyingBulkExcuse" :class="['w-full px-4 py-3 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 disabled:opacity-50' : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 disabled:opacity-50']">
+                  <svg v-if="applyingBulkExcuse" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  Apply
+                </button>
+                <!-- Tooltip -->
+                <div class="invisible group-hover:visible absolute bottom-full mb-2 right-0 w-56 p-2 rounded-lg shadow-lg z-40 transition-all bg-gray-900 text-white text-xs">
+                  Mark all selected students as <span class="font-bold">excused</span> (without individual reasons)
+                </div>
+              </div>
             </div>
 
             <!-- Absent Students List -->
@@ -6184,10 +6335,16 @@
                         <div :class="['text-xs', isCOE ? 'text-orange-700' : 'text-purple-700']">{{ log.program || log.student?.program || '-' }} · {{ log.year_level || log.student?.year_level || '-' }} · {{ log.student?.student_id || log.student_id_number || '' }}</div>
                       </div>
                     </div>
-                    <button @click="openExcuseForLog(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all transform hover:scale-105', isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-md' : 'bg-purple-600 text-white hover:bg-purple-700 shadow-md']">
-                      <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                      Excuse
-                    </button>
+                    <div class="group relative">
+                      <button @click="openExcuseForLog(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all transform hover:scale-105', isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-md' : 'bg-purple-600 text-white hover:bg-purple-700 shadow-md']">
+                        <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                        Excuse
+                      </button>
+                      <!-- Tooltip -->
+                      <div class="invisible group-hover:visible absolute bottom-full mb-2 left-0 w-56 p-2 rounded-lg shadow-lg z-40 transition-all bg-gray-900 text-white text-xs">
+                        Open form to add excuse reason and who approved it
+                      </div>
+                    </div>
                   </div>
                 </transition-group>
                 <div v-if="filteredAbsentLogsForCurrentSession.length === 0" :class="['text-xs text-center py-6 rounded-lg', isCOE ? 'text-orange-600 bg-orange-100' : 'text-purple-600 bg-purple-100']">
@@ -6232,14 +6389,26 @@
                         </div>
                       </div>
                       <div class="flex flex-col gap-2 ml-2">
-                        <button @click="openEditAttendanceModal(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all whitespace-nowrap transform hover:scale-105', isCOE ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md']">
-                          <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                          Details
-                        </button>
-                        <button @click="undoExcuse(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all whitespace-nowrap transform hover:scale-105', isCOE ? 'bg-red-600 text-white hover:bg-red-700 shadow-md' : 'bg-red-600 text-white hover:bg-red-700 shadow-md']">
-                          <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                          Revoke
-                        </button>
+                        <div class="group relative">
+                          <button @click="openEditAttendanceModal(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all whitespace-nowrap transform hover:scale-105', isCOE ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md']">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Details
+                          </button>
+                          <!-- Tooltip -->
+                          <div class="invisible group-hover:visible absolute bottom-full mb-2 left-0 w-56 p-2 rounded-lg shadow-lg z-40 transition-all bg-gray-900 text-white text-xs whitespace-normal">
+                            View or edit the reason and who approved this excuse
+                          </div>
+                        </div>
+                        <div class="group relative">
+                          <button @click="undoExcuse(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all whitespace-nowrap transform hover:scale-105', isCOE ? 'bg-red-600 text-white hover:bg-red-700 shadow-md' : 'bg-red-600 text-white hover:bg-red-700 shadow-md']">
+                            <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Revoke
+                          </button>
+                          <!-- Tooltip -->
+                          <div class="invisible group-hover:visible absolute bottom-full mb-2 left-0 w-56 p-2 rounded-lg shadow-lg z-40 transition-all bg-gray-900 text-white text-xs whitespace-normal">
+                            Remove this excuse and mark student as still absent
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </transition-group>
@@ -13475,10 +13644,23 @@ const fetchEventSessions = async (eventId) => {
       console.log('Fetched sessions for event:', eventId, 'Response:', result)
       eventSessions.value = result.data || result.sessions || []
       console.log('eventSessions.value set to:', eventSessions.value)
-        // If no session selected yet, auto-select the first active session or the only session
+        // Auto-select session logic: if multiple active sessions, ask user; if 1, select it
         if (!selectedSession.value && Array.isArray(eventSessions.value) && eventSessions.value.length > 0) {
-          let pick = eventSessions.value.find(s => getSessionDisplayStatus(s, selectedEvent.value) === 'active')
-          if (!pick && eventSessions.value.length === 1) pick = eventSessions.value[0]
+          const activeSessions = eventSessions.value.filter(s => getSessionDisplayStatus(s, selectedEvent.value) === 'active')
+          let pick = null
+          
+          if (activeSessions.length === 1) {
+            // Only one active session - auto-select it
+            pick = activeSessions[0]
+          } else if (activeSessions.length > 1) {
+            // Multiple active sessions - don't auto-select, let user choose
+            pick = null
+            // The UI will show the session selection buttons automatically
+          } else if (eventSessions.value.length === 1) {
+            // No active sessions, but only 1 session total - select it anyway
+            pick = eventSessions.value[0]
+          }
+          
           if (pick) {
             selectedSession.value = pick
             selectedSessionForLogs.value = pick
@@ -13617,6 +13799,46 @@ const deleteSession = async (sessionId) => {
 }
 
 const sessionStats = ref({ present: 0, incomplete: 0, late: 0, absent: 0, total: 0, totalStudents: 0 })
+
+// Computed stats that dynamically recalculate based on current late threshold
+const dynamicSessionStats = computed(() => {
+  if (!attendanceLogs.value || attendanceLogs.value.length === 0) {
+    return sessionStats.value
+  }
+  
+  let present = 0, incomplete = 0, late = 0, absent = 0
+  
+  attendanceLogs.value.forEach(log => {
+    if (log.excused) {
+      // Excused records don't contribute to these counts
+      return
+    }
+    
+    const hasCheckIn = log.check_in_at || log.check_in_time
+    const hasCheckOut = log.check_out_at || log.check_out_time
+    const shouldBeLate = calculateShouldBeLate(log)
+    
+    if (hasCheckIn && hasCheckOut) {
+      if (shouldBeLate) late++
+      else present++
+    } else if (hasCheckIn && !hasCheckOut) {
+      incomplete++
+    } else {
+      absent++
+    }
+  })
+  
+  const totalAttended = present + incomplete + late
+  
+  return {
+    present,
+    incomplete,
+    late,
+    absent,
+    total: totalAttended,
+    totalStudents: sessionStats.value.totalStudents
+  }
+})
 const allSessionLogs = ref([]) // Store all logs for stats and export
 const lateThresholdTime = ref('')
 const selectedLateThresholdMinutes = ref(60)
@@ -14996,28 +15218,59 @@ const getAttendanceLogStatusLabel = (log) => {
   if (log && log.excused) return 'Excused'
   const hasCheckIn = log.check_in_at || log.check_in_time
   const hasCheckOut = log.check_out_at || log.check_out_time
-  const isLate = log.is_late
+  
+  // Dynamically calculate if should be late based on current threshold
+  const shouldBeLate = calculateShouldBeLate(log)
 
   if (hasCheckIn && hasCheckOut) {
-    return isLate ? 'Late' : 'Present'
+    return shouldBeLate ? 'Late' : 'Present'
   }
   if (hasCheckIn && !hasCheckOut) {
-    return isLate ? 'Late (Incomplete)' : 'Incomplete'
+    return shouldBeLate ? 'Late (Incomplete)' : 'Incomplete'
   }
   return 'Absent'
+}
+
+// Helper function to dynamically calculate if a log should be late
+const calculateShouldBeLate = (log) => {
+  if (!selectedSessionForLogs.value) return log.is_late || false
+  
+  const checkInTime = log.check_in_at || log.check_in_time
+  if (!checkInTime) return false
+  
+  try {
+    const sessionStart = selectedSessionForLogs.value.start_time
+    const [startHours, startMinutes] = sessionStart.split(':').map(Number)
+    const thresholdMinutes = selectedLateThresholdMinutes.value || 60
+    
+    // Calculate threshold time
+    const totalMinutes = startHours * 60 + startMinutes + thresholdMinutes
+    const thresholdHours = Math.floor(totalMinutes / 60) % 24
+    const thresholdMins = totalMinutes % 60
+    const thresholdTime = `${thresholdHours.toString().padStart(2, '0')}:${thresholdMins.toString().padStart(2, '0')}`
+    
+    // Get check-in time
+    const checkInDate = new Date(checkInTime)
+    const checkInHourMin = checkInDate.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit' })
+    
+    return checkInHourMin > thresholdTime
+  } catch (e) {
+    console.warn('Error calculating late status:', e)
+    return log.is_late || false
+  }
 }
 
 const getAttendanceLogStatusClass = (log) => {
   if (log && log.excused) return 'bg-green-100 text-green-800'
   const hasCheckIn = log.check_in_at || log.check_in_time
   const hasCheckOut = log.check_out_at || log.check_out_time
-  const isLate = log.is_late
+  const shouldBeLate = calculateShouldBeLate(log)
 
   if (hasCheckIn && hasCheckOut) {
-    return isLate ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
+    return shouldBeLate ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'
   }
   if (hasCheckIn && !hasCheckOut) {
-    return isLate ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'
+    return shouldBeLate ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'
   }
   return 'bg-red-100 text-red-800'
 }
