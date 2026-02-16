@@ -239,7 +239,7 @@
                 <!-- Student Avatar -->
                 <div class="w-20 h-20 lg:w-28 lg:h-28 rounded-full overflow-hidden flex-shrink-0 mx-auto lg:mx-0 border-2 border-white shadow-md bg-white bg-opacity-10">
                   <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="w-full h-full object-cover" />
-                  <div v-else class="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold text-xl">
+                  <div v-else :class="['w-full h-full flex items-center justify-center font-semibold text-xl text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
                     {{ (rfidResult.student?.full_name || rfidResult.student_name || '?').charAt(0) }}
                   </div>
                 </div>
@@ -281,7 +281,7 @@
                 <!-- Student Avatar -->
                 <div class="w-20 h-20 lg:w-28 lg:h-28 rounded-full overflow-hidden flex-shrink-0 mx-auto lg:mx-0 border-2 border-white shadow-md bg-white bg-opacity-10">
                   <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="w-full h-full object-cover rounded-full" />
-                  <div v-else class="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold text-xl">
+                  <div v-else :class="['w-full h-full flex items-center justify-center font-semibold text-xl text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
                     {{ (rfidResult.student?.full_name || rfidResult.student_name || '?').charAt(0) }}
                   </div>
                 </div>
@@ -497,8 +497,8 @@
 
   <!-- Edit Attendance (Excuse) Modal -->
   <transition name="fade">
-    <div v-if="showEditAttendanceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showEditAttendanceModal = false">
-      <div class="bg-white rounded-lg p-4 w-full max-w-md mx-4">
+    <div v-if="showEditAttendanceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] overflow-y-auto" @click.self="showEditAttendanceModal = false">
+      <div class="bg-white rounded-lg p-4 w-full max-w-md mx-4 my-8 shadow-2xl">
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-semibold">Edit Attendance (Excuse)</h3>
           <button @click="showEditAttendanceModal = false" class="text-gray-500 hover:text-gray-700">&times;</button>
@@ -640,6 +640,10 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span>Contributions</span>
         </button>
+        <button @click="currentPage = 'applications'; fetchApplicationsForDashboard()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'applications' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span>Applications</span>
+        </button>
         <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'manage' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
           <span>Manage</span>
@@ -773,6 +777,10 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span>Contributions</span>
         </button>
+          <button @click="currentPage = 'applications'; showMobileMenu = false; fetchApplicationsForDashboard()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'applications' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+            <span>Applications</span>
+          </button>
           <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="['flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2', currentPage === 'manage' ? 'bg-white bg-opacity-20' : 'hover:bg-white hover:bg-opacity-10']">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
             <span>Manage</span>
@@ -2412,6 +2420,395 @@
               <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             </div>
             <p class="text-gray-500">No payment records found yet.</p>
+          </div>
+        </div>
+
+        <!-- Applications Page - Student View -->
+        <div v-if="currentPage === 'applications' && !(currentUser.role === 'admin' || currentUser.isMaster)" :class="['bg-gradient-to-br rounded-lg shadow-lg p-4 md:p-8 space-y-6', isCOE ? 'from-orange-50 to-red-50' : 'from-purple-50 to-pink-50']">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+              <h2 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2', isCOE ? 'from-orange-600 to-red-600' : 'from-purple-600 to-pink-600']">Available Applications</h2>
+              <p :class="['text-sm', isCOE ? 'text-orange-700' : 'text-purple-700']">Apply for opportunities and programs that match your eligibility</p>
+            </div>
+            <button @click="fetchApplicationsForDashboard()" :disabled="applicationLoading" :class="['px-6 py-2 rounded-lg transition flex items-center gap-2 text-white font-semibold bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
+              <svg v-if="applicationLoading" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              Refresh
+            </button>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex gap-2 border-b" :class="isCOE ? 'border-orange-300' : 'border-purple-300'">
+            <button @click="applicationDashboardTab = 'available'" :class="['px-6 py-3 font-semibold transition', applicationDashboardTab === 'available' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-900']">
+              Available ({{ availableApplications?.length || 0 }})
+            </button>
+            <button @click="applicationDashboardTab = 'submitted'" :class="['px-6 py-3 font-semibold transition', applicationDashboardTab === 'submitted' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-900']">
+              My Submissions ({{ submittedApplications?.length || 0 }})
+            </button>
+          </div>
+
+          <!-- Available Applications Tab -->
+          <div v-if="applicationDashboardTab === 'available'" class="space-y-4">
+            <div v-if="applicationLoading" class="text-center py-12">
+              <svg :class="['animate-spin h-12 w-12 mx-auto mb-4', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <p :class="['mt-4', isCOE ? 'text-orange-700' : 'text-purple-700']">Loading applications...</p>
+            </div>
+            <div v-else-if="!availableApplications || availableApplications.length === 0" class="text-center py-12 border-2 border-dashed rounded-lg" :class="isCOE ? 'border-orange-300 bg-orange-50/50' : 'border-purple-300 bg-purple-50/50'">
+              <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <p :class="['text-gray-600 text-lg font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">No available applications for you yet</p>
+              <p class="text-gray-500 text-sm mt-2">Check back later for new opportunities</p>
+            </div>
+            <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div v-for="app in availableApplications" :key="app._id" :class="['rounded-lg p-6 border-2 hover:shadow-lg transition', isCOE ? 'bg-gradient-to-br from-white to-orange-50 border-orange-200 hover:border-orange-400' : 'bg-gradient-to-br from-white to-purple-50 border-purple-200 hover:border-purple-400']">
+                <div class="flex justify-between items-start mb-4">
+                  <div class="flex-1">
+                    <h3 class="text-lg font-bold text-gray-900 mb-1">{{ app.title }}</h3>
+                    <p class="text-sm text-gray-600">{{ app.description }}</p>
+                  </div>
+                  <span v-if="app.alreadyApplied" :class="['px-3 py-1 rounded-full text-xs font-semibold', 'bg-yellow-100 text-yellow-700']">
+                    {{ app.applicationStatus }}
+                  </span>
+                </div>
+                <div class="space-y-2 mb-4 text-xs text-gray-600">
+                  <div v-if="app.eligible_programs?.length > 0"><strong>Programs:</strong> {{ app.eligible_programs.join(', ') }}</div>
+                  <div v-if="app.eligible_year_levels?.length > 0"><strong>Year Levels:</strong> {{ app.eligible_year_levels.join(', ') }}</div>
+                  <div v-if="app.max_applicants"><strong>Max Applicants:</strong> {{ app.max_applicants }}</div>
+                </div>
+                <button v-if="!app.alreadyApplied" @click="startApplicationDashboard(app)" :class="['w-full py-2 rounded-lg font-semibold transition text-white', 'bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
+                  Apply Now
+                </button>
+                <button v-else disabled :class="['w-full py-2 rounded-lg font-semibold text-gray-500', 'bg-gray-300 cursor-not-allowed']">
+                  Already Applied
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Submitted Applications Tab -->
+          <div v-if="applicationDashboardTab === 'submitted'" class="space-y-4">
+            <div v-if="applicationLoading" class="text-center py-12">
+              <svg :class="['animate-spin h-12 w-12 mx-auto mb-4', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <p :class="['mt-4', isCOE ? 'text-orange-700' : 'text-purple-700']">Loading submissions...</p>
+            </div>
+            <div v-else-if="!submittedApplications || submittedApplications.length === 0" class="text-center py-12 border-2 border-dashed rounded-lg" :class="isCOE ? 'border-orange-300 bg-orange-50/50' : 'border-purple-300 bg-purple-50/50'">
+              <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <p :class="['text-gray-600 text-lg font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">No applications submitted yet</p>
+              <p class="text-gray-500 text-sm mt-2">Your submitted applications will appear here</p>
+            </div>
+            <div v-else class="space-y-4">
+              <div v-for="app in submittedApplications" :key="app._id" :class="['rounded-lg p-6 border-2', isCOE ? 'bg-gradient-to-br from-white to-orange-50 border-orange-200' : 'bg-gradient-to-br from-white to-purple-50 border-purple-200']">
+                <div class="flex justify-between items-start mb-3">
+                  <div class="flex-1">
+                    <h3 class="text-lg font-bold text-gray-900">{{ app.title }}</h3>
+                    <p class="text-sm text-gray-600">{{ app.description }}</p>
+                  </div>
+                  <span :class="['px-3 py-1 rounded-full text-xs font-semibold', app.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : app.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                    {{ app.status.charAt(0).toUpperCase() + app.status.slice(1) }}
+                  </span>
+                </div>
+                <div class="space-y-1 text-xs text-gray-600">
+                  <div><strong>Applied:</strong> {{ new Date(app.applied_at).toLocaleDateString() }}</div>
+                  <div v-if="app.reviewed_at"><strong>Reviewed:</strong> {{ new Date(app.reviewed_at).toLocaleDateString() }}</div>
+                  <div v-if="app.reviewed_by"><strong>Reviewed by:</strong> {{ app.reviewed_by }}</div>
+                  <div v-if="app.notes" class="mt-2 p-2 bg-black/10 rounded"><strong>Notes:</strong> {{ app.notes }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Application Modal -->
+          <div v-if="applicationDashboardModal.show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+            <div :class="['bg-white rounded-lg shadow-xl max-w-md w-full p-6', isCOE ? 'border-t-4 border-orange-500' : 'border-t-4 border-purple-500']">
+              <h3 class="text-2xl font-bold text-gray-900 mb-2">Apply for {{ applicationDashboardModal.form?.title }}</h3>
+              <p class="text-gray-600 text-sm mb-4">{{ applicationDashboardModal.form?.description }}</p>
+              <div class="space-y-4">
+                <p :class="['text-sm', isCOE ? 'text-orange-700' : 'text-purple-700']">ℹ️ Your application will be reviewed by the admin team. You'll receive updates on your status.</p>
+                <div class="flex gap-3">
+                  <button @click="applicationDashboardModal.show = false" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancel</button>
+                  <button @click="submitApplicationDashboard()" :disabled="applicationDashboardModal.submitting" :class="['flex-1 px-4 py-2 text-white rounded-lg transition font-semibold flex items-center justify-center gap-2', 'bg-gradient-to-r', primaryButtonGradient, primaryButtonHover, 'disabled:opacity-50']">
+                    <svg v-if="applicationDashboardModal.submitting" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    {{ applicationDashboardModal.submitting ? 'Submitting...' : 'Submit Application' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Applications Page - Admin View -->
+        <div v-if="currentPage === 'applications' && (currentUser.role === 'admin' || currentUser.isMaster)" :class="['bg-gradient-to-br rounded-lg shadow-lg p-4 md:p-8 space-y-6', isCOE ? 'from-orange-50 to-red-50' : 'from-purple-50 to-pink-50']">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+              <h2 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2', isCOE ? 'from-orange-600 to-red-600' : 'from-purple-600 to-pink-600']">Application Management</h2>
+              <p :class="['text-sm', isCOE ? 'text-orange-700' : 'text-purple-700']">Create forms and review student applications</p>
+            </div>
+            <button @click="fetchApplicationsForDashboard()" :disabled="applicationLoading" :class="['px-6 py-2 rounded-lg transition flex items-center gap-2 text-white font-semibold bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
+              <svg v-if="applicationLoading" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              Refresh
+            </button>
+          </div>
+
+          <!-- Tabs -->
+          <div class="flex gap-2 border-b" :class="isCOE ? 'border-orange-300' : 'border-purple-300'">
+            <button @click="applicationAdminTab = 'forms'" :class="['px-6 py-3 font-semibold transition', applicationAdminTab === 'forms' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-900']">
+              Application Forms
+            </button>
+            <button @click="applicationAdminTab = 'create'" :class="['px-6 py-3 font-semibold transition', applicationAdminTab === 'create' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-900']">
+              Create New Form
+            </button>
+          </div>
+
+          <!-- Application Forms List Tab -->
+          <div v-if="applicationAdminTab === 'forms'" class="space-y-4">
+            <div v-if="applicationLoading" class="text-center py-12">
+              <svg :class="['animate-spin h-12 w-12 mx-auto mb-4', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <p :class="['mt-4', isCOE ? 'text-orange-700' : 'text-purple-700']">Loading forms...</p>
+            </div>
+            <div v-else-if="!applicationForms || applicationForms.length === 0" class="text-center py-12 border-2 border-dashed rounded-lg" :class="isCOE ? 'border-orange-300 bg-orange-50/50' : 'border-purple-300 bg-purple-50/50'">
+              <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <p :class="['text-gray-600 text-lg font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">No application forms created yet</p>
+              <p class="text-gray-500 text-sm mt-2">Create your first application form to get started</p>
+            </div>
+            <div v-else class="space-y-4">
+              <div v-for="form in applicationForms" :key="form._id" class="rounded-lg overflow-hidden" :class="isCOE ? 'bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200' : 'bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200'">
+                <div class=" p-6 cursor-pointer hover:shadow-lg transition" @click="expandedApplicationForm = expandedApplicationForm === form._id ? null : form._id">
+                  <div class="flex justify-between items-start">
+                    <div class="flex-1">
+                      <h3 class="text-lg font-bold text-gray-900">{{ form.title }}</h3>
+                      <p class="text-sm text-gray-600 mt-1">{{ form.description }}</p>
+                      <div class="flex gap-4 mt-3 text-xs">
+                        <span :class="['px-3 py-1 rounded-full font-semibold', form.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                          {{ form.status === 'active' ? 'Active' : 'Closed' }}
+                        </span>
+                      </div>
+                    </div>
+                    <svg :class="['w-6 h-6 transition', expandedApplicationForm === form._id ? 'rotate-180' : '', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                  </div>
+                </div>
+                
+                <!-- Expanded View -->
+                <div v-if="expandedApplicationForm === form._id" :class="['p-6 border-t-2', isCOE ? 'border-orange-200 bg-white' : 'border-purple-200 bg-white']">
+                  <!-- Stats Grid -->
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                    <div class="rounded-lg p-4" :class="isCOE ? 'bg-orange-100' : 'bg-purple-100'">
+                      <p class="text-xs font-semibold text-gray-700">Total Applications</p>
+                      <p :class="['text-2xl font-bold', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ form.stats?.total || 0 }}</p>
+                    </div>
+                    <div class="rounded-lg p-4 bg-yellow-100">
+                      <p class="text-xs font-semibold text-gray-700">Pending</p>
+                      <p class="text-2xl font-bold text-yellow-600">{{ form.stats?.pending || 0 }}</p>
+                    </div>
+                    <div class="rounded-lg p-4 bg-green-100">
+                      <p class="text-xs font-semibold text-gray-700">Approved</p>
+                      <p class="text-2xl font-bold text-green-600">{{ form.stats?.approved || 0 }}</p>
+                    </div>
+                    <div class="rounded-lg p-4 bg-red-100">
+                      <p class="text-xs font-semibold text-gray-700">Rejected</p>
+                      <p class="text-2xl font-bold text-red-600">{{ form.stats?.rejected || 0 }}</p>
+                    </div>
+                  </div>
+
+                  <!-- Applications List -->
+                  <div class="space-y-2">
+                    <h4 class="font-semibold text-gray-900 mb-3">Student Applications</h4>
+                    <div v-if="!form.student_applications || form.student_applications.length === 0" class="text-center py-4 text-gray-500">
+                      No student applications yet
+                    </div>
+                    <div v-else class="space-y-2 max-h-80 overflow-y-auto">
+                      <div v-for="app in form.student_applications" :key="app._id" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <p class="font-medium text-gray-900">{{ app.student_name }}</p>
+                          <p class="text-xs text-gray-600">{{ app.program }} - {{ app.year_level }}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                          <span :class="['px-2 py-1 rounded-full text-xs font-semibold', app.status === 'pending' ? 'bg-yellow-100 text-yellow-700' : app.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                            {{ app.status }}
+                          </span>
+                          <button v-if="app.status === 'pending'" @click="approveApplicationDashboard(form._id, app._id)" class="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition">Approve</button>
+                          <button v-if="app.status === 'pending'" @click="rejectApplicationDashboard(form._id, app._id)" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition">Reject</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Create Form Tab - Two Column Layout -->
+          <div v-if="applicationAdminTab === 'create'" class="animate-fadeIn">
+            <!-- Header -->
+            <div class="mb-8">
+              <div class="flex items-center gap-3 mb-2">
+                <div :class="['w-10 h-10 rounded-lg flex items-center justify-center text-white', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-600' : 'bg-gradient-to-br from-purple-500 to-pink-600']">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <div>
+                  <h3 class="text-2xl font-bold text-gray-900">Create New Application Form</h3>
+                  <p :class="['text-sm', isCOE ? 'text-orange-600' : 'text-purple-600']">Fill in the details below to create a new application form</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Two Column Layout Container -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              
+              <!-- LEFT COLUMN: Form Details -->
+              <div class="space-y-6">
+                <!-- Form Title Card -->
+                <div class="group">
+                  <label :class="['block text-sm font-bold mb-3 flex items-center gap-2 transition-colors', isCOE ? 'text-orange-900 group-focus-within:text-orange-600' : 'text-purple-900 group-focus-within:text-purple-600']">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                    Form Title <span :class="isCOE ? 'text-red-500' : 'text-pink-500'">*</span>
+                  </label>
+                  <div class="relative">
+                    <input 
+                      v-model="applicationCreateForm.title" 
+                      type="text" 
+                      placeholder="e.g., Leadership Program 2024" 
+                      :class="['w-full px-4 py-3 border-2 rounded-xl outline-none transition-all duration-300 bg-white', 
+                        isCOE 
+                          ? 'border-orange-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-100' 
+                          : 'border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100']" 
+                    />
+                    <div v-if="applicationCreateForm.title" :class="['absolute right-3 top-3 text-lg', isCOE ? 'text-orange-500' : 'text-purple-500']">✓</div>
+                  </div>
+                </div>
+
+                <!-- Form Description Card -->
+                <div class="group">
+                  <label :class="['block text-sm font-bold mb-3 flex items-center gap-2 transition-colors', isCOE ? 'text-orange-900 group-focus-within:text-orange-600' : 'text-purple-900 group-focus-within:text-purple-600']">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Description
+                  </label>
+                  <textarea 
+                    v-model="applicationCreateForm.description" 
+                    placeholder="Describe this application, eligibility requirements, and other important details..." 
+                    :class="['w-full px-4 py-3 border-2 rounded-xl outline-none transition-all duration-300 resize-none bg-white', 
+                      isCOE 
+                        ? 'border-orange-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-100' 
+                        : 'border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100']" 
+                    rows="4"
+                  ></textarea>
+                </div>
+
+                <!-- Max Applicants Card -->
+                <div class="group">
+                  <label :class="['block text-sm font-bold mb-3 flex items-center gap-2 transition-colors', isCOE ? 'text-orange-900 group-focus-within:text-orange-600' : 'text-purple-900 group-focus-within:text-purple-600']">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 20H9m8-20v2c0 .656-.126 1.283-.356 1.857m0 0a5.002 5.002 0 01-9.288 0M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zM7 20a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                    Max Applicants
+                  </label>
+                  <div class="relative">
+                    <input 
+                      v-model.number="applicationCreateForm.maxApplicants" 
+                      type="number" 
+                      placeholder="Leave blank for unlimited" 
+                      :class="['w-full px-4 py-3 border-2 rounded-xl outline-none transition-all duration-300 bg-white', 
+                        isCOE 
+                          ? 'border-orange-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-100' 
+                          : 'border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100']" 
+                    />
+                    <span v-if="!applicationCreateForm.maxApplicants" class="absolute right-3 top-3 text-xs font-semibold text-gray-400">∞</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RIGHT COLUMN: Eligibility & Actions -->
+              <div class="flex flex-col gap-6">
+                <!-- Programs Card -->
+                <div :class="['rounded-xl p-5 border-2 transition-all duration-300', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-purple-50 border-purple-200 hover:border-purple-400']">
+                  <label :class="['text-sm font-bold flex items-center gap-2 mb-4', isCOE ? 'text-orange-900' : 'text-purple-900']">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
+                    Programs (Optional)
+                  </label>
+                  <div class="space-y-3">
+                    <template v-for="prog in ['BSCS', 'BSIT', 'BSIS']" :key="prog">
+                      <label class="flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer" :class="applicationCreateForm.programs.includes(prog) ? (isCOE ? 'bg-orange-100' : 'bg-purple-100') : 'hover:' + (isCOE ? 'bg-orange-100/50' : 'bg-purple-100/50')">
+                        <input 
+                          v-model="applicationCreateForm.programs" 
+                          type="checkbox" 
+                          :value="prog"
+                          class="w-5 h-5 rounded cursor-pointer transition-transform hover:scale-110"
+                          :class="isCOE ? 'accent-orange-500' : 'accent-purple-500'"
+                        />
+                        <span :class="['font-medium', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ prog }}</span>
+                      </label>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Year Levels Card -->
+                <div :class="['rounded-xl p-5 border-2 transition-all duration-300', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-purple-50 border-purple-200 hover:border-purple-400']">
+                  <label :class="['text-sm font-bold flex items-center gap-2 mb-4', isCOE ? 'text-orange-900' : 'text-purple-900']">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                    Year Levels (Optional)
+                  </label>
+                  <div class="space-y-3">
+                    <template v-for="year in ['1st Year', '2nd Year', '3rd Year', '4th Year']" :key="year">
+                      <label class="flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer" :class="applicationCreateForm.years.includes(year) ? (isCOE ? 'bg-orange-100' : 'bg-purple-100') : 'hover:' + (isCOE ? 'bg-orange-100/50' : 'bg-purple-100/50')">
+                        <input 
+                          v-model="applicationCreateForm.years" 
+                          type="checkbox" 
+                          :value="year"
+                          class="w-5 h-5 rounded cursor-pointer transition-transform hover:scale-110"
+                          :class="isCOE ? 'accent-orange-500' : 'accent-purple-500'"
+                        />
+                        <span :class="['font-medium', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ year }}</span>
+                      </label>
+                    </template>
+                  </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="space-y-3 mt-6 pt-6 border-t-2" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                  <!-- Cancel/Back Button -->
+                  <button 
+                    @click="applicationAdminTab = 'forms'" 
+                    :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg', 
+                      'border-2', 
+                      isCOE ? 'border-orange-300 text-orange-700 hover:bg-orange-50' : 'border-purple-300 text-purple-700 hover:bg-purple-50']"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 0l-7 7 7 7"></path></svg>
+                    Back to Forms
+                  </button>
+
+                  <!-- Reset Button -->
+                  <button 
+                    @click="resetApplicationCreateForm"
+                    :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg', 
+                      'bg-gray-100 text-gray-700 hover:bg-gray-200']"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Clear Form
+                  </button>
+
+                  <!-- Create Form Button -->
+                  <button 
+                    @click="createApplicationFormDashboard" 
+                    :disabled="applicationCreateSubmitting || !applicationCreateForm.title.trim()"
+                    :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2', 
+                      'text-white bg-gradient-to-r shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed', 
+                      applicationCreateSubmitting ? 'scale-95' : 'hover:scale-105',
+                      'bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]"
+                  >
+                    <svg v-if="applicationCreateSubmitting" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    {{ applicationCreateSubmitting ? 'Creating...' : 'Create Form' }}
+                  </button>
+
+                  <!-- Info Message -->
+                  <div v-if="!applicationCreateForm.title.trim()" :class="['p-3 rounded-lg text-xs text-center font-medium', isCOE ? 'bg-orange-100 text-orange-700' : 'bg-purple-100 text-purple-700']">
+                    <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                    Form title is required to create
+                  </div>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
 
@@ -5678,113 +6075,180 @@
       </transition>
 
           <!-- Excuse Management (separate panel) -->
-        <div v-if="selectedPanel === 'excused'" class="w-full border-t pt-4">
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="font-semibold text-gray-800">Excuse Management</h4>
-            <div class="text-xs text-gray-500">Session</div>
+        <div v-if="selectedPanel === 'excused'" class="w-full">
+          <!-- Header with Theme Gradient -->
+          <div :class="['rounded-xl mb-4 p-4 shadow-lg', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600' : 'bg-gradient-to-r from-pink-500 to-purple-600']">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <h4 class="font-bold text-white text-lg">Excuse Management</h4>
+              </div>
+              <div class="text-xs text-white text-opacity-90 font-medium">Session</div>
+            </div>
+            <p class="text-white text-opacity-80 text-sm mt-2">Manage student absences and excuses efficiently</p>
           </div>
 
-          <!-- Tabs -->
-          <div class="mb-3">
-            <div class="inline-flex bg-gray-100 rounded-lg p-1">
-              <button @click="selectedExcuseTab = 'excusable'" :class="['px-3 py-1 rounded-lg text-sm', selectedExcuseTab === 'excusable' ? 'bg-white shadow' : 'text-gray-600']">Excusable</button>
-              <button @click="selectedExcuseTab = 'excused'" :class="['px-3 py-1 rounded-lg text-sm', selectedExcuseTab === 'excused' ? 'bg-white shadow' : 'text-gray-600']">Excused</button>
+          <!-- Tabs with Theme Colors -->
+          <div class="mb-4">
+            <div :class="['inline-flex rounded-xl p-1 shadow-md', isCOE ? 'bg-orange-100' : 'bg-purple-100']">
+              <button @click="selectedExcuseTab = 'excusable'" :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all', selectedExcuseTab === 'excusable' ? (isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg' : 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg') : (isCOE ? 'text-orange-700 hover:text-orange-900' : 'text-purple-700 hover:text-purple-900')]">
+                <svg class="w-4 h-4 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0-10a4 4 0 100 8 4 4 0 000-8z"></path></svg>
+                Excusable
+              </button>
+              <button @click="selectedExcuseTab = 'excused'" :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all', selectedExcuseTab === 'excused' ? (isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg' : 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg') : (isCOE ? 'text-orange-700 hover:text-orange-900' : 'text-purple-700 hover:text-purple-900')]">
+                <svg class="w-4 h-4 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Excused
+              </button>
             </div>
           </div>
 
           <div v-if="selectedExcuseTab === 'excusable'">
-            <p class="text-xs text-gray-500 mb-3">Mark which absent attendees can be excused. You can Apply as Excused or open individual excuse dialog.</p>
+            <p :class="['text-sm mb-4 p-3 rounded-lg', isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800']">
+              <svg class="w-4 h-4 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0zm3 0a1 1 0 11-2 0 1 1 0 012 0zm3 0a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd"></path></svg>
+              Mark which absent attendees can be excused. You can Apply as Excused or open individual excuse dialog.
+            </p>
 
-            <!-- Search & Filters -->
-            <div class="mb-3">
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <input v-model="excusableSearch" type="text" placeholder="Search name, program, or year..." class="col-span-1 sm:col-span-2 px-3 py-2 border rounded-lg focus:ring-2 outline-none" />
-                <div class="col-span-1 flex items-center justify-end gap-2">
-                  <button @click="clearExcusableFilters" class="px-3 py-2 bg-gray-100 rounded">Clear Filters</button>
+            <!-- Search & Filters Card -->
+            <div :class="['p-4 rounded-xl shadow-md mb-4', isCOE ? 'bg-orange-50 border border-orange-200' : 'bg-purple-50 border border-purple-200']">
+              <!-- Search Box -->
+              <div class="mb-4">
+                <div class="relative">
+                  <svg class="absolute left-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                  <input v-model="excusableSearch" type="text" placeholder="Search name, program, or year..." :class="['w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'focus:ring-orange-500 border-orange-300' : 'focus:ring-purple-500 border-purple-300']" />
                 </div>
               </div>
 
-              <div class="mt-3 flex flex-wrap gap-2">
-                <div class="text-xs text-gray-600 mr-2 self-center">Programs:</div>
-                <button @click="toggleExcusableProgramFilter('BSCS')" :class="['text-xs px-3 py-1 rounded', excusableProgramFilterActive('BSCS') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-indigo-600 text-white') : 'bg-white border']">BSCS</button>
-                <button @click="toggleExcusableProgramFilter('BSIT')" :class="['text-xs px-3 py-1 rounded', excusableProgramFilterActive('BSIT') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-cyan-600 text-white') : 'bg-white border']">BSIT</button>
-                <button @click="toggleExcusableProgramFilter('BSIS')" :class="['text-xs px-3 py-1 rounded', excusableProgramFilterActive('BSIS') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-white border']">BSIS</button>
+              <!-- Program Filters -->
+              <div class="mb-3">
+                <label :class="['text-xs font-bold mb-2 block', isCOE ? 'text-orange-800' : 'text-purple-800']">Programs:</label>
+                <div class="flex flex-wrap gap-2">
+                  <button @click="toggleExcusableProgramFilter('BSCS')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableProgramFilterActive('BSCS') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">BSCS</button>
+                  <button @click="toggleExcusableProgramFilter('BSIT')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableProgramFilterActive('BSIT') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-cyan-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">BSIT</button>
+                  <button @click="toggleExcusableProgramFilter('BSIS')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableProgramFilterActive('BSIS') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-rose-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">BSIS</button>
+                </div>
               </div>
 
-              <div class="mt-2 flex flex-wrap gap-2">
-                <div class="text-xs text-gray-600 mr-2 self-center">Year:</div>
-                <button @click="toggleExcusableYearFilter('1st Year')" :class="['text-xs px-3 py-1 rounded', excusableYearFilterActive('1st Year') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border']">1st</button>
-                <button @click="toggleExcusableYearFilter('2nd Year')" :class="['text-xs px-3 py-1 rounded', excusableYearFilterActive('2nd Year') ? 'bg-green-600 text-white' : 'bg-white border']">2nd</button>
-                <button @click="toggleExcusableYearFilter('3rd Year')" :class="['text-xs px-3 py-1 rounded', excusableYearFilterActive('3rd Year') ? 'bg-yellow-600 text-white' : 'bg-white border']">3rd</button>
-                <button @click="toggleExcusableYearFilter('4th Year')" :class="['text-xs px-3 py-1 rounded', excusableYearFilterActive('4th Year') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border']">4th</button>
+              <!-- Year Filters -->
+              <div class="mb-4">
+                <label :class="['text-xs font-bold mb-2 block', isCOE ? 'text-orange-800' : 'text-purple-800']">Year Level:</label>
+                <div class="flex flex-wrap gap-2">
+                  <button @click="toggleExcusableYearFilter('1st Year')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableYearFilterActive('1st Year') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-purple-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">1st</button>
+                  <button @click="toggleExcusableYearFilter('2nd Year')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableYearFilterActive('2nd Year') ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100']">2nd</button>
+                  <button @click="toggleExcusableYearFilter('3rd Year')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableYearFilterActive('3rd Year') ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100']">3rd</button>
+                  <button @click="toggleExcusableYearFilter('4th Year')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableYearFilterActive('4th Year') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-purple-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">4th</button>
+                </div>
               </div>
 
-                <div class="mt-4 flex items-center gap-2">
-                <div class="flex-1">
-                  <div class="flex items-center gap-2">
-                    <button @click="allowAllAbsent" class="flex-1 px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm shadow-sm hover:shadow-md transition">Mark All as Excusable</button>
-                    <button @click="clearAllExcusable" class="px-3 py-2 bg-gray-100 border rounded-lg text-sm">Clear Selections</button>
-                  </div>
-                </div>
-                <div>
-                  <button @click="applyExcusableAsExcused" :disabled="applyingBulkExcuse" class="px-4 py-2 bg-gradient-to-r from-indigo-600 to-indigo-500 text-white rounded-lg text-sm shadow-sm hover:from-indigo-700 hover:to-indigo-600 transition flex items-center gap-2">
-                    <svg v-if="applyingBulkExcuse" class="animate-spin h-4 w-4 inline-block mr-2" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                    Apply Selected as Excused
-                  </button>
-                </div>
+              <!-- Action Buttons -->
+              <div class="flex items-center gap-2 pt-3 border-t" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                <button @click="clearExcusableFilters" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100']">
+                  <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  Clear Filters
+                </button>
               </div>
             </div>
 
+            <!-- Mark All & Apply Buttons -->
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+              <button @click="allowAllAbsent" :class="['px-4 py-3 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105', isCOE ? 'bg-gradient-to-r from-emerald-500 to-teal-600' : 'bg-gradient-to-r from-emerald-500 to-green-600']">
+                <svg class="w-4 h-4 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Mark All
+              </button>
+              <button @click="clearAllExcusable" :class="['px-4 py-3 rounded-xl text-sm font-bold transition-all transform hover:scale-105', isCOE ? 'bg-orange-100 text-orange-800 border border-orange-300 hover:bg-orange-200' : 'bg-purple-100 text-purple-800 border border-purple-300 hover:bg-purple-200']">
+                <svg class="w-4 h-4 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                Clear
+              </button>
+              <button @click="applyExcusableAsExcused" :disabled="applyingBulkExcuse" :class="['col-span-2 sm:col-span-1 px-4 py-3 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 disabled:opacity-50' : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 disabled:opacity-50']">
+                <svg v-if="applyingBulkExcuse" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Apply
+              </button>
+            </div>
+
+            <!-- Absent Students List -->
             <div>
-              <p class="text-xs font-medium text-gray-700 mb-2">Absent Students</p>
-              <div class="max-h-64 overflow-y-auto space-y-2">
-                <transition-group tag="div" enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2" class="max-h-64 overflow-y-auto space-y-2">
-                  <div v-for="log in filteredAbsentLogsForCurrentSession" :key="log._id" class="flex items-center justify-between p-2 bg-white rounded border hover:shadow-sm hover:scale-[1.01] transform-gpu transition-all duration-200">
+              <div :class="['text-xs font-bold mb-3 p-2 rounded-lg flex items-center gap-2', isCOE ? 'text-orange-800 bg-orange-100' : 'text-purple-800 bg-purple-100']">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.5 1.5H5.75A2.75 2.75 0 003 4.25v11.5A2.75 2.75 0 005.75 18.5h8.5a2.75 2.75 0 002.75-2.75V9.5m-8-8v8m4-4h4m0 0v4"></path></svg>
+                Absent Students ({{ filteredAbsentLogsForCurrentSession.length }})
+              </div>
+              <div class="max-h-96 overflow-y-auto space-y-2">
+                <transition-group tag="div" enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2" class="space-y-2">
+                  <div v-for="log in filteredAbsentLogsForCurrentSession" :key="log._id" :class="['flex items-center justify-between p-3 rounded-lg border-2 hover:shadow-md transform-gpu transition-all duration-200 hover:scale-[1.02]', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-purple-50 border-purple-200 hover:border-purple-400']">
                     <div class="flex items-center gap-3">
-                      <div :class="['w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white text-sm', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+                      <div :class="['w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white text-sm font-bold shadow-md', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
                         <img v-if="(log.student_image || log.student?.image || log.student?.photo || log.student?.avatar)" :src="log.student_image || log.student?.image || log.student?.photo || log.student?.avatar" class="w-full h-full object-cover" />
                         <span v-else>{{ ((log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || '?').charAt(0) }}</span>
                       </div>
                       <div class="text-sm">
-                        <div class="font-medium">{{ (log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || 'N/A' }}</div>
-                        <div class="text-xs text-gray-500">{{ log.program || log.student?.program || '-' }} · {{ log.year_level || log.student?.year_level || '-' }}</div>
-                        <div class="text-xs text-gray-400">{{ log.student?.student_id || log.student_id_number || '' }}</div>
+                        <div class="font-semibold text-gray-900">{{ (log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || 'N/A' }}</div>
+                        <div :class="['text-xs', isCOE ? 'text-orange-700' : 'text-purple-700']">{{ log.program || log.student?.program || '-' }} · {{ log.year_level || log.student?.year_level || '-' }} · {{ log.student?.student_id || log.student_id_number || '' }}</div>
                       </div>
                     </div>
-                    <div class="flex sm:flex-row flex-col sm:items-center items-stretch gap-2">
-                      <button @click="openExcuseForLog(log)" class="w-full sm:w-auto text-xs px-3 py-2 rounded text-center" :class="isCOE ? 'bg-orange-100 text-orange-800' : 'bg-yellow-100 text-yellow-800'">Excuse</button>
-                    </div>
+                    <button @click="openExcuseForLog(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all transform hover:scale-105', isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-md' : 'bg-purple-600 text-white hover:bg-purple-700 shadow-md']">
+                      <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                      Excuse
+                    </button>
                   </div>
                 </transition-group>
-                <div v-if="filteredAbsentLogsForCurrentSession.length === 0" class="text-xs text-gray-500">No absent records.</div>
+                <div v-if="filteredAbsentLogsForCurrentSession.length === 0" :class="['text-xs text-center py-6 rounded-lg', isCOE ? 'text-orange-600 bg-orange-100' : 'text-purple-600 bg-purple-100']">
+                  <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                  No absent records to excuse
+                </div>
               </div>
             </div>
           </div>
 
           <transition name="fade-slide" v-else enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
             <div>
-              <p class="text-xs text-gray-500 mb-3">Students already excused for this session. Click Details to view or edit the reason.</p>
-              <transition-group tag="div" enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2" class="max-h-72 overflow-y-auto space-y-2">
-                <div v-for="log in excusedLogsForCurrentSession" :key="log._id" class="bg-white rounded-lg border p-3 flex items-start justify-between shadow-sm hover:shadow-md transform-gpu transition-all duration-250">
-                  <div class="flex items-start gap-3">
-                    <div :class="['w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-white text-sm shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
-                      <img v-if="(log.student_image || log.student?.image || log.student?.photo || log.student?.avatar)" :src="log.student_image || log.student?.image || log.student?.photo || log.student?.avatar" class="w-full h-full object-cover" />
-                      <span v-else>{{ ((log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || '?').charAt(0) }}</span>
+              <p :class="['text-sm mb-4 p-3 rounded-lg', isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800']">
+                <svg class="w-4 h-4 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                Students already excused for this session. Click Details to view or edit the reason.
+              </p>
+              
+              <!-- Excused Students List -->
+              <div>
+                <div :class="['text-xs font-bold mb-3 p-2 rounded-lg flex items-center gap-2', isCOE ? 'text-orange-800 bg-orange-100' : 'text-purple-800 bg-purple-100']">
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                  Excused Records ({{ excusedLogsForCurrentSession.length }})
+                </div>
+                <div class="max-h-96 overflow-y-auto space-y-2">
+                  <transition-group tag="div" enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2" class="space-y-2">
+                    <div v-for="log in excusedLogsForCurrentSession" :key="log._id" :class="['p-3 rounded-lg border-2 flex items-start justify-between hover:shadow-md transform-gpu transition-all duration-250 hover:scale-[1.01]', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-purple-50 border-purple-200 hover:border-purple-400']">
+                      <div class="flex items-start gap-3">
+                        <div :class="['w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-white text-sm shrink-0 font-bold shadow-md', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+                          <img v-if="(log.student_image || log.student?.image || log.student?.photo || log.student?.avatar)" :src="log.student_image || log.student?.image || log.student?.photo || log.student?.avatar" class="w-full h-full object-cover" />
+                          <span v-else>{{ ((log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || '?').charAt(0) }}</span>
+                        </div>
+                        <div class="text-sm min-w-0 flex-1">
+                          <div class="font-semibold text-gray-900 truncate">{{ (log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || 'N/A' }}</div>
+                          <div :class="['text-xs truncate', isCOE ? 'text-orange-700' : 'text-purple-700']">{{ log.program || log.student?.program || '-' }} · {{ log.year_level || log.student?.year_level || '-' }}</div>
+                          <div v-if="log.excuse_reason" :class="['text-xs mt-1.5 p-2 rounded', isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800']">
+                            <span class="font-medium">Reason:</span> {{ log.excuse_reason }}
+                          </div>
+                          <div v-if="log.excused_by_name || log.excused_by" :class="['text-xs mt-1', isCOE ? 'text-orange-600' : 'text-purple-600']">
+                            <svg class="w-3 h-3 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path></svg>
+                            Excused by: <span class="font-medium">{{ log.excused_by_name || log.excused_by }}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex flex-col gap-2 ml-2">
+                        <button @click="openEditAttendanceModal(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all whitespace-nowrap transform hover:scale-105', isCOE ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md']">
+                          <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                          Details
+                        </button>
+                        <button @click="undoExcuse(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all whitespace-nowrap transform hover:scale-105', isCOE ? 'bg-red-600 text-white hover:bg-red-700 shadow-md' : 'bg-red-600 text-white hover:bg-red-700 shadow-md']">
+                          <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                          Revoke
+                        </button>
+                      </div>
                     </div>
-                    <div class="text-sm">
-                      <div class="font-semibold text-gray-900">{{ (log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || 'N/A' }}</div>
-                      <div class="text-xs text-gray-500">{{ log.program || log.student?.program || '-' }} · {{ log.year_level || log.student?.year_level || '-' }}</div>
-                      <div class="text-xs text-gray-600 mt-1">{{ log.excuse_reason || 'No reason provided' }}</div>
-                      <div v-if="log.excused_by_name || log.excused_by" class="text-xs text-gray-400 mt-1">Excused by: {{ log.excused_by_name || log.excused_by }}</div>
-                    </div>
-                  </div>
-                  <div class="flex flex-col items-end gap-2">
-                    <button @click="openEditAttendanceModal(log)" class="text-xs px-3 py-1 bg-indigo-50 text-indigo-800 rounded hover:bg-indigo-100 transition">Details</button>
-                    <button @click="undoExcuse(log)" class="text-xs px-3 py-1 bg-red-50 text-red-800 rounded hover:bg-red-100 transition">Revoke</button>
+                  </transition-group>
+                  <div v-if="excusedLogsForCurrentSession.length === 0" :class="['text-xs text-center py-6 rounded-lg', isCOE ? 'text-orange-600 bg-orange-100' : 'text-purple-600 bg-purple-100']">
+                    <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    No excused records yet.
                   </div>
                 </div>
-              </transition-group>
-              <div v-if="excusedLogsForCurrentSession.length === 0" class="text-xs text-gray-500">No excused records yet.</div>
+              </div>
             </div>
           </transition>
         </div>
@@ -7458,6 +7922,16 @@ const showMobileMenu = ref(false)
 const showContactModal = ref(false)
 const helpTab = ref('about')
 const currentPage = ref('dashboard')
+const applicationLoading = ref(false)
+const applicationDashboardTab = ref('available')
+const applicationAdminTab = ref('forms')
+const availableApplications = ref([])
+const submittedApplications = ref([])
+const applicationForms = ref([])
+const expandedApplicationForm = ref(null)
+const applicationDashboardModal = { show: ref(false), form: ref(null), submitting: ref(false) }
+const applicationCreateForm = ref({ title: '', description: '', programs: [], years: [], maxApplicants: null })
+const applicationCreateSubmitting = ref(false)
 const manageComponent = ref(null)
 const currentPageNum = ref(1)
 const itemsPerPage = ref(20)
@@ -9932,6 +10406,11 @@ const goToNotifications = async () => {
   }
 }
 
+// Navigate to Applications
+const goToApplications = () => {
+  router.push('/applications')
+}
+
 // Password change management with email verification
 const showPasswordChangeModal = ref(false)
 const passwordForm = ref({ currentPassword: '', newPassword: '', confirmPassword: '' })
@@ -10223,6 +10702,204 @@ onMounted(async () => {
 const handleAppNotification = (e) => {
   const d = e && e.detail ? e.detail : {}
   showNotification(d.message || 'Notification', d.type || 'info')
+}
+
+// ============================================
+// APPLICATION FEATURE METHODS
+// ============================================
+
+const fetchApplicationsForDashboard = async () => {
+  applicationLoading.value = true
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster
+    
+    if (isAdmin) {
+      // Fetch all forms for admin
+      const response = await fetch(buildAPIUrl('/apis/admin/applications'), {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (response.ok) {
+        const data = await response.json()
+        applicationForms.value = data.data || data || []
+      }
+    } else {
+      // Fetch available applications for student
+      const availResponse = await fetch(buildAPIUrl('/apis/applications/available'), {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (availResponse.ok) {
+        const availData = await availResponse.json()
+        availableApplications.value = availData.data || availData || []
+      }
+      
+      // Fetch submitted applications for student
+      const submittedResponse = await fetch(buildAPIUrl('/apis/applications/user/my'), {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+      if (submittedResponse.ok) {
+        const submittedData = await submittedResponse.json()
+        submittedApplications.value = submittedData.data || submittedData || []
+      }
+    }
+  } catch (error) {
+    console.error('Failed to fetch applications:', error)
+    showNotification('Failed to load applications', 'error')
+  } finally {
+    applicationLoading.value = false
+  }
+}
+
+const startApplicationDashboard = (app) => {
+  applicationDashboardModal.form.value = app
+  applicationDashboardModal.show.value = true
+}
+
+const submitApplicationDashboard = async () => {
+  if (!applicationDashboardModal.form.value) return
+  
+  applicationDashboardModal.submitting.value = true
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const formId = applicationDashboardModal.form.value._id || applicationDashboardModal.form.value.id
+    
+    const response = await fetch(buildAPIUrl(`/apis/applications/${formId}/apply`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        student_id: currentUser.value.student_id || currentUser.value.studentId
+      })
+    })
+    
+    if (response.ok) {
+      showNotification('Application submitted successfully!', 'success')
+      applicationDashboardModal.show.value = false
+      applicationDashboardModal.form.value = null
+      await fetchApplicationsForDashboard()
+      applicationDashboardTab.value = 'submitted'
+    } else {
+      const error = await response.json()
+      showNotification(error.message || 'Failed to submit application', 'error')
+    }
+  } catch (error) {
+    console.error('Failed to submit application:', error)
+    showNotification('Failed to submit application', 'error')
+  } finally {
+    applicationDashboardModal.submitting.value = false
+  }
+}
+
+const closeApplicationDashboardModal = () => {
+  applicationDashboardModal.show.value = false
+  applicationDashboardModal.form.value = null
+  applicationDashboardModal.submitting.value = false
+}
+
+const createApplicationFormDashboard = async () => {
+  if (!applicationCreateForm.value.title.trim()) {
+    showNotification('Please enter a form title', 'error')
+    return
+  }
+  
+  applicationCreateSubmitting.value = true
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    
+    const response = await fetch(buildAPIUrl('/apis/admin/applications'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        title: applicationCreateForm.value.title.trim(),
+        description: applicationCreateForm.value.description.trim(),
+        eligible_programs: applicationCreateForm.value.programs.length > 0 ? applicationCreateForm.value.programs : null,
+        eligible_year_levels: applicationCreateForm.value.years.length > 0 ? applicationCreateForm.value.years : null,
+        max_applicants: applicationCreateForm.value.maxApplicants
+      })
+    })
+    
+    if (response.ok) {
+      showNotification('Application form created successfully!', 'success')
+      resetApplicationCreateForm()
+      applicationAdminTab.value = 'forms'
+      await fetchApplicationsForDashboard()
+    } else {
+      const error = await response.json()
+      showNotification(error.message || 'Failed to create form', 'error')
+    }
+  } catch (error) {
+    console.error('Failed to create application form:', error)
+    showNotification('Failed to create form', 'error')
+  } finally {
+    applicationCreateSubmitting.value = false
+  }
+}
+
+const approveApplicationDashboard = async (formId, appId) => {
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    
+    const response = await fetch(buildAPIUrl(`/apis/admin/applications/${formId}/review/${appId}`), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status: 'approved' })
+    })
+    
+    if (response.ok) {
+      showNotification('Application approved!', 'success')
+      await fetchApplicationsForDashboard()
+    } else {
+      const error = await response.json()
+      showNotification(error.message || 'Failed to approve application', 'error')
+    }
+  } catch (error) {
+    console.error('Failed to approve application:', error)
+    showNotification('Failed to approve application', 'error')
+  }
+}
+
+const rejectApplicationDashboard = async (formId, appId) => {
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    
+    const response = await fetch(buildAPIUrl(`/apis/admin/applications/${formId}/review/${appId}`), {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ status: 'rejected' })
+    })
+    
+    if (response.ok) {
+      showNotification('Application rejected!', 'success')
+      await fetchApplicationsForDashboard()
+    } else {
+      const error = await response.json()
+      showNotification(error.message || 'Failed to reject application', 'error')
+    }
+  } catch (error) {
+    console.error('Failed to reject application:', error)
+    showNotification('Failed to reject application', 'error')
+  }
+}
+
+const resetApplicationCreateForm = () => {
+  applicationCreateForm.value = {
+    title: '',
+    description: '',
+    programs: [],
+    years: [],
+    maxApplicants: null
+  }
 }
 
 onMounted(() => {

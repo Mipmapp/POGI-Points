@@ -1925,6 +1925,63 @@ notificationSeenSchema.index({ notification_id: 1 });
 
 const NotificationSeen = mongoose.model("NotificationSeen", notificationSeenSchema);
 
+// ==================== APPLICATION SCHEMAS ====================
+
+// Application Form Configuration - Admin-managed application settings
+const applicationFormSchema = new mongoose.Schema({
+    title: { type: String, required: true, maxlength: 200 },
+    description: { type: String, maxlength: 2000, default: "" },
+    status: { 
+        type: String, 
+        enum: ['active', 'closed'],
+        default: 'active'
+    },
+    // Eligibility criteria - empty means all students can apply
+    eligible_programs: { type: [String], default: [] }, // e.g., ['BSCS', 'BSIS']
+    eligible_year_levels: { type: [String], default: [] }, // e.g., ['1st Year', '2nd Year']
+    max_applicants: { type: Number, default: null }, // null = unlimited
+    allow_one_per_student: { type: Boolean, default: true }, // Students can only apply once
+    created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'Master', required: true },
+    created_by_name: { type: String, required: true },
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now },
+    opened_at: { type: Date, default: null },
+    closed_at: { type: Date, default: null }
+});
+
+applicationFormSchema.index({ status: 1, created_at: -1 });
+
+const ApplicationForm = mongoose.model("ApplicationForm", applicationFormSchema);
+
+// Student Application Records - Individual student applications
+const studentApplicationSchema = new mongoose.Schema({
+    form_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ApplicationForm', required: true },
+    student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
+    student_id_number: { type: String, required: true }, // e.g., "21-A-12345"
+    student_name: { type: String, required: true },
+    program: { type: String, required: true },
+    year_level: { type: String, required: true },
+    email: { type: String, required: true },
+    status: {
+        type: String,
+        enum: ['pending', 'approved', 'rejected'],
+        default: 'pending'
+    },
+    application_data: { type: mongoose.Schema.Types.Mixed, default: {} }, // Flexible for custom form fields
+    notes: { type: String, maxlength: 1000, default: "" },
+    reviewed_by: { type: mongoose.Schema.Types.ObjectId, ref: 'Master', default: null },
+    reviewed_by_name: { type: String, default: "" },
+    applied_at: { type: Date, default: Date.now },
+    reviewed_at: { type: Date, default: null }
+});
+
+studentApplicationSchema.index({ form_id: 1, student_id: 1 }, { unique: true });
+studentApplicationSchema.index({ form_id: 1, status: 1 });
+studentApplicationSchema.index({ student_id: 1 });
+studentApplicationSchema.index({ form_id: 1 });
+
+const StudentApplication = mongoose.model("StudentApplication", studentApplicationSchema);
+
 // ==================== ATTENDANCE SCHEMAS ====================
 
 // Attendance Event Schema - Container/Folder for attendance sessions
@@ -5429,6 +5486,455 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
         res.status(500).json({ message: err.message });
     }
 });
+
+// ==================== APPLICATIONS API ENDPOINTS ====================
+
+// Admin: Create new application form
+app.post('/apis/admin/applications', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { title, description, eligible_programs, eligible_year_levels, max_applicants, allow_one_per_student } = req.body;
+
+        if (!title || title.trim() === '') {
+            return res.status(400).json({ message: 'Application title is required' });
+        }
+
+        // Get creator info
+        const creatorName = req.master ? req.master.username : req.student.first_name + ' ' + req.student.last_name;
+
+        const form = new ApplicationForm({
+            title: title.trim(),
+            description: description || '',
+            eligible_programs: Array.isArray(eligible_programs) ? eligible_programs : [],
+            eligible_year_levels: Array.isArray(eligible_year_levels) ? eligible_year_levels : [],
+            max_applicants: max_applicants || null,
+            allow_one_per_student: allow_one_per_student !== false, // default true
+            created_by: req.master ? req.master.id : req.student._id,
+            created_by_name: creatorName,
+            status: 'active'
+        });
+
+        await form.save();
+
+        res.status(201).json({
+            success: true,
+            message: 'Application form created successfully',
+            data: form
+        });
+    } catch (err) {
+        console.error('Create application error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Admin: Get all application forms
+app.get('/apis/admin/applications', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { status, page = 1, limit = 10 } = req.query;
+        const skip = (page - 1) * limit;
+
+        let filter = {};
+        if (status) {
+            filter.status = status;
+        }
+
+        const forms = await ApplicationForm.find(filter)
+            .populate('created_by', 'username email')
+            .sort({ created_at: -1 })
+            .skip(skip)
+            .limit(limit);
+
+        // Get stats for each form
+        const formsWithStats = await Promise.all(forms.map(async (form) => {
+            const applications = await StudentApplication.find({ form_id: form._id });
+            const stats = {
+                total: applications.length,
+                pending: applications.filter(a => a.status === 'pending').length,
+                approved: applications.filter(a => a.status === 'approved').length,
+                rejected: applications.filter(a => a.status === 'rejected').length
+            };
+
+            return {
+                ...form.toObject(),
+                stats
+            };
+        }));
+
+        const total = await ApplicationForm.countDocuments(filter);
+        const totalPages = Math.ceil(total / limit);
+
+        res.json({
+            success: true,
+            data: formsWithStats,
+            pagination: {
+                currentPage: page,
+                limit,
+                total,
+                totalPages,
+                hasNextPage: page < totalPages,
+                hasPrevPage: page > 1
+            }
+        });
+    } catch (err) {
+        console.error('Get applications error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Admin: Get single application form with all student applications
+app.get('/apis/admin/applications/:id', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const form = await ApplicationForm.findById(req.params.id)
+            .populate('created_by', 'username email');
+
+        if (!form) {
+            return res.status(404).json({ message: 'Application form not found' });
+        }
+
+        const applications = await StudentApplication.find({ form_id: req.params.id })
+            .sort({ applied_at: -1 });
+
+        res.json({
+            success: true,
+            data: {
+                form,
+                applications,
+                stats: {
+                    total: applications.length,
+                    pending: applications.filter(a => a.status === 'pending').length,
+                    approved: applications.filter(a => a.status === 'approved').length,
+                    rejected: applications.filter(a => a.status === 'rejected').length
+                }
+            }
+        });
+    } catch (err) {
+        console.error('Get application detail error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Admin: Update application form (eligibility, title, description)
+app.put('/apis/admin/applications/:id', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { title, description, status, eligible_programs, eligible_year_levels, max_applicants, allow_one_per_student } = req.body;
+
+        const update = {};
+        
+        if (title !== undefined) update.title = title;
+        if (description !== undefined) update.description = description;
+        if (status !== undefined) {
+            if (!['active', 'closed'].includes(status)) {
+                return res.status(400).json({ message: 'Status must be "active" or "closed"' });
+            }
+            update.status = status;
+        }
+        if (eligible_programs !== undefined) update.eligible_programs = Array.isArray(eligible_programs) ? eligible_programs : [];
+        if (eligible_year_levels !== undefined) update.eligible_year_levels = Array.isArray(eligible_year_levels) ? eligible_year_levels : [];
+        if (max_applicants !== undefined) update.max_applicants = max_applicants;
+        if (allow_one_per_student !== undefined) update.allow_one_per_student = allow_one_per_student;
+
+        update.updated_at = new Date();
+
+        const form = await ApplicationForm.findByIdAndUpdate(
+            req.params.id,
+            update,
+            { new: true }
+        );
+
+        if (!form) {
+            return res.status(404).json({ message: 'Application form not found' });
+        }
+
+        res.json({
+            success: true,
+            message: 'Application form updated successfully',
+            data: form
+        });
+    } catch (err) {
+        console.error('Update application error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Admin: Delete application form and all associated applications
+app.delete('/apis/admin/applications/:id', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const form = await ApplicationForm.findById(req.params.id);
+        if (!form) {
+            return res.status(404).json({ message: 'Application form not found' });
+        }
+
+        const formTitle = form.title;
+
+        // Delete all student applications for this form
+        const deleteResult = await StudentApplication.deleteMany({ form_id: req.params.id });
+
+        // Delete the form itself
+        await ApplicationForm.deleteOne({ _id: req.params.id });
+
+        res.json({
+            success: true,
+            message: `Application form "${formTitle}" deleted successfully`,
+            data: {
+                deleted_form: form.title,
+                deleted_applications: deleteResult.deletedCount
+            }
+        });
+    } catch (err) {
+        console.error('Delete application error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Admin: Review and approve/reject student application
+app.put('/apis/admin/applications/:formId/review/:applicationId', adminOrTreasurerAuth, async (req, res) => {
+    try {
+        const { status, notes } = req.body;
+
+        if (!['approved', 'rejected'].includes(status)) {
+            return res.status(400).json({ message: 'Status must be "approved" or "rejected"' });
+        }
+
+        const application = await StudentApplication.findById(req.body.applicationId || req.params.applicationId);
+        if (!application) {
+            return res.status(404).json({ message: 'Application not found' });
+        }
+
+        const reviewerName = req.master ? req.master.username : req.student.first_name + ' ' + req.student.last_name;
+
+        application.status = status;
+        application.notes = notes || '';
+        application.reviewed_by = req.master ? req.master.id : req.student._id;
+        application.reviewed_by_name = reviewerName;
+        application.reviewed_at = new Date();
+
+        await application.save();
+
+        res.json({
+            success: true,
+            message: `Application ${status} successfully`,
+            data: application
+        });
+    } catch (err) {
+        console.error('Review application error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Student: Get list of available applications to apply for
+app.get('/apis/applications/available', studentAuthWithToken, async (req, res) => {
+    try {
+        const student = req.student;
+
+        // Find active applications where student is eligible
+        const applications = await ApplicationForm.find({
+            status: 'active',
+            $or: [
+                // Empty arrays mean "all students can apply"
+                { eligible_programs: { $size: 0 }, eligible_year_levels: { $size: 0 } },
+                // Student program is in eligible list AND student year is in eligible list
+                { 
+                    $and: [
+                        { $or: [
+                            { eligible_programs: { $size: 0 } },
+                            { eligible_programs: student.program }
+                        ]},
+                        { $or: [
+                            { eligible_year_levels: { $size: 0 } },
+                            { eligible_year_levels: student.year_level }
+                        ]}
+                    ]
+                }
+            ]
+        }).sort({ created_at: -1 });
+
+        // For each application, check if student already applied
+        const applicationsWithStatus = await Promise.all(applications.map(async (app) => {
+            const existing = await StudentApplication.findOne({
+                form_id: app._id,
+                student_id: student._id
+            });
+
+            return {
+                ...app.toObject(),
+                alreadyApplied: !!existing,
+                applicationStatus: existing ? existing.status : null
+            };
+        }));
+
+        res.json({
+            success: true,
+            data: applicationsWithStatus
+        });
+    } catch (err) {
+        console.error('Get available applications error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Student: Submit application for a form
+app.post('/apis/applications/:formId/apply', studentAuthWithToken, async (req, res) => {
+    try {
+        const { formId } = req.params;
+        const { applicationData } = req.body;
+        const student = req.student;
+
+        // Verify form exists and is active
+        const form = await ApplicationForm.findById(formId);
+        if (!form) {
+            return res.status(404).json({ message: 'Application form not found' });
+        }
+
+        if (form.status !== 'active') {
+            return res.status(400).json({ message: 'This application is no longer accepting submissions' });
+        }
+
+        // Check eligibility
+        const isEligible = this.checkApplicationEligibility(student, form);
+        if (!isEligible) {
+            return res.status(403).json({ 
+                message: 'You do not meet the eligibility requirements for this application',
+                required: {
+                    programs: form.eligible_programs.length > 0 ? form.eligible_programs : 'All programs',
+                    year_levels: form.eligible_year_levels.length > 0 ? form.eligible_year_levels : 'All year levels'
+                }
+            });
+        }
+
+        // Check if student already applied (if allow_one_per_student is true)
+        if (form.allow_one_per_student) {
+            const existing = await StudentApplication.findOne({
+                form_id: formId,
+                student_id: student._id
+            });
+
+            if (existing) {
+                return res.status(400).json({ 
+                    message: 'You have already applied for this application',
+                    existingApplication: existing
+                });
+            }
+        }
+
+        // Check max applicants limit
+        if (form.max_applicants) {
+            const currentCount = await StudentApplication.countDocuments({ form_id: formId });
+            if (currentCount >= form.max_applicants) {
+                return res.status(400).json({ message: 'Maximum number of applicants reached for this application' });
+            }
+        }
+
+        // Create application record
+        const newApplication = new StudentApplication({
+            form_id: formId,
+            student_id: student._id,
+            student_id_number: student.student_id,
+            student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+            program: student.program,
+            year_level: student.year_level,
+            email: student.email,
+            status: 'pending',
+            application_data: applicationData || {},
+            applied_at: new Date()
+        });
+
+        await newApplication.save();
+
+        res.status(201).json({
+            success: true,
+            message: 'Application submitted successfully. Please wait for review.',
+            data: newApplication
+        });
+    } catch (err) {
+        console.error('Submit application error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Student: Get their own applications
+app.get('/apis/applications/user/my', studentAuthWithToken, async (req, res) => {
+    try {
+        const student = req.student;
+
+        const applications = await StudentApplication.find({ student_id: student._id })
+            .populate('form_id', 'title description status eligible_programs eligible_year_levels')
+            .sort({ applied_at: -1 });
+
+        const formattedApplications = applications.map(app => ({
+            _id: app._id,
+            form: {
+                _id: app.form_id._id,
+                title: app.form_id.title,
+                description: app.form_id.description,
+                status: app.form_id.status
+            },
+            status: app.status,
+            appliedAt: app.applied_at,
+            reviewedAt: app.reviewed_at,
+            notes: app.notes,
+            reviewedByName: app.reviewed_by_name
+        }));
+
+        res.json({
+            success: true,
+            data: formattedApplications,
+            message: formattedApplications.length === 0 ? 'You have not applied for any applications yet' : undefined
+        });
+    } catch (err) {
+        console.error('Get user applications error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Student: Get single application details
+app.get('/apis/applications/:applicationId', studentAuthWithToken, async (req, res) => {
+    try {
+        const student = req.student;
+
+        const application = await StudentApplication.findById(req.params.applicationId)
+            .populate('form_id');
+
+        if (!application) {
+            return res.status(404).json({ message: 'Application not found' });
+        }
+
+        // Verify student owns this application
+        if (application.student_id.toString() !== student._id.toString()) {
+            return res.status(403).json({ message: 'Access denied' });
+        }
+
+        res.json({
+            success: true,
+            data: application
+        });
+    } catch (err) {
+        console.error('Get application detail error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Helper function to check application eligibility
+function checkApplicationEligibility(student, form) {
+    // If no eligibility criteria set, all students are eligible
+    if (form.eligible_programs.length === 0 && form.eligible_year_levels.length === 0) {
+        return true;
+    }
+
+    // Check program eligibility
+    if (form.eligible_programs.length > 0) {
+        if (!form.eligible_programs.includes(student.program)) {
+            return false;
+        }
+    }
+
+    // Check year level eligibility
+    if (form.eligible_year_levels.length > 0) {
+        if (!form.eligible_year_levels.includes(student.year_level)) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 // ==================== ATTENDANCE API ENDPOINTS ====================
 

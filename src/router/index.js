@@ -3,6 +3,8 @@ import Login from '../views/Login.vue'
 import Register from '../views/Register.vue'
 import Dashboard from '../views/Dashboard.vue'
 import EventDetails from '../views/EventDetails.vue'
+import Application from '../views/Application.vue'
+import AdminApplications from '../views/AdminApplications.vue'
 
 const routes = [
   {
@@ -19,13 +21,22 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: Dashboard
-  }
-  ,
+  },
   {
     path: '/attendance/events/:id',
     name: 'EventDetails',
     component: EventDetails,
     props: true
+  },
+  {
+    path: '/applications',
+    name: 'Application',
+    component: Application
+  },
+  {
+    path: '/manage/applications',
+    name: 'AdminApplications',
+    component: AdminApplications
   }
 ]
 

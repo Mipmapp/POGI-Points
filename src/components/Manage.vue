@@ -269,7 +269,16 @@
                   <!-- User Basic Info -->
                   <div class="flex-1 min-w-0">
                     <h3 class="font-bold text-gray-900 text-base md:text-lg truncate">{{ (user.first_name || user.firstName) }} {{ (user.middle_name || user.middleName) ? ((user.middle_name || user.middleName) + ' ') : '' }}{{ (user.last_name || user.lastName) }}{{ user.suffix ? (' ' + user.suffix) : '' }}</h3>
-                    <p class="text-sm text-gray-600 truncate">{{ user.student_id }}</p>
+                    <div class="flex items-center gap-2 mt-1">
+                      <p class="text-sm text-gray-600 font-mono">{{ user.student_id }}</p>
+                      <button 
+                        @click="copyToClipboard(user.student_id)"
+                        class="p-1.5 rounded-lg hover:bg-gray-100 transition-colors duration-200 text-gray-500 hover:text-gray-700"
+                        title="Copy Student ID"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                      </button>
+                    </div>
                     <div class="flex flex-wrap gap-2 mt-2">
                       <!-- Role Badge -->
                       <span v-if="user.role && user.role !== 'student'" :class="['px-2 py-1 rounded-full text-xs font-bold capitalize shadow-sm', isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700' : 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700']">
@@ -519,7 +528,17 @@
                 class="px-3 md:px-4 py-2 hover:bg-purple-100 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors text-sm"
               >
                 <p class="font-medium text-gray-900">{{ (user.first_name || user.firstName) }} {{ (user.last_name || user.lastName) }}</p>
-                <p class="text-xs text-gray-600">{{ user.student_id }} • {{ user.email }}</p>
+                <div class="flex items-center gap-2">
+                  <p class="text-xs text-gray-600 font-mono">{{ user.student_id }}</p>
+                  <button 
+                    @click.stop="copyToClipboard(user.student_id)"
+                    class="p-1 rounded hover:bg-gray-100 transition-colors duration-200 text-gray-500 hover:text-gray-700"
+                    title="Copy Student ID"
+                  >
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                  </button>
+                  <span class="text-xs text-gray-600">• {{ user.email }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -547,7 +566,17 @@
                 <!-- Member Info -->
                 <div class="flex-1 min-w-0">
                   <p class="font-medium text-gray-900 truncate text-sm md:text-base">{{ (member.first_name || member.firstName) }} {{ (member.last_name || member.lastName) }}</p>
-                  <p class="text-xs md:text-sm text-gray-600 truncate">{{ member.student_id }} • {{ member.email }}</p>
+                  <div class="flex items-center gap-2 flex-1 min-w-0">
+                    <p class="text-xs md:text-sm text-gray-600 font-mono">{{ member.student_id }}</p>
+                    <button 
+                      @click="copyToClipboard(member.student_id)"
+                      class="p-1 rounded hover:bg-gray-200 transition-colors duration-200 text-gray-500 hover:text-gray-700 flex-shrink-0"
+                      title="Copy Student ID"
+                    >
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                    </button>
+                    <span class="text-xs md:text-sm text-gray-600 truncate">• {{ member.email }}</span>
+                  </div>
                   <p v-if="member.program" class="text-xs text-gray-500">{{ member.program }} - {{ member.year_level }}</p>
                 </div>
               </div>
@@ -1176,6 +1205,13 @@ export default {
     },
     closeNotification() {
       this.notification.show = false
+    },
+    copyToClipboard(text) {
+      navigator.clipboard.writeText(text).then(() => {
+        this.showNotification('success', 'Copied!', `"${text}" copied to clipboard`)
+      }).catch(() => {
+        this.showNotification('error', 'Failed', 'Could not copy to clipboard')
+      })
     },
     getRoleDescription(role) {
       const descriptions = {
