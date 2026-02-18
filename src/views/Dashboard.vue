@@ -2519,7 +2519,7 @@
                   <div v-if="app.eligible_year_levels?.length > 0"><strong>Year Levels:</strong> {{ app.eligible_year_levels.join(', ') }}</div>
                   <div v-if="app.max_applicants"><strong>Max Applicants:</strong> {{ app.max_applicants }}</div>
                 </div>
-                <button v-if="!app.alreadyApplied" @click="startApplicationDashboard(app)" :class="['w-full py-2 rounded-lg font-semibold transition text-white', 'bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
+                <button v-if="!app.alreadyApplied" @click="applyDirectly(app)" :class="['w-full py-2 rounded-lg font-semibold transition text-white', 'bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
                   Apply Now
                 </button>
                 <button v-else disabled :class="['w-full py-2 rounded-lg font-semibold text-gray-500', 'bg-gray-300 cursor-not-allowed']">
@@ -2561,23 +2561,6 @@
             </div>
           </div>
 
-          <!-- Application Modal -->
-          <div v-if="applicationDashboardModal.show" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div :class="['bg-white rounded-lg shadow-xl max-w-md w-full p-6', isCOE ? 'border-t-4 border-orange-500' : 'border-t-4 border-purple-500']">
-              <h3 class="text-2xl font-bold text-gray-900 mb-2">Apply for {{ applicationDashboardModal.form?.title }}</h3>
-              <p class="text-gray-600 text-sm mb-4">{{ applicationDashboardModal.form?.description }}</p>
-              <div class="space-y-4">
-                <p :class="['text-sm', isCOE ? 'text-orange-700' : 'text-purple-700']">ℹ️ Your application will be reviewed by the admin team. You'll receive updates on your status.</p>
-                <div class="flex gap-3">
-                  <button @click="applicationDashboardModal.show = false" class="flex-1 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">Cancel</button>
-                  <button @click="submitApplicationDashboard()" :disabled="applicationDashboardModal.submitting" :class="['flex-1 px-4 py-2 text-white rounded-lg transition font-semibold flex items-center justify-center gap-2', 'bg-gradient-to-r', primaryButtonGradient, primaryButtonHover, 'disabled:opacity-50']">
-                    <svg v-if="applicationDashboardModal.submitting" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                    {{ applicationDashboardModal.submitting ? 'Submitting...' : 'Submit Application' }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
 
         <!-- Applications Page - Admin View -->
@@ -4649,12 +4632,12 @@
         </div>
 
         <div v-if="currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8 mb-8">
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-6">
+          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
             <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Registered Students</h2>
-            <button @click="handleStatsRefresh" :disabled="statsLoading" :class="['w-full sm:w-auto text-white px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed shrink-0', isCOE ? 'bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600' : primaryButtonGradient, isCOE ? 'hover:from-orange-700 hover:to-orange-600' : primaryButtonHover]" title="Refresh Statistics">
-              <svg v-if="statsLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              {{ statsLoading ? 'Refreshing...' : 'Refresh' }}
+            <button @click="handleStatsRefresh" :disabled="statsLoading" :class="['w-full sm:w-auto px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-bold text-base flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 text-white border-2', isCOE ? 'bg-orange-600 hover:bg-orange-700 border-orange-700 shadow-lg' : 'bg-purple-600 hover:bg-purple-700 border-purple-700 shadow-lg']" title="Refresh Statistics">
+              <svg v-if="statsLoading" class="w-5 h-5 animate-spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              <svg v-else class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              <span class="text-white font-bold text-base">{{ statsLoading ? 'Refreshing...' : 'Refresh' }}</span>
             </button>
           </div>
 
@@ -11012,6 +10995,36 @@ const submitApplicationDashboard = async () => {
   }
 }
 
+const applyDirectly = async (app) => {
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const formId = app._id || app.id
+    
+    const response = await fetch(buildAPIUrl(`/apis/applications/${formId}/apply`), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        student_id: currentUser.value.student_id || currentUser.value.studentId
+      })
+    })
+    
+    if (response.ok) {
+      showNotification('Application submitted successfully!', 'success')
+      await fetchApplicationsForDashboard()
+      applicationDashboardTab.value = 'submitted'
+    } else {
+      const error = await response.json()
+      showNotification(error.message || 'Failed to submit application', 'error')
+    }
+  } catch (error) {
+    console.error('Failed to submit application:', error)
+    showNotification('Failed to submit application', 'error')
+  }
+}
+
 const closeApplicationDashboardModal = () => {
   applicationDashboardModal.show.value = false
   applicationDashboardModal.form.value = null
@@ -11142,6 +11155,13 @@ watch([
   () => paymentRecordsFilter.value.searchQuery
 ], () => {
   paymentRecordsFilter.value.currentPage = 1
+})
+
+// Reset submitting flag when application dashboard modal opens
+watch(() => applicationDashboardModal.show.value, (isOpen) => {
+  if (isOpen) {
+    applicationDashboardModal.submitting.value = false
+  }
 })
 
 // Handle stats refresh button click

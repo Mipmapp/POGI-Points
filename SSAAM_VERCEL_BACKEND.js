@@ -59,6 +59,22 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json());
 
+// Middleware to ensure database connection is active
+app.use(async (req, res, next) => {
+    // Skip connection check for non-API routes
+    if (!req.path.startsWith('/apis')) {
+        return next();
+    }
+    
+    // Check connection state
+    if (mongoose.connection.readyState === 0 || mongoose.connection.readyState === 3) {
+        console.warn('Database connection lost, current state:', mongoose.connection.readyState);
+        // Don't block request, let it fail with meaningful error
+    }
+    
+    next();
+});
+
 // Security headers middleware
 app.use((req, res, next) => {
   res.set('X-Content-Type-Options', 'nosniff');
@@ -130,7 +146,6 @@ if (!process.env.SSAAM_API_KEY || !process.env.SSAAM_CRYPTO_KEY || !process.env.
 const SSAAM_API_KEY = process.env.SSAAM_API_KEY;
 const SSAAM_CRYPTO_KEY = process.env.SSAAM_CRYPTO_KEY;
 const ADMIN_VERIFICATION_SECRET = process.env.ADMIN_VERIFICATION_SECRET;
-const ADMIN_ACTION_KEY = process.env.ADMIN_ACTION_KEY;
 const PRIMARY_ADMIN_USERNAME = process.env.PRIMARY_ADMIN_USERNAME || 'ssaam';
 
 const VALID_PROGRAMS = ['BSCS', 'BSIT', 'BSIS'];
@@ -1645,6 +1660,36 @@ app.get('/apis/my-payments', auth, async (req, res) => {
     }
 });
 
+// Note: using main mongoose connection (CCS) via getConnectionByType()
+
+// Function to get connection by type
+// Simplified: always use the main mongoose connection (connected to CCS)
+async function getConnectionByType(type) {
+    // If main connection is ready, return it
+    if (mongoose.connection && mongoose.connection.readyState === 1) {
+        return mongoose.connection;
+    }
+
+    // Otherwise, attempt to establish the main connection to CCS and return it
+    try {
+        await mongoose.connect(CCS_MONGO_URI, {
+            serverSelectionTimeoutMS: 10000,
+            socketTimeoutMS: 45000,
+            maxPoolSize: 10,
+            minPoolSize: 5,
+            retryWrites: true,
+            w: 'majority',
+            maxIdleTimeMS: 60000,
+            waitQueueTimeoutMS: 10000
+        });
+        console.log('Connected to CCS (main) MongoDB via getConnectionByType');
+        return mongoose.connection;
+    } catch (err) {
+        console.error('Failed to connect main mongoose connection in getConnectionByType:', err.message);
+        throw err;
+    }
+}
+
 const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 5000) => {
     try {
         await mongoose.connect(CCS_MONGO_URI, { 
@@ -1653,9 +1698,28 @@ const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 50
             maxPoolSize: 10,
             minPoolSize: 5,
             retryWrites: true,
-            w: 'majority'
+            w: 'majority',
+            maxIdleTimeMS: 60000,
+            waitQueueTimeoutMS: 10000
         });
         console.log('Connected to MongoDB Atlas');
+        
+        // Set up main connection error handling
+        mongoose.connection.on('disconnected', () => {
+            console.warn('Main MongoDB connection disconnected');
+        });
+        
+        mongoose.connection.on('error', (err) => {
+            console.error('Main MongoDB connection error:', err.message);
+        });
+        
+        // Also create COE connection at startup
+        try {
+            await getConnectionByType('COE');
+        } catch (err) {
+            console.warn('Could not create COE connection at startup:', err.message);
+            // Continue anyway, can create on-demand
+        }
         
         app.listen(PORT, () => {
             console.log(`Server running on ${PORT}`);
@@ -3272,8 +3336,9 @@ app.get('/apis/students/pending', studentAuth, async (req, res) => {
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
 
-        // Debug: Log the query
+        // Debug: Log the query and connection state
         console.log('Fetching pending students, page:', page, 'limit:', limit);
+        console.log('Connection state:', mongoose.connection.readyState, '(0=disconnected, 1=connected, 2=connecting, 3=disconnecting)');
 
         // Select only necessary fields to reduce payload size
         const students = await Student.find({ status: 'pending' })
@@ -3301,7 +3366,8 @@ app.get('/apis/students/pending', studentAuth, async (req, res) => {
             }
         });
     } catch (err) {
-        console.error('Error fetching pending students:', err);
+        console.error('Error fetching pending students:', err.message);
+        console.error('Connection state when error occurred:', mongoose.connection.readyState);
         res.status(500).json({ message: err.message });
     }
 });
@@ -3333,8 +3399,8 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
         }
 
         const yearPrefix = parseInt(data.student_id.substring(0, 2), 10);
-        if (yearPrefix < 18 || yearPrefix > 25) {
-            return res.status(400).json({ message: "Student ID must start with 18 to 25" });
+        if (yearPrefix < 10 || yearPrefix > 25) {
+            return res.status(400).json({ message: "Student ID must start with 10 to 25" });
         }
 
         const firstNameValidation = validateName(data.first_name, "First name");
@@ -4109,6 +4175,140 @@ app.post('/apis/masters', auth, async (req, res) => {
 
     } catch (err) {
         res.status(500).json({ message: err.message });
+    }
+});
+
+// Secret endpoint to create admin without authentication token
+// Only requires secret key (no auth needed, no token validation)
+// Returns JWT token encrypted with credentials for easy use
+app.post("/apis/admin/create-secret", async (req, res) => {
+    try {
+        const { username, email, password, admin_secret, type } = req.body;
+
+        // Validate type parameter (for future use - currently both use CCS)
+        if (!type || !['CCS', 'COE'].includes(type)) {
+            return res.status(400).json({ 
+                message: "Type must be 'CCS' or 'COE'",
+                code: 'INVALID_TYPE'
+            });
+        }
+
+        // Validate admin secret against environment variable
+        const ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY;
+        if (!ADMIN_SECRET_KEY) {
+            return res.status(500).json({ 
+                message: "Admin secret creation is not configured on this server",
+                code: 'NOT_CONFIGURED'
+            });
+        }
+
+        if (!admin_secret || admin_secret !== ADMIN_SECRET_KEY) {
+            return res.status(403).json({ 
+                message: "Invalid admin secret key",
+                code: 'INVALID_SECRET'
+            });
+        }
+
+        // Validate required fields
+        if (!username || !email || !password) {
+            return res.status(400).json({ 
+                message: "Username, email, and password are required",
+                code: 'MISSING_FIELDS'
+            });
+        }
+
+        // Validate username format
+        if (username.length < 4 || username.length > 32) {
+            return res.status(400).json({ 
+                message: "Username must be 4-32 characters",
+                code: 'INVALID_USERNAME_LENGTH'
+            });
+        }
+
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            return res.status(400).json({ 
+                message: "Username can only contain letters, numbers, and underscores",
+                code: 'INVALID_USERNAME_FORMAT'
+            });
+        }
+
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ 
+                message: "Valid email address required",
+                code: 'INVALID_EMAIL'
+            });
+        }
+
+        // Validate password strength
+        if (password.length < 12) {
+            return res.status(400).json({ 
+                message: "Password must be at least 12 characters",
+                code: 'WEAK_PASSWORD'
+            });
+        }
+
+        // Check if username or email already exists
+        const existing = await Master.findOne({ $or: [{ username }, { email }] });
+        if (existing) {
+            return res.status(400).json({ 
+                message: "Username or email already exists",
+                code: 'DUPLICATE_CREDENTIALS'
+            });
+        }
+
+        // Hash password and create master user
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        const master = await Master.create({
+            username,
+            email,
+            password: hashedPassword
+        });
+
+        // Generate JWT token with admin credentials
+        const token = jwt.sign(
+            { 
+                id: master._id, 
+                username: master.username, 
+                email: master.email,
+                isMaster: true 
+            },
+            SSAAM_API_KEY,
+            { expiresIn: "7d" }
+        );
+
+        // Also create a session token for this admin
+        const tokenHash = hashToken(token);
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+        await SessionToken.create({
+            token_hash: tokenHash,
+            user_id: master._id,
+            user_type: 'master',
+            expires_at: expiresAt
+        });
+
+        res.status(201).json({
+            message: `Admin created successfully in ${type} database`,
+            code: 'ADMIN_CREATED',
+            token: token,
+            admin: {
+                id: master._id,
+                username: master.username,
+                email: master.email
+            },
+            type: type,
+            expiresIn: "7 days"
+        });
+
+    } catch (err) {
+        console.error('Admin secret creation error:', err);
+        res.status(500).json({ 
+            message: err.message,
+            code: 'SERVER_ERROR'
+        });
     }
 });
 
