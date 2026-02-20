@@ -14,8 +14,8 @@
     const ALLOWED_ORIGINS = [
     'https://ssaam.vercel.app',
     'https://ssaam-api.vercel.app',
-    'http://localhost:5000',
-    'http://localhost:3000',
+    'http://:5000',
+    'http://:3000',
     'http://127.0.0.1:5000',
     'http://127.0.0.1:3000',
     process.env.FRONTEND_URL
@@ -28,7 +28,7 @@
 
     const isLocalhost = (origin) => {
     if (!origin) return false;
-    return origin.startsWith('http://localhost') || origin.startsWith('http://127.0.0.1');
+    return origin.startsWith('http://') || origin.startsWith('http://127.0.0.1');
     };
 
     const corsOptions = {
@@ -36,7 +36,7 @@
         // Allow requests with no origin (same-origin requests, mobile apps, etc.)
         if (!origin) return callback(null, true);
         
-        // Allow if origin is in allowed list, is a Replit origin, or is localhost (for development)
+        // Allow if origin is in allowed list, is a Replit origin, or is  (for development)
         if (ALLOWED_ORIGINS.includes(origin) || isReplitOrigin(origin) || isLocalhost(origin)) {
         callback(null, true);
         } else {

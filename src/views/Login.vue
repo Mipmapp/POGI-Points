@@ -937,7 +937,7 @@ const handleLogin = async () => {
     } catch (err) {
       console.warn('Primary API fetch failed, attempting fallback:', err)
       // fallback to main API
-      const fallbackBase = import.meta.env.VITE_API_URL || 'https://ssaam-api.vercel.app'
+      const fallbackBase = 'https://ssaam-api.vercel.app'
       const url = (typeof endpoint === 'string' && endpoint.startsWith('http')) ? endpoint : (endpoint.startsWith('/') ? `${fallbackBase}${endpoint}` : `${fallbackBase}/${endpoint}`)
       try {
         // Mark that fallback is used and clear pre-login COE hint so we don't keep trying COE repeatedly
