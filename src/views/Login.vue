@@ -94,16 +94,42 @@
   </transition>
 
   <transition name="fade">
+    <div v-if="showCollegeMismatch" @click.self="showCollegeMismatch = false" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="mismatch-title">
+      <transition name="modal-bounce" appear>
+        <div ref="collegeMismatchModal" @keydown="handleMismatchKeydown" class="bg-white rounded-xl shadow-lg py-3 px-4 sm:py-6 sm:px-8 max-w-sm w-full mx-2 text-center transform transition-all overflow-visible" tabindex="-1">
+          <div class="relative">
+            <div class="absolute left-1/2 -translate-x-1/2 -top-12 sm:-top-20 pointer-events-none z-20">
+              <div class="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-md border border-gray-100 overflow-visible modal-logo-container">
+                <img :src="mismatchLogo" :alt="`${mismatchCollege} logo`" class="w-12 h-12 sm:w-16 sm:h-16 object-contain modal-logo" />
+              </div>
+            </div>
+
+            <div class="pt-6 sm:pt-10 pb-3 max-h-[60vh] overflow-y-auto">
+              
+              <h3 class="text-xl sm:text-2xl font-extrabold text-gray-800 mt-2 sm:mt-3">Account College Mismatch</h3>
+              <p class="text-gray-600 mt-2 text-sm leading-snug px-3 sm:px-4 line-clamp-6">{{ mismatchMessage }}</p>
+              <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center px-3 sm:px-4">
+                <button ref="mismatchPrimary" @click="goToCollegePortal" class="modal-primary w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg font-semibold shadow-sm transform transition duration-200 hover:-translate-y-0.5">Go to {{ mismatchCollege }} Login</button>
+                <button @click="showCollegeMismatch = false" class="modal-secondary w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transform transition duration-150">Try Again</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </div>
+  </transition>
+
+  <transition name="fade">
     <div v-if="showErrorNotification" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center transform transition-all border-2 border-red-500">
-          <div class="w-20 h-20 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 text-center transform transition-all border border-red-200">
+          <div class="w-20 h-20 mx-auto mb-4 bg-red-50 rounded-full flex items-center justify-center">
             <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
             </svg>
           </div>
-          <h3 class="text-2xl font-bold text-red-600 mb-2">Oops!</h3>
-          <p class="text-red-700 font-medium">{{ errorMessage }}</p>
+          <h3 class="text-xl font-bold text-red-600 mb-2">Oops!</h3>
+          <p class="text-red-700 font-medium px-4">{{ errorMessage }}</p>
           <button @click="showErrorNotification = false" class="mt-6 px-6 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg font-medium hover:from-red-700 hover:to-red-600 transition duration-300">
             Try Again
           </button>
@@ -509,7 +535,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
@@ -545,6 +571,9 @@ const handleLoadingComplete = () => {
 
 const showDevelopersPopup = ref(false)
 const showErrorNotification = ref(false)
+const showCollegeMismatch = ref(false)
+const mismatchCollege = ref('')
+const mismatchMessage = ref('')
 const showContactModal = ref(false)
 const errorMessage = ref('')
 const showPassword = ref(false)
@@ -557,6 +586,52 @@ const verificationInputs = ref([])
 const verificationError = ref(false)
 const verificationErrorMessage = ref('')
 let pendingUser = null
+
+const mismatchLogo = computed(() => {
+  try {
+    const label = (mismatchCollege.value || '').toUpperCase()
+    const dept = departments.find(d => d.label === label)
+    return dept ? dept.logo : '/icons/ccs.svg'
+  } catch (e) {
+    return '/icons/ccs.svg'
+  }
+})
+
+const goToCollegePortal = () => {
+  try {
+    const label = (mismatchCollege.value || '').toUpperCase()
+    const dept = departments.find(d => d.label === label)
+    if (dept) {
+      chosenDepartment.value = dept
+      try { localStorage.setItem('loginChosenDepartment', dept.label) } catch (e) {}
+    }
+  } finally {
+    showCollegeMismatch.value = false
+  }
+}
+
+// Accessibility & focus management for mismatch modal
+const collegeMismatchModal = ref(null)
+const mismatchPrimary = ref(null)
+
+const handleMismatchKeydown = (e) => {
+  if (!showCollegeMismatch.value) return
+  if (e.key === 'Escape') {
+    showCollegeMismatch.value = false
+  }
+}
+
+watch(showCollegeMismatch, async (val) => {
+  if (val) {
+    await nextTick()
+    // prefer focusing primary action for quick keyboard access
+    if (mismatchPrimary.value && typeof mismatchPrimary.value.focus === 'function') {
+      mismatchPrimary.value.focus()
+    } else if (collegeMismatchModal.value && typeof collegeMismatchModal.value.focus === 'function') {
+      collegeMismatchModal.value.focus()
+    }
+  }
+})
 
 const handleDigitInput = (index, event) => {
   const val = event.target.value;
@@ -937,7 +1012,17 @@ const handleLogin = async () => {
       });
       const data = await response.json();
       console.log("API STUDENT LOGIN RESPONSE:", data);
-      
+
+      // If backend returned 403 and a college-mismatch message, show dedicated modal
+      if (response.status === 403 && data && typeof data.message === 'string' && /belongs to the/i.test(data.message)) {
+        const match = data.message.match(/belongs to the ([A-Za-z]+)/i);
+        mismatchCollege.value = match ? match[1].toUpperCase() : (chosenDepartment.value ? chosenDepartment.value.label : 'CCS');
+        mismatchMessage.value = data.message;
+        showCollegeMismatch.value = true;
+        isLoading.value = false;
+        return;
+      }
+
       if (data.student && data.message === "Login successful") {
         user = data.student;
         user.token = data.token; // Token is returned at top level, not inside student object
@@ -1186,3 +1271,59 @@ const verifyAdminCode = () => {
 }
 
 </style> 
+<style scoped>
+.modal-logo {
+  animation: logo-pop 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+@keyframes logo-pop {
+  0% { transform: translateY(-6px) scale(0.85); opacity: 0; }
+  60% { transform: translateY(2px) scale(1.05); opacity: 1; }
+  100% { transform: translateY(0) scale(1); }
+}
+
+.modal-logo-container {
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+.modal-primary:focus,
+.modal-secondary:focus {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
+}
+
+/* Backdrop fade */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 260ms ease;
+}
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+/* Modal bounce with subtle scale and translate */
+.modal-bounce-enter-active {
+  animation: modal-bounce-in 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+.modal-bounce-leave-active {
+  animation: modal-bounce-out 320ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+@keyframes modal-bounce-in {
+  0% { transform: translateY(12px) scale(0.98); opacity: 0; }
+  60% { transform: translateY(-8px) scale(1.02); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes modal-bounce-out {
+  0% { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(8px) scale(0.98); opacity: 0; }
+}
+
+/* Button hover glow and subtle gradient animation */
+.modal-primary {
+  background-image: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+}
+.modal-primary:hover { box-shadow: 0 12px 30px rgba(37,99,235,0.18); }
+.modal-secondary:hover { box-shadow: 0 8px 20px rgba(15,23,42,0.06); }
+
+/* Ensure modal content doesn't get clipped on very small screens */
+.modal-primary, .modal-secondary { min-height: 44px; }
+
+</style>
