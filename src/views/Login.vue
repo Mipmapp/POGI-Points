@@ -926,7 +926,8 @@ const handleLogin = async () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer SSAAMStudents`
+          'Authorization': `Bearer SSAAMStudents`,
+          'X-SSAAM-College': chosenDepartment.value.label
         },
         body: JSON.stringify({
           student_id: enteredId,

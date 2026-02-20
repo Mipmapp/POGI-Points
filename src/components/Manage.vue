@@ -970,6 +970,7 @@ export default {
       allUsers: [],
       isLoading: false,
       isRefreshing: false,
+      isFetchingUsers: false,
       isAddingMember: false,
       showMembersModal: false,
       selectedRole: null,
@@ -1255,7 +1256,14 @@ export default {
       return this.allUsers.filter(user => (user.role || '').toLowerCase() === roleValue).length
     },
     async fetchAllUsers() {
+      // Prevent duplicate concurrent requests
+      if (this.isFetchingUsers) {
+        console.warn('fetchAllUsers already in progress, skipping duplicate call')
+        return
+      }
+
       try {
+        this.isFetchingUsers = true
         // Get the JWT token from localStorage (adminToken for admin users)
         const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
         
@@ -1285,6 +1293,8 @@ export default {
         }
       } catch (error) {
         console.error('Error fetching users:', error)
+      } finally {
+        this.isFetchingUsers = false
       }
     },
     async fetchRoleMembers(role) {

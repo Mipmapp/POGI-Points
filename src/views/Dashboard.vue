@@ -345,7 +345,7 @@
                   <div class="flex flex-wrap justify-center lg:justify-start gap-2 mt-3">
                     <span v-if="rfidResult.student?.student_id" class="px-4 py-1 bg-white bg-opacity-20 rounded-full text-sm text-white">ID: {{ rfidResult.student.student_id }}</span>
                   </div>
-                  <p v-if="rfidResult.cooldown_remaining && rfidOperationType === 'in'" class="text-yellow-200 text-opacity-90 text-sm mt-3 font-semibold">⏱️ Wait {{ Math.ceil(rfidResult.cooldown_remaining) }}s before checkout</p>
+                  <p v-if="rfidResult.cooldown_remaining" class="text-yellow-200 text-opacity-90 text-sm mt-3 font-semibold">⏱️ Wait {{ Math.ceil(rfidResult.cooldown_remaining) }}s before checkout</p>
                   <p v-if="rfidResult.time" class="text-white text-opacity-70 text-sm mt-2">{{ new Date(rfidResult.time).toLocaleString('en-PH') }}</p>
                 </div>
               </div>
@@ -6402,8 +6402,8 @@
                 </div>
                 <div class="max-h-96 overflow-y-auto space-y-2">
                   <transition-group tag="div" enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2" class="space-y-2">
-                    <div v-for="log in excusedLogsForCurrentSession" :key="log._id" :class="['p-3 rounded-lg border-2 flex items-start justify-between hover:shadow-md transform-gpu transition-all duration-250 hover:scale-[1.01]', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-purple-50 border-purple-200 hover:border-purple-400']">
-                      <div class="flex items-start gap-3">
+                    <div v-for="log in excusedLogsForCurrentSession" :key="log._id" :class="['p-3 rounded-lg border-2 flex items-start justify-between gap-3 hover:shadow-md transform-gpu transition-all duration-250 hover:scale-[1.01]', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-purple-50 border-purple-200 hover:border-purple-400']">
+                      <div class="flex items-start gap-3 min-w-0 flex-1">
                         <div :class="['w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-white text-sm shrink-0 font-bold shadow-md', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
                           <img v-if="(log.student_image || log.student?.image || log.student?.photo || log.student?.avatar)" :src="log.student_image || log.student?.image || log.student?.photo || log.student?.avatar" class="w-full h-full object-cover" />
                           <span v-else>{{ ((log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || '?').charAt(0) }}</span>
@@ -6420,7 +6420,7 @@
                           </div>
                         </div>
                       </div>
-                      <div class="flex flex-col gap-2 ml-2">
+                      <div class="flex flex-col gap-2 flex-shrink-0">
                         <div class="group relative">
                           <button @click="openEditAttendanceModal(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all whitespace-nowrap transform hover:scale-105', isCOE ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-md' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md']">
                             <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>

@@ -11,26 +11,39 @@ const getCollegeFromProgram = (program) => {
   return null
 }
 
-// Helper function to get the appropriate API URL based on user's college
-export const getAPIBaseURL = () => {
+// Helper function to get college (CCS or COE)
+export const getCollege = () => {
   try {
-    // Allow an explicit pre-login selection to override API choice
     const chosenDept = localStorage.getItem('loginChosenDepartment')
+    if (chosenDept === 'COE') return 'COE'
+    
     const chosenProg = localStorage.getItem('loginChosenProgram')
-    if (chosenDept === 'COE') return 'https://ssaam-coe.vercel.app'
     if (chosenProg) {
       const college = getCollegeFromProgram(chosenProg)
-      if (college === 'COE') return 'https://ssaam-coe.vercel.app'
+      if (college === 'COE') return 'COE'
     }
 
-    // Fallback to stored user (post-login)
     const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
     const user = userJson ? JSON.parse(userJson) : {}
     const userProgram = user.program
     const college = getCollegeFromProgram(userProgram)
-    if (college === 'COE') return 'https://ssaam-coe.vercel.app'
+    if (college === 'COE') return 'COE'
 
-    // Default to CCS/standard API endpoint
+    return 'CCS'
+  } catch (e) {
+    return 'CCS'
+  }
+}
+
+// Helper function to get college prefix for collection naming
+export const getCollegePrefix = () => {
+  return getCollege() === 'COE' ? 'coe_' : 'ccs_'
+}
+
+// Helper function to get the appropriate API URL based on user's college
+export const getAPIBaseURL = () => {
+  try {
+    // All colleges use the same backend endpoint
     return import.meta.env.VITE_API_URL || 'https://ssaam-api.vercel.app'
   } catch (e) {
     return import.meta.env.VITE_API_URL || 'https://ssaam-api.vercel.app'
@@ -44,6 +57,14 @@ export const buildAPIUrl = (endpoint) => {
   const base = getAPIBaseURL()
   const cleanEndpoint = typeof endpoint === 'string' && endpoint.startsWith('/') ? endpoint : `/${endpoint}`
   return `${base}${cleanEndpoint}`
+}
+
+// Helper to get default request headers with college information
+export const getDefaultHeaders = () => {
+  return {
+    'Content-Type': 'application/json',
+    'X-SSAAM-College': getCollege() // Send college to backend
+  }
 }
 
 export default getAPIBaseURL

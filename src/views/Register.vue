@@ -124,7 +124,7 @@
       </div>
 
       <div class="absolute bottom-4 left-4 right-4 text-center text-xs text-white opacity-75">
-        Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+        Copyright ï¿½ 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
       </div>
     </div>
     <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50">
@@ -809,7 +809,7 @@
         </div>
 
         <div class="mt-4 text-center text-xs text-gray-400">
-          Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+          Copyright ï¿½ 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
         </div>
       </div>
     </div>
@@ -901,7 +901,7 @@ onMounted(async () => {
 })
 
 const developers = [
-  { name: 'Kenzen Miñao', initials: 'KM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
+  { name: 'Kenzen Miï¿½ao', initials: 'KM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
   { name: 'Jullan Maglinte', initials: 'JM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
   { name: 'Keith Laranjo', initials: 'KL', role: 'Backend Dev', year_level: '2nd year', program: 'CS', facebook: 'https://facebook.com/kei.takun.5070', image: '/team/keith.jpg' },
   { name: 'Christoph Bagabuyo', initials: 'CB', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/christoph.bagabuyo', image: '/team/christoph.jpg' },
@@ -1343,13 +1343,13 @@ const handleNext = async () => {
       return
     }
     if (!/^\d{2}-[A-Z]-\d{5}$/.test(formData.student_id)) {
-      errorMessage.value = "Student ID must follow format: 18-A-12345 (2 digits, hyphen, 1 letter, hyphen, 5 digits)."
+      errorMessage.value = "Student ID must follow format: 25-A-12345 (2 digits, hyphen, 1 letter, hyphen, 5 digits)."
       showErrorNotification.value = true
       return
     }
     const yearPrefix = parseInt(formData.student_id.substring(0, 2), 10)
-    if (yearPrefix < 18 || yearPrefix > 25) {
-      errorMessage.value = "Student ID must start with 18 to 25 (e.g., 18-A-12345 to 25-A-12345)."
+    if (yearPrefix < 12 || yearPrefix > 25) {
+      errorMessage.value = "Student ID must start with 12 to 25 (e.g., 12-A-12345 to 25-A-12345)."
       showErrorNotification.value = true
       return
     }
