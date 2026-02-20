@@ -1543,7 +1543,8 @@ export default {
         first_name: user.first_name || user.firstName || '',
         middle_name: user.middle_name || user.middleName || '',
         last_name: user.last_name || user.lastName || '',
-        suffix: user.suffix || ''
+        suffix: user.suffix || '',
+        originalStudentId: user.student_id || user.studentId // Preserve original ID for API calls
       }
       
       // Auto-set verification status based on RFID
@@ -1606,7 +1607,8 @@ export default {
           return
         }
 
-        const userId = this.editingUser.student_id || this.editingUser._id || this.editingUser.id
+        // Use original student ID for API call (to support ID renames), fallback to current ID
+        const userId = this.editingUser.originalStudentId || this.editingUser.student_id || this.editingUser._id || this.editingUser.id
         
         // Auto-set rfid_status based on rfid_code before saving
         let rfidStatus = this.editingUser.rfid_status
@@ -1644,7 +1646,8 @@ export default {
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
-            'X-SSAAM-TS': timestamp
+            'X-SSAAM-TS': timestamp,
+            'X-SSAAM-Original-Student-Id': userId
           },
           body: JSON.stringify(updateData)
         })

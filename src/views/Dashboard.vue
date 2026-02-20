@@ -2904,18 +2904,63 @@
 
             <!-- Events List Tab -->
             <div v-if="attendanceTab === 'events'">
+              <!-- Search & Pagination Controls -->
+              <div :class="['rounded-lg p-4 shadow-sm mb-4 border', isCOE ? 'bg-white border-orange-200' : 'bg-white border-purple-200']">
+                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+                  <!-- Search Input -->
+                  <div class="flex-1 w-full md:w-auto">
+                    <div class="relative">
+                      <svg class="w-5 h-5 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                      </svg>
+                      <input
+                        v-model="attendanceSearchQuery"
+                        type="text"
+                        placeholder="Search events by title..."
+                        :class="['w-full pl-10 pr-4 py-2 rounded-lg border transition-all outline-none', isCOE ? 'border-orange-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : 'border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200']"
+                      />
+                    </div>
+                  </div>
+                  <!-- Info & Pagination -->
+                  <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                    <div :class="['text-sm font-medium whitespace-nowrap', isCOE ? 'text-orange-700' : 'text-purple-700']">
+                      {{ filteredAttendanceEvents.length }} of {{ attendanceEvents.length }} events
+                    </div>
+                    <div class="flex gap-2">
+                      <button
+                        @click="prevAttendancePage"
+                        :disabled="attendanceCurrentPage === 1"
+                        :class="['px-3 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+                      >
+                        ← Prev
+                      </button>
+                      <button
+                        @click="nextAttendancePage"
+                        :disabled="attendanceCurrentPage === attendanceTotalPages"
+                        :class="['px-3 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === attendanceTotalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+                      >
+                        Next →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="attendanceTotalPages > 1" :class="['text-sm font-medium mt-3 pt-3 border-t', isCOE ? 'text-orange-700 border-orange-200' : 'text-purple-700 border-purple-200']">
+                  Page {{ attendanceCurrentPage }} of {{ attendanceTotalPages }}
+                </div>
+              </div>
+
               <div v-if="attendanceLoading" class="flex items-center justify-center py-12">
                 <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </div>
-              <div v-else-if="attendanceEvents.length === 0" class="text-center py-12 text-gray-500">
+              <div v-else-if="paginatedAttendanceEvents.length === 0" class="text-center py-12 text-gray-500">
                 <img src="/events.svg" alt="No Events" class="w-16 h-16 mx-auto mb-4 text-gray-300" style="filter: invert(0.5);" />
-                <p>No attendance events yet. Create one to get started!</p>
+                <p>{{ attendanceSearchQuery ? 'No events match your search.' : 'No attendance events yet. Create one to get started!' }}</p>
               </div>
               <div v-else class="space-y-4">
-                <div v-for="event in attendanceEvents" :key="event._id" class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition">
+                <div v-for="event in paginatedAttendanceEvents" :key="event._id" class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition">
                   <!-- Event Header - Clickable to expand -->
                   <div class="p-3 sm:p-4 cursor-pointer" @click="toggleEventExpansion(event._id)">
                     <div class="flex flex-col gap-3">
@@ -3006,6 +3051,29 @@
                       </div>
                     </div>
                   </transition>
+                </div>
+              </div>
+
+              <!-- Bottom Pagination -->
+              <div v-if="attendanceTotalPages > 1" class="flex items-center justify-between pt-6 mt-6 border-t" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                <div :class="['text-sm font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">
+                  Page {{ attendanceCurrentPage }} of {{ attendanceTotalPages }}
+                </div>
+                <div class="flex gap-2">
+                  <button
+                    @click="prevAttendancePage"
+                    :disabled="attendanceCurrentPage === 1"
+                    :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+                  >
+                    ← Previous
+                  </button>
+                  <button
+                    @click="nextAttendancePage"
+                    :disabled="attendanceCurrentPage === attendanceTotalPages"
+                    :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === attendanceTotalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+                  >
+                    Next →
+                  </button>
                 </div>
               </div>
             </div>
@@ -4646,47 +4714,20 @@
               <thead>
                 <tr :class="[isCOE ? 'bg-orange-100' : 'bg-purple-100']">
                   <th :class="['border px-6 py-3 text-left font-semibold', isCOE ? 'border-orange-300 text-orange-900' : 'border-purple-300 text-purple-900']"></th>
-                  <th :class="['border px-6 py-3 text-center font-semibold', isCOE ? 'border-orange-300 text-orange-900' : 'border-purple-300 text-purple-900']">BSCS</th>
-                  <th :class="['border px-6 py-3 text-center font-semibold', isCOE ? 'border-orange-300 text-orange-900' : 'border-purple-300 text-purple-900']">BSIS</th>
-                  <th :class="['border px-6 py-3 text-center font-semibold', isCOE ? 'border-orange-300 text-orange-900' : 'border-purple-300 text-purple-900']">BSIT</th>
+                  <th v-for="prog in availablePrograms" :key="prog" :class="['border px-6 py-3 text-center font-semibold', isCOE ? 'border-orange-300 text-orange-900' : 'border-purple-300 text-purple-900']">{{ prog }}</th>
                   <th :class="['border px-6 py-3 text-center font-semibold', isCOE ? 'border-orange-300 text-orange-900' : 'border-purple-300 text-purple-900']">Total</th>
                 </tr>
               </thead>
               <tbody>
-                <tr class="hover:bg-gray-50">
-                  <td :class="['border px-6 py-4 font-medium text-gray-700', isCOE ? 'border-orange-300' : 'border-purple-300']">1st years</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSCS['1st Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIS['1st Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIT['1st Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center font-bold', isCOE ? 'border-orange-300 text-orange-700' : 'border-purple-300 text-purple-700']">{{ (stats.BSCS['1st Year'] || 0) + (stats.BSIS['1st Year'] || 0) + (stats.BSIT['1st Year'] || 0) }}</td>
-                </tr>
-                <tr class="hover:bg-gray-50">
-                  <td :class="['border px-6 py-4 font-medium text-gray-700', isCOE ? 'border-orange-300' : 'border-purple-300']">2nd years</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSCS['2nd Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIS['2nd Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIT['2nd Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center font-bold', isCOE ? 'border-orange-300 text-orange-700' : 'border-purple-300 text-purple-700']">{{ (stats.BSCS['2nd Year'] || 0) + (stats.BSIS['2nd Year'] || 0) + (stats.BSIT['2nd Year'] || 0) }}</td>
-                </tr>
-                <tr class="hover:bg-gray-50">
-                  <td :class="['border px-6 py-4 font-medium text-gray-700', isCOE ? 'border-orange-300' : 'border-purple-300']">3rd years</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSCS['3rd Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIS['3rd Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIT['3rd Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center font-bold', isCOE ? 'border-orange-300 text-orange-700' : 'border-purple-300 text-purple-700']">{{ (stats.BSCS['3rd Year'] || 0) + (stats.BSIS['3rd Year'] || 0) + (stats.BSIT['3rd Year'] || 0) }}</td>
-                </tr>
-                <tr class="hover:bg-gray-50">
-                  <td :class="['border px-6 py-4 font-medium text-gray-700', isCOE ? 'border-orange-300' : 'border-purple-300']">4th years</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSCS['4th Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIS['4th Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIT['4th Year'] || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center font-bold', isCOE ? 'border-orange-300 text-orange-700' : 'border-purple-300 text-purple-700']">{{ (stats.BSCS['4th Year'] || 0) + (stats.BSIS['4th Year'] || 0) + (stats.BSIT['4th Year'] || 0) }}</td>
+                <tr v-for="year in ['1st Year', '2nd Year', '3rd Year', '4th Year']" :key="year" class="hover:bg-gray-50">
+                  <td :class="['border px-6 py-4 font-medium text-gray-700', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ year.toLowerCase().replace('year', 'years') }}</td>
+                  <td v-for="prog in availablePrograms" :key="prog" :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats[prog]?.[year] || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center font-bold', isCOE ? 'border-orange-300 text-orange-700' : 'border-purple-300 text-purple-700']">{{ availablePrograms.reduce((sum, prog) => sum + (stats[prog]?.[year] || 0), 0) }}</td>
                 </tr>
                 <tr :class="[isCOE ? 'bg-orange-50 font-bold' : 'bg-purple-50 font-bold']">
                   <td :class="['border px-6 py-4 font-bold text-gray-900', isCOE ? 'border-orange-300' : 'border-purple-300']">All year levels</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSCS.total || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIS.total || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats.BSIT.total || 0 }}</td>
-                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300 bg-orange-200' : 'border-purple-300 bg-purple-200']">{{ (stats.BSCS.total || 0) + (stats.BSIS.total || 0) + (stats.BSIT.total || 0) }}</td>
+                  <td v-for="prog in availablePrograms" :key="prog" :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300' : 'border-purple-300']">{{ stats[prog]?.total || 0 }}</td>
+                  <td :class="['border px-6 py-4 text-center', isCOE ? 'border-orange-300 bg-orange-200' : 'border-purple-300 bg-purple-200']">{{ totalStudents }}</td>
                 </tr>
               </tbody>
             </table>
@@ -6017,9 +6058,7 @@
           <p class="text-sm font-medium text-gray-700 mb-2">Program Filter:</p>
           <div class="flex flex-wrap gap-2">
             <button @click="selectAllPrograms()" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', selectedProgramFilters.length === 0 ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border border-gray-200']">All</button>
-            <button @click="toggleProgramFilter('BSCS')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', programFilterActive('BSCS') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-indigo-600 text-white') : 'bg-white border border-gray-200']">BSCS</button>
-            <button @click="toggleProgramFilter('BSIT')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', programFilterActive('BSIT') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-cyan-600 text-white') : 'bg-white border border-gray-200']">BSIT</button>
-            <button @click="toggleProgramFilter('BSIS')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', programFilterActive('BSIS') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-rose-600 text-white') : 'bg-white border border-gray-200']">BSIS</button>
+            <button v-for="prog in availablePrograms" :key="prog" @click="toggleProgramFilter(prog)" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', programFilterActive(prog) ? (isCOE ? 'bg-orange-600 text-white' : 'bg-indigo-600 text-white') : 'bg-white border border-gray-200']">{{ prog }}</button>
           </div>
         </div>
 
@@ -6285,9 +6324,7 @@
               <div class="mb-3">
                 <label :class="['text-xs font-bold mb-2 block', isCOE ? 'text-orange-800' : 'text-purple-800']">Programs:</label>
                 <div class="flex flex-wrap gap-2">
-                  <button @click="toggleExcusableProgramFilter('BSCS')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableProgramFilterActive('BSCS') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">BSCS</button>
-                  <button @click="toggleExcusableProgramFilter('BSIT')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableProgramFilterActive('BSIT') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-cyan-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">BSIT</button>
-                  <button @click="toggleExcusableProgramFilter('BSIS')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableProgramFilterActive('BSIS') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-rose-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">BSIS</button>
+                  <button v-for="prog in availablePrograms" :key="prog" @click="toggleExcusableProgramFilter(prog)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableProgramFilterActive(prog) ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">{{ prog }}</button>
                 </div>
               </div>
 
@@ -6757,7 +6794,7 @@ import StudentContributionsView from '../components/StudentContributionsView.vue
 import AdminContributionPanel from '../components/AdminContributionPanel.vue'
 import Manage from '../components/Manage.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
-import { buildAPIUrl } from '../config/api.js'
+import { buildAPIUrl, getCollege } from '../config/api.js'
 import { handleTokenError, setTokenExpiredCallback } from '../utils/tokenHandler.js'
 import departments from '../config/departments.js'
 
@@ -6822,6 +6859,16 @@ const markSectionAsCached = (sectionName) => {
   }
 }
 
+// Helper function to get fetch headers with college information
+const getFetchHeaders = (additionalHeaders = {}) => {
+  const college = getCollege()
+  return {
+    'Content-Type': 'application/json',
+    'X-SSAAM-College': college,
+    ...additionalHeaders
+  }
+}
+
 // ============================================
 // REFRESH WRAPPER FUNCTIONS - Clear cache and re-fetch
 // These functions are called when refresh buttons are clicked
@@ -6855,6 +6902,21 @@ const refreshSettingsSection = async () => {
 const refreshAttendanceSection = async () => {
   clearSectionCache('attendance')
   await fetchAttendanceData()
+}
+
+// Attendance Events Pagination Methods
+const nextAttendancePage = () => {
+  if (attendanceCurrentPage.value < attendanceTotalPages.value) {
+    attendanceCurrentPage.value++
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
+
+const prevAttendancePage = () => {
+  if (attendanceCurrentPage.value > 1) {
+    attendanceCurrentPage.value--
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 }
 
 // Refresh Notifications section (clears cache and re-fetches)
@@ -6982,7 +7044,9 @@ const getSessionToken = () => {
 const fetchTransparencyBoard = async () => {
   transparencyLoading.value = true
   try {
-    const response = await fetch(buildAPIUrl('/apis/contributions/transparency'))
+    const response = await fetch(buildAPIUrl('/apis/contributions/transparency'), {
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
+    })
     const result = await response.json()
     if (response.ok) {
       // Flatten the nested structure: each student has payments array
@@ -7031,7 +7095,7 @@ const fetchPayments = async (skipAutoSync = false) => {
   try {
     const response = await Promise.race([
       fetch(buildAPIUrl('/apis/payments'), {
-        headers: { 'Authorization': `Bearer ${getSessionToken()}` }
+        headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
       }),
       new Promise((_, reject) => 
         setTimeout(() => reject(new Error('Fetch payments timeout')), 10000)
@@ -7077,7 +7141,7 @@ const fetchMyPayments = async () => {
   loadingMyPayments.value = true
   try {
     const response = await fetch(buildAPIUrl('/apis/my-payments'), {
-      headers: { 'Authorization': `Bearer ${getSessionToken()}` }
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
     })
     const result = await response.json()
     
@@ -7118,7 +7182,7 @@ const refreshAllData = async () => {
           const paymentResponse = await Promise.race([
             fetch(buildAPIUrl(`/apis/payments/${selectedPayment.value._id}`), {
               method: 'GET',
-              headers: { 'Authorization': `Bearer ${getSessionToken()}` }
+              headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
             }),
             new Promise((_, reject) => 
               setTimeout(() => reject(new Error('Payment fetch timeout')), 8000)
@@ -7145,7 +7209,7 @@ const refreshAllData = async () => {
         try {
           const paymentsResponse = await Promise.race([
             fetch(buildAPIUrl('/apis/payments'), {
-              headers: { 'Authorization': `Bearer ${getSessionToken()}` }
+              headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
             }),
             new Promise((_, reject) => 
               setTimeout(() => reject(new Error('Payments fetch timeout')), 8000)
@@ -7177,9 +7241,7 @@ const refreshAllData = async () => {
       const studentsResponse = await Promise.race([
         fetch(buildAPIUrl(`/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`), {
           method: 'GET',
-          headers: {
-            'Authorization': `Bearer SSAAMStudents`
-          }
+          headers: getFetchHeaders({ 'Authorization': `Bearer SSAAMStudents` })
         }),
         new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Students fetch timeout')), 8000)
@@ -7236,10 +7298,9 @@ const createPayment = async () => {
   try {
     const response = await fetch(buildAPIUrl('/apis/payments'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+      headers: getFetchHeaders({
         'Authorization': `Bearer ${getSessionToken()}`
-      },
+      }),
       body: JSON.stringify(newPaymentData.value)
     })
     
@@ -7289,10 +7350,7 @@ const searchStudentForPayment = async () => {
     
     const response = await fetch(buildAPIUrl(`/apis/students/search?${searchParams}`), {
       method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getSessionToken()}`
-      }
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
     })
     
     const result = await response.json()
@@ -7371,7 +7429,7 @@ const selectPaymentForMarking = async (payment) => {
   try {
     // Fetch full payment details with all records
     const response = await fetch(buildAPIUrl(`/apis/payments/${payment._id}`), {
-      headers: { 'Authorization': `Bearer ${getSessionToken()}` }
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
     })
     const result = await response.json()
     if (response.ok && result.data) {
@@ -7440,10 +7498,10 @@ const confirmMarkPaymentAsPaid = async () => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/payments/${selectedPayment.value._id}/mark-paid`), {
       method: 'PUT',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getSessionToken()}`
-      },
+      }),
       body: JSON.stringify({
         student_id_input: selectedPaymentStudent.value.student_id
       })
@@ -7489,10 +7547,10 @@ const deletePaymentRecord = async (paymentId, studentId) => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/payments/${paymentId}/student/${studentId}`), {
       method: 'DELETE',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getSessionToken()}`
-      }
+      })
     })
     
     const result = await response.json()
@@ -7551,11 +7609,10 @@ const applyDiscount = async () => {
     
     const response = await fetch(buildAPIUrl(`/apis/payments/${discountModal.value.paymentId}/apply-discount`), {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
+      headers: getFetchHeaders({
         'Authorization': `Bearer ${token}`,
         'X-SSAAM-TS': encodeTimestamp()
-      },
+      }),
       body: JSON.stringify({
         studentId: discountModal.value.studentId,
         discountType: discountType,
@@ -7648,10 +7705,10 @@ const deletePaymentCampaign = async () => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/payments/${deletePaymentCampaignConfirm.value.payment._id}`), {
       method: 'DELETE',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getSessionToken()}`
-      }
+      })
     })
     
     const result = await response.json()
@@ -7676,10 +7733,10 @@ const updatePaymentStatus = async (paymentId, newStatus) => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/payments/${paymentId}/status`), {
       method: 'PUT',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getSessionToken()}`
-      },
+      }),
       body: JSON.stringify({ status: newStatus })
     })
     
@@ -7706,10 +7763,10 @@ const updatePaymentDetails = async () => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/payments/${selectedPayment.value._id}`), {
       method: 'PUT',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getSessionToken()}`
-      },
+      }),
       body: JSON.stringify({
         title: selectedPayment.value.title,
         description: selectedPayment.value.description,
@@ -7742,10 +7799,7 @@ const syncStudentsWithPayment = async (paymentId) => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/payments/${paymentId}/sync-students`), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${getSessionToken()}`
-      }
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
     })
     
     const result = await response.json()
@@ -7784,10 +7838,10 @@ const autoSyncPayments = async () => {
         
         fetch(buildAPIUrl(`/apis/payments/${payment._id}/sync-students`), {
           method: 'POST',
-          headers: {
+          headers: getFetchHeaders({
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${getSessionToken()}`
-          }
+          })
         })
           .then(response => {
             clearTimeout(timeout)
@@ -7955,10 +8009,10 @@ const autoFixStudentIds = async () => {
   try {
     const response = await fetch(buildAPIUrl('/apis/payments/migrate/fix-student-ids'), {
       method: 'POST',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getSessionToken()}`
-      }
+      })
     })
 
     const result = await response.json()
@@ -8001,7 +8055,7 @@ const confirmDeletePaymentRecord = async () => {
     if (selectedPayment.value && selectedPayment.value._id) {
       // Find the student ID from their full name
       const students = await fetch(buildAPIUrl('/apis/students'), {
-        headers: { 'Authorization': `Bearer ${getSessionToken()}` }
+        headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
       }).then(r => r.json())
       
       const student = students.data?.find(s => 
@@ -8011,9 +8065,7 @@ const confirmDeletePaymentRecord = async () => {
       if (student) {
         const deleteResponse = await fetch(buildAPIUrl(`/apis/payments/${selectedPayment.value._id}/student/${student._id}`), {
           method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${getSessionToken()}`
-          }
+          headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
         })
         
         if (deleteResponse.ok) {
@@ -8045,7 +8097,7 @@ const searchStudentForContribution = async () => {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
     const queryParam = contributionScanMode.value === 'rfid' ? `rfid=${contributionSearchQuery.value}` : `search=${contributionSearchQuery.value}`
     const response = await fetch(buildAPIUrl(`/apis/students?${queryParam}`), {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` })
     })
     const result = await response.json()
     if (response.ok) {
@@ -8074,10 +8126,7 @@ const recordContribution = async () => {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
     const response = await fetch(buildAPIUrl('/apis/admin/contributions'), {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` }),
       body: JSON.stringify({
         student_id: selectedStudentForContribution.value.student_id,
         amount: contributionAmount.value,
@@ -9342,6 +9391,11 @@ const studentPhotoCache = ref({})
 const noPhotoCache = {} // studentId -> expiry timestamp (ms)
 const attendanceDataFetched = ref(false) // Track if attendance section has been fetched
 
+// Attendance Events Search and Pagination
+const attendanceSearchQuery = ref('')
+const attendanceCurrentPage = ref(1)
+const attendanceItemsPerPage = 5
+
 // Helper to derive a stable student key from log or student object
 const deriveStudentKey = (obj) => {
   if (!obj) return null
@@ -9430,9 +9484,9 @@ const openCreateEventModalImpl = async () => {
   try {
     const response = await fetch(buildAPIUrl('/apis/students/list/all'), {
       method: 'GET',
-      headers: {
+      headers: getFetchHeaders({
         'Authorization': `Bearer ${localStorage.getItem('authToken') || localStorage.getItem('adminToken')}`
-      }
+      })
     })
     
     if (response.ok) {
@@ -9642,7 +9696,7 @@ const fetchExcuseStudentOptions = async () => {
     loadingStudentsForEvent.value = true
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
     const response = await fetch(buildAPIUrl('/apis/students?limit=1000'), {
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` })
     })
     if (response.ok) {
       const data = await response.json()
@@ -9808,7 +9862,7 @@ const applyExcusableAsExcused = async () => {
       try {
         const res = await fetch(buildAPIUrl(`/apis/attendance/logs/${logId}`), {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() },
+          headers: getFetchHeaders({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }),
           body: JSON.stringify(body)
         })
         if (!res.ok) console.error('Failed to apply excuse for', logId)
@@ -9832,11 +9886,11 @@ const undoExcuse = async (log) => {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
     const response = await fetch(buildAPIUrl(`/apis/attendance/logs/${id}`), {
       method: 'PATCH',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
         'X-SSAAM-TS': encodeTimestamp()
-      },
+      }),
       body: JSON.stringify({ excused: false, excuse_reason: null, excused_by: null })
     })
 
@@ -10540,9 +10594,9 @@ const fetchSeenNotifications = async () => {
   try {
     const response = await fetch(buildAPIUrl('/apis/notifications/seen'), {
       method: 'GET',
-      headers: {
+      headers: getFetchHeaders({
         'Authorization': `Bearer ${token}`
-      }
+      })
     })
     
     const data = await response.json()
@@ -10569,10 +10623,10 @@ const markNotificationsAsSeen = async (notificationIds) => {
   try {
     const response = await fetch(buildAPIUrl('/apis/notifications/mark-seen'), {
       method: 'POST',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }),
       body: JSON.stringify({ notification_ids: notificationIds })
     })
     if (response.ok) {
@@ -10697,6 +10751,14 @@ const isCOEorAdmin = computed(() => {
   return isCOE.value || (currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster))
 })
 
+// Get available programs based on user department
+const availablePrograms = computed(() => {
+  if (isCOE.value) {
+    return ['BSCE', 'BSEE', 'BSECE', 'BSCpE']
+  }
+  return ['BSCS', 'BSIT', 'BSIS']
+})
+
 const sidebarGradient = computed(() => {
   if (isCOE.value) return 'from-orange-700 to-red-600'
   // default/CCS
@@ -10712,6 +10774,26 @@ const pageLoadingBgClass = computed(() => {
 const logoutBgClass = computed(() => {
   if (isCCS.value) return 'fixed inset-0 bg-gradient-to-b from-purple-600 to-pink-400 flex items-center justify-center z-50'
   return 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+})
+
+// Attendance Events Search & Pagination
+const filteredAttendanceEvents = computed(() => {
+  if (!attendanceSearchQuery.value.trim()) {
+    return attendanceEvents.value
+  }
+  return attendanceEvents.value.filter(event =>
+    event.title.toLowerCase().includes(attendanceSearchQuery.value.toLowerCase())
+  )
+})
+
+const paginatedAttendanceEvents = computed(() => {
+  const start = (attendanceCurrentPage.value - 1) * attendanceItemsPerPage
+  const end = start + attendanceItemsPerPage
+  return filteredAttendanceEvents.value.slice(start, end)
+})
+
+const attendanceTotalPages = computed(() => {
+  return Math.ceil(filteredAttendanceEvents.value.length / attendanceItemsPerPage) || 1
 })
 
 const primaryButtonGradient = computed(() => {
@@ -10774,10 +10856,10 @@ onMounted(async () => {
     try {
       const verifyResponse = await fetch(buildAPIUrl(`/apis/admin/verify`), {
         method: 'POST',
-        headers: {
+        headers: getFetchHeaders({
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
-        }
+        })
       })
       
       if (!verifyResponse.ok) {
@@ -10815,9 +10897,7 @@ onMounted(async () => {
       // Fetch only current page (10-20 students)
       const response = await fetch(buildAPIUrl(`/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`), {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer SSAAMStudents`
-        }
+        headers: getFetchHeaders({ 'Authorization': `Bearer SSAAMStudents` })
       })
       const result = await response.json()
       const pageData = result.data || result
@@ -10918,7 +10998,7 @@ const fetchApplicationsForDashboard = async () => {
     if (isAdmin) {
       // Fetch all forms for admin
       const response = await fetch(buildAPIUrl('/apis/admin/applications'), {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` })
       })
       if (response.ok) {
         const data = await response.json()
@@ -10927,7 +11007,7 @@ const fetchApplicationsForDashboard = async () => {
     } else {
       // Fetch available applications for student
       const availResponse = await fetch(buildAPIUrl('/apis/applications/available'), {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` })
       })
       if (availResponse.ok) {
         const availData = await availResponse.json()
@@ -10936,7 +11016,7 @@ const fetchApplicationsForDashboard = async () => {
       
       // Fetch submitted applications for student
       const submittedResponse = await fetch(buildAPIUrl('/apis/applications/user/my'), {
-        headers: { 'Authorization': `Bearer ${token}` }
+        headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` })
       })
       if (submittedResponse.ok) {
         const submittedData = await submittedResponse.json()
@@ -11002,10 +11082,10 @@ const applyDirectly = async (app) => {
     
     const response = await fetch(buildAPIUrl(`/apis/applications/${formId}/apply`), {
       method: 'POST',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }),
       body: JSON.stringify({
         student_id: currentUser.value.student_id || currentUser.value.studentId
       })
@@ -11043,10 +11123,10 @@ const createApplicationFormDashboard = async () => {
     
     const response = await fetch(buildAPIUrl('/apis/admin/applications'), {
       method: 'POST',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }),
       body: JSON.stringify({
         title: applicationCreateForm.value.title.trim(),
         description: applicationCreateForm.value.description.trim(),
@@ -11079,10 +11159,10 @@ const approveApplicationDashboard = async (formId, appId) => {
     
     const response = await fetch(buildAPIUrl(`/apis/admin/applications/${formId}/review/${appId}`), {
       method: 'PUT',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }),
       body: JSON.stringify({ status: 'approved' })
     })
     
@@ -11105,10 +11185,10 @@ const rejectApplicationDashboard = async (formId, appId) => {
     
     const response = await fetch(buildAPIUrl(`/apis/admin/applications/${formId}/review/${appId}`), {
       method: 'PUT',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }),
       body: JSON.stringify({ status: 'rejected' })
     })
     
@@ -11186,10 +11266,10 @@ const refreshCurrentUser = async () => {
     // First refresh the basic profile data
     const response = await fetch(buildAPIUrl(`/apis/students/search?search=${encodeURIComponent(studentId)}&limit=1`), {
       method: 'GET',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${getSessionToken()}`
-      }
+      })
     })
     
     if (response.ok) {
@@ -11260,9 +11340,7 @@ const fetchStats = async () => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/students/stats`), {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer SSAAMStudents`
-      }
+      headers: getFetchHeaders({ 'Authorization': `Bearer SSAAMStudents` })
     })
     if (!response.ok) {
       throw new Error('Failed to fetch statistics')
@@ -11307,11 +11385,13 @@ const toggleRfidList = async (type) => {
   rfidListDisplayLimit.value = 20
   
   try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    
     const response = await fetch(buildAPIUrl(`/apis/students?limit=1000`), {
       method: 'GET',
-      headers: {
+      headers: getFetchHeaders({
         'Authorization': `Bearer SSAAMStudents`
-      }
+      })
     })
     
     if (response.ok) {
@@ -11380,9 +11460,7 @@ const fetchPendingStudents = async () => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/students/pending?limit=1000`), {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer SSAAMStudents`
-      }
+      headers: getFetchHeaders({ 'Authorization': `Bearer SSAAMStudents` })
     })
     const result = await response.json()
     if (response.ok) {
@@ -11406,11 +11484,11 @@ const approveStudentImpl = async (student) => {
     const token = localStorage.getItem('authToken')
     const response = await fetch(buildAPIUrl(`/apis/students/${student.student_id}/approve`), {
       method: 'PUT',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
         'X-SSAAM-TS': encodeTimestamp()
-      }
+      })
     })
     
     if (response.ok) {
@@ -11453,11 +11531,11 @@ const confirmRejectStudentImpl = async () => {
     const token = localStorage.getItem('authToken')
     const response = await fetch(buildAPIUrl(`/apis/students/${studentToReject.value.student_id}/reject`), {
       method: 'PUT',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
         'X-SSAAM-TS': encodeTimestamp()
-      },
+      }),
       body: JSON.stringify({ reason: rejectReason.value })
     })
     
@@ -11550,22 +11628,31 @@ const calculateTargetAmount = (payment) => {
 }
 
 const stats = computed(() => {
-  // Return stats from backend if available
+  // Return stats from backend if available, but ensure all available programs are present
   if (statsData.value) {
-    return statsData.value
+    const result = { ...statsData.value }
+    // Ensure all available programs have structure
+    availablePrograms.value.forEach(prog => {
+      if (!result[prog]) {
+        result[prog] = { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, total: 0 }
+      }
+    })
+    return result
   }
   
-  // Fallback: compute from current page (if backend endpoint not available yet)
-  const result = {
-    BSCS: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, total: 0 },
-    BSIS: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, total: 0 },
-    BSIT: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, total: 0 }
-  }
+  // Fallback: compute from available programs for current college
+  const result = {}
+  availablePrograms.value.forEach(prog => {
+    result[prog] = { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, total: 0 }
+  })
   return result
 })
 
 const totalStudents = computed(() => {
-  return stats.value.BSCS.total + stats.value.BSIS.total + stats.value.BSIT.total
+  if (!stats.value) return 0
+  return availablePrograms.value.reduce((sum, prog) => {
+    return sum + (stats.value[prog]?.total || 0)
+  }, 0)
 })
 
 const verifiedCount = computed(() => {
@@ -11594,7 +11681,9 @@ const rfidListFilteredUsers = computed(() => {
       const studentId = (user.student_id || '').toLowerCase()
       return fullName.includes(searchLower) || studentId.includes(searchLower)
     })
-  }
+  }availablePrograms.value.reduce((sum, prog) => {
+    return sum + (stats.value[prog]?.total || 0)
+  }, 0)
   
   // Apply program filter
   if (rfidListFilterProgram.value) {
@@ -11666,9 +11755,9 @@ const refreshStudents = async () => {
     
     const response = await fetch(url, {
       method: 'GET',
-      headers: {
+      headers: getFetchHeaders({
         'Authorization': `Bearer ${getSessionToken()}`
-      }
+      })
     })
     const result = await response.json()
     const apiStudents = result.data || result
@@ -11708,9 +11797,9 @@ const fetchSettings = async () => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/settings`), {
       method: 'GET',
-      headers: {
+      headers: getFetchHeaders({
         'Authorization': `Bearer SSAAMStudents`
-      }
+      })
     })
     const data = await response.json()
     if (response.ok && data) {
@@ -11754,11 +11843,11 @@ const saveSettingsImpl = async () => {
     const token = localStorage.getItem('authToken')
     const response = await fetch(buildAPIUrl(`/apis/settings`), {
       method: 'PUT',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
         'X-SSAAM-TS': encodeTimestamp()
-      },
+      }),
       body: JSON.stringify({
         userRegister: appSettings.value.userRegister,
         userLogin: appSettings.value.userLogin,
@@ -11799,11 +11888,11 @@ const saveRfidScannerSettings = async () => {
     const token = localStorage.getItem('authToken')
     const response = await fetch(buildAPIUrl(`/apis/settings`), {
       method: 'PUT',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
         'X-SSAAM-TS': encodeTimestamp()
-      },
+      }),
       body: JSON.stringify({
         rfidScanner: appSettings.value.rfidScanner
       })
@@ -11836,11 +11925,11 @@ const saveEventRfidSettings = async (eventId, rfidSettings) => {
     const token = localStorage.getItem('authToken')
     const response = await fetch(buildAPIUrl(`/apis/events/${eventId}`), {
       method: 'PATCH',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
         'X-SSAAM-TS': encodeTimestamp()
-      },
+      }),
       body: JSON.stringify({ rfidScanner: rfidSettings })
     })
 
@@ -11873,11 +11962,11 @@ const saveSessionRfidSettings = async (sessionId, rfidSettings) => {
     const token = localStorage.getItem('authToken')
     const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${sessionId}`), {
       method: 'PUT',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
         'X-SSAAM-TS': encodeTimestamp()
-      },
+      }),
       body: JSON.stringify({ rfidScanner: rfidSettings })
     })
 
@@ -12507,6 +12596,7 @@ const openEditDuplicateStudent = (student) => {
   // Reuse the existing edit user flow
   const userCopy = JSON.parse(JSON.stringify(student))
   userCopy.studentId = userCopy.student_id || userCopy.studentId
+  userCopy.originalStudentId = userCopy.studentId // Store original ID for updates (duplicate flow)
   userCopy.firstName = userCopy.first_name || userCopy.firstName || ''
   userCopy.middleName = userCopy.middle_name || userCopy.middleName || ''
   userCopy.lastName = userCopy.last_name || userCopy.lastName || ''
@@ -12984,11 +13074,11 @@ const saveUserImpl = async () => {
     
     const response = await fetch(buildAPIUrl(`/apis/students/${originalStudentId}`), {
       method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json',
+      headers: getFetchHeaders({
         'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp()
-      },
+        'X-SSAAM-TS': encodeTimestamp(),
+        'X-SSAAM-Original-Student-Id': originalStudentId
+      }),
       body: JSON.stringify(updateData)
     })
     
@@ -13002,11 +13092,11 @@ const saveUserImpl = async () => {
         try {
           const roleResponse = await fetch(buildAPIUrl(`/apis/students/${originalStudentId}/role`), {
             method: 'PUT',
-            headers: { 
-              'Content-Type': 'application/json',
+            headers: getFetchHeaders({
               'Authorization': `Bearer ${token}`,
-              'X-SSAAM-TS': encodeTimestamp()
-            },
+              'X-SSAAM-TS': encodeTimestamp(),
+              'X-SSAAM-Original-Student-Id': originalStudentId
+            }),
             body: JSON.stringify({ 
               role: newRole.toLowerCase(),
               _ssaam_access_token: encodeTimestamp()
@@ -13030,11 +13120,11 @@ const saveUserImpl = async () => {
         try {
           const rfidResponse = await fetch(buildAPIUrl(`/apis/students/${originalStudentId}/rfid`), {
             method: 'PUT',
-            headers: { 
-              'Content-Type': 'application/json',
+            headers: getFetchHeaders({
               'Authorization': `Bearer ${token}`,
-              'X-SSAAM-TS': encodeTimestamp()
-            },
+              'X-SSAAM-TS': encodeTimestamp(),
+              'X-SSAAM-Original-Student-Id': originalStudentId
+            }),
             body: JSON.stringify({ 
               rfid_code: newRfid,
               admin_verification_token: 'admin_update',
@@ -13261,10 +13351,7 @@ const fetchAttendanceData = async () => {
       console.log('Fetching admin attendance events...')
       const response = await fetch(buildAPIUrl('/apis/attendance/events'), {
         method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'X-SSAAM-TS': encodeTimestamp()
-        }
+        headers: getFetchHeaders({ 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() })
       })
       console.log('Admin attendance events response status:', response.status)
       if (response.status === 401) {
@@ -13318,10 +13405,7 @@ const fetchActiveEvents = async () => {
     
     const response = await fetch(buildAPIUrl('/apis/attendance/events/active'), {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp()
-      }
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() })
     })
     
     if (response.ok) {
@@ -13342,10 +13426,7 @@ const fetchUpcomingEvents = async () => {
     
     const response = await fetch(buildAPIUrl('/apis/attendance/events/upcoming'), {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'X-SSAAM-TS': encodeTimestamp()
-      }
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() })
     })
     
     if (response.ok) {
@@ -14264,10 +14345,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
           } else {
             const studentStatsResponse = await fetch(buildAPIUrl('/apis/students/stats'), {
               method: 'GET',
-              headers: {
-                'Authorization': 'Bearer SSAAMStudents',
-                'X-SSAAM-TS': encodeTimestamp()
-              }
+              headers: getFetchHeaders({ 'Authorization': 'Bearer SSAAMStudents', 'X-SSAAM-TS': encodeTimestamp() })
             })
             if (studentStatsResponse.ok) {
               const studentStatsData = await studentStatsResponse.json()
