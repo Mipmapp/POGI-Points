@@ -320,7 +320,7 @@
 
         <!-- Duplicate / Already Checked In Card (Yellow) -->
         <transition name="slide-down">
-          <div v-if="rfidResult && (rfidResult.action === 'already_checked_in' || (rfidResult.message && /already/i.test(rfidResult.message)))" class="mb-4 lg:mb-6">
+          <div v-if="rfidResult && selectedSession && (rfidResult.action === 'already_checked_in' || (rfidResult.message && /already/i.test(rfidResult.message)))" class="mb-4 lg:mb-6">
             <div class="bg-yellow-500 bg-opacity-20 backdrop-blur-lg rounded-2xl p-6 lg:p-8 border-2 border-yellow-400 border-opacity-70 shadow-2xl">
               <div class="flex flex-col lg:flex-row items-center gap-4 lg:gap-6">
                 <!-- Student Avatar -->
@@ -334,7 +334,7 @@
                 <div class="flex-1 text-center lg:text-left">
                   <div class="flex items-center justify-center lg:justify-start gap-3 mb-3">
                     <svg class="w-8 h-8 lg:w-10 lg:h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <span class="text-xl lg:text-2xl font-bold text-yellow-300">{{ (rfidResult.action === 'check_out' || rfidResult.action === 'already_checked_out') ? 'Already Logged Out' : 'Already Logged In' }}</span>
+                    <span class="text-xl lg:text-2xl font-bold text-yellow-300">{{ (rfidResult.action === 'check_out' || rfidResult.action === 'already_checked_out' || (rfidResult.action === 'already_completed' && rfidOperationType === 'out')) ? 'Already Logged Out' : 'Already Logged In' }}</span>
                   </div>
                   <p class="text-xl lg:text-2xl font-bold text-white mb-1">{{ rfidResult.student?.full_name || rfidResult.student_name }}</p>
                   <div v-if="rfidResult.student?.program || rfidResult.student?.year_level" class="text-lg lg:text-xl text-white text-opacity-90 mb-2">
@@ -345,7 +345,6 @@
                   <div class="flex flex-wrap justify-center lg:justify-start gap-2 mt-3">
                     <span v-if="rfidResult.student?.student_id" class="px-4 py-1 bg-white bg-opacity-20 rounded-full text-sm text-white">ID: {{ rfidResult.student.student_id }}</span>
                   </div>
-                  <p v-if="rfidResult.cooldown_remaining" class="text-yellow-200 text-opacity-90 text-sm mt-3 font-semibold">⏱️ Wait {{ Math.ceil(rfidResult.cooldown_remaining) }}s before checkout</p>
                   <p v-if="rfidResult.time" class="text-white text-opacity-70 text-sm mt-2">{{ new Date(rfidResult.time).toLocaleString('en-PH') }}</p>
                 </div>
               </div>
@@ -5289,7 +5288,7 @@
   </transition>
   <!-- Modal Pop -->
   <transition name="fade-scale">
-    <div v-if="showTimePicker" class="fixed inset-0 flex items-center justify-center z-[70]" @click.self="showTimePicker = false">
+    <div v-if="showTimePicker" class="fixed inset-0 flex items-center justify-center z-[100]" @click.self="showTimePicker = false">
       <div class="bg-white rounded-2xl shadow-2xl p-5 max-w-sm w-full mx-4">
       <div class="flex justify-between items-center mb-6">
         <h3 :class="['text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : 'from-purple-600 to-pink-500']">Select Time</h3>
@@ -5857,7 +5856,7 @@
   </transition>
   <!-- Modal Pop -->
   <transition name="fade-scale">
-    <div v-if="showSessionModal" class="fixed inset-0 flex items-center justify-center z-[60]" @click.self="showSessionModal = false">
+    <div v-if="showSessionModal" class="fixed inset-0 flex items-center justify-center z-[80]" @click.self="showSessionModal = false">
       <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
       <div class="flex justify-between items-center mb-4">
         <h3 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ editingSession ? 'Edit Session' : 'Add Session' }}</h3>
@@ -8235,8 +8234,13 @@ const onProfileImageLoad = (event) => {
 
 const updateProfileGradientFromImage = async (img) => {
   try {
-    const palette = await fac.getPaletteAsync(img, { algorithm: 'sqrt', colorCount: 10 });
-    applyPaletteToGradient(palette);
+    // Use the synchronous method and wrap in a try-catch
+    const color = fac.getColor(img);
+    if (color && color.rgba) {
+      profileGradient.value = `linear-gradient(to top, rgb(${color.rgba[0]},${color.rgba[1]},${color.rgba[2]}), rgb(${Math.min(color.rgba[0]+30,255)},${Math.min(color.rgba[1]+30,255)},${Math.min(color.rgba[2]+30,255)}))`;
+    } else {
+      updateProfileGradient(img.src);
+    }
   } catch (e) {
     console.error('Failed to extract colors from image element:', e);
     // Try with URL as backup
@@ -8302,24 +8306,30 @@ const updateProfileGradient = async (url) => {
   }
 
   try {
-    // Attempt to fetch the image as a blob to bypass some CORS issues if the server allows it
-    const response = await fetch(url, { mode: 'cors' });
-    const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    
-    const palette = await fac.getPaletteAsync(blobUrl, { algorithm: 'sqrt', colorCount: 15 });
-    applyPaletteToGradient(palette);
-    
-    URL.revokeObjectURL(blobUrl);
-  } catch (e) {
-    console.warn('Fetch-based color extraction failed, trying direct method:', e);
-    try {
-      const palette = await fac.getPaletteAsync(url, { algorithm: 'sqrt', colorCount: 15, crossOrigin: 'anonymous' });
-      applyPaletteToGradient(palette);
-    } catch (e2) {
-      console.error('All color extraction methods failed:', e2);
+    // Create an image element to extract colors from
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const color = fac.getColor(img);
+        if (color && color.rgba) {
+          profileGradient.value = `linear-gradient(to top, rgb(${color.rgba[0]},${color.rgba[1]},${color.rgba[2]}), rgb(${Math.min(color.rgba[0]+30,255)},${Math.min(color.rgba[1]+30,255)},${Math.min(color.rgba[2]+30,255)}))`;
+        } else {
+          profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+        }
+      } catch (e) {
+        console.error('Color extraction failed:', e);
+        profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+      }
+    };
+    img.onerror = () => {
+      console.warn('Failed to load image for color extraction:', url);
       profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
-    }
+    };
+    img.src = url;
+  } catch (e) {
+    console.error('Error in updateProfileGradient:', e);
+    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
   }
 };
 
@@ -8341,6 +8351,18 @@ watch(() => currentUser.value?.image || currentUser.value?.photo, (newUrl) => {
   };
   img.src = newUrl;
 }, { immediate: true })
+
+// Watch currentUser for logout - clear RFID state when user logs out
+watch(() => currentUser.value, (newUser) => {
+  if (!newUser || Object.keys(newUser).length === 0) {
+    // User has logged out - clear all RFID related data
+    rfidResult.value = null
+    rfidFullscreenMode.value = false
+    rfidInput.value = ''
+    rfidProcessing.value = false
+  }
+})
+
 const sidebarImageRetries = ref(0)
 const maxRetries = 3
 const studentPhotoUploading = ref(false)
@@ -10588,14 +10610,16 @@ const savingEditedNotification = ref(false)
 const seenNotificationIds = ref(new Set())
 
 const fetchSeenNotifications = async () => {
-  const token = localStorage.getItem('authToken')
+  const token = getSessionToken()
   if (!token) return
 
   try {
+    console.debug('[notifications] fetchSeenNotifications -> college=', getCollege(), 'token=', token && token.slice ? token.slice(0,12) + '...' : token)
     const response = await fetch(buildAPIUrl('/apis/notifications/seen'), {
       method: 'GET',
       headers: getFetchHeaders({
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-College': getCollege()
       })
     })
     
@@ -10617,15 +10641,17 @@ const fetchSeenNotifications = async () => {
 const markNotificationsAsSeen = async (notificationIds) => {
   if (!notificationIds || notificationIds.length === 0) return
   
-  const token = localStorage.getItem('authToken')
+  const token = getSessionToken()
   if (!token) return
 
   try {
+    console.debug('[notifications] markNotificationsAsSeen -> college=', getCollege(), 'token=', token && token.slice ? token.slice(0,12) + '...' : token, 'ids=', notificationIds)
     const response = await fetch(buildAPIUrl('/apis/notifications/mark-seen'), {
       method: 'POST',
       headers: getFetchHeaders({
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-College': getCollege()
       }),
       body: JSON.stringify({ notification_ids: notificationIds })
     })
@@ -12706,6 +12732,11 @@ const handleLogoutWithAnimation = () => {
 const confirmLogout = async () => {
   showLogoutConfirmation.value = false
   showLogoutAnimation.value = true
+  
+  // Clear RFID fullscreen state and result immediately on logout
+  rfidFullscreenMode.value = false
+  rfidResult.value = null
+  rfidInput.value = ''
   
   try {
     const token = localStorage.getItem('authToken')
@@ -14797,6 +14828,19 @@ const fetchAndCacheStudentPhoto = async (studentId, fullName) => {
 }
 
 const processRfidScan = async (inputCode) => {
+  // Check if user is still authenticated before processing scan
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+  const currentUserData = localStorage.getItem('currentUser')
+  
+  if (!token || !currentUserData) {
+    rfidResult.value = null
+    rfidFullscreenMode.value = false
+    rfidProcessing.value = false
+    showNotification('Session expired. Please log in again.', 'error')
+    router.push('/')
+    return
+  }
+  
   if (!selectedSession.value || rfidProcessing.value) return
   
   rfidProcessing.value = true
@@ -14806,7 +14850,6 @@ const processRfidScan = async (inputCode) => {
   if (bulkRfidQueue.value.length > 0) {
     showNotification(`Processing... (${bulkRfidQueue.value.length} remaining in queue)`, 'info')
   }
-  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   
   try {
     // Normalize input and auto-detect student ID pattern
@@ -15978,13 +16021,13 @@ const saveEditedNotification = async () => {
   
   savingEditedNotification.value = true
   try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const token = getSessionToken()
     const response = await fetch(buildAPIUrl(`/apis/notifications/${editNotificationData.value._id}`), {
       method: 'PUT',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }),
       body: JSON.stringify({
         title: editNotificationData.value.title,
         message: editNotificationData.value.message,
@@ -16169,7 +16212,7 @@ const postNotification = async () => {
   uploadingImage.value = !!notificationImageBase64.value
   
   try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const token = getSessionToken()
     
     const payload = {
       title: newNotification.value.title,
@@ -16197,10 +16240,10 @@ const postNotification = async () => {
     
     const response = await fetch(buildAPIUrl(`/apis/notifications`), {
       method: 'POST',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }),
       body: JSON.stringify(payload)
     })
     
@@ -16237,12 +16280,10 @@ const confirmDeleteNotification = async () => {
   
   deletingNotification.value = true
   try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const token = getSessionToken()
     const response = await fetch(buildAPIUrl(`/apis/notifications/${notificationToDelete.value}`), {
       method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` })
     })
     
     if (response.ok) {
@@ -16349,15 +16390,15 @@ const toggleLike = async (notif) => {
   recordLikeAction()
   
   try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const token = getSessionToken()
     const visitorId = currentUser.value.studentId || currentUser.value.student_id || currentUser.value._id
     
     const response = await fetch(buildAPIUrl(`/apis/notifications/${notif._id}/like`), {
       method: 'POST',
-      headers: {
+      headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`
-      },
+      }),
       body: JSON.stringify({ user_id: visitorId })
     })
     

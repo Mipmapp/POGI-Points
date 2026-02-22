@@ -15,26 +15,43 @@
         </div>
       </div>
 
-      <!-- Search & Info Bar -->
-      <div :class="['rounded-lg p-4 shadow-sm', isCOE ? 'bg-white border border-orange-200' : 'bg-white border border-purple-200']">
-        <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-          <!-- Search Input -->
-          <div class="flex-1 w-full md:w-auto">
-            <div class="relative">
-              <svg class="w-5 h-5 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <!-- Search & Info Bar Mobile Responsive -->
+      <div :class="['rounded-xl shadow-md p-4 md:p-6 backdrop-blur-sm transition-all duration-200', isCOE ? 'bg-white bg-opacity-95 border-2 border-orange-200 hover:shadow-lg hover:border-orange-300' : 'bg-white bg-opacity-95 border-2 border-purple-200 hover:shadow-lg hover:border-purple-300']">
+        <div class="flex flex-col gap-4">
+          <!-- Search Input with Icon -->
+          <div class="relative group">
+            <div :class="['absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-200', isCOE ? 'text-orange-400 group-focus-within:text-orange-600' : 'text-purple-400 group-focus-within:text-purple-600']">
+              <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
-              <input
-                v-model="searchQuery"
-                type="text"
-                placeholder="Search events by title..."
-                :class="['w-full pl-10 pr-4 py-2 rounded-lg border transition-all outline-none', isCOE ? 'border-orange-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : 'border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200']"
-              />
             </div>
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search events by title..."
+              :class="['w-full pl-11 md:pl-12 pr-12 md:pr-12 py-3 md:py-4 rounded-xl border-2 transition-all outline-none text-sm md:text-base font-medium', searchQuery.length > 0 ? (isCOE ? 'border-orange-400 bg-orange-50 focus:ring-2 focus:ring-orange-300' : 'border-purple-400 bg-purple-50 focus:ring-2 focus:ring-purple-300') : (isCOE ? 'border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-200' : 'border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200')]"
+            />
+            <!-- Clear button -->
+            <button
+              v-if="searchQuery.length > 0"
+              @click="searchQuery = ''"
+              :class="['absolute inset-y-0 right-0 pr-4 flex items-center transition-opacity hover:opacity-100 active:scale-90', isCOE ? 'text-orange-500 hover:text-orange-700' : 'text-purple-500 hover:text-purple-700']"
+              title="Clear search"
+            >
+              <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
           </div>
-          <!-- Results Info -->
-          <div :class="['text-sm font-medium whitespace-nowrap', isCOE ? 'text-orange-700' : 'text-purple-700']">
-            {{ paginatedEvents.length }} of {{ searchedEvents.length }} events
+          
+          <!-- Results Info and Pagination Controls -->
+          <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div :class="['text-xs md:text-sm font-semibold px-3 py-1.5 rounded-lg', isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800']">
+              <span class="font-bold">{{ paginatedEvents.length }}</span> of <span class="font-bold">{{ searchedEvents.length }}</span> events
+            </div>
+            <div :class="['text-xs md:text-sm font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">
+              Page {{ currentPage }} of {{ totalPages }}
+            </div>
           </div>
         </div>
       </div>

@@ -14,17 +14,26 @@ const getCollegeFromProgram = (program) => {
 // Helper function to get college (CCS or COE)
 export const getCollege = () => {
   try {
+    // 1) Pre-login explicit choice (keeps existing behavior)
     const chosenDept = localStorage.getItem('loginChosenDepartment')
     if (chosenDept === 'COE') return 'COE'
-    
+
+    // 2) If a program was saved pre-login, use it
     const chosenProg = localStorage.getItem('loginChosenProgram')
     if (chosenProg) {
       const college = getCollegeFromProgram(chosenProg)
       if (college === 'COE') return 'COE'
     }
 
+    // 3) Check currentUser; prefer an explicit selectedDepartment (used for admins/masters)
     const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
     const user = userJson ? JSON.parse(userJson) : {}
+    // If the login flow stored a selectedDepartment object, respect it
+    if (user && user.selectedDepartment && typeof user.selectedDepartment.label === 'string') {
+      if (user.selectedDepartment.label === 'COE') return 'COE'
+    }
+
+    // 4) Fallback to program-based detection (students)
     const userProgram = user.program
     const college = getCollegeFromProgram(userProgram)
     if (college === 'COE') return 'COE'
