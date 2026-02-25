@@ -216,7 +216,7 @@
               <div>
                 <label class="block text-white font-semibold mb-2">Eligible Programs (leave empty for all)</label>
                 <div class="space-y-2">
-                  <label v-for="prog in ['BSCS', 'BSIT', 'BSIS']" :key="prog" class="flex items-center">
+                  <label v-for="prog in ['BSCS', 'BSIT', 'BSIS', 'BSM']" :key="prog" class="flex items-center">
                     <input
                       type="checkbox"
                       :value="prog"

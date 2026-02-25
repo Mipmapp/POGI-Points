@@ -129,9 +129,12 @@
                 if (req.master.college === 'CCS') return 'CCS';
             }
             if (req.student && req.student.program) {
-                // Check if student program is COE-based
-                const coePrograms = ['BSECE', 'BSEE', 'BSME'];
-                if (coePrograms.includes(req.student.program)) return 'COE';
+                // Check if student program is COE-based. this fallback only applies when
+                // headers/token did not already identify the college. keep the list in
+                // sync with the front-end departments config.
+                const prog = String(req.student.program || '').toUpperCase();
+                const coePrograms = ['BSCE', 'BSEE', 'BSECE', 'BSCPE'];
+                if (coePrograms.includes(prog)) return 'COE';
             }
         } catch (e) {
             console.error('Error determining college from request:', e.message);
@@ -157,7 +160,7 @@
         if (baseCollectionName.toLowerCase() === 'masters') {
             return 'masters';
         }
-        const prefix = college === 'COE' ? 'coe_' : 'ccs_';
+        const prefix = college === 'COE' ? 'coe_' : (college === 'SOM' ? 'som_' : 'ccs_');
         return `${prefix}${baseCollectionName}`;
     }
 
@@ -218,7 +221,7 @@
 
     // Helper function to get prefixed collection name
     function getPrefix(college) {
-        return college === 'COE' ? 'coe_' : 'ccs_';
+        return college === 'COE' ? 'coe_' : (college === 'SOM' ? 'som_' : 'ccs_');
     }
 
     // Helper to get collection name with prefix (excludes 'masters')
@@ -271,7 +274,7 @@
     const ADMIN_VERIFICATION_SECRET = process.env.ADMIN_VERIFICATION_SECRET;
     const PRIMARY_ADMIN_USERNAME = process.env.PRIMARY_ADMIN_USERNAME || 'ssaam';
 
-    const VALID_PROGRAMS = ['BSCS', 'BSIT', 'BSIS'];
+    const VALID_PROGRAMS = ['BSCS', 'BSIT', 'BSIS', 'BSM'];
     const VALID_SUFFIXES = ['', 'Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
     const VALID_SEMESTERS = ['1st Sem', '2nd Sem'];
     const VALID_YEAR_LEVELS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
@@ -2087,7 +2090,7 @@
             required: true,
             enum: {
                 values: VALID_PROGRAMS,
-                message: "Program must be one of: BSCS, BSIT, or BSIS"
+                message: "Program must be one of: BSCS, BSIT, BSIS, or BSM"
             }
         },
         photo: { type: String },
@@ -2153,7 +2156,7 @@
         username: { type: String, required: true, unique: true },
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
-        college: { type: String, enum: ['CCS', 'COE'], default: 'CCS' },
+        college: { type: String, enum: ['CCS', 'COE', 'SOM'], default: 'CCS' },
         created_at: { type: Date, default: Date.now }
     });
 
@@ -3153,13 +3156,13 @@
         }
     });
 
-    // Debug/Fix endpoint to remove users with invalid programs (not BSCS, BSIT, BSIS)
+    // Debug/Fix endpoint to remove users with invalid programs (not BSCS, BSIT, BSIS, BSM)
     app.get('/apis/fix/remove-invalid-programs', async (req, res) => {
         try {
             // First, find all students with invalid programs
             const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
             const invalidStudents = await StudentModel.find({
-                program: { $nin: ['BSCS', 'BSIT', 'BSIS'] }
+                program: { $nin: ['BSCS', 'BSIT', 'BSIS', 'BSM'] }
             });
 
             // Get list of what will be deleted
@@ -3171,7 +3174,7 @@
 
             // Delete them
             const result = await StudentModel.deleteMany({
-                program: { $nin: ['BSCS', 'BSIT', 'BSIS'] }
+                program: { $nin: ['BSCS', 'BSIT', 'BSIS', 'BSM'] }
             });
 
             res.json({
@@ -3189,11 +3192,11 @@
         try {
             const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
             const invalidStudents = await StudentModel.find({
-                program: { $nin: ['BSCS', 'BSIT', 'BSIS'] }
+                program: { $nin: ['BSCS', 'BSIT', 'BSIS', 'BSM'] }
             });
 
             const validCount = await StudentModel.countDocuments({
-                program: { $in: ['BSCS', 'BSIT', 'BSIS'] }
+                program: { $in: ['BSCS', 'BSIT', 'BSIS', 'BSM'] }
             });
 
             res.json({
@@ -3747,7 +3750,7 @@
             }
 
             if (!VALID_PROGRAMS.includes(data.program)) {
-                return res.status(400).json({ message: "Program must be one of: BSCS, BSIT, or BSIS" });
+                return res.status(400).json({ message: "Program must be one of: BSCS, BSIT, BSIS, or BSM" });
             }
 
             const existingStudent = await StudentModel.findOne({ student_id: data.student_id });
@@ -4216,7 +4219,7 @@
             }
 
             if (updates.program && !VALID_PROGRAMS.includes(updates.program)) {
-                return res.status(400).json({ message: "Program must be one of: BSCS, BSIT, or BSIS" });
+                return res.status(400).json({ message: "Program must be one of: BSCS, BSIT, BSIS, or BSM" });
             }
 
             // If rfid_code is being set and it's not an UNREADABLE code, and rfid_status is not explicitly set, mark as verified
@@ -5698,6 +5701,11 @@
     });
 
     // Middleware to check if user can post notifications (admin or medpub)
+    // previous implementation used `req.college` directly when validating the
+    // session token, which leads to a 401 if the client header differs from the
+    // college where the token was issued. replicate the same token/college
+    // lookup logic used elsewhere so masters can select either department in
+    // the UI without being logged out.
     async function canPostNotification(req, res, next) {
         const token = req.headers.authorization?.split(" ")[1];
 
@@ -5705,13 +5713,37 @@
             return res.status(401).json({ message: "Access denied. No token provided." });
         }
 
+        // verify JWT first
+        let decoded;
         try {
-            const decoded = jwt.verify(token, SSAAM_API_KEY);
+            decoded = jwt.verify(token, SSAAM_API_KEY);
+        } catch (err) {
+            return res.status(401).json({ message: "Invalid or expired token" });
+        }
 
-            const tokenHash = hashToken(token);
-            const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, req.college);
-            const sessionToken = await SessionTokenModel.findOneAndUpdate(
-                { 
+        const tokenHash = hashToken(token);
+        let tokenCollege = decoded.college || req.college || 'CCS';
+
+        // attempt lookup in claimed college, fall back to the other one
+        let SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, tokenCollege);
+        let sessionToken = await SessionTokenModel.findOneAndUpdate(
+            {
+                token_hash: tokenHash,
+                is_revoked: false,
+                expires_at: { $gt: new Date() }
+            },
+            { last_used_at: new Date() },
+            { new: true }
+        );
+
+        let foundCollege = null;
+        if (sessionToken) {
+            foundCollege = tokenCollege;
+        } else {
+            const otherCollege = tokenCollege === 'COE' ? 'CCS' : 'COE';
+            const OtherModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, otherCollege);
+            sessionToken = await OtherModel.findOneAndUpdate(
+                {
                     token_hash: tokenHash,
                     is_revoked: false,
                     expires_at: { $gt: new Date() }
@@ -5719,53 +5751,52 @@
                 { last_used_at: new Date() },
                 { new: true }
             );
-
-            if (!sessionToken) {
-                return res.status(401).json({ message: "Session expired or invalid. Please login again." });
-            }
-
-            if (decoded.isMaster) {
-                req.poster = {
-                    id: decoded.id,
-                    name: decoded.username,
-                    type: 'admin'
-                };
-                return next();
-            }
-
-            if (decoded.student_id) {
-                const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-                const student = await StudentModel.findOne({ student_id: decoded.student_id });
-                if (!student) {
-                    await SessionToken.updateOne({ _id: sessionToken._id }, { is_revoked: true });
-                    return res.status(403).json({ 
-                        message: "Student account not found. Please login again.",
-                        code: 'STUDENT_NOT_FOUND'
-                    });
-                }
-
-                if (student.role !== 'medpub') {
-                    await SessionToken.updateOne({ _id: sessionToken._id }, { is_revoked: true });
-                    return res.status(403).json({ 
-                        message: "Your MedPub access has been revoked. Please login again.",
-                        code: 'MEDPUB_ACCESS_REVOKED'
-                    });
-                }
-
-                req.poster = {
-                    id: decoded.id,
-                    studentId: student._id,
-                    name: student.first_name + ' ' + student.last_name,
-                    type: 'medpub'
-                };
-                return next();
-            }
-
-            return res.status(403).json({ message: "Only admins and MedPub users can post notifications" });
-
-        } catch (err) {
-            return res.status(401).json({ message: "Invalid token." });
+            if (sessionToken) foundCollege = otherCollege;
         }
+
+        if (!sessionToken) {
+            return res.status(401).json({ message: "Session expired or invalid. Please login again." });
+        }
+
+        if (foundCollege) {
+            req.college = foundCollege;
+        }
+
+        // master/admin users
+        if (decoded.isMaster) {
+            req.poster = { id: decoded.id, name: decoded.username, type: 'admin' };
+            return next();
+        }
+
+        // medpub student
+        if (decoded.student_id) {
+            const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+            const student = await StudentModel.findOne({ student_id: decoded.student_id });
+            if (!student) {
+                await SessionToken.updateOne({ _id: sessionToken._id }, { is_revoked: true });
+                return res.status(403).json({
+                    message: "Student account not found. Please login again.",
+                    code: 'STUDENT_NOT_FOUND'
+                });
+            }
+            if (student.role !== 'medpub') {
+                await SessionToken.updateOne({ _id: sessionToken._id }, { is_revoked: true });
+                return res.status(403).json({
+                    message: "Your MedPub access has been revoked. Please login again.",
+                    code: 'MEDPUB_ACCESS_REVOKED'
+                });
+            }
+            req.poster = {
+                id: decoded.id,
+                studentId: student._id,
+                name: student.first_name + ' ' + student.last_name,
+                type: 'medpub'
+            };
+            return next();
+        }
+
+        // anything else is not allowed
+        return res.status(403).json({ message: "Only admins and MedPub users can post notifications" });
     }
 
     // Helper function to upload image to ImgBB
@@ -6072,27 +6103,70 @@
     });
 
     // Get seen notification IDs for current user
+    // NOTE: this endpoint used to rely solely on `req.college` (header value) when
+    // looking up the session token. that caused a 401 if the client sent a
+    // different college than the one the token was originally issued for
+    // (e.g. logging in as a CCS user while selecting COE in the UI). to make the
+    // behaviour consistent with the other authentication middlewares we now
+    // perform a lightweight token validation/fallback here and update `req.college`
+    // based on where the session was found.
     app.get('/apis/notifications/seen', async (req, res) => {
         try {
-            const token = extractToken(req);
-            if (!token) return res.status(401).json({ message: "Unauthorized: No token provided" });
+            // helper function inlined to avoid pulling in student/masters logic
+            const verifyToken = async () => {
+                const token = extractToken(req);
+                if (!token) throw { status: 401, message: "Unauthorized: No token provided" };
 
-            let userId;
-            try {
-                const decoded = jwt.verify(token, SSAAM_API_KEY);
+                let decoded;
+                try {
+                    decoded = jwt.verify(token, SSAAM_API_KEY);
+                } catch (e) {
+                    throw { status: 401, message: "Invalid or expired token" };
+                }
+
                 const tokenHash = hashToken(token);
-                const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, req.college);
-                const sessionToken = await SessionTokenModel.findOne({ 
+                // prefer college encoded in JWT, then header, then default
+                let tokenCollege = decoded.college || req.college || 'CCS';
+
+                // try first college
+                let SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, tokenCollege);
+                let sessionToken = await SessionTokenModel.findOne({
                     token_hash: tokenHash,
                     is_revoked: false,
                     expires_at: { $gt: new Date() }
                 });
 
-                if (!sessionToken) return res.status(401).json({ message: "Session expired or invalid. Please login again." });
+                let foundCollege = null;
+                if (sessionToken) {
+                    foundCollege = tokenCollege;
+                } else {
+                    const otherCollege = tokenCollege === 'COE' ? 'CCS' : 'COE';
+                    const OtherModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, otherCollege);
+                    sessionToken = await OtherModel.findOne({
+                        token_hash: tokenHash,
+                        is_revoked: false,
+                        expires_at: { $gt: new Date() }
+                    });
+                    if (sessionToken) foundCollege = otherCollege;
+                }
 
-                userId = decoded.id || decoded._id || decoded.student_id;
-            } catch (jwtError) {
-                return res.status(401).json({ message: "Invalid or expired token" });
+                if (!sessionToken) {
+                    throw { status: 401, message: "Session expired or invalid. Please login again." };
+                }
+
+                // update req.college so the remainder of the handler uses the
+                // college where the session actually lives
+                if (foundCollege) req.college = foundCollege;
+
+                return { decoded, sessionToken };
+            };
+
+            let userId;
+            try {
+                const { decoded } = await verifyToken();
+                userId = decoded.id || decoded._id || decoded.student_id || decoded.username;
+            } catch (err) {
+                return res.status(err.status || 401).json({ message: err.message });
             }
 
             const NotificationSeenModel = getCollegeModel(NotificationSeen, CCS_NotificationSeen, COE_NotificationSeen, req.college);
@@ -6118,31 +6192,58 @@
                 return res.status(401).json({ message: "No token provided" });
             }
 
-            // Verify JWT token and extract user identity - NO fallback to request body
-            let userId;
-            try {
-                const decoded = jwt.verify(token, SSAAM_API_KEY);
+            // Helper reused from notifications/seen handler above; performs college-aware
+            // session lookup with fallback and updates req.college.
+            const verifyTokenForNotifications = async () => {
+                let decoded;
+                try {
+                    decoded = jwt.verify(token, SSAAM_API_KEY);
+                } catch (e) {
+                    throw { status: 401, message: "Invalid or expired token" };
+                }
 
-                // Validate session token in database (college-aware)
                 const tokenHash = hashToken(token);
-                const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, req.college);
-                const sessionToken = await SessionTokenModel.findOne({ 
+                let tokenCollege = decoded.college || req.college || 'CCS';
+
+                let SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, tokenCollege);
+                let sessionToken = await SessionTokenModel.findOne({
                     token_hash: tokenHash,
                     is_revoked: false,
                     expires_at: { $gt: new Date() }
                 });
 
-                if (!sessionToken) {
-                    return res.status(401).json({ message: "Session expired or invalid. Please login again." });
+                let foundCollege = null;
+                if (sessionToken) {
+                    foundCollege = tokenCollege;
+                } else {
+                    const otherCollege = tokenCollege === 'COE' ? 'CCS' : 'COE';
+                    const OtherModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, otherCollege);
+                    sessionToken = await OtherModel.findOne({
+                        token_hash: tokenHash,
+                        is_revoked: false,
+                        expires_at: { $gt: new Date() }
+                    });
+                    if (sessionToken) foundCollege = otherCollege;
                 }
 
-                // Get user ID from decoded token - support both student and admin/master tokens
+                if (!sessionToken) {
+                    throw { status: 401, message: "Session expired or invalid. Please login again." };
+                }
+
+                if (foundCollege) req.college = foundCollege;
+                return decoded;
+            };
+
+            let userId;
+            let decoded;
+            try {
+                decoded = await verifyTokenForNotifications();
                 userId = decoded.student_id || decoded.id || decoded.username;
                 if (!userId) {
                     return res.status(401).json({ message: "Invalid token: no user identifier found" });
                 }
-            } catch (jwtError) {
-                return res.status(401).json({ message: "Invalid or expired token" });
+            } catch (err) {
+                return res.status(err.status || 401).json({ message: err.message });
             }
 
             // Check rate limit before processing (also records the attempt)

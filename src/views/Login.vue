@@ -223,7 +223,7 @@
                       <h2 class="text-lg sm:text-2xl font-bold text-blue-900 mb-1">{{ selectedDepartment.name }}</h2>
                       <p class="text-xs sm:text-sm text-gray-600 font-medium">{{ selectedDepartment.programs.length }} programs available</p>
                       <div class="mt-2 sm:mt-3 flex justify-center sm:justify-start">
-                        <span class="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">Department Selected</span>
+                        <span class="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">College Selected</span>
                       </div>
                     </div>
                   </div>
@@ -975,7 +975,10 @@ const handleLogin = async () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer SSAAMRegJRMSU`
+          'Authorization': `Bearer SSAAMRegJRMSU`,
+          // include college selection so backend knows where to store the session
+          // token (previously masters always went to CCS because no header was sent)
+          'X-SSAAM-College': chosenDepartment.value ? chosenDepartment.value.label : ''
         },
         body: JSON.stringify({
           username: enteredId,

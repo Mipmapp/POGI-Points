@@ -124,14 +124,14 @@
       </div>
 
       <div class="absolute bottom-4 left-4 right-4 text-center text-xs text-white opacity-75">
-        Copyright � 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+        Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
       </div>
     </div>
     <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50">
       <div class="w-full max-w-md">
         <div class="text-center mb-8">
           <div class="flex items-center justify-center gap-4 mb-4">
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center flex-shrink-0">
+            <div :class="['w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0', registrationIconGradientClass]">
               <img src="/user_plus.svg" alt="Register" class="w-7 h-7" style="filter: brightness(0) invert(1);" />
             </div>
             <div class="text-left">
@@ -203,7 +203,7 @@
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
                 <div class="relative">
-                  <img src="/mail.svg" alt="Email" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+                  <div class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
                   <input ref="emailInput" v-model="formData.email" @keydown.enter.prevent="() => handleNext()" type="email" placeholder="juandelacruz@gmail.com" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" required />
                 </div>
               </div>
@@ -215,8 +215,8 @@
                   <div class="w-12 h-1 bg-gray-300 rounded"></div>
                 </div>
               </div>
-              <button type="submit" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-                Next <span class="ml-2">?</span>
+              <button type="submit" :class="['w-full py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center border-2', registrationButtonClass, registrationBorderClass]">
+                Next <span class="ml-2">&rarr;</span>
               </button>
             </div>
 
@@ -285,10 +285,10 @@
               </div>
               <div class="flex gap-4">
                 <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                  <span class="mr-2">?</span>Back
+                  <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-                  Next <span class="ml-2">?</span>
+                <button type="submit" :class="['flex-1 flex items-center justify-center transition duration-300 py-3 px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
+                  Next <span class="ml-2">&rarr;</span>
                 </button>
               </div>
             </div>
@@ -306,7 +306,7 @@
                 <div class="relative">
                   <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload" />
                   <label for="file-upload" class="cursor-pointer inline-flex items-center justify-center px-8 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-300">
-                    <span class="mr-2">??</span>{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
+                    <img src="/change_photo.svg" alt="Upload" class="w-5 h-5 mr-2" />{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
                   </label>
                 </div>
               </div>
@@ -320,17 +320,17 @@
               </div>
               <div class="flex gap-4">
                 <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                  <span class="mr-2">?</span>Back
+                  <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-                  Next <span class="ml-2">?</span>
+                <button type="submit" :class="['flex-1 flex items-center justify-center transition duration-300 py-3 px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
+                  Next <span class="ml-2">&rarr;</span>
                 </button>
               </div>
             </div>
 
             <div v-if="currentStep === 3.5" class="space-y-4">
               <div class="text-center mb-4">
-                <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
                   <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 </div>
                 <h3 class="text-lg font-semibold text-blue-900 mb-2">Review Your Information</h3>
@@ -370,7 +370,7 @@
               </div>
               
               <div v-if="reviewCountdown > 0" class="text-center">
-                <div class="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full">
+                <div class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full">
                   <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                   <span class="font-medium text-sm">Please review... {{ reviewCountdown }}s</span>
                 </div>
@@ -386,17 +386,17 @@
               </div>
               <div class="flex gap-4">
                 <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                  <span class="mr-2">?</span>Back
+                  <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600']">
-                  {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-2">?</span>
+                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center border-2', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300' : registrationButtonClass + ' ' + registrationBorderClass]">
+                  {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-2">&rarr;</span>
                 </button>
               </div>
             </div>
 
             <div v-if="currentStep === 4" class="space-y-4">
               <div class="text-center mb-4">
-                <div class="w-16 h-16 mx-auto mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+                <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
                   <img src="/mail-gradient.svg" alt="Email" class="w-8 h-8" />
                 </div>
                 <h3 class="text-lg font-semibold text-blue-900 mb-2">Verify Your Email</h3>
@@ -452,10 +452,10 @@
               </div>
               <div class="flex gap-4">
                 <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                  <span class="mr-2">?</span>Back
+                  <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-                  Register <span class="ml-2">?</span>
+                <button type="submit" :class="['flex-1 flex items-center justify-center transition duration-300 py-3 px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
+                  Register <span class="ml-2">&rarr;</span>
                 </button>
               </div>
             </div>
@@ -476,7 +476,7 @@
         <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
       </div>
-      <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="hidden sm:w-16 sm:h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center shadow-lg">
+      <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="hidden sm:w-16 sm:h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg" :class="registrationIconGradientClass">
         <img src="/user_plus.svg" alt="Register" class="w-10 h-10" style="filter: brightness(0) invert(1);" />
       </div>
       <h1 class="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Let's Create</h1>
@@ -540,7 +540,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
               <div class="relative">
-                <img src="/mail.svg" alt="Email" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
+                <div class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
                 <input v-model="formData.email" type="email" placeholder="juandelacruz@gmail.com" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" required />
               </div>
             </div>
@@ -552,8 +552,8 @@
                 <div class="w-12 h-1 bg-gray-300 rounded"></div>
               </div>
             </div>
-            <button type="submit" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-              Next <span class="ml-2">?</span>
+            <button type="submit" :class="['w-full flex items-center justify-center transition duration-300 py-3 px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
+              Next <span class="ml-2">&rarr;</span>
             </button>
           </div>
 
@@ -621,10 +621,10 @@
             </div>
             <div class="flex gap-4">
               <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                <span class="mr-2">?</span>Back
+                <span class="mr-2">&larr;</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center">
-                Next <span class="ml-2">?</span>
+              <button type="submit" :class="['flex-1 flex items-center justify-center transition duration-300 py-3 px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
+                Next <span class="ml-2">&rarr;</span>
               </button>
             </div>
           </div>
@@ -642,7 +642,7 @@
               <div class="relative">
                 <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload-mobile" />
                 <label for="file-upload-mobile" class="cursor-pointer inline-flex items-center justify-center px-6 sm:px-8 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-300">
-                  <span class="mr-2">??</span>{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
+                  <img src="/change_photo.svg" alt="Upload" class="w-5 h-5 mr-2" />{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
                 </label>
               </div>
             </div>
@@ -657,17 +657,17 @@
             </div>
             <div class="flex gap-4">
               <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-4 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm sm:text-base">
-                <span class="mr-2">?</span>Back
+                <span class="mr-2">&larr;</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center text-sm sm:text-base">
-                Next <span class="ml-2">?</span>
+              <button type="submit" :class="['flex-1 flex items-center justify-center text-sm sm:text-base transition duration-300 py-3 px-4 sm:px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
+                Next <span class="ml-2">&rarr;</span>
               </button>
             </div>
           </div>
 
           <div v-if="currentStep === 3.5" class="space-y-4">
             <div class="text-center mb-3">
-              <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-blue-100 rounded-full flex items-center justify-center">
                 <svg class="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
               <h3 class="text-base sm:text-lg font-semibold text-blue-900 mb-1 sm:mb-2">Review Your Information</h3>
@@ -713,7 +713,7 @@
             </div>
             
             <div v-if="reviewCountdown > 0" class="text-center">
-              <div class="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-3 sm:px-4 py-2 rounded-full">
+              <div class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 sm:px-4 py-2 rounded-full">
                 <svg class="w-4 h-4 sm:w-5 sm:h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 <span class="font-medium text-xs sm:text-sm">Please review... {{ reviewCountdown }}s</span>
               </div>
@@ -729,17 +729,17 @@
             </div>
             <div class="flex gap-3 sm:gap-4">
               <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
-                <span class="mr-1 sm:mr-2">?</span>Back
+                <span class="mr-1 sm:mr-2">&larr;</span>Back
               </button>
-              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center text-sm', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600']">
-                {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1 sm:ml-2">?</span>
+              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center text-sm border-2', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300' : registrationButtonClass + ' ' + registrationBorderClass]">
+                {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1 sm:ml-2">&rarr;</span>
               </button>
             </div>
           </div>
 
           <div v-if="currentStep === 4" class="space-y-4">
             <div class="text-center mb-3 sm:mb-4">
-              <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-purple-100 rounded-full flex items-center justify-center">
+              <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-blue-100 rounded-full flex items-center justify-center">
                 <img src="/mail-gradient.svg" alt="Email" class="w-7 h-7 sm:w-8 sm:h-8" />
               </div>
               <h3 class="text-base sm:text-lg font-semibold text-blue-900 mb-1 sm:mb-2">Verify Your Email</h3>
@@ -795,10 +795,10 @@
             </div>
             <div class="flex gap-3 sm:gap-4">
               <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
-                <span class="mr-1 sm:mr-2">?</span>Back
+                <span class="mr-1 sm:mr-2">&larr;</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center text-sm">
-                Register <span class="ml-1 sm:ml-2">?</span>
+              <button type="submit" :class="['flex-1 flex items-center justify-center text-sm transition duration-300 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
+                Register <span class="ml-1 sm:ml-2">&rarr;</span>
               </button>
             </div>
           </div>
@@ -809,7 +809,7 @@
         </div>
 
         <div class="mt-4 text-center text-xs text-gray-400">
-          Copyright � 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+          Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
         </div>
       </div>
     </div>
@@ -943,6 +943,46 @@ const programDepartment = computed(() => {
   if (!formData.program) return null
   return flattenedPrograms.value.find(p => p.shortName === formData.program) || null
 })
+
+const isSOMSelected = computed(() => {
+  return programDepartment.value && String(programDepartment.value.departmentLabel).toUpperCase() === 'SOM'
+})
+
+const primaryGradientClass = computed(() => {
+  return isSOMSelected.value
+    ? 'bg-gradient-to-r from-som-green to-som-yellow text-white'
+    : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white'
+})
+
+const primaryBorderClass = computed(() => {
+  return isSOMSelected.value ? 'border-som-green' : 'border-blue-600'
+})
+
+// Registration flow buttons always stay blue (not affected by SOM theme)
+const registrationButtonClass = computed(() => {
+  return 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white'
+})
+
+const registrationBorderClass = computed(() => {
+  return 'border-blue-600'
+})
+
+const pillGradientClass = computed(() => {
+  return isSOMSelected.value
+    ? 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-som-green to-som-yellow text-white text-xs font-bold rounded-full shadow-sm'
+    : 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white text-xs font-bold rounded-full shadow-sm'
+})
+
+// Icon gradient for branding. registration buttons and icons should always use blue,
+// even when SOM is selected, so we keep a separate computed value for the form icon.
+const iconGradientClass = computed(() => {
+  // used in other parts of the UI (e.g. department cards) which should still follow
+  // theme changes; do not modify.
+  return isSOMSelected.value ? 'bg-gradient-to-br from-som-green to-som-yellow' : 'bg-gradient-to-br from-blue-600 to-blue-400'
+})
+
+// Always-blue gradient for the registration form's avatar/logo.
+const registrationIconGradientClass = computed(() => 'bg-gradient-to-br from-blue-600 to-blue-400')
 
 // Program dropdown state for custom select with logos
 const showProgramMenu = ref(false)

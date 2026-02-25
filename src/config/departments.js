@@ -19,9 +19,21 @@ const departments = [
       { shortName: 'BSCE', fullName: 'Bachelor of Science in Civil Engineering' },
       { shortName: 'BSEE', fullName: 'Bachelor of Science in Electrical Engineering' },
       { shortName: 'BSECE', fullName: 'Bachelor of Science in Electronics Engineering' },
-      { shortName: 'BSCpE', fullName: 'Bachelor of Science in Computer Engineering' }
+      { shortName: 'BSCPE', fullName: 'Bachelor of Science in Computer Engineering' }
     ]
   }
 ]
+
+const som = {
+  id: 3,
+  name: 'School of Midwifery',
+  label: 'SOM',
+  logo: '/icons/som.svg',
+  programs: [
+    { shortName: 'BSM', fullName: 'Bachelor oF Science in Midwifery' }
+  ]
+}
+
+departments.push(som)
 
 export default departments

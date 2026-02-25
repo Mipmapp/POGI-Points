@@ -155,7 +155,8 @@ export default {
       const userProgram = this.currentUser.program
       const departments = [
         { label: 'CCS', programs: [{ shortName: 'BSCS' }, { shortName: 'BSIT' }, { shortName: 'BSIS' }] },
-        { label: 'COE', programs: [{ shortName: 'BSCE' }, { shortName: 'BSME' }] }
+        { label: 'COE', programs: [{ shortName: 'BSCE' }, { shortName: 'BSME' }] },
+        { label: 'SOM', programs: [{ shortName: 'BSM' }] }
       ]
       if (userProgram) {
         for (const dept of departments) {

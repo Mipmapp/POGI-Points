@@ -2797,7 +2797,7 @@
                     Programs (Optional)
                   </label>
                   <div class="space-y-3">
-                    <template v-for="prog in ['BSCS', 'BSIT', 'BSIS']" :key="prog">
+                    <template v-for="prog in ['BSCS', 'BSIT', 'BSIS', 'BSM']" :key="prog">
                       <label class="flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer" :class="applicationCreateForm.programs.includes(prog) ? (isCOE ? 'bg-orange-100' : 'bg-purple-100') : 'hover:' + (isCOE ? 'bg-orange-100/50' : 'bg-purple-100/50')">
                         <input 
                           v-model="applicationCreateForm.programs" 
@@ -14201,6 +14201,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
   if (!loadMore) {
     attendanceLoading.value = true
     attendanceLogs.value = []
+    allSessionLogs.value = []
     attendanceLogsPagination.value.page = 1
     console.log('[fetchSessionLogs] Reset loading=true, logs=[]')
   } else {
@@ -14265,6 +14266,15 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
 
                 const attendedStudentIds = new Set(logs.map(log => log.student_id_number || log.student?.student_id || log.student_id))
 
+                // Infer the event's target cohort from the actual logs
+                // Extract the program and year_level from logs (they should all be consistent for one event)
+                let targetProgram = ''
+                let targetYearLevel = ''
+                if (logs.length > 0) {
+                  targetProgram = logs[0].program || logs[0].student?.program || ''
+                  targetYearLevel = logs[0].year_level || logs[0].student?.year_level || ''
+                }
+
                 // If this is a custom event and assigned_users is present, restrict absent synthesis
                 // to only students who were assigned to this event. assigned_users may contain ids
                 // or objects with `_id` properties depending on how the event was created.
@@ -14272,17 +14282,20 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
                 if (selectedEvent.value && selectedEvent.value.is_custom && Array.isArray(selectedEvent.value.assigned_users) && selectedEvent.value.assigned_users.length > 0) {
                   const assignedSet = new Set(selectedEvent.value.assigned_users.map(u => (typeof u === 'string' ? u : (u._id || u))))
                   studentsPool = allStudents.filter(s => assignedSet.has(s._id) || assignedSet.has(s.student_id))
+                } else {
+                  // For non-custom events, filter students pool ONLY by the cohort inferred from logs
+                  // This ensures we only synthesize absent for the actual target program/year
+                  if (targetProgram) {
+                    studentsPool = studentsPool.filter(s => s.program === targetProgram)
+                  }
+                  if (targetYearLevel) {
+                    studentsPool = studentsPool.filter(s => s.year_level === targetYearLevel)
+                  }
                 }
-
-                const eventYearLevel = event?.year_level || ''
-                const validYearLevels = ['1st Year', '2nd Year', '3rd Year', '4th Year']
-                const hasSpecificYearLevel = validYearLevels.includes(eventYearLevel)
 
                 let absentStudents = studentsPool.filter(student => {
                   if (attendedStudentIds.has(student.student_id)) return false
-                  if (hasSpecificYearLevel && student.year_level !== eventYearLevel) return false
-                  if (eventLogsFilter.value.yearLevel && student.year_level !== eventLogsFilter.value.yearLevel) return false
-                  if (eventLogsFilter.value.program && student.program !== eventLogsFilter.value.program) return false
+                  // Apply UI search filter if present (doesn't restrict event pool, just display)
                   if (eventLogsFilter.value.search) {
                     const searchLower = eventLogsFilter.value.search.toLowerCase()
                     const nameMatch = (student.full_name || '').toLowerCase().includes(searchLower)
@@ -14327,6 +14340,8 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
                   if (!l.student && sid && studentsMap[sid]) l.student = studentsMap[sid]
                   return l
                 })
+                // cache a copy for exports and other operations
+                allSessionLogs.value = mergedLogs
               }
           } catch (studentsError) {
             console.error('[fetchSessionLogs] Error fetching students for absent list:', studentsError)
@@ -14336,8 +14351,10 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
         console.error('[fetchSessionLogs] error determining eventEnded', e)
       }
 
+      // Cache logs for exports and other global operations
+      allSessionLogs.value = mergedLogs
       attendanceLogs.value = mergedLogs
-      console.log('[fetchSessionLogs] Assigned logs to attendanceLogs:', mergedLogs.length, 'items')
+      console.log('[fetchSessionLogs] Assigned logs to attendanceLogs (and allSessionLogs):', mergedLogs.length, 'items')
 
       // Calculate stats from merged logs
       let present = 0, incomplete = 0, late = 0, absent = 0
