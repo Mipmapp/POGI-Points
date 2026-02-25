@@ -13334,9 +13334,7 @@ const fetchNotifications = async () => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/notifications`), {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer SSAAMStudents`
-      }
+      headers: getFetchHeaders({ 'Authorization': `Bearer SSAAMStudents` })
     })
     const result = await response.json()
     if (response.ok) {

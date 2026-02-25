@@ -4728,11 +4728,28 @@
             if (!valid)
                 return res.status(400).json({ message: "Invalid username or password" });
 
+            // When an admin logs in we honour whatever college was inferred from
+            // the request (headers/theme).  Previously the token used the value
+            // stored on the master record which is often blank, causing the token
+            // to default to CCS and all subsequent queries (notifications, etc.)
+            // to hit the CCS collections even if the user selected COE at login.
+            //
+            // Use req.college first, then fall back to stored value, then CCS.
+            const tokenCollege = req.college || master.college || 'CCS';
             const token = jwt.sign(
-                { id: master._id, username: master.username, isMaster: true, college: master.college || 'CCS' },
+                { id: master._id, username: master.username, isMaster: true, college: tokenCollege },
                 SSAAM_API_KEY,
                 { expiresIn: "7d" }
             );
+
+            // if the backend inferred a different college than what's stored on
+            // the master record, update it so future tokens (and headers) stay
+            // in sync.  This makes the selection "stick" if the admin manually
+            // chooses COE/CCS on the login page.
+            if (master.college !== tokenCollege) {
+                master.college = tokenCollege;
+                await master.save();
+            }
 
             const tokenHash = hashToken(token);
             const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
