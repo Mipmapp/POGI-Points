@@ -6682,7 +6682,7 @@
     <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showContactModal = false">
       <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
-          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Help & Support</h3>
+          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">Help & Support</h3>
           <button @click="showContactModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
         </div>
 
@@ -6690,19 +6690,19 @@
         <div class="flex gap-2 mb-6 border-b">
           <button 
             @click="helpTab = 'about'"
-            :class="['px-4 py-2 font-medium transition', helpTab === 'about' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : isSOM ? 'text-green-600 border-b-2 border-green-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-800']"
+            :class="['px-4 py-2 font-medium transition', helpTab === 'about' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : isSOM ? 'text-green-600 border-b-2 border-green-600' : isCNAHS ? 'text-green-600 border-b-2 border-green-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-800']"
           >
             About
           </button>
           <button 
             @click="helpTab = 'faq'"
-            :class="['px-4 py-2 font-medium transition', helpTab === 'faq' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : isSOM ? 'text-green-600 border-b-2 border-green-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-800']"
+            :class="['px-4 py-2 font-medium transition', helpTab === 'faq' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : isSOM ? 'text-green-600 border-b-2 border-green-600' : isCNAHS ? 'text-green-600 border-b-2 border-green-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-800']"
           >
             FAQ
           </button>
           <button 
             @click="helpTab = 'contact'"
-            :class="['px-4 py-2 font-medium transition', helpTab === 'contact' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : isSOM ? 'text-green-600 border-b-2 border-green-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-800']"
+            :class="['px-4 py-2 font-medium transition', helpTab === 'contact' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : isSOM ? 'text-green-600 border-b-2 border-green-600' : isCNAHS ? 'text-green-600 border-b-2 border-green-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-800']"
           >
             Contact
           </button>
@@ -6711,7 +6711,7 @@
         <!-- Tab Content -->
         <div v-if="helpTab === 'about'" class="space-y-4">
           <div>
-            <h4 :class="['font-bold text-lg mb-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">SSAAM - Student School Activity Attendance Management</h4>
+            <h4 :class="['font-bold text-lg mb-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">SSAAM - Student School Activity Attendance Management</h4>
             <p class="text-gray-700 text-sm leading-relaxed">
               SSAAM is a comprehensive attendance management system designed for educational institutions. It provides real-time RFID scanning, automated attendance tracking, and detailed reporting capabilities.
             </p>
@@ -6731,7 +6731,7 @@
         <div v-if="helpTab === 'faq'" class="space-y-6">
           <!-- USER FAQs -->
           <div>
-            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : 'text-purple-900 border-purple-200']">For Students & General Users</h4>
+            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-purple-900 border-purple-200']">For Students & General Users</h4>
             <div class="space-y-3">
               <div class="border-l-4 border-blue-300 pl-4">
                 <h5 class="font-semibold text-gray-900 mb-1">What is SSAAM?</h5>
@@ -6778,7 +6778,7 @@
 
           <!-- ADMIN FAQs -->
           <div v-if="currentUser.role === 'admin' || currentUser.isMaster">
-            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : 'text-purple-900 border-purple-200']">For Administrators</h4>
+            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-purple-900 border-purple-200']">For Administrators</h4>
             <div class="space-y-3">
               <div class="border-l-4 border-green-300 pl-4">
                 <h5 class="font-semibold text-gray-900 mb-1">How do I create a new event?</h5>
@@ -8377,7 +8377,7 @@ let cooldownTimer = null
 const profileImageFailed = ref(false)
 const sidebarImageFailed = ref(false)
 const profileImageRetries = ref(0)
-const profileGradient = ref('linear-gradient(to bottom right, #ec4899, #9333ea)')
+const profileGradient = ref('')
 
 const onProfileImageLoad = (event) => {
   profileImageLoading.value = false;
@@ -8402,9 +8402,29 @@ const updateProfileGradientFromImage = async (img) => {
   }
 };
 
+// Return full department object for theming decisions
+const userDepartment = computed(() => {
+  if (currentUser.value.selectedDepartment) return currentUser.value.selectedDepartment
+  const userProgram = currentUser.value.program
+  if (userProgram) {
+    for (const dept of departments) {
+      if (dept.programs.some(p => p.shortName === userProgram)) return dept
+    }
+  }
+  return null
+})
+
+const getDefaultProfileGradient = () => {
+  const dept = userDepartment.value?.label
+  if (dept === 'COE') return 'linear-gradient(to bottom right, #fb923c, #dc2626)' // orange to red
+  if (dept === 'SOM') return 'linear-gradient(to bottom right, #22c55e, #eab308)' // green to yellow
+  if (dept === 'CNAHS') return 'linear-gradient(to bottom right, #22c55e, #16a34a)' // green to darker green
+  return 'linear-gradient(to bottom right, #ec4899, #9333ea)' // pink to purple
+}
+
 const applyPaletteToGradient = (palette) => {
   if (!palette || palette.length === 0) {
-    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+    profileGradient.value = getDefaultProfileGradient();
     return;
   }
   
@@ -8455,7 +8475,7 @@ const applyPaletteToGradient = (palette) => {
 
 const updateProfileGradient = async (url) => {
   if (!url) {
-    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+    profileGradient.value = getDefaultProfileGradient();
     return;
   }
 
@@ -8469,27 +8489,27 @@ const updateProfileGradient = async (url) => {
         if (color && color.rgba) {
           profileGradient.value = `linear-gradient(to top, rgb(${color.rgba[0]},${color.rgba[1]},${color.rgba[2]}), rgb(${Math.min(color.rgba[0]+30,255)},${Math.min(color.rgba[1]+30,255)},${Math.min(color.rgba[2]+30,255)}))`;
         } else {
-          profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+          profileGradient.value = getDefaultProfileGradient();
         }
       } catch (e) {
         console.error('Color extraction failed:', e);
-        profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+        profileGradient.value = getDefaultProfileGradient();
       }
     };
     img.onerror = () => {
       console.warn('Failed to load image for color extraction:', url);
-      profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+      profileGradient.value = getDefaultProfileGradient();
     };
     img.src = url;
   } catch (e) {
     console.error('Error in updateProfileGradient:', e);
-    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+    profileGradient.value = getDefaultProfileGradient();
   }
 };
 
 watch(() => currentUser.value?.image || currentUser.value?.photo, (newUrl) => {
   if (!newUrl) {
-    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+    profileGradient.value = getDefaultProfileGradient();
     return;
   }
 
@@ -8501,7 +8521,7 @@ watch(() => currentUser.value?.image || currentUser.value?.photo, (newUrl) => {
   };
   img.onerror = (err) => {
     console.error('Error detecting image for colors:', err);
-    profileGradient.value = 'linear-gradient(to bottom, #9333ea, #7e22ce)';
+    profileGradient.value = getDefaultProfileGradient();
   };
   img.src = newUrl;
 }, { immediate: true })
@@ -10907,18 +10927,6 @@ const userDepartmentLogo = computed(() => {
   return '/src/assets/jrmsu-logo.webp'
 })
 
-// Return full department object for theming decisions
-const userDepartment = computed(() => {
-  if (currentUser.value.selectedDepartment) return currentUser.value.selectedDepartment
-  const userProgram = currentUser.value.program
-  if (userProgram) {
-    for (const dept of departments) {
-      if (dept.programs.some(p => p.shortName === userProgram)) return dept
-    }
-  }
-  return null
-})
-
 const isCCS = computed(() => {
   return (userDepartment.value && userDepartment.value.label === 'CCS')
 })
@@ -11080,6 +11088,9 @@ onMounted(async () => {
   
   // Add ESC key listener for fullscreen mode
   document.addEventListener('keydown', handleEscKey)
+  
+  // Set default profile gradient based on theme
+  profileGradient.value = getDefaultProfileGradient()
   
   const user = JSON.parse(localStorage.getItem('currentUser') || '{}')
   if (!user.studentId && !user.student_id) {
@@ -12922,20 +12933,24 @@ const compressImage = (file) => {
         
         // Compress with quality adjustment
         let quality = 0.9
-        let compressedBlob = null
+        let compressedDataURL = null
         
-        const checkSize = (blob) => {
-          if (blob.size <= 80 * 1024) {
-            resolve(blob)
+        const checkSize = (dataURL) => {
+          // Estimate size (base64 is ~4/3 of binary)
+          const base64Size = (dataURL.length - 'data:image/jpeg;base64,'.length) * 3 / 4
+          if (base64Size <= 80 * 1024) {
+            resolve(dataURL)
           } else if (quality > 0.1) {
             quality -= 0.1
-            canvas.toBlob(checkSize, 'image/jpeg', quality)
+            compressedDataURL = canvas.toDataURL('image/jpeg', quality)
+            checkSize(compressedDataURL)
           } else {
-            resolve(blob)
+            resolve(dataURL)
           }
         }
         
-        canvas.toBlob(checkSize, 'image/jpeg', quality)
+        compressedDataURL = canvas.toDataURL('image/jpeg', quality)
+        checkSize(compressedDataURL)
       }
     }
   })
@@ -12946,38 +12961,35 @@ const handleEditImageUpload = async (event) => {
   if (!file) return
 
   editImageUploading.value = true
-  showNotification('Compressing image...', 'info')
 
   try {
-    // Compress the image to 600KB or smaller
-    const compressedBlob = await compressImage(file)
+    // Compress the image first
+    const compressedBase64 = await compressImage(file);
     
-    const formData = new FormData()
-    const apiKey = getRandomApiKey()
-    formData.append("key", apiKey)
-    formData.append("image", compressedBlob)
-
     showNotification('Uploading image...', 'info')
 
-    const res = await fetch("https://api.imgbb.com/1/upload", {
-      method: "POST",
-      body: formData,
+    const res = await fetch(buildAPIUrl('/apis/upload-image'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ image: compressedBase64 })
     })
 
     const data = await res.json()
 
     if (data.success) {
-      editingUser.value.image = data.data.url
-      editingUser.value.photo = data.data.url
+      editingUser.value.image = data.url
+      editingUser.value.photo = data.url
       editImageLoading.value = false
       showNotification('Image uploaded successfully!', 'success')
     } else {
       editImageLoading.value = false
-      showNotification('Upload failed', 'error')
+      showNotification('Upload failed: ' + (data.message || 'Unknown error'), 'error')
     }
   } catch (error) {
     editImageLoading.value = false
-    showNotification('Upload error', 'error')
+    showNotification('Upload error: ' + error.message, 'error')
     console.error("Upload error:", error)
   } finally {
     editImageUploading.value = false
@@ -12985,22 +12997,6 @@ const handleEditImageUpload = async (event) => {
 }
 
 const handleProfileImageError = () => {
-  profileImageLoading.value = false
-  if (profileImageRetries.value < maxRetries) {
-    profileImageRetries.value++
-    setTimeout(() => {
-      // Force re-render by toggling loading state
-      profileImageLoading.value = true
-      setTimeout(() => {
-        profileImageLoading.value = false
-      }, 100)
-    }, 1000)
-  } else {
-    profileImageFailed.value = true
-  }
-}
-
-const goToNextPage = () => {
   if (currentPageNum.value < totalPages.value) {
     currentPageNum.value++
     refreshStudents()
@@ -13059,20 +13055,22 @@ const handleStudentPhotoUpload = async (event) => {
   const maxUploadRetries = 3;
   let uploadSuccess = false;
   try {
-    const compressedBlob = await compressImage(file);
+    // Compress the image first
+    showNotification('Compressing image...', 'info')
+    const compressedBase64 = await compressImage(file);
+    
     for (let attempt = 1; attempt <= maxUploadRetries; attempt++) {
       try {
-        const apiKey = getRandomApiKey();
-        const uploadForm = new FormData();
-        uploadForm.append("key", apiKey);
-        uploadForm.append("image", compressedBlob, "photo.jpg");
-        const res = await fetch("https://api.imgbb.com/1/upload", {
-          method: "POST",
-          body: uploadForm,
+        const res = await fetch(buildAPIUrl('/apis/upload-image'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ image: compressedBase64 })
         });
         const data = await res.json();
         if (data.success) {
-          const photoUrl = data.data.url;
+          const photoUrl = data.url;
           const studentId = currentUser.value.studentId || currentUser.value.student_id;
           const token = localStorage.getItem('authToken') || localStorage.getItem('studentToken');
           const updateResponse = await fetch(buildAPIUrl(`/apis/students/${studentId}/photo`), {

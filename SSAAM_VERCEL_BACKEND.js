@@ -4134,6 +4134,27 @@ app.put('/apis/students/:student_id/photo', studentAuthWithToken, async (req, re
     }
 });
 
+// Upload image to ImgBB (frontend can use this to upload images)
+app.post('/apis/upload-image', async (req, res) => {
+    try {
+        const { image } = req.body; // base64 string
+
+        if (!image || typeof image !== 'string') {
+            return res.status(400).json({ message: 'Image data is required' });
+        }
+
+        const imageUrl = await uploadToImgBB(image);
+
+        res.json({
+            success: true,
+            url: imageUrl
+        });
+    } catch (error) {
+        console.error('Error uploading image:', error);
+        res.status(500).json({ message: 'Failed to upload image' });
+    }
+});
+
 // Get student photo - works with or without authentication (for displaying cached photos)
 app.get('/apis/students/:student_id/photo', async (req, res) => {
     try {

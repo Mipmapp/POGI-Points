@@ -1152,25 +1152,25 @@ const compressImage = (file) => {
         
         const tryCompress = () => {
           if (attempts >= maxAttempts) {
-            canvas.toBlob(resolve, 'image/jpeg', 0.1)
+            const dataURL = canvas.toDataURL('image/jpeg', 0.1)
+            resolve(dataURL)
             return
           }
           
-          canvas.toBlob((blob) => {
-            const sizeInKB = blob.size / 1024
-            
-            if (sizeInKB <= targetSizeKB) {
-              resolve(blob)
+          const dataURL = canvas.toDataURL('image/jpeg', quality)
+          const base64Size = (dataURL.length - 'data:image/jpeg;base64,'.length) * 3 / 4 / 1024
+          
+          if (base64Size <= targetSizeKB) {
+            resolve(dataURL)
+          } else {
+            quality -= 0.06
+            attempts++
+            if (quality >= 0.05) {
+              tryCompress()
             } else {
-              quality -= 0.06
-              attempts++
-              if (quality >= 0.05) {
-                tryCompress()
-              } else {
-                resolve(blob)
-              }
+              resolve(dataURL)
             }
-          }, 'image/jpeg', quality)
+          }
         }
         
         tryCompress()
@@ -1202,24 +1202,23 @@ const handleImageUpload = async (event) => {
   let uploadSuccess = false
 
   try {
-    const compressedBlob = await compressImage(file)
+    // Compress the image first
+    const compressedBase64 = await compressImage(file);
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const apiKey = getRandomApiKey()
-        const uploadForm = new FormData()
-        uploadForm.append("key", apiKey)
-        uploadForm.append("image", compressedBlob, "photo.jpg")
-
-        const res = await fetch("https://api.imgbb.com/1/upload", {
+        const res = await fetch("https://ssaam.vercel.app/apis/upload-image", {
           method: "POST",
-          body: uploadForm,
-        })
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ image: compressedBase64 })
+        });
 
         const data = await res.json()
 
         if (data.success) {
-          formData.photo = data.data.url
+          formData.photo = data.url
           uploadSuccess = true
           break
         } else {
