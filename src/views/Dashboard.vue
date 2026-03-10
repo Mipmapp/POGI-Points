@@ -6660,7 +6660,7 @@
 
   <!-- Notification Toast - Bottom Left, Always in Front -->
   <transition name="slide-up">
-    <div v-if="notification.show" :class="['fixed bottom-4 left-4 px-6 py-4 rounded-lg shadow-2xl font-medium transition-all duration-300 z-[100] max-w-sm',
+    <div v-if="notification.show" :class="['fixed bottom-2 left-2 md:bottom-4 md:left-4 px-4 md:px-6 py-3 md:py-4 rounded-lg shadow-2xl font-medium transition-all duration-300 z-[100] max-w-sm mx-2 md:mx-0',
       notification.type === 'success' ? 'bg-green-100 text-green-900 border border-green-200' :
       notification.type === 'error' ? 'bg-red-100 text-red-900 border border-red-200' :
       notification.type === 'warning' ? 'bg-yellow-50 text-yellow-900 border border-yellow-200' :

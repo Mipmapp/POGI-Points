@@ -206,24 +206,39 @@
             <div v-if="selectedDepartment" :key="selectedDepartment.id" class="space-y-4 sm:space-y-6">
               <!-- Profile-like Header -->
               <div>
-                <button @click="selectedDepartment = null" class="mb-3 sm:mb-4 flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors text-sm sm:text-base">
-                  <svg class="w-4 h-4 sm:w-5 sm:h-5 transform -rotate-90">
+                <button @click="selectedDepartment = null" :class="['mb-3 sm:mb-4 flex items-center gap-2 font-medium transition-colors text-sm sm:text-base',
+                  selectedDepartment.label === 'CCS' ? 'text-purple-600 hover:text-purple-800' :
+                  selectedDepartment.label === 'COE' ? 'text-orange-600 hover:text-orange-800' :
+                  selectedDepartment.label === 'SOM' ? 'text-green-600 hover:text-green-800' :
+                  selectedDepartment.label === 'CNAHS' ? 'text-green-600 hover:text-green-800' :
+                  'text-blue-600 hover:text-blue-800']">
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 rotate-180">
                     <path fill="currentColor" d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
                   </svg>
-                  Back to Departments
+                  Go Back
                 </button>
                 
-                <!-- Profile Card Style -->
-                <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg sm:rounded-xl p-4 sm:p-6 border border-blue-200">
-                  <div class="flex flex-col sm:flex-row items-center sm:items-start gap-3 sm:gap-4">
-                    <div class="flex-shrink-0">
-                      <img :src="selectedDepartment.logo" :alt="selectedDepartment.name" class="w-16 h-16 sm:w-24 sm:h-24 object-contain rounded-lg p-2 shadow-md" />
-                    </div>
-                    <div class="flex-1 text-center sm:text-left">
-                      <h2 class="text-lg sm:text-2xl font-bold text-blue-900 mb-1">{{ selectedDepartment.name }}</h2>
-                      <p class="text-xs sm:text-sm text-gray-600 font-medium">{{ selectedDepartment.programs.length }} programs available</p>
-                      <div class="mt-2 sm:mt-3 flex justify-center sm:justify-start">
-                        <span class="inline-block px-3 py-1 bg-blue-600 text-white text-xs font-semibold rounded-full">College Selected</span>
+                <!-- Profile Card (glassmorphism) -->
+                <div :class="['p-1 rounded-lg bg-gradient-to-br',
+                  selectedDepartment.label === 'CCS' ? 'from-purple-600 to-purple-400' :
+                  selectedDepartment.label === 'COE' ? 'from-orange-600 to-orange-400' :
+                  selectedDepartment.label === 'SOM' ? 'from-green-600 to-green-400' :
+                  selectedDepartment.label === 'CNAHS' ? 'from-green-700 to-green-500' :
+                  'from-blue-600 to-blue-400']">
+                  <div class="bg-white/20 backdrop-blur-md rounded-lg p-3 sm:p-4 border border-white/30">
+                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3">
+                      <div class="flex-shrink-0">
+                        <img :src="selectedDepartment.logo" :alt="selectedDepartment.name" class="w-12 h-12 sm:w-16 sm:h-16 object-contain rounded-lg p-1" />
+                      </div>
+                      <div class="flex-1 text-center sm:text-left">
+                        <!-- college name with checkmark to indicate selection -->
+                        <div class="flex items-center justify-center sm:justify-start gap-1 mb-1">
+                          <h2 class="text-base sm:text-xl font-bold text-white leading-tight">{{ selectedDepartment.name }}</h2>
+                          <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                        <p class="text-xs sm:text-sm text-gray-100 font-medium">{{ selectedDepartment.programs.length }} programs</p>
                       </div>
                     </div>
                   </div>
@@ -232,23 +247,42 @@
 
               <!-- Programs List -->
               <div class="space-y-3 sm:space-y-4">
-                <h3 class="text-base sm:text-lg font-bold text-gray-900">Available Programs</h3>
-                <div class="bg-blue-50 p-3 sm:p-5 rounded-lg border border-blue-150">
-                  <ul class="list-disc pl-5 space-y-2">
-                    <li v-for="(program, idx) in selectedDepartment.programs" :key="idx" class="bg-white rounded-md p-3 border border-blue-100 hover:border-blue-300 transition-colors">
-                      <p class="text-sm font-semibold text-gray-900">{{ program.fullName }}</p>
-                      <p class="text-xs text-gray-500 mt-1">Code: <span class="font-mono font-bold">{{ program.shortName }}</span></p>
+                <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-2">Available Programs</h3>
+                <p class="text-xs sm:text-sm text-gray-600 mb-2">Please make sure your study program belongs to this college before confirming.</p>
+                <p v-if="currentUserProgram" :class="['text-xs sm:text-sm mb-4',
+                  isProgramAvailable ? 'text-green-700 font-medium' : 'text-red-700 font-medium']">
+                  {{ isProgramAvailable ? '✓ Your program is available in this college' : '✗ Your program is not available in this college' }}
+                </p>
+                <div class="bg-white/20 backdrop-blur-md p-2 sm:p-3 rounded-lg border border-white/30 max-h-[40vh] overflow-y-auto">
+                  <ul class="space-y-2">
+                    <li v-for="(program, idx) in selectedDepartment.programs" :key="idx" :class="['bg-white rounded-md p-2 sm:p-3 border border-gray-200 hover:border-gray-300 transition-all flex justify-between items-center',
+                      currentUserProgram && program.shortName === currentUserProgram ? 'ring-2 ring-green-300' : '']">
+                      <div>
+                        <p class="text-sm font-semibold text-gray-900">{{ program.fullName }}</p>
+                        <p class="text-xs text-gray-500 mt-1">Code: <span class="font-mono font-bold">{{ program.shortName }}</span></p>
+                      </div>
+                      <span v-if="currentUserProgram && program.shortName === currentUserProgram" class="text-green-500 font-bold text-lg">✓</span>
                     </li>
                   </ul>
                 </div>
               </div>
 
               <!-- Action Buttons -->
-              <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-gray-200">
-                <button @click="confirmDepartment" class="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white text-sm sm:text-base rounded-lg font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition-all shadow-md hover:shadow-lg">
+              <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-white/20">
+                <button @click="confirmDepartment" :class="['flex-1 px-4 sm:px-6 py-2 sm:py-3 text-white text-sm sm:text-base rounded-lg font-semibold transition-all shadow-md hover:shadow-lg bg-gradient-to-r',
+                  selectedDepartment.label === 'CCS' ? 'from-purple-600 via-purple-500 to-purple-400 hover:from-purple-700 hover:via-purple-600 hover:to-purple-500' :
+                  selectedDepartment.label === 'COE' ? 'from-orange-600 via-orange-500 to-orange-400 hover:from-orange-700 hover:via-orange-600 hover:to-orange-500' :
+                  selectedDepartment.label === 'SOM' ? 'from-green-600 via-green-500 to-green-400 hover:from-green-700 hover:via-green-600 hover:to-green-500' :
+                  selectedDepartment.label === 'CNAHS' ? 'from-green-700 via-green-600 to-green-500 hover:from-green-800 hover:via-green-700 hover:to-green-600' :
+                  'from-blue-700 via-blue-600 to-blue-500 hover:from-blue-800 hover:via-blue-700 hover:to-blue-600']">
                   Confirm
                 </button>
-                <button @click="selectedDepartment = null" class="flex-1 px-4 sm:px-6 py-2 sm:py-3 bg-gray-200 text-gray-800 text-sm sm:text-base rounded-lg font-medium hover:bg-gray-300 transition">
+                <button @click="selectedDepartment = null" :class="['flex-1 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition border',
+                  selectedDepartment.label === 'CCS' ? 'bg-purple-50 text-purple-800 border-purple-300 hover:bg-purple-100' :
+                  selectedDepartment.label === 'COE' ? 'bg-orange-50 text-orange-800 border-orange-300 hover:bg-orange-100' :
+                  selectedDepartment.label === 'SOM' ? 'bg-green-50 text-green-800 border-green-300 hover:bg-green-100' :
+                  selectedDepartment.label === 'CNAHS' ? 'bg-green-50 text-green-800 border-green-300 hover:bg-green-100' :
+                  'bg-blue-50 text-blue-800 border-blue-300 hover:bg-blue-100']">
                   Back
                 </button>
               </div>
@@ -260,20 +294,40 @@
                 v-for="dept in departments" 
                 :key="dept.id"
                 @click="selectedDepartment = dept"
-                class="w-full group p-4 sm:p-6 bg-white border-2 border-blue-200 rounded-lg sm:rounded-xl hover:shadow-xl transition-all duration-300 hover:border-blue-400 text-left"
+                :class="['w-full group p-4 sm:p-6 border-2 rounded-lg sm:rounded-xl hover:shadow-xl transition-all duration-300 text-left',
+                  dept.label === 'CCS' ? 'bg-purple-50 border-purple-200 hover:border-purple-400' :
+                  dept.label === 'COE' ? 'bg-orange-50 border-orange-200 hover:border-orange-400' :
+                  dept.label === 'SOM' ? 'bg-green-50 border-green-200 hover:border-green-400' :
+                  dept.label === 'CNAHS' ? 'bg-green-50 border-green-200 hover:border-green-400' :
+                  'bg-white border-blue-200 hover:border-blue-400']"
               >
                 <div class="flex items-center gap-3 sm:gap-5">
-                  <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md flex items-center justify-center transition-shadow group-hover:shadow-lg bg-white">
-                    <img :src="dept.logo" :alt="dept.name" class="w-full h-full object-cover" />
+                  <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14">
+                    <img :src="dept.logo" :alt="dept.name" class="w-full h-full object-contain" />
                   </div>
                   <div class="flex-1 min-w-0">
-                    <h3 class="text-sm sm:text-base font-bold text-blue-900 group-hover:text-blue-600 transition-colors truncate">{{ dept.name }}</h3>
+                    <h3 :class="['text-sm sm:text-base font-bold transition-colors truncate',
+                      dept.label === 'CCS' ? 'text-purple-900 group-hover:text-purple-700' :
+                      dept.label === 'COE' ? 'text-orange-900 group-hover:text-orange-700' :
+                      dept.label === 'SOM' ? 'text-green-900 group-hover:text-green-700' :
+                      dept.label === 'CNAHS' ? 'text-green-900 group-hover:text-green-700' :
+                      'text-blue-900 group-hover:text-blue-600']">{{ dept.name }}</h3>
                     <div class="mt-1.5 sm:mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
-                      <span class="inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white text-xs font-bold rounded-full shadow-sm">{{ dept.label }}</span>
+                      <span :class="['inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r text-white text-xs font-bold rounded-full shadow-sm',
+                        dept.label === 'CCS' ? 'from-purple-700 via-purple-600 to-pink-600' :
+                        dept.label === 'COE' ? 'from-orange-700 via-orange-600 to-red-600' :
+                        dept.label === 'SOM' ? 'from-green-700 via-green-600 to-yellow-600' :
+                        dept.label === 'CNAHS' ? 'from-green-800 via-green-700 to-green-600' :
+                        'from-blue-700 via-blue-600 to-blue-500']">{{ dept.label }}</span>
                       <span class="text-xs text-gray-500 font-medium">{{ dept.programs.length }} program<span v-if="dept.programs.length !== 1">s</span></span>
                     </div>
                   </div>
-                  <svg class="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 group-hover:translate-x-1 transition-transform flex-shrink-0">
+                  <svg :class="['w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform flex-shrink-0',
+                    dept.label === 'CCS' ? 'text-purple-600' :
+                    dept.label === 'COE' ? 'text-orange-600' :
+                    dept.label === 'SOM' ? 'text-green-600' :
+                    dept.label === 'CNAHS' ? 'text-green-600' :
+                    'text-blue-600']">                    
                     <path fill="currentColor" d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
                   </svg>
                 </div>
@@ -345,7 +399,14 @@
               </div>
             </div>
 
-            <button type="button" @click="showDepartmentModal = true" class="w-full py-3 px-6 bg-white border-2 border-blue-600 text-blue-900 rounded-lg font-medium hover:bg-blue-50 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl mb-4">
+            <button type="button" @click="showDepartmentModal = true" :class="['w-full py-3 px-6 border-2 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl mb-4',
+              chosenDepartment ? 
+                (chosenDepartment.label === 'CCS' ? 'bg-purple-50 border-purple-600 text-purple-900 hover:bg-purple-100' :
+                 chosenDepartment.label === 'COE' ? 'bg-orange-50 border-orange-600 text-orange-900 hover:bg-orange-100' :
+                 chosenDepartment.label === 'SOM' ? 'bg-green-50 border-green-600 text-green-900 hover:bg-green-100' :
+                 chosenDepartment.label === 'CNAHS' ? 'bg-green-50 border-green-600 text-green-900 hover:bg-green-100' :
+                 'bg-blue-50 border-blue-600 text-blue-900 hover:bg-blue-100')
+              : 'bg-white border-blue-600 text-blue-900 hover:bg-blue-50']">
               <template v-if="chosenDepartment">
                 <img :src="chosenDepartment.logo" :alt="chosenDepartment.name" class="w-8 h-8 object-contain rounded-md p-1" />
                 <div class="text-left">
@@ -426,7 +487,14 @@
               </div>
             </div>
 
-            <button type="button" @click="showDepartmentModal = true" class="w-full py-3 px-6 bg-white border-2 border-blue-600 text-blue-900 rounded-lg font-medium hover:bg-blue-50 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl">
+            <button type="button" @click="showDepartmentModal = true" :class="['w-full py-3 px-6 border-2 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl',
+              chosenDepartment ? 
+                (chosenDepartment.label === 'CCS' ? 'bg-purple-50 border-purple-600 text-purple-900 hover:bg-purple-100' :
+                 chosenDepartment.label === 'COE' ? 'bg-orange-50 border-orange-600 text-orange-900 hover:bg-orange-100' :
+                 chosenDepartment.label === 'SOM' ? 'bg-green-50 border-green-600 text-green-900 hover:bg-green-100' :
+                 chosenDepartment.label === 'CNAHS' ? 'bg-green-50 border-green-600 text-green-900 hover:bg-green-100' :
+                 'bg-blue-50 border-blue-600 text-blue-900 hover:bg-blue-100')
+              : 'bg-white border-blue-600 text-blue-900 hover:bg-blue-50']">
               <template v-if="chosenDepartment">
                 <img :src="chosenDepartment.logo" :alt="chosenDepartment.name" class="w-8 h-8 object-contain rounded-md p-1" />
                 <div class="text-left">
@@ -569,6 +637,22 @@ const isSOM = computed(() => {
     }
   } catch (e) {}
   return false
+})
+
+// Get current user's program for program availability checking
+const currentUserProgram = computed(() => {
+  try {
+    const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
+    const user = userJson ? JSON.parse(userJson) : {}
+    return user.program || null
+  } catch (e) {}
+  return null
+})
+
+// Check if current user's program is available in selected department
+const isProgramAvailable = computed(() => {
+  if (!currentUserProgram.value || !selectedDepartment.value) return false
+  return selectedDepartment.value.programs.some(p => p.shortName === currentUserProgram.value)
 })
 
 const router = useRouter()
