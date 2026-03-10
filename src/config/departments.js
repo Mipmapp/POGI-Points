@@ -34,6 +34,17 @@ const som = {
   ]
 }
 
+const cnahs = {
+  id: 4,
+  name: 'College of Nursing and Allied Health Sciences',
+  label: 'CNAHS',
+  logo: '/icons/cnahs.svg',
+  programs: [
+    { shortName: 'BSN', fullName: 'Bachelor of Science in Nursing' }
+  ]
+}
+
 departments.push(som)
+departments.push(cnahs)
 
 export default departments

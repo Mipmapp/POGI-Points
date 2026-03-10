@@ -11,18 +11,18 @@ const getCollegeFromProgram = (program) => {
   return null
 }
 
-// Helper function to get college (CCS or COE)
+// Helper function to get college (CCS, COE, SOM, or CNAHS)
 export const getCollege = () => {
   try {
-    // 1) Pre-login explicit choice (keeps existing behavior)
+    // 1) Pre-login explicit choice
     const chosenDept = localStorage.getItem('loginChosenDepartment')
-    if (chosenDept === 'COE') return 'COE'
+    if (['COE', 'SOM', 'CNAHS'].includes(chosenDept)) return chosenDept
 
     // 2) If a program was saved pre-login, use it
     const chosenProg = localStorage.getItem('loginChosenProgram')
     if (chosenProg) {
       const college = getCollegeFromProgram(chosenProg)
-      if (college === 'COE') return 'COE'
+      if (college && ['COE', 'SOM', 'CNAHS'].includes(college)) return college
     }
 
     // 3) Check currentUser; prefer an explicit selectedDepartment (used for admins/masters)
@@ -30,13 +30,15 @@ export const getCollege = () => {
     const user = userJson ? JSON.parse(userJson) : {}
     // If the login flow stored a selectedDepartment object, respect it
     if (user && user.selectedDepartment && typeof user.selectedDepartment.label === 'string') {
-      if (user.selectedDepartment.label === 'COE') return 'COE'
+      if (['COE', 'SOM', 'CNAHS'].includes(user.selectedDepartment.label)) {
+        return user.selectedDepartment.label
+      }
     }
 
     // 4) Fallback to program-based detection (students)
     const userProgram = user.program
     const college = getCollegeFromProgram(userProgram)
-    if (college === 'COE') return 'COE'
+    if (college && ['COE', 'SOM', 'CNAHS'].includes(college)) return college
 
     return 'CCS'
   } catch (e) {
@@ -46,7 +48,13 @@ export const getCollege = () => {
 
 // Helper function to get college prefix for collection naming
 export const getCollegePrefix = () => {
-  return getCollege() === 'COE' ? 'coe_' : 'ccs_'
+  const college = getCollege()
+  switch (college) {
+    case 'COE': return 'coe_'
+    case 'SOM': return 'som_'
+    case 'CNAHS': return 'cnahs_'
+    default: return 'ccs_'
+  }
 }
 
 // Helper function to get the appropriate API URL based on user's college

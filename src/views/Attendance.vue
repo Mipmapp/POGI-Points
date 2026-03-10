@@ -1,8 +1,8 @@
 <template>
-  <div :class="['rounded-lg shadow-lg p-3 md:p-8 min-h-screen', isCOE ? 'bg-gradient-to-br from-orange-50 to-orange-100' : 'bg-gradient-to-br from-purple-50 to-purple-100']">
+  <div :class="['rounded-lg shadow-lg p-3 md:p-8 min-h-screen', isCOE ? 'bg-gradient-to-br from-orange-50 to-orange-100' : isSOM ? 'bg-gradient-to-br from-green-50 to-green-100' : isCNAHS ? 'bg-gradient-to-br from-emerald-50 to-emerald-100' : 'bg-gradient-to-br from-purple-50 to-purple-100']">
     <!-- Loading State -->
     <div v-if="isLoading" class="flex items-center justify-center py-12">
-      <div :class="['animate-spin rounded-full h-12 w-12 border-b-2', isCOE ? 'border-orange-600' : 'border-purple-600']"></div>
+      <div :class="['animate-spin rounded-full h-12 w-12 border-b-2', isCOE ? 'border-orange-600' : isSOM ? 'border-green-600' : isCNAHS ? 'border-emerald-600' : 'border-purple-600']"></div>
     </div>
 
     <!-- Main Content -->
@@ -10,17 +10,17 @@
       <!-- Header -->
       <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
         <div>
-          <h2 :class="['text-2xl md:text-3xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Attendance Management</h2>
-          <p :class="['mt-1', isCOE ? 'text-orange-700' : 'text-purple-700']">Manage and track attendance events</p>
+          <h2 :class="['text-2xl md:text-3xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-emerald-900' : 'text-purple-900']">Attendance Management</h2>
+          <p :class="['mt-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-purple-700']">Manage and track attendance events</p>
         </div>
       </div>
 
       <!-- Search & Info Bar Mobile Responsive -->
-      <div :class="['rounded-xl shadow-md p-4 md:p-6 backdrop-blur-sm transition-all duration-200', isCOE ? 'bg-white bg-opacity-95 border-2 border-orange-200 hover:shadow-lg hover:border-orange-300' : 'bg-white bg-opacity-95 border-2 border-purple-200 hover:shadow-lg hover:border-purple-300']">
+      <div :class="['rounded-xl shadow-md p-4 md:p-6 backdrop-blur-sm transition-all duration-200', isCOE ? 'bg-white bg-opacity-95 border-2 border-orange-200 hover:shadow-lg hover:border-orange-300' : isSOM ? 'bg-white bg-opacity-95 border-2 border-green-200 hover:shadow-lg hover:border-green-300' : isCNAHS ? 'bg-white bg-opacity-95 border-2 border-emerald-200 hover:shadow-lg hover:border-emerald-300' : 'bg-white bg-opacity-95 border-2 border-purple-200 hover:shadow-lg hover:border-purple-300']">
         <div class="flex flex-col gap-4">
           <!-- Search Input with Icon -->
           <div class="relative group">
-            <div :class="['absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-200', isCOE ? 'text-orange-400 group-focus-within:text-orange-600' : 'text-purple-400 group-focus-within:text-purple-600']">
+            <div :class="['absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none transition-colors duration-200', isCOE ? 'text-orange-400 group-focus-within:text-orange-600' : isSOM ? 'text-green-400 group-focus-within:text-green-600' : isCNAHS ? 'text-emerald-400 group-focus-within:text-emerald-600' : 'text-purple-400 group-focus-within:text-purple-600']">
               <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
@@ -29,13 +29,13 @@
               v-model="searchQuery"
               type="text"
               placeholder="Search events by title..."
-              :class="['w-full pl-11 md:pl-12 pr-12 md:pr-12 py-3 md:py-4 rounded-xl border-2 transition-all outline-none text-sm md:text-base font-medium', searchQuery.length > 0 ? (isCOE ? 'border-orange-400 bg-orange-50 focus:ring-2 focus:ring-orange-300' : 'border-purple-400 bg-purple-50 focus:ring-2 focus:ring-purple-300') : (isCOE ? 'border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-200' : 'border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200')]"
+              :class="['w-full pl-11 md:pl-12 pr-12 md:pr-12 py-3 md:py-4 rounded-xl border-2 transition-all outline-none text-sm md:text-base font-medium', searchQuery.length > 0 ? (isCOE ? 'border-orange-400 bg-orange-50 focus:ring-2 focus:ring-orange-300' : isSOM ? 'border-green-400 bg-green-50 focus:ring-2 focus:ring-green-300' : isCNAHS ? 'border-emerald-400 bg-emerald-50 focus:ring-2 focus:ring-emerald-300' : 'border-purple-400 bg-purple-50 focus:ring-2 focus:ring-purple-300') : (isCOE ? 'border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-200' : isSOM ? 'border-green-200 focus:border-green-400 focus:ring-2 focus:ring-green-200' : isCNAHS ? 'border-emerald-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-200' : 'border-purple-200 focus:border-purple-400 focus:ring-2 focus:ring-purple-200')]"
             />
             <!-- Clear button -->
             <button
               v-if="searchQuery.length > 0"
               @click="searchQuery = ''"
-              :class="['absolute inset-y-0 right-0 pr-4 flex items-center transition-opacity hover:opacity-100 active:scale-90', isCOE ? 'text-orange-500 hover:text-orange-700' : 'text-purple-500 hover:text-purple-700']"
+              :class="['absolute inset-y-0 right-0 pr-4 flex items-center transition-opacity hover:opacity-100 active:scale-90', isCOE ? 'text-orange-500 hover:text-orange-700' : isSOM ? 'text-green-500 hover:text-green-700' : isCNAHS ? 'text-emerald-500 hover:text-emerald-700' : 'text-purple-500 hover:text-purple-700']"
               title="Clear search"
             >
               <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,10 +46,10 @@
           
           <!-- Results Info and Pagination Controls -->
           <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-            <div :class="['text-xs md:text-sm font-semibold px-3 py-1.5 rounded-lg', isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800']">
+            <div :class="['text-xs md:text-sm font-semibold px-3 py-1.5 rounded-lg', isCOE ? 'bg-orange-100 text-orange-800' : isSOM ? 'bg-green-100 text-green-800' : isCNAHS ? 'bg-emerald-100 text-emerald-800' : 'bg-purple-100 text-purple-800']">
               <span class="font-bold">{{ paginatedEvents.length }}</span> of <span class="font-bold">{{ searchedEvents.length }}</span> events
             </div>
-            <div :class="['text-xs md:text-sm font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">
+            <div :class="['text-xs md:text-sm font-medium', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-purple-700']">
               Page {{ currentPage }} of {{ totalPages }}
             </div>
           </div>
@@ -58,21 +58,21 @@
 
       <!-- Top Pagination -->
       <div class="flex items-center justify-between">
-        <div :class="['text-sm font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">
+        <div :class="['text-sm font-medium', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-purple-700']">
           Page {{ currentPage }} of {{ totalPages }}
         </div>
         <div class="flex gap-2">
           <button
             @click="previousPage"
             :disabled="currentPage === 1"
-            :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+            :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
           >
             ← Previous
           </button>
           <button
             @click="nextPage"
             :disabled="currentPage === totalPages"
-            :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+            :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
           >
             Next →
           </button>
@@ -93,14 +93,14 @@
         <div 
           v-for="event in paginatedEvents" 
           :key="event._id"
-          :class="['bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 border-l-4 overflow-hidden', event.is_custom ? (isCOE ? 'border-l-orange-600' : 'border-l-purple-600') : isCOE ? 'border-l-orange-400' : 'border-l-purple-400']"
+<div :class="['bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 border-l-4 overflow-hidden', event.is_custom ? (isCOE ? 'border-l-orange-600' : isSOM ? 'border-l-green-600' : isCNAHS ? 'border-l-emerald-600' : 'border-l-purple-600') : isCOE ? 'border-l-orange-400' : isSOM ? 'border-l-green-400' : isCNAHS ? 'border-l-emerald-400' : 'border-l-purple-400']">
         >
           <!-- Event Header -->
           <div :class="['p-5 border-b', isCOE ? 'border-orange-100' : 'border-purple-100']">
             <div class="flex justify-between items-start gap-3 mb-3">
               <div class="flex-1">
                 <h3 class="text-lg font-bold text-gray-900 line-clamp-2">{{ event.title }}</h3>
-                <p :class="['text-sm mt-1', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ formatEventDate(event.event_date) }}</p>
+                <p :class="['text-sm mt-1', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-purple-600']">{{ formatEventDate(event.event_date) }}</p>
               </div>
               <span :class="['px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap', event.is_custom ? (isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800') : (isCOE ? 'bg-orange-50 text-orange-700 border border-orange-200' : 'bg-purple-50 text-purple-700 border border-purple-200')]">
                 {{ event.is_custom ? '✓ Custom' : 'Regular' }}
@@ -140,22 +140,22 @@
       </div>
 
       <!-- Bottom Pagination -->
-      <div class="flex items-center justify-between pt-6 border-t" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
-        <div :class="['text-sm font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">
+      <div class="flex items-center justify-between pt-6 border-t" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-emerald-200' : 'border-purple-200'">
+        <div :class="['text-sm font-medium', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-purple-700']">
           Page {{ currentPage }} of {{ totalPages }}
         </div>
         <div class="flex gap-2">
           <button
             @click="previousPage"
             :disabled="currentPage === 1"
-            :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+            :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', currentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
           >
             ← Previous
           </button>
           <button
             @click="nextPage"
             :disabled="currentPage === totalPages"
-            :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+            :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', currentPage === totalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
           >
             Next →
           </button>
@@ -167,6 +167,8 @@
 
 <script>
 import { buildAPIUrl } from '../config/api.js'
+import departments from '../config/departments.js'
+import { checkDepartment } from '../config/themes.js'
 
 export default {
   name: 'Attendance',
@@ -182,18 +184,13 @@ export default {
   },
   computed: {
     isCOE() {
-      try {
-        const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
-        const user = userJson ? JSON.parse(userJson) : {}
-        const userProgram = user.program
-        if (userProgram) {
-          const departments = require('../config/departments').default
-          for (const dept of departments) {
-            if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'COE'
-          }
-        }
-      } catch (e) {}
-      return false
+      return checkDepartment('COE', departments)
+    },
+    isSOM() {
+      return checkDepartment('SOM', departments)
+    },
+    isCNAHS() {
+      return checkDepartment('CNAHS', departments)
     },
     // Filter events by search query and sort by date (newest first)
     searchedEvents() {

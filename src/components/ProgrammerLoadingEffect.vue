@@ -19,7 +19,7 @@
           <div class="w-2.5 h-2.5 rounded-full bg-purple-400"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-pink-400"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-indigo-400"></div>
-          <span class="ml-3 text-[10px] text-white/40 tracking-[0.3em] uppercase font-bold">Secure Access Protocol v2.0</span>
+          <span class="ml-3 text-[10px] text-white/40 tracking-[0.3em] uppercase font-bold">Secure Access Protocol v3.0</span>
         </div>
 
         <!-- Terminal Content -->

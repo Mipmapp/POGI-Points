@@ -2,16 +2,16 @@
   <div class="p-6 min-h-screen">
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ event.title || 'Event Details' }}</h1>
+        <h1 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">{{ event.title || 'Event Details' }}</h1>
         <p class="text-sm text-gray-600">{{ formatDate(event.event_date) }}</p>
       </div>
       <div class="flex items-center gap-2">
-        <button @click="$router.back()" class="px-3 py-2 border rounded" :class="isCOE ? 'border-orange-300' : 'border-purple-300'">Back</button>
+        <button @click="$router.back()" class="px-3 py-2 border rounded" :class="isCOE ? 'border-orange-300' : isSOM ? 'border-green-300' : 'border-purple-300'">Back</button>
       </div>
     </div>
 
     <div v-if="loading" class="text-center py-12">
-      <div class="inline-block animate-spin rounded-full h-10 w-10" :class="isCOE ? 'border-b-2 border-orange-600' : 'border-b-2 border-purple-600'"></div>
+      <div class="inline-block animate-spin rounded-full h-10 w-10" :class="isCOE ? 'border-b-2 border-orange-600' : isSOM ? 'border-b-2 border-green-600' : 'border-b-2 border-purple-600'"></div>
     </div>
 
     <div v-else>
@@ -24,8 +24,8 @@
             <p class="text-sm text-gray-500">{{ formatTime(s.start_time) }} — {{ formatTime(s.end_time) }}</p>
           </div>
           <div class="flex items-center gap-2">
-            <button @click="showAbsent(s)" class="px-3 py-1.5 rounded" :class="isCOE ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'">Show Absent</button>
-            <button @click="exportAbsentCSV(s)" class="px-3 py-1.5 rounded border" :class="isCOE ? 'border-orange-300 text-orange-700' : 'border-purple-300 text-purple-700'">Export Absent</button>
+            <button @click="showAbsent(s)" class="px-3 py-1.5 rounded" :class="isCOE ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'">Show Absent</button>
+            <button @click="exportAbsentCSV(s)" class="px-3 py-1.5 rounded border" :class="isCOE ? 'border-orange-300 text-orange-700' : isSOM ? 'border-green-300 text-green-700' : 'border-purple-300 text-purple-700'">Export Absent</button>
           </div>
         </div>
       </div>
@@ -35,9 +35,9 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div v-for="stu in absentList" :key="stu.student_id || stu._id" class="bg-white rounded shadow overflow-hidden">
             <div class="relative h-28 bg-gray-100">
-              <div class="absolute -top-8 left-4 w-16 h-16 rounded-full overflow-hidden border-2 bg-white" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+              <div class="absolute -top-8 left-4 w-16 h-16 rounded-full overflow-hidden border-2 bg-white" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-purple-200'">
                 <img v-if="stu.photo || stu.student?.photo" :src="stu.photo || stu.student?.photo" class="w-full h-full object-cover rounded-full" />
-                <div v-else class="w-full h-full flex items-center justify-center" :class="isCOE ? 'bg-gradient-to-br from-orange-300 to-red-400 text-white' : 'bg-gradient-to-br from-pink-400 to-purple-600 text-white'">
+                <div v-else class="w-full h-full flex items-center justify-center" :class="isCOE ? 'bg-gradient-to-br from-orange-300 to-red-400 text-white' : isSOM ? 'bg-gradient-to-br from-green-300 to-teal-400 text-white' : 'bg-gradient-to-br from-pink-400 to-purple-600 text-white'">
                   <span class="font-bold">{{ initials(stu) }}</span>
                 </div>
               </div>
@@ -79,6 +79,19 @@ export default {
         if (userProgram) {
           for (const dept of departments) {
             if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'COE'
+          }
+        }
+      } catch (e) {}
+      return false
+    },
+    isSOM() {
+      try {
+        const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
+        const user = userJson ? JSON.parse(userJson) : {}
+        const userProgram = user.program
+        if (userProgram) {
+          for (const dept of departments) {
+            if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'SOM'
           }
         }
       } catch (e) {}

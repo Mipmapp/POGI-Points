@@ -948,14 +948,30 @@ const isSOMSelected = computed(() => {
   return programDepartment.value && String(programDepartment.value.departmentLabel).toUpperCase() === 'SOM'
 })
 
+const isCOE = computed(() => {
+  return programDepartment.value && String(programDepartment.value.departmentLabel).toUpperCase() === 'COE'
+})
+
+const isSOM = computed(() => {
+  return programDepartment.value && String(programDepartment.value.departmentLabel).toUpperCase() === 'SOM'
+})
+
+const isCNAHS = computed(() => {
+  return programDepartment.value && String(programDepartment.value.departmentLabel).toUpperCase() === 'CNAHS'
+})
+
 const primaryGradientClass = computed(() => {
-  return isSOMSelected.value
-    ? 'bg-gradient-to-r from-som-green to-som-yellow text-white'
-    : 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white'
+  if (isCOE.value) return 'bg-gradient-to-r from-orange-600 to-orange-500 text-white'
+  if (isSOM.value) return 'bg-gradient-to-r from-som-green to-som-yellow text-white'
+  if (isCNAHS.value) return 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white'
+  return 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white'
 })
 
 const primaryBorderClass = computed(() => {
-  return isSOMSelected.value ? 'border-som-green' : 'border-blue-600'
+  if (isCOE.value) return 'border-orange-600'
+  if (isSOM.value) return 'border-som-green'
+  if (isCNAHS.value) return 'border-emerald-600'
+  return 'border-blue-600'
 })
 
 // Registration flow buttons always stay blue (not affected by SOM theme)
@@ -968,9 +984,10 @@ const registrationBorderClass = computed(() => {
 })
 
 const pillGradientClass = computed(() => {
-  return isSOMSelected.value
-    ? 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-som-green to-som-yellow text-white text-xs font-bold rounded-full shadow-sm'
-    : 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white text-xs font-bold rounded-full shadow-sm'
+  if (isCOE.value) return 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-orange-600 to-orange-500 text-white text-xs font-bold rounded-full shadow-sm'
+  if (isSOM.value) return 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-som-green to-som-yellow text-white text-xs font-bold rounded-full shadow-sm'
+  if (isCNAHS.value) return 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold rounded-full shadow-sm'
+  return 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white text-xs font-bold rounded-full shadow-sm'
 })
 
 // Icon gradient for branding. registration buttons and icons should always use blue,
@@ -978,7 +995,10 @@ const pillGradientClass = computed(() => {
 const iconGradientClass = computed(() => {
   // used in other parts of the UI (e.g. department cards) which should still follow
   // theme changes; do not modify.
-  return isSOMSelected.value ? 'bg-gradient-to-br from-som-green to-som-yellow' : 'bg-gradient-to-br from-blue-600 to-blue-400'
+  if (isCOE.value) return 'bg-gradient-to-br from-orange-600 to-orange-400'
+  if (isSOM.value) return 'bg-gradient-to-br from-som-green to-som-yellow'
+  if (isCNAHS.value) return 'bg-gradient-to-br from-emerald-600 to-teal-600'
+  return 'bg-gradient-to-br from-blue-600 to-blue-400'
 })
 
 // Always-blue gradient for the registration form's avatar/logo.

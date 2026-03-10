@@ -473,7 +473,7 @@
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-6">
-            <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">Reset Password</h3>
+            <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Reset Password</h3>
             <button @click="closeForgotPasswordModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
           </div>
 
@@ -506,7 +506,7 @@
               <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ resetLoading ? 'Verifying...' : 'Verify Code' }}
             </button>
-            <button @click="resetStep = 1" :class="['w-full text-sm font-medium', isCOE ? 'text-orange-600 hover:text-orange-800' : 'text-purple-600 hover:text-purple-700']">Back to Step 1</button>
+            <button @click="resetStep = 1" :class="['w-full text-sm font-medium', isCOE ? 'text-orange-600 hover:text-orange-800' : isSOM ? 'text-green-600 hover:text-green-800' : 'text-purple-600 hover:text-purple-700']">Back to Step 1</button>
             <p v-if="resetMessage" :class="['text-sm text-center', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
           </div>
 
@@ -551,6 +551,20 @@ const isCOE = computed(() => {
     if (userProgram) {
       for (const dept of departments) {
         if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'COE'
+      }
+    }
+  } catch (e) {}
+  return false
+})
+
+const isSOM = computed(() => {
+  try {
+    const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
+    const user = userJson ? JSON.parse(userJson) : {}
+    const userProgram = user.program
+    if (userProgram) {
+      for (const dept of departments) {
+        if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'SOM'
       }
     }
   } catch (e) {}
