@@ -93,54 +93,56 @@ const PORT = process.env.PORT || 5000;
 const MONGO_URI = 'mongodb+srv://SSAAM:ssaam.admin.jrmsu@cluster0.bnwy9iy.mongodb.net/dbconnect?retryWrites=true&w=majority';
 
 // Helper to determine college from request and get collection prefix
+const VALID_COLLEGES = ['CCS', 'COE', 'SOM', 'CNAHS'];
+
+function normalizeCollege(value) {
+    if (!value || typeof value !== 'string') return null;
+    const upper = value.toUpperCase().trim();
+    if (VALID_COLLEGES.includes(upper)) return upper;
+    return null;
+}
+
 function getCollegeFromRequest(req) {
     try {
-        // Try header first (most direct - set by frontend)
-        const collegeHeader = req.headers['x-ssaam-college'];
-        if (collegeHeader && typeof collegeHeader === 'string') {
-            if (collegeHeader.toUpperCase() === 'COE') return 'COE';
-            if (collegeHeader.toUpperCase() === 'CCS') return 'CCS';
-        }
+        // 1. Header (most direct — set by frontend on every request)
+        const headerCollege = normalizeCollege(req.headers['x-ssaam-college']);
+        if (headerCollege) return headerCollege;
 
-        // Try other headers/theme indicators
+        // 2. Theme / department hint headers
         const theme = req.headers['x-ssaam-theme'] || req.headers['x-ssaam-department'];
-        if (theme && typeof theme === 'string') {
-            if (theme.toLowerCase().includes('coe')) return 'COE';
-            if (theme.toLowerCase().includes('ccs')) return 'CCS';
-        }
+        const themeCollege = normalizeCollege(theme);
+        if (themeCollege) return themeCollege;
 
-        // Try to extract college from JWT token directly (before auth middleware sets req.master)
+        // 3. JWT token payload (before auth middleware has run)
         try {
             const token = extractToken(req);
             if (token) {
                 const decoded = jwt.verify(token, SSAAM_API_KEY);
-                if (decoded.college) {
-                    if (decoded.college === 'COE') return 'COE';
-                    if (decoded.college === 'CCS') return 'CCS';
-                }
+                const tokenCollege = normalizeCollege(decoded.college);
+                if (tokenCollege) return tokenCollege;
             }
         } catch (jwtErr) {
-            // Token verification failed, continue to next method
+            // Token verification failed — continue
         }
 
-        // Fallback to req.master if it's already set (from other auth paths)
+        // 4. Already-authenticated master record
         if (req.master && req.master.college) {
-            if (req.master.college === 'COE') return 'COE';
-            if (req.master.college === 'CCS') return 'CCS';
+            const masterCollege = normalizeCollege(req.master.college);
+            if (masterCollege) return masterCollege;
         }
+
+        // 5. Student program-based detection
         if (req.student && req.student.program) {
-            // Check if student program is COE-based. this fallback only applies when
-            // headers/token did not already identify the college. keep the list in
-            // sync with the front-end departments config.
-            const prog = String(req.student.program || '').toUpperCase();
-            const coePrograms = ['BSCE', 'BSEE', 'BSECE', 'BSCPE'];
-            if (coePrograms.includes(prog)) return 'COE';
+            const prog = String(req.student.program).toUpperCase();
+            if (['BSCE', 'BSEE', 'BSECE', 'BSCPE'].includes(prog)) return 'COE';
+            if (['BSM'].includes(prog)) return 'SOM';
+            if (['BSN'].includes(prog)) return 'CNAHS';
         }
     } catch (e) {
         console.error('Error determining college from request:', e.message);
     }
 
-    return 'CCS'; // Default to CCS
+    return 'CCS'; // Default
 }
 
 // Helper to get collection name with appropriate prefix
@@ -160,8 +162,7 @@ function getPrefixedCollectionName(baseCollectionName, college) {
     if (baseCollectionName.toLowerCase() === 'masters') {
         return 'masters';
     }
-    const prefix = college === 'COE' ? 'coe_' : (college === 'SOM' ? 'som_' : 'ccs_');
-    return `${prefix}${baseCollectionName}`;
+    return `${getPrefix(college)}${baseCollectionName}`;
 }
 
 // Single database connection
@@ -2707,6 +2708,22 @@ async function getSettings(college = 'CCS') {
     return settings;
 }
 
+// Helper: search for a session token hash across all college collections in priority order.
+async function findSessionTokenAcrossColleges(tokenHash, preferredCollege) {
+    const query = { token_hash: tokenHash, is_revoked: false, expires_at: { $gt: new Date() } };
+    const update = { last_used_at: new Date() };
+    const opts = { new: true };
+
+    // Try preferred college first, then all others
+    const order = [preferredCollege, ...VALID_COLLEGES.filter(c => c !== preferredCollege)];
+    for (const college of order) {
+        const model = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, college);
+        const found = await model.findOneAndUpdate(query, update, opts);
+        if (found) return { sessionToken: found, foundCollege: college };
+    }
+    return { sessionToken: null, foundCollege: null };
+}
+
 async function auth(req, res, next) {
     const token = extractToken(req);
 
@@ -2717,48 +2734,18 @@ async function auth(req, res, next) {
         const decoded = jwt.verify(token, SSAAM_API_KEY);
         const tokenHash = hashToken(token);
 
-        // Prefer the college encoded in the token (if present) when looking up session tokens.
-        // This allows tokens created under one college to still validate even if the frontend
-        // is currently sending a different `X-SSAAM-College` header (for UI rendering).
-        let tokenCollege = decoded.college || req.college || 'CCS';
-
-        // Try to find the session token in the token's college collection first
-        let SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, tokenCollege);
-        let sessionToken = await SessionTokenModel.findOneAndUpdate(
-            {
-                token_hash: tokenHash,
-                is_revoked: false,
-                expires_at: { $gt: new Date() }
-            },
-            { last_used_at: new Date() },
-            { new: true }
-        );
-
-        // If not found, fallback to searching the other college's collection
-        let foundCollege = null;
-        if (sessionToken) {
-            foundCollege = tokenCollege;
-        } else {
-            const otherCollege = tokenCollege === 'COE' ? 'CCS' : 'COE';
-            const OtherSessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, otherCollege);
-            sessionToken = await OtherSessionTokenModel.findOneAndUpdate(
-                {
-                    token_hash: tokenHash,
-                    is_revoked: false,
-                    expires_at: { $gt: new Date() }
-                },
-                { last_used_at: new Date() },
-                { new: true }
-            );
-            if (sessionToken) foundCollege = otherCollege;
-        }
+        // For the session lookup, prefer the college in the token first, then the header.
+        const preferredCollege = normalizeCollege(decoded.college) || req.college || 'CCS';
+        const { sessionToken } = await findSessionTokenAcrossColleges(tokenHash, preferredCollege);
 
         if (!sessionToken) {
             return res.status(401).json({ message: "Session expired or invalid. Please login again." });
         }
 
-        // Ensure req.college reflects the collection where the session token was found
-        if (foundCollege) req.college = foundCollege;
+        // For master tokens: preserve the header-derived req.college (the college the admin
+        // chose at login / in the UI). Do NOT override it with where the session token was
+        // stored — those may differ when admins switch college context.
+        // req.college is already correctly set from getCollegeFromRequest (header-first).
 
         req.master = decoded;
         req.sessionToken = sessionToken;
@@ -2779,45 +2766,15 @@ async function studentAuthWithToken(req, res, next) {
         const decoded = jwt.verify(token, SSAAM_API_KEY);
 
         const tokenHash = hashToken(token);
-        // Prefer the college encoded in the token (if present) when looking up session tokens.
-        let tokenCollege = decoded.college || req.college || 'CCS';
-
-        // Try session lookup in token's college first
-        let SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, tokenCollege);
-        let sessionToken = await SessionTokenModel.findOneAndUpdate(
-            {
-                token_hash: tokenHash,
-                is_revoked: false,
-                expires_at: { $gt: new Date() }
-            },
-            { last_used_at: new Date() },
-            { new: true }
-        );
-
-        // Fallback to other college if not found
-        let foundCollege = null;
-        if (sessionToken) {
-            foundCollege = tokenCollege;
-        } else {
-            const otherCollege = tokenCollege === 'COE' ? 'CCS' : 'COE';
-            const OtherSessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, otherCollege);
-            sessionToken = await OtherSessionTokenModel.findOneAndUpdate(
-                {
-                    token_hash: tokenHash,
-                    is_revoked: false,
-                    expires_at: { $gt: new Date() }
-                },
-                { last_used_at: new Date() },
-                { new: true }
-            );
-            if (sessionToken) foundCollege = otherCollege;
-        }
+        const preferredCollege = normalizeCollege(decoded.college) || req.college || 'CCS';
+        const { sessionToken, foundCollege } = await findSessionTokenAcrossColleges(tokenHash, preferredCollege);
 
         if (!sessionToken) {
             return res.status(401).json({ message: "Session expired or invalid. Please login again." });
         }
 
-        // Ensure req.college reflects the collection where the session token was found
+        // For student tokens: sync req.college with where their session lives
+        // so all subsequent data queries hit the right college's collections.
         if (foundCollege) req.college = foundCollege;
 
         // Fetch the full student document (use college from token/session if available)
@@ -5907,12 +5864,8 @@ app.post('/apis/notifications/mark-seen', async (req, res) => {
         try {
             const decoded = jwt.verify(token, SSAAM_API_KEY);
             const tokenHash = hashToken(token);
-            const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, req.college);
-            const sessionToken = await SessionTokenModel.findOne({
-                token_hash: tokenHash,
-                is_revoked: false,
-                expires_at: { $gt: new Date() }
-            });
+            const preferredCollege = normalizeCollege(decoded.college) || req.college || 'CCS';
+            const { sessionToken } = await findSessionTokenAcrossColleges(tokenHash, preferredCollege);
 
             if (!sessionToken) return res.status(401).json({ message: "Session expired or invalid. Please login again." });
 
@@ -5977,38 +5930,12 @@ app.get('/apis/notifications/seen', async (req, res) => {
             }
 
             const tokenHash = hashToken(token);
-            // prefer college encoded in JWT, then header, then default
-            let tokenCollege = decoded.college || req.college || 'CCS';
-
-            // try first college
-            let SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, tokenCollege);
-            let sessionToken = await SessionTokenModel.findOne({
-                token_hash: tokenHash,
-                is_revoked: false,
-                expires_at: { $gt: new Date() }
-            });
-
-            let foundCollege = null;
-            if (sessionToken) {
-                foundCollege = tokenCollege;
-            } else {
-                const otherCollege = tokenCollege === 'COE' ? 'CCS' : 'COE';
-                const OtherModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, otherCollege);
-                sessionToken = await OtherModel.findOne({
-                    token_hash: tokenHash,
-                    is_revoked: false,
-                    expires_at: { $gt: new Date() }
-                });
-                if (sessionToken) foundCollege = otherCollege;
-            }
+            const preferredCollege = normalizeCollege(decoded.college) || req.college || 'CCS';
+            const { sessionToken } = await findSessionTokenAcrossColleges(tokenHash, preferredCollege);
 
             if (!sessionToken) {
                 throw { status: 401, message: "Session expired or invalid. Please login again." };
             }
-
-            // update req.college so the remainder of the handler uses the
-            // college where the session actually lives
-            if (foundCollege) req.college = foundCollege;
 
             return { decoded, sessionToken };
         };
@@ -6044,8 +5971,7 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
             return res.status(401).json({ message: "No token provided" });
         }
 
-        // Helper reused from notifications/seen handler above; performs college-aware
-        // session lookup with fallback and updates req.college.
+        // Verify the token and session across all college collections.
         const verifyTokenForNotifications = async () => {
             let decoded;
             try {
@@ -6055,34 +5981,13 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
             }
 
             const tokenHash = hashToken(token);
-            let tokenCollege = decoded.college || req.college || 'CCS';
-
-            let SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, tokenCollege);
-            let sessionToken = await SessionTokenModel.findOne({
-                token_hash: tokenHash,
-                is_revoked: false,
-                expires_at: { $gt: new Date() }
-            });
-
-            let foundCollege = null;
-            if (sessionToken) {
-                foundCollege = tokenCollege;
-            } else {
-                const otherCollege = tokenCollege === 'COE' ? 'CCS' : 'COE';
-                const OtherModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, otherCollege);
-                sessionToken = await OtherModel.findOne({
-                    token_hash: tokenHash,
-                    is_revoked: false,
-                    expires_at: { $gt: new Date() }
-                });
-                if (sessionToken) foundCollege = otherCollege;
-            }
+            const preferredCollege = normalizeCollege(decoded.college) || req.college || 'CCS';
+            const { sessionToken } = await findSessionTokenAcrossColleges(tokenHash, preferredCollege);
 
             if (!sessionToken) {
                 throw { status: 401, message: "Session expired or invalid. Please login again." };
             }
 
-            if (foundCollege) req.college = foundCollege;
             return decoded;
         };
 
