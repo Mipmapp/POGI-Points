@@ -356,14 +356,23 @@ All endpoints are prefixed with `/apis`.
 
 ### Notifications & Announcements
 
-> **Global collection** — all colleges see the same notifications. Only the super Admin can post.
+Notifications follow a **two-tier architecture**:
+
+| Tier | Collection | Who Posts | Who Sees |
+|---|---|---|---|
+| **Global** | `notifications` | Super Admin only | All colleges (every student) |
+| **College-specific** | `ccs_notifications`, `coe_notifications`, `som_notifications`, `cnahs_notifications` | College-level users (Medpub) | Only that college's students |
+
+- The **Global** tier is for platform-wide announcements made by the super Admin. Every student across all colleges receives these.
+- Each college still has its **own notification collection** for college-specific announcements posted by Medpub officers. Students only see their own college's posts.
+- When a student loads their notifications, the frontend fetches **both** the global notifications and their college-specific notifications and merges them together.
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/apis/notifications` | All authenticated | List all global notifications |
+| GET | `/apis/notifications` | All authenticated | List global notifications (all colleges see these) |
 | POST | `/apis/notifications` | Admin only | Create global notification |
-| PUT | `/apis/notifications/:id` | Admin only | Update notification |
-| DELETE | `/apis/notifications/:id` | Admin only | Delete notification |
+| PUT | `/apis/notifications/:id` | Admin only | Update global notification |
+| DELETE | `/apis/notifications/:id` | Admin only | Delete global notification |
 | POST | `/apis/notifications/mark-seen` | None | Mark notifications as seen |
 | GET | `/apis/notifications/seen` | None | Get seen notification IDs |
 | POST | `/apis/notifications/:id/like` | None | Toggle like on notification |
@@ -431,8 +440,16 @@ coe_sessiontokens  → COE login session tokens
 som_sessiontokens  → SOM login session tokens
 cnahs_sessiontokens→ CNAHS login session tokens
 
-notifications      → GLOBAL announcements (all colleges share this)
-notification_seen  → GLOBAL seen tracking (all colleges share this)
+notifications          → GLOBAL announcements (posted by super Admin, visible to all colleges)
+notification_seen      → GLOBAL seen tracking (shared across all colleges)
+
+ccs_notifications      → CCS-specific announcements (posted by CCS Medpub)
+coe_notifications      → COE-specific announcements (posted by COE Medpub)
+som_notifications      → SOM-specific announcements (posted by SOM Medpub)
+cnahs_notifications    → CNAHS-specific announcements (posted by CNAHS Medpub)
+
+ccs_notificationseens  → CCS seen tracking for college-specific notifications
+coe_notificationseens  → COE seen tracking for college-specific notifications
 
 masters            → Admin + Co-Admin accounts (shared, no prefix)
 settings           → Global settings
