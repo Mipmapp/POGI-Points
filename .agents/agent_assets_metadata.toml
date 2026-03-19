@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "qY8sM5rmyJxs-CZ_7KmC9"
+uri = "file://DOCUMENTATION.md"
+type = "text"
+title = "SSAAM Project Documentation"
