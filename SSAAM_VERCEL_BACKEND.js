@@ -197,6 +197,22 @@ app.use('/apis', (req, res, next) => {
 // Apply college context
 app.use('/apis', applyCollegeContext);
 
+// Enforce college restrictions for co-admin tokens on every /apis route
+app.use('/apis', (req, res, next) => {
+    try {
+        const token = extractToken(req);
+        if (token) {
+            const decoded = jwt.verify(token, SSAAM_API_KEY);
+            if (decoded && decoded.isMaster && decoded.role === 'co-admin' && decoded.college) {
+                req.college = decoded.college;
+            }
+        }
+    } catch (e) {
+        // not a valid token — let downstream auth handle it
+    }
+    next();
+});
+
 // Extract auth token from header, query, or alternative headers/cookies
 function extractToken(req) {
     // Header: "Authorization: Bearer <token>"
@@ -221,7 +237,10 @@ function extractToken(req) {
 
 // Helper function to get prefixed collection name
 function getPrefix(college) {
-    return college === 'COE' ? 'coe_' : (college === 'SOM' ? 'som_' : 'ccs_');
+    if (college === 'COE') return 'coe_';
+    if (college === 'SOM') return 'som_';
+    if (college === 'CNAHS') return 'cnahs_';
+    return 'ccs_';
 }
 
 // Helper to get collection name with prefix (excludes 'masters')
@@ -230,7 +249,7 @@ function withPrefix(college, collectionName) {
     return `${getPrefix(college)}${collectionName}`;
 }
 
-// Cache for dynamically created models
+// Cache for dynamically created models (extended below)
 const modelCache = {};
 
 // Helper to get a model with the correct prefixed collection name
@@ -1977,8 +1996,20 @@ const UPPERCASE_ONLY_REGEX = /^[A-ZÑ\s'-]+$/;
 
 // Helper function to get the correct model based on college
 // Usage: const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
+// Supports CCS, COE, SOM, and CNAHS — SOM/CNAHS models are created on demand using the CCS schema
 function getCollegeModel(baseModel, ccsModel, coeModel, college) {
-    return college === 'COE' ? coeModel : ccsModel;
+    if (college === 'COE') return coeModel;
+    if (college === 'SOM' || college === 'CNAHS') {
+        const key = `${college}_${ccsModel.modelName}`;
+        if (!mongoose.models[key]) {
+            const prefix = getPrefix(college);
+            const ccsCollectionName = ccsModel.collection.name;
+            const newCollectionName = ccsCollectionName.replace(/^ccs_/, prefix);
+            mongoose.model(key, ccsModel.schema, newCollectionName);
+        }
+        return mongoose.models[key];
+    }
+    return ccsModel;
 }
 
 const sessionTokenSchema = new mongoose.Schema({
@@ -2156,7 +2187,8 @@ const masterSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    college: { type: String, enum: ['CCS', 'COE', 'SOM'], default: 'CCS' },
+    role: { type: String, enum: ['admin', 'co-admin'], default: 'admin' },
+    college: { type: String, enum: ['CCS', 'COE', 'SOM', 'CNAHS'], default: 'CCS' },
     created_at: { type: Date, default: Date.now }
 });
 
@@ -2801,6 +2833,7 @@ function studentAuth(req, res, next) {
 
 // Middleware to verify the token actually has isMaster: true in the JWT payload
 // This prevents localStorage tampering - the JWT signature cannot be forged
+// Both full admin and co-admin pass this check
 async function requireMaster(req, res, next) {
     if (!req.master) {
         return res.status(401).json({ message: "Authentication required" });
@@ -2822,6 +2855,30 @@ async function requireMaster(req, res, next) {
         });
     }
 
+    next();
+}
+
+// Only full admin (role='admin') — co-admin is blocked from super-admin areas
+async function requireSuperAdmin(req, res, next) {
+    if (!req.master || !req.master.isMaster) {
+        return res.status(401).json({ message: "Authentication required" });
+    }
+    const role = req.master.role || 'admin';
+    if (role !== 'admin') {
+        return res.status(403).json({
+            message: "Access denied. Only the super admin can perform this action.",
+            code: 'NOT_SUPER_ADMIN'
+        });
+    }
+    next();
+}
+
+// Enforces that co-admin users can only operate on their own college's data.
+// Full admins are unrestricted. Apply this after `auth` on any route that manages college data.
+function enforceCoAdminCollege(req, res, next) {
+    if (req.master && req.master.isMaster && req.master.role === 'co-admin') {
+        req.college = req.master.college || 'CCS';
+    }
     next();
 }
 
@@ -4760,7 +4817,7 @@ app.post("/apis/masters/login", async (req, res) => {
         // Use req.college first, then fall back to stored value, then CCS.
         const tokenCollege = req.college || master.college || 'CCS';
         const token = jwt.sign(
-            { id: master._id, username: master.username, isMaster: true, college: tokenCollege },
+            { id: master._id, username: master.username, isMaster: true, role: master.role || 'admin', college: tokenCollege },
             SSAAM_API_KEY,
             { expiresIn: "7d" }
         );
@@ -4817,10 +4874,151 @@ app.post('/apis/masters/logout', auth, async (req, res) => {
 
 
 
-app.get('/apis/masters', auth, requireMaster, async (req, res) => {
+app.get('/apis/masters', auth, requireMaster, requireSuperAdmin, async (req, res) => {
     try {
-        const masters = await Master.find();
+        const masters = await Master.find({ role: { $in: ['admin', null] } }).select('-password');
         res.json(masters);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ==================== CO-ADMIN MANAGEMENT (Super Admin only) ====================
+
+// Create a co-admin account (super admin only)
+app.post('/apis/co-admin', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+    try {
+        const { username, email, password, college } = req.body;
+
+        if (!username || !email || !password || !college) {
+            return res.status(400).json({ message: "Username, email, password, and college are required" });
+        }
+
+        const validColleges = ['CCS', 'COE', 'SOM', 'CNAHS'];
+        if (!validColleges.includes(college)) {
+            return res.status(400).json({ message: `College must be one of: ${validColleges.join(', ')}` });
+        }
+
+        if (username.length < 4 || username.length > 32) {
+            return res.status(400).json({ message: "Username must be 4-32 characters" });
+        }
+
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            return res.status(400).json({ message: "Username can only contain letters, numbers, and underscores" });
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: "Valid email address required" });
+        }
+
+        if (password.length < 8) {
+            return res.status(400).json({ message: "Password must be at least 8 characters" });
+        }
+
+        const existing = await Master.findOne({ $or: [{ username }, { email }] });
+        if (existing) {
+            return res.status(400).json({ message: "Username or email already exists" });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 12);
+
+        const coAdmin = await Master.create({
+            username,
+            email,
+            password: hashedPassword,
+            role: 'co-admin',
+            college
+        });
+
+        res.status(201).json({
+            message: `Co-admin for ${college} created successfully`,
+            co_admin: coAdmin
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// List all co-admins (super admin only)
+app.get('/apis/co-admin', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+    try {
+        const coAdmins = await Master.find({ role: 'co-admin' }).select('-password');
+        res.json({ co_admins: coAdmins });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get a specific co-admin (super admin only)
+app.get('/apis/co-admin/:id', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+    try {
+        const coAdmin = await Master.findOne({ _id: req.params.id, role: 'co-admin' }).select('-password');
+        if (!coAdmin) return res.status(404).json({ message: "Co-admin not found" });
+        res.json({ co_admin: coAdmin });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update a co-admin (super admin only)
+app.put('/apis/co-admin/:id', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+    try {
+        const { username, email, password, college } = req.body;
+
+        const coAdmin = await Master.findOne({ _id: req.params.id, role: 'co-admin' });
+        if (!coAdmin) return res.status(404).json({ message: "Co-admin not found" });
+
+        if (username) {
+            if (username.length < 4 || username.length > 32) {
+                return res.status(400).json({ message: "Username must be 4-32 characters" });
+            }
+            const exists = await Master.findOne({ username, _id: { $ne: coAdmin._id } });
+            if (exists) return res.status(400).json({ message: "Username already taken" });
+            coAdmin.username = username;
+        }
+
+        if (email) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) return res.status(400).json({ message: "Valid email required" });
+            const exists = await Master.findOne({ email, _id: { $ne: coAdmin._id } });
+            if (exists) return res.status(400).json({ message: "Email already in use" });
+            coAdmin.email = email;
+        }
+
+        if (college) {
+            const validColleges = ['CCS', 'COE', 'SOM', 'CNAHS'];
+            if (!validColleges.includes(college)) {
+                return res.status(400).json({ message: `College must be one of: ${validColleges.join(', ')}` });
+            }
+            coAdmin.college = college;
+        }
+
+        if (password) {
+            if (password.length < 8) return res.status(400).json({ message: "Password must be at least 8 characters" });
+            coAdmin.password = await bcrypt.hash(password, 12);
+        }
+
+        await coAdmin.save();
+
+        res.json({
+            message: "Co-admin updated successfully",
+            co_admin: coAdmin
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Delete a co-admin (super admin only)
+app.delete('/apis/co-admin/:id', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+    try {
+        const coAdmin = await Master.findOne({ _id: req.params.id, role: 'co-admin' });
+        if (!coAdmin) return res.status(404).json({ message: "Co-admin not found" });
+
+        await Master.deleteOne({ _id: req.params.id });
+
+        res.json({ message: `Co-admin ${coAdmin.username} deleted successfully` });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -5386,10 +5584,10 @@ app.post('/apis/upload-image', canPostNotification, async (req, res) => {
 
 // ==================== NOTIFICATIONS ENDPOINTS ====================
 
-// Get all notifications (requires authentication - student or admin token)
+// Get all notifications — global collection, visible to all authenticated users across all colleges
 app.get('/apis/notifications', studentAuth, async (req, res) => {
     try {
-        const NotificationModel = getCollegeModel(Notification, CCS_Notification, COE_Notification, req.college);
+        const NotificationModel = Notification;
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
         const notifications = await NotificationModel.find()
@@ -5438,12 +5636,8 @@ app.get('/apis/notifications', studentAuth, async (req, res) => {
     }
 });
 
-// Middleware to check if user can post notifications (admin or medpub)
-// previous implementation used `req.college` directly when validating the
-// session token, which leads to a 401 if the client header differs from the
-// college where the token was issued. replicate the same token/college
-// lookup logic used elsewhere so masters can select either department in
-// the UI without being logged out.
+// Middleware: only full admin (isMaster + role='admin') can post/edit/delete notifications.
+// Notifications are global across all colleges — only the super admin can publish to all.
 async function canPostNotification(req, res, next) {
     const token = req.headers.authorization?.split(" ")[1];
 
@@ -5451,7 +5645,6 @@ async function canPostNotification(req, res, next) {
         return res.status(401).json({ message: "Access denied. No token provided." });
     }
 
-    // verify JWT first
     let decoded;
     try {
         decoded = jwt.verify(token, SSAAM_API_KEY);
@@ -5459,82 +5652,42 @@ async function canPostNotification(req, res, next) {
         return res.status(401).json({ message: "Invalid or expired token" });
     }
 
+    // Only isMaster (admin) tokens are allowed — co-admin and students cannot post
+    if (!decoded.isMaster) {
+        return res.status(403).json({ message: "Access denied. Only the Admin can post notifications.", code: 'ADMIN_ONLY' });
+    }
+
+    // Co-admin cannot post global notifications
+    if (decoded.role === 'co-admin') {
+        return res.status(403).json({ message: "Access denied. Only the super Admin can post public notifications.", code: 'NOT_SUPER_ADMIN' });
+    }
+
     const tokenHash = hashToken(token);
     let tokenCollege = decoded.college || req.college || 'CCS';
 
-    // attempt lookup in claimed college, fall back to the other one
     let SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, tokenCollege);
     let sessionToken = await SessionTokenModel.findOneAndUpdate(
-        {
-            token_hash: tokenHash,
-            is_revoked: false,
-            expires_at: { $gt: new Date() }
-        },
+        { token_hash: tokenHash, is_revoked: false, expires_at: { $gt: new Date() } },
         { last_used_at: new Date() },
         { new: true }
     );
 
-    let foundCollege = null;
-    if (sessionToken) {
-        foundCollege = tokenCollege;
-    } else {
+    if (!sessionToken) {
         const otherCollege = tokenCollege === 'COE' ? 'CCS' : 'COE';
         const OtherModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, otherCollege);
         sessionToken = await OtherModel.findOneAndUpdate(
-            {
-                token_hash: tokenHash,
-                is_revoked: false,
-                expires_at: { $gt: new Date() }
-            },
+            { token_hash: tokenHash, is_revoked: false, expires_at: { $gt: new Date() } },
             { last_used_at: new Date() },
             { new: true }
         );
-        if (sessionToken) foundCollege = otherCollege;
     }
 
     if (!sessionToken) {
         return res.status(401).json({ message: "Session expired or invalid. Please login again." });
     }
 
-    if (foundCollege) {
-        req.college = foundCollege;
-    }
-
-    // master/admin users
-    if (decoded.isMaster) {
-        req.poster = { id: decoded.id, name: decoded.username, type: 'admin' };
-        return next();
-    }
-
-    // medpub student
-    if (decoded.student_id) {
-        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-        const student = await StudentModel.findOne({ student_id: decoded.student_id });
-        if (!student) {
-            await SessionToken.updateOne({ _id: sessionToken._id }, { is_revoked: true });
-            return res.status(403).json({
-                message: "Student account not found. Please login again.",
-                code: 'STUDENT_NOT_FOUND'
-            });
-        }
-        if (student.role !== 'medpub') {
-            await SessionToken.updateOne({ _id: sessionToken._id }, { is_revoked: true });
-            return res.status(403).json({
-                message: "Your MedPub access has been revoked. Please login again.",
-                code: 'MEDPUB_ACCESS_REVOKED'
-            });
-        }
-        req.poster = {
-            id: decoded.id,
-            studentId: student._id,
-            name: student.first_name + ' ' + student.last_name,
-            type: 'medpub'
-        };
-        return next();
-    }
-
-    // anything else is not allowed
-    return res.status(403).json({ message: "Only admins and MedPub users can post notifications" });
+    req.poster = { id: decoded.id, name: decoded.username, type: 'admin' };
+    return next();
 }
 
 // Helper function to upload image to ImgBB
@@ -5588,42 +5741,11 @@ app.post('/apis/notifications', canPostNotification, async (req, res) => {
             return res.status(400).json({ message: "Message must be 2000 characters or less" });
         }
 
-        // MedPub rate limiting: 1 post per day
-        const NotificationModel = getCollegeModel(Notification, CCS_Notification, COE_Notification, req.college);
-        if (req.poster.type === 'medpub') {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-
-            // Convert poster id to ObjectId for proper comparison
-            let posterId;
-            try {
-                posterId = new mongoose.Types.ObjectId(req.poster.id);
-            } catch (e) {
-                posterId = req.poster.id;
-            }
-
-            const todayPostCount = await NotificationModel.countDocuments({
-                posted_by_id: posterId,
-                posted_by: 'medpub',
-                created_at: { $gte: today, $lt: tomorrow }
-            });
-
-            if (todayPostCount >= 1) {
-                return res.status(429).json({
-                    message: "MedPub users can only post once per day. Please try again tomorrow.",
-                    limit_type: "post",
-                    remaining: 0
-                });
-            }
-        }
+        // Global notifications collection — admin only posting
+        const NotificationModel = Notification;
 
         // Only admin can set urgent priority
         let finalPriority = priority || 'normal';
-        if (finalPriority === 'urgent' && req.poster.type !== 'admin') {
-            finalPriority = 'important'; // Downgrade to important for non-admin
-        }
 
         // Use provided image_url or upload base64 image to ImgBB
         let imageUrl = image_url || null;
@@ -5659,56 +5781,20 @@ app.post('/apis/notifications', canPostNotification, async (req, res) => {
     }
 });
 
-// Update notification (only the poster or admin can update)
+// Update notification (only admin can update — global collection)
 app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
     try {
-        // support updating image or image_url as well
         const { title, message, priority, image, image_url } = req.body;
 
-        const NotificationModel = getCollegeModel(Notification, CCS_Notification, COE_Notification, req.college);
+        const NotificationModel = Notification;
         const notification = await NotificationModel.findById(req.params.id);
 
         if (!notification) {
             return res.status(404).json({ message: "Notification not found" });
         }
 
-        // Only allow admin or the original poster to update
+        // Only the admin can update notifications (canPostNotification ensures this)
         const isAdmin = req.poster.type === 'admin';
-        const isOwner = notification.posted_by_id.toString() === req.poster.id;
-
-        if (!isAdmin && !isOwner) {
-            return res.status(403).json({ message: "You can only edit your own notifications" });
-        }
-
-        // MedPub rate limiting: 3 edits per day per post
-        if (req.poster.type === 'medpub' && isOwner) {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const tomorrow = new Date(today);
-            tomorrow.setDate(tomorrow.getDate() + 1);
-
-            // Check if the last edit was today (within today's date range)
-            const lastEditDate = notification.last_edit_date ? new Date(notification.last_edit_date) : null;
-            const lastEditWasToday = lastEditDate && lastEditDate >= today && lastEditDate < tomorrow;
-
-            // If last edit was not today, reset the counter
-            if (!lastEditWasToday) {
-                notification.edit_count = 0;
-            }
-
-            // Check if we've reached the limit
-            if (notification.edit_count >= 3) {
-                return res.status(429).json({
-                    message: "MedPub users can only edit each post 3 times per day. Please try again tomorrow.",
-                    limit_type: "edit",
-                    remaining: 0
-                });
-            }
-
-            // Increment edit count and update last edit date
-            notification.edit_count = (notification.edit_count || 0) + 1;
-            notification.last_edit_date = new Date();
-        }
 
         if (title) {
             if (title.length > 200) {
@@ -5754,12 +5840,9 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
         notification.was_edited = true;
         await notification.save();
 
-        const remainingEdits = req.poster.type === 'medpub' ? Math.max(0, 3 - notification.edit_count) : null;
-
         res.json({
             message: "Notification updated successfully",
-            notification,
-            remaining_edits: remainingEdits
+            notification
         });
 
     } catch (err) {
@@ -5768,30 +5851,16 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
     }
 });
 
-// Delete notification (only the poster or admin can delete)
+// Delete notification (admin only — global collection)
 app.delete('/apis/notifications/:id', canPostNotification, async (req, res) => {
     try {
-        const NotificationModel = getCollegeModel(Notification, CCS_Notification, COE_Notification, req.college);
-        const notification = await NotificationModel.findById(req.params.id);
+        const notification = await Notification.findById(req.params.id);
 
         if (!notification) {
             return res.status(404).json({ message: "Notification not found" });
         }
 
-        // Only allow admin or the original poster to delete
-        const isAdmin = req.poster.type === 'admin';
-        const isOwner = notification.posted_by_id.toString() === req.poster.id;
-
-        if (!isAdmin && !isOwner) {
-            return res.status(403).json({ message: "You can only delete your own notifications" });
-        }
-
-        // MedPub cannot delete admin notifications
-        if (!isAdmin && notification.posted_by === 'admin') {
-            return res.status(403).json({ message: "Only admins can delete admin notifications" });
-        }
-
-        await NotificationModel.deleteOne({ _id: req.params.id });
+        await Notification.deleteOne({ _id: req.params.id });
 
         res.json({ message: "Notification deleted successfully" });
 
@@ -5836,7 +5905,7 @@ app.post('/apis/notifications/mark-seen', async (req, res) => {
             seen_at: new Date()
         }));
 
-        const NotificationSeenModel = getCollegeModel(NotificationSeen, CCS_NotificationSeen, COE_NotificationSeen, req.college);
+        const NotificationSeenModel = NotificationSeen;
 
         await NotificationSeenModel.bulkWrite(
             seenRecords.map(record => ({
@@ -5925,7 +5994,7 @@ app.get('/apis/notifications/seen', async (req, res) => {
             return res.status(err.status || 401).json({ message: err.message });
         }
 
-        const NotificationSeenModel = getCollegeModel(NotificationSeen, CCS_NotificationSeen, COE_NotificationSeen, req.college);
+        const NotificationSeenModel = NotificationSeen;
 
         const seenRecords = await NotificationSeenModel.find({ user_id: userId })
             .select('notification_id seen_at')
@@ -6012,13 +6081,11 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
             });
         }
 
-        const NotificationModel = getCollegeModel(Notification, CCS_Notification, COE_Notification, req.college);
-        const notification = await NotificationModel.findById(req.params.id);
+        const notification = await Notification.findById(req.params.id);
         if (!notification) {
             return res.status(404).json({ message: "Notification not found" });
         }
 
-        // Initialize liked_by if it doesn't exist
         if (!notification.liked_by) {
             notification.liked_by = [];
         }

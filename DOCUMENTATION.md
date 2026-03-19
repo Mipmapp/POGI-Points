@@ -140,16 +140,36 @@ Data isolation is achieved by prefixing MongoDB collection names: `ccs_students`
 
 ## 5. User Roles
 
+### Student Roles (stored in college-prefixed `students` collections)
+
 | Role | Description | Access Level |
 |---|---|---|
 | `student` | Registered student | View own profile, attendance, and contributions |
-| `medpub` | Media/publication officer | Can post announcements and notifications |
-| `treasurer` | College treasurer | Manage payments, export reports |
-| `master` / Admin | Super admin | Full system access across all colleges |
+| `medpub` | Media/publication officer | College-level role; can manage their own profile |
+| `treasurer` | College treasurer | Manage payments, export reports for their college |
+
+### Admin Roles (stored in shared `masters` collection)
+
+| Role | Description | Access Level |
+|---|---|---|
+| `admin` | Super Admin | Full access across all colleges, all data, all co-admins |
+| `co-admin` | College Department Admin | Restricted to their assigned college only |
+
+**Admin vs Co-Admin comparison:**
+
+| Capability | Admin | Co-Admin |
+|---|---|---|
+| Post public notifications | ✅ Yes | ❌ No |
+| Manage students | ✅ All colleges | ✅ Own college only |
+| Manage events | ✅ All colleges | ✅ Own college only |
+| Manage payments | ✅ All colleges | ✅ Own college only |
+| View co-admin list | ✅ Yes | ❌ No |
+| Create co-admin accounts | ✅ Yes | ❌ No |
+| Access other admin areas | ✅ Yes | ❌ No |
 
 The college of the logged-in user is determined by:
 1. `X-SSAAM-College` request header (set by frontend)
-2. JWT token payload (`college` field)
+2. JWT token payload (`college` field — enforced server-side for co-admin)
 3. Student's program (mapped to college via `departments.js`)
 4. Default fallback: `CCS`
 
@@ -336,15 +356,38 @@ All endpoints are prefixed with `/apis`.
 
 ### Notifications & Announcements
 
+> **Global collection** — all colleges see the same notifications. Only the super Admin can post.
+
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/apis/notifications` | Student | List notifications |
-| POST | `/apis/notifications` | Medpub/Admin | Create notification |
-| PUT | `/apis/notifications/:id` | Medpub/Admin | Update notification |
-| DELETE | `/apis/notifications/:id` | Medpub/Admin | Delete notification |
+| GET | `/apis/notifications` | All authenticated | List all global notifications |
+| POST | `/apis/notifications` | Admin only | Create global notification |
+| PUT | `/apis/notifications/:id` | Admin only | Update notification |
+| DELETE | `/apis/notifications/:id` | Admin only | Delete notification |
 | POST | `/apis/notifications/mark-seen` | None | Mark notifications as seen |
 | GET | `/apis/notifications/seen` | None | Get seen notification IDs |
 | POST | `/apis/notifications/:id/like` | None | Toggle like on notification |
+
+### Co-Admin Management (Super Admin only)
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| POST | `/apis/co-admin` | Admin | Create a co-admin account for a college |
+| GET | `/apis/co-admin` | Admin | List all co-admin accounts |
+| GET | `/apis/co-admin/:id` | Admin | Get a specific co-admin |
+| PUT | `/apis/co-admin/:id` | Admin | Update co-admin (username, email, password, college) |
+| DELETE | `/apis/co-admin/:id` | Admin | Delete a co-admin account |
+
+**Create co-admin request body:**
+```json
+{
+  "username": "ccs_admin",
+  "email": "ccs@jrmsu.edu.ph",
+  "password": "securepassword",
+  "college": "CCS"
+}
+```
+College must be one of: `CCS`, `COE`, `SOM`, `CNAHS`.
 
 ### Settings & Admin
 
@@ -365,18 +408,37 @@ All data lives in a single MongoDB database (`dbconnect` on Cluster0). Collectio
 
 ### Collection Naming Convention
 
+Collections use a college-prefix to isolate each college's data. Notifications and admin accounts are shared globally.
+
 ```
 ccs_students       → CCS student records
 coe_students       → COE student records
 som_students       → SOM student records
+cnahs_students     → CNAHS student records
+
 ccs_events         → CCS attendance events
 coe_events         → COE attendance events
+som_events         → SOM attendance events
+cnahs_events       → CNAHS attendance events
+
 ccs_payments       → CCS contribution payments
 coe_payments       → COE contribution payments
-ccs_notifications  → CCS announcements
-masters            → Admin accounts (shared, no prefix)
+som_payments       → SOM contribution payments
+cnahs_payments     → CNAHS contribution payments
+
+ccs_sessiontokens  → CCS login session tokens
+coe_sessiontokens  → COE login session tokens
+som_sessiontokens  → SOM login session tokens
+cnahs_sessiontokens→ CNAHS login session tokens
+
+notifications      → GLOBAL announcements (all colleges share this)
+notification_seen  → GLOBAL seen tracking (all colleges share this)
+
+masters            → Admin + Co-Admin accounts (shared, no prefix)
 settings           → Global settings
 ```
+
+> **SOM and CNAHS models** are created automatically the first time a request for those colleges is made (dynamic model creation using the `getCollegeModel` helper). No manual setup needed.
 
 ### Key Data Shapes
 
@@ -397,6 +459,20 @@ settings           → Global settings
   "photo": "<base64 or cloudinary url>"
 }
 ```
+
+**Master (Admin / Co-Admin)**
+```json
+{
+  "username": "ccs_admin",
+  "email": "ccs@jrmsu.edu.ph",
+  "role": "co-admin",
+  "college": "CCS",
+  "created_at": "2024-01-01T00:00:00.000Z"
+}
+```
+- `role` is either `"admin"` (super admin) or `"co-admin"` (department admin)
+- `college` is one of `CCS`, `COE`, `SOM`, `CNAHS`
+- Co-admin's `college` restricts which college's data they can manage (enforced server-side via JWT)
 
 **Event**
 ```json
