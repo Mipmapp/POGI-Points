@@ -2000,14 +2000,19 @@ const UPPERCASE_ONLY_REGEX = /^[A-ZÑ\s'-]+$/;
 function getCollegeModel(baseModel, ccsModel, coeModel, college) {
     if (college === 'COE') return coeModel;
     if (college === 'SOM' || college === 'CNAHS') {
-        const key = `${college}_${ccsModel.modelName}`;
-        if (!mongoose.models[key]) {
+        // Use clean key: e.g. SOM_Student, CNAHS_Notification
+        const modelBaseName = ccsModel.modelName.replace(/^CCS_/, '');
+        const cleanKey = `${college}_${modelBaseName}`;
+        if (mongoose.models[cleanKey]) return mongoose.models[cleanKey];
+        // Fallback: dynamic creation using ccs collection name as template
+        const legacyKey = `${college}_${ccsModel.modelName}`;
+        if (!mongoose.models[legacyKey]) {
             const prefix = getPrefix(college);
             const ccsCollectionName = ccsModel.collection.name;
             const newCollectionName = ccsCollectionName.replace(/^ccs_/, prefix);
-            mongoose.model(key, ccsModel.schema, newCollectionName);
+            mongoose.model(legacyKey, ccsModel.schema, newCollectionName);
         }
-        return mongoose.models[key];
+        return mongoose.models[legacyKey];
     }
     return ccsModel;
 }
@@ -2027,9 +2032,10 @@ sessionTokenSchema.index({ user_id: 1 });
 sessionTokenSchema.index({ last_used_at: 1 });
 
 const SessionToken = mongoose.model("SessionToken", sessionTokenSchema);
-// Create college-specific variants
 const CCS_SessionToken = mongoose.model("CCS_SessionToken", sessionTokenSchema, 'ccs_sessiontokens');
 const COE_SessionToken = mongoose.model("COE_SessionToken", sessionTokenSchema, 'coe_sessiontokens');
+const SOM_SessionToken = mongoose.model("SOM_SessionToken", sessionTokenSchema, 'som_sessiontokens');
+const CNAHS_SessionToken = mongoose.model("CNAHS_SessionToken", sessionTokenSchema, 'cnahs_sessiontokens');
 
 const SESSION_INACTIVITY_MS = 12 * 60 * 60 * 1000;
 
@@ -2170,6 +2176,8 @@ studentSchema.pre('save', function () {
 const Student = mongoose.model("Student", studentSchema);
 const CCS_Student = mongoose.model("CCS_Student", studentSchema, 'ccs_students');
 const COE_Student = mongoose.model("COE_Student", studentSchema, 'coe_students');
+const SOM_Student = mongoose.model("SOM_Student", studentSchema, 'som_students');
+const CNAHS_Student = mongoose.model("CNAHS_Student", studentSchema, 'cnahs_students');
 
 const verificationCodeSchema = new mongoose.Schema({
     email: { type: String, required: true },
@@ -2225,6 +2233,8 @@ const settingsSchema = new mongoose.Schema({
 const Settings = mongoose.model("Settings", settingsSchema, "settings");
 const CCS_Settings = mongoose.model("CCS_Settings", settingsSchema, 'ccs_settings');
 const COE_Settings = mongoose.model("COE_Settings", settingsSchema, 'coe_settings');
+const SOM_Settings = mongoose.model("SOM_Settings", settingsSchema, 'som_settings');
+const CNAHS_Settings = mongoose.model("CNAHS_Settings", settingsSchema, 'cnahs_settings');
 
 // Password Reset Schema
 const passwordResetSchema = new mongoose.Schema({
@@ -2268,6 +2278,8 @@ notificationSchema.index({ created_at: -1 });
 const Notification = mongoose.model("Notification", notificationSchema);
 const CCS_Notification = mongoose.model("CCS_Notification", notificationSchema, 'ccs_notifications');
 const COE_Notification = mongoose.model("COE_Notification", notificationSchema, 'coe_notifications');
+const SOM_Notification = mongoose.model("SOM_Notification", notificationSchema, 'som_notifications');
+const CNAHS_Notification = mongoose.model("CNAHS_Notification", notificationSchema, 'cnahs_notifications');
 
 const notificationSeenSchema = new mongoose.Schema({
     user_id: { type: mongoose.Schema.Types.ObjectId, required: true },
@@ -2279,11 +2291,10 @@ notificationSeenSchema.index({ user_id: 1, notification_id: 1 }, { unique: true 
 notificationSeenSchema.index({ notification_id: 1 });
 
 const NotificationSeen = mongoose.model("NotificationSeen", notificationSeenSchema);
-// Note: some deployments previously used the pluralized collection name
-// 'ccs_notificationseens' (and 'coe_notificationseens'). Use those names
-// to read existing data created before the model was standardized.
 const CCS_NotificationSeen = mongoose.model("CCS_NotificationSeen", notificationSeenSchema, 'ccs_notificationseens');
 const COE_NotificationSeen = mongoose.model("COE_NotificationSeen", notificationSeenSchema, 'coe_notificationseens');
+const SOM_NotificationSeen = mongoose.model("SOM_NotificationSeen", notificationSeenSchema, 'som_notificationseens');
+const CNAHS_NotificationSeen = mongoose.model("CNAHS_NotificationSeen", notificationSeenSchema, 'cnahs_notificationseens');
 
 // ==================== APPLICATION SCHEMAS ====================
 
@@ -2314,6 +2325,8 @@ applicationFormSchema.index({ status: 1, created_at: -1 });
 const ApplicationForm = mongoose.model("ApplicationForm", applicationFormSchema);
 const CCS_ApplicationForm = mongoose.model("CCS_ApplicationForm", applicationFormSchema, 'ccs_applicationforms');
 const COE_ApplicationForm = mongoose.model("COE_ApplicationForm", applicationFormSchema, 'coe_applicationforms');
+const SOM_ApplicationForm = mongoose.model("SOM_ApplicationForm", applicationFormSchema, 'som_applicationforms');
+const CNAHS_ApplicationForm = mongoose.model("CNAHS_ApplicationForm", applicationFormSchema, 'cnahs_applicationforms');
 
 // Student Application Records - Individual student applications
 const studentApplicationSchema = new mongoose.Schema({
@@ -2345,6 +2358,8 @@ studentApplicationSchema.index({ form_id: 1 });
 const StudentApplication = mongoose.model("StudentApplication", studentApplicationSchema);
 const CCS_StudentApplication = mongoose.model("CCS_StudentApplication", studentApplicationSchema, 'ccs_studentapplications');
 const COE_StudentApplication = mongoose.model("COE_StudentApplication", studentApplicationSchema, 'coe_studentapplications');
+const SOM_StudentApplication = mongoose.model("SOM_StudentApplication", studentApplicationSchema, 'som_studentapplications');
+const CNAHS_StudentApplication = mongoose.model("CNAHS_StudentApplication", studentApplicationSchema, 'cnahs_studentapplications');
 
 // ==================== ATTENDANCE SCHEMAS ====================
 
@@ -2379,6 +2394,8 @@ attendanceEventSchema.index({ created_at: -1 });
 const AttendanceEvent = mongoose.model("AttendanceEvent", attendanceEventSchema);
 const CCS_AttendanceEvent = mongoose.model("CCS_AttendanceEvent", attendanceEventSchema, 'ccs_attendanceevents');
 const COE_AttendanceEvent = mongoose.model("COE_AttendanceEvent", attendanceEventSchema, 'coe_attendanceevents');
+const SOM_AttendanceEvent = mongoose.model("SOM_AttendanceEvent", attendanceEventSchema, 'som_attendanceevents');
+const CNAHS_AttendanceEvent = mongoose.model("CNAHS_AttendanceEvent", attendanceEventSchema, 'cnahs_attendanceevents');
 
 // Attendance Session Schema - Individual check-in/out periods within an event
 // Each session has a label (Morning, Afternoon, Noon, Night, Dawn) and its own time window
@@ -2411,6 +2428,8 @@ attendanceSessionSchema.index({ status: 1 });
 const AttendanceSession = mongoose.model("AttendanceSession", attendanceSessionSchema);
 const CCS_AttendanceSession = mongoose.model("CCS_AttendanceSession", attendanceSessionSchema, 'ccs_attendancesessions');
 const COE_AttendanceSession = mongoose.model("COE_AttendanceSession", attendanceSessionSchema, 'coe_attendancesessions');
+const SOM_AttendanceSession = mongoose.model("SOM_AttendanceSession", attendanceSessionSchema, 'som_attendancesessions');
+const CNAHS_AttendanceSession = mongoose.model("CNAHS_AttendanceSession", attendanceSessionSchema, 'cnahs_attendancesessions');
 
 // Attendance Log Schema - Individual student attendance records per session
 // Each log represents one student's check-in/out for a specific session
@@ -2461,6 +2480,8 @@ attendanceLogSchema.set('toObject', { virtuals: true });
 const AttendanceLog = mongoose.model("AttendanceLog", attendanceLogSchema);
 const CCS_AttendanceLog = mongoose.model("CCS_AttendanceLog", attendanceLogSchema, 'ccs_attendancelogs');
 const COE_AttendanceLog = mongoose.model("COE_AttendanceLog", attendanceLogSchema, 'coe_attendancelogs');
+const SOM_AttendanceLog = mongoose.model("SOM_AttendanceLog", attendanceLogSchema, 'som_attendancelogs');
+const CNAHS_AttendanceLog = mongoose.model("CNAHS_AttendanceLog", attendanceLogSchema, 'cnahs_attendancelogs');
 
 // ==================== CONTRIBUTION SCHEMAS ====================
 
@@ -2497,6 +2518,8 @@ eventContributionSchema.index({ event_id: 1, student_id_number: 1 });
 const EventContribution = mongoose.model("EventContribution", eventContributionSchema);
 const CCS_EventContribution = mongoose.model("CCS_EventContribution", eventContributionSchema, 'ccs_eventcontributions');
 const COE_EventContribution = mongoose.model("COE_EventContribution", eventContributionSchema, 'coe_eventcontributions');
+const SOM_EventContribution = mongoose.model("SOM_EventContribution", eventContributionSchema, 'som_eventcontributions');
+const CNAHS_EventContribution = mongoose.model("CNAHS_EventContribution", eventContributionSchema, 'cnahs_eventcontributions');
 
 // ==================== PAYMENT SCHEMAS ====================
 
@@ -2527,6 +2550,8 @@ paymentSchema.index({ created_by: 1 });
 const Payment = mongoose.model("Payment", paymentSchema);
 const CCS_Payment = mongoose.model("CCS_Payment", paymentSchema, 'ccs_payments');
 const COE_Payment = mongoose.model("COE_Payment", paymentSchema, 'coe_payments');
+const SOM_Payment = mongoose.model("SOM_Payment", paymentSchema, 'som_payments');
+const CNAHS_Payment = mongoose.model("CNAHS_Payment", paymentSchema, 'cnahs_payments');
 
 // Payment Record Schema - Consolidated: One record per student with multiple campaigns
 const paymentRecordSchema = new mongoose.Schema({
@@ -2576,6 +2601,8 @@ paymentRecordSchema.index({ 'campaigns.payment_status': 1 });
 const PaymentRecord = mongoose.model("PaymentRecord", paymentRecordSchema);
 const CCS_PaymentRecord = mongoose.model("CCS_PaymentRecord", paymentRecordSchema, 'ccs_paymentrecords');
 const COE_PaymentRecord = mongoose.model("COE_PaymentRecord", paymentRecordSchema, 'coe_paymentrecords');
+const SOM_PaymentRecord = mongoose.model("SOM_PaymentRecord", paymentRecordSchema, 'som_paymentrecords');
+const CNAHS_PaymentRecord = mongoose.model("CNAHS_PaymentRecord", paymentRecordSchema, 'cnahs_paymentrecords');
 
 // Send Password Reset Email
 async function sendPasswordResetEmail(toEmail, code, studentName) {

@@ -417,42 +417,86 @@ All data lives in a single MongoDB database (`dbconnect` on Cluster0). Collectio
 
 ### Collection Naming Convention
 
-Collections use a college-prefix to isolate each college's data. Notifications and admin accounts are shared globally.
+Every feature area has its own collection per college, prefixed with the college code. The only shared (unprefixed) collections are `notifications` (global admin announcements), `masters`, and `settings`.
 
 ```
-ccs_students       → CCS student records
-coe_students       → COE student records
-som_students       → SOM student records
-cnahs_students     → CNAHS student records
+── STUDENTS ──────────────────────────────────────────────────────────────────
+ccs_students            → CCS student records
+coe_students            → COE student records
+som_students            → SOM student records
+cnahs_students          → CNAHS student records
 
-ccs_events         → CCS attendance events
-coe_events         → COE attendance events
-som_events         → SOM attendance events
-cnahs_events       → CNAHS attendance events
+── SESSION TOKENS ────────────────────────────────────────────────────────────
+ccs_sessiontokens       → CCS login session tokens
+coe_sessiontokens       → COE login session tokens
+som_sessiontokens       → SOM login session tokens
+cnahs_sessiontokens     → CNAHS login session tokens
 
-ccs_payments       → CCS contribution payments
-coe_payments       → COE contribution payments
-som_payments       → SOM contribution payments
-cnahs_payments     → CNAHS contribution payments
+── SETTINGS ──────────────────────────────────────────────────────────────────
+ccs_settings            → CCS system settings
+coe_settings            → COE system settings
+som_settings            → SOM system settings
+cnahs_settings          → CNAHS system settings
 
-ccs_sessiontokens  → CCS login session tokens
-coe_sessiontokens  → COE login session tokens
-som_sessiontokens  → SOM login session tokens
-cnahs_sessiontokens→ CNAHS login session tokens
+── NOTIFICATIONS (college-specific) ──────────────────────────────────────────
+ccs_notifications       → CCS announcements (posted by CCS Medpub)
+coe_notifications       → COE announcements (posted by COE Medpub)
+som_notifications       → SOM announcements (posted by SOM Medpub)
+cnahs_notifications     → CNAHS announcements (posted by CNAHS Medpub)
 
-notifications          → GLOBAL announcements (posted by super Admin, visible to all colleges)
-notification_seen      → GLOBAL seen tracking (shared across all colleges)
+ccs_notificationseens   → CCS seen-tracking for college notifications
+coe_notificationseens   → COE seen-tracking for college notifications
+som_notificationseens   → SOM seen-tracking for college notifications
+cnahs_notificationseens → CNAHS seen-tracking for college notifications
 
-ccs_notifications      → CCS-specific announcements (posted by CCS Medpub)
-coe_notifications      → COE-specific announcements (posted by COE Medpub)
-som_notifications      → SOM-specific announcements (posted by SOM Medpub)
-cnahs_notifications    → CNAHS-specific announcements (posted by CNAHS Medpub)
+── ATTENDANCE ────────────────────────────────────────────────────────────────
+ccs_attendanceevents    → CCS attendance events
+coe_attendanceevents    → COE attendance events
+som_attendanceevents    → SOM attendance events
+cnahs_attendanceevents  → CNAHS attendance events
 
-ccs_notificationseens  → CCS seen tracking for college-specific notifications
-coe_notificationseens  → COE seen tracking for college-specific notifications
+ccs_attendancesessions  → CCS attendance sessions (Morning, Afternoon, etc.)
+coe_attendancesessions  → COE attendance sessions
+som_attendancesessions  → SOM attendance sessions
+cnahs_attendancesessions→ CNAHS attendance sessions
 
-masters            → Admin + Co-Admin accounts (shared, no prefix)
-settings           → Global settings
+ccs_attendancelogs      → CCS per-student check-in/out logs
+coe_attendancelogs      → COE per-student check-in/out logs
+som_attendancelogs      → SOM per-student check-in/out logs
+cnahs_attendancelogs    → CNAHS per-student check-in/out logs
+
+── CONTRIBUTIONS & PAYMENTS ──────────────────────────────────────────────────
+ccs_eventcontributions  → CCS event contribution tracking
+coe_eventcontributions  → COE event contribution tracking
+som_eventcontributions  → SOM event contribution tracking
+cnahs_eventcontributions→ CNAHS event contribution tracking
+
+ccs_payments            → CCS payment campaigns
+coe_payments            → COE payment campaigns
+som_payments            → SOM payment campaigns
+cnahs_payments          → CNAHS payment campaigns
+
+ccs_paymentrecords      → CCS per-student payment records
+coe_paymentrecords      → COE per-student payment records
+som_paymentrecords      → SOM per-student payment records
+cnahs_paymentrecords    → CNAHS per-student payment records
+
+── APPLICATION FORMS ─────────────────────────────────────────────────────────
+ccs_applicationforms        → CCS application form configurations
+coe_applicationforms        → COE application form configurations
+som_applicationforms        → SOM application form configurations
+cnahs_applicationforms      → CNAHS application form configurations
+
+ccs_studentapplications     → CCS student applications
+coe_studentapplications     → COE student applications
+som_studentapplications     → SOM student applications
+cnahs_studentapplications   → CNAHS student applications
+
+── GLOBAL (shared, no college prefix) ────────────────────────────────────────
+notifications       → Global announcements posted by super Admin (all colleges see these)
+notification_seen   → Global seen-tracking for admin announcements
+masters             → Admin + Co-Admin accounts
+settings            → Global system settings
 ```
 
 > **SOM and CNAHS models** are created automatically the first time a request for those colleges is made (dynamic model creation using the `getCollegeModel` helper). No manual setup needed.
