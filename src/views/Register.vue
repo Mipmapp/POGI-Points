@@ -130,7 +130,6 @@
     <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50">
       <div class="w-full max-w-md">
         <div class="text-center mb-6">
-          <h2 class="text-3xl font-bold text-blue-700 mb-1">Hello,</h2>
           <h2 class="text-3xl font-bold text-blue-700 mb-2">Create Your Account</h2>
           <p class="text-gray-500 text-sm">{{ stepTitle }}</p>
         </div>
@@ -142,17 +141,17 @@
 
           <form @submit.prevent="handleNext" novalidate class="space-y-4">
 
-            <div v-if="currentStep === 1" class="space-y-3">
+            <div v-if="currentStep === 1" class="space-y-3 step-animate">
               <div class="relative">
-                <img src="/user.svg" alt="First Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+                <img src="/user.svg" alt="First Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
                 <input ref="firstNameInput" v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('middleNameInput')" type="text" placeholder="First Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
               </div>
               <div class="relative">
-                <img src="/user.svg" alt="Middle Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+                <img src="/user.svg" alt="Middle Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
                 <input ref="middleNameInput" v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('lastNameInput')" type="text" placeholder="Middle Name (optional)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" />
               </div>
               <div class="relative">
-                <img src="/user.svg" alt="Last Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+                <img src="/user.svg" alt="Last Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
                 <input ref="lastNameInput" v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('emailInput')" type="text" placeholder="Last Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
               </div>
               <div class="relative">
@@ -171,10 +170,10 @@
                   <option value="IX">IX</option>
                   <option value="X">X</option>
                 </select>
-                <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40" />
+                <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-65" />
               </div>
               <div class="relative">
-                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: currentColor;"></div>
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: currentColor;"></div>
                 <input ref="emailInput" v-model="formData.email" @keydown.enter.prevent="() => handleNext()" type="email" placeholder="E-mail" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
               </div>
               <div class="flex items-center justify-center pt-2">
@@ -190,13 +189,13 @@
               </button>
             </div>
 
-            <div v-if="currentStep === 2" class="space-y-3">
+            <div v-if="currentStep === 2" class="space-y-3 step-animate">
               <div class="relative">
-                <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+                <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
                 <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="Student ID (00-A-00000)" maxlength="10" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
               </div>
               <div class="relative">
-                <img src="/book.svg" alt="Year Level" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+                <img src="/book.svg" alt="Year Level" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
                 <select v-model="formData.year_level" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none appearance-none text-sm text-gray-700" required>
                   <option value="" disabled>Select Year Level</option>
                   <option value="1st Year">1st Year</option>
@@ -204,17 +203,17 @@
                   <option value="3rd Year">3rd Year</option>
                   <option value="4th Year">4th Year</option>
                 </select>
-                <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40" />
+                <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-65" />
               </div>
               <div>
                 <div class="relative" ref="programDropdownDesktopRef">
-                  <img src="/course.svg" alt="Course" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40 z-10" />
+                  <img src="/course.svg" alt="Course" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65 z-10" />
                   <button type="button" @click="toggleProgramMenu('desktop')" class="w-full text-left pl-11 pr-10 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none flex items-center justify-between text-sm text-gray-700">
                     <span class="truncate">
                       <template v-if="selectedProgramItem">{{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}</template>
                       <template v-else><span class="text-gray-400">Select Program</span></template>
                     </span>
-                    <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-40 flex-shrink-0" />
+                    <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-65 flex-shrink-0" />
                   </button>
                   <ul v-if="showProgramMenu" :class="showMenuAboveDesktop ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto'">
                     <li v-for="p in flattenedPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer">
@@ -250,7 +249,7 @@
               </div>
             </div>
 
-            <div v-if="currentStep === 3" class="space-y-4">
+            <div v-if="currentStep === 3" class="space-y-4 step-animate">
               <div class="text-center">
                 <div class="w-40 h-40 mx-auto mb-4 bg-green-50 rounded-full flex items-center justify-center overflow-hidden">
                   <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
@@ -285,7 +284,7 @@
               </div>
             </div>
 
-            <div v-if="currentStep === 3.5" class="space-y-4">
+            <div v-if="currentStep === 3.5" class="space-y-4 step-animate">
               <div class="text-center mb-4">
                 <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
                   <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -351,7 +350,7 @@
               </div>
             </div>
 
-            <div v-if="currentStep === 4" class="space-y-4">
+            <div v-if="currentStep === 4" class="space-y-4 step-animate">
               <div class="text-center mb-4">
                 <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
                   <img src="/mail-gradient.svg" alt="Email" class="w-8 h-8" />
@@ -452,7 +451,6 @@
       <div class="max-w-md mx-auto">
 
         <div class="mb-5 text-center">
-          <h2 class="text-2xl font-bold text-blue-700 mb-1">Hello,</h2>
           <h2 class="text-2xl font-bold text-blue-700 mb-1">Create Your Account</h2>
           <p class="text-gray-500 text-xs">{{ stepTitle }}</p>
         </div>
@@ -463,17 +461,17 @@
 
         <form @submit.prevent="handleNext" novalidate class="space-y-4">
 
-          <div v-if="currentStep === 1" class="space-y-3">
+          <div v-if="currentStep === 1" class="space-y-3 step-animate">
             <div class="relative">
-              <img src="/user.svg" alt="First Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <img src="/user.svg" alt="First Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
               <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="First Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
             </div>
             <div class="relative">
-              <img src="/user.svg" alt="Middle Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <img src="/user.svg" alt="Middle Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
               <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="Middle Name (optional)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" />
             </div>
             <div class="relative">
-              <img src="/user.svg" alt="Last Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <img src="/user.svg" alt="Last Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
               <input v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" type="text" placeholder="Last Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
             </div>
             <div class="relative">
@@ -485,10 +483,10 @@
                 <option value="III">III</option>
                 <option value="IV">IV</option>
               </select>
-              <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40" />
+              <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-65" />
             </div>
             <div class="relative">
-              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: currentColor;"></div>
+              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: currentColor;"></div>
               <input v-model="formData.email" type="email" placeholder="E-mail" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
             </div>
             <div class="flex items-center justify-center pt-1">
@@ -504,13 +502,13 @@
             </button>
           </div>
 
-          <div v-if="currentStep === 2" class="space-y-3">
+          <div v-if="currentStep === 2" class="space-y-3 step-animate">
             <div class="relative">
-              <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
               <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="Student ID (00-A-00000)" maxlength="10" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
             </div>
             <div class="relative">
-              <img src="/book.svg" alt="Year Level" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <img src="/book.svg" alt="Year Level" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
               <select v-model="formData.year_level" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none appearance-none text-sm text-gray-700" required>
                 <option value="" disabled>Select Year Level</option>
                 <option value="1st Year">1st Year</option>
@@ -518,17 +516,17 @@
                 <option value="3rd Year">3rd Year</option>
                 <option value="4th Year">4th Year</option>
               </select>
-              <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40" />
+              <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-65" />
             </div>
             <div>
               <div class="relative" ref="programDropdownMobileRef">
-                <img src="/course.svg" alt="Course" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40 z-10" />
+                <img src="/course.svg" alt="Course" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65 z-10" />
                 <button type="button" @click="toggleProgramMenu('mobile')" class="w-full text-left pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none flex items-center justify-between text-sm text-gray-700">
                   <span class="truncate">
                     <template v-if="selectedProgramItem">{{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}</template>
                     <template v-else><span class="text-gray-400">Select Program</span></template>
                   </span>
-                  <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-40 flex-shrink-0" />
+                  <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-65 flex-shrink-0" />
                 </button>
                 <ul v-if="showProgramMenu" :class="showMenuAboveMobile ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto'">
                   <li v-for="p in flattenedPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer">
@@ -563,7 +561,7 @@
             </div>
           </div>
 
-          <div v-if="currentStep === 3" class="space-y-4">
+          <div v-if="currentStep === 3" class="space-y-4 step-animate">
             <div class="text-center">
               <div class="w-36 h-36 sm:w-40 sm:h-40 mx-auto mb-4 bg-green-50 rounded-full flex items-center justify-center overflow-hidden">
                 <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
@@ -598,7 +596,7 @@
             </div>
           </div>
 
-          <div v-if="currentStep === 3.5" class="space-y-4">
+          <div v-if="currentStep === 3.5" class="space-y-4 step-animate">
             <div class="text-center mb-3">
               <div class="w-14 h-14 mx-auto mb-3 bg-blue-100 rounded-full flex items-center justify-center">
                 <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -670,7 +668,7 @@
             </div>
           </div>
 
-          <div v-if="currentStep === 4" class="space-y-4">
+          <div v-if="currentStep === 4" class="space-y-4 step-animate">
             <div class="text-center mb-3 sm:mb-4">
               <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-blue-100 rounded-full flex items-center justify-center">
                 <img src="/mail-gradient.svg" alt="Email" class="w-7 h-7 sm:w-8 sm:h-8" />
@@ -1548,5 +1546,19 @@ const goToLogin = () => {
 .fade-scale-leave-to {
   opacity: 0;
   transform: scale(0.95);
+}
+
+.step-animate {
+  animation: step-enter 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+@keyframes step-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

@@ -373,14 +373,14 @@
         <div class="bg-white rounded-3xl shadow-xl p-8">
           <form @submit.prevent="handleLogin" novalidate class="space-y-4">
             <div class="relative">
-              <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
               <input ref="studentIdInput" v-model="studentId" type="text" placeholder="Student ID (e.g. 25-A-12345)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" @keydown.enter.prevent="focusPassword" required />
             </div>
 
             <div class="relative">
-              <img src="/key.svg" alt="Password" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <img src="/key.svg" alt="Password" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
               <input ref="passwordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Password" class="w-full pl-11 pr-12 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
-              <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70 opacity-40', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
+              <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-80 opacity-65', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
             </div>
 
             <button type="button" @click="showDepartmentModal = true" :class="['w-full py-3 px-6 rounded-full font-medium transition-all duration-300 flex items-center justify-center gap-3',
@@ -398,12 +398,12 @@
                 </div>
               </template>
               <template v-else>
-                <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain opacity-40" />
+                <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain opacity-65" />
                 <span class="text-sm">Select College</span>
               </template>
             </button>
 
-            <div class="text-right">
+            <div class="text-center">
               <button type="button" @click="showForgotPasswordModal = true" class="text-sm text-blue-500 hover:text-blue-700 font-medium">
                 forgot your password?
               </button>
@@ -457,14 +457,14 @@
 
         <form @submit.prevent="handleLogin" novalidate class="space-y-4">
           <div class="relative">
-            <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+            <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
             <input ref="mobileStudentIdInput" v-model="studentId" type="text" placeholder="Student ID (e.g. 25-A-12345)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" @keydown.enter.prevent="focusMobilePassword" required />
           </div>
 
           <div class="relative">
-            <img src="/key.svg" alt="Password" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+            <img src="/key.svg" alt="Password" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
             <input ref="mobilePasswordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Password" class="w-full pl-11 pr-12 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
-            <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70 opacity-40', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
+            <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-80 opacity-65', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
           </div>
 
           <button type="button" @click="showDepartmentModal = true" :class="['w-full py-3 px-6 rounded-full font-medium transition-all duration-300 flex items-center justify-center gap-3',
@@ -482,12 +482,12 @@
               </div>
             </template>
             <template v-else>
-              <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain opacity-40" />
+              <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain opacity-65" />
               <span class="text-sm">Select College</span>
             </template>
           </button>
 
-          <div class="text-right">
+          <div class="text-center">
             <button type="button" @click="showForgotPasswordModal = true" class="text-sm text-blue-500 hover:text-blue-700 font-medium">
               forgot your password?
             </button>
