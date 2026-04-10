@@ -60,10 +60,12 @@ export const getCollegePrefix = () => {
 // Helper function to get the appropriate API URL based on user's college
 export const getAPIBaseURL = () => {
   try {
-    // All colleges use the same backend endpoint
-    return import.meta.env.VITE_API_URL || 'https://ssaam-api.vercel.app'
+    // If VITE_API_URL is set, use it; otherwise use relative URL (proxied by Vite in dev)
+    const configured = import.meta.env.VITE_API_URL
+    if (configured && configured.trim() !== '') return configured.trim()
+    return ''
   } catch (e) {
-    return import.meta.env.VITE_API_URL || 'https://ssaam-api.vercel.app'
+    return ''
   }
 }
 
