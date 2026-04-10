@@ -1582,15 +1582,16 @@ const goToLogin = () => {
   position: absolute;
   bottom: -80px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.22);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.25);
   animation: float-up linear infinite;
 }
 
 @keyframes float-up {
   0%   { transform: translateY(0) scale(1);   opacity: 0; }
-  10%  { opacity: 0.8; }
-  90%  { opacity: 0.4; }
+  8%   { opacity: 1; }
+  88%  { opacity: 0.7; }
   100% { transform: translateY(-110vh) scale(0.75); opacity: 0; }
 }
 
