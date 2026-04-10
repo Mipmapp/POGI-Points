@@ -7033,7 +7033,7 @@ const getDefaultProfileGradient = () => {
   if (dept === 'COE') return 'linear-gradient(to bottom right, #fb923c, #dc2626)' // orange to red
   if (dept === 'SOM') return 'linear-gradient(to bottom right, #22c55e, #eab308)' // green to yellow
   if (dept === 'CNAHS') return 'linear-gradient(to bottom right, #22c55e, #16a34a)' // green to darker green
-  return 'linear-gradient(to bottom right, #ec4899, #9333ea)' // pink to purple
+  return 'linear-gradient(to bottom right, #1e3bdb, #4f62ff)' // ssaam blue
 }
 
 const applyPaletteToGradient = (palette) => {
@@ -11633,10 +11633,8 @@ const handleEditImageUpload = async (event) => {
 }
 
 const handleProfileImageError = () => {
-  if (currentPageNum.value < totalPages.value) {
-    currentPageNum.value++
-    refreshStudents()
-  }
+  profileImageLoading.value = false
+  profileImageFailed.value = true
 }
 
 const goToPreviousPage = () => {
