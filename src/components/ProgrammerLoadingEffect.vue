@@ -1,51 +1,45 @@
 <template>
   <transition name="terminal-fade">
-    <!-- Fancy terminal-style loading for CCS theme -->
-    <div v-if="visible && theme && theme.toUpperCase() === 'CCS'" class="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-purple-900 via-purple-800 to-pink-900 font-mono" style="height:100dvh">
-      <!-- Animated Background Scanner Lines -->
+    <div v-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 font-mono" style="height:100dvh">
       <div class="absolute inset-0 overflow-hidden opacity-30 pointer-events-none">
         <div class="scanner-line"></div>
         <div class="grid-overlay"></div>
       </div>
 
       <div class="relative w-full max-w-2xl p-6 md:p-8 mx-4 border border-white/20 bg-black/40 backdrop-blur-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden">
-        <!-- SSAAM Branding Corner -->
         <div class="absolute top-0 right-0 p-4 opacity-10">
           <div class="text-[40px] font-bold text-white select-none tracking-tighter">SSAAM</div>
         </div>
 
-        <!-- Terminal Header -->
         <div class="absolute top-0 left-0 right-0 h-10 bg-white/5 border-b border-white/10 flex items-center px-4 gap-2">
-          <div class="w-2.5 h-2.5 rounded-full bg-purple-400"></div>
-          <div class="w-2.5 h-2.5 rounded-full bg-pink-400"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-blue-400"></div>
+          <div class="w-2.5 h-2.5 rounded-full bg-sky-400"></div>
           <div class="w-2.5 h-2.5 rounded-full bg-indigo-400"></div>
           <span class="ml-3 text-[10px] text-white/40 tracking-[0.3em] uppercase font-bold">Secure Access Protocol v3.0</span>
         </div>
 
-        <!-- Terminal Content -->
         <div class="mt-6 space-y-3 text-sm md:text-base min-h-[220px] relative z-10">
           <div v-for="(line, index) in visibleLines" :key="index" class="flex items-start">
-            <span class="mr-3 text-pink-400 font-bold">>></span>
+            <span class="mr-3 text-blue-400 font-bold">>></span>
             <span class="typing-text text-white font-medium">{{ line }}</span>
           </div>
           
           <div v-if="visibleLines.length < script.length" class="flex items-center">
-            <span class="mr-3 text-pink-400 font-bold">>></span>
-            <div class="w-2 h-5 bg-pink-500 animate-pulse"></div>
+            <span class="mr-3 text-blue-400 font-bold">>></span>
+            <div class="w-2 h-5 bg-blue-500 animate-pulse"></div>
           </div>
 
-          <!-- SSAAM Style Progress Bar -->
           <div v-if="showProgress" class="mt-10 space-y-2">
             <div class="flex justify-between items-end">
               <div class="flex flex-col">
                 <span class="text-[10px] uppercase tracking-widest text-white/40 font-bold">System Status</span>
                 <span class="text-xs text-white font-bold">{{ message }}</span>
               </div>
-              <span class="text-xl font-bold italic text-pink-400 tabular-nums">{{ progress }}%</span>
+              <span class="text-xl font-bold italic text-blue-400 tabular-nums">{{ progress }}%</span>
             </div>
             <div class="h-2 w-full bg-white/10 rounded-full relative overflow-hidden">
               <div 
-                class="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300 relative" 
+                class="h-full bg-gradient-to-r from-blue-500 to-sky-400 rounded-full transition-all duration-300 relative" 
                 :style="{ width: `${progress}%` }"
               >
                 <div class="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.4)_50%,transparent_100%)] animate-shimmer"></div>
@@ -54,24 +48,12 @@
           </div>
         </div>
 
-        <!-- Decorative UI Elements -->
         <div class="absolute bottom-0 left-0 p-4 flex gap-4 opacity-20">
           <div class="flex flex-col gap-1">
-            <div class="h-1 w-8 bg-purple-400"></div>
-            <div class="h-1 w-4 bg-pink-400"></div>
+            <div class="h-1 w-8 bg-blue-400"></div>
+            <div class="h-1 w-4 bg-sky-400"></div>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- Simple circular spinner overlay for non-CCS themes -->
-    <div v-else-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-50" style="height:100dvh">
-      <div class="p-6 bg-white rounded-lg shadow-lg flex flex-col items-center gap-3">
-        <svg class="animate-spin h-12 w-12 text-gray-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        <div class="text-gray-800 font-semibold">{{ message || 'Loading...' }}</div>
       </div>
     </div>
   </transition>
@@ -86,7 +68,6 @@ const props = defineProps({
     type: String,
     default: 'SYSTEM INITIALIZING'
   },
-  // theme can be department label like 'CCS' or 'COE' - when CCS use fancy terminal, otherwise use simple spinner overlay
   theme: {
     type: String,
     default: ''
@@ -121,10 +102,6 @@ const runTerminal = async () => {
   }
 }
 
-const isCCSTheme = () => {
-  return (props.theme && props.theme.toUpperCase() === 'CCS')
-}
-
 watch(() => props.visible, (newVal) => {
   if (newVal) {
     runTerminal()
@@ -145,7 +122,6 @@ watch(() => props.visible, (newVal) => {
   }
 })
 
-// Prevent background scrolling / layout shifts on mobile when overlay is visible
 let previousHtmlOverflow = ''
 watch(() => props.visible, (visible) => {
   try {
@@ -155,9 +131,7 @@ watch(() => props.visible, (visible) => {
     } else {
       document.documentElement.style.overflow = previousHtmlOverflow || ''
     }
-  } catch (e) {
-    // ignore (SSR or non-browser)
-  }
+  } catch (e) {}
 })
 
 onMounted(() => {
@@ -192,7 +166,7 @@ onUnmounted(() => {
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(236, 72, 153, 0.5), transparent);
+  background: linear-gradient(90deg, transparent, rgba(96, 165, 250, 0.5), transparent);
   animation: scan 4s linear infinite;
   z-index: 1;
 }
@@ -215,5 +189,3 @@ onUnmounted(() => {
   letter-spacing: 0.02em;
 }
 </style>
-
-
