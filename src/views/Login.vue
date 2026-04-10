@@ -3,7 +3,7 @@
     <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40" @click.self="showContactModal = false">
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden">
-          <div class="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-400 px-6 py-5 flex items-center justify-between">
+          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center justify-between">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
                 <div class="w-5 h-5" style="-webkit-mask: url(/help.svg) center/contain no-repeat; mask: url(/help.svg) center/contain no-repeat; background-color: white;"></div>
@@ -53,7 +53,7 @@
               </ul>
             </div>
 
-            <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition">
+            <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition">
               Close
             </button>
           </div>
@@ -97,7 +97,7 @@
             <button @click="showVerificationModal = false; isLoading = false" class="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition duration-300">
               Cancel
             </button>
-            <button @click="verifyAdminCode" class="flex-1 px-6 py-2 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300">
+            <button @click="verifyAdminCode" class="flex-1 px-6 py-2 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-lg font-medium hover:from-ssaam-dark hover:to-ssaam-light transition duration-300">
               Verify
             </button>
           </div>
@@ -122,7 +122,7 @@
               <h3 class="text-xl sm:text-2xl font-extrabold text-gray-800 mt-2 sm:mt-3">Account College Mismatch</h3>
               <p class="text-gray-600 mt-2 text-sm leading-snug px-3 sm:px-4 line-clamp-6">{{ mismatchMessage }}</p>
               <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center px-3 sm:px-4">
-                <button ref="mismatchPrimary" @click="goToCollegePortal" class="modal-primary w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg font-semibold shadow-sm transform transition duration-200 hover:-translate-y-0.5">Go to {{ mismatchCollege }} Login</button>
+                <button ref="mismatchPrimary" @click="goToCollegePortal" class="modal-primary w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-3 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-lg font-semibold shadow-sm transform transition duration-200 hover:-translate-y-0.5">Go to {{ mismatchCollege }} Login</button>
                 <button @click="showCollegeMismatch = false" class="modal-secondary w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transform transition duration-150">Try Again</button>
               </div>
             </div>
@@ -165,7 +165,7 @@
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-          <div class="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-400 rounded-t-3xl px-6 py-5 text-center relative">
+          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl px-6 py-5 text-center relative">
             <h3 class="text-xl font-bold text-white">Meet Our Developers</h3>
             <p class="text-blue-100 text-xs mt-0.5">CCS - Creatives Committee</p>
             <button @click="showDevelopersPopup = false" class="absolute right-4 top-4 text-white/70 hover:text-white text-2xl leading-none">&times;</button>
@@ -176,7 +176,7 @@
               <a v-for="(dev, index) in developers.slice(0,2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
                  class="flex flex-col items-center p-3 bg-green-50 rounded-2xl w-32 hover:bg-blue-50 hover:scale-105 transition-all duration-300 cursor-pointer"
                  :style="{ transitionDelay: `${index * 50}ms` }">
-                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
                   <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
                   <span v-else>{{ dev.initials }}</span>
                 </div>
@@ -190,7 +190,7 @@
               <a v-for="(dev, idx) in developers.slice(2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
                  class="flex flex-col items-center p-3 bg-green-50 rounded-2xl hover:bg-blue-50 hover:scale-105 transition-all duration-300 cursor-pointer"
                  :style="{ transitionDelay: `${(idx + 2) * 50}ms` }">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
                   <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
                   <span v-else>{{ dev.initials }}</span>
                 </div>
@@ -205,7 +205,7 @@
               <p class="text-xs text-gray-500">Chairperson: Sheen Lee</p>
             </div>
 
-            <button @click="showDevelopersPopup = false" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition">
+            <button @click="showDevelopersPopup = false" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition">
               Close
             </button>
           </div>
@@ -242,7 +242,7 @@
                   selectedDepartment.label === 'COE' ? 'from-orange-600 to-orange-400' :
                   selectedDepartment.label === 'SOM' ? 'from-green-600 to-green-400' :
                   selectedDepartment.label === 'CNAHS' ? 'from-green-700 to-green-500' :
-                  'from-blue-600 to-blue-400']">
+                  'from-ssaam-dark to-ssaam-light']">
                   <div class="bg-white/20 backdrop-blur-md rounded-lg p-3 sm:p-4 border border-white/30">
                     <div class="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3">
                       <div class="flex-shrink-0">
@@ -292,7 +292,7 @@
                   selectedDepartment.label === 'COE' ? 'from-orange-600 via-orange-500 to-orange-400 hover:from-orange-700 hover:via-orange-600 hover:to-orange-500' :
                   selectedDepartment.label === 'SOM' ? 'from-green-600 via-green-500 to-green-400 hover:from-green-700 hover:via-green-600 hover:to-green-500' :
                   selectedDepartment.label === 'CNAHS' ? 'from-green-700 via-green-600 to-green-500 hover:from-green-800 hover:via-green-700 hover:to-green-600' :
-                  'from-blue-700 via-blue-600 to-blue-500 hover:from-blue-800 hover:via-blue-700 hover:to-blue-600']">
+                  'from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light']">
                   Confirm
                 </button>
                 <button @click="selectedDepartment = null" :class="['flex-1 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition border',
@@ -336,7 +336,7 @@
                         dept.label === 'COE' ? 'from-orange-700 via-orange-600 to-red-600' :
                         dept.label === 'SOM' ? 'from-green-700 via-green-600 to-yellow-600' :
                         dept.label === 'CNAHS' ? 'from-green-800 via-green-700 to-green-600' :
-                        'from-blue-700 via-blue-600 to-blue-500']">{{ dept.label }}</span>
+                        'from-ssaam-dark to-ssaam-light']">{{ dept.label }}</span>
                       <span class="text-xs text-gray-500 font-medium">{{ dept.programs.length }} program<span v-if="dept.programs.length !== 1">s</span></span>
                     </div>
                   </div>
@@ -427,7 +427,7 @@
               </button>
             </div>
 
-            <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
+            <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
               {{ isLoading ? 'Logging in...' : 'Log In' }}
             </button>
 
@@ -510,7 +510,7 @@
             </button>
           </div>
 
-          <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
+          <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
             {{ isLoading ? 'Logging in...' : 'Log In' }}
           </button>
 
@@ -544,7 +544,7 @@
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
           <!-- Gradient Header -->
-          <div class="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-400 px-6 py-5 flex items-center justify-between flex-shrink-0">
+          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -577,7 +577,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                 <input v-model="resetEmail" type="email" placeholder="your.email@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
               </div>
-              <button @click="requestResetCode" :disabled="resetLoading || !resetStudentId.trim() || !resetEmail.trim()" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+              <button @click="requestResetCode" :disabled="resetLoading || !resetStudentId.trim() || !resetEmail.trim()" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
                 <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 {{ resetLoading ? 'Sending...' : 'Send Code' }}
               </button>
@@ -593,7 +593,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
                 <input v-model="resetCode" type="text" placeholder="123456" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-center text-2xl tracking-widest transition" />
               </div>
-              <button @click="verifyResetCode" :disabled="resetLoading || resetCode.length !== 6" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+              <button @click="verifyResetCode" :disabled="resetLoading || resetCode.length !== 6" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
                 <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 {{ resetLoading ? 'Verifying...' : 'Verify Code' }}
               </button>
@@ -614,7 +614,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
                 <input v-model="confirmNewPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
               </div>
-              <button @click="completePasswordReset" :disabled="resetLoading || !newPassword || newPassword !== confirmNewPassword" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+              <button @click="completePasswordReset" :disabled="resetLoading || !newPassword || newPassword !== confirmNewPassword" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
                 <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 {{ resetLoading ? 'Resetting...' : 'Reset Password' }}
               </button>
@@ -1306,7 +1306,7 @@ const verifyAdminCode = () => {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1300bf 0%, #311bf5 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -1321,7 +1321,7 @@ const verifyAdminCode = () => {
 }
 
 .mobile-bg-panel {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1300bf 0%, #311bf5 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   position: relative;
@@ -1450,7 +1450,7 @@ const verifyAdminCode = () => {
 
 /* Button hover glow and subtle gradient animation */
 .modal-primary {
-  background-image: linear-gradient(90deg, #2563eb 0%, #1e40af 100%);
+  background-image: linear-gradient(90deg, #1300bf 0%, #311bf5 100%);
 }
 .modal-primary:hover { box-shadow: 0 12px 30px rgba(37,99,235,0.18); }
 .modal-secondary:hover { box-shadow: 0 8px 20px rgba(15,23,42,0.06); }

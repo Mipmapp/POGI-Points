@@ -63,7 +63,7 @@ const loadingScreenStyle = computed(() => {
     }
   }
   return {
-    background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.7) 0%, rgba(118, 75, 162, 0.7) 100%), url(/assets/classroom-bg.jpg)',
+    background: 'linear-gradient(135deg, rgba(19, 0, 191, 0.7) 0%, rgba(49, 27, 245, 0.7) 100%), url(/assets/classroom-bg.jpg)',
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     backgroundAttachment: 'fixed'

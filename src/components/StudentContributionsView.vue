@@ -22,7 +22,7 @@
         class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
       >
         <!-- Event Header -->
-        <div class="bg-gradient-to-r from-purple-600 to-pink-500 px-6 py-4">
+        <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-4">
           <h3 class="text-lg font-bold text-white">{{ event.eventTitle }}</h3>
           <p class="text-purple-100 text-sm">{{ formatDate(event.eventDate) }}</p>
         </div>

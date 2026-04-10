@@ -3,7 +3,7 @@
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-          <div class="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-400 rounded-t-3xl px-6 py-5 text-center relative">
+          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl px-6 py-5 text-center relative">
             <h3 class="text-xl font-bold text-white">Meet Our Developers</h3>
             <p class="text-blue-100 text-xs mt-0.5">CCS - Creatives Committee</p>
             <button @click="showDevelopersPopup = false" class="absolute right-4 top-4 text-white/70 hover:text-white text-2xl leading-none">&times;</button>
@@ -14,7 +14,7 @@
               <a v-for="(dev, index) in developers.slice(0,2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
                  class="flex flex-col items-center p-3 bg-green-50 rounded-2xl w-32 hover:bg-blue-50 hover:scale-105 transition-all duration-300 cursor-pointer"
                  :style="{ transitionDelay: `${index * 50}ms` }">
-                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
                   <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
                   <span v-else>{{ dev.initials }}</span>
                 </div>
@@ -28,7 +28,7 @@
               <a v-for="(dev, idx) in developers.slice(2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
                  class="flex flex-col items-center p-3 bg-green-50 rounded-2xl hover:bg-blue-50 hover:scale-105 transition-all duration-300 cursor-pointer"
                  :style="{ transitionDelay: `${(idx + 2) * 50}ms` }">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
                   <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
                   <span v-else>{{ dev.initials }}</span>
                 </div>
@@ -43,7 +43,7 @@
               <p class="text-xs text-gray-500">Chairperson: Sheen Lee</p>
             </div>
 
-            <button @click="showDevelopersPopup = false" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition">
+            <button @click="showDevelopersPopup = false" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition">
               Close
             </button>
           </div>
@@ -189,7 +189,7 @@
                   <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
                 </div>
               </div>
-              <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+              <button type="submit" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
                 Next <span class="ml-2">&rarr;</span>
               </button>
             </div>
@@ -254,7 +254,7 @@
                 <button type="button" @click="currentStep--" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                   <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
                   Next <span class="ml-2">&rarr;</span>
                 </button>
               </div>
@@ -289,7 +289,7 @@
                 <button type="button" @click="currentStep--" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                   <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
                   Next <span class="ml-2">&rarr;</span>
                 </button>
               </div>
@@ -355,7 +355,7 @@
                 <button type="button" @click="currentStep = 3" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                   <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-full font-semibold transition duration-300 flex items-center justify-center text-sm uppercase tracking-wide shadow-md', reviewCountdown > 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-blue-400 text-white hover:from-blue-700 hover:to-blue-500']">
+                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-full font-semibold transition duration-300 flex items-center justify-center text-sm uppercase tracking-wide shadow-md', reviewCountdown > 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white hover:from-ssaam-dark hover:to-ssaam-light']">
                   {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-2">&rarr;</span>
                 </button>
               </div>
@@ -421,7 +421,7 @@
                 <button type="button" @click="currentStep = 3.5" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                   <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
                   Sign Up <span class="ml-2">&rarr;</span>
                 </button>
               </div>
@@ -507,7 +507,7 @@
                 <div class="w-8 h-1 bg-gray-200 rounded-full"></div>
               </div>
             </div>
-            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+            <button type="submit" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
               Next <span class="ml-2">&rarr;</span>
             </button>
           </div>
@@ -571,7 +571,7 @@
               <button type="button" @click="currentStep--" class="flex-1 bg-green-50 text-blue-600 py-3 px-4 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                 <span class="mr-1">&larr;</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-4 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+              <button type="submit" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-4 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
                 Next <span class="ml-1">&rarr;</span>
               </button>
             </div>
@@ -606,7 +606,7 @@
               <button type="button" @click="currentStep--" class="flex-1 bg-green-50 text-blue-600 py-3 px-4 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                 <span class="mr-1">&larr;</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-4 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+              <button type="submit" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-4 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
                 Next <span class="ml-1">&rarr;</span>
               </button>
             </div>
@@ -678,7 +678,7 @@
               <button type="button" @click="currentStep = 3" class="flex-1 bg-green-50 text-blue-600 py-3 px-3 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                 <span class="mr-1">&larr;</span>Back
               </button>
-              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-3 rounded-full font-semibold transition duration-300 flex items-center justify-center text-sm uppercase tracking-wide shadow-md', reviewCountdown > 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-blue-400 text-white hover:from-blue-700 hover:to-blue-500']">
+              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-3 rounded-full font-semibold transition duration-300 flex items-center justify-center text-sm uppercase tracking-wide shadow-md', reviewCountdown > 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white hover:from-ssaam-dark hover:to-ssaam-light']">
                 {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1">&rarr;</span>
               </button>
             </div>
@@ -744,7 +744,7 @@
               <button type="button" @click="currentStep = 3.5" class="flex-1 bg-green-50 text-blue-600 py-3 px-3 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                 <span class="mr-1">&larr;</span>Back
               </button>
-              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-3 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+              <button type="submit" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-3 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
                 Sign Up <span class="ml-1">&rarr;</span>
               </button>
             </div>
@@ -916,7 +916,7 @@ const primaryGradientClass = computed(() => {
   if (isCOE.value) return 'bg-gradient-to-r from-orange-600 to-orange-500 text-white'
   if (isSOM.value) return 'bg-gradient-to-r from-som-green to-som-yellow text-white'
   if (isCNAHS.value) return 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white'
-  return 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white'
+  return 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white'
 })
 
 const primaryBorderClass = computed(() => {
@@ -928,7 +928,7 @@ const primaryBorderClass = computed(() => {
 
 // Registration flow buttons always stay blue (not affected by SOM theme)
 const registrationButtonClass = computed(() => {
-  return 'bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white'
+  return 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white'
 })
 
 const registrationBorderClass = computed(() => {
@@ -939,7 +939,7 @@ const pillGradientClass = computed(() => {
   if (isCOE.value) return 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-orange-600 to-orange-500 text-white text-xs font-bold rounded-full shadow-sm'
   if (isSOM.value) return 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-som-green to-som-yellow text-white text-xs font-bold rounded-full shadow-sm'
   if (isCNAHS.value) return 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold rounded-full shadow-sm'
-  return 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white text-xs font-bold rounded-full shadow-sm'
+  return 'inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white text-xs font-bold rounded-full shadow-sm'
 })
 
 // Icon gradient for branding. registration buttons and icons should always use blue,
@@ -950,11 +950,11 @@ const iconGradientClass = computed(() => {
   if (isCOE.value) return 'bg-gradient-to-br from-orange-600 to-orange-400'
   if (isSOM.value) return 'bg-gradient-to-br from-som-green to-som-yellow'
   if (isCNAHS.value) return 'bg-gradient-to-br from-emerald-600 to-teal-600'
-  return 'bg-gradient-to-br from-blue-600 to-blue-400'
+  return 'bg-gradient-to-br from-ssaam-dark to-ssaam-light'
 })
 
 // Always-blue gradient for the registration form's avatar/logo.
-const registrationIconGradientClass = computed(() => 'bg-gradient-to-br from-blue-600 to-blue-400')
+const registrationIconGradientClass = computed(() => 'bg-gradient-to-br from-ssaam-dark to-ssaam-light')
 
 // Program dropdown state for custom select with logos
 const showProgramMenu = ref(false)
@@ -1522,7 +1522,7 @@ const goToLogin = () => {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1300bf 0%, #311bf5 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   width: 40%;
@@ -1540,7 +1540,7 @@ const goToLogin = () => {
 }
 
 .mobile-bg-panel {
-  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1300bf 0%, #311bf5 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   position: relative;

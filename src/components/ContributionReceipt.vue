@@ -4,7 +4,7 @@
     <div class="flex gap-2">
       <button
         @click="showPreview = true"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-medium hover:from-blue-600 hover:to-cyan-600 transition-all duration-300 hover:shadow-lg"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-lg font-medium hover:from-ssaam-dark hover:to-ssaam-light transition-all duration-300 hover:shadow-lg"
       >
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -14,7 +14,7 @@
       </button>
       <button
         @click="downloadReceipt"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition-all duration-300 hover:shadow-lg"
+        class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-lg font-medium hover:from-ssaam-dark hover:to-ssaam-light transition-all duration-300 hover:shadow-lg"
         :disabled="isDownloading"
       >
         <svg v-if="!isDownloading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -33,7 +33,7 @@
         <transition name="modal-bounce" appear>
           <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
             <!-- Modal Header -->
-            <div class="flex justify-between items-center sticky top-0 bg-gradient-to-r from-purple-600 to-pink-500 text-white p-6 border-b border-gray-200">
+            <div class="flex justify-between items-center sticky top-0 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white p-6 border-b border-gray-200">
               <h3 class="text-2xl font-bold">Receipt Preview</h3>
               <button @click="showPreview = false" class="text-white hover:text-gray-200 text-3xl">&times;</button>
             </div>
@@ -72,7 +72,7 @@
                   </div>
 
                   <!-- Student Information Section -->
-                  <div style="background: linear-gradient(to right, #6b21a8, #ec4899); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                  <div style="background: linear-gradient(to right, #1300bf, #311bf5); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
                     <h3 style="margin: 0 0 0.75rem 0; font-size: 14px; font-weight: bold; text-transform: uppercase;">Student Information</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 12px;">
                       <div>
@@ -164,7 +164,7 @@
               </button>
               <button
                 @click="downloadReceipt; showPreview = false"
-                class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition-all duration-300"
+                class="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-lg font-medium hover:from-ssaam-dark hover:to-ssaam-light transition-all duration-300"
                 :disabled="isDownloading"
               >
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -211,7 +211,7 @@
         </div>
 
         <!-- Student Information Section -->
-        <div style="background: linear-gradient(to right, #6b21a8, #ec4899); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+        <div style="background: linear-gradient(to right, #1300bf, #311bf5); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
           <h3 style="margin: 0 0 0.75rem 0; font-size: 14px; font-weight: bold; text-transform: uppercase;">Student Information</h3>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 12px;">
             <div>

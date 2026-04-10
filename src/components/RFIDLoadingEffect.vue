@@ -61,7 +61,7 @@
           <!-- Main Scanner Animation -->
           <div class="relative mb-4 z-10">
             <div class="w-32 h-32 mx-auto border-4 border-blue-500/30 rounded-2xl relative overflow-hidden bg-blue-900/40">
-              <div class="absolute inset-0 bg-gradient-to-b from-blue-500/0 via-blue-400/50 to-blue-500/0 h-1 w-full scanner-line"></div>
+              <div class="absolute inset-0 bg-gradient-to-b from-ssaam-dark/0 via-ssaam-light/50 to-ssaam-dark/0 h-1 w-full scanner-line"></div>
               <div class="absolute inset-0 flex items-center justify-center">
                 <svg class="w-16 h-16 text-blue-300 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path>

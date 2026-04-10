@@ -25,7 +25,7 @@
 
           <!-- Inner Pulse Orbs -->
           <div class="absolute inset-0 flex items-center justify-center">
-            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-purple-500 to-pink-500 blur-xl opacity-20 animate-pulse"></div>
+            <div class="w-16 h-16 rounded-full bg-gradient-to-tr from-ssaam-dark to-ssaam-light blur-xl opacity-20 animate-pulse"></div>
             <div class="absolute w-8 h-8 rounded-full bg-white opacity-90 shadow-[0_0_20px_rgba(255,255,255,0.8)] animate-ping"></div>
           </div>
         </div>

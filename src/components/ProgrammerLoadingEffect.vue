@@ -1,6 +1,6 @@
 <template>
   <transition name="terminal-fade">
-    <div v-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900 font-mono" style="height:100dvh">
+    <div v-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center bg-gradient-to-br from-ssaam-dark to-ssaam-dark font-mono" style="height:100dvh">
       <div class="absolute inset-0 overflow-hidden opacity-30 pointer-events-none">
         <div class="scanner-line"></div>
         <div class="grid-overlay"></div>
@@ -39,7 +39,7 @@
             </div>
             <div class="h-2 w-full bg-white/10 rounded-full relative overflow-hidden">
               <div 
-                class="h-full bg-gradient-to-r from-blue-500 to-sky-400 rounded-full transition-all duration-300 relative" 
+                class="h-full bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-full transition-all duration-300 relative" 
                 :style="{ width: `${progress}%` }"
               >
                 <div class="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.4)_50%,transparent_100%)] animate-shimmer"></div>

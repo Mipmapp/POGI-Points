@@ -24,7 +24,7 @@
             <p class="text-sm text-gray-500">{{ formatTime(s.start_time) }} — {{ formatTime(s.end_time) }}</p>
           </div>
           <div class="flex items-center gap-2">
-            <button @click="showAbsent(s)" class="px-3 py-1.5 rounded" :class="isCOE ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white' : 'bg-gradient-to-r from-purple-500 to-pink-500 text-white'">Show Absent</button>
+            <button @click="showAbsent(s)" class="px-3 py-1.5 rounded" :class="isCOE ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white'">Show Absent</button>
             <button @click="exportAbsentCSV(s)" class="px-3 py-1.5 rounded border" :class="isCOE ? 'border-orange-300 text-orange-700' : isSOM ? 'border-green-300 text-green-700' : 'border-purple-300 text-purple-700'">Export Absent</button>
           </div>
         </div>

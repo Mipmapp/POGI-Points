@@ -256,7 +256,7 @@
                 <!-- Left: Profile Info -->
                 <div class="flex items-start gap-3 flex-1 min-w-0">
                   <!-- Profile Image -->
-                  <div :class="['w-12 h-12 md:w-14 md:h-14 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm md:text-base overflow-hidden shadow-md', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-blue-400 to-blue-400']">
+                  <div :class="['w-12 h-12 md:w-14 md:h-14 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm md:text-base overflow-hidden shadow-md', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
                     <img 
                       v-if="user.photo" 
                       :src="user.photo" 
@@ -511,7 +511,7 @@
               <button 
                 @click="addMemberToRole"
                 :disabled="!memberToAdd || isAddingMember"
-                :class="['px-4 md:px-6 py-2.5 md:py-2.5 rounded-lg transition font-bold text-sm md:text-base shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white disabled:from-gray-400 disabled:to-gray-500' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white disabled:from-gray-400 disabled:to-gray-500' : isCNAHS ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white disabled:from-gray-400 disabled:to-gray-500' : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white disabled:from-gray-400 disabled:to-gray-500', !memberToAdd || isAddingMember ? 'opacity-60 cursor-not-allowed' : '']"
+                :class="['px-4 md:px-6 py-2.5 md:py-2.5 rounded-lg transition font-bold text-sm md:text-base shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white disabled:from-gray-400 disabled:to-gray-500' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white disabled:from-gray-400 disabled:to-gray-500' : isCNAHS ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white disabled:from-gray-400 disabled:to-gray-500' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light text-white disabled:from-gray-400 disabled:to-gray-500', !memberToAdd || isAddingMember ? 'opacity-60 cursor-not-allowed' : '']"
               >
                 <svg v-if="isAddingMember" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -553,7 +553,7 @@
               <!-- Profile Image and Info -->
               <div class="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
                 <!-- Profile Image -->
-                <div :class="['w-9 md:w-12 h-9 md:h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-xs md:text-sm overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-blue-400 to-blue-400']">
+                <div :class="['w-9 md:w-12 h-9 md:h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-xs md:text-sm overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
                   <img 
                     v-if="member.photo" 
                     :src="member.photo" 
@@ -621,7 +621,7 @@
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
               <div class="flex items-start gap-4">
-                <div :class="['w-20 h-20 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-300', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-blue-400 to-blue-400']">
+                <div :class="['w-20 h-20 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-300', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
                   <img 
                     v-if="editingUser.photo" 
                     :src="editingUser.photo" 
@@ -1047,13 +1047,13 @@ export default {
       if (this.isCOE) return 'from-orange-700 to-red-600'
       if (this.isSOM) return 'from-green-600 to-yellow-500'
       if (this.isCNAHS) return 'from-green-800 to-green-600'
-      return 'from-blue-600 to-blue-500'
+      return 'from-ssaam-dark to-ssaam-light'
     },
     primaryButtonHover() {
       if (this.isCOE) return 'hover:from-orange-800 hover:to-red-700'
       if (this.isSOM) return 'hover:from-green-700 hover:to-yellow-600'
       if (this.isCNAHS) return 'hover:from-green-900 hover:to-green-700'
-      return 'hover:from-blue-700 hover:to-blue-600'
+      return 'hover:from-ssaam-dark hover:to-ssaam-light'
     },
     primaryTextColor() {
       if (this.isCOE) return 'text-orange-700'
