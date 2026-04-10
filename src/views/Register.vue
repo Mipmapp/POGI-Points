@@ -481,7 +481,7 @@
       </p>
     </div>
 
-    <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 overflow-auto">
+    <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 overflow-auto relative z-10">
       <div class="max-w-md mx-auto">
 
         <div class="mb-5 text-center">
