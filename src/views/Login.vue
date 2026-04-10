@@ -2,48 +2,61 @@
   <transition name="fade">
     <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40" @click.self="showContactModal = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-2xl font-bold text-blue-900">Need Help?</h3>
-            <button @click="showContactModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-          </div>
-          
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            <div class="flex flex-col items-center text-center p-4 bg-blue-50 rounded-lg">
-              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
-              <p class="font-semibold text-blue-900 text-sm">Email Support</p>
-              <p class="text-xs text-gray-600 mt-2">ssaamjrmsu@gmail.com</p>
-              <p class="text-xs text-gray-500 mt-1">For general inquiries</p>
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden">
+          <div class="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-400 px-6 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
+                <div class="w-5 h-5" style="-webkit-mask: url(/help.svg) center/contain no-repeat; mask: url(/help.svg) center/contain no-repeat; background-color: white;"></div>
+              </div>
+              <h3 class="text-xl font-bold text-white">Need Help?</h3>
             </div>
-
-            <div class="flex flex-col items-center text-center p-4 bg-pink-50 rounded-lg">
-              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat;"></div>
-              <p class="font-semibold text-blue-900 text-sm">JRMSU CCS Office</p>
-              <p class="text-xs text-gray-600 mt-2">College of Computing Studies</p>
-              <p class="text-xs text-gray-500 mt-1">Visit during office hours</p>
-            </div>
-
-            <div class="flex flex-col items-center text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
-              <div class="w-8 h-8 mb-3 gradient-icon" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat;"></div>
-              <p class="font-semibold text-blue-900 text-sm">Meet Our Developers</p>
-              <p class="text-xs text-gray-600 mt-2">CCS - Creatives Committee</p>
-              <button @click="showDevelopersPopup = true; showContactModal = false" class="text-xs text-blue-600 hover:text-blue-800 font-medium mt-2 underline">View Team →</button>
-            </div>
+            <button @click="showContactModal = false" class="text-white/70 hover:text-white text-2xl leading-none">&times;</button>
           </div>
 
-          <div class="bg-blue-50 rounded-lg p-4 mb-6">
-            <p class="text-sm text-blue-900 font-medium mb-3">Quick Help</p>
-            <ul class="text-xs text-blue-800 space-y-2">
-              <li>• Your default password is your Last Name (UPPERCASE)</li>
-              <li>• Use “Forgot Password” if needed</li>
-              <li>• Register your RFID at the CCS office</li>
-              <li>• For profile issues, contact the Developers or visit the CCS office</li>
-            </ul>
-          </div>
+          <div class="p-6 space-y-4">
+            <div class="grid grid-cols-3 gap-3">
+              <div class="flex flex-col items-center text-center p-3 bg-green-50 rounded-2xl">
+                <div class="w-10 h-10 mb-2 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div class="w-5 h-5" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: #2563eb;"></div>
+                </div>
+                <p class="font-semibold text-blue-900 text-xs mb-1">Email Support</p>
+                <p class="text-xs text-gray-500 break-all">ssaamjrmsu@gmail.com</p>
+                <p class="text-xs text-gray-400 mt-0.5">For inquiries</p>
+              </div>
 
-          <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition">
-            Close
-          </button>
+              <div class="flex flex-col items-center text-center p-3 bg-green-50 rounded-2xl">
+                <div class="w-10 h-10 mb-2 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div class="w-5 h-5" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat; background-color: #2563eb;"></div>
+                </div>
+                <p class="font-semibold text-blue-900 text-xs mb-1">CCS Office</p>
+                <p class="text-xs text-gray-500">College of Computing Studies</p>
+                <p class="text-xs text-gray-400 mt-0.5">Office hours</p>
+              </div>
+
+              <div class="flex flex-col items-center text-center p-3 bg-green-50 rounded-2xl cursor-pointer hover:bg-blue-50 transition" @click="showDevelopersPopup = true; showContactModal = false">
+                <div class="w-10 h-10 mb-2 bg-blue-100 rounded-full flex items-center justify-center">
+                  <div class="w-5 h-5" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat; background-color: #2563eb;"></div>
+                </div>
+                <p class="font-semibold text-blue-900 text-xs mb-1">Meet the Team</p>
+                <p class="text-xs text-gray-500">CCS Creatives</p>
+                <p class="text-xs text-blue-600 mt-0.5 font-medium">View →</p>
+              </div>
+            </div>
+
+            <div class="bg-green-50 rounded-2xl p-4">
+              <p class="text-sm font-semibold text-blue-900 mb-2">Quick Help</p>
+              <ul class="text-xs text-gray-600 space-y-1.5">
+                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5 flex-shrink-0">•</span>Your default password is your Last Name (UPPERCASE)</li>
+                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5 flex-shrink-0">•</span>Use "Forgot Password" if needed</li>
+                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5 flex-shrink-0">•</span>Register your RFID at the CCS office</li>
+                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5 flex-shrink-0">•</span>For profile issues, contact the Developers or visit the CCS office</li>
+              </ul>
+            </div>
+
+            <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition">
+              Close
+            </button>
+          </div>
         </div>
       </transition>
     </div>
@@ -151,45 +164,50 @@
   <transition name="fade">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full mx-2 max-h-[80vh] overflow-y-auto transform transition-all duration-300">
-          <div class="relative mb-4">
-            <h3 class="text-2xl font-bold text-blue-900 text-center mx-auto">Meet Our Developers</h3>
-            <button @click="showDevelopersPopup = false" class="absolute right-0 top-0 text-gray-500 hover:text-gray-700 text-2xl -mt-1">&times;</button>
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div class="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-400 rounded-t-3xl px-6 py-5 text-center relative">
+            <h3 class="text-xl font-bold text-white">Meet Our Developers</h3>
+            <p class="text-blue-100 text-xs mt-0.5">CCS - Creatives Committee</p>
+            <button @click="showDevelopersPopup = false" class="absolute right-4 top-4 text-white/70 hover:text-white text-2xl leading-none">&times;</button>
           </div>
-          <div class="space-y-3 mb-4">
-            <!-- Top row: first 2 developers centered -->
-            <div class="flex justify-center gap-6">
+
+          <div class="p-6 space-y-3">
+            <div class="flex justify-center gap-3">
               <a v-for="(dev, index) in developers.slice(0,2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
-                 class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
+                 class="flex flex-col items-center p-3 bg-green-50 rounded-2xl w-32 hover:bg-blue-50 hover:scale-105 transition-all duration-300 cursor-pointer"
                  :style="{ transitionDelay: `${index * 50}ms` }">
-                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white text-2xl shadow-lg mb-2 overflow-hidden flex-shrink-0 ring-2 ring-purple-100">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
                   <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
                   <span v-else>{{ dev.initials }}</span>
                 </div>
-                <p class="text-sm font-semibold text-blue-600 hover:text-blue-800 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
-                <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-                <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+                <p class="text-xs font-semibold text-blue-700 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
+                <p class="text-xs text-gray-500 text-center">{{ dev.year_level }} - {{ dev.program }}</p>
+                <p class="text-xs text-gray-400 text-center">{{ dev.role }}</p>
               </a>
             </div>
 
-            <!-- Bottom row: remaining developers in 3 columns -->
-            <div class="grid grid-cols-3 gap-6 justify-items-center">
+            <div class="grid grid-cols-3 gap-3">
               <a v-for="(dev, idx) in developers.slice(2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
-                 class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
+                 class="flex flex-col items-center p-3 bg-green-50 rounded-2xl hover:bg-blue-50 hover:scale-105 transition-all duration-300 cursor-pointer"
                  :style="{ transitionDelay: `${(idx + 2) * 50}ms` }">
-                <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white text-2xl shadow-lg mb-2 overflow-hidden flex-shrink-0 ring-2 ring-purple-100">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
                   <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
                   <span v-else>{{ dev.initials }}</span>
                 </div>
-                <p class="text-sm font-semibold text-blue-600 hover:text-blue-800 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
-                <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-                <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+                <p class="text-xs font-semibold text-blue-700 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
+                <p class="text-xs text-gray-500 text-center">{{ dev.year_level }} - {{ dev.program }}</p>
+                <p class="text-xs text-gray-400 text-center">{{ dev.role }}</p>
               </a>
             </div>
-          </div>
-          <div class="text-center text-sm text-gray-600">
-            <p class="font-medium text-blue-900">CCS - Creatives Committee</p>
-            <p>Chairperson: Sheen Lee</p>
+
+            <div class="text-center bg-green-50 rounded-2xl py-3">
+              <p class="text-sm font-semibold text-blue-900">CCS - Creatives Committee</p>
+              <p class="text-xs text-gray-500">Chairperson: Sheen Lee</p>
+            </div>
+
+            <button @click="showDevelopersPopup = false" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition">
+              Close
+            </button>
           </div>
         </div>
       </transition>

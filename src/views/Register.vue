@@ -2,45 +2,50 @@
   <transition name="fade">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-2xl w-full mx-2 max-h-[80vh] overflow-y-auto transform transition-all duration-300">
-          <div class="relative mb-3">
-            <h3 class="text-2xl font-bold text-blue-900 text-center mx-auto">Meet Our Developers</h3>
-            <button @click="showDevelopersPopup = false" class="absolute right-0 top-0 text-gray-500 hover:text-gray-700 text-2xl -mt-1">&times;</button>
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div class="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-400 rounded-t-3xl px-6 py-5 text-center relative">
+            <h3 class="text-xl font-bold text-white">Meet Our Developers</h3>
+            <p class="text-blue-100 text-xs mt-0.5">CCS - Creatives Committee</p>
+            <button @click="showDevelopersPopup = false" class="absolute right-4 top-4 text-white/70 hover:text-white text-2xl leading-none">&times;</button>
           </div>
-          <div class="space-y-3 mb-4">
-            <!-- Top row: first 2 developers centered -->
-            <div class="flex justify-center gap-6">
+
+          <div class="p-6 space-y-3">
+            <div class="flex justify-center gap-3">
               <a v-for="(dev, index) in developers.slice(0,2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
-                 class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
+                 class="flex flex-col items-center p-3 bg-green-50 rounded-2xl w-32 hover:bg-blue-50 hover:scale-105 transition-all duration-300 cursor-pointer"
                  :style="{ transitionDelay: `${index * 50}ms` }">
-                <div class="w-16 h-16 rounded-full overflow-hidden shadow-md flex items-center justify-center mb-2 flex-shrink-0 transition-shadow group-hover:shadow-lg bg-white">
+                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
                   <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
                   <span v-else>{{ dev.initials }}</span>
                 </div>
-                <p class="text-sm font-semibold text-blue-600 hover:text-blue-800 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
-                <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-                <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+                <p class="text-xs font-semibold text-blue-700 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
+                <p class="text-xs text-gray-500 text-center">{{ dev.year_level }} - {{ dev.program }}</p>
+                <p class="text-xs text-gray-400 text-center">{{ dev.role }}</p>
               </a>
             </div>
 
-            <!-- Bottom row: remaining developers in 3 columns -->
-            <div class="grid grid-cols-3 gap-6 justify-items-center">
+            <div class="grid grid-cols-3 gap-3">
               <a v-for="(dev, idx) in developers.slice(2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
-                 class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300"
+                 class="flex flex-col items-center p-3 bg-green-50 rounded-2xl hover:bg-blue-50 hover:scale-105 transition-all duration-300 cursor-pointer"
                  :style="{ transitionDelay: `${(idx + 2) * 50}ms` }">
-                <div class="w-16 h-16 rounded-full overflow-hidden shadow-md flex items-center justify-center mb-2 flex-shrink-0 transition-shadow group-hover:shadow-lg bg-white">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-blue-400 flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
                   <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
                   <span v-else>{{ dev.initials }}</span>
                 </div>
-                <p class="text-sm font-semibold text-blue-600 hover:text-blue-800 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
-                <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-                <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+                <p class="text-xs font-semibold text-blue-700 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
+                <p class="text-xs text-gray-500 text-center">{{ dev.year_level }} - {{ dev.program }}</p>
+                <p class="text-xs text-gray-400 text-center">{{ dev.role }}</p>
               </a>
             </div>
-          </div>
-          <div class="text-center text-sm text-gray-600">
-            <p class="font-medium text-blue-900">CCS - Creatives Committee</p>
-            <p>Chairperson: Sheen Lee</p>
+
+            <div class="text-center bg-green-50 rounded-2xl py-3">
+              <p class="text-sm font-semibold text-blue-900">CCS - Creatives Committee</p>
+              <p class="text-xs text-gray-500">Chairperson: Sheen Lee</p>
+            </div>
+
+            <button @click="showDevelopersPopup = false" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition">
+              Close
+            </button>
           </div>
         </div>
       </transition>
