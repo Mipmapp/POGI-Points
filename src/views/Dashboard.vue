@@ -911,26 +911,17 @@
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-2xl md:text-4xl font-bold mb-8 pb-4 border-b-2', isCOE ? 'text-orange-900 border-orange-900' : isSOM ? 'text-green-900 border-green-900' : isCNAHS ? 'text-green-900 border-green-900' : 'text-blue-900 border-blue-900']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
-        <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg shadow-sm">
-          <div class="flex items-start gap-3">
-            <svg class="w-6 h-6 text-yellow-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-            </svg>
-            <div class="flex-1">
-              <h3 class="text-sm font-semibold text-yellow-800">Security Recommendation</h3>
-              <p class="text-sm text-yellow-700 mt-1">Your password is still set to your last name. For better security, please change your password.</p>
-              <div class="mt-3 flex flex-wrap gap-2">
-                <button @click="showPasswordChangeModal = true; showPasswordUpdateWarning = false" class="bg-yellow-500 hover:bg-yellow-600 text-white text-sm px-4 py-1.5 rounded-lg font-medium transition">
-                  Change Password
-                </button>
-                <button @click="showPasswordUpdateWarning = false" class="text-yellow-700 hover:text-yellow-800 text-sm px-3 py-1.5 font-medium transition">
-                  Remind Me Later
-                </button>
-              </div>
-            </div>
+        <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-4 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-xl flex items-center gap-3">
+          <svg class="w-4 h-4 text-yellow-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+          </svg>
+          <p class="text-xs text-yellow-800 flex-1">Your password is still set to your last name. Please change it for better security.</p>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button @click="showPasswordChangeModal = true; showPasswordUpdateWarning = false" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs px-3 py-1.5 rounded-lg font-medium transition">Change Password</button>
+            <button @click="showPasswordUpdateWarning = false" class="text-yellow-600 hover:text-yellow-800 text-xs font-medium transition">Dismiss</button>
           </div>
         </div>
 
@@ -3124,50 +3115,32 @@
         <Manage ref="manageComponent" v-if="currentPage === 'manage' && (currentUser.role === 'admin' || currentUser.isMaster)" />
 
         <!-- Active Attendance Event Banner for Students -->
-        <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster && activeUnattendedEvents.length > 0" class="mb-4">
-          <div v-for="event in activeUnattendedEvents" :key="event._id" :class="['rounded-lg shadow-lg p-4 mb-3 text-white', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
-            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-              <div class="flex items-start gap-3">
-                <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                </div>
-                <div>
-                  <h3 class="font-bold text-lg">{{ event.title }}</h3>
-                  <p class="text-sm text-white text-opacity-90">
-                    <span v-if="getAttendanceStatus(event._id || event.event_id) === 'incomplete'" class="flex items-center gap-1">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      You checked in but haven't checked out yet
-                    </span>
-                    <span v-else-if="getAttendanceStatus(event._id || event.event_id) === 'ongoing'" class="flex items-center gap-1">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      Event is ongoing - check in to mark attendance
-                    </span>
-                    <span v-else class="flex items-center gap-1">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      Active attendance event - Please check in with your RFID
-                    </span>
-                  </p>
-                  <div class="flex flex-wrap gap-3 mt-2 text-xs text-white text-opacity-80">
-                    <span v-if="event.date || event.event_date" class="flex items-center gap-1">
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                      {{ formatEventDate(event.date || event.event_date) }}
-                    </span>
-                    <span v-if="event.startTime || event.start_time" class="flex items-center gap-1">
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                      {{ formatEventTime(event.startTime || event.start_time) }} - {{ formatEventTime(event.endTime || event.end_time) }}
-                    </span>
-                    <span v-if="event.location" class="flex items-center gap-1">
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                      {{ event.location }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <button @click="currentPage = 'attendance'; fetchAttendanceData()" class="bg-white text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition flex items-center gap-2 text-sm whitespace-nowrap">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                View Attendance
-              </button>
+        <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster && activeUnattendedEvents.length > 0" class="mb-4 space-y-2">
+          <div v-for="event in activeUnattendedEvents" :key="event._id" :class="['rounded-xl px-4 py-3 text-white flex items-center gap-3 shadow-md', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-r from-green-700 to-teal-600' : isCNAHS ? 'bg-gradient-to-r from-green-700 to-green-600' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
+            <div class="flex-shrink-0">
+              <svg v-if="getAttendanceStatus(event._id || event.event_id) === 'incomplete'" class="w-4 h-4 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <svg v-else class="w-4 h-4 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
             </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+                <span class="font-semibold text-sm">{{ event.title }}</span>
+                <span class="text-white/50 text-xs">·</span>
+                <span class="text-white/80 text-xs">
+                  <template v-if="getAttendanceStatus(event._id || event.event_id) === 'incomplete'">Checked in — not yet checked out</template>
+                  <template v-else-if="getAttendanceStatus(event._id || event.event_id) === 'ongoing'">Ongoing — check in with RFID</template>
+                  <template v-else>Active — tap your RFID card</template>
+                </span>
+              </div>
+              <div class="flex flex-wrap gap-x-3 mt-0.5 text-xs text-white/55">
+                <span v-if="event.date || event.event_date">{{ formatEventDate(event.date || event.event_date) }}</span>
+                <span v-if="event.startTime || event.start_time">{{ formatEventTime(event.startTime || event.start_time) }}–{{ formatEventTime(event.endTime || event.end_time) }}</span>
+                <span v-if="event.location">{{ event.location }}</span>
+              </div>
+            </div>
+            <button @click="currentPage = 'attendance'; fetchAttendanceData()" class="flex-shrink-0 bg-white/15 hover:bg-white/25 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition border border-white/20 flex items-center gap-1.5 whitespace-nowrap">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              Attendance
+            </button>
           </div>
         </div>
 
