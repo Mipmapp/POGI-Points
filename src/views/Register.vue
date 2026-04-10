@@ -143,15 +143,15 @@
 
             <div v-if="currentStep === 1" class="space-y-3 step-animate">
               <div class="relative">
-                <img src="/user.svg" alt="First Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
                 <input ref="firstNameInput" v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('middleNameInput')" type="text" placeholder="First Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
               </div>
               <div class="relative">
-                <img src="/user.svg" alt="Middle Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
                 <input ref="middleNameInput" v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('lastNameInput')" type="text" placeholder="Middle Name (optional)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" />
               </div>
               <div class="relative">
-                <img src="/user.svg" alt="Last Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
                 <input ref="lastNameInput" v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('emailInput')" type="text" placeholder="Last Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
               </div>
               <div class="relative">
@@ -191,11 +191,11 @@
 
             <div v-if="currentStep === 2" class="space-y-3 step-animate">
               <div class="relative">
-                <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
                 <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="Student ID (00-A-00000)" maxlength="10" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
               </div>
               <div class="relative">
-                <img src="/book.svg" alt="Year Level" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/book.svg) center/contain no-repeat; mask: url(/book.svg) center/contain no-repeat; background-color: currentColor;"></div>
                 <select v-model="formData.year_level" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none appearance-none text-sm text-gray-700" required>
                   <option value="" disabled>Select Year Level</option>
                   <option value="1st Year">1st Year</option>
@@ -207,7 +207,7 @@
               </div>
               <div>
                 <div class="relative" ref="programDropdownDesktopRef">
-                  <img src="/course.svg" alt="Course" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65 z-10" />
+                  <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65 z-10" style="-webkit-mask: url(/course.svg) center/contain no-repeat; mask: url(/course.svg) center/contain no-repeat; background-color: currentColor;"></div>
                   <button type="button" @click="toggleProgramMenu('desktop')" class="w-full text-left pl-11 pr-10 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none flex items-center justify-between text-sm text-gray-700">
                     <span class="truncate">
                       <template v-if="selectedProgramItem">{{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}</template>
@@ -463,15 +463,15 @@
 
           <div v-if="currentStep === 1" class="space-y-3 step-animate">
             <div class="relative">
-              <img src="/user.svg" alt="First Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
+              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
               <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="First Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
             </div>
             <div class="relative">
-              <img src="/user.svg" alt="Middle Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
+              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
               <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="Middle Name (optional)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" />
             </div>
             <div class="relative">
-              <img src="/user.svg" alt="Last Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
+              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
               <input v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" type="text" placeholder="Last Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
             </div>
             <div class="relative">
@@ -504,11 +504,11 @@
 
           <div v-if="currentStep === 2" class="space-y-3 step-animate">
             <div class="relative">
-              <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
+              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
               <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="Student ID (00-A-00000)" maxlength="10" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
             </div>
             <div class="relative">
-              <img src="/book.svg" alt="Year Level" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" />
+              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/book.svg) center/contain no-repeat; mask: url(/book.svg) center/contain no-repeat; background-color: currentColor;"></div>
               <select v-model="formData.year_level" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none appearance-none text-sm text-gray-700" required>
                 <option value="" disabled>Select Year Level</option>
                 <option value="1st Year">1st Year</option>
@@ -520,7 +520,7 @@
             </div>
             <div>
               <div class="relative" ref="programDropdownMobileRef">
-                <img src="/course.svg" alt="Course" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65 z-10" />
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65 z-10" style="-webkit-mask: url(/course.svg) center/contain no-repeat; mask: url(/course.svg) center/contain no-repeat; background-color: currentColor;"></div>
                 <button type="button" @click="toggleProgramMenu('mobile')" class="w-full text-left pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none flex items-center justify-between text-sm text-gray-700">
                   <span class="truncate">
                     <template v-if="selectedProgramItem">{{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}</template>
