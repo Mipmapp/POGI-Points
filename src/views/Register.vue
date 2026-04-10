@@ -129,137 +129,94 @@
     </div>
     <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50">
       <div class="w-full max-w-md">
-        <div class="text-center mb-8">
-          <div class="flex items-center justify-center gap-4 mb-4">
-            <div :class="['w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0', registrationIconGradientClass]">
-              <img src="/user_plus.svg" alt="Register" class="w-7 h-7" style="filter: brightness(0) invert(1);" />
-            </div>
-            <div class="text-left">
-              <h2 class="text-2xl font-bold text-blue-900">Let's Create</h2>
-              <h2 class="text-2xl font-bold text-blue-900">Your Profile!</h2>
-            </div>
-          </div>
-          <p class="text-gray-600 text-sm italic mb-4">Please provide your basic information.</p>
-          <p class="text-sm font-semibold text-blue-900">
-            {{ stepTitle }}
-          </p>
+        <div class="text-center mb-6">
+          <h2 class="text-3xl font-bold text-blue-700 mb-1">Hello,</h2>
+          <h2 class="text-3xl font-bold text-blue-700 mb-2">Create Your Account</h2>
+          <p class="text-gray-500 text-sm">{{ stepTitle }}</p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-lg p-8">
-          <div class="flex mb-6 border-b border-gray-200">
-            <button @click="goToLogin" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700">
-              Log In
-            </button>
-            <button class="flex-1 py-3 px-4 text-center font-medium border-b-2 border-blue-600 text-blue-600 flex items-center justify-center gap-1">
-              <span class="icon-mask w-5 h-5" aria-hidden="true"></span> Register
-            </button>
+        <div class="bg-white rounded-3xl shadow-xl p-8">
+          <div class="text-center mb-5">
+            <h3 class="text-2xl font-bold text-gray-800">Sign Up</h3>
           </div>
 
           <form @submit.prevent="handleNext" novalidate class="space-y-4">
 
-            <div v-if="currentStep === 1" class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-                <div class="relative">
-                  <img src="/user.svg" alt="First Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input ref="firstNameInput" v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('middleNameInput')" type="text" placeholder="JUAN" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" required />
-                </div>
+            <div v-if="currentStep === 1" class="space-y-3">
+              <div class="relative">
+                <img src="/user.svg" alt="First Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+                <input ref="firstNameInput" v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('middleNameInput')" type="text" placeholder="First Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Middle Name <span class="text-gray-500 text-xs">(optional)</span></label>
-                <div class="relative">
-                  <img src="/user.svg" alt="Middle Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input ref="middleNameInput" v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('lastNameInput')" type="text" placeholder="DELA" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" />
-                </div>
+              <div class="relative">
+                <img src="/user.svg" alt="Middle Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+                <input ref="middleNameInput" v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('lastNameInput')" type="text" placeholder="Middle Name (optional)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" />
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-                <div class="relative">
-                  <img src="/user.svg" alt="Last Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input ref="lastNameInput" v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('emailInput')" type="text" placeholder="CRUZ" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" required />
-                </div>
+              <div class="relative">
+                <img src="/user.svg" alt="Last Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+                <input ref="lastNameInput" v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('emailInput')" type="text" placeholder="Last Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Suffix <span class="text-gray-500 text-xs">(optional)</span></label>
-                <div class="relative">
-                  <select v-model="formData.suffix" class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none appearance-none bg-white">
-                    <option value="">Select Suffix</option>
-                    <option value="Jr.">Jr.</option>
-                    <option value="Sr.">Sr.</option>
-                    <option value="I">I</option>
-                    <option value="II">II</option>
-                    <option value="III">III</option>
-                    <option value="IV">IV</option>
-                    <option value="V">V</option>
-                    <option value="VI">VI</option>
-                    <option value="VII">VII</option>
-                    <option value="VIII">VIII</option>
-                    <option value="IX">IX</option>
-                    <option value="X">X</option>
-                  </select>
-                  <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none" />
-                </div>
+              <div class="relative">
+                <select v-model="formData.suffix" class="w-full pl-4 pr-10 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none appearance-none text-sm text-gray-700">
+                  <option value="">Suffix (optional)</option>
+                  <option value="Jr.">Jr.</option>
+                  <option value="Sr.">Sr.</option>
+                  <option value="I">I</option>
+                  <option value="II">II</option>
+                  <option value="III">III</option>
+                  <option value="IV">IV</option>
+                  <option value="V">V</option>
+                  <option value="VI">VI</option>
+                  <option value="VII">VII</option>
+                  <option value="VIII">VIII</option>
+                  <option value="IX">IX</option>
+                  <option value="X">X</option>
+                </select>
+                <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40" />
               </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
-                <div class="relative">
-                  <div class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
-                  <input ref="emailInput" v-model="formData.email" @keydown.enter.prevent="() => handleNext()" type="email" placeholder="juandelacruz@gmail.com" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" required />
-                </div>
+              <div class="relative">
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: currentColor;"></div>
+                <input ref="emailInput" v-model="formData.email" @keydown.enter.prevent="() => handleNext()" type="email" placeholder="E-mail" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
               </div>
-              <div class="flex items-center justify-center pt-4">
+              <div class="flex items-center justify-center pt-2">
                 <div class="flex space-x-2">
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
-                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
-                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+                  <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+                  <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
                 </div>
               </div>
-              <button type="submit" :class="['w-full py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center border-2', registrationButtonClass, registrationBorderClass]">
+              <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
                 Next <span class="ml-2">&rarr;</span>
               </button>
             </div>
 
-            <div v-if="currentStep === 2" class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
-                <div class="relative">
-                  <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="00-A-00000" maxlength="10" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" required />
-                </div>
-                <p class="text-xs text-gray-400 mt-1 pl-10">Format: 00-A-00000</p>
+            <div v-if="currentStep === 2" class="space-y-3">
+              <div class="relative">
+                <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+                <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="Student ID (00-A-00000)" maxlength="10" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
+              </div>
+              <div class="relative">
+                <img src="/book.svg" alt="Year Level" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+                <select v-model="formData.year_level" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none appearance-none text-sm text-gray-700" required>
+                  <option value="" disabled>Select Year Level</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                </select>
+                <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40" />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
-                <div class="relative">
-                  <img src="/book.svg" alt="Year Level" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                  <select v-model="formData.year_level" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none appearance-none bg-white" required>
-                    <option value="" disabled>Select Year Level</option>
-                    <option value="1st Year">1st Year</option>
-                    <option value="2nd Year">2nd Year</option>
-                    <option value="3rd Year">3rd Year</option>
-                    <option value="4th Year">4th Year</option>
-                  </select>
-                </div>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Program</label>
                 <div class="relative" ref="programDropdownDesktopRef">
-                  <img src="/course.svg" alt="Course" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-
-                  <button type="button" @click="toggleProgramMenu('desktop')" class="w-full text-left pl-14 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none bg-white flex items-center justify-between">
+                  <img src="/course.svg" alt="Course" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40 z-10" />
+                  <button type="button" @click="toggleProgramMenu('desktop')" class="w-full text-left pl-11 pr-10 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none flex items-center justify-between text-sm text-gray-700">
                     <span class="truncate">
-                      <template v-if="selectedProgramItem">
-                        {{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}
-                      </template>
-                      <template v-else>
-                        Select Program
-                      </template>
+                      <template v-if="selectedProgramItem">{{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}</template>
+                      <template v-else><span class="text-gray-400">Select Program</span></template>
                     </span>
-                    <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-60" />
+                    <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-40 flex-shrink-0" />
                   </button>
-
-                  <ul v-if="showProgramMenu" :class="showMenuAboveDesktop ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-auto' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-auto'">
+                  <ul v-if="showProgramMenu" :class="showMenuAboveDesktop ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto'">
                     <li v-for="p in flattenedPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer">
                       <img :src="p.departmentLogo" :alt="p.departmentLabel" class="w-8 h-8 object-contain rounded bg-white flex-shrink-0" />
                       <div class="min-w-0">
@@ -270,24 +227,24 @@
                     </li>
                   </ul>
                 </div>
-                <div v-if="programDepartment" class="mt-2 flex items-center gap-2">
-                  <img :src="programDepartment.departmentLogo" :alt="programDepartment.departmentLabel" class="w-6 h-6 object-contain rounded" />
-                  <span class="text-xs text-gray-600">Department: <strong class="text-blue-800">{{ programDepartment.departmentName }} ({{ programDepartment.departmentLabel }})</strong></span>
+                <div v-if="programDepartment" class="mt-2 flex items-center gap-2 pl-2">
+                  <img :src="programDepartment.departmentLogo" :alt="programDepartment.departmentLabel" class="w-5 h-5 object-contain rounded" />
+                  <span class="text-xs text-gray-600">Dept: <strong class="text-blue-700">{{ programDepartment.departmentName }} ({{ programDepartment.departmentLabel }})</strong></span>
                 </div>
               </div>
-              <div class="flex items-center justify-center pt-4">
+              <div class="flex items-center justify-center pt-2">
                 <div class="flex space-x-2">
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
-                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+                  <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
                 </div>
               </div>
-              <div class="flex gap-4">
-                <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+              <div class="flex gap-3">
+                <button type="button" @click="currentStep--" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                   <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" :class="['flex-1 flex items-center justify-center transition duration-300 py-3 px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
                   Next <span class="ml-2">&rarr;</span>
                 </button>
               </div>
@@ -295,34 +252,34 @@
 
             <div v-if="currentStep === 3" class="space-y-4">
               <div class="text-center">
-                <div class="w-48 h-48 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+                <div class="w-40 h-40 mx-auto mb-4 bg-green-50 rounded-full flex items-center justify-center overflow-hidden">
                   <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
                   <div v-else class="flex flex-col items-center justify-center">
-                    <div class="w-24 h-24 rounded-full bg-gray-400 mb-4"></div>
-                    <div class="w-32 h-20 bg-gray-500 rounded-t-full"></div>
+                    <div class="w-20 h-20 rounded-full bg-gray-300 mb-3"></div>
+                    <div class="w-28 h-16 bg-gray-400 rounded-t-full"></div>
                   </div>
                 </div>
-                <label class="block text-sm font-medium text-gray-700 mb-4">Upload Image</label>
+                <label class="block text-sm font-medium text-gray-600 mb-4">Upload Profile Photo</label>
                 <div class="relative">
                   <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload" />
-                  <label for="file-upload" class="cursor-pointer inline-flex items-center justify-center px-8 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-300">
-                    <img src="/change_photo.svg" alt="Upload" class="w-5 h-5 mr-2" />{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
+                  <label for="file-upload" class="cursor-pointer inline-flex items-center justify-center px-8 py-3 bg-green-50 rounded-full text-sm font-medium text-gray-600 hover:bg-green-100 transition duration-300">
+                    <img src="/change_photo.svg" alt="Upload" class="w-5 h-5 mr-2 opacity-60" />{{ imagePreview ? 'Change Photo' : 'Choose Photo' }}
                   </label>
                 </div>
               </div>
-              <div class="flex items-center justify-center pt-4">
+              <div class="flex items-center justify-center pt-2">
                 <div class="flex space-x-2">
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
                 </div>
               </div>
-              <div class="flex gap-4">
-                <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+              <div class="flex gap-3">
+                <button type="button" @click="currentStep--" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                   <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" :class="['flex-1 flex items-center justify-center transition duration-300 py-3 px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
+                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
                   Next <span class="ml-2">&rarr;</span>
                 </button>
               </div>
@@ -376,19 +333,19 @@
                 </div>
               </div>
               
-              <div class="flex items-center justify-center pt-4">
+              <div class="flex items-center justify-center pt-2">
                 <div class="flex space-x-2">
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
                 </div>
               </div>
-              <div class="flex gap-4">
-                <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+              <div class="flex gap-3">
+                <button type="button" @click="currentStep = 3" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                   <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center border-2', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300' : registrationButtonClass + ' ' + registrationBorderClass]">
+                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-full font-semibold transition duration-300 flex items-center justify-center text-sm uppercase tracking-wide shadow-md', reviewCountdown > 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-blue-400 text-white hover:from-blue-700 hover:to-blue-500']">
                   {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-2">&rarr;</span>
                 </button>
               </div>
@@ -442,27 +399,31 @@
                   {{ resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code' }}
                 </button>
               </div>
-              <div class="flex items-center justify-center pt-4">
+              <div class="flex items-center justify-center pt-2">
                 <div class="flex space-x-2">
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                  <div class="w-12 h-1 bg-blue-600 rounded"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
                 </div>
               </div>
-              <div class="flex gap-4">
-                <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
+              <div class="flex gap-3">
+                <button type="button" @click="currentStep = 3.5" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
                   <span class="mr-2">&larr;</span>Back
                 </button>
-                <button type="submit" :class="['flex-1 flex items-center justify-center transition duration-300 py-3 px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
-                  Register <span class="ml-2">&rarr;</span>
+                <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+                  Sign Up <span class="ml-2">&rarr;</span>
                 </button>
               </div>
             </div>
           </form>
 
-          <div class="mt-6 text-center text-xs text-gray-500">
-            Powered by <button @click="showDevelopersPopup = true" class="text-yellow-500 font-medium hover:text-yellow-600 cursor-pointer">CCS - Creatives Committee</button>
+          <div class="mt-5 text-center text-sm text-gray-500">
+            Already have an account?
+            <button @click="goToLogin" class="text-blue-500 hover:text-blue-700 font-semibold ml-1">Log In</button>
+          </div>
+          <div class="mt-3 text-center text-xs text-gray-400">
+            Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer">CCS - Creatives Committee</button>
           </div>
         </div>
       </div>
@@ -490,113 +451,86 @@
     <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 overflow-auto">
       <div class="max-w-md mx-auto">
 
-        <div class="flex mb-8 bg-gray-100 rounded-lg p-1">
-          <button @click="goToLogin" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700">
-            Log In
-          </button>
-          <button class="flex-1 py-3 px-4 text-center font-medium rounded-md bg-white text-blue-600 shadow-sm flex items-center justify-center gap-1">
-            <span class="icon-mask w-5 h-5" aria-hidden="true"></span> Register
-          </button>
+        <div class="mb-5 text-center">
+          <h2 class="text-2xl font-bold text-blue-700 mb-1">Hello,</h2>
+          <h2 class="text-2xl font-bold text-blue-700 mb-1">Create Your Account</h2>
+          <p class="text-gray-500 text-xs">{{ stepTitle }}</p>
+        </div>
+
+        <div class="text-center mb-4">
+          <h3 class="text-xl font-bold text-gray-800">Sign Up</h3>
         </div>
 
         <form @submit.prevent="handleNext" novalidate class="space-y-4">
 
-          <div v-if="currentStep === 1" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-              <div class="relative">
-                <img src="/user.svg" alt="First Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="JUAN" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" required />
-              </div>
+          <div v-if="currentStep === 1" class="space-y-3">
+            <div class="relative">
+              <img src="/user.svg" alt="First Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="First Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Middle Name <span class="text-gray-500 text-xs">(optional)</span></label>
-              <div class="relative">
-                <img src="/user.svg" alt="Middle Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="DELA" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" />
-              </div>
+            <div class="relative">
+              <img src="/user.svg" alt="Middle Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="Middle Name (optional)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" />
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-              <div class="relative">
-                <img src="/user.svg" alt="Last Name" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" type="text" placeholder="CRUZ" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" required />
-              </div>
+            <div class="relative">
+              <img src="/user.svg" alt="Last Name" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <input v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" type="text" placeholder="Last Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Suffix <span class="text-gray-500 text-xs">(optional)</span></label>
-              <div class="relative">
-                <select v-model="formData.suffix" class="w-full pl-4 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none appearance-none bg-white">
-                  <option value="">Select Suffix</option>
-                  <option value="Jr.">Jr.</option>
-                  <option value="Sr.">Sr.</option>
-                  <option value="II">II</option>
-                  <option value="III">III</option>
-                  <option value="IV">IV</option>
-                </select>
-                <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-3 top-1/2 transform -translate-y-1/2 w-5 h-5 pointer-events-none" />
-              </div>
+            <div class="relative">
+              <select v-model="formData.suffix" class="w-full pl-4 pr-10 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none appearance-none text-sm text-gray-700">
+                <option value="">Suffix (optional)</option>
+                <option value="Jr.">Jr.</option>
+                <option value="Sr.">Sr.</option>
+                <option value="II">II</option>
+                <option value="III">III</option>
+                <option value="IV">IV</option>
+              </select>
+              <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40" />
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">E-mail</label>
-              <div class="relative">
-                <div class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 gradient-icon" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat;"></div>
-                <input v-model="formData.email" type="email" placeholder="juandelacruz@gmail.com" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" required />
-              </div>
+            <div class="relative">
+              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: currentColor;"></div>
+              <input v-model="formData.email" type="email" placeholder="E-mail" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
             </div>
-            <div class="flex items-center justify-center pt-4">
+            <div class="flex items-center justify-center pt-1">
               <div class="flex space-x-2">
-                <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                <div class="w-12 h-1 bg-gray-300 rounded"></div>
-                <div class="w-12 h-1 bg-gray-300 rounded"></div>
-                <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-gray-200 rounded-full"></div>
+                <div class="w-8 h-1 bg-gray-200 rounded-full"></div>
+                <div class="w-8 h-1 bg-gray-200 rounded-full"></div>
               </div>
             </div>
-            <button type="submit" :class="['w-full flex items-center justify-center transition duration-300 py-3 px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
+            <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
               Next <span class="ml-2">&rarr;</span>
             </button>
           </div>
 
-          <div v-if="currentStep === 2" class="space-y-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
-              <div class="relative">
-                <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="00-A-00000" maxlength="10" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none uppercase" required />
-              </div>
-              <p class="text-xs text-gray-400 mt-1">Format: 00-A-00000</p>
+          <div v-if="currentStep === 2" class="space-y-3">
+            <div class="relative">
+              <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="Student ID (00-A-00000)" maxlength="10" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400 uppercase" required />
+            </div>
+            <div class="relative">
+              <img src="/book.svg" alt="Year Level" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <select v-model="formData.year_level" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none appearance-none text-sm text-gray-700" required>
+                <option value="" disabled>Select Year Level</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+              <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-40" />
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
-              <div class="relative">
-                <img src="/book.svg" alt="Year Level" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-                <select v-model="formData.year_level" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none appearance-none bg-white" required>
-                  <option value="" disabled>Select Year Level</option>
-                  <option value="1st Year">1st Year</option>
-                  <option value="2nd Year">2nd Year</option>
-                  <option value="3rd Year">3rd Year</option>
-                  <option value="4th Year">4th Year</option>
-                </select>
-              </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Program</label>
               <div class="relative" ref="programDropdownMobileRef">
-                <img src="/course.svg" alt="Course" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-
-                <button type="button" @click="toggleProgramMenu('mobile')" class="w-full text-left pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none bg-white flex items-center justify-between">
+                <img src="/course.svg" alt="Course" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40 z-10" />
+                <button type="button" @click="toggleProgramMenu('mobile')" class="w-full text-left pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none flex items-center justify-between text-sm text-gray-700">
                   <span class="truncate">
-                    <template v-if="selectedProgramItem">
-                      {{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}
-                    </template>
-                    <template v-else>
-                      Select Program
-                    </template>
+                    <template v-if="selectedProgramItem">{{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}</template>
+                    <template v-else><span class="text-gray-400">Select Program</span></template>
                   </span>
-                  <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-60" />
+                  <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-40 flex-shrink-0" />
                 </button>
-
-                <ul v-if="showProgramMenu" :class="showMenuAboveMobile ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-auto' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-56 overflow-auto'">
+                <ul v-if="showProgramMenu" :class="showMenuAboveMobile ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto'">
                   <li v-for="p in flattenedPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer">
                     <img :src="p.departmentLogo" :alt="p.departmentLabel" class="w-6 h-6 object-contain rounded bg-white flex-shrink-0" />
                     <div class="min-w-0">
@@ -606,133 +540,132 @@
                   </li>
                 </ul>
               </div>
-              <div v-if="programDepartment" class="mt-2 flex items-center gap-2">
-                <img :src="programDepartment.departmentLogo" :alt="programDepartment.departmentLabel" class="w-6 h-6 object-contain rounded" />
-                <span class="text-xs text-gray-600">Department: <strong class="text-blue-800">{{ programDepartment.departmentName }} ({{ programDepartment.departmentLabel }})</strong></span>
+              <div v-if="programDepartment" class="mt-2 flex items-center gap-2 pl-2">
+                <img :src="programDepartment.departmentLogo" :alt="programDepartment.departmentLabel" class="w-5 h-5 object-contain rounded" />
+                <span class="text-xs text-gray-600">Dept: <strong class="text-blue-700">{{ programDepartment.departmentName }}</strong></span>
               </div>
             </div>
-            <div class="flex items-center justify-center pt-4">
+            <div class="flex items-center justify-center pt-1">
               <div class="flex space-x-2">
-                <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                <div class="w-12 h-1 bg-blue-600 rounded"></div>
-                <div class="w-12 h-1 bg-gray-300 rounded"></div>
-                <div class="w-12 h-1 bg-gray-300 rounded"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-gray-200 rounded-full"></div>
+                <div class="w-8 h-1 bg-gray-200 rounded-full"></div>
               </div>
             </div>
-            <div class="flex gap-4">
-              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center">
-                <span class="mr-2">&larr;</span>Back
+            <div class="flex gap-3">
+              <button type="button" @click="currentStep--" class="flex-1 bg-green-50 text-blue-600 py-3 px-4 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
+                <span class="mr-1">&larr;</span>Back
               </button>
-              <button type="submit" :class="['flex-1 flex items-center justify-center transition duration-300 py-3 px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
-                Next <span class="ml-2">&rarr;</span>
+              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-4 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+                Next <span class="ml-1">&rarr;</span>
               </button>
             </div>
           </div>
 
           <div v-if="currentStep === 3" class="space-y-4">
             <div class="text-center">
-              <div class="w-40 h-40 sm:w-48 sm:h-48 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden">
+              <div class="w-36 h-36 sm:w-40 sm:h-40 mx-auto mb-4 bg-green-50 rounded-full flex items-center justify-center overflow-hidden">
                 <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
                 <div v-else class="flex flex-col items-center justify-center">
-                  <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gray-400 mb-3 sm:mb-4"></div>
-                  <div class="w-28 h-16 sm:w-32 sm:h-20 bg-gray-500 rounded-t-full"></div>
+                  <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-300 mb-3"></div>
+                  <div class="w-24 h-14 sm:w-28 sm:h-16 bg-gray-400 rounded-t-full"></div>
                 </div>
               </div>
-              <label class="block text-sm font-medium text-gray-700 mb-4">Upload Image</label>
+              <label class="block text-sm font-medium text-gray-600 mb-4">Upload Profile Photo</label>
               <div class="relative">
                 <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload-mobile" />
-                <label for="file-upload-mobile" class="cursor-pointer inline-flex items-center justify-center px-6 sm:px-8 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-300">
-                  <img src="/change_photo.svg" alt="Upload" class="w-5 h-5 mr-2" />{{ imagePreview ? 'Change Image' : 'No File Chosen' }}
+                <label for="file-upload-mobile" class="cursor-pointer inline-flex items-center justify-center px-6 py-3 bg-green-50 rounded-full text-sm font-medium text-gray-600 hover:bg-green-100 transition duration-300">
+                  <img src="/change_photo.svg" alt="Upload" class="w-5 h-5 mr-2 opacity-60" />{{ imagePreview ? 'Change Photo' : 'Choose Photo' }}
                 </label>
               </div>
             </div>
-            <div class="flex items-center justify-center pt-4">
+            <div class="flex items-center justify-center pt-1">
               <div class="flex space-x-2">
-                <div class="w-10 h-1 bg-blue-600 rounded"></div>
-                <div class="w-10 h-1 bg-blue-600 rounded"></div>
-                <div class="w-10 h-1 bg-blue-600 rounded"></div>
-                <div class="w-10 h-1 bg-gray-300 rounded"></div>
-                <div class="w-10 h-1 bg-gray-300 rounded"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-gray-200 rounded-full"></div>
               </div>
             </div>
-            <div class="flex gap-4">
-              <button type="button" @click="currentStep--" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-3 px-4 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm sm:text-base">
-                <span class="mr-2">&larr;</span>Back
+            <div class="flex gap-3">
+              <button type="button" @click="currentStep--" class="flex-1 bg-green-50 text-blue-600 py-3 px-4 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
+                <span class="mr-1">&larr;</span>Back
               </button>
-              <button type="submit" :class="['flex-1 flex items-center justify-center text-sm sm:text-base transition duration-300 py-3 px-4 sm:px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
-                Next <span class="ml-2">&rarr;</span>
+              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-4 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+                Next <span class="ml-1">&rarr;</span>
               </button>
             </div>
           </div>
 
           <div v-if="currentStep === 3.5" class="space-y-4">
             <div class="text-center mb-3">
-              <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg class="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <div class="w-14 h-14 mx-auto mb-3 bg-blue-100 rounded-full flex items-center justify-center">
+                <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
-              <h3 class="text-base sm:text-lg font-semibold text-blue-900 mb-1 sm:mb-2">Review Your Information</h3>
-              <p class="text-xs sm:text-sm text-gray-600">Please verify all details are correct.</p>
+              <h3 class="text-base font-semibold text-blue-900 mb-1">Review Your Information</h3>
+              <p class="text-xs text-gray-600">Please verify all details are correct.</p>
             </div>
             
-            <div class="bg-gray-50 rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3">
+            <div class="bg-green-50 rounded-2xl p-3 space-y-2">
               <div class="flex flex-col items-center text-center gap-2">
-                <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+                <div class="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
                   <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
                   <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
-                    <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                   </div>
                 </div>
                 <div class="min-w-0">
-                  <p class="font-bold text-blue-900 text-sm sm:text-base">{{ formData.first_name }} {{ formData.middle_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
-                  <p class="text-xs sm:text-sm text-gray-600">{{ formData.student_id }}</p>
+                  <p class="font-bold text-blue-900 text-sm">{{ formData.first_name }} {{ formData.middle_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
+                  <p class="text-xs text-gray-600">{{ formData.student_id }}</p>
                 </div>
               </div>
               
-              <div class="border-t border-gray-200 pt-2 sm:pt-3 grid grid-cols-2 gap-2 text-xs sm:text-sm">
+              <div class="border-t border-gray-200 pt-2 grid grid-cols-2 gap-2">
                 <div>
-                  <p class="text-gray-500 text-[10px] sm:text-xs">Email</p>
-                  <p class="font-medium text-gray-800 break-all text-[10px] sm:text-xs leading-tight">{{ formData.email }}</p>
+                  <p class="text-gray-400 text-[10px]">Email</p>
+                  <p class="font-medium text-gray-800 break-all text-[10px] leading-tight">{{ formData.email }}</p>
                 </div>
                 <div>
-                  <p class="text-gray-500 text-[10px] sm:text-xs">Program</p>
-                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.program }}</p>
+                  <p class="text-gray-400 text-[10px]">Program</p>
+                  <p class="font-medium text-gray-800 text-xs">{{ formData.program }}</p>
                 </div>
                 <div>
-                  <p class="text-gray-500 text-[10px] sm:text-xs">Year Level</p>
-                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.year_level }}</p>
+                  <p class="text-gray-400 text-[10px]">Year Level</p>
+                  <p class="font-medium text-gray-800 text-xs">{{ formData.year_level }}</p>
                 </div>
                 <div>
-                  <p class="text-gray-500 text-[10px] sm:text-xs">Semester</p>
-                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.semester }}</p>
+                  <p class="text-gray-400 text-[10px]">Semester</p>
+                  <p class="font-medium text-gray-800 text-xs">{{ formData.semester }}</p>
                 </div>
                 <div class="col-span-2">
-                  <p class="text-gray-500 text-[10px] sm:text-xs">School Year</p>
-                  <p class="font-medium text-gray-800 text-xs sm:text-sm">{{ formData.school_year }}</p>
+                  <p class="text-gray-400 text-[10px]">School Year</p>
+                  <p class="font-medium text-gray-800 text-xs">{{ formData.school_year }}</p>
                 </div>
               </div>
             </div>
             
             <div v-if="reviewCountdown > 0" class="text-center">
-              <div class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-3 sm:px-4 py-2 rounded-full">
-                <svg class="w-4 h-4 sm:w-5 sm:h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                <span class="font-medium text-xs sm:text-sm">Please review... {{ reviewCountdown }}s</span>
+              <div class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full">
+                <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <span class="font-medium text-xs">Please review... {{ reviewCountdown }}s</span>
               </div>
             </div>
             
-            <div class="flex items-center justify-center pt-3 sm:pt-4">
+            <div class="flex items-center justify-center">
               <div class="flex space-x-2">
-                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
-                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
-                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
-                <div class="w-10 sm:w-12 h-1 bg-gray-300 rounded"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-gray-200 rounded-full"></div>
               </div>
             </div>
-            <div class="flex gap-3 sm:gap-4">
-              <button type="button" @click="currentStep = 3" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
-                <span class="mr-1 sm:mr-2">&larr;</span>Back
+            <div class="flex gap-3">
+              <button type="button" @click="currentStep = 3" class="flex-1 bg-green-50 text-blue-600 py-3 px-3 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
+                <span class="mr-1">&larr;</span>Back
               </button>
-              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center text-sm border-2', reviewCountdown > 0 ? 'bg-gray-300 text-gray-500 cursor-not-allowed border-gray-300' : registrationButtonClass + ' ' + registrationBorderClass]">
-                {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1 sm:ml-2">&rarr;</span>
+              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-3 rounded-full font-semibold transition duration-300 flex items-center justify-center text-sm uppercase tracking-wide shadow-md', reviewCountdown > 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-blue-600 to-blue-400 text-white hover:from-blue-700 hover:to-blue-500']">
+                {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1">&rarr;</span>
               </button>
             </div>
           </div>
@@ -785,30 +718,35 @@
                 {{ resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : 'Resend Code' }}
               </button>
             </div>
-            <div class="flex items-center justify-center pt-3 sm:pt-4">
+            <div class="flex items-center justify-center pt-2">
               <div class="flex space-x-2">
-                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
-                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
-                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
-                <div class="w-10 sm:w-12 h-1 bg-blue-600 rounded"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
               </div>
             </div>
-            <div class="flex gap-3 sm:gap-4">
-              <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border-2 border-blue-600 text-blue-600 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium hover:bg-purple-50 transition duration-300 flex items-center justify-center text-sm">
-                <span class="mr-1 sm:mr-2">&larr;</span>Back
+            <div class="flex gap-3">
+              <button type="button" @click="currentStep = 3.5" class="flex-1 bg-green-50 text-blue-600 py-3 px-3 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
+                <span class="mr-1">&larr;</span>Back
               </button>
-              <button type="submit" :class="['flex-1 flex items-center justify-center text-sm transition duration-300 py-2.5 sm:py-3 px-3 sm:px-6 rounded-lg font-medium border-2', registrationButtonClass, registrationBorderClass]">
-                Register <span class="ml-1 sm:ml-2">&rarr;</span>
+              <button type="submit" class="flex-1 bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-3 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
+                Sign Up <span class="ml-1">&rarr;</span>
               </button>
             </div>
           </div>
         </form>
 
-        <div class="mt-8 text-center text-xs text-gray-500">
-          Powered by <button @click="showDevelopersPopup = true" class="text-yellow-500 font-medium hover:text-yellow-600 cursor-pointer">CCS - Creatives Committee</button>
+        <div class="mt-5 text-center text-sm text-gray-500">
+          Already have an account?
+          <button @click="goToLogin" class="text-blue-500 hover:text-blue-700 font-semibold ml-1">Log In</button>
         </div>
 
-        <div class="mt-4 text-center text-xs text-gray-400">
+        <div class="mt-3 text-center text-xs text-gray-400">
+          Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer">CCS - Creatives Committee</button>
+        </div>
+
+        <div class="mt-2 text-center text-xs text-gray-400">
           Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
         </div>
       </div>

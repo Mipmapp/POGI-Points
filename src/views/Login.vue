@@ -366,78 +366,68 @@
     <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50">
       <div class="w-full max-w-md">
         <div class="mb-8 text-center">
-          <h2 class="text-3xl font-bold text-blue-900 mb-4">Let's Get Started!</h2>
-          <p class="text-gray-600 text-sm mb-2">You are a few clicks away from your profile.</p>
-          <p class="text-gray-600 text-sm mb-6">Input your JRMSU Student ID to continue.</p>
+          <h2 class="text-3xl font-bold text-blue-700 mb-2">Welcome</h2>
+          <p class="text-gray-500 text-sm">Login in to your account to continue</p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-lg p-8">
-          <div class="flex mb-6 border-b border-gray-200">
-            <button class="flex-1 py-3 px-4 text-center font-medium border-b-2 border-blue-600 text-blue-600">
-              Log In
-            </button>
-            <button @click="goToRegister" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
-              <span class="icon-mask" aria-hidden="true"></span> Register
-            </button>
-          </div>
-
-          <form @submit.prevent="handleLogin" novalidate class="space-y-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
-              <div class="relative">
-                <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input ref="studentIdInput" v-model="studentId" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" @keydown.enter.prevent="focusPassword" required />
-              </div>
+        <div class="bg-white rounded-3xl shadow-xl p-8">
+          <form @submit.prevent="handleLogin" novalidate class="space-y-4">
+            <div class="relative">
+              <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <input ref="studentIdInput" v-model="studentId" type="text" placeholder="Student ID (e.g. 25-A-12345)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" @keydown.enter.prevent="focusPassword" required />
             </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <div class="relative">
-                <img src="/key.svg" alt="Password" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input ref="passwordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
-                <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
-              </div>
+            <div class="relative">
+              <img src="/key.svg" alt="Password" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+              <input ref="passwordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Password" class="w-full pl-11 pr-12 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
+              <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70 opacity-40', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
             </div>
 
-            <button type="button" @click="showDepartmentModal = true" :class="['w-full py-3 px-6 border-2 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl mb-4',
+            <button type="button" @click="showDepartmentModal = true" :class="['w-full py-3 px-6 rounded-full font-medium transition-all duration-300 flex items-center justify-center gap-3',
               chosenDepartment ? 
-                (chosenDepartment.label === 'CCS' ? 'bg-purple-50 border-purple-600 text-purple-900 hover:bg-purple-100' :
-                 chosenDepartment.label === 'COE' ? 'bg-orange-50 border-orange-600 text-orange-900 hover:bg-orange-100' :
-                 chosenDepartment.label === 'SOM' ? 'bg-green-50 border-green-600 text-green-900 hover:bg-green-100' :
-                 chosenDepartment.label === 'CNAHS' ? 'bg-green-50 border-green-600 text-green-900 hover:bg-green-100' :
-                 'bg-blue-50 border-blue-600 text-blue-900 hover:bg-blue-100')
-              : 'bg-white border-blue-600 text-blue-900 hover:bg-blue-50']">
+                (chosenDepartment.label === 'CCS' ? 'bg-purple-50 text-purple-900 hover:bg-purple-100' :
+                 chosenDepartment.label === 'COE' ? 'bg-orange-50 text-orange-900 hover:bg-orange-100' :
+                 chosenDepartment.label === 'SOM' ? 'bg-green-50 text-green-900 hover:bg-green-100' :
+                 chosenDepartment.label === 'CNAHS' ? 'bg-green-50 text-green-900 hover:bg-green-100' :
+                 'bg-blue-50 text-blue-900 hover:bg-blue-100')
+              : 'bg-green-50 text-gray-500 hover:bg-green-100']">
               <template v-if="chosenDepartment">
-                <img :src="chosenDepartment.logo" :alt="chosenDepartment.name" class="w-8 h-8 object-contain rounded-md p-1" />
-                <div class="text-left">
+                <img :src="chosenDepartment.logo" :alt="chosenDepartment.name" class="w-6 h-6 object-contain rounded-md" />
+                <div class="text-left text-sm">
                   <div class="font-semibold">{{ chosenDepartment.name }}</div>
                 </div>
               </template>
               <template v-else>
-                <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain" style="filter: invert(27%) sepia(51%) saturate(2478%) hue-rotate(216deg) brightness(104%) contrast(97%);" />
-                <span>Select College</span>
+                <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain opacity-40" />
+                <span class="text-sm">Select College</span>
               </template>
             </button>
 
-            <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
-              <span class="flex items-center">
-                {{ isLoading ? 'Logging in...' : 'Login' }} <span v-if="!isLoading" class="ml-2">→</span>
-              </span>
+            <div class="text-right">
+              <button type="button" @click="showForgotPasswordModal = true" class="text-sm text-blue-500 hover:text-blue-700 font-medium">
+                forgot your password?
+              </button>
+            </div>
+
+            <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
+              {{ isLoading ? 'Logging in...' : 'Log In' }}
             </button>
 
-            <div class="flex items-center justify-between text-sm">
-              <button type="button" @click="showForgotPasswordModal = true" class="text-yellow-500 hover:text-yellow-600 font-medium">
-                Forgot Password?
-              </button>
-              <button type="button" @click="showContactModal = true" class="text-yellow-500 hover:text-yellow-600 inline-flex items-center gap-1 font-medium">
-                <img src="/help.svg" alt="Help" class="w-4 h-4" />
+            <div class="text-center text-sm text-gray-500 pt-1">
+              Don't have an account?
+              <button type="button" @click="goToRegister" class="text-blue-500 hover:text-blue-700 font-semibold ml-1">Sign Up</button>
+            </div>
+
+            <div class="flex items-center justify-center text-sm pt-1">
+              <button type="button" @click="showContactModal = true" class="text-gray-400 hover:text-gray-600 inline-flex items-center gap-1 text-xs">
+                <img src="/help.svg" alt="Help" class="w-4 h-4 opacity-50" />
                 Need help?
               </button>
             </div>
           </form>
 
-          <div class="mt-6 text-center text-xs text-gray-500">
-            Powered by <button @click="showDevelopersPopup = true" class="text-yellow-500 font-medium hover:text-yellow-600 cursor-pointer">CCS - Creatives Committee</button>
+          <div class="mt-5 text-center text-xs text-gray-400">
+            Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer">CCS - Creatives Committee</button>
           </div>
         </div>
       </div>
@@ -460,72 +450,68 @@
     <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 overflow-auto">
       <div class="max-w-md mx-auto">
 
-        <div class="flex mb-8 bg-gray-100 rounded-lg p-1">
-          <button class="flex-1 py-3 px-4 text-center font-medium rounded-md bg-white text-blue-600 shadow-sm">
-            Log In
-          </button>
-          <button @click="goToRegister" class="flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700 flex items-center justify-center gap-1">
-            <span class="icon-mask" aria-hidden="true"></span> Register
-          </button>
+        <div class="mb-6 text-center">
+          <h2 class="text-2xl font-bold text-blue-700 mb-1">Welcome</h2>
+          <p class="text-gray-500 text-sm">Login in to your account to continue</p>
         </div>
 
-          <form @submit.prevent="handleLogin" novalidate class="space-y-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
-              <div class="relative">
-                <img src="/user.svg" alt="Student ID" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input ref="mobileStudentIdInput" v-model="studentId" type="text" placeholder="25-A-12345" class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" @keydown.enter.prevent="focusMobilePassword" required />
+        <form @submit.prevent="handleLogin" novalidate class="space-y-4">
+          <div class="relative">
+            <img src="/user.svg" alt="Student ID" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+            <input ref="mobileStudentIdInput" v-model="studentId" type="text" placeholder="Student ID (e.g. 25-A-12345)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" @keydown.enter.prevent="focusMobilePassword" required />
+          </div>
+
+          <div class="relative">
+            <img src="/key.svg" alt="Password" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-40" />
+            <input ref="mobilePasswordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Password" class="w-full pl-11 pr-12 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
+            <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70 opacity-40', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
+          </div>
+
+          <button type="button" @click="showDepartmentModal = true" :class="['w-full py-3 px-6 rounded-full font-medium transition-all duration-300 flex items-center justify-center gap-3',
+            chosenDepartment ? 
+              (chosenDepartment.label === 'CCS' ? 'bg-purple-50 text-purple-900 hover:bg-purple-100' :
+               chosenDepartment.label === 'COE' ? 'bg-orange-50 text-orange-900 hover:bg-orange-100' :
+               chosenDepartment.label === 'SOM' ? 'bg-green-50 text-green-900 hover:bg-green-100' :
+               chosenDepartment.label === 'CNAHS' ? 'bg-green-50 text-green-900 hover:bg-green-100' :
+               'bg-blue-50 text-blue-900 hover:bg-blue-100')
+            : 'bg-green-50 text-gray-500 hover:bg-green-100']">
+            <template v-if="chosenDepartment">
+              <img :src="chosenDepartment.logo" :alt="chosenDepartment.name" class="w-6 h-6 object-contain rounded-md" />
+              <div class="text-left text-sm">
+                <div class="font-semibold">{{ chosenDepartment.name }}</div>
               </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
-              <div class="relative">
-                <img src="/key.svg" alt="Password" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input ref="mobilePasswordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Enter your password" class="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none" required />
-                <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
-              </div>
-            </div>
-
-            <button type="button" @click="showDepartmentModal = true" :class="['w-full py-3 px-6 border-2 rounded-lg font-medium transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl',
-              chosenDepartment ? 
-                (chosenDepartment.label === 'CCS' ? 'bg-purple-50 border-purple-600 text-purple-900 hover:bg-purple-100' :
-                 chosenDepartment.label === 'COE' ? 'bg-orange-50 border-orange-600 text-orange-900 hover:bg-orange-100' :
-                 chosenDepartment.label === 'SOM' ? 'bg-green-50 border-green-600 text-green-900 hover:bg-green-100' :
-                 chosenDepartment.label === 'CNAHS' ? 'bg-green-50 border-green-600 text-green-900 hover:bg-green-100' :
-                 'bg-blue-50 border-blue-600 text-blue-900 hover:bg-blue-100')
-              : 'bg-white border-blue-600 text-blue-900 hover:bg-blue-50']">
-              <template v-if="chosenDepartment">
-                <img :src="chosenDepartment.logo" :alt="chosenDepartment.name" class="w-8 h-8 object-contain rounded-md p-1" />
-                <div class="text-left">
-                  <div class="font-semibold text-sm">{{ chosenDepartment.name }}</div>
-                </div>
-              </template>
-              <template v-else>
-                <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain" style="filter: invert(27%) sepia(51%) saturate(2478%) hue-rotate(216deg) brightness(104%) contrast(97%);" />
-                <span class="text-sm">Select College</span>
-              </template>
-            </button>
-
-          <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition duration-300 flex items-center justify-center disabled:opacity-70 disabled:cursor-not-allowed">
-            <span class="flex items-center">
-              {{ isLoading ? 'Logging in...' : 'Login' }} <span v-if="!isLoading" class="ml-2">→</span>
-            </span>
+            </template>
+            <template v-else>
+              <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain opacity-40" />
+              <span class="text-sm">Select College</span>
+            </template>
           </button>
 
-          <div class="flex items-center justify-between text-sm">
-            <button type="button" @click="showForgotPasswordModal = true" class="text-yellow-500 hover:text-yellow-600 font-medium">
-              Forgot Password?
+          <div class="text-right">
+            <button type="button" @click="showForgotPasswordModal = true" class="text-sm text-blue-500 hover:text-blue-700 font-medium">
+              forgot your password?
             </button>
-            <button type="button" @click="showContactModal = true" class="text-yellow-500 hover:text-yellow-600 inline-flex items-center gap-1 font-medium">
-              <img src="/help.svg" alt="Help" class="w-4 h-4" />
+          </div>
+
+          <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-blue-600 to-blue-400 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-700 hover:to-blue-500 transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
+            {{ isLoading ? 'Logging in...' : 'Log In' }}
+          </button>
+
+          <div class="text-center text-sm text-gray-500 pt-1">
+            Don't have an account?
+            <button type="button" @click="goToRegister" class="text-blue-500 hover:text-blue-700 font-semibold ml-1">Sign Up</button>
+          </div>
+
+          <div class="flex items-center justify-center text-sm">
+            <button type="button" @click="showContactModal = true" class="text-gray-400 hover:text-gray-600 inline-flex items-center gap-1 text-xs">
+              <img src="/help.svg" alt="Help" class="w-4 h-4 opacity-50" />
               Need help?
             </button>
           </div>
         </form>
 
-        <div class="mt-8 text-center text-xs text-gray-500">
-          Powered by <button @click="showDevelopersPopup = true" class="text-yellow-500 font-medium hover:text-yellow-600 cursor-pointer">CCS - Creatives Committee</button>
+        <div class="mt-6 text-center text-xs text-gray-400">
+          Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer">CCS - Creatives Committee</button>
         </div>
 
         <div class="mt-4 text-center text-xs text-gray-400">
