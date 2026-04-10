@@ -450,6 +450,20 @@
   </div>
 
   <div class="mobile-bg-panel md:hidden min-h-screen flex flex-col">
+    <div class="bubble-container" aria-hidden="true">
+      <div class="bubble" style="width:18px;height:18px;left:8%;animation-duration:9s;animation-delay:0s;"></div>
+      <div class="bubble" style="width:30px;height:30px;left:18%;animation-duration:7s;animation-delay:1.5s;"></div>
+      <div class="bubble" style="width:12px;height:12px;left:28%;animation-duration:11s;animation-delay:0.5s;"></div>
+      <div class="bubble" style="width:45px;height:45px;left:38%;animation-duration:8s;animation-delay:3s;"></div>
+      <div class="bubble" style="width:20px;height:20px;left:50%;animation-duration:12s;animation-delay:1s;"></div>
+      <div class="bubble" style="width:35px;height:35px;left:62%;animation-duration:6s;animation-delay:4s;"></div>
+      <div class="bubble" style="width:14px;height:14px;left:72%;animation-duration:10s;animation-delay:1.8s;"></div>
+      <div class="bubble" style="width:40px;height:40px;left:82%;animation-duration:7.5s;animation-delay:0.8s;"></div>
+      <div class="bubble" style="width:22px;height:22px;left:14%;animation-duration:9.5s;animation-delay:2.5s;"></div>
+      <div class="bubble" style="width:50px;height:50px;left:55%;animation-duration:8.5s;animation-delay:3.5s;"></div>
+      <div class="bubble" style="width:16px;height:16px;left:88%;animation-duration:11.5s;animation-delay:0.3s;"></div>
+      <div class="bubble" style="width:28px;height:28px;left:44%;animation-duration:6.5s;animation-delay:2s;"></div>
+    </div>
 
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
       <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
@@ -1553,6 +1567,8 @@ const goToLogin = () => {
   background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #60a5fa 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .bubble-container {
