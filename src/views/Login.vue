@@ -348,6 +348,20 @@
   <ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" :theme="chosenDepartment ? chosenDepartment.label : ''" @complete="handleLoadingComplete" />
   <div class="hidden md:flex min-h-screen bg-white w-full">
     <div class="w-2/5 desktop-bg-panel flex-shrink-0">
+      <div class="bubble-container" aria-hidden="true">
+        <div class="bubble" style="width:18px;height:18px;left:8%;animation-duration:9s;animation-delay:0s;"></div>
+        <div class="bubble" style="width:30px;height:30px;left:18%;animation-duration:7s;animation-delay:1.5s;"></div>
+        <div class="bubble" style="width:12px;height:12px;left:28%;animation-duration:11s;animation-delay:0.5s;"></div>
+        <div class="bubble" style="width:45px;height:45px;left:38%;animation-duration:8s;animation-delay:3s;"></div>
+        <div class="bubble" style="width:20px;height:20px;left:50%;animation-duration:12s;animation-delay:1s;"></div>
+        <div class="bubble" style="width:35px;height:35px;left:62%;animation-duration:6s;animation-delay:4s;"></div>
+        <div class="bubble" style="width:14px;height:14px;left:72%;animation-duration:10s;animation-delay:1.8s;"></div>
+        <div class="bubble" style="width:40px;height:40px;left:82%;animation-duration:7.5s;animation-delay:0.8s;"></div>
+        <div class="bubble" style="width:22px;height:22px;left:14%;animation-duration:9.5s;animation-delay:2.5s;"></div>
+        <div class="bubble" style="width:50px;height:50px;left:55%;animation-duration:8.5s;animation-delay:3.5s;"></div>
+        <div class="bubble" style="width:16px;height:16px;left:88%;animation-duration:11.5s;animation-delay:0.3s;"></div>
+        <div class="bubble" style="width:28px;height:28px;left:44%;animation-duration:6.5s;animation-delay:2s;"></div>
+      </div>
       <div class="relative z-10 text-center">
         <div class="mb-4">
           <div class="w-40 h-40 mx-auto flex items-center justify-center logo-sweep" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
@@ -1275,6 +1289,31 @@ const verifyAdminCode = () => {
   color: white;
   padding: 2rem;
   position: relative;
+  overflow: hidden;
+  box-shadow: inset -18px 0 40px rgba(0,0,0,0.35), 6px 0 24px rgba(0,0,0,0.28);
+}
+
+.bubble-container {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.bubble {
+  position: absolute;
+  bottom: -80px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  animation: float-up linear infinite;
+}
+
+@keyframes float-up {
+  0%   { transform: translateY(0) scale(1);   opacity: 0; }
+  10%  { opacity: 0.8; }
+  90%  { opacity: 0.4; }
+  100% { transform: translateY(-110vh) scale(0.75); opacity: 0; }
 }
 
 .mobile-bg-panel {
