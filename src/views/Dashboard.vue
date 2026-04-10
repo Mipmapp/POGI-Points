@@ -3201,9 +3201,9 @@
           <div class="px-8 pb-8">
             <div class="relative -mt-16 mb-6">
               <div class="inline-block relative">
-                <div :class="[isCOE ? 'bg-gradient-to-br from-orange-100 to-orange-200' : isSOM ? 'bg-gradient-to-br from-green-100 to-green-200' : isCNAHS ? 'bg-gradient-to-br from-green-100 to-green-200' : 'bg-gradient-to-br from-blue-100 to-blue-200', 'w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center']">
+                <div :class="[isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light', 'w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center']">
                   <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
-                    <svg :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'animate-spin h-10 w-10']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg class="animate-spin h-10 w-10 text-white/80" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -3217,7 +3217,7 @@
                     @load="onProfileImageLoad" 
                     @error="handleProfileImageError" 
                   />
-                  <div v-else :class="[isCOE ? 'text-orange-300' : isSOM ? 'text-green-300' : isCNAHS ? 'text-green-300' : 'text-blue-300', 'w-full h-full flex items-center justify-center text-4xl font-bold']">
+                  <div v-else class="w-full h-full flex items-center justify-center text-4xl font-bold text-white">
                     {{ getInitials(currentUser?.full_name || displayName || '') }}
                   </div>
                 </div>

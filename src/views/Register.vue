@@ -119,7 +119,7 @@
         </div>
 
         <div class="space-y-1">
-          <h1 class="text-3xl sm:text-4xl font-bold mb-0">SSAAM</h1>
+          <h1 class="text-4xl sm:text-6xl font-extrabold italic mb-0">SSAAM</h1>
           <p class="text-sm text-white/90">Student School Activities Attendance Monitoring</p>
           <div v-if="programDepartment" class="mt-3 text-sm text-white/90">
             <div class="font-semibold">{{ programDepartment.departmentName }} <span class="text-xs text-white/80">({{ programDepartment.departmentLabel }})</span></div>
