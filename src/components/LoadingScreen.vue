@@ -7,10 +7,7 @@
       <div>
         <h1 class="text-6xl font-extrabold italic text-white mb-1 tracking-wide drop-shadow-lg">SSAAM</h1>
         <p class="text-base text-white opacity-90">Student School Activities Attendance Monitoring</p>
-        <div class="flex items-center justify-center gap-2 mt-3">
-          <img :src="departmentLogo" :alt="isCOE ? 'COE Logo' : 'JRMSU Logo'" class="w-6 h-6 object-contain drop-shadow" />
-          <p class="text-xs text-white/70">Jose Rizal Memorial State University</p>
-        </div>
+        <p class="text-xs text-white/70 mt-3">Jose Rizal Memorial State University</p>
       </div>
       <div class="flex gap-2 mt-4">
         <div class="w-3 h-3 rounded-full bg-white animate-pulse"></div>
