@@ -215,16 +215,22 @@
                     </span>
                     <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-65 flex-shrink-0" />
                   </button>
-                  <ul v-if="showProgramMenu" :class="showMenuAboveDesktop ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto'">
-                    <li v-for="p in flattenedPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer">
-                      <img :src="p.departmentLogo" :alt="p.departmentLabel" class="w-8 h-8 object-contain rounded bg-white flex-shrink-0" />
-                      <div class="min-w-0">
-                        <div class="text-sm font-medium text-gray-800">{{ p.shortName }}</div>
-                        <div class="text-xs text-gray-500 whitespace-normal break-words">{{ p.fullName }}</div>
-                        <div class="text-xs text-gray-400 mt-1">{{ p.departmentLabel }}</div>
-                      </div>
-                    </li>
-                  </ul>
+                  <div v-if="showProgramMenu" :class="showMenuAboveDesktop ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg'">
+                    <div class="px-2 pt-2 pb-1">
+                      <input v-model="programSearch" type="text" placeholder="Search program..." @click.stop class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 outline-none" />
+                    </div>
+                    <ul class="max-h-48 overflow-auto">
+                      <li v-for="p in filteredPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer">
+                        <img :src="p.departmentLogo" :alt="p.departmentLabel" class="w-8 h-8 object-contain rounded bg-white flex-shrink-0" />
+                        <div class="min-w-0">
+                          <div class="text-sm font-medium text-gray-800">{{ p.shortName }}</div>
+                          <div class="text-xs text-gray-500 whitespace-normal break-words">{{ p.fullName }}</div>
+                          <div class="text-xs text-gray-400 mt-1">{{ p.departmentLabel }}</div>
+                        </div>
+                      </li>
+                      <li v-if="filteredPrograms.length === 0" class="px-3 py-4 text-sm text-gray-400 text-center">No programs found</li>
+                    </ul>
+                  </div>
                 </div>
                 <div v-if="programDepartment" class="mt-2 flex items-center gap-2 pl-2">
                   <img :src="programDepartment.departmentLogo" :alt="programDepartment.departmentLabel" class="w-5 h-5 object-contain rounded" />
@@ -528,15 +534,21 @@
                   </span>
                   <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-65 flex-shrink-0" />
                 </button>
-                <ul v-if="showProgramMenu" :class="showMenuAboveMobile ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg max-h-56 overflow-auto'">
-                  <li v-for="p in flattenedPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer">
-                    <img :src="p.departmentLogo" :alt="p.departmentLabel" class="w-6 h-6 object-contain rounded bg-white flex-shrink-0" />
-                    <div class="min-w-0">
-                      <div class="text-sm font-medium text-gray-800">{{ p.shortName }}</div>
-                      <div class="text-xs text-gray-500 whitespace-normal break-words">{{ p.fullName }}</div>
-                    </div>
-                  </li>
-                </ul>
+                <div v-if="showProgramMenu" :class="showMenuAboveMobile ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg'">
+                  <div class="px-2 pt-2 pb-1">
+                    <input v-model="programSearch" type="text" placeholder="Search program..." @click.stop class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 outline-none" />
+                  </div>
+                  <ul class="max-h-48 overflow-auto">
+                    <li v-for="p in filteredPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer">
+                      <img :src="p.departmentLogo" :alt="p.departmentLabel" class="w-6 h-6 object-contain rounded bg-white flex-shrink-0" />
+                      <div class="min-w-0">
+                        <div class="text-sm font-medium text-gray-800">{{ p.shortName }}</div>
+                        <div class="text-xs text-gray-500 whitespace-normal break-words">{{ p.fullName }}</div>
+                      </div>
+                    </li>
+                    <li v-if="filteredPrograms.length === 0" class="px-3 py-4 text-sm text-gray-400 text-center">No programs found</li>
+                  </ul>
+                </div>
               </div>
               <div v-if="programDepartment" class="mt-2 flex items-center gap-2 pl-2">
                 <img :src="programDepartment.departmentLogo" :alt="programDepartment.departmentLabel" class="w-5 h-5 object-contain rounded" />
@@ -946,8 +958,19 @@ const programDropdownDesktopRef = ref(null)
 const programDropdownMobileRef = ref(null)
 const showMenuAboveDesktop = ref(false)
 const showMenuAboveMobile = ref(false)
+const programSearch = ref('')
 const selectedProgramItem = computed(() => {
   return flattenedPrograms.value.find(p => p.shortName === formData.program) || null
+})
+const filteredPrograms = computed(() => {
+  const q = programSearch.value.trim().toLowerCase()
+  if (!q) return flattenedPrograms.value
+  return flattenedPrograms.value.filter(p =>
+    p.shortName.toLowerCase().includes(q) ||
+    p.fullName.toLowerCase().includes(q) ||
+    p.departmentName.toLowerCase().includes(q) ||
+    p.departmentLabel.toLowerCase().includes(q)
+  )
 })
 
 const handleOutsideClick = (e) => {
@@ -990,7 +1013,10 @@ const onWindowChange = () => {
 
 const toggleProgramMenu = (which) => {
   showProgramMenu.value = !showProgramMenu.value
-  if (showProgramMenu.value) updateProgramMenuPlacement(which)
+  if (showProgramMenu.value) {
+    programSearch.value = ''
+    updateProgramMenuPlacement(which)
+  }
 }
 
 onMounted(() => {
@@ -1008,6 +1034,7 @@ onBeforeUnmount(() => {
 const chooseProgram = (p) => {
   formData.program = p.shortName
   showProgramMenu.value = false
+  programSearch.value = ''
 }
 
 const isUploading = ref(false)
