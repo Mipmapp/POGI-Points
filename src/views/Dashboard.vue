@@ -616,8 +616,8 @@
         </div>
       </div>
 
-      <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
-        <div class="flex flex-col items-center">
+      <div class="px-4 py-4 border-b border-white/10 flex-shrink-0">
+        <div class="flex flex-col items-center bg-white/[0.06] rounded-2xl px-3 py-4 border border-white/10">
           <!-- Profile Picture Container (Hidden for Admins) -->
           <div :class="['w-16 h-16 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden mb-3 relative', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }" v-if="currentUser.role !== 'admin' && !currentUser.isMaster">
             <!-- Initials as Background/Placeholder -->
@@ -695,7 +695,8 @@
         </div>
       </div>
 
-      <nav class="flex-1 p-4 overflow-y-auto min-h-0 sidebar-scroll">
+      <nav class="flex-1 px-3 py-4 overflow-y-auto min-h-0 sidebar-scroll">
+        <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Menu</p>
         <button @click="currentPage = 'dashboard'" :class="[sidebarItemBase, currentPage === 'dashboard' ? sidebarItemActive : sidebarItemHover]">
           <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>Dashboard</span>
@@ -718,22 +719,24 @@
           <span>Attendance</span>
         </button>
 
-        <button 
-          @click="handleLogoutWithAnimation"
-          :class="[
-            'flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2 transition-all duration-300',
-            isLoggingOut ? 'scale-95 opacity-70' : '',
-            'hover:bg-white hover:bg-opacity-10'
-          ]"
-        >
-          <img src="/logout.svg" alt="Log Out" :class="['w-5 h-5 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1);" />
-          <span>Log Out</span>
-        </button>
+        <div class="mt-3 border-t border-white/10 pt-3">
+          <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
+          <button 
+            @click="handleLogoutWithAnimation"
+            :class="[
+              'flex items-center space-x-3 px-4 py-2.5 rounded-xl w-full text-left text-sm font-medium transition-all duration-200 border-l-4 border-transparent text-white/80',
+              isLoggingOut ? 'scale-95 opacity-60' : 'hover:bg-red-500/20 hover:border-red-400/60 hover:text-white hover:translate-x-0.5'
+            ]"
+          >
+            <img src="/logout.svg" alt="Log Out" :class="['w-4 h-4 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1); opacity:0.85;" />
+            <span>{{ isLoggingOut ? 'Signing out…' : 'Log Out' }}</span>
+          </button>
+        </div>
       </nav>
 
-      <div class="p-4 text-xs text-white opacity-75 flex-shrink-0">
-        <p>Powered by</p>
-        <button @click="showDevelopersPopup = true" class="text-yellow-300 hover:text-yellow-400 cursor-pointer">CCS - Creatives Committee</button>
+      <div class="px-5 py-3 border-t border-white/10 flex-shrink-0">
+        <p class="text-white/30 text-[10px]">Powered by</p>
+        <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
       </div>
     </div>
 
@@ -748,7 +751,8 @@
           <button @click="showMobileMenu = false" class="text-2xl text-white/80 hover:text-white leading-none">×</button>
         </div>
         
-        <div class="p-4 md:p-6 border-b border-white border-opacity-20 flex-shrink-0 flex flex-col items-center text-center">
+        <div class="px-4 py-4 border-b border-white/10 flex-shrink-0">
+          <div class="flex flex-col items-center bg-white/[0.06] rounded-2xl px-3 py-4 border border-white/10 text-center">
             <div v-if="currentUser.role !== 'admin' && !currentUser.isMaster" class="mb-4">
             <div :class="['w-16 h-16 md:w-20 md:h-20 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden relative', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
               <!-- Initials as Background/Placeholder -->
@@ -825,9 +829,11 @@
               </div>
             </div>
           </div>
+          </div>
         </div>
 
-        <nav class="flex-1 p-4 overflow-y-auto min-h-0 sidebar-scroll">
+        <nav class="flex-1 px-3 py-4 overflow-y-auto min-h-0 sidebar-scroll">
+          <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Menu</p>
           <button @click="currentPage = 'dashboard'" :class="[sidebarItemBase, currentPage === 'dashboard' ? sidebarItemActive : sidebarItemHover]">
             <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>Dashboard</span>
@@ -859,22 +865,24 @@
             </svg>
             <span>Refresh Data</span>
           </button>
-          <button 
-            @click="handleLogoutWithAnimation"
-            :class="[
-              'flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left mt-2 transition-all duration-300',
-              isLoggingOut ? 'scale-95 opacity-70' : '',
-              'hover:bg-white hover:bg-opacity-10'
-            ]"
-          >
-            <img src="/logout.svg" alt="Log Out" :class="['w-5 h-5 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1);" />
-            <span>Log Out</span>
-          </button>
+          <div class="mt-3 border-t border-white/10 pt-3">
+            <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
+            <button 
+              @click="handleLogoutWithAnimation"
+              :class="[
+                'flex items-center space-x-3 px-4 py-2.5 rounded-xl w-full text-left text-sm font-medium transition-all duration-200 border-l-4 border-transparent text-white/80',
+                isLoggingOut ? 'scale-95 opacity-60' : 'hover:bg-red-500/20 hover:border-red-400/60 hover:text-white hover:translate-x-0.5'
+              ]"
+            >
+              <img src="/logout.svg" alt="Log Out" :class="['w-4 h-4 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1); opacity:0.85;" />
+              <span>{{ isLoggingOut ? 'Signing out…' : 'Log Out' }}</span>
+            </button>
+          </div>
         </nav>
 
-        <div class="p-4 text-xs text-white opacity-75 flex-shrink-0">
-          <p>Powered by</p>
-          <button @click="showDevelopersPopup = true" class="text-yellow-300 hover:text-yellow-400 cursor-pointer">CCS - Creatives Committee</button>
+        <div class="px-5 py-3 border-t border-white/10 flex-shrink-0">
+          <p class="text-white/30 text-[10px]">Powered by</p>
+          <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
         </div>
       </div>
     </transition>
@@ -9597,11 +9605,11 @@ const availablePrograms = computed(() => {
 })
 
 const sidebarGradient = computed(() => {
-  if (isCOE.value) return 'from-orange-700 to-red-600'
-  if (isSOM.value) return 'from-green-700 to-yellow-600'  // darker yellow for SOM per UX feedback
-  if (isCNAHS.value) return 'from-green-800 to-green-600'  // dark green gradient for CNAHS
-  // default/CCS — blue matching login/register
-  return 'from-ssaam-dark to-ssaam-light'
+  if (isCOE.value) return 'from-[#4a1207] to-[#7c2210]'
+  if (isSOM.value) return 'from-[#0d3320] to-[#5a3a08]'
+  if (isCNAHS.value) return 'from-[#052e16] to-[#14532d]'
+  // default/CCS — deep dark navy (refined, not overwhelming)
+  return 'from-[#080e2e] to-[#0f1f6e]'
 })
 
 const themeColors = computed(() => {
@@ -9644,14 +9652,19 @@ const themeColors = computed(() => {
 })
 
 // sidebar item helpers used in nav buttons
-const sidebarItemBase = 'flex items-center space-x-3 px-4 py-3 rounded-lg w-full text-left transition-colors transform duration-150 ease-in-out'
+const sidebarItemBase = 'flex items-center space-x-3 px-4 py-2.5 rounded-xl w-full text-left transition-all duration-200 ease-in-out text-sm font-medium border-l-4 border-transparent'
 const sidebarItemHover = computed(() => {
-  // only scale on medium+ screens; mobile gets color-only hover
-  if (isCOE.value) return 'hover:bg-orange-200 hover:bg-opacity-20 md:hover:scale-105'
-  if (isSOM.value) return 'hover:bg-green-200 hover:bg-opacity-20 md:hover:scale-105'
-  return 'hover:bg-white hover:bg-opacity-10 md:hover:scale-105'
+  if (isCOE.value) return 'hover:bg-white/10 hover:border-l-4 hover:border-orange-300/60 hover:translate-x-0.5'
+  if (isSOM.value) return 'hover:bg-white/10 hover:border-l-4 hover:border-green-300/60 hover:translate-x-0.5'
+  if (isCNAHS.value) return 'hover:bg-white/10 hover:border-l-4 hover:border-emerald-300/60 hover:translate-x-0.5'
+  return 'hover:bg-white/10 hover:border-l-4 hover:border-blue-300/60 hover:translate-x-0.5'
 })
-const sidebarItemActive = 'bg-white bg-opacity-20 md:scale-105'
+const sidebarItemActive = computed(() => {
+  if (isCOE.value) return 'bg-white/15 border-l-4 border-orange-300 shadow-sm text-white'
+  if (isSOM.value) return 'bg-white/15 border-l-4 border-green-300 shadow-sm text-white'
+  if (isCNAHS.value) return 'bg-white/15 border-l-4 border-emerald-300 shadow-sm text-white'
+  return 'bg-white/15 border-l-4 border-blue-300 shadow-sm text-white'
+})
 
 const pageLoadingBgClass = computed(() => {
   if (isCCS.value) return 'fixed inset-0 bg-gradient-to-b from-ssaam-dark to-ssaam-light flex items-center justify-center z-50'
