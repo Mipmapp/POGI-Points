@@ -546,11 +546,11 @@
   <transition name="fade">
     <div v-if="showLogoutAnimation" :class="logoutBgClass" :style="logoutBgStyle">
       <div class="text-center text-white flex flex-col items-center gap-4">
-        <div class="flex items-center gap-3">
-          <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-14 h-14 object-contain drop-shadow-2xl flex-shrink-0" />
+        <div class="flex items-center gap-4">
+          <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-20 h-20 object-contain drop-shadow-2xl flex-shrink-0" />
           <div class="leading-tight text-left">
-            <h1 class="text-5xl font-extrabold italic tracking-wide drop-shadow-lg">SSAAM</h1>
-            <p class="text-xs text-white/60 mt-0.5">Student School Activities Attendance Monitoring</p>
+            <h1 class="text-6xl font-extrabold italic tracking-wide drop-shadow-lg">SSAAM</h1>
+            <p class="text-sm text-white/65 mt-1">Student School Activities Attendance Monitoring</p>
           </div>
         </div>
         <p class="text-lg font-semibold opacity-90">Logging Out</p>
@@ -3794,11 +3794,19 @@
   <transition name="fade">
     <div v-if="showPasswordChangeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closePasswordChangeModal">
       <transition name="modal-bounce" appear>
-        <div v-if="showPasswordChangeModal" class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-6">
-            <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Change Password</h3>
-            <button @click="closePasswordChangeModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <div v-if="showPasswordChangeModal" class="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-md w-full mx-4 max-h-[90vh] flex flex-col">
+          <!-- Gradient Header -->
+          <div :class="['flex justify-between items-center px-6 py-4 flex-shrink-0', isCOE ? 'bg-gradient-to-r from-orange-700 to-red-500' : isSOM ? 'bg-gradient-to-r from-green-700 to-teal-500' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
+            <div class="flex items-center gap-3">
+              <div class="bg-white/20 p-2 rounded-lg">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              </div>
+              <h3 class="text-xl font-bold text-white">Change Password</h3>
+            </div>
+            <button @click="closePasswordChangeModal" class="text-white/70 hover:text-white text-2xl leading-none">&times;</button>
           </div>
+          <!-- Body -->
+          <div class="p-6 overflow-y-auto flex-1">
 
           <!-- Step 1: Request Email Verification -->
           <div v-if="pwChangeStep === 1" class="space-y-4">
@@ -3875,6 +3883,7 @@
             </button>
             <p v-if="passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword" class="text-sm text-red-600 text-center">Passwords do not match</p>
             <p v-if="pwChangeMessage" :class="['text-sm text-center', pwChangeSuccess ? 'text-green-600' : 'text-red-600']">{{ pwChangeMessage }}</p>
+          </div>
           </div>
         </div>
       </transition>
