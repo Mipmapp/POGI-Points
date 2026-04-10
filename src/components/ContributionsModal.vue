@@ -2,7 +2,7 @@
   <div>
     <!-- Full-page loading overlay (COE-themed when applicable) -->
     <div v-if="isLoading" class="fixed inset-0 z-60 flex items-center justify-center">
-      <div class="absolute inset-0" :class="isCOE ? 'bg-gradient-to-br from-orange-700 via-orange-500 to-yellow-400 bg-opacity-85' : 'bg-gradient-to-br from-purple-800 via-pink-700 to-pink-500 bg-opacity-85'"></div>
+      <div class="absolute inset-0" :class="isCOE ? 'bg-gradient-to-br from-orange-700 via-orange-500 to-yellow-400 bg-opacity-85' : 'bg-gradient-to-br from-blue-800 via-blue-700 to-blue-500 bg-opacity-85'"></div>
       <div class="relative z-10 text-center">
         <div :class="['animate-spin rounded-full', isCOE ? 'h-20 w-20 border-4 border-white border-t-transparent' : 'h-20 w-20 border-4 border-white border-t-transparent']"></div>
         <p class="mt-4 text-white font-bold">Loading contributions...</p>
@@ -12,9 +12,9 @@
       <div v-if="visible" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeModal">
         <transition name="modal-bounce" appear>
           <div class="bg-white rounded-lg shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col mx-4">
-            <div class="bg-gradient-to-r from-purple-600 to-pink-500 px-6 py-4 flex justify-between items-center">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-4 flex justify-between items-center">
               <h2 class="text-2xl font-bold text-white">Contribution Tracking</h2>
-              <button @click="closeModal" class="text-white hover:text-purple-200">
+              <button @click="closeModal" class="text-white hover:text-blue-200">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
@@ -24,7 +24,7 @@
               <div class="grid grid-cols-4 gap-4 p-4 bg-gray-50 border-b">
                 <div class="bg-white p-3 rounded text-center">
                   <p class="text-sm text-gray-600">Total</p>
-                  <p class="text-2xl font-bold text-purple-600">{{ stats.total }}</p>
+                  <p class="text-2xl font-bold text-blue-600">{{ stats.total }}</p>
                 </div>
                 <div class="bg-white p-3 rounded text-center">
                   <p class="text-sm text-gray-600">Paid</p>
@@ -84,9 +84,9 @@
       <div v-if="showReceiptModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showReceiptModal = false">
         <transition name="modal-bounce" appear>
           <div class="bg-white rounded-lg shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div class="bg-gradient-to-r from-purple-600 to-pink-500 px-6 py-4 flex justify-between items-center">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-500 px-6 py-4 flex justify-between items-center">
               <h2 class="text-2xl font-bold text-white">Receipt</h2>
-              <button @click="showReceiptModal = false" class="text-white hover:text-purple-200">
+              <button @click="showReceiptModal = false" class="text-white hover:text-blue-200">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>

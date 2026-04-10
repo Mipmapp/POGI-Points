@@ -49,31 +49,31 @@
       </div>
 
       <!-- CCS Version: Matrix Scanner Effect -->
-      <div v-else class="fixed inset-0 z-[150] flex items-center justify-center bg-purple-950/30 backdrop-blur-md pointer-events-auto">
+      <div v-else class="fixed inset-0 z-[150] flex items-center justify-center bg-blue-950/30 backdrop-blur-md pointer-events-auto">
         <div class="relative max-w-md w-full p-8 text-center flex flex-col items-center justify-center">
           <!-- Matrix-like background effect -->
           <div class="absolute inset-0 overflow-hidden opacity-20 pointer-events-none flex items-center justify-center">
-            <div class="matrix-text text-xs text-purple-400 font-mono text-center leading-none whitespace-pre select-none">
+            <div class="matrix-text text-xs text-blue-400 font-mono text-center leading-none whitespace-pre select-none">
               {{ matrixText }}
             </div>
           </div>
 
           <!-- Main Scanner Animation -->
           <div class="relative mb-4 z-10">
-            <div class="w-32 h-32 mx-auto border-4 border-purple-500/30 rounded-2xl relative overflow-hidden bg-purple-900/40">
-              <div class="absolute inset-0 bg-gradient-to-b from-purple-500/0 via-purple-400/50 to-purple-500/0 h-1 w-full scanner-line"></div>
+            <div class="w-32 h-32 mx-auto border-4 border-blue-500/30 rounded-2xl relative overflow-hidden bg-blue-900/40">
+              <div class="absolute inset-0 bg-gradient-to-b from-blue-500/0 via-blue-400/50 to-blue-500/0 h-1 w-full scanner-line"></div>
               <div class="absolute inset-0 flex items-center justify-center">
-                <svg class="w-16 h-16 text-purple-300 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-16 h-16 text-blue-300 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path>
                 </svg>
               </div>
             </div>
             
             <!-- Glowing corners -->
-            <div class="absolute -top-2 -left-2 w-6 h-6 border-t-4 border-l-4 border-purple-400"></div>
-            <div class="absolute -top-2 -right-2 w-6 h-6 border-t-4 border-r-4 border-purple-400"></div>
-            <div class="absolute -bottom-2 -left-2 w-6 h-6 border-b-4 border-l-4 border-purple-400"></div>
-            <div class="absolute -bottom-2 -right-2 w-6 h-6 border-b-4 border-r-4 border-purple-400"></div>
+            <div class="absolute -top-2 -left-2 w-6 h-6 border-t-4 border-l-4 border-blue-400"></div>
+            <div class="absolute -top-2 -right-2 w-6 h-6 border-t-4 border-r-4 border-blue-400"></div>
+            <div class="absolute -bottom-2 -left-2 w-6 h-6 border-b-4 border-l-4 border-blue-400"></div>
+            <div class="absolute -bottom-2 -right-2 w-6 h-6 border-b-4 border-r-4 border-blue-400"></div>
           </div>
 
           <!-- Status Text -->

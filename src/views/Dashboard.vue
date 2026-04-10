@@ -116,7 +116,7 @@
       <!-- Sessions loading bar -->
       <div v-if="sessionsLoading" class="w-full mb-4">
         <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-          <div :class="[isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-yellow-500' : isCNAHS ? 'from-green-700 to-green-600' : 'from-purple-600 to-pink-500','h-2','rounded-full','animate-pulse','bg-gradient-to-r']" style="width:60%"></div>
+          <div :class="[isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-yellow-500' : isCNAHS ? 'from-green-700 to-green-600' : 'from-blue-600 to-blue-500','h-2','rounded-full','animate-pulse','bg-gradient-to-r']" style="width:60%"></div>
         </div>
       </div>
       
@@ -158,8 +158,8 @@
     </div>
 
     <!-- RFID Scanner Fullscreen Modal - Two Column Layout -->
-    <div v-if="rfidFullscreenMode" :class="['fixed inset-0 z-[70] overflow-hidden bg-gradient-to-br', isCOE ? 'from-orange-900 via-orange-800 to-red-900' : isSOM ? 'from-green-900 via-green-800 to-yellow-900' : isCNAHS ? 'from-green-900 via-green-700 to-green-900' : 'from-purple-900 via-purple-800 to-pink-900']">
-    <button @click="rfidFullscreenMode = false" :class="['absolute top-4 right-4 md:top-6 md:right-6 text-white transition z-10', isCOE ? 'hover:text-red-300' : isSOM ? 'hover:text-yellow-300' : isCNAHS ? 'hover:text-green-300' : 'hover:text-pink-300']">
+    <div v-if="rfidFullscreenMode" :class="['fixed inset-0 z-[70] overflow-hidden bg-gradient-to-br', isCOE ? 'from-orange-900 via-orange-800 to-red-900' : isSOM ? 'from-green-900 via-green-800 to-yellow-900' : isCNAHS ? 'from-green-900 via-green-700 to-green-900' : 'from-blue-900 via-blue-800 to-blue-900']">
+    <button @click="rfidFullscreenMode = false" :class="['absolute top-4 right-4 md:top-6 md:right-6 text-white transition z-10', isCOE ? 'hover:text-red-300' : isSOM ? 'hover:text-yellow-300' : isCNAHS ? 'hover:text-green-300' : 'hover:text-blue-300']">
       <svg class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
     
@@ -176,14 +176,14 @@
               }"
             >
               <img :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/icons/ccs.svg'" :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'CCS Logo'" class="w-full h-full object-contain relative z-10" />
-              <div :class="['absolute inset-0 -translate-x-full animate-sweep z-20 pointer-events-none', isCOE ? 'bg-gradient-to-r from-transparent via-red-300/40 to-transparent' : isSOM ? 'bg-gradient-to-r from-transparent via-yellow-300/40 to-transparent' : isCNAHS ? 'bg-gradient-to-r from-transparent via-green-300/40 to-transparent' : 'bg-gradient-to-r from-transparent via-purple-300/40 to-transparent']"></div>
+              <div :class="['absolute inset-0 -translate-x-full animate-sweep z-20 pointer-events-none', isCOE ? 'bg-gradient-to-r from-transparent via-red-300/40 to-transparent' : isSOM ? 'bg-gradient-to-r from-transparent via-yellow-300/40 to-transparent' : isCNAHS ? 'bg-gradient-to-r from-transparent via-green-300/40 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-300/40 to-transparent']"></div>
             </div>
             <h1 class="text-2xl lg:text-4xl font-bold text-white">SSAAM</h1>
           </div>
           <p class="text-white text-opacity-80 text-base lg:text-3xl font-medium">{{ selectedEvent?.title || 'Select an Event' }}</p>
           <p v-if="selectedEvent" class="text-white text-opacity-60 text-xs lg:text-sm">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
           <div v-if="selectedSession" class="mt-2">
-            <span class="px-3 py-1 rounded-full text-xs font-medium" :class="isCOE ? 'bg-gradient-to-r from-orange-400 to-red-400 text-white' : isSOM ? 'bg-gradient-to-r from-green-400 to-yellow-400 text-white' : isCNAHS ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' : 'bg-gradient-to-r from-purple-400 to-pink-400 text-white'">
+            <span class="px-3 py-1 rounded-full text-xs font-medium" :class="isCOE ? 'bg-gradient-to-r from-orange-400 to-red-400 text-white' : isSOM ? 'bg-gradient-to-r from-green-400 to-yellow-400 text-white' : isCNAHS ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' : 'bg-gradient-to-r from-blue-400 to-blue-400 text-white'">
               {{ selectedSession.label }} Session
             </span>
             <p class="text-white text-opacity-60 text-xs mt-1">{{ formatDisplayTime(selectedSession.start_time) }} - {{ formatDisplayTime(selectedSession.end_time) }}</p>
@@ -199,7 +199,7 @@
           <div class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white bg-opacity-10 border border-white border-opacity-20 backdrop-blur-md shadow-lg">
             <div 
               class="w-3 h-3 rounded-full animate-pulse" 
-              :class="rfidOperationType === 'in' ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : (rfidOperationType === 'out' ? (isCOE ? 'bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)]' : isSOM ? 'bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : isCNAHS ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-pink-400 shadow-[0_0_10px_rgba(244,114,182,0.5)]') : (appSettings.rfidScanner.checkInEnabled ? 'bg-green-400' : (isCOE ? 'bg-red-400' : isSOM ? 'bg-yellow-400' : isCNAHS ? 'bg-green-400' : 'bg-pink-400')))"
+              :class="rfidOperationType === 'in' ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : (rfidOperationType === 'out' ? (isCOE ? 'bg-red-400 shadow-[0_0_10px_rgba(248,113,113,0.5)]' : isSOM ? 'bg-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.5)]' : isCNAHS ? 'bg-green-400 shadow-[0_0_10px_rgba(74,222,128,0.5)]' : 'bg-blue-400 shadow-[0_0_10px_rgba(244,114,182,0.5)]') : (appSettings.rfidScanner.checkInEnabled ? 'bg-green-400' : (isCOE ? 'bg-red-400' : isSOM ? 'bg-yellow-400' : isCNAHS ? 'bg-green-400' : 'bg-blue-400')))"
             ></div>
             <span class="text-white font-bold tracking-widest uppercase text-sm">
               {{ rfidOperationType === 'in' ? 'Check-In Mode' : (rfidOperationType === 'out' ? 'Check-Out Mode' : (appSettings.rfidScanner.checkInEnabled ? 'Check-In Mode' : 'Check-Out Mode')) }}
@@ -228,7 +228,7 @@
               @keydown="handleRfidKeydown"
               type="text"
               :placeholder="'Scan RFID or enter Student ID...'"
-              :class="['flex-1 px-3 lg:px-4 py-2.5 lg:py-3 text-center text-sm lg:text-lg bg-white bg-opacity-20 border-2 rounded-xl outline-none text-white placeholder-white placeholder-opacity-50 transition-all', isCOE ? 'border-orange-400 focus:border-red-400 focus:ring-4 focus:ring-red-300 focus:ring-opacity-50' : isSOM ? 'border-green-400 focus:border-yellow-400 focus:ring-4 focus:ring-yellow-300 focus:ring-opacity-50' : isCNAHS ? 'border-green-400 focus:border-green-300 focus:ring-4 focus:ring-green-300 focus:ring-opacity-50' : 'border-white border-opacity-30 focus:border-pink-400 focus:ring-4 focus:ring-pink-300 focus:ring-opacity-50']"
+              :class="['flex-1 px-3 lg:px-4 py-2.5 lg:py-3 text-center text-sm lg:text-lg bg-white bg-opacity-20 border-2 rounded-xl outline-none text-white placeholder-white placeholder-opacity-50 transition-all', isCOE ? 'border-orange-400 focus:border-red-400 focus:ring-4 focus:ring-red-300 focus:ring-opacity-50' : isSOM ? 'border-green-400 focus:border-yellow-400 focus:ring-4 focus:ring-yellow-300 focus:ring-opacity-50' : isCNAHS ? 'border-green-400 focus:border-green-300 focus:ring-4 focus:ring-green-300 focus:ring-opacity-50' : 'border-white border-opacity-30 focus:border-blue-400 focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50']"
               :disabled="rfidProcessing"
               autofocus
             />
@@ -256,19 +256,19 @@
                 <!-- Student Avatar -->
                 <div class="w-20 h-20 lg:w-28 lg:h-28 rounded-full overflow-hidden flex-shrink-0 mx-auto lg:mx-0 border-2 border-white shadow-md bg-white bg-opacity-10">
                   <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="w-full h-full object-cover" />
-                  <div v-else :class="['w-full h-full flex items-center justify-center font-semibold text-xl text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
+                  <div v-else :class="['w-full h-full flex items-center justify-center font-semibold text-xl text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-blue-400 to-blue-600']">
                     {{ (rfidResult.student?.full_name || rfidResult.student_name || '?').charAt(0) }}
                   </div>
                 </div>
 
                 <!-- Mobile-only Actions: show immediately under Programs on small screens -->
                 <div class="lg:hidden space-y-3 mt-4">
-                  <div class="space-y-3 pt-4 border-t-2" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-purple-200'">
+                  <div class="space-y-3 pt-4 border-t-2" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-blue-200'">
                     <button 
                       @click="applicationAdminTab = 'forms'" 
                       :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg', 
                         'border-2', 
-                        isCOE ? 'border-orange-300 text-orange-700 hover:bg-orange-50' : isSOM ? 'border-green-300 text-green-700 hover:bg-green-50' : isCNAHS ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-purple-300 text-purple-700 hover:bg-purple-50']"
+                        isCOE ? 'border-orange-300 text-orange-700 hover:bg-orange-50' : isSOM ? 'border-green-300 text-green-700 hover:bg-green-50' : isCNAHS ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-blue-300 text-blue-700 hover:bg-blue-50']"
                     >
                       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 0l-7 7 7 7"></path></svg>
                       Back to Forms
@@ -299,7 +299,7 @@
                       {{ applicationCreateSubmitting ? 'Creating...' : 'Create Form' }}
                     </button>
 
-                    <div v-if="!applicationCreateForm.title.trim()" :class="['p-3 rounded-lg text-xs text-center font-medium', isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : isCNAHS ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700']">
+                    <div v-if="!applicationCreateForm.title.trim()" :class="['p-3 rounded-lg text-xs text-center font-medium', isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : isCNAHS ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700']">
                       <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                       Form title is required to create
                     </div>
@@ -343,7 +343,7 @@
                 <!-- Student Avatar -->
                 <div class="w-20 h-20 lg:w-28 lg:h-28 rounded-full overflow-hidden flex-shrink-0 mx-auto lg:mx-0 border-2 border-white shadow-md bg-white bg-opacity-10">
                   <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="w-full h-full object-cover rounded-full" />
-                  <div v-else :class="['w-full h-full flex items-center justify-center font-semibold text-xl text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
+                  <div v-else :class="['w-full h-full flex items-center justify-center font-semibold text-xl text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-blue-400 to-blue-600']">
                     {{ (rfidResult.student?.full_name || rfidResult.student_name || '?').charAt(0) }}
                   </div>
                 </div>
@@ -412,7 +412,7 @@
         
         <!-- Recent Logs - Hide on mobile fullscreen, show on desktop fullscreen -->
         <div class="hidden lg:flex flex-col flex-1 min-h-0">
-          <h2 :class="['text-lg lg:text-xl font-bold mb-3 lg:mb-4 flex items-center gap-2', isCOE ? 'text-orange-300' : isSOM ? 'text-green-300' : isCNAHS ? 'text-green-300' : 'text-purple-300']">
+          <h2 :class="['text-lg lg:text-xl font-bold mb-3 lg:mb-4 flex items-center gap-2', isCOE ? 'text-orange-300' : isSOM ? 'text-green-300' : isCNAHS ? 'text-green-300' : 'text-blue-300']">
             <svg class="w-5 h-5 lg:w-6 lg:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
             Recent Logs
           </h2>
@@ -427,13 +427,13 @@
               v-for="(log, index) in sortedAttendanceLogs.slice(0, 15)" 
               :key="log._id" 
               :class="['backdrop-blur-sm rounded-xl p-3 lg:p-4 border transition-all duration-300', 
-                isCOE ? 'bg-orange-500 bg-opacity-10 border-orange-400/30' : isSOM ? 'bg-green-500 bg-opacity-10 border-green-400/30' : 'bg-purple-500 bg-opacity-10 border-purple-400/30',
-                index === 0 && isRecentCheckIn(log) ? (isCOE ? 'ring-2 ring-orange-400 bg-opacity-20 animate-pulse' : isSOM ? 'ring-2 ring-green-400 bg-opacity-20 animate-pulse' : 'ring-2 ring-pink-400 bg-opacity-20 animate-pulse') : '']"
+                isCOE ? 'bg-orange-500 bg-opacity-10 border-orange-400/30' : isSOM ? 'bg-green-500 bg-opacity-10 border-green-400/30' : 'bg-blue-500 bg-opacity-10 border-blue-400/30',
+                index === 0 && isRecentCheckIn(log) ? (isCOE ? 'ring-2 ring-orange-400 bg-opacity-20 animate-pulse' : isSOM ? 'ring-2 ring-green-400 bg-opacity-20 animate-pulse' : 'ring-2 ring-blue-400 bg-opacity-20 animate-pulse') : '']"
             >
               <div class="flex items-center gap-3 lg:gap-4">
                 <!-- Photo with Initials Fallback -->
                 <div class="relative w-10 h-10 lg:w-12 lg:h-12 rounded-full flex-shrink-0">
-                  <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-white text-xs lg:text-sm font-bold', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
+                  <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-white text-xs lg:text-sm font-bold', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-blue-400 to-blue-600']">
                     {{ getInitials(log.student?.full_name || log.student_name) }}
                   </div>
                   <img 
@@ -447,7 +447,7 @@
                 <!-- Name and Details -->
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-white text-sm lg:text-base truncate">{{ log.student?.full_name || log.student_name }}</p>
-                  <p :class="['text-xs', isCOE ? 'text-orange-200/70' : isSOM ? 'text-green-200/70' : isCNAHS ? 'text-green-200/70' : 'text-purple-200/70']">{{ log.program || log.student?.program || '' }}</p>
+                  <p :class="['text-xs', isCOE ? 'text-orange-200/70' : isSOM ? 'text-green-200/70' : isCNAHS ? 'text-green-200/70' : 'text-blue-200/70']">{{ log.program || log.student?.program || '' }}</p>
                 </div>
                 
                 <!-- Check In/Out Times -->
@@ -486,7 +486,7 @@
         <div class="bg-white bg-opacity-15 backdrop-blur-lg rounded-2xl p-4 sm:p-6 border-2 border-green-400 border-opacity-50 shadow-2xl mx-auto max-w-sm mt-2">
           <div class="flex items-center gap-3 sm:gap-4">
             <div class="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex-shrink-0 ring-4 ring-green-400 ring-opacity-60">
-              <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-xl sm:text-2xl font-bold text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
+              <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-xl sm:text-2xl font-bold text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : 'bg-gradient-to-br from-blue-400 to-blue-600']">
                 {{ getInitials(rfidResult.student?.full_name || rfidResult.student_name) }}
               </div>
             </div>
@@ -616,7 +616,7 @@
       <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
         <div class="flex flex-col items-center">
           <!-- Profile Picture Container (Hidden for Admins) -->
-          <div :class="['w-16 h-16 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden mb-3 relative', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-pink-400 to-purple-600']" :style="{ background: profileGradient }" v-if="currentUser.role !== 'admin' && !currentUser.isMaster">
+          <div :class="['w-16 h-16 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden mb-3 relative', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-blue-400 to-blue-600']" :style="{ background: profileGradient }" v-if="currentUser.role !== 'admin' && !currentUser.isMaster">
             <!-- Initials as Background/Placeholder -->
             <div class="absolute inset-0 flex items-center justify-center text-white font-bold">
               {{ getInitials(displayName) }}
@@ -741,7 +741,7 @@
         
         <div class="p-4 md:p-6 border-b border-white border-opacity-20 flex-shrink-0 flex flex-col items-center text-center">
             <div v-if="currentUser.role !== 'admin' && !currentUser.isMaster" class="mb-4">
-            <div :class="['w-16 h-16 md:w-20 md:h-20 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden relative', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-pink-400 to-purple-600']" :style="{ background: profileGradient }">
+            <div :class="['w-16 h-16 md:w-20 md:h-20 aspect-square rounded-full flex items-center justify-center text-2xl overflow-hidden relative', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-blue-400 to-blue-600']" :style="{ background: profileGradient }">
               <!-- Initials as Background/Placeholder -->
               <div class="absolute inset-0 flex items-center justify-center text-white font-bold">
                 {{ getInitials(displayName) }}
@@ -874,24 +874,24 @@
     <div class="flex-1 bg-gray-100 overflow-auto order-2 md:order-2">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-20 shadow">
-        <h1 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">SSAAM</h1>
+        <h1 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">SSAAM</h1>
         <div class="flex items-center gap-2">
-          <button @click="showContactModal = true" :class="['p-2 rounded-lg transition', isCOE ? 'hover:bg-orange-100' : isSOM ? 'hover:bg-green-100' : isCNAHS ? 'hover:bg-green-100' : 'hover:bg-purple-100']">
-            <img src="/help.svg" alt="Help" :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']" />
+          <button @click="showContactModal = true" :class="['p-2 rounded-lg transition', isCOE ? 'hover:bg-orange-100' : isSOM ? 'hover:bg-green-100' : isCNAHS ? 'hover:bg-green-100' : 'hover:bg-blue-100']">
+            <img src="/help.svg" alt="Help" :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" />
           </button>
-          <button @click="showMobileMenu = true" :class="['text-2xl', isCOE ? 'text-orange-900 hover:text-orange-700' : isSOM ? 'text-green-900 hover:text-green-700' : isCNAHS ? 'text-green-900 hover:text-green-700' : 'text-purple-900 hover:text-purple-700']">☰</button>
+          <button @click="showMobileMenu = true" :class="['text-2xl', isCOE ? 'text-orange-900 hover:text-orange-700' : isSOM ? 'text-green-900 hover:text-green-700' : isCNAHS ? 'text-green-900 hover:text-green-700' : 'text-blue-900 hover:text-blue-700']">☰</button>
         </div>
       </div>
 
       <!-- Floating Help Button (visible on mobile and desktop) -->
       <div class="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-20">
-        <button @click="showContactModal = true" :class="['text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-all duration-300 shadow-lg hover:scale-110 active:scale-95 hover:shadow-xl bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600' : isCNAHS ? 'from-green-700 to-green-600 hover:from-green-800 hover:to-green-700' : 'from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600']">
+        <button @click="showContactModal = true" :class="['text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-all duration-300 shadow-lg hover:scale-110 active:scale-95 hover:shadow-xl bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600' : isCNAHS ? 'from-green-700 to-green-600 hover:from-green-800 hover:to-green-700' : 'from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600']">
           <img src="/help.svg" alt="Help" class="w-5 h-5 md:w-6 md:h-6" style="filter: brightness(0) invert(1);" />
         </button>
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-2xl md:text-4xl font-bold mb-8 pb-4 border-b-2', isCOE ? 'text-orange-900 border-orange-900' : isSOM ? 'text-green-900 border-green-900' : isCNAHS ? 'text-green-900 border-green-900' : 'text-purple-900 border-purple-900']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-2xl md:text-4xl font-bold mb-8 pb-4 border-b-2', isCOE ? 'text-orange-900 border-orange-900' : isSOM ? 'text-green-900 border-green-900' : isCNAHS ? 'text-green-900 border-green-900' : 'text-blue-900 border-blue-900']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg shadow-sm">
@@ -917,7 +917,7 @@
 
         <div v-if="currentPage === 'settings' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">Access Control Settings</h2>
+            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Access Control Settings</h2>
             <button @click="refreshSettingsSection" :disabled="settingsLoading" :class="['px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
               <svg v-if="settingsLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -926,7 +926,7 @@
           </div>
 
           <div v-if="settingsLoading" class="flex items-center justify-center py-12">
-            <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -937,8 +937,8 @@
             <div class="border border-gray-200 rounded-xl p-6">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
-                  <h3 :class="['text-lg font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">
-                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                  <h3 :class="['text-lg font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
+                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
                     User Registration
                   </h3>
                   <p class="text-sm text-gray-500 mt-1">Allow new students to create accounts</p>
@@ -960,7 +960,7 @@
                 <textarea 
                   v-model="appSettings.userRegister.message" 
                   placeholder="Enter a message to show users when registration is disabled..."
-                  :class="['w-full px-4 py-3 border rounded-lg outline-none resize-none', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200 focus:border-transparent' : isSOM ? 'border-green-300 focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
+                  :class="['w-full px-4 py-3 border rounded-lg outline-none resize-none', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200 focus:border-transparent' : isSOM ? 'border-green-300 focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                   rows="3"
                 ></textarea>
               </div>
@@ -970,8 +970,8 @@
             <div class="border border-gray-200 rounded-xl p-6">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
-                  <h3 :class="['text-lg font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">
-                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+                  <h3 :class="['text-lg font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
+                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
                     User Login
                   </h3>
                   <p class="text-sm text-gray-500 mt-1">Allow students to log into their accounts</p>
@@ -993,18 +993,18 @@
                 <textarea 
                   v-model="appSettings.userLogin.message" 
                   placeholder="Enter a message to show users when login is disabled..."
-                  :class="['w-full px-4 py-3 border rounded-lg outline-none resize-none', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200 focus:border-transparent' : isSOM ? 'border-green-300 focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'border-gray-300 focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
+                  :class="['w-full px-4 py-3 border rounded-lg outline-none resize-none', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200 focus:border-transparent' : isSOM ? 'border-green-300 focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                   rows="3"
                 ></textarea>
               </div>
             </div>
 
             <!-- Academic Term Settings -->
-            <div :class="['border border-gray-200 rounded-xl p-6', isCOE ? 'bg-orange-50/30' : isSOM ? 'bg-green-50/30' : isCNAHS ? 'bg-green-50/30' : 'bg-purple-50/30']">
+            <div :class="['border border-gray-200 rounded-xl p-6', isCOE ? 'bg-orange-50/30' : isSOM ? 'bg-green-50/30' : isCNAHS ? 'bg-green-50/30' : 'bg-blue-50/30']">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
                 <div>
-                  <h3 :class="['text-lg font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">
-                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  <h3 :class="['text-lg font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
+                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Academic Term Settings
                   </h3>
                   <p class="text-sm text-gray-500 mt-1">Global semester and school year configuration</p>
@@ -1015,7 +1015,7 @@
                   <label class="block text-sm font-medium text-gray-700 mb-2">Semester</label>
                   <select 
                     v-model="appSettings.semester"
-                    :class="['w-full px-4 py-2 bg-white rounded-lg outline-none transition-all', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200' : 'border-gray-300 focus:ring-2 focus:ring-purple-600']"
+                    :class="['w-full px-4 py-2 bg-white rounded-lg outline-none transition-all', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200' : 'border-gray-300 focus:ring-2 focus:ring-blue-600']"
                   >
                     <option value="1st Sem">1st Semester</option>
                     <option value="2nd Sem">2nd Semester</option>
@@ -1027,7 +1027,7 @@
                     v-model="appSettings.schoolYear"
                     type="text"
                     placeholder="e.g. 2023-2024"
-                    :class="['w-full px-4 py-2 bg-white rounded-lg outline-none transition-all', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200' : 'border-gray-300 focus:ring-2 focus:ring-purple-600']"
+                    :class="['w-full px-4 py-2 bg-white rounded-lg outline-none transition-all', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200' : 'border-gray-300 focus:ring-2 focus:ring-blue-600']"
                   />
                 </div>
               </div>
@@ -1069,7 +1069,7 @@
                       <p class="text-xs font-bold text-red-700 mb-2">{{ group.type }} Duplicate: "{{ group.value }}"</p>
                       <div class="space-y-2">
                         <div v-for="student in group.students" :key="student.student_id" class="bg-white p-2 rounded border border-gray-200 flex items-center gap-3">
-                          <div class="w-8 h-8 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
+                          <div class="w-8 h-8 rounded-full bg-gradient-to-r from-blue-500 to-blue-500 flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
                             <img v-if="student.photo" :src="student.photo" class="w-full h-full object-cover rounded-full" />
                             <span v-else>{{ (student.first_name || '?').charAt(0) }}</span>
                           </div>
@@ -1134,7 +1134,7 @@
                   <div class="space-y-2 max-h-60 overflow-y-auto">
                     <div v-for="result in duplicateSearchResults" :key="result.student_id" class="bg-gray-50 p-3 rounded-lg border border-gray-200">
                       <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white text-sm font-bold overflow-hidden">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-r from-blue-500 to-blue-500 flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                           <img v-if="result.photo" :src="result.photo" class="w-full h-full object-cover rounded-full" />
                           <span v-else>{{ (result.first_name || '?').charAt(0) }}</span>
                         </div>
@@ -1145,7 +1145,7 @@
                           <p v-if="result.rfid_code" class="text-xs text-blue-600">RFID: {{ result.rfid_code }}</p>
                         </div>
                         <div class="flex flex-col items-end gap-1">
-                          <span :class="['text-xs px-2 py-1 rounded-full', result.match_type === 'rfid' ? 'bg-orange-100 text-orange-700' : result.match_type === 'email' ? 'bg-purple-100 text-purple-700' : result.match_type === 'id' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700']">
+                          <span :class="['text-xs px-2 py-1 rounded-full', result.match_type === 'rfid' ? 'bg-orange-100 text-orange-700' : result.match_type === 'email' ? 'bg-blue-100 text-blue-700' : result.match_type === 'id' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700']">
                             {{ result.match_type === 'rfid' ? 'RFID Match' : result.match_type === 'email' ? 'Email Match' : result.match_type === 'id' ? 'ID Match' : 'Name Match' }}
                           </span>
                           <span v-if="result.is_duplicate" class="text-xs px-2 py-1 rounded-full bg-red-100 text-red-700 font-semibold">
@@ -1283,24 +1283,24 @@
         <div v-if="currentPage === 'transparency' && (currentUser.role === 'admin' || currentUser.role === 'administrator' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
             <div>
-              <h2 class="text-2xl font-bold text-purple-900">Transparency Board</h2>
+              <h2 class="text-2xl font-bold text-blue-900">Transparency Board</h2>
               <p class="text-sm text-gray-500">View all students who have fulfilled their contributions.</p>
             </div>
-            <button @click="fetchTransparencyBoard" :disabled="transparencyLoading" class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 transition flex items-center gap-2">
+            <button @click="fetchTransparencyBoard" :disabled="transparencyLoading" class="px-4 py-2 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition flex items-center gap-2">
               <svg :class="['w-4 h-4', transparencyLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               Refresh Board
             </button>
           </div>
 
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div v-for="student in transparencyList" :key="student.name" class="bg-gray-50 rounded-2xl p-6 border border-gray-100 hover:border-purple-200 transition-all shadow-sm">
+            <div v-for="student in transparencyList" :key="student.name" class="bg-gray-50 rounded-2xl p-6 border border-gray-100 hover:border-blue-200 transition-all shadow-sm">
               <div class="flex items-center gap-4 mb-4">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 flex items-center justify-center text-white font-bold">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-400 to-blue-500 flex items-center justify-center text-white font-bold">
                   {{ getInitials(student.name) }}
                 </div>
                 <div>
                   <p class="font-bold text-gray-900 leading-tight">{{ student.name }}</p>
-                  <p class="text-xs text-purple-600 font-medium">{{ student.program }} | {{ student.year_level }}</p>
+                  <p class="text-xs text-blue-600 font-medium">{{ student.program }} | {{ student.year_level }}</p>
                 </div>
               </div>
               <div class="space-y-3">
@@ -1324,11 +1324,11 @@
         </div>
 
         <!-- Applications Page - Student View -->
-        <div v-if="currentPage === 'applications' && !(currentUser.role === 'admin' || currentUser.isMaster) && window.innerWidth >= 768" :class="['bg-gradient-to-br rounded-lg shadow-lg p-4 md:p-8 space-y-6', isCOE ? 'from-orange-50 to-red-50' : isSOM ? 'from-green-50 to-yellow-50' : 'from-purple-50 to-pink-50']">
+        <div v-if="currentPage === 'applications' && !(currentUser.role === 'admin' || currentUser.isMaster) && window.innerWidth >= 768" :class="['bg-gradient-to-br rounded-lg shadow-lg p-4 md:p-8 space-y-6', isCOE ? 'from-orange-50 to-red-50' : isSOM ? 'from-green-50 to-yellow-50' : 'from-blue-50 to-blue-50']">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
-              <h2 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2', isCOE ? 'from-orange-600 to-red-600' : isSOM ? 'from-green-600 to-yellow-600' : 'from-purple-600 to-pink-600']">Available Applications</h2>
-              <p :class="['text-sm', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Apply for opportunities and programs that match your eligibility</p>
+              <h2 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2', isCOE ? 'from-orange-600 to-red-600' : isSOM ? 'from-green-600 to-yellow-600' : 'from-blue-600 to-blue-600']">Available Applications</h2>
+              <p :class="['text-sm', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Apply for opportunities and programs that match your eligibility</p>
             </div>
             <button @click="fetchApplicationsForDashboard()" :disabled="applicationLoading" :class="['px-6 py-2 rounded-lg transition flex items-center gap-2 text-white font-semibold bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
               <svg v-if="applicationLoading" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
@@ -1338,11 +1338,11 @@
           </div>
 
           <!-- Tabs -->
-          <div class="flex gap-2 border-b" :class="isCOE ? 'border-orange-300' : isSOM ? 'border-green-300' : 'border-purple-300'">
-            <button @click="applicationDashboardTab = 'available'" :class="['px-6 py-3 font-semibold transition', applicationDashboardTab === 'available' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : isSOM ? 'text-green-600 border-b-2 border-green-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-900']">
+          <div class="flex gap-2 border-b" :class="isCOE ? 'border-orange-300' : isSOM ? 'border-green-300' : 'border-blue-300'">
+            <button @click="applicationDashboardTab = 'available'" :class="['px-6 py-3 font-semibold transition', applicationDashboardTab === 'available' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : isSOM ? 'text-green-600 border-b-2 border-green-600' : 'text-blue-600 border-b-2 border-blue-600') : 'text-gray-600 hover:text-gray-900']">
               Available ({{ availableApplications?.length || 0 }})
             </button>
-            <button @click="applicationDashboardTab = 'submitted'" :class="['px-6 py-3 font-semibold transition', applicationDashboardTab === 'submitted' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : isSOM ? 'text-green-600 border-b-2 border-green-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-900']">
+            <button @click="applicationDashboardTab = 'submitted'" :class="['px-6 py-3 font-semibold transition', applicationDashboardTab === 'submitted' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : isSOM ? 'text-green-600 border-b-2 border-green-600' : 'text-blue-600 border-b-2 border-blue-600') : 'text-gray-600 hover:text-gray-900']">
               My Submissions ({{ submittedApplications?.length || 0 }})
             </button>
           </div>
@@ -1350,16 +1350,16 @@
           <!-- Available Applications Tab -->
           <div v-if="applicationDashboardTab === 'available'" class="space-y-4">
             <div v-if="applicationLoading" class="text-center py-12">
-              <svg :class="['animate-spin h-12 w-12 mx-auto mb-4', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              <p :class="['mt-4', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Loading applications...</p>
+              <svg :class="['animate-spin h-12 w-12 mx-auto mb-4', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <p :class="['mt-4', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Loading applications...</p>
             </div>
-            <div v-else-if="!availableApplications || availableApplications.length === 0" class="text-center py-12 border-2 border-dashed rounded-lg" :class="isCOE ? 'border-orange-300 bg-orange-50/50' : 'border-purple-300 bg-purple-50/50'">
+            <div v-else-if="!availableApplications || availableApplications.length === 0" class="text-center py-12 border-2 border-dashed rounded-lg" :class="isCOE ? 'border-orange-300 bg-orange-50/50' : 'border-blue-300 bg-blue-50/50'">
               <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-              <p :class="['text-gray-600 text-lg font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">No available applications for you yet</p>
+              <p :class="['text-gray-600 text-lg font-medium', isCOE ? 'text-orange-700' : 'text-blue-700']">No available applications for you yet</p>
               <p class="text-gray-500 text-sm mt-2">Check back later for new opportunities</p>
             </div>
             <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div v-for="app in availableApplications" :key="app._id" :class="['rounded-lg p-6 border-2 hover:shadow-lg transition', isCOE ? 'bg-gradient-to-br from-white to-orange-50 border-orange-200 hover:border-orange-400' : isSOM ? 'bg-gradient-to-br from-white to-green-50 border-green-200 hover:border-green-400' : 'bg-gradient-to-br from-white to-purple-50 border-purple-200 hover:border-purple-400']">
+              <div v-for="app in availableApplications" :key="app._id" :class="['rounded-lg p-6 border-2 hover:shadow-lg transition', isCOE ? 'bg-gradient-to-br from-white to-orange-50 border-orange-200 hover:border-orange-400' : isSOM ? 'bg-gradient-to-br from-white to-green-50 border-green-200 hover:border-green-400' : 'bg-gradient-to-br from-white to-blue-50 border-blue-200 hover:border-blue-400']">
                 <div class="flex justify-between items-start mb-4">
                   <div class="flex-1">
                     <h3 class="text-lg font-bold text-gray-900 mb-1">{{ app.title }}</h3>
@@ -1387,16 +1387,16 @@
           <!-- Submitted Applications Tab -->
           <div v-if="applicationDashboardTab === 'submitted'" class="space-y-4">
             <div v-if="applicationLoading" class="text-center py-12">
-              <svg :class="['animate-spin h-12 w-12 mx-auto mb-4', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              <p :class="['mt-4', isCOE ? 'text-orange-700' : 'text-purple-700']">Loading submissions...</p>
+              <svg :class="['animate-spin h-12 w-12 mx-auto mb-4', isCOE ? 'text-orange-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <p :class="['mt-4', isCOE ? 'text-orange-700' : 'text-blue-700']">Loading submissions...</p>
             </div>
-            <div v-else-if="!submittedApplications || submittedApplications.length === 0" class="text-center py-12 border-2 border-dashed rounded-lg" :class="isCOE ? 'border-orange-300 bg-orange-50/50' : 'border-purple-300 bg-purple-50/50'">
+            <div v-else-if="!submittedApplications || submittedApplications.length === 0" class="text-center py-12 border-2 border-dashed rounded-lg" :class="isCOE ? 'border-orange-300 bg-orange-50/50' : 'border-blue-300 bg-blue-50/50'">
               <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-              <p :class="['text-gray-600 text-lg font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">No applications submitted yet</p>
+              <p :class="['text-gray-600 text-lg font-medium', isCOE ? 'text-orange-700' : 'text-blue-700']">No applications submitted yet</p>
               <p class="text-gray-500 text-sm mt-2">Your submitted applications will appear here</p>
             </div>
             <div v-else class="space-y-4">
-              <div v-for="app in submittedApplications" :key="app._id" :class="['rounded-lg p-6 border-2', isCOE ? 'bg-gradient-to-br from-white to-orange-50 border-orange-200' : 'bg-gradient-to-br from-white to-purple-50 border-purple-200']">
+              <div v-for="app in submittedApplications" :key="app._id" :class="['rounded-lg p-6 border-2', isCOE ? 'bg-gradient-to-br from-white to-orange-50 border-orange-200' : 'bg-gradient-to-br from-white to-blue-50 border-blue-200']">
                 <div class="flex justify-between items-start mb-3">
                   <div class="flex-1">
                     <h3 class="text-lg font-bold text-gray-900">{{ app.title }}</h3>
@@ -1419,11 +1419,11 @@
         </div>
 
         <!-- Applications Page - Admin View -->
-        <div v-if="currentPage === 'applications' && (currentUser.role === 'admin' || currentUser.isMaster) && window.innerWidth >= 768" :class="['bg-gradient-to-br rounded-lg shadow-lg p-4 md:p-8 space-y-6', isCOE ? 'from-orange-50 to-red-50' : 'from-purple-50 to-pink-50']">
+        <div v-if="currentPage === 'applications' && (currentUser.role === 'admin' || currentUser.isMaster) && window.innerWidth >= 768" :class="['bg-gradient-to-br rounded-lg shadow-lg p-4 md:p-8 space-y-6', isCOE ? 'from-orange-50 to-red-50' : 'from-blue-50 to-blue-50']">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
-              <h2 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2', isCOE ? 'from-orange-600 to-red-600' : 'from-purple-600 to-pink-600']">Application Management</h2>
-              <p :class="['text-sm', isCOE ? 'text-orange-700' : 'text-purple-700']">Create forms and review student applications</p>
+              <h2 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2', isCOE ? 'from-orange-600 to-red-600' : 'from-blue-600 to-blue-600']">Application Management</h2>
+              <p :class="['text-sm', isCOE ? 'text-orange-700' : 'text-blue-700']">Create forms and review student applications</p>
             </div>
             <button @click="fetchApplicationsForDashboard()" :disabled="applicationLoading" :class="['px-6 py-2 rounded-lg transition flex items-center gap-2 text-white font-semibold bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
               <svg v-if="applicationLoading" class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
@@ -1433,11 +1433,11 @@
           </div>
 
           <!-- Tabs -->
-          <div class="flex gap-2 border-b" :class="isCOE ? 'border-orange-300' : 'border-purple-300'">
-            <button @click="applicationAdminTab = 'forms'" :class="['px-6 py-3 font-semibold transition', applicationAdminTab === 'forms' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-900']">
+          <div class="flex gap-2 border-b" :class="isCOE ? 'border-orange-300' : 'border-blue-300'">
+            <button @click="applicationAdminTab = 'forms'" :class="['px-6 py-3 font-semibold transition', applicationAdminTab === 'forms' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : 'text-blue-600 border-b-2 border-blue-600') : 'text-gray-600 hover:text-gray-900']">
               Application Forms
             </button>
-            <button @click="applicationAdminTab = 'create'" :class="['px-6 py-3 font-semibold transition', applicationAdminTab === 'create' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : 'text-purple-600 border-b-2 border-purple-600') : 'text-gray-600 hover:text-gray-900']">
+            <button @click="applicationAdminTab = 'create'" :class="['px-6 py-3 font-semibold transition', applicationAdminTab === 'create' ? (isCOE ? 'text-orange-600 border-b-2 border-orange-600' : 'text-blue-600 border-b-2 border-blue-600') : 'text-gray-600 hover:text-gray-900']">
               Create New Form
             </button>
           </div>
@@ -1445,16 +1445,16 @@
           <!-- Application Forms List Tab -->
           <div v-if="applicationAdminTab === 'forms'" class="space-y-4">
             <div v-if="applicationLoading" class="text-center py-12">
-              <svg :class="['animate-spin h-12 w-12 mx-auto mb-4', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              <p :class="['mt-4', isCOE ? 'text-orange-700' : 'text-purple-700']">Loading forms...</p>
+              <svg :class="['animate-spin h-12 w-12 mx-auto mb-4', isCOE ? 'text-orange-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              <p :class="['mt-4', isCOE ? 'text-orange-700' : 'text-blue-700']">Loading forms...</p>
             </div>
-            <div v-else-if="!applicationForms || applicationForms.length === 0" class="text-center py-12 border-2 border-dashed rounded-lg" :class="isCOE ? 'border-orange-300 bg-orange-50/50' : 'border-purple-300 bg-purple-50/50'">
+            <div v-else-if="!applicationForms || applicationForms.length === 0" class="text-center py-12 border-2 border-dashed rounded-lg" :class="isCOE ? 'border-orange-300 bg-orange-50/50' : 'border-blue-300 bg-blue-50/50'">
               <svg class="w-16 h-16 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-              <p :class="['text-gray-600 text-lg font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">No application forms created yet</p>
+              <p :class="['text-gray-600 text-lg font-medium', isCOE ? 'text-orange-700' : 'text-blue-700']">No application forms created yet</p>
               <p class="text-gray-500 text-sm mt-2">Create your first application form to get started</p>
             </div>
             <div v-else class="space-y-4">
-              <div v-for="form in applicationForms" :key="form._id" class="rounded-lg overflow-hidden" :class="isCOE ? 'bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200' : 'bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200'">
+              <div v-for="form in applicationForms" :key="form._id" class="rounded-lg overflow-hidden" :class="isCOE ? 'bg-gradient-to-r from-orange-50 to-red-50 border-2 border-orange-200' : 'bg-gradient-to-r from-blue-50 to-blue-50 border-2 border-blue-200'">
                 <div class=" p-6 cursor-pointer hover:shadow-lg transition" @click="expandedApplicationForm = expandedApplicationForm === form._id ? null : form._id">
                   <div class="flex justify-between items-start">
                     <div class="flex-1">
@@ -1466,17 +1466,17 @@
                         </span>
                       </div>
                     </div>
-                    <svg :class="['w-6 h-6 transition', expandedApplicationForm === form._id ? 'rotate-180' : '', isCOE ? 'text-orange-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+                    <svg :class="['w-6 h-6 transition', expandedApplicationForm === form._id ? 'rotate-180' : '', isCOE ? 'text-orange-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
                   </div>
                 </div>
                 
                 <!-- Expanded View -->
-                <div v-if="expandedApplicationForm === form._id" :class="['p-6 border-t-2', isCOE ? 'border-orange-200 bg-white' : isSOM ? 'border-green-200 bg-white' : 'border-purple-200 bg-white']">
+                <div v-if="expandedApplicationForm === form._id" :class="['p-6 border-t-2', isCOE ? 'border-orange-200 bg-white' : isSOM ? 'border-green-200 bg-white' : 'border-blue-200 bg-white']">
                   <!-- Stats Grid -->
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                    <div class="rounded-lg p-4" :class="isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : 'bg-purple-100'">
+                    <div class="rounded-lg p-4" :class="isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : 'bg-blue-100'">
                       <p class="text-xs font-semibold text-gray-700">Total Applications</p>
-                      <p :class="['text-2xl font-bold', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ form.stats?.total || 0 }}</p>
+                      <p :class="['text-2xl font-bold', isCOE ? 'text-orange-600' : 'text-blue-600']">{{ form.stats?.total || 0 }}</p>
                     </div>
                     <div class="rounded-lg p-4 bg-yellow-100">
                       <p class="text-xs font-semibold text-gray-700">Pending</p>
@@ -1524,12 +1524,12 @@
             <!-- Header -->
             <div class="mb-8">
               <div class="flex items-center gap-3 mb-2">
-                <div :class="['w-10 h-10 rounded-lg flex items-center justify-center text-white', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-600' : 'bg-gradient-to-br from-purple-500 to-pink-600']">
+                <div :class="['w-10 h-10 rounded-lg flex items-center justify-center text-white', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-600' : 'bg-gradient-to-br from-blue-500 to-blue-600']">
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 </div>
                 <div>
                   <h3 class="text-2xl font-bold text-gray-900">Create New Application Form</h3>
-                  <p :class="['text-sm', isCOE ? 'text-orange-600' : 'text-purple-600']">Fill in the details below to create a new application form</p>
+                  <p :class="['text-sm', isCOE ? 'text-orange-600' : 'text-blue-600']">Fill in the details below to create a new application form</p>
                 </div>
               </div>
             </div>
@@ -1541,9 +1541,9 @@
               <div class="space-y-6">
                 <!-- Form Title Card -->
                 <div class="group">
-                  <label :class="['block text-sm font-bold mb-3 flex items-center gap-2 transition-colors', isCOE ? 'text-orange-900 group-focus-within:text-orange-600' : 'text-purple-900 group-focus-within:text-purple-600']">
+                  <label :class="['block text-sm font-bold mb-3 flex items-center gap-2 transition-colors', isCOE ? 'text-orange-900 group-focus-within:text-orange-600' : 'text-blue-900 group-focus-within:text-blue-600']">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                    Form Title <span :class="isCOE ? 'text-red-500' : 'text-pink-500'">*</span>
+                    Form Title <span :class="isCOE ? 'text-red-500' : 'text-blue-500'">*</span>
                   </label>
                   <div class="relative">
                     <input 
@@ -1553,15 +1553,15 @@
                       :class="['w-full px-4 py-3 border-2 rounded-xl outline-none transition-all duration-300 bg-white', 
                         isCOE 
                           ? 'border-orange-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-100' 
-                          : 'border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100']" 
+                          : 'border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100']" 
                     />
-                    <div v-if="applicationCreateForm.title" :class="['absolute right-3 top-3 text-lg', isCOE ? 'text-orange-500' : 'text-purple-500']">✓</div>
+                    <div v-if="applicationCreateForm.title" :class="['absolute right-3 top-3 text-lg', isCOE ? 'text-orange-500' : 'text-blue-500']">✓</div>
                   </div>
                 </div>
 
                 <!-- Form Description Card -->
                 <div class="group">
-                  <label :class="['block text-sm font-bold mb-3 flex items-center gap-2 transition-colors', isCOE ? 'text-orange-900 group-focus-within:text-orange-600' : 'text-purple-900 group-focus-within:text-purple-600']">
+                  <label :class="['block text-sm font-bold mb-3 flex items-center gap-2 transition-colors', isCOE ? 'text-orange-900 group-focus-within:text-orange-600' : 'text-blue-900 group-focus-within:text-blue-600']">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     Description
                   </label>
@@ -1571,14 +1571,14 @@
                     :class="['w-full px-4 py-3 border-2 rounded-xl outline-none transition-all duration-300 resize-none bg-white', 
                       isCOE 
                         ? 'border-orange-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-100' 
-                        : 'border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100']" 
+                        : 'border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100']" 
                     rows="4"
                   ></textarea>
                 </div>
 
                 <!-- Max Applicants Card -->
                 <div class="group">
-                  <label :class="['block text-sm font-bold mb-3 flex items-center gap-2 transition-colors', isCOE ? 'text-orange-900 group-focus-within:text-orange-600' : 'text-purple-900 group-focus-within:text-purple-600']">
+                  <label :class="['block text-sm font-bold mb-3 flex items-center gap-2 transition-colors', isCOE ? 'text-orange-900 group-focus-within:text-orange-600' : 'text-blue-900 group-focus-within:text-blue-600']">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.856-1.487M15 20H9m8-20v2c0 .656-.126 1.283-.356 1.857m0 0a5.002 5.002 0 01-9.288 0M15 12a3 3 0 11-6 0 3 3 0 016 0zm6 0a2 2 0 11-4 0 2 2 0 014 0zM7 20a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     Max Applicants
                   </label>
@@ -1590,20 +1590,20 @@
                       :class="['w-full px-4 py-3 border-2 rounded-xl outline-none transition-all duration-300 bg-white', 
                         isCOE 
                           ? 'border-orange-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-100' 
-                          : 'border-purple-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100']" 
+                          : 'border-blue-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100']" 
                     />
                     <span v-if="!applicationCreateForm.maxApplicants" class="absolute right-3 top-3 text-xs font-semibold text-gray-400">∞</span>
                   </div>
                 </div>
                 
                 <!-- Action Buttons (moved here from right column) -->
-                <div class="hidden lg:block space-y-3 mt-6 pt-6 border-t-2" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                <div class="hidden lg:block space-y-3 mt-6 pt-6 border-t-2" :class="isCOE ? 'border-orange-200' : 'border-blue-200'">
                   <!-- Cancel/Back Button -->
                   <button 
                     @click="applicationAdminTab = 'forms'" 
                     :class="['w-full px-4 py-3 rounded-xl font-semibold transition-all duration-300 flex items-center justify-center gap-2 hover:shadow-lg', 
                       'border-2', 
-                      isCOE ? 'border-orange-300 text-orange-700 hover:bg-orange-50' : 'border-purple-300 text-purple-700 hover:bg-purple-50']"
+                      isCOE ? 'border-orange-300 text-orange-700 hover:bg-orange-50' : 'border-blue-300 text-blue-700 hover:bg-blue-50']"
                   >
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 0l-7 7 7 7"></path></svg>
                     Back to Forms
@@ -1637,7 +1637,7 @@
                   </button>
 
                   <!-- Info Message -->
-                  <div v-if="!applicationCreateForm.title.trim()" :class="['p-3 rounded-lg text-xs text-center font-medium', isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700']">
+                  <div v-if="!applicationCreateForm.title.trim()" :class="['p-3 rounded-lg text-xs text-center font-medium', isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700']">
                     <svg class="w-4 h-4 inline mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                     Form title is required to create
                   </div>
@@ -1647,14 +1647,14 @@
               <!-- RIGHT COLUMN: Eligibility & Actions -->
               <div class="flex flex-col gap-6">
                 <!-- Programs Card -->
-                <div :class="['rounded-xl p-5 border-2 transition-all duration-300', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : isSOM ? 'bg-green-50 border-green-200 hover:border-green-400' : 'bg-purple-50 border-purple-200 hover:border-purple-400']">
-                  <label :class="['text-sm font-bold flex items-center gap-2 mb-4', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">
+                <div :class="['rounded-xl p-5 border-2 transition-all duration-300', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : isSOM ? 'bg-green-50 border-green-200 hover:border-green-400' : 'bg-blue-50 border-blue-200 hover:border-blue-400']">
+                  <label :class="['text-sm font-bold flex items-center gap-2 mb-4', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path></svg>
                     Programs (Optional)
                   </label>
                   <div class="space-y-3">
                     <template v-for="prog in ['BSCS', 'BSIT', 'BSIS', 'BSM']" :key="prog">
-                      <label class="flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer" :class="applicationCreateForm.programs.includes(prog) ? (isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : 'bg-purple-100') : 'hover:' + (isCOE ? 'bg-orange-100/50' : isSOM ? 'bg-green-100/50' : 'bg-purple-100/50')">>
+                      <label class="flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer" :class="applicationCreateForm.programs.includes(prog) ? (isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : 'bg-blue-100') : 'hover:' + (isCOE ? 'bg-orange-100/50' : isSOM ? 'bg-green-100/50' : 'bg-blue-100/50')">>
                         <input 
                           v-model="applicationCreateForm.programs" 
                           type="checkbox" 
@@ -1662,21 +1662,21 @@
                           class="w-5 h-5 rounded cursor-pointer transition-transform hover:scale-110"
                           :class="isCOE ? 'accent-orange-500' : 'accent-purple-500'"
                         />
-                        <span :class="['font-medium', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ prog }}</span>
+                        <span :class="['font-medium', isCOE ? 'text-orange-900' : 'text-blue-900']">{{ prog }}</span>
                       </label>
                     </template>
                   </div>
                 </div>
 
                 <!-- Year Levels Card -->
-                <div :class="['rounded-xl p-5 border-2 transition-all duration-300', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : isSOM ? 'bg-green-50 border-green-200 hover:border-green-400' : 'bg-purple-50 border-purple-200 hover:border-purple-400']">
-                  <label :class="['text-sm font-bold flex items-center gap-2 mb-4', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">
+                <div :class="['rounded-xl p-5 border-2 transition-all duration-300', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : isSOM ? 'bg-green-50 border-green-200 hover:border-green-400' : 'bg-blue-50 border-blue-200 hover:border-blue-400']">
+                  <label :class="['text-sm font-bold flex items-center gap-2 mb-4', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
                     Year Levels (Optional)
                   </label>
                   <div class="space-y-3">
                     <template v-for="year in ['1st Year', '2nd Year', '3rd Year', '4th Year']" :key="year">
-                      <label class="flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer" :class="applicationCreateForm.years.includes(year) ? (isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : 'bg-purple-100') : 'hover:' + (isCOE ? 'bg-orange-100/50' : isSOM ? 'bg-green-100/50' : 'bg-purple-100/50')">>
+                      <label class="flex items-center gap-3 p-2 rounded-lg transition-colors cursor-pointer" :class="applicationCreateForm.years.includes(year) ? (isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : 'bg-blue-100') : 'hover:' + (isCOE ? 'bg-orange-100/50' : isSOM ? 'bg-green-100/50' : 'bg-blue-100/50')">>
                         <input 
                           v-model="applicationCreateForm.years" 
                           type="checkbox" 
@@ -1684,7 +1684,7 @@
                           class="w-5 h-5 rounded cursor-pointer transition-transform hover:scale-110"
                           :class="isCOE ? 'accent-orange-500' : 'accent-purple-500'"
                         />
-                        <span :class="['font-medium', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ year }}</span>
+                        <span :class="['font-medium', isCOE ? 'text-orange-900' : 'text-blue-900']">{{ year }}</span>
                       </label>
                     </template>
                   </div>
@@ -1704,20 +1704,20 @@
             <div class="flex flex-col gap-4 mb-6">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
-                  <h2 :class="['text-lg sm:text-xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Attendance Events</h2>
+                  <h2 :class="['text-lg sm:text-xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Attendance Events</h2>
                   <div class="group relative">
-                    <button :class="['p-1.5 rounded-full transition-all', isCOE ? 'hover:bg-orange-100 text-orange-600' : isSOM ? 'hover:bg-green-100 text-green-600' : 'hover:bg-purple-100 text-purple-600']" title="Information">
+                    <button :class="['p-1.5 rounded-full transition-all', isCOE ? 'hover:bg-orange-100 text-orange-600' : isSOM ? 'hover:bg-green-100 text-green-600' : 'hover:bg-blue-100 text-blue-600']" title="Information">
                       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                     </button>
                     <!-- Tooltip -->
-                    <div :class="['invisible group-hover:visible absolute left-0 top-full mt-2 w-64 p-3 rounded-lg shadow-xl z-40 transition-all', isCOE ? 'bg-orange-50 border border-orange-200 text-orange-900' : isSOM ? 'bg-green-50 border border-green-200 text-green-900' : 'bg-purple-50 border border-purple-200 text-purple-900']">
+                    <div :class="['invisible group-hover:visible absolute left-0 top-full mt-2 w-64 p-3 rounded-lg shadow-xl z-40 transition-all', isCOE ? 'bg-orange-50 border border-orange-200 text-orange-900' : isSOM ? 'bg-green-50 border border-green-200 text-green-900' : 'bg-blue-50 border border-blue-200 text-blue-900']">
                       <div class="text-xs space-y-2">
                         <div class="font-bold flex items-center gap-1">
                           <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
                           Attendance Events
                         </div>
                         <p>Browse all active and upcoming attendance events. Click an event to select it and view/manage its sessions.</p>
-                        <div class="pt-2 border-t" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                        <div class="pt-2 border-t" :class="isCOE ? 'border-orange-200' : 'border-blue-200'">
                           <p class="font-semibold mb-1">What you can do:</p>
                           <ul class="space-y-1 text-xs">
                             <li class="flex gap-1">
@@ -1739,7 +1739,7 @@
                   </div>
                 </div>
                 <div class="flex gap-2 flex-wrap sm:flex-nowrap">
-                  <button @click="refreshAttendanceSection" :disabled="attendanceLoading" :class="['flex-1 sm:flex-none px-3 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm', attendanceLoading ? 'opacity-50 cursor-not-allowed' : isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-purple-100 text-purple-700 hover:bg-purple-200']" title="Refresh">
+                  <button @click="refreshAttendanceSection" :disabled="attendanceLoading" :class="['flex-1 sm:flex-none px-3 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm', attendanceLoading ? 'opacity-50 cursor-not-allowed' : isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200']" title="Refresh">
                     <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     <span>Refresh</span>
                   </button>
@@ -1760,7 +1760,7 @@
             <!-- Events List Tab -->
             <div v-if="attendanceTab === 'events'">
               <!-- Search & Pagination Controls -->
-              <div :class="['rounded-lg p-4 shadow-sm mb-4 border', isCOE ? 'bg-white border-orange-200' : 'bg-white border-purple-200']">
+              <div :class="['rounded-lg p-4 shadow-sm mb-4 border', isCOE ? 'bg-white border-orange-200' : 'bg-white border-blue-200']">
                 <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
                   <!-- Search Input -->
                   <div class="flex-1 w-full md:w-auto">
@@ -1772,40 +1772,40 @@
                         v-model="attendanceSearchQuery"
                         type="text"
                         placeholder="Search events by title..."
-                        :class="['w-full pl-10 pr-4 py-2 rounded-lg border transition-all outline-none', isCOE ? 'border-orange-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : isSOM ? 'border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-200' : 'border-purple-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200']"
+                        :class="['w-full pl-10 pr-4 py-2 rounded-lg border transition-all outline-none', isCOE ? 'border-orange-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : isSOM ? 'border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-200' : 'border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200']"
                       />
                     </div>
                   </div>
                   <!-- Info & Pagination -->
                   <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                    <div :class="['text-sm font-medium whitespace-nowrap', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-purple-700']">
+                    <div :class="['text-sm font-medium whitespace-nowrap', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">
                       {{ filteredAttendanceEvents.length }} of {{ attendanceEvents.length }} events
                     </div>
                     <div class="flex gap-2">
                       <button
                         @click="prevAttendancePage"
                         :disabled="attendanceCurrentPage === 1"
-                        :class="['px-3 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+                        :class="['px-3 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
                       >
                         ← Prev
                       </button>
                       <button
                         @click="nextAttendancePage"
                         :disabled="attendanceCurrentPage === attendanceTotalPages"
-                        :class="['px-3 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === attendanceTotalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+                        :class="['px-3 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === attendanceTotalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
                       >
                         Next →
                       </button>
                     </div>
                   </div>
                 </div>
-                <div v-if="attendanceTotalPages > 1" :class="['text-sm font-medium mt-3 pt-3 border-t', isCOE ? 'text-orange-700 border-orange-200' : isSOM ? 'text-green-700 border-green-200' : isCNAHS ? 'text-green-700 border-green-200' : 'text-purple-700 border-purple-200']">
+                <div v-if="attendanceTotalPages > 1" :class="['text-sm font-medium mt-3 pt-3 border-t', isCOE ? 'text-orange-700 border-orange-200' : isSOM ? 'text-green-700 border-green-200' : isCNAHS ? 'text-green-700 border-green-200' : 'text-blue-700 border-blue-200']">
                   Page {{ attendanceCurrentPage }} of {{ attendanceTotalPages }}
                 </div>
               </div>
 
               <div v-if="attendanceLoading" class="flex items-center justify-center py-12">
-                <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']" fill="none" viewBox="0 0 24 24">
+                <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -1821,8 +1821,8 @@
                     <div class="flex flex-col gap-3">
                       <div class="flex-1">
                         <div class="flex flex-wrap items-center gap-2 mb-2">
-                          <svg :class="['w-4 h-4 sm:w-5 sm:h-5 transition-transform flex-shrink-0', isCOE ? 'text-orange-600' : 'text-purple-600', expandedEvents[event._id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                          <h3 :class="['font-semibold text-base sm:text-lg break-words', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">{{ event.title }}</h3>
+                          <svg :class="['w-4 h-4 sm:w-5 sm:h-5 transition-transform flex-shrink-0', isCOE ? 'text-orange-600' : 'text-blue-600', expandedEvents[event._id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                          <h3 :class="['font-semibold text-base sm:text-lg break-words', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ event.title }}</h3>
                           <span :class="['px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap', getStatusBadgeClass(getEventDisplayStatus(event).status)]">{{ getEventDisplayStatus(event).label }}</span>
                           <span v-if="event.status === 'active' && getEventTimeRemaining(event._id) && getEventTimeRemaining(event._id) !== 'Ended'" :class="['px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap', 'bg-orange-100 text-orange-800']">
                             {{ getEventTimeRemaining(event._id) }}
@@ -1848,7 +1848,7 @@
                         <button 
                           v-if="currentUser.role === 'treasurer'"
                           @click="openContributionsModal(event._id, event.title)" 
-                          :class="['px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition text-xs sm:text-sm flex items-center gap-1', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : isCNAHS ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-purple-100 text-purple-700 hover:bg-purple-200']" 
+                          :class="['px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition text-xs sm:text-sm flex items-center gap-1', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : isCNAHS ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200']" 
                           title="View Contributions"
                         >
                           <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1910,22 +1910,22 @@
               </div>
 
               <!-- Bottom Pagination -->
-              <div v-if="attendanceTotalPages > 1" class="flex items-center justify-between pt-6 mt-6 border-t" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-purple-200'">
-                <div :class="['text-sm font-medium', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-purple-700']">
+              <div v-if="attendanceTotalPages > 1" class="flex items-center justify-between pt-6 mt-6 border-t" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200'">
+                <div :class="['text-sm font-medium', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">
                   Page {{ attendanceCurrentPage }} of {{ attendanceTotalPages }}
                 </div>
                 <div class="flex gap-2">
                   <button
                     @click="prevAttendancePage"
                     :disabled="attendanceCurrentPage === 1"
-                    :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+                    :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
                   >
                     ← Previous
                   </button>
                   <button
                     @click="nextAttendancePage"
                     :disabled="attendanceCurrentPage === attendanceTotalPages"
-                    :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === attendanceTotalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-purple-600 text-white hover:bg-purple-700 active:scale-95']"
+                    :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === attendanceTotalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
                   >
                     Next →
                   </button>
@@ -1936,8 +1936,8 @@
             <!-- RFID Scanner Tab -->
             <div v-if="attendanceTab === 'scanner'" class="space-y-4">
               <!-- RFID Scanner Lock Controls -->
-              <div v-if="selectedEvent || selectedSession" :class="['bg-gradient-to-r border rounded-lg p-3 sm:p-4 mb-4', isCOE ? 'from-orange-50 to-red-50 border-orange-200' : isSOM ? 'from-green-50 to-teal-50 border-green-200' : isCNAHS ? 'from-green-50 to-teal-50 border-green-200' : 'from-purple-50 to-pink-50 border-purple-200']">
-                <h3 :class="['font-semibold mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">
+              <div v-if="selectedEvent || selectedSession" :class="['bg-gradient-to-r border rounded-lg p-3 sm:p-4 mb-4', isCOE ? 'from-orange-50 to-red-50 border-orange-200' : isSOM ? 'from-green-50 to-teal-50 border-green-200' : isCNAHS ? 'from-green-50 to-teal-50 border-green-200' : 'from-blue-50 to-blue-50 border-blue-200']">
+                <h3 :class="['font-semibold mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
                   <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                   Attendance Mode (Select One)
                 </h3>
@@ -2026,7 +2026,7 @@
 
               <div v-if="!selectedEvent" class="text-center py-8">
                 <div class="mb-4">
-                  <select v-model="selectedEvent" @change="onEventSelectForScanner" :class="['px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none w-full max-w-lg text-sm sm:text-base', isCOE ? 'focus:ring-orange-600' : 'focus:ring-purple-600']">
+                  <select v-model="selectedEvent" @change="onEventSelectForScanner" :class="['px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none w-full max-w-lg text-sm sm:text-base', isCOE ? 'focus:ring-orange-600' : 'focus:ring-blue-600']">
                     <option :value="null">-- Select Event --</option>
                     <option v-for="event in attendanceEvents.filter(e => getEventDisplayStatus(e).status === 'active')" :key="event._id" :value="event">{{ event.title }} ({{ formatEventDate(event.date || event.event_date) }})</option>
                   </select>
@@ -2036,11 +2036,11 @@
               </div>
               <div v-else-if="!selectedSession" class="text-center py-8">
                 <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p class="text-gray-500 mb-2">Selected: <span :class="['font-semibold', isCOE ? 'text-orange-700' : 'text-purple-700']">{{ selectedEvent.title }}</span></p>
+                <p class="text-gray-500 mb-2">Selected: <span :class="['font-semibold', isCOE ? 'text-orange-700' : 'text-blue-700']">{{ selectedEvent.title }}</span></p>
                 <p class="text-gray-500 mb-4">Now select a session for attendance</p>
                 <!-- Sessions Loading Bar -->
                 <div v-if="sessionsLoading" class="max-w-md mx-auto mb-4">
-                  <div :class="['flex items-center justify-center gap-2 mb-2', isCOE ? 'text-orange-600' : 'text-purple-600']">
+                  <div :class="['flex items-center justify-center gap-2 mb-2', isCOE ? 'text-orange-600' : 'text-blue-600']">
                     <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -2048,36 +2048,36 @@
                     <span class="text-sm font-medium">Loading sessions...</span>
                   </div>
                   <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                    <div :class="['h-2 rounded-full animate-pulse bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500' : 'from-purple-600 to-pink-500']" style="width: 70%"></div>
+                    <div :class="['h-2 rounded-full animate-pulse bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500' : 'from-blue-600 to-blue-500']" style="width: 70%"></div>
                   </div>
                 </div>
                 <div v-else-if="eventSessions.length === 0" class="text-center py-4">
                   <p class="text-sm text-orange-600 mb-2">No sessions found for this event.</p>
                   <p class="text-xs text-gray-500">Please add sessions in the event settings first.</p>
-                  <button @click="selectedEvent = null; selectedSession = null" class="mt-3 text-purple-600 hover:text-purple-800 text-sm underline">Select different event</button>
+                  <button @click="selectedEvent = null; selectedSession = null" class="mt-3 text-blue-600 hover:text-blue-800 text-sm underline">Select different event</button>
                 </div>
                 <div v-else class="space-y-2 max-w-md mx-auto">
-                  <button v-for="session in eventSessions.filter(s => getSessionDisplayStatus(s, selectedEvent) === 'active')" :key="session._id" @click="selectedSession = session" :class="['w-full p-3 border rounded-lg transition text-left bg-gradient-to-r', isCOE ? 'from-orange-50 to-red-50 border-orange-200 hover:from-orange-100 hover:to-red-100' : 'from-purple-50 to-pink-50 border-purple-200 hover:from-purple-100 hover:to-pink-100']">
+                  <button v-for="session in eventSessions.filter(s => getSessionDisplayStatus(s, selectedEvent) === 'active')" :key="session._id" @click="selectedSession = session" :class="['w-full p-3 border rounded-lg transition text-left bg-gradient-to-r', isCOE ? 'from-orange-50 to-red-50 border-orange-200 hover:from-orange-100 hover:to-red-100' : 'from-blue-50 to-blue-50 border-blue-200 hover:from-blue-100 hover:to-blue-100']">
                     <div class="flex items-center justify-between">
                       <div>
-                        <span :class="['font-medium', isCOE ? 'text-orange-800' : 'text-purple-800']">{{ session.label }}</span>
+                        <span :class="['font-medium', isCOE ? 'text-orange-800' : 'text-blue-800']">{{ session.label }}</span>
                         <span :class="['ml-2 px-2 py-0.5 rounded-full text-xs', getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600']">{{ getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'Active' : 'Not Active' }}</span>
                       </div>
-                      <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-purple-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                      <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                     </div>
                     <p class="text-xs text-gray-500 mt-1">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
                   </button>
-                  <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" class="mt-3 text-purple-600 hover:text-purple-800 text-sm underline">Select different event</button>
+                  <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" class="mt-3 text-blue-600 hover:text-blue-800 text-sm underline">Select different event</button>
                 </div>
               </div>
               <div v-else class="space-y-4">
-                <div :class="['bg-gradient-to-r border rounded-lg p-3 sm:p-4', isCOE ? 'from-orange-50 to-red-50 border-orange-200' : 'from-purple-50 to-pink-50 border-purple-200']">
+                <div :class="['bg-gradient-to-r border rounded-lg p-3 sm:p-4', isCOE ? 'from-orange-50 to-red-50 border-orange-200' : 'from-blue-50 to-blue-50 border-blue-200']">
                   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                     <div class="flex-1 text-left sm:text-left">
-                      <h3 :class="['font-semibold text-sm sm:text-base', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">{{ selectedEvent.title }}</h3>
-                      <p :class="['text-xs sm:text-sm', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
+                      <h3 :class="['font-semibold text-sm sm:text-base', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ selectedEvent.title }}</h3>
+                      <p :class="['text-xs sm:text-sm', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
                       <div class="flex flex-wrap items-center gap-2 mt-1">
-                        <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : isCNAHS ? 'bg-green-100 text-green-700' : 'bg-purple-100 text-purple-700']">{{ selectedSession.label }}</span>
+                        <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : isCNAHS ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700']">{{ selectedSession.label }}</span>
                         <span class="text-xs text-gray-500 truncate">{{ formatDisplayTime(selectedSession.start_time) }} - {{ formatDisplayTime(selectedSession.end_time) }}</span>
                       </div>
                     </div>
@@ -2086,14 +2086,14 @@
                         <svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
                         <span class="hidden sm:inline">Fullscreen</span>
                       </button>
-                      <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" :class="['p-2 rounded-lg transition', isCOE ? 'text-orange-600 hover:text-orange-800 hover:bg-orange-100' : isSOM ? 'text-green-600 hover:text-green-800 hover:bg-green-50' : isCNAHS ? 'text-green-600 hover:text-green-800 hover:bg-green-50' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-100']">
+                      <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" :class="['p-2 rounded-lg transition', isCOE ? 'text-orange-600 hover:text-orange-800 hover:bg-orange-100' : isSOM ? 'text-green-600 hover:text-green-800 hover:bg-green-50' : isCNAHS ? 'text-green-600 hover:text-green-800 hover:bg-green-50' : 'text-blue-600 hover:text-blue-800 hover:bg-blue-100']">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                       </button>
                     </div>
                   </div>
                 </div>
 
-                <div :class="['bg-gradient-to-br border-2 border-dashed rounded-lg p-4 sm:p-8 text-center', isCOE ? 'from-orange-50 to-red-50 border-orange-300' : isSOM ? 'from-green-50 to-teal-50 border-green-300' : isCNAHS ? 'from-green-50 to-teal-50 border-green-300' : 'from-purple-50 to-pink-50 border-purple-300']">
+                <div :class="['bg-gradient-to-br border-2 border-dashed rounded-lg p-4 sm:p-8 text-center', isCOE ? 'from-orange-50 to-red-50 border-orange-300' : isSOM ? 'from-green-50 to-teal-50 border-green-300' : isCNAHS ? 'from-green-50 to-teal-50 border-green-300' : 'from-blue-50 to-blue-50 border-blue-300']">
                   <!-- Combined input info -->
                   <div class="flex justify-center mb-3 sm:mb-4">
                     <div class="inline-flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg bg-white bg-opacity-10 border border-white border-opacity-10">
@@ -2109,7 +2109,7 @@
                       @keydown="handleRfidKeydown"
                       type="text"
                       :placeholder="'Scan or ID'"
-                      :class="['flex-1 px-2 sm:px-4 py-1.5 sm:py-3 text-center text-xs sm:text-lg border-2 rounded-lg focus:ring-2 outline-none uppercase', isCOE ? 'border-orange-300 focus:border-red-500 focus:ring-red-200' : isSOM ? 'border-green-300 focus:border-yellow-500 focus:ring-yellow-200' : isCNAHS ? 'border-green-300 focus:border-green-500 focus:ring-green-200' : 'border-purple-300 focus:border-pink-500 focus:ring-pink-200']"
+                      :class="['flex-1 px-2 sm:px-4 py-1.5 sm:py-3 text-center text-xs sm:text-lg border-2 rounded-lg focus:ring-2 outline-none uppercase', isCOE ? 'border-orange-300 focus:border-red-500 focus:ring-red-200' : isSOM ? 'border-green-300 focus:border-yellow-500 focus:ring-yellow-200' : isCNAHS ? 'border-green-300 focus:border-green-500 focus:ring-green-200' : 'border-blue-300 focus:border-blue-500 focus:ring-blue-200']"
                       :disabled="rfidProcessing"
                     />
                     <button 
@@ -2127,19 +2127,19 @@
                 <!-- Recent Logs -->
                 <div class="mt-6">
                   <h4 class="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
                     Recent Attendance Logs
-                    <span v-if="selectedEvent?.title" :class="['text-sm font-normal', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']">- {{ selectedEvent.title }}</span>
+                    <span v-if="selectedEvent?.title" :class="['text-sm font-normal', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']">- {{ selectedEvent.title }}</span>
                   </h4>
                   <div v-if="attendanceLogs.length === 0" class="text-center py-4 text-gray-500">
                     No attendance records yet for this event.
                   </div>
                   <!-- Mobile Card View -->
                   <div v-else class="block sm:hidden space-y-3">
-                    <div v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['rounded-lg border p-4 transition-all duration-300 flex flex-col gap-3', index === 0 && isRecentCheckIn(log) ? (isCOE ? 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-200 ring-2 ring-orange-200 ring-inset animate-pulse' : 'bg-gradient-to-r from-purple-50 to-pink-50 border-purple-300 ring-2 ring-purple-300 ring-inset animate-pulse') : 'bg-white border-gray-200']">
+                    <div v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['rounded-lg border p-4 transition-all duration-300 flex flex-col gap-3', index === 0 && isRecentCheckIn(log) ? (isCOE ? 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-200 ring-2 ring-orange-200 ring-inset animate-pulse' : 'bg-gradient-to-r from-blue-50 to-blue-50 border-blue-300 ring-2 ring-blue-300 ring-inset animate-pulse') : 'bg-white border-gray-200']">
                       <div class="flex items-center justify-between gap-2">
                         <div class="flex items-center gap-3 min-w-0 flex-1">
-                          <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+                          <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-blue-400 to-blue-600']">
                             <img v-if="log.student_image || log.student?.photo" :src="log.student_image || log.student?.photo" class="w-full h-full object-cover" />
                             <span v-else>{{ (log.student?.full_name || log.student_name)?.charAt(0) || '?' }}</span>
                           </div>
@@ -2169,18 +2169,18 @@
                     <table class="w-full text-sm">
                       <thead class="bg-gray-50">
                         <tr>
-                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-purple-800']">Student</th>
-                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-purple-800']">Program</th>
-                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-purple-800']">Check-in</th>
-                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-purple-800']">Check-out</th>
-                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-purple-800']">Status</th>
+                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Student</th>
+                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Program</th>
+                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Check-in</th>
+                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Check-out</th>
+                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Status</th>
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['border-b transition-all duration-300', index === 0 && isRecentCheckIn(log) ? (isCOE ? 'bg-gradient-to-r from-orange-50 to-red-50 ring-2 ring-orange-200 ring-inset animate-pulse' : 'bg-gradient-to-r from-purple-50 to-pink-50 ring-2 ring-purple-300 ring-inset animate-pulse') : 'hover:bg-gray-50']">
+                        <tr v-for="(log, index) in sortedAttendanceLogs.slice(0, 10)" :key="log._id" :class="['border-b transition-all duration-300', index === 0 && isRecentCheckIn(log) ? (isCOE ? 'bg-gradient-to-r from-orange-50 to-red-50 ring-2 ring-orange-200 ring-inset animate-pulse' : 'bg-gradient-to-r from-blue-50 to-blue-50 ring-2 ring-blue-300 ring-inset animate-pulse') : 'hover:bg-gray-50']">
                           <td class="px-3 py-2">
                             <div class="flex items-center gap-2">
-                              <div :class="['w-7 h-7 rounded-full flex items-center justify-center text-white text-xs overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-r from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-r from-green-500 to-green-700' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+                              <div :class="['w-7 h-7 rounded-full flex items-center justify-center text-white text-xs overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-r from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-r from-green-500 to-green-700' : 'bg-gradient-to-r from-blue-400 to-blue-600']">
                                 <img v-if="log.student_image || log.student?.photo" :src="log.student_image || log.student?.photo" class="w-full h-full object-cover rounded-full" />
                                 <span v-else>{{ (log.student?.full_name || log.student_name)?.charAt(0) || '?' }}</span>
                               </div>
@@ -2207,7 +2207,7 @@
           <!-- Student Attendance View -->
           <div v-else class="bg-white rounded-lg shadow-lg p-4 md:p-6">
             <div class="flex items-center justify-between mb-6">
-              <h2 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">My Attendance</h2>
+              <h2 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">My Attendance</h2>
               <button @click="refreshAttendanceData" :disabled="attendanceLoading" :class="['px-4 py-2 rounded-lg transition flex items-center gap-2 disabled:opacity-70 text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
                 <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                 Refresh
@@ -2215,7 +2215,7 @@
             </div>
 
             <div v-if="attendanceLoading" class="flex items-center justify-center py-12">
-              <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']" fill="none" viewBox="0 0 24 24">
+              <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
               </svg>
@@ -2232,11 +2232,11 @@
                   Active Events
                 </h3>
                 <div class="space-y-4">
-                  <div v-for="event in activeNonEndedEvents" :key="event._id || event.event_id" :class="['rounded-2xl shadow-sm border overflow-hidden bg-gradient-to-br', isCOE ? 'from-white to-orange-50 border-orange-100' : isSOM ? 'from-white to-green-50 border-green-100' : 'from-white to-purple-50 border-purple-100']">
+                  <div v-for="event in activeNonEndedEvents" :key="event._id || event.event_id" :class="['rounded-2xl shadow-sm border overflow-hidden bg-gradient-to-br', isCOE ? 'from-white to-orange-50 border-orange-100' : isSOM ? 'from-white to-green-50 border-green-100' : 'from-white to-blue-50 border-blue-100']">
                     <!-- Header with status badges - Clickable to expand -->
                     <div class="px-4 pt-4 pb-2 cursor-pointer" @click="toggleEventExpansion(event._id || event.event_id)">
                       <div class="flex flex-wrap items-center gap-2 mb-3">
-                        <svg :class="['w-4 h-4 transition-transform', isCOE ? 'text-orange-600' : 'text-purple-600', expandedEvents[event._id || event.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        <svg :class="['w-4 h-4 transition-transform', isCOE ? 'text-orange-600' : 'text-blue-600', expandedEvents[event._id || event.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                         <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getOverallStatusClass(getSmartRecordStatus((myAttendanceRecords.value && myAttendanceRecords.value.find(r => r.event_id === (event._id || event.event_id))) || { event_id: event._id || event.event_id, event, overall_status: 'ongoing' }))]">
                           {{ getOverallStatusLabel(getSmartRecordStatus((myAttendanceRecords.value && myAttendanceRecords.value.find(r => r.event_id === (event._id || event.event_id))) || { event_id: event._id || event.event_id, event, overall_status: 'ongoing' })) }}
                         </span>
@@ -2245,31 +2245,31 @@
                         </span>
                       </div>
                       <!-- Event Title -->
-                      <h3 class="font-bold text-base md:text-lg text-purple-900 leading-tight mb-2">{{ event.title }}</h3>
+                      <h3 class="font-bold text-base md:text-lg text-blue-900 leading-tight mb-2">{{ event.title }}</h3>
                       <!-- Description -->
                       <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3">{{ event.description }}</p>
                     </div>
                     <!-- Event Details Footer -->
-                    <div :class="['bg-white bg-opacity-60 px-4 py-3 border-t', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : 'border-purple-100']">
+                    <div :class="['bg-white bg-opacity-60 px-4 py-3 border-t', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : 'border-blue-100']">
                       <div class="flex flex-col gap-2 text-xs text-gray-600">
                         <div class="flex items-center gap-2">
-                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-purple-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                           <span class="font-medium">{{ formatEventDate(event.date || event.event_date) }}</span>
                         </div>
                         <div class="flex items-center gap-2">
-                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-purple-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                           <span class="font-medium">{{ formatEventTime(event.start_time || event.startTime || '07:00') }} - {{ formatEventTime(event.end_time || event.endTime || '17:00') }}</span>
                         </div>
                         <div v-if="event.location" class="flex items-center gap-2">
-                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-purple-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                           <span class="font-medium">{{ event.location }}</span>
                         </div>
                       </div>
                     </div>
                     <!-- Sessions Panel - Expandable with Slide Animation -->
                     <transition name="slide-down">
-                      <div v-if="expandedEvents[event._id || event.event_id]" :class="['border-t px-4 py-3', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-purple-50 border-purple-100']">
-                        <h4 :class="['text-sm font-semibold mb-2 flex items-center gap-2', isCOE ? 'text-orange-700' : 'text-purple-700']"]>
+                      <div v-if="expandedEvents[event._id || event.event_id]" :class="['border-t px-4 py-3', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+                        <h4 :class="['text-sm font-semibold mb-2 flex items-center gap-2', isCOE ? 'text-orange-700' : 'text-blue-700']"]>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                         Sessions
                       </h4>
@@ -2277,7 +2277,7 @@
                         No sessions available for this event.
                       </div>
                       <div v-else class="space-y-2">
-                        <div v-for="session in expandedEventSessions[event._id || event.event_id]" :key="session._id" @click="selectSession(session, event, $event)" :class="['flex items-center justify-between bg-white rounded-lg px-3 py-2 border cursor-pointer hover:shadow', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-purple-200']"]>
+                        <div v-for="session in expandedEventSessions[event._id || event.event_id]" :key="session._id" @click="selectSession(session, event, $event)" :class="['flex items-center justify-between bg-white rounded-lg px-3 py-2 border cursor-pointer hover:shadow', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-blue-200']"]>
                           <div class="flex items-center gap-3">
                             <span class="font-medium text-gray-800">{{ session.label }}</span>
                             <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
@@ -2310,7 +2310,7 @@
                         </span>
                       </div>
                       <!-- Event Title -->
-                      <h3 :class="['font-bold text-base md:text-lg leading-tight mb-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">{{ event.title }}</h3>
+                      <h3 :class="['font-bold text-base md:text-lg leading-tight mb-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">{{ event.title }}</h3>
                       <!-- Description -->
                       <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3">{{ event.description }}</p>
                     </div>
@@ -2361,7 +2361,7 @@
               <!-- My Attendance Records Section - Enhanced with Expandable Event Folders -->
               <div v-if="myAttendanceRecords.length > 0">
                 <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <img src="/events.svg" alt="History" class="w-5 h-5 text-purple-600" style="filter: invert(0.3) sepia(1) hue-rotate(270deg) saturate(1.5);" />
+                  <img src="/events.svg" alt="History" class="w-5 h-5 text-blue-600" style="filter: invert(0.3) sepia(1) hue-rotate(270deg) saturate(1.5);" />
                   My Attendance History
                 </h3>
                 <div class="space-y-3">
@@ -2379,10 +2379,10 @@
                       <div class="flex items-center gap-3 flex-1 min-w-0">
                         <!-- Folder Icon with expand indicator -->
                         <div class="flex-shrink-0 relative">
-                          <svg :class="['w-8 h-8 transition-all duration-200', expandedAttendanceRecords[record.event_id] ? 'text-purple-600' : 'text-gray-400']" fill="currentColor" viewBox="0 0 24 24">
+                          <svg :class="['w-8 h-8 transition-all duration-200', expandedAttendanceRecords[record.event_id] ? 'text-blue-600' : 'text-gray-400']" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
                           </svg>
-                          <svg :class="['w-3 h-3 absolute -right-0.5 -bottom-0.5 transition-transform duration-200', expandedAttendanceRecords[record.event_id] ? 'rotate-90 text-purple-600' : 'text-gray-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg :class="['w-3 h-3 absolute -right-0.5 -bottom-0.5 transition-transform duration-200', expandedAttendanceRecords[record.event_id] ? 'rotate-90 text-blue-600' : 'text-gray-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
                           </svg>
                         </div>
@@ -2415,7 +2415,7 @@
                     
                     <!-- Expanded Sessions Panel -->
                     <transition name="slide-fade">
-                      <div v-if="expandedAttendanceRecords[record.event_id]" :class="['border-t bg-gradient-to-b', isCOE ? 'border-orange-100 from-orange-50 to-white' : 'border-gray-100 from-purple-50 to-white']">
+                      <div v-if="expandedAttendanceRecords[record.event_id]" :class="['border-t bg-gradient-to-b', isCOE ? 'border-orange-100 from-orange-50 to-white' : 'border-gray-100 from-blue-50 to-white']">
                         <!-- Event Description if available -->
                         <div v-if="record.event?.description" class="px-4 py-2 text-sm text-gray-600 border-b border-gray-100">
                           {{ record.event.description }}
@@ -2504,7 +2504,7 @@
             <!-- Header -->
             <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
               <div>
-                <h1 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-600' : 'from-purple-600 to-pink-600']">Payment Management</h1>
+                <h1 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-600' : 'from-blue-600 to-blue-600']">Payment Management</h1>
                 <p class="text-gray-600 mt-1">Create and manage payment campaigns for students</p>
               </div>
               <button 
@@ -2518,9 +2518,9 @@
             </div>
 
             <!-- Create Payment Section -->
-            <div :class="['bg-gradient-to-br rounded-2xl p-6 border shadow-sm', isCOE ? 'from-orange-50 to-red-50 border-orange-100' : isSOM ? 'from-green-50 to-yellow-50 border-green-100' : 'from-purple-50 to-pink-50 border-purple-100']">
+            <div :class="['bg-gradient-to-br rounded-2xl p-6 border shadow-sm', isCOE ? 'from-orange-50 to-red-50 border-orange-100' : isSOM ? 'from-green-50 to-yellow-50 border-green-100' : 'from-blue-50 to-blue-50 border-blue-100']">
               <div class="flex items-center gap-3 mb-5">
-                <div :class="['w-10 h-10 rounded-lg flex items-center justify-center', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-600 to-yellow-500' : 'bg-gradient-to-br from-purple-500 to-pink-500']">
+                <div :class="['w-10 h-10 rounded-lg flex items-center justify-center', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-600 to-yellow-500' : 'bg-gradient-to-br from-blue-500 to-blue-500']">
                   <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 </div>
                 <h2 class="text-xl font-bold text-gray-900">Create New Payment Campaign</h2>
@@ -2531,11 +2531,11 @@
                 <div class="md:col-span-1 space-y-4">
                   <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Campaign Title</label>
-                    <input v-model="newPaymentData.title" type="text" placeholder="e.g., Membership Fee Q1 2026" :class="['w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent outline-none transition', isCOE ? 'focus:ring-orange-500' : isSOM ? 'focus:ring-green-500' : 'focus:ring-purple-500']" />
+                    <input v-model="newPaymentData.title" type="text" placeholder="e.g., Membership Fee Q1 2026" :class="['w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent outline-none transition', isCOE ? 'focus:ring-orange-500' : isSOM ? 'focus:ring-green-500' : 'focus:ring-blue-500']" />
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Type</label>
-                    <select v-model="newPaymentData.type" :class="['w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent outline-none transition', isCOE ? 'focus:ring-orange-500' : isSOM ? 'focus:ring-green-500' : 'focus:ring-purple-500']">
+                    <select v-model="newPaymentData.type" :class="['w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent outline-none transition', isCOE ? 'focus:ring-orange-500' : isSOM ? 'focus:ring-green-500' : 'focus:ring-blue-500']">
                       <option value="fee">Fee</option>
                       <option value="membership">Membership</option>
                       <option value="donation">Donation</option>
@@ -2544,7 +2544,7 @@
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Amount Due (₱)</label>
-                    <input v-model.number="newPaymentData.amount_due" type="number" placeholder="0.00" :class="['w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent outline-none transition', isCOE ? 'focus:ring-orange-500' : isSOM ? 'focus:ring-green-500' : 'focus:ring-purple-500']" />
+                    <input v-model.number="newPaymentData.amount_due" type="number" placeholder="0.00" :class="['w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent outline-none transition', isCOE ? 'focus:ring-orange-500' : isSOM ? 'focus:ring-green-500' : 'focus:ring-blue-500']" />
                   </div>
                   <button 
                     @click="createPayment" 
@@ -2559,7 +2559,7 @@
                 <!-- Right Column: Description -->
                 <div class="md:col-span-2">
                   <label class="block text-xs font-semibold text-gray-700 mb-2 uppercase tracking-wide">Description (Optional)</label>
-                  <textarea v-model="newPaymentData.description" placeholder="Add notes, details, or instructions..." :class="['w-full h-full min-h-48 px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent outline-none transition resize-none', isCOE ? 'focus:ring-orange-500' : isSOM ? 'focus:ring-green-500' : 'focus:ring-purple-500']" rows="4"></textarea>
+                  <textarea v-model="newPaymentData.description" placeholder="Add notes, details, or instructions..." :class="['w-full h-full min-h-48 px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-xl focus:ring-2 focus:border-transparent outline-none transition resize-none', isCOE ? 'focus:ring-orange-500' : isSOM ? 'focus:ring-green-500' : 'focus:ring-blue-500']" rows="4"></textarea>
                 </div>
               </div>
             </div>
@@ -2577,16 +2577,16 @@
               </div>
 
               <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                <div v-for="payment in paymentsList.filter(p => p.status === 'active')" :key="payment._id" class="relative bg-white rounded-2xl border border-gray-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300 overflow-hidden group">
+                <div v-for="payment in paymentsList.filter(p => p.status === 'active')" :key="payment._id" class="relative bg-white rounded-2xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 overflow-hidden group">
                   <!-- Gradient accent bar -->
-                  <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-500 to-pink-500"></div>
+                  <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-blue-500"></div>
                   
                   <!-- Loading overlay -->
                   <transition name="card-overlay">
                     <div v-if="activeCardLoadingId === payment._id" class="absolute inset-0 z-30 flex items-center justify-center">
                       <div class="absolute inset-0 bg-black bg-opacity-20 backdrop-blur-sm"></div>
                       <div class="relative z-40 bg-white rounded-xl px-5 py-4 shadow-2xl flex items-center gap-3">
-                        <svg class="animate-spin h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                        <svg class="animate-spin h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                         <span class="text-sm font-medium text-gray-700">Loading...</span>
                       </div>
                     </div>
@@ -2602,7 +2602,7 @@
                       <span :class="[
                         'text-xs font-bold px-3 py-1 rounded-lg whitespace-nowrap',
                         payment.type === 'fee' && 'bg-blue-100 text-blue-700',
-                        payment.type === 'membership' && 'bg-purple-100 text-purple-700',
+                        payment.type === 'membership' && 'bg-blue-100 text-blue-700',
                         payment.type === 'donation' && 'bg-green-100 text-green-700',
                         !['fee', 'membership', 'donation'].includes(payment.type) && 'bg-gray-100 text-gray-700'
                       ]">{{ (payment.type || 'fee').charAt(0).toUpperCase() + (payment.type || 'fee').slice(1) }}</span>
@@ -2614,9 +2614,9 @@
                         <div class="text-xs text-blue-600 font-semibold uppercase">Total Students</div>
                         <div class="text-2xl font-bold text-blue-900 mt-1">{{ payment.stats.total_students }}</div>
                       </div>
-                      <div :class="['bg-gradient-to-br rounded-xl p-3 border', isCOE ? 'from-orange-50 to-orange-100 border-orange-200' : isSOM ? 'from-green-50 to-green-100 border-green-200' : isCNAHS ? 'from-green-50 to-green-100 border-green-200' : 'from-purple-50 to-purple-100 border-purple-200']">
-                        <div :class="['text-xs font-semibold uppercase', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']">Progress</div>
-                        <div :class="['text-2xl font-bold mt-1', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">{{ payment.stats.completion_percentage }}%</div>
+                      <div :class="['bg-gradient-to-br rounded-xl p-3 border', isCOE ? 'from-orange-50 to-orange-100 border-orange-200' : isSOM ? 'from-green-50 to-green-100 border-green-200' : isCNAHS ? 'from-green-50 to-green-100 border-green-200' : 'from-blue-50 to-blue-100 border-blue-200']">
+                        <div :class="['text-xs font-semibold uppercase', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']">Progress</div>
+                        <div :class="['text-2xl font-bold mt-1', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ payment.stats.completion_percentage }}%</div>
                       </div>
                     </div>
 
@@ -2635,14 +2635,14 @@
                     <!-- Progress Bar -->
                     <div class="mb-4">
                       <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                        <div class="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-300" :style="{ width: payment.stats.completion_percentage + '%' }"></div>
+                        <div class="h-full bg-gradient-to-r from-blue-500 to-blue-500 transition-all duration-300" :style="{ width: payment.stats.completion_percentage + '%' }"></div>
                       </div>
                     </div>
 
                     <!-- Action Button -->
                     <button 
                       @click="handleManagePaymentFromCard(payment)"
-                      class="w-full px-4 py-2.5 bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 text-purple-700 rounded-xl text-sm font-semibold hover:from-purple-100 hover:to-pink-100 hover:border-purple-400 transition group-hover:shadow-md"
+                      class="w-full px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-50 border border-blue-200 text-blue-700 rounded-xl text-sm font-semibold hover:from-blue-100 hover:to-blue-100 hover:border-blue-400 transition group-hover:shadow-md"
                     >
                       Manage Campaign
                     </button>
@@ -2657,11 +2657,11 @@
             <transition name="fade">
               <div v-if="activeCardLoadingId" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
                 <div :class="['absolute rounded-2xl w-full max-w-sm inset-0 m-auto backdrop-blur-sm',
-                                       isCOE ? 'bg-orange-700 bg-opacity-30' : isSOM ? 'bg-green-700 bg-opacity-30' : 'bg-purple-700 bg-opacity-30']"></div>
+                                       isCOE ? 'bg-orange-700 bg-opacity-30' : isSOM ? 'bg-green-700 bg-opacity-30' : 'bg-blue-700 bg-opacity-30']"></div>
                 <div :class="['bg-white rounded-2xl shadow-2xl px-6 py-8 sm:px-8 sm:py-10 flex flex-col items-center gap-4 max-w-sm w-full mx-2 transition-all duration-200 relative z-10',
-                                         isCOE ? 'border-2 border-orange-200' : isSOM ? 'border-2 border-green-200' : 'border-2 border-purple-200']">
+                                         isCOE ? 'border-2 border-orange-200' : isSOM ? 'border-2 border-green-200' : 'border-2 border-blue-200']">
                   <div :class="['w-16 h-16 rounded-full flex items-center justify-center',
-                                    isCOE ? 'bg-gradient-to-br from-orange-700 to-red-600' : isSOM ? 'bg-gradient-to-br from-som-green to-som-yellow' : 'bg-gradient-to-br from-purple-500 to-pink-500']">
+                                    isCOE ? 'bg-gradient-to-br from-orange-700 to-red-600' : isSOM ? 'bg-gradient-to-br from-som-green to-som-yellow' : 'bg-gradient-to-br from-blue-500 to-blue-500']">
                     <svg class="animate-spin h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
@@ -2774,14 +2774,14 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
               <!-- Scanner Input -->
               <div class="space-y-4">
-                <div class="bg-purple-50 rounded-lg p-6 border-2 border-purple-200">
+                <div class="bg-blue-50 rounded-lg p-6 border-2 border-blue-200">
                   <div class="text-center mb-4">
-                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
-                      <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2"></path>
                       </svg>
                     </div>
-                    <h4 class="font-bold text-purple-900">Scan Student ID or RFID</h4>
+                    <h4 class="font-bold text-blue-900">Scan Student ID or RFID</h4>
                   </div>
                   
                   <input 
@@ -2789,14 +2789,14 @@
                     type="text" 
                     placeholder="Enter Student ID or scan RFID"
                     @keydown.enter="markPaymentAsPaid(selectedPayment._id)"
-                    class="w-full px-4 py-3 bg-white border-2 border-purple-200 rounded-lg text-center font-mono focus:border-purple-500 outline-none"
+                    class="w-full px-4 py-3 bg-white border-2 border-blue-200 rounded-lg text-center font-mono focus:border-blue-500 outline-none"
                   />
                 </div>
 
                 <button 
                   @click="markPaymentAsPaid(selectedPayment._id)"
                   :disabled="!paymentSearchQuery.trim()"
-                  class="w-full py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-lg font-bold hover:from-purple-700 hover:to-pink-600 transition disabled:opacity-50"
+                  class="w-full py-3 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg font-bold hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-50"
                 >
                  Mark as Paid
                 </button>
@@ -2814,16 +2814,16 @@
                   <p class="text-3xl font-bold text-blue-600">{{ selectedPayment.stats.paid_count }}</p>
                 </div>
 
-                <div class="bg-gradient-to-br from-red-50 to-pink-50 rounded-lg p-4 border border-red-200">
+                <div class="bg-gradient-to-br from-red-50 to-blue-50 rounded-lg p-4 border border-red-200">
                   <p class="text-sm text-red-800 mb-1">Still Unpaid</p>
                   <p class="text-3xl font-bold text-red-600">{{ Math.max(0, totalStudents - (selectedPayment.stats?.paid_count || 0)) }}</p>
                 </div>
 
-                <div class="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
-                  <p class="text-sm text-purple-800 mb-1">Completion Rate</p>
-                  <p class="text-3xl font-bold text-purple-600">{{ selectedPayment.stats.completion_percentage }}%</p>
+                <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
+                  <p class="text-sm text-blue-800 mb-1">Completion Rate</p>
+                  <p class="text-3xl font-bold text-blue-600">{{ selectedPayment.stats.completion_percentage }}%</p>
                   <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
-                    <div class="bg-purple-600 h-2 rounded-full transition-all" :style="{ width: selectedPayment.stats.completion_percentage + '%' }"></div>
+                    <div class="bg-blue-600 h-2 rounded-full transition-all" :style="{ width: selectedPayment.stats.completion_percentage + '%' }"></div>
                   </div>
                 </div>
               </div>
@@ -2834,7 +2834,7 @@
         <!-- Pending Approvals Page -->
         <div v-if="currentPage === 'pending' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">Pending Student Approvals</h2>
+            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Pending Student Approvals</h2>
             <button @click="refreshPendingSection" :disabled="pendingLoading" :class="['text-white px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Refresh Pending List">
               <svg :class="{'animate-spin': pendingLoading}" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               Refresh
@@ -2845,13 +2845,13 @@
           <div class="mb-4">
             <div class="relative">
               <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-              <input v-model="pendingSearchQuery" @input="filterPendingStudents" type="text" placeholder="Search by name, email, student ID, or RFID..." :class="['w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-green-600 focus:border-transparent' : 'focus:ring-purple-600 focus:border-transparent']" />
+              <input v-model="pendingSearchQuery" @input="filterPendingStudents" type="text" placeholder="Search by name, email, student ID, or RFID..." :class="['w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-green-600 focus:border-transparent' : 'focus:ring-blue-600 focus:border-transparent']" />
             </div>
             <p class="text-xs text-gray-500 mt-1">Search across name, email, student ID, and RFID code</p>
           </div>
 
           <div v-if="pendingLoading" class="flex items-center justify-center py-12">
-            <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -2880,7 +2880,7 @@
             <div v-for="student in paginatedPendingStudents" :key="student.student_id" :class="['border rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-gray-200']">
               <div class="flex flex-col md:flex-row gap-4">
                 <div class="flex-shrink-0">
-                  <div :class="['w-20 h-20 rounded-full flex items-center justify-center overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-600' : isCNAHS ? 'bg-gradient-to-br from-green-600 to-green-800' : 'bg-gradient-to-br from-pink-400 to-purple-600']" :style="{ background: profileGradient }">
+                  <div :class="['w-20 h-20 rounded-full flex items-center justify-center overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-600' : isCNAHS ? 'bg-gradient-to-br from-green-600 to-green-800' : 'bg-gradient-to-br from-blue-400 to-blue-600']" :style="{ background: profileGradient }">
                     <img v-if="student.photo" :src="student.photo" alt="Student Photo" class="w-full h-full object-cover rounded-full" />
                     <img v-else src="/user.svg" alt="No Photo" class="w-10 h-10 brightness-0 invert" />
                   </div>
@@ -2888,7 +2888,7 @@
                 <div class="flex-1">
                   <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
                     <div>
-                      <h3 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">{{ student.first_name }} {{ student.middle_name || '' }} {{ student.last_name }} {{ student.suffix || '' }}</h3>
+                      <h3 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ student.first_name }} {{ student.middle_name || '' }} {{ student.last_name }} {{ student.suffix || '' }}</h3>
                       <p class="text-sm text-gray-500">{{ student.student_id }}</p>
                     </div>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 w-fit">
@@ -2973,9 +2973,9 @@
         <div v-if="currentPage === 'users' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
           <div class="flex flex-col gap-4 mb-6">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <h2 class="text-xl md:text-2xl font-bold text-purple-900">Manage Users</h2>
+              <h2 class="text-xl md:text-2xl font-bold text-blue-900">Manage Users</h2>
               <div class="flex items-center gap-2">
-                <button @click="refreshStudents" :disabled="isRefreshing" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" title="Refresh Student List">
+                <button @click="refreshStudents" :disabled="isRefreshing" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" title="Refresh Student List">
                   <svg v-if="isRefreshing" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                   <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                   {{ isRefreshing ? 'Refreshing...' : 'Refresh' }}
@@ -2985,10 +2985,10 @@
             <div class="flex flex-col sm:flex-row gap-3">
               <div class="flex-1 relative">
                 <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input v-model="searchQuery" @change="handleSearchChange" type="text" placeholder="Search by Name, Email, Student ID, or RFID Code..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm" />
+                <input v-model="searchQuery" @change="handleSearchChange" type="text" placeholder="Search by Name, Email, Student ID, or RFID Code..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm" />
               </div>
               <div class="relative min-w-[140px]">
-                <select v-model="filterProgram" @change="handleSearchChange" class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm">
+                <select v-model="filterProgram" @change="handleSearchChange" class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm">
                   <option value="">All Programs</option>
                   <option value="BSCS">BSCS</option>
                   <option value="BSIS">BSIS</option>
@@ -2997,7 +2997,7 @@
                 <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
               <div class="relative min-w-[120px]">
-                <select v-model="filterSchoolLevel" @change="handleSearchChange" class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm">
+                <select v-model="filterSchoolLevel" @change="handleSearchChange" class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm">
                   <option value="">All Levels</option>
                   <option value="1st Year">1st Year</option>
                   <option value="2nd Year">2nd Year</option>
@@ -3007,7 +3007,7 @@
                 <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
               <div class="relative min-w-[140px]">
-                <select v-model="filterRfidStatus" @change="handleSearchChange" class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none text-sm">
+                <select v-model="filterRfidStatus" @change="handleSearchChange" class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm">
                   <option value="">All RFID Status</option>
                   <option value="verified">Verified</option>
                   <option value="unverified">Unverified</option>
@@ -3021,34 +3021,34 @@
           <div class="overflow-x-auto">
             <table class="w-full border-collapse text-sm">
               <thead>
-                <tr class="bg-purple-100">
-                  <th class="border border-purple-300 px-4 py-3 text-left font-semibold text-purple-900">Name</th>
-                  <th class="border border-purple-300 px-4 py-3 text-left font-semibold text-purple-900">Student ID</th>
-                  <th class="border border-purple-300 px-4 py-3 text-left font-semibold text-purple-900">Email</th>
-                  <th class="border border-purple-300 px-4 py-3 text-center font-semibold text-purple-900">RFID Code</th>
-                  <th class="border border-purple-300 px-4 py-3 text-center font-semibold text-purple-900">RFID Status</th>
-                  <th class="border border-purple-300 px-4 py-3 text-center font-semibold text-purple-900">Program</th>
-                  <th class="border border-purple-300 px-4 py-3 text-center font-semibold text-purple-900">School Level</th>
-                  <th class="border border-purple-300 px-4 py-3 text-center font-semibold text-purple-900">Actions</th>
+                <tr class="bg-blue-100">
+                  <th class="border border-blue-300 px-4 py-3 text-left font-semibold text-blue-900">Name</th>
+                  <th class="border border-blue-300 px-4 py-3 text-left font-semibold text-blue-900">Student ID</th>
+                  <th class="border border-blue-300 px-4 py-3 text-left font-semibold text-blue-900">Email</th>
+                  <th class="border border-blue-300 px-4 py-3 text-center font-semibold text-blue-900">RFID Code</th>
+                  <th class="border border-blue-300 px-4 py-3 text-center font-semibold text-blue-900">RFID Status</th>
+                  <th class="border border-blue-300 px-4 py-3 text-center font-semibold text-blue-900">Program</th>
+                  <th class="border border-blue-300 px-4 py-3 text-center font-semibold text-blue-900">School Level</th>
+                  <th class="border border-blue-300 px-4 py-3 text-center font-semibold text-blue-900">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-if="filteredUsers.length === 0" class="hover:bg-gray-50">
-                  <td colspan="8" class="border border-purple-300 px-4 py-8 text-center text-gray-600">No users found matching your search.</td>
+                  <td colspan="8" class="border border-blue-300 px-4 py-8 text-center text-gray-600">No users found matching your search.</td>
                 </tr>
                 <tr v-for="user in filteredUsers" :key="user.studentId || user.student_id" class="hover:bg-gray-50">
-                  <td class="border border-purple-300 px-4 py-3 text-gray-700">{{ (user.firstName || user.first_name) }} {{ (user.lastName || user.last_name) }}</td>
-                  <td class="border border-purple-300 px-4 py-3 text-gray-700 text-xs font-mono">{{ user.studentId || user.student_id }}</td>
-                  <td class="border border-purple-300 px-4 py-3 text-gray-700">{{ user.email }}</td>
-                  <td class="border border-purple-300 px-4 py-3 text-center text-gray-700">{{ user.rfidCode || user.rfid_code || '—' }}</td>
-                  <td class="border border-purple-300 px-4 py-3 text-center">
+                  <td class="border border-blue-300 px-4 py-3 text-gray-700">{{ (user.firstName || user.first_name) }} {{ (user.lastName || user.last_name) }}</td>
+                  <td class="border border-blue-300 px-4 py-3 text-gray-700 text-xs font-mono">{{ user.studentId || user.student_id }}</td>
+                  <td class="border border-blue-300 px-4 py-3 text-gray-700">{{ user.email }}</td>
+                  <td class="border border-blue-300 px-4 py-3 text-center text-gray-700">{{ user.rfidCode || user.rfid_code || '—' }}</td>
+                  <td class="border border-blue-300 px-4 py-3 text-center">
                     <span :class="['px-2 py-1 rounded-full text-xs font-medium', (user.rfid_status === 'verified') ? 'bg-green-100 text-green-800' : (user.rfid_status === 'Unreadable') ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800']">
                       {{ (user.rfid_status === 'verified') ? 'Verified' : (user.rfid_status === 'Unreadable') ? 'Unreadable' : 'Unverified' }}
                     </span>
                   </td>
-                  <td class="border border-purple-300 px-4 py-3 text-center text-gray-700">{{ user.program }}</td>
-                  <td class="border border-purple-300 px-4 py-3 text-center text-gray-700">{{ user.yearLevel || user.year_level }}</td>
-                  <td class="border border-purple-300 px-4 py-3 text-center">
+                  <td class="border border-blue-300 px-4 py-3 text-center text-gray-700">{{ user.program }}</td>
+                  <td class="border border-blue-300 px-4 py-3 text-center text-gray-700">{{ user.yearLevel || user.year_level }}</td>
+                  <td class="border border-blue-300 px-4 py-3 text-center">
                     <div class="flex items-center justify-center gap-2 flex-nowrap">
                       <button @click="editUser(user)" class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all duration-200 hover:scale-110 active:scale-95 flex-shrink-0" title="Edit User">
                         <img src="/edit.svg" alt="Edit" class="w-4 h-4 min-w-[16px] min-h-[16px]" style="filter: brightness(0) invert(1);" />
@@ -3066,29 +3066,29 @@
           <!-- Pagination Controls -->
           <div v-if="paginationTotal > 0" class="mt-6 pt-6 border-t border-gray-200">
             <div class="text-sm text-gray-600 mb-4">
-              Showing page <span class="font-semibold text-purple-900">{{ currentPageNum }}</span> of <span class="font-semibold text-purple-900">{{ totalPages }}</span> ({{ paginationTotal }} total students)
+              Showing page <span class="font-semibold text-blue-900">{{ currentPageNum }}</span> of <span class="font-semibold text-blue-900">{{ totalPages }}</span> ({{ paginationTotal }} total students)
             </div>
             <div class="flex flex-wrap gap-2 items-center justify-center md:justify-start">
               <div class="flex gap-1">
-                <button @click="goToPreviousPage" :disabled="currentPageNum === 1" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
+                <button @click="goToPreviousPage" :disabled="currentPageNum === 1" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
                   Previous
                 </button>
-                <button @click="goToNextPage" :disabled="currentPageNum >= totalPages" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
+                <button @click="goToNextPage" :disabled="currentPageNum >= totalPages" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
                   Next
                 </button>
               </div>
               
               <div class="flex gap-1">
-                <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="['px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200', currentPageNum === page ? 'bg-purple-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300']">
+                <button v-for="page in visiblePages" :key="page" @click="goToPage(page)" :class="['px-3 py-2 rounded-lg font-medium text-sm transition-all duration-200', currentPageNum === page ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800 hover:bg-gray-300']">
                   {{ page }}
                 </button>
               </div>
               
               <div class="flex gap-1">
-                <button @click="goToPage(1)" :disabled="currentPageNum === 1" class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
+                <button @click="goToPage(1)" :disabled="currentPageNum === 1" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
                   ← First
                 </button>
-                <button @click="goToPage(totalPages)" :disabled="currentPageNum === totalPages" class="bg-purple-600 text-white px-3 py-2 rounded-lg hover:bg-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
+                <button @click="goToPage(totalPages)" :disabled="currentPageNum === totalPages" class="bg-blue-600 text-white px-3 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed font-medium text-sm">
                   Last →
                 </button>
               </div>
@@ -3105,7 +3105,7 @@
 
         <!-- Active Attendance Event Banner for Students -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster && activeUnattendedEvents.length > 0" class="mb-4">
-          <div v-for="event in activeUnattendedEvents" :key="event._id" :class="['rounded-lg shadow-lg p-4 mb-3 text-white', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']" :style="{ background: profileGradient }">
+          <div v-for="event in activeUnattendedEvents" :key="event._id" :class="['rounded-lg shadow-lg p-4 mb-3 text-white', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-600' : 'bg-gradient-to-br from-blue-400 to-blue-600']" :style="{ background: profileGradient }">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
               <div class="flex items-start gap-3">
                 <div class="w-10 h-10 bg-white bg-opacity-20 rounded-full flex items-center justify-center flex-shrink-0">
@@ -3143,7 +3143,7 @@
                   </div>
                 </div>
               </div>
-              <button @click="currentPage = 'attendance'; fetchAttendanceData()" class="bg-white text-purple-700 px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition flex items-center gap-2 text-sm whitespace-nowrap">
+              <button @click="currentPage = 'attendance'; fetchAttendanceData()" class="bg-white text-blue-700 px-4 py-2 rounded-lg font-medium hover:bg-opacity-90 transition flex items-center gap-2 text-sm whitespace-nowrap">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                 View Attendance
               </button>
@@ -3154,7 +3154,7 @@
         <!-- Dashboard Page -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
           <!-- Profile Header -->
-          <div :class="['relative h-40 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-pink-400 to-purple-600']">
+          <div :class="['relative h-40 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-blue-400 to-blue-600']">
             <!-- Artistic Blurred Background -->
             <div 
               v-if="currentUser.image || currentUser.photo"
@@ -3164,13 +3164,13 @@
                 filter: 'blur(30px) saturate(1.8) brightness(0.8)'
               }"
             ></div>
-            <div v-else :class="[isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-purple-900 via-purple-600 to-pink-600', 'absolute inset-0 w-full h-full animate-gradient-slow']"></div>
+            <div v-else :class="[isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-blue-900 via-blue-600 to-blue-600', 'absolute inset-0 w-full h-full animate-gradient-slow']"></div>
             
             <!-- Artistic Overlays -->
             <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
             <div class="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-            <div :class="[isCOE ? 'bg-orange-500/20' : isSOM ? 'bg-green-500/20' : isCNAHS ? 'bg-green-700/20' : 'bg-purple-500/20', 'absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl animate-pulse']"></div>
-            <div :class="[isCOE ? 'bg-red-500/20' : isSOM ? 'bg-teal-500/20' : isCNAHS ? 'bg-green-600/20' : 'bg-pink-500/20', 'absolute -bottom-20 -left-20 w-64 h-64 rounded-full blur-3xl animate-pulse-slow']"></div>
+            <div :class="[isCOE ? 'bg-orange-500/20' : isSOM ? 'bg-green-500/20' : isCNAHS ? 'bg-green-700/20' : 'bg-blue-500/20', 'absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl animate-pulse']"></div>
+            <div :class="[isCOE ? 'bg-red-500/20' : isSOM ? 'bg-teal-500/20' : isCNAHS ? 'bg-green-600/20' : 'bg-blue-500/20', 'absolute -bottom-20 -left-20 w-64 h-64 rounded-full blur-3xl animate-pulse-slow']"></div>
             
             <div class="light-sweep"></div>
             <button @click="refreshCurrentUser" :disabled="refreshingUserData" class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition-all backdrop-blur-md z-10 border border-white/20 shadow-lg" title="Refresh Profile">
@@ -3181,9 +3181,9 @@
           <div class="px-8 pb-8">
             <div class="relative -mt-16 mb-6">
               <div class="inline-block relative">
-                <div :class="[isCOE ? 'bg-gradient-to-br from-orange-100 to-orange-200' : isSOM ? 'bg-gradient-to-br from-green-100 to-green-200' : isCNAHS ? 'bg-gradient-to-br from-green-100 to-green-200' : 'bg-gradient-to-br from-purple-100 to-purple-200', 'w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center']">
+                <div :class="[isCOE ? 'bg-gradient-to-br from-orange-100 to-orange-200' : isSOM ? 'bg-gradient-to-br from-green-100 to-green-200' : isCNAHS ? 'bg-gradient-to-br from-green-100 to-green-200' : 'bg-gradient-to-br from-blue-100 to-blue-200', 'w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center']">
                   <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
-                    <svg :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-purple-600', 'animate-spin h-10 w-10']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <svg :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'animate-spin h-10 w-10']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -3197,14 +3197,14 @@
                     @load="onProfileImageLoad" 
                     @error="handleProfileImageError" 
                   />
-                  <div v-else :class="[isCOE ? 'text-orange-300' : isSOM ? 'text-green-300' : isCNAHS ? 'text-green-300' : 'text-purple-300', 'w-full h-full flex items-center justify-center text-4xl font-bold']">
+                  <div v-else :class="[isCOE ? 'text-orange-300' : isSOM ? 'text-green-300' : isCNAHS ? 'text-green-300' : 'text-blue-300', 'w-full h-full flex items-center justify-center text-4xl font-bold']">
                     {{ getInitials(currentUser?.full_name || displayName || '') }}
                   </div>
                 </div>
                 <button 
                   v-if="currentUser.role !== 'admin' && !currentUser.isMaster"
                   @click="$refs.studentPhotoInput.click()" 
-                  :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-purple-600', 'absolute -bottom-2 -right-2 p-2.5 bg-white rounded-2xl shadow-lg hover:scale-110 transition-transform border border-gray-100']"
+                  :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'absolute -bottom-2 -right-2 p-2.5 bg-white rounded-2xl shadow-lg hover:scale-110 transition-transform border border-gray-100']"
                   title="Change Photo"
                 >
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -3221,20 +3221,20 @@
 
             <div class="mb-8">
               <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">{{ displayName }}</h1>
-              <p :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-purple-600', 'text-lg font-medium']">ID: {{ currentUser.studentId || currentUser.student_id }}</p>
-              <p v-if="studentPhotoUploading" :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-purple-600', 'text-xs mt-2 font-medium']">Uploading photo...</p>
+              <p :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'text-lg font-medium']">ID: {{ currentUser.studentId || currentUser.student_id }}</p>
+              <p v-if="studentPhotoUploading" :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'text-xs mt-2 font-medium']">Uploading photo...</p>
             </div>
 
             <!-- Info Grid -->
             <div class="space-y-8">
               <section>
                 <div class="flex items-center gap-2 mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-purple-600', 'w-1 h-6 rounded-full']"></div>
+                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Personal Information</h3>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div v-for="(val, label) in { 'First Name': currentUser.firstName || currentUser.first_name, 'Middle Name': currentUser.middleName || currentUser.middle_name || 'N/A', 'Last Name': currentUser.lastName || currentUser.last_name, 'Suffix': currentUser.suffix || 'N/A' }" :key="label" 
-                       :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-purple-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
+                       :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ label }}</p>
                     <p class="text-gray-900 font-semibold truncate">{{ val }}</p>
                   </div>
@@ -3244,11 +3244,11 @@
 
               <section>
                 <div class="flex items-center gap-2 mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-purple-600', 'w-1 h-6 rounded-full']"></div>
+                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Contact & Identification</h3>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-purple-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
+                  <div :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email Address</p>
                     <p class="text-gray-900 font-semibold truncate">{{ currentUser.email || 'Not provided' }}</p>
                   </div>
@@ -3260,8 +3260,8 @@
                     </div>
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">RFID STATUS</p>
                     <div v-if="currentUser.rfid_status === 'verified'" class="flex items-center gap-2 mb-2">
-                      <p :class="[isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900', 'text-lg font-mono font-bold tracking-tight']">{{ currentUser.rfidCode || currentUser.rfid_code }}</p>
-                      <button @click="copyRfidToClipboard(currentUser.rfidCode || currentUser.rfid_code)" :class="[isCOE ? 'hover:bg-orange-50 text-orange-400' : isSOM ? 'hover:bg-green-50 text-green-400' : isCNAHS ? 'hover:bg-green-50 text-green-700' : 'hover:bg-purple-50 text-purple-400', 'p-1 rounded transition-colors']">
+                      <p :class="[isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900', 'text-lg font-mono font-bold tracking-tight']">{{ currentUser.rfidCode || currentUser.rfid_code }}</p>
+                      <button @click="copyRfidToClipboard(currentUser.rfidCode || currentUser.rfid_code)" :class="[isCOE ? 'hover:bg-orange-50 text-orange-400' : isSOM ? 'hover:bg-green-50 text-green-400' : isCNAHS ? 'hover:bg-green-50 text-green-700' : 'hover:bg-blue-50 text-blue-400', 'p-1 rounded transition-colors']">
                         <svg v-if="!rfidCopied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                         <svg v-else class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                       </button>
@@ -3280,7 +3280,7 @@
 
               <section>
                 <div class="flex items-center gap-2 mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-purple-600', 'w-1 h-6 rounded-full']"></div>
+                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Academic Information</h3>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -3290,7 +3290,7 @@
                     'Semester': appSettings.semester || 'N/A', 
                     'School Year': appSettings.schoolYear || 'N/A' 
                   }" :key="label" 
-                       :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-purple-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
+                       :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ label }}</p>
                     <p class="text-gray-900 font-bold">{{ val }}</p>
                   </div>
@@ -3299,7 +3299,7 @@
 
               <section>
                 <div class="flex items-center gap-2 mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-purple-600', 'w-1 h-6 rounded-full']"></div>
+                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Account Security</h3>
                 </div>
                 <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-4">
@@ -3307,7 +3307,7 @@
                     <h4 class="font-bold text-gray-900 mb-1">Password</h4>
                     <p class="text-xs text-gray-500">Keep your account secure by updating your password regularly.</p>
                   </div>
-                  <button @click="showPasswordChangeModal = true" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 shadow-lg shadow-orange-200 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-yellow-500 shadow-lg shadow-green-200 hover:from-green-700 hover:to-yellow-600' : isCNAHS ? 'bg-gradient-to-r from-green-700 to-green-600 shadow-lg shadow-green-300 hover:from-green-800 hover:to-green-700' : 'bg-gradient-to-r from-purple-600 to-pink-500 shadow-lg shadow-purple-200 hover:from-purple-700 hover:to-pink-600', 'px-6 py-2.5 text-white rounded-xl font-bold text-sm hover:scale-105 transition-transform flex items-center justify-center md:justify-start gap-2 whitespace-nowrap']">
+                  <button @click="showPasswordChangeModal = true" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 shadow-lg shadow-orange-200 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-yellow-500 shadow-lg shadow-green-200 hover:from-green-700 hover:to-yellow-600' : isCNAHS ? 'bg-gradient-to-r from-green-700 to-green-600 shadow-lg shadow-green-300 hover:from-green-800 hover:to-green-700' : 'bg-gradient-to-r from-blue-600 to-blue-500 shadow-lg shadow-blue-200 hover:from-blue-700 hover:to-blue-600', 'px-6 py-2.5 text-white rounded-xl font-bold text-sm hover:scale-105 transition-transform flex items-center justify-center md:justify-start gap-2 whitespace-nowrap']">
                     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
                     Change Password
                   </button>
@@ -3319,8 +3319,8 @@
 
         <div v-if="currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster)" class="bg-white rounded-lg shadow-lg p-4 md:p-8 mb-8">
           <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">Registered Students</h2>
-            <button @click="handleStatsRefresh" :disabled="statsLoading" :class="['w-full sm:w-auto px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-bold text-base flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 text-white border-2', isCOE ? 'bg-orange-600 hover:bg-orange-700 border-orange-700 shadow-lg' : isSOM ? 'bg-green-600 hover:bg-green-700 border-green-700 shadow-lg' : isCNAHS ? 'bg-green-700 hover:bg-green-800 border-green-800 shadow-lg' : 'bg-purple-600 hover:bg-purple-700 border-purple-700 shadow-lg']" title="Refresh Statistics">
+            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Registered Students</h2>
+            <button @click="handleStatsRefresh" :disabled="statsLoading" :class="['w-full sm:w-auto px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-bold text-base flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 text-white border-2', isCOE ? 'bg-orange-600 hover:bg-orange-700 border-orange-700 shadow-lg' : isSOM ? 'bg-green-600 hover:bg-green-700 border-green-700 shadow-lg' : isCNAHS ? 'bg-green-700 hover:bg-green-800 border-green-800 shadow-lg' : 'bg-blue-600 hover:bg-blue-700 border-blue-700 shadow-lg']" title="Refresh Statistics">
               <svg v-if="statsLoading" class="w-5 h-5 animate-spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               <svg v-else class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               <span class="text-white font-bold text-base">{{ statsLoading ? 'Refreshing...' : 'Refresh' }}</span>
@@ -3340,7 +3340,7 @@
                 <tr v-for="year in ['1st Year', '2nd Year', '3rd Year', '4th Year']" :key="year" class="hover:bg-gray-50">
                   <td :class="['border px-6 py-4 font-medium text-gray-700', themeColors.rowBorder]">{{ year.toLowerCase().replace('year', 'years') }}</td>
                   <td v-for="prog in availablePrograms" :key="prog" :class="['border px-6 py-4 text-center', themeColors.rowBorder]">{{ stats[prog]?.[year] || 0 }}</td>
-                  <td :class="`border px-6 py-4 text-center font-bold ${themeColors.rowBorder} ${isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-purple-700'}`">{{ availablePrograms.reduce((sum, prog) => sum + (stats[prog]?.[year] || 0), 0) }}</td>
+                  <td :class="`border px-6 py-4 text-center font-bold ${themeColors.rowBorder} ${isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700'}`">{{ availablePrograms.reduce((sum, prog) => sum + (stats[prog]?.[year] || 0), 0) }}</td>
                 </tr>
                 <tr :class="`font-bold ${themeColors.rowBgAlt}`">
                   <td :class="['border px-6 py-4 font-bold text-gray-900', themeColors.rowBorder]">All year levels</td>
@@ -3352,7 +3352,7 @@
           </div>
 
           <div class="mt-6 text-center">
-            <p :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">
+            <p :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
               Total Registered Students: <span class="text-2xl">{{ totalStudents }}</span>
             </p>
           </div>
@@ -3405,9 +3405,9 @@
             </div>
           </div>
           
-          <div v-if="showRfidList" :class="['mt-6 bg-white rounded-lg p-4 border', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-purple-200']">
+          <div v-if="showRfidList" :class="['mt-6 bg-white rounded-lg p-4 border', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200']">
             <div class="flex items-center justify-between mb-4">
-              <h4 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">
+              <h4 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
                 {{ rfidListType === 'verified' ? 'Verified Users' : rfidListType === 'unverified' ? 'Unverified Users' : 'Unreadable Status Users' }}
                 <span class="text-sm font-normal text-gray-500 ml-2">({{ rfidListDisplayUsers.length }} of {{ rfidListFilteredUsers.length }})</span>
               </h4>
@@ -3418,14 +3418,14 @@
             
             <!-- Filters -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <input v-model="rfidListSearch" type="text" placeholder="Search by name..." :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : isCNAHS ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']" />
-              <select v-model="rfidListFilterProgram" :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : isCNAHS ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']">
+              <input v-model="rfidListSearch" type="text" placeholder="Search by name..." :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : isCNAHS ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']" />
+              <select v-model="rfidListFilterProgram" :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : isCNAHS ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
                 <option value="">All Programs</option>
                 <option value="BSCS">BSCS</option>
                 <option value="BSIS">BSIS</option>
                 <option value="BSIT">BSIT</option>
               </select>
-              <select v-model="rfidListFilterYear" :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : isCNAHS ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']">
+              <select v-model="rfidListFilterYear" :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : isCNAHS ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
                 <option value="">All Year Levels</option>
                 <option value="1st Year">1st Year</option>
                 <option value="2nd Year">2nd Year</option>
@@ -3435,7 +3435,7 @@
             </div>
             
             <div v-if="rfidListLoading" class="flex items-center justify-center py-8">
-              <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']" fill="none" viewBox="0 0 24 24">
+              <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
@@ -3445,18 +3445,18 @@
             </div>
             <div v-else class="max-h-96 overflow-y-auto">
               <table class="w-full text-sm">
-                <thead :class="['sticky top-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-purple-50']">
+                <thead :class="['sticky top-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
                   <tr>
-                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">Student ID</th>
-                    <th :class="['text-left px-3 py-2 font-medium cursor-pointer', isCOE ? 'text-orange-900 hover:text-orange-700' : isSOM ? 'text-green-900 hover:text-green-700' : isCNAHS ? 'text-green-900 hover:text-green-700' : 'text-purple-900 hover:text-purple-700']" @click="toggleRfidListSort">
+                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Student ID</th>
+                    <th :class="['text-left px-3 py-2 font-medium cursor-pointer', isCOE ? 'text-orange-900 hover:text-orange-700' : isSOM ? 'text-green-900 hover:text-green-700' : isCNAHS ? 'text-green-900 hover:text-green-700' : 'text-blue-900 hover:text-blue-700']" @click="toggleRfidListSort">
                       Name
                       <span v-if="rfidListSortAsc">↑</span>
                       <span v-else>↓</span>
                     </th>
-                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">Program</th>
-                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">Year</th>
-                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">RFID Code</th>
-                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-purple-900']">Status</th>
+                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Program</th>
+                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Year</th>
+                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">RFID Code</th>
+                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Status</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -3480,7 +3480,7 @@
               
               <!-- Load More Button -->
               <div v-if="rfidListDisplayUsers.length < rfidListFilteredUsers.length" class="mt-4 text-center">
-                <button @click="loadMoreRfidUsers" :class="['px-6 py-2 rounded-lg transition font-medium text-sm', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : isCNAHS ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-purple-100 text-purple-700 hover:bg-purple-200']">
+                <button @click="loadMoreRfidUsers" :class="['px-6 py-2 rounded-lg transition font-medium text-sm', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : isCNAHS ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200']">
                   Load More ({{ rfidListFilteredUsers.length - rfidListDisplayUsers.length }} remaining)
                 </button>
               </div>
@@ -3495,11 +3495,11 @@
   <!-- Edit User Modal -->
   <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-      <h3 class="text-2xl font-bold text-purple-900 mb-6">Edit User</h3>
+      <h3 class="text-2xl font-bold text-blue-900 mb-6">Edit User</h3>
       <div v-if="editingUser" class="space-y-4">
         <div class="flex flex-col items-center mb-6">
           <div class="relative">
-            <div :class="['w-24 h-24 rounded-full overflow-hidden mb-3 shadow-lg flex items-center justify-center relative', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+            <div :class="['w-24 h-24 rounded-full overflow-hidden mb-3 shadow-lg flex items-center justify-center relative', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-blue-400 to-blue-600']">
               <div v-if="editImageLoading" class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
                 <svg class="animate-spin h-8 w-8 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -3511,7 +3511,7 @@
             </div>
             <button 
               @click="$refs.photoInput.click()" 
-              :class="['absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600' : 'bg-gradient-to-br from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700']"
+              :class="['absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600' : 'bg-gradient-to-br from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700']"
               title="Change Photo"
             >
               <img src="/change_photo.svg" alt="Change Photo" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
@@ -3524,7 +3524,7 @@
             accept="image/*" 
             class="hidden" 
           />
-          <p v-if="editImageUploading" class="text-xs text-purple-600 mt-3 font-medium">Uploading...</p>
+          <p v-if="editImageUploading" class="text-xs text-blue-600 mt-3 font-medium">Uploading...</p>
           <div v-if="editingUser.image && editingUser.image.includes('imgbb')" class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p class="text-xs font-medium text-gray-700 mb-1">Photo URL:</p>
             <a :href="editingUser.image" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 underline break-all font-medium">{{ editingUser.image }}</a>
@@ -3532,27 +3532,27 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
-          <input v-model="editingUser.studentId" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+          <input v-model="editingUser.studentId" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-          <input v-model="editingUser.firstName" @input="editingUser.firstName = editingUser.firstName.toUpperCase()" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none uppercase" />
+          <input v-model="editingUser.firstName" @input="editingUser.firstName = editingUser.firstName.toUpperCase()" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none uppercase" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Middle Name <span class="text-gray-400">(optional)</span></label>
-          <input v-model="editingUser.middleName" @input="editingUser.middleName = editingUser.middleName.toUpperCase()" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none uppercase" />
+          <input v-model="editingUser.middleName" @input="editingUser.middleName = editingUser.middleName.toUpperCase()" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none uppercase" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
-          <input v-model="editingUser.lastName" @input="editingUser.lastName = editingUser.lastName.toUpperCase()" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none uppercase" />
+          <input v-model="editingUser.lastName" @input="editingUser.lastName = editingUser.lastName.toUpperCase()" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none uppercase" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
-          <input v-model="editingUser.email" type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" />
+          <input v-model="editingUser.email" type="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Program</label>
-          <select v-model="editingUser.program" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
+          <select v-model="editingUser.program" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none">
             <option value="">Select Program</option>
             <option value="BSCS">BSCS</option>
             <option value="BSIS">BSIS</option>
@@ -3561,7 +3561,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
-          <select v-model="editingUser.yearLevel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
+          <select v-model="editingUser.yearLevel" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none">
             <option value="">Select Year</option>
             <option value="1st Year">1st Year</option>
             <option value="2nd Year">2nd Year</option>
@@ -3571,14 +3571,14 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">RFID Code</label>
-          <input v-model="editingUser.rfidCode" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none" :disabled="editingUser.rfidUnreadable" :class="{'bg-gray-100': editingUser.rfidUnreadable}" />
+          <input v-model="editingUser.rfidCode" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" :disabled="editingUser.rfidUnreadable" :class="{'bg-gray-100': editingUser.rfidUnreadable}" />
           <div class="flex items-center gap-2 mt-2">
             <input 
               type="checkbox" 
               id="rfidUnreadable" 
               v-model="editingUser.rfidUnreadable"
               @change="handleRfidUnreadableChange"
-              class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500"
+              class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
             />
             <label for="rfidUnreadable" class="text-sm text-gray-600">Mark RFID as unreadable</label>
           </div>
@@ -3586,7 +3586,7 @@
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
-          <select v-model="editingUser.role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 outline-none">
+          <select v-model="editingUser.role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none">
             <option value="student">Student</option>
             <option value="medpub">Medpub</option>
             <option value="treasurer">Treasurer</option>
@@ -3601,16 +3601,16 @@
           <div class="flex-1">
             <template v-if="editingUser && editingUser.isDuplicate">
               <div class="mb-2 flex items-center gap-2">
-                <input id="confirmDuplicate" type="checkbox" v-model="confirmDuplicate" class="w-4 h-4 text-purple-600 rounded focus:ring-purple-500" />
+                <input id="confirmDuplicate" type="checkbox" v-model="confirmDuplicate" class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500" />
                 <label for="confirmDuplicate" class="text-sm text-gray-700">I confirm I want to duplicate this record</label>
               </div>
-              <button @click="duplicateUser" :disabled="savingUser || !confirmDuplicate" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              <button @click="duplicateUser" :disabled="savingUser || !confirmDuplicate" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg v-if="savingUser" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 {{ savingUser ? 'Duplicating...' : 'Duplicate' }}
               </button>
             </template>
             <template v-else>
-              <button @click="saveUser" :disabled="savingUser" class="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white py-2 px-4 rounded-lg font-medium hover:from-purple-700 hover:to-pink-600 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              <button @click="saveUser" :disabled="savingUser" class="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white py-2 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-blue-600 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
                 <svg v-if="savingUser" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 {{ savingUser ? 'Saving...' : 'Save' }}
               </button>
@@ -3625,15 +3625,15 @@
   <transition name="fade" appear>
     <div v-if="showEditNotificationModal && editNotificationData" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="closeEditNotificationModal">
       <transition name="notification-pop" appear>
-        <div :class="['relative bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-slide-up', isCOE ? 'border-orange-100' : 'border-purple-100']">
-          <div :class="['p-4 border-b flex items-center justify-between', isCOE ? 'border-orange-50 bg-orange-50/30' : isSOM ? 'border-green-50 bg-green-50/30' : 'border-purple-50 bg-purple-50/30']">
+        <div :class="['relative bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden animate-slide-up', isCOE ? 'border-orange-100' : 'border-blue-100']">
+          <div :class="['p-4 border-b flex items-center justify-between', isCOE ? 'border-orange-50 bg-orange-50/30' : isSOM ? 'border-green-50 bg-green-50/30' : 'border-blue-50 bg-blue-50/30']">
             <div class="flex items-center gap-2">
-              <div :class="['w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : 'bg-purple-600']">
+              <div :class="['w-8 h-8 rounded-lg flex items-center justify-center text-white shadow-sm', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : 'bg-blue-600']">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                 </svg>
               </div>
-              <h2 :class="['text-md font-bold uppercase tracking-wide', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Edit Announcement</h2>
+              <h2 :class="['text-md font-bold uppercase tracking-wide', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Edit Announcement</h2>
             </div>
             <button @click="closeEditNotificationModal" class="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-all">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
@@ -3648,23 +3648,23 @@
             </div>
             <div class="space-y-3">
               <div class="relative group">
-                <label :class="['block text-xs font-bold uppercase tracking-wider mb-1.5 ml-1', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Title</label>
+                <label :class="['block text-xs font-bold uppercase tracking-wider mb-1.5 ml-1', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Title</label>
                 <input 
                   v-model="editNotificationData.title" 
                   type="text" 
                   placeholder="Announcement Title"
-                   :class="['w-full px-4 py-2.5 bg-gray-50 border rounded-xl focus:ring-2 focus:border-transparent outline-none transition-all font-medium', isCOE ? 'border-orange-200 focus:ring-orange-200' : isSOM ? 'border-green-200 focus:ring-green-500' : 'border-gray-200 focus:ring-purple-500']"
+                   :class="['w-full px-4 py-2.5 bg-gray-50 border rounded-xl focus:ring-2 focus:border-transparent outline-none transition-all font-medium', isCOE ? 'border-orange-200 focus:ring-orange-200' : isSOM ? 'border-green-200 focus:ring-green-500' : 'border-gray-200 focus:ring-blue-500']"
                   maxlength="200"
                 />
               </div>
 
               <div class="relative group">
-                <label :class="['block text-xs font-bold uppercase tracking-wider mb-1.5 ml-1', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Content</label>
+                <label :class="['block text-xs font-bold uppercase tracking-wider mb-1.5 ml-1', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Content</label>
                 <textarea 
                   v-model="editNotificationData.message" 
                   rows="4" 
                   placeholder="What's happening?"
-                   :class="['w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:border-transparent outline-none transition-all resize-none', isCOE ? 'border-orange-200 focus:ring-orange-200' : isSOM ? 'border-green-200 focus:ring-green-500' : 'border-gray-200 focus:ring-purple-500']"
+                   :class="['w-full px-4 py-3 bg-gray-50 border rounded-xl focus:ring-2 focus:border-transparent outline-none transition-all resize-none', isCOE ? 'border-orange-200 focus:ring-orange-200' : isSOM ? 'border-green-200 focus:ring-green-500' : 'border-gray-200 focus:ring-blue-500']"
                   maxlength="2000"
                 ></textarea>
               </div>
@@ -3675,7 +3675,7 @@
               <div class="flex-1 min-w-0">
                 <div 
                   @click="$refs.editImageFileInput.click()"
-                  :class="['relative flex items-center justify-center gap-3 p-3 border-2 border-dashed rounded-xl transition-all cursor-pointer group', isCOE ? 'border-orange-200 hover:border-orange-300 hover:bg-orange-50/30' : isSOM ? 'border-green-200 hover:border-green-300 hover:bg-green-50/30' : 'border-gray-200 hover:border-purple-300 hover:bg-purple-50/30']"
+                  :class="['relative flex items-center justify-center gap-3 p-3 border-2 border-dashed rounded-xl transition-all cursor-pointer group', isCOE ? 'border-orange-200 hover:border-orange-300 hover:bg-orange-50/30' : isSOM ? 'border-green-200 hover:border-green-300 hover:bg-green-50/30' : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/30']"
                   :style="editNotificationImagePreview ? (isCOE ? {'borderColor': '#F6AD55', 'backgroundColor': '#FFF7ED'} : {'borderColor': ''}) : {}"
                 >
                   <input 
@@ -3685,14 +3685,14 @@
                     accept="image/*"
                     @change="handleEditImageFileSelect"
                   />
-                  <div v-if="!editNotificationImagePreview" class="flex items-center gap-2 text-gray-500 group-hover:text-purple-600 transition-colors">
+                  <div v-if="!editNotificationImagePreview" class="flex items-center gap-2 text-gray-500 group-hover:text-blue-600 transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <span class="text-sm font-medium">Add Image</span>
                   </div>
                   <div v-else class="flex items-center gap-3 w-full overflow-hidden">
-                    <img :src="editNotificationImagePreview" :class="['w-10 h-10 rounded-lg object-cover flex-shrink-0', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : 'border-purple-100']" />
+                    <img :src="editNotificationImagePreview" :class="['w-10 h-10 rounded-lg object-cover flex-shrink-0', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : 'border-blue-100']" />
                     <span class="text-xs text-gray-600 truncate flex-1 min-w-0">Image selected</span>
                     <button @click.stop="clearEditNotificationImage" class="p-1.5 text-red-500 hover:bg-red-50 rounded-md transition-colors flex-shrink-0">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3708,7 +3708,7 @@
               <button 
                 @click="saveEditedNotification"
                 :disabled="savingEditedNotification || uploadingEditImage || !editNotificationData.title.trim() || !editNotificationData.message.trim()"
-                :class="['flex-1 px-6 py-2.5 rounded-xl font-bold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 justify-center', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-500 text-white' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white']"
+                :class="['flex-1 px-6 py-2.5 rounded-xl font-bold shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 justify-center', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-500 text-white' : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white']"
               >
                 <span v-if="savingEditedNotification || uploadingEditImage" class="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                 <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -3797,7 +3797,7 @@
       <transition name="modal-bounce" appear>
         <div v-if="showPasswordChangeModal" class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
           <div class="flex justify-between items-center mb-6">
-            <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Change Password</h3>
+            <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Change Password</h3>
             <button @click="closePasswordChangeModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
           </div>
 
@@ -3811,9 +3811,9 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Your Email Address</label>
-              <input v-model="pwChangeEmail" type="email" :placeholder="currentUser.email || 'your.email@example.com'" :class="['w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-purple-600']" />
+              <input v-model="pwChangeEmail" type="email" :placeholder="currentUser.email || 'your.email@example.com'" :class="['w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-blue-600']" />
             </div>
-            <button @click="requestPasswordChangeCode" :disabled="changingPassword || !pwChangeEmail.trim()" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
+            <button @click="requestPasswordChangeCode" :disabled="changingPassword || !pwChangeEmail.trim()" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600' : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
               <svg v-if="changingPassword" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ changingPassword ? 'Sending...' : 'Send Verification Code' }}
             </button>
@@ -3830,29 +3830,29 @@
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
-              <input v-model="pwChangeCode" type="text" placeholder="123456" maxlength="6" :class="['w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none text-center text-2xl tracking-widest', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-purple-600']" />
+              <input v-model="pwChangeCode" type="text" placeholder="123456" maxlength="6" :class="['w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none text-center text-2xl tracking-widest', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-blue-600']" />
             </div>
-            <button @click="verifyPasswordChangeCode" :disabled="changingPassword || pwChangeCode.length !== 6" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
+            <button @click="verifyPasswordChangeCode" :disabled="changingPassword || pwChangeCode.length !== 6" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600' : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
               <svg v-if="changingPassword" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ changingPassword ? 'Verifying...' : 'Verify Code' }}
             </button>
-            <button @click="pwChangeStep = 1" :class="[isCOE ? 'text-orange-600 hover:text-orange-700' : isSOM ? 'text-green-600 hover:text-green-700' : 'text-purple-600 hover:text-purple-700', 'w-full text-sm font-medium']">Back to Step 1</button>
+            <button @click="pwChangeStep = 1" :class="[isCOE ? 'text-orange-600 hover:text-orange-700' : isSOM ? 'text-green-600 hover:text-green-700' : 'text-blue-600 hover:text-blue-700', 'w-full text-sm font-medium']">Back to Step 1</button>
             <p v-if="pwChangeMessage" :class="['text-sm text-center', pwChangeSuccess ? 'text-green-600' : 'text-red-600']">{{ pwChangeMessage }}</p>
           </div>
 
           <!-- Step 3: Enter New Password -->
           <div v-if="pwChangeStep === 3" class="space-y-4">
-            <div :class="[isCOE ? 'bg-orange-50 border-orange-200' : isSOM ? 'bg-green-50 border-green-200' : 'bg-purple-50 border-purple-200', 'border rounded-lg p-4 mb-4']">
+            <div :class="[isCOE ? 'bg-orange-50 border-orange-200' : isSOM ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200', 'border rounded-lg p-4 mb-4']">
               <div class="flex items-start gap-3">
-                <svg :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-purple-500', 'w-5 h-5 mt-0.5 flex-shrink-0']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p :class="[isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : 'text-purple-800', 'text-sm']">Email verified! Now create your new secure password.</p>
+                <svg :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500', 'w-5 h-5 mt-0.5 flex-shrink-0']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <p :class="[isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : 'text-blue-800', 'text-sm']">Email verified! Now create your new secure password.</p>
               </div>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
               <div class="relative">
-                <input v-model="passwordForm.newPassword" :type="showNewPassword ? 'text' : 'password'" placeholder="Enter new password (min 6 characters)" :class="['w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-purple-600']" />
-                <button type="button" @click="showNewPassword = !showNewPassword" :class="[isCOE ? 'hover:text-orange-600' : isSOM ? 'hover:text-green-600' : 'hover:text-purple-600', 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition']">
+                <input v-model="passwordForm.newPassword" :type="showNewPassword ? 'text' : 'password'" placeholder="Enter new password (min 6 characters)" :class="['w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-blue-600']" />
+                <button type="button" @click="showNewPassword = !showNewPassword" :class="[isCOE ? 'hover:text-orange-600' : isSOM ? 'hover:text-green-600' : 'hover:text-blue-600', 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition']">
                   <svg v-if="showNewPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                   <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
                 </button>
@@ -3862,15 +3862,15 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
               <div class="relative">
-                <input v-model="passwordForm.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" placeholder="Confirm new password" :class="['w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-purple-600']" />
-                <button type="button" @click="showConfirmPassword = !showConfirmPassword" :class="[isCOE ? 'hover:text-orange-600' : isSOM ? 'hover:text-green-600' : 'hover:text-purple-600', 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition']">
+                <input v-model="passwordForm.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" placeholder="Confirm new password" :class="['w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-blue-600']" />
+                <button type="button" @click="showConfirmPassword = !showConfirmPassword" :class="[isCOE ? 'hover:text-orange-600' : isSOM ? 'hover:text-green-600' : 'hover:text-blue-600', 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition']">
                   <svg v-if="showConfirmPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                   <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
                 </button>
               </div>
               <p v-if="passwordErrors.confirmPassword" class="text-red-500 text-xs mt-1">{{ passwordErrors.confirmPassword }}</p>
             </div>
-            <button @click="completePasswordChange" :disabled="changingPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
+            <button @click="completePasswordChange" :disabled="changingPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600' : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
               <svg v-if="changingPassword" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ changingPassword ? 'Changing Password...' : 'Change Password' }}
             </button>
@@ -3892,26 +3892,26 @@
     <div v-if="showCalendarPicker" class="fixed inset-0 flex items-center justify-center z-[60] p-2 sm:p-4" @click.self="showCalendarPicker = false">
       <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-5 w-full max-w-sm">
       <div class="flex justify-between items-center mb-4">
-        <h3 :class="['text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-purple-600 to-pink-500']">Select Date</h3>
+        <h3 :class="['text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-blue-600 to-blue-500']">Select Date</h3>
         <button @click="showCalendarPicker = false" :class="['text-2xl transition', isCOE ? 'text-orange-500 hover:text-orange-700' : isSOM ? 'text-green-500 hover:text-green-700' : 'text-gray-500 hover:text-gray-700']">×</button>
       </div>
       
       <!-- Calendar Header -->
       <div class="flex items-center justify-between mb-3 sm:mb-4 gap-2">
-        <button @click="changeCalendarMonth(-1)" :class="['w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full transition', isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 hover:from-orange-200 hover:to-red-200 text-orange-700' : isSOM ? 'bg-gradient-to-r from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 text-green-700' : 'bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700']">
+        <button @click="changeCalendarMonth(-1)" :class="['w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full transition', isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 hover:from-orange-200 hover:to-red-200 text-orange-700' : isSOM ? 'bg-gradient-to-r from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 text-green-700' : 'bg-gradient-to-r from-blue-100 to-blue-100 hover:from-blue-200 hover:to-blue-200 text-blue-700']">
           <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         </button>
         <div class="text-center flex-1 min-w-0">
-          <span :class="['text-sm sm:text-lg font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-purple-600 to-pink-500']">{{ calendarMonthName }} {{ calendarYear }}</span>
+          <span :class="['text-sm sm:text-lg font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-blue-600 to-blue-500']">{{ calendarMonthName }} {{ calendarYear }}</span>
         </div>
-        <button @click="changeCalendarMonth(1)" :class="['w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full transition', isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 hover:from-orange-200 hover:to-red-200 text-orange-700' : isSOM ? 'bg-gradient-to-r from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 text-green-700' : 'bg-gradient-to-r from-purple-100 to-pink-100 hover:from-purple-200 hover:to-pink-200 text-purple-700']">
+        <button @click="changeCalendarMonth(1)" :class="['w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0 flex items-center justify-center rounded-full transition', isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 hover:from-orange-200 hover:to-red-200 text-orange-700' : isSOM ? 'bg-gradient-to-r from-green-100 to-teal-100 hover:from-green-200 hover:to-teal-200 text-green-700' : 'bg-gradient-to-r from-blue-100 to-blue-100 hover:from-blue-200 hover:to-blue-200 text-blue-700']">
           <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
         </button>
       </div>
       
       <!-- Day Headers -->
       <div class="grid grid-cols-7 gap-0.5 sm:gap-1 mb-1 sm:mb-2">
-        <div v-for="day in ['S', 'M', 'T', 'W', 'T', 'F', 'S']" :key="day" :class="['text-center py-1 sm:py-2 text-[10px] sm:text-xs font-semibold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']">{{ day }}</div>
+        <div v-for="day in ['S', 'M', 'T', 'W', 'T', 'F', 'S']" :key="day" :class="['text-center py-1 sm:py-2 text-[10px] sm:text-xs font-semibold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']">{{ day }}</div>
       </div>
       
       <!-- Calendar Grid -->
@@ -3922,9 +3922,9 @@
             @click="selectCalendarDate(day.date)"
             :class="[
               'w-full h-full rounded-lg sm:rounded-xl text-xs sm:text-sm font-medium transition-all duration-200 flex items-center justify-center',
-              day.isToday && !day.isSelected ? (isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 ring-1 sm:ring-2 ring-orange-400' : isSOM ? 'bg-gradient-to-r from-green-100 to-teal-100 text-green-700 ring-1 sm:ring-2 ring-green-400' : 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 ring-1 sm:ring-2 ring-purple-400') : '',
-              day.isSelected ? (isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white shadow-lg scale-105 sm:scale-110' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg scale-105 sm:scale-110' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white shadow-lg scale-105 sm:scale-110') : '',
-              !day.isToday && !day.isSelected && day.isCurrentMonth ? (isCOE ? 'text-gray-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 hover:text-orange-700' : isSOM ? 'text-gray-700 hover:bg-gradient-to-r hover:from-green-50 hover:to-teal-50 hover:text-green-700' : 'text-gray-700 hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 hover:text-purple-700') : '',
+              day.isToday && !day.isSelected ? (isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700 ring-1 sm:ring-2 ring-orange-400' : isSOM ? 'bg-gradient-to-r from-green-100 to-teal-100 text-green-700 ring-1 sm:ring-2 ring-green-400' : 'bg-gradient-to-r from-blue-100 to-blue-100 text-blue-700 ring-1 sm:ring-2 ring-blue-400') : '',
+              day.isSelected ? (isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white shadow-lg scale-105 sm:scale-110' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white shadow-lg scale-105 sm:scale-110' : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg scale-105 sm:scale-110') : '',
+              !day.isToday && !day.isSelected && day.isCurrentMonth ? (isCOE ? 'text-gray-700 hover:bg-gradient-to-r hover:from-orange-50 hover:to-red-50 hover:text-orange-700' : isSOM ? 'text-gray-700 hover:bg-gradient-to-r hover:from-green-50 hover:to-teal-50 hover:text-green-700' : 'text-gray-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-blue-50 hover:text-blue-700') : '',
               !day.isCurrentMonth ? 'text-gray-300' : ''
             ]"
           >
@@ -3935,21 +3935,21 @@
       
       <!-- Quick Actions -->
       <div class="flex gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-100">
-        <button @click="selectToday" :class="['flex-1 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition', isCOE ? 'text-orange-600 bg-orange-50 hover:bg-orange-100' : isSOM ? 'text-green-600 bg-green-50 hover:bg-green-100' : 'text-purple-600 bg-purple-50 hover:bg-purple-100']">Today</button>
+        <button @click="selectToday" :class="['flex-1 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition', isCOE ? 'text-orange-600 bg-orange-50 hover:bg-orange-100' : isSOM ? 'text-green-600 bg-green-50 hover:bg-green-100' : 'text-blue-600 bg-blue-50 hover:bg-blue-100']">Today</button>
         <button @click="clearCalendarDate" class="flex-1 px-2 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 transition">Clear</button>
       </div>
       
       <!-- Selected Date Display -->
-      <div :class="['mt-3 sm:mt-4 p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-r', isCOE ? 'from-orange-50 to-red-50' : isSOM ? 'from-green-50 to-teal-50' : 'from-purple-50 to-pink-50']">
+      <div :class="['mt-3 sm:mt-4 p-2 sm:p-3 rounded-lg sm:rounded-xl bg-gradient-to-r', isCOE ? 'from-orange-50 to-red-50' : isSOM ? 'from-green-50 to-teal-50' : 'from-blue-50 to-blue-50']">
         <p class="text-xs sm:text-sm text-center">
           <span class="text-gray-500">Selected: </span>
-          <span :class="['font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-purple-600 to-pink-500']">{{ selectedCalendarDateDisplay || 'No date selected' }}</span>
+          <span :class="['font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-blue-600 to-blue-500']">{{ selectedCalendarDateDisplay || 'No date selected' }}</span>
         </p>
       </div>
       
       <div class="flex gap-2 sm:gap-3 mt-3 sm:mt-4">
         <button @click="showCalendarPicker = false" class="flex-1 bg-gray-200 text-gray-800 py-2 sm:py-3 px-3 sm:px-4 rounded-lg text-sm sm:text-base font-medium hover:bg-gray-300 transition">Cancel</button>
-        <button @click="confirmCalendarDate" :disabled="!calendarSelectedDate" :class="['flex-1 text-white py-2 sm:py-3 px-3 sm:px-4 rounded-lg text-sm sm:text-base font-medium transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600']">Confirm</button>
+        <button @click="confirmCalendarDate" :disabled="!calendarSelectedDate" :class="['flex-1 text-white py-2 sm:py-3 px-3 sm:px-4 rounded-lg text-sm sm:text-base font-medium transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600']">Confirm</button>
       </div>
       </div>
     </div>
@@ -3965,23 +3965,23 @@
     <div v-if="showTimePicker" class="fixed inset-0 flex items-center justify-center z-[100]" @click.self="showTimePicker = false">
       <div class="bg-white rounded-2xl shadow-2xl p-5 max-w-sm w-full mx-4">
       <div class="flex justify-between items-center mb-6">
-        <h3 :class="['text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-purple-600 to-pink-500']">Select Time</h3>
+        <h3 :class="['text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-blue-600 to-blue-500']">Select Time</h3>
         <button @click="showTimePicker = false" :class="['text-2xl transition', isCOE ? 'text-orange-500 hover:text-orange-700' : isSOM ? 'text-green-500 hover:text-green-700' : 'text-gray-500 hover:text-gray-700']">&times;</button>
       </div>
       
       <!-- Clock Face Design -->
       <div class="relative w-48 h-48 mx-auto mb-6">
-        <div :class="['absolute inset-0 rounded-full bg-gradient-to-br shadow-inner', isCOE ? 'from-orange-100 to-red-100' : isSOM ? 'from-green-100 to-teal-100' : 'from-purple-100 to-pink-100']"></div>
+        <div :class="['absolute inset-0 rounded-full bg-gradient-to-br shadow-inner', isCOE ? 'from-orange-100 to-red-100' : isSOM ? 'from-green-100 to-teal-100' : 'from-blue-100 to-blue-100']"></div>
         <div class="absolute inset-2 rounded-full bg-white shadow-lg flex items-center justify-center">
           <div class="text-center">
-            <div :class="['text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-purple-600 to-pink-500']">
+            <div :class="['text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-blue-600 to-blue-500']">
               {{ timePickerHour.toString().padStart(2, '0') }}:{{ timePickerMinute.toString().padStart(2, '0') }}
             </div>
-            <div :class="['text-lg font-semibold mt-1', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']">{{ timePickerPeriod }}</div>
+            <div :class="['text-lg font-semibold mt-1', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']">{{ timePickerPeriod }}</div>
           </div>
         </div>
         <!-- Clock hour markers -->
-        <div v-for="i in 12" :key="i" :class="['absolute w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-300' : isSOM ? 'bg-green-300' : 'bg-purple-300']" :style="{ top: `${50 - 42 * Math.cos((i * 30 - 90) * Math.PI / 180)}%`, left: `${50 + 42 * Math.sin((i * 30 - 90) * Math.PI / 180)}%` }"></div>
+        <div v-for="i in 12" :key="i" :class="['absolute w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-300' : isSOM ? 'bg-green-300' : 'bg-blue-300']" :style="{ top: `${50 - 42 * Math.cos((i * 30 - 90) * Math.PI / 180)}%`, left: `${50 + 42 * Math.sin((i * 30 - 90) * Math.PI / 180)}%` }"></div>
       </div>
       
       <!-- Time Input Controls -->
@@ -3990,31 +3990,31 @@
         <div class="flex flex-col items-center">
           <label class="text-xs text-gray-500 mb-1 font-medium">Hour</label>
           <div class="flex flex-col items-center">
-            <button @click="timePickerHour = timePickerHour < 12 ? timePickerHour + 1 : 1" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : isSOM ? 'text-green-600 hover:text-teal-500' : 'text-purple-600 hover:text-pink-500']">
+            <button @click="timePickerHour = timePickerHour < 12 ? timePickerHour + 1 : 1" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : isSOM ? 'text-green-600 hover:text-teal-500' : 'text-blue-600 hover:text-blue-500']">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
             </button>
-            <div :class="['w-16 h-16 flex items-center justify-center text-2xl font-bold text-white rounded-xl shadow-lg bg-gradient-to-br', isCOE ? 'from-orange-500 to-red-500' : isSOM ? 'from-green-500 to-teal-500' : 'from-purple-500 to-pink-500']">
+            <div :class="['w-16 h-16 flex items-center justify-center text-2xl font-bold text-white rounded-xl shadow-lg bg-gradient-to-br', isCOE ? 'from-orange-500 to-red-500' : isSOM ? 'from-green-500 to-teal-500' : 'from-blue-500 to-blue-500']">
               {{ timePickerHour.toString().padStart(2, '0') }}
             </div>
-            <button @click="timePickerHour = timePickerHour > 1 ? timePickerHour - 1 : 12" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : isSOM ? 'text-green-600 hover:text-teal-500' : 'text-purple-600 hover:text-pink-500']">
+            <button @click="timePickerHour = timePickerHour > 1 ? timePickerHour - 1 : 12" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : isSOM ? 'text-green-600 hover:text-teal-500' : 'text-blue-600 hover:text-blue-500']">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
           </div>
         </div>
         
-        <span :class="['text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent mt-5', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-purple-600 to-pink-500']">:</span>
+        <span :class="['text-3xl font-bold bg-gradient-to-r bg-clip-text text-transparent mt-5', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-blue-600 to-blue-500']">:</span>
         
         <!-- Minute Control (any minute 0-59) -->
         <div class="flex flex-col items-center">
           <label class="text-xs text-gray-500 mb-1 font-medium">Minute</label>
           <div class="flex flex-col items-center">
-            <button @click="timePickerMinute = timePickerMinute < 59 ? timePickerMinute + 1 : 0" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : isSOM ? 'text-green-600 hover:text-teal-500' : 'text-purple-600 hover:text-pink-500']">
+            <button @click="timePickerMinute = timePickerMinute < 59 ? timePickerMinute + 1 : 0" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : isSOM ? 'text-green-600 hover:text-teal-500' : 'text-blue-600 hover:text-blue-500']">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"></path></svg>
             </button>
-            <div :class="['w-16 h-16 flex items-center justify-center text-2xl font-bold text-white rounded-xl shadow-lg bg-gradient-to-br', isCOE ? 'from-orange-500 to-red-500' : isSOM ? 'from-green-500 to-teal-500' : 'from-purple-500 to-pink-500']">
+            <div :class="['w-16 h-16 flex items-center justify-center text-2xl font-bold text-white rounded-xl shadow-lg bg-gradient-to-br', isCOE ? 'from-orange-500 to-red-500' : isSOM ? 'from-green-500 to-teal-500' : 'from-blue-500 to-blue-500']">
               {{ timePickerMinute.toString().padStart(2, '0') }}
             </div>
-            <button @click="timePickerMinute = timePickerMinute > 0 ? timePickerMinute - 1 : 59" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : isSOM ? 'text-green-600 hover:text-teal-500' : 'text-purple-600 hover:text-pink-500']">
+            <button @click="timePickerMinute = timePickerMinute > 0 ? timePickerMinute - 1 : 59" :class="['p-1 transition', isCOE ? 'text-orange-600 hover:text-red-500' : isSOM ? 'text-green-600 hover:text-teal-500' : 'text-blue-600 hover:text-blue-500']">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
           </div>
@@ -4024,15 +4024,15 @@
         <div class="flex flex-col items-center ml-2">
           <label class="text-xs text-gray-500 mb-1 font-medium">Period</label>
           <div class="flex flex-col gap-2 mt-1">
-            <button @click="timePickerPeriod = 'AM'" :class="['px-4 py-3 rounded-xl text-sm font-bold transition shadow-md', timePickerPeriod === 'AM' ? (isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white') : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">AM</button>
-            <button @click="timePickerPeriod = 'PM'" :class="['px-4 py-3 rounded-xl text-sm font-bold transition shadow-md', timePickerPeriod === 'PM' ? (isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white' : 'bg-gradient-to-r from-purple-600 to-pink-500 text-white') : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">PM</button>
+            <button @click="timePickerPeriod = 'AM'" :class="['px-4 py-3 rounded-xl text-sm font-bold transition shadow-md', timePickerPeriod === 'AM' ? (isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white' : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white') : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">AM</button>
+            <button @click="timePickerPeriod = 'PM'" :class="['px-4 py-3 rounded-xl text-sm font-bold transition shadow-md', timePickerPeriod === 'PM' ? (isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 text-white' : 'bg-gradient-to-r from-blue-600 to-blue-500 text-white') : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">PM</button>
           </div>
         </div>
       </div>
       
       <div class="flex gap-3">
         <button @click="showTimePicker = false" class="flex-1 bg-gray-200 text-gray-800 py-3 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-        <button @click="confirmTimePicker" :class="['flex-1 text-white py-3 px-4 rounded-lg font-medium transition shadow-lg bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600']">Confirm</button>
+        <button @click="confirmTimePicker" :class="['flex-1 text-white py-3 px-4 rounded-lg font-medium transition shadow-lg bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600']">Confirm</button>
       </div>
       </div>
     </div>
@@ -4041,11 +4041,11 @@
   <!-- Loading Screen Modal for Events (Both Create and Edit) -->
   <transition name="fade">
     <div v-if="loadingStudentsForEvent" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[60]">
-      <div :class="['rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center transform transition-all duration-300', isCOE ? 'bg-gradient-to-br from-orange-50 to-orange-100' : isSOM ? 'bg-gradient-to-br from-green-50 to-green-100' : 'bg-gradient-to-br from-purple-50 to-purple-100']">
+      <div :class="['rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4 text-center transform transition-all duration-300', isCOE ? 'bg-gradient-to-br from-orange-50 to-orange-100' : isSOM ? 'bg-gradient-to-br from-green-50 to-green-100' : 'bg-gradient-to-br from-blue-50 to-blue-100']">
         <!-- Animated Spinner -->
         <div class="flex justify-center mb-6">
-          <div :class="['relative w-20 h-20 flex items-center justify-center', isCOE ? 'bg-orange-200 rounded-full' : isSOM ? 'bg-green-200 rounded-full' : 'bg-purple-200 rounded-full']">
-            <svg :class="['w-12 h-12 animate-spin', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <div :class="['relative w-20 h-20 flex items-center justify-center', isCOE ? 'bg-orange-200 rounded-full' : isSOM ? 'bg-green-200 rounded-full' : 'bg-blue-200 rounded-full']">
+            <svg :class="['w-12 h-12 animate-spin', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
@@ -4053,18 +4053,18 @@
         </div>
         
         <!-- Loading Text -->
-        <h3 :class="['text-xl font-bold mb-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Preparing Event</h3>
-        <p :class="['text-sm mb-6', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Loading students and data...</p>
+        <h3 :class="['text-xl font-bold mb-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Preparing Event</h3>
+        <p :class="['text-sm mb-6', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Loading students and data...</p>
         
         <!-- Progress Bar -->
         <div class="mb-4">
-          <div :class="['w-full rounded-full h-2 overflow-hidden', isCOE ? 'bg-orange-300' : isSOM ? 'bg-green-300' : 'bg-purple-300']">
-            <div :class="['h-full rounded-full transition-all duration-500 ease-out', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-purple-500 to-purple-600']" :style="{ width: totalStudentCount > 0 ? (loadedStudentCount / totalStudentCount * 100) + '%' : '0%' }"></div>
+          <div :class="['w-full rounded-full h-2 overflow-hidden', isCOE ? 'bg-orange-300' : isSOM ? 'bg-green-300' : 'bg-blue-300']">
+            <div :class="['h-full rounded-full transition-all duration-500 ease-out', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-blue-500 to-blue-600']" :style="{ width: totalStudentCount > 0 ? (loadedStudentCount / totalStudentCount * 100) + '%' : '0%' }"></div>
           </div>
         </div>
         
         <!-- Progress Text -->
-        <p :class="['text-xs font-medium', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']">{{ loadedStudentCount }} / {{ totalStudentCount }} students loaded</p>
+        <p :class="['text-xs font-medium', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']">{{ loadedStudentCount }} / {{ totalStudentCount }} students loaded</p>
       </div>
     </div>
   </transition>
@@ -4079,7 +4079,7 @@
     <div v-if="showCreateEventModal" class="fixed inset-0 flex items-center justify-center z-50" @click.self="showCreateEventModal = false">
       <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-2xl w-full mx-4 max-h-[95vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
-          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Create Attendance Event</h3>
+          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Create Attendance Event</h3>
           <button @click="showCreateEventModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
         </div>
         
@@ -4096,35 +4096,35 @@
         
         <div class="space-y-5">
           <!-- Basic Event Info Section -->
-          <div :class="['p-5 rounded-xl border-2', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-purple-50 border-purple-100']">
-            <h4 :class="['text-sm font-semibold mb-4', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Basic Information</h4>
+          <div :class="['p-5 rounded-xl border-2', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <h4 :class="['text-sm font-semibold mb-4', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Basic Information</h4>
             <div class="space-y-4">
               <!-- Title -->
               <div>
-                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Event Title *</label>
-                <input v-model="newEvent.title" type="text" placeholder="e.g., CCS General Assembly" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition font-medium', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']" />
+                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Event Title *</label>
+                <input v-model="newEvent.title" type="text" placeholder="e.g., CCS General Assembly" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition font-medium', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
               </div>
               <!-- Location -->
               <div>
-                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Location</label>
-                <input v-model="newEvent.location" type="text" placeholder="e.g., CCS AVR" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']" />
+                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Location</label>
+                <input v-model="newEvent.location" type="text" placeholder="e.g., CCS AVR" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
               </div>
               <!-- Description -->
               <div>
-                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Description</label>
-                <textarea v-model="newEvent.description" placeholder="Event description..." rows="2" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none resize-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']"></textarea>
+                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Description</label>
+                <textarea v-model="newEvent.description" placeholder="Event description..." rows="2" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none resize-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']"></textarea>
               </div>
             </div>
           </div>
 
           <!-- Schedule Section -->
-          <div :class="['p-5 rounded-xl border-2', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-purple-50 border-purple-100']">
-            <h4 :class="['text-sm font-semibold mb-4', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Schedule</h4>
+          <div :class="['p-5 rounded-xl border-2', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <h4 :class="['text-sm font-semibold mb-4', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Schedule</h4>
             <div class="space-y-4">
               <!-- Date -->
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-                <button @click="openCalendarPicker('newEvent')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']">
+                <button @click="openCalendarPicker('newEvent')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
                   <span :class="newEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(newEvent.date) }}</span>
                   <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 </button>
@@ -4133,41 +4133,41 @@
               <div class="grid grid-cols-2 gap-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
-                  <button @click="openTimePicker('event_start_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']">
+                  <button @click="openTimePicker('event_start_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
                     <span :class="newEvent.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.start_time) || 'Select time' }}</span>
                     <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                   </button>
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">End Time *</label>
-                  <button @click="openTimePicker('event_end_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']">
+                  <button @click="openTimePicker('event_end_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
                     <span :class="newEvent.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.end_time) || 'Select time' }}</span>
                     <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                   </button>
                 </div>
               </div>
-              <div :class="['p-3 rounded-lg text-sm', isCOE ? 'bg-orange-100 text-orange-800 border border-orange-200' : isSOM ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-purple-100 text-purple-800 border border-purple-200']">
+              <div :class="['p-3 rounded-lg text-sm', isCOE ? 'bg-orange-100 text-orange-800 border border-orange-200' : isSOM ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-blue-100 text-blue-800 border border-blue-200']">
                 <span class="font-medium">Tip:</span> Session times must fall within the event time range.
               </div>
             </div>
           </div>
           
           <!-- Custom Event Toggle -->
-          <div :class="['flex items-center gap-3 border-2 rounded-xl p-4 transition cursor-pointer', isCOE ? 'bg-orange-50 border-orange-200 hover:bg-orange-100' : isSOM ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-purple-50 border-purple-200 hover:bg-purple-100']" @click="newEvent.is_custom = !newEvent.is_custom">
-            <input type="checkbox" v-model="newEvent.is_custom" id="customEventToggle" :class="['w-5 h-5 rounded cursor-pointer', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']" />
+          <div :class="['flex items-center gap-3 border-2 rounded-xl p-4 transition cursor-pointer', isCOE ? 'bg-orange-50 border-orange-200 hover:bg-orange-100' : isSOM ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-blue-50 border-blue-200 hover:bg-blue-100']" @click="newEvent.is_custom = !newEvent.is_custom">
+            <input type="checkbox" v-model="newEvent.is_custom" id="customEventToggle" :class="['w-5 h-5 rounded cursor-pointer', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" />
             <label for="customEventToggle" class="flex-1 cursor-pointer">
-              <p :class="['font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Assign to Specific Students</p>
-              <p :class="['text-xs mt-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Select individual students from the complete student list</p>
+              <p :class="['font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Assign to Specific Students</p>
+              <p :class="['text-xs mt-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Select individual students from the complete student list</p>
             </label>
           </div>
 
           <!-- User Selection Section -->
-          <div v-if="newEvent.is_custom" :class="['border-2 rounded-xl p-5 space-y-4', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-purple-50 border-purple-100']">
-            <h4 :class="['text-sm font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Select Students to Assign to This Event</h4>
+          <div v-if="newEvent.is_custom" :class="['border-2 rounded-xl p-5 space-y-4', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <h4 :class="['text-sm font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Select Students to Assign to This Event</h4>
             
             <!-- Filter Section -->
-            <div :class="['bg-white border rounded-lg p-4 space-y-3', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-purple-200']">
-              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Filter Students</p>
+            <div :class="['bg-white border rounded-lg p-4 space-y-3', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-blue-200']">
+              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Filter Students</p>
               
               <!-- Name/Student ID Filter -->
               <div>
@@ -4176,7 +4176,7 @@
                   v-model="eventUserFilters.name" 
                   type="text" 
                   placeholder="Search by name or student ID..." 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-purple-300 focus:ring-purple-600']"
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
                 />
               </div>
               
@@ -4185,7 +4185,7 @@
                 <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
                 <select 
                   v-model="eventUserFilters.program" 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-purple-300 focus:ring-purple-600']"
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
                 >
                   <option value="">All Programs</option>
                   <option value="BSIT">BSIT</option>
@@ -4199,7 +4199,7 @@
                 <label class="block text-xs font-medium text-gray-700 mb-1">Year Level</label>
                 <select 
                   v-model="eventUserFilters.yearLevel" 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-purple-300 focus:ring-purple-600']"
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
                 >
                   <option value="">All Year Levels</option>
                   <option value="1st Year">1st Year</option>
@@ -4214,7 +4214,7 @@
                 <button 
                   @click="eventUserFilters = { name: '', program: '', yearLevel: '' }" 
                   type="button" 
-                  :class="['text-xs font-medium hover:opacity-80', isCOE ? 'text-orange-600' : 'text-purple-600']"
+                  :class="['text-xs font-medium hover:opacity-80', isCOE ? 'text-orange-600' : 'text-blue-600']"
                 >
                   Clear All Filters
                 </button>
@@ -4238,7 +4238,7 @@
             </div>
 
             <!-- User List (Search Results) -->
-            <div :class="['max-h-48 overflow-y-auto border rounded-lg bg-white', isCOE ? 'border-orange-200' : 'border-purple-200']">
+            <div :class="['max-h-48 overflow-y-auto border rounded-lg bg-white', isCOE ? 'border-orange-200' : 'border-blue-200']">
               <div v-if="filteredEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
                 No students found
               </div>
@@ -4247,7 +4247,7 @@
                   type="checkbox" 
                   :checked="newEvent.assigned_users && (newEvent.assigned_users.includes(user._id) || newEvent.assigned_users.some(u => (typeof u === 'object' ? u._id : u) === user._id))"
                   @change="toggleEventUser(user._id)"
-                  :class="['mt-1 w-4 h-4 rounded focus:ring-2', isCOE ? 'text-orange-600 focus:ring-orange-600' : isSOM ? 'text-green-600 focus:ring-green-600' : 'text-purple-600 focus:ring-purple-600']"
+                  :class="['mt-1 w-4 h-4 rounded focus:ring-2', isCOE ? 'text-orange-600 focus:ring-orange-600' : isSOM ? 'text-green-600 focus:ring-green-600' : 'text-blue-600 focus:ring-blue-600']"
                 />
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-gray-900 text-sm">{{ getUserDisplayName(user) }}</p>
@@ -4257,12 +4257,12 @@
             </div>
 
             <!-- Selected Users Pills -->
-            <div v-if="newEvent.assigned_users && newEvent.assigned_users.length > 0" :class="['mb-3 pb-3 border-b', isCOE ? 'border-orange-300' : isSOM ? 'border-green-300' : 'border-purple-300']">
-              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Selected: {{ newEvent.assigned_users.length }} student(s)</p>
+            <div v-if="newEvent.assigned_users && newEvent.assigned_users.length > 0" :class="['mb-3 pb-3 border-b', isCOE ? 'border-orange-300' : isSOM ? 'border-green-300' : 'border-blue-300']">
+              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Selected: {{ newEvent.assigned_users.length }} student(s)</p>
               <div class="flex flex-wrap gap-2">
-                <div v-for="userItem in newEventDisplayUsers" :key="typeof userItem === 'string' ? userItem : userItem._id" :class="['text-xs font-medium flex items-center gap-2 px-3 py-1 rounded-full', isCOE ? 'bg-orange-200 text-orange-800' : isSOM ? 'bg-green-200 text-green-800' : 'bg-purple-200 text-purple-800']">
+                <div v-for="userItem in newEventDisplayUsers" :key="typeof userItem === 'string' ? userItem : userItem._id" :class="['text-xs font-medium flex items-center gap-2 px-3 py-1 rounded-full', isCOE ? 'bg-orange-200 text-orange-800' : isSOM ? 'bg-green-200 text-green-800' : 'bg-blue-200 text-blue-800']">
                   <span>{{ getSelectedEventUserName(userItem) }}</span>
-                  <button @click="newEvent.assigned_users = newEvent.assigned_users.filter(id => (typeof id === 'string' ? id : id._id) !== (typeof userItem === 'string' ? userItem : userItem._id))" type="button" :class="['hover:opacity-80', isCOE ? 'hover:text-orange-900' : 'hover:text-purple-900']">×</button>
+                  <button @click="newEvent.assigned_users = newEvent.assigned_users.filter(id => (typeof id === 'string' ? id : id._id) !== (typeof userItem === 'string' ? userItem : userItem._id))" type="button" :class="['hover:opacity-80', isCOE ? 'hover:text-orange-900' : 'hover:text-blue-900']">×</button>
                 </div>
               </div>
             </div>
@@ -4273,7 +4273,7 @@
           </div>
           <div class="flex gap-3 mt-6">
             <button @click="showCreateEventModal = false; eventUserFilters = { name: '', program: '', yearLevel: '' }" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-            <button @click="createAttendanceEvent" :disabled="!newEvent.title || !newEvent.date" :class="['flex-1 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600']">Create Event</button>
+            <button @click="createAttendanceEvent" :disabled="!newEvent.title || !newEvent.date" :class="['flex-1 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600']">Create Event</button>
           </div>
         </div>
       </div>
@@ -4290,7 +4290,7 @@
     <div v-if="showEditEventModal && selectedEvent" class="fixed inset-0 flex items-center justify-center z-50" @click.self="showEditEventModal = false">
       <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-2xl w-full mx-4 max-h-[95vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
-          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Edit Attendance Event</h3>
+          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Edit Attendance Event</h3>
           <button @click="showEditEventModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
         </div>
         
@@ -4307,20 +4307,20 @@
         
         <div class="space-y-4">
           <div>
-            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Event Title *</label>
-            <input v-model="selectedEvent.title" type="text" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none font-medium transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']" />
+            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Event Title *</label>
+            <input v-model="selectedEvent.title" type="text" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none font-medium transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
           </div>
           <div>
-            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Description</label>
-            <textarea v-model="selectedEvent.description" rows="3" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none resize-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']"></textarea>
+            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Description</label>
+            <textarea v-model="selectedEvent.description" rows="3" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none resize-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']"></textarea>
           </div>
           <div>
-            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Location</label>
-            <input v-model="selectedEvent.location" type="text" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-purple-300 focus:ring-purple-600 focus:border-purple-500']" />
+            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Location</label>
+            <input v-model="selectedEvent.location" type="text" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-            <button @click="openCalendarPicker('editEvent')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']">
+            <button @click="openCalendarPicker('editEvent')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
               <span :class="selectedEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(selectedEvent.date) }}</span>
               <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </button>
@@ -4328,14 +4328,14 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Event Start Time *</label>
-              <button @click="openTimePicker('edit_start_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']">
+              <button @click="openTimePicker('edit_start_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
                 <span :class="selectedEvent.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.start_time || selectedEvent.startTime) || 'Select time' }}</span>
                 <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </button>
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2">Event End Time *</label>
-              <button @click="openTimePicker('edit_end_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']">
+              <button @click="openTimePicker('edit_end_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
                 <span :class="selectedEvent.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.end_time || selectedEvent.endTime) || 'Select time' }}</span>
                 <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </button>
@@ -4355,21 +4355,21 @@
           </div>
 
           <!-- Custom Event Toggle (Edit) -->
-          <div :class="['flex items-center gap-3 border rounded-lg p-4', isCOE ? 'bg-orange-50 border-orange-200' : 'bg-purple-50 border-purple-200']">
-            <input type="checkbox" v-model="selectedEvent.is_custom" id="editCustomEventToggle" :class="['w-4 h-4 rounded cursor-pointer', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']" />
+          <div :class="['flex items-center gap-3 border rounded-lg p-4', isCOE ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200']">
+            <input type="checkbox" v-model="selectedEvent.is_custom" id="editCustomEventToggle" :class="['w-4 h-4 rounded cursor-pointer', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" />
             <label for="editCustomEventToggle" class="flex-1 cursor-pointer">
-              <p :class="['font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Custom Event (Select Specific Students)</p>
-              <p :class="['text-xs mt-0.5', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Enable this to assign this event to specific students from the complete student list</p>
+              <p :class="['font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Custom Event (Select Specific Students)</p>
+              <p :class="['text-xs mt-0.5', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Enable this to assign this event to specific students from the complete student list</p>
             </label>
           </div>
 
           <!-- User Selection Section (Edit) -->
-          <div v-if="selectedEvent.is_custom" :class="['border-2 rounded-xl p-5 space-y-4', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-purple-50 border-purple-100']">
-            <h4 :class="['text-sm font-semibold', isCOE ? 'text-orange-900' : 'text-purple-900']">Select Students to Assign to This Event</h4>
+          <div v-if="selectedEvent.is_custom" :class="['border-2 rounded-xl p-5 space-y-4', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <h4 :class="['text-sm font-semibold', isCOE ? 'text-orange-900' : 'text-blue-900']">Select Students to Assign to This Event</h4>
             
             <!-- Filter Section -->
-            <div :class="['bg-white border rounded-lg p-4 space-y-3', isCOE ? 'border-orange-200' : 'border-purple-200']">
-              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : 'text-purple-700']">Filter Students</p>
+            <div :class="['bg-white border rounded-lg p-4 space-y-3', isCOE ? 'border-orange-200' : 'border-blue-200']">
+              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : 'text-blue-700']">Filter Students</p>
               
               <!-- Name/Student ID Filter -->
               <div>
@@ -4378,7 +4378,7 @@
                   v-model="editEventUserFilters.name" 
                   type="text" 
                   placeholder="Search by name or student ID..." 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-purple-300 focus:ring-purple-600']"
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
                 />
               </div>
               
@@ -4387,7 +4387,7 @@
                 <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
                 <select 
                   v-model="editEventUserFilters.program" 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-purple-300 focus:ring-purple-600']"
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
                 >
                   <option value="">All Programs</option>
                   <option value="BSIT">BSIT</option>
@@ -4401,7 +4401,7 @@
                 <label class="block text-xs font-medium text-gray-700 mb-1">Year Level</label>
                 <select 
                   v-model="editEventUserFilters.yearLevel" 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-purple-300 focus:ring-purple-600']"
+                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
                 >
                   <option value="">All Year Levels</option>
                   <option value="1st Year">1st Year</option>
@@ -4416,7 +4416,7 @@
                 <button 
                   @click="editEventUserFilters = { name: '', program: '', yearLevel: '' }" 
                   type="button" 
-                  :class="['text-xs font-medium hover:opacity-80', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']"
+                  :class="['text-xs font-medium hover:opacity-80', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']"
                 >
                   Clear All Filters
                 </button>
@@ -4440,7 +4440,7 @@
             </div>
 
             <!-- User List (Search Results) -->
-            <div :class="['max-h-48 overflow-y-auto border rounded-lg bg-white', isCOE ? 'border-orange-200' : 'border-purple-200']">
+            <div :class="['max-h-48 overflow-y-auto border rounded-lg bg-white', isCOE ? 'border-orange-200' : 'border-blue-200']">
               <div v-if="filteredEditEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
                 No students found
               </div>
@@ -4449,7 +4449,7 @@
                   type="checkbox" 
                   :checked="selectedEvent.assigned_users && (selectedEvent.assigned_users.includes(user._id) || selectedEvent.assigned_users.some(u => (typeof u === 'object' ? u._id : u) === user._id))"
                   @change="toggleEditEventUser(user._id)"
-                  :class="['mt-1 w-4 h-4 rounded focus:ring-2', isCOE ? 'text-orange-600 focus:ring-orange-600' : isSOM ? 'text-green-600 focus:ring-green-600' : 'text-purple-600 focus:ring-purple-600']"
+                  :class="['mt-1 w-4 h-4 rounded focus:ring-2', isCOE ? 'text-orange-600 focus:ring-orange-600' : isSOM ? 'text-green-600 focus:ring-green-600' : 'text-blue-600 focus:ring-blue-600']"
                 />
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-gray-900 text-sm">{{ getUserDisplayName(user) }}</p>
@@ -4459,12 +4459,12 @@
             </div>
 
             <!-- Selected Users Pills -->
-            <div v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0" :class="['mb-3 pb-3 border-b', isCOE ? 'border-orange-300' : isSOM ? 'border-green-300' : 'border-purple-300']">
-              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-purple-700']">Selected: {{ selectedEvent.assigned_users.length }} student(s)</p>
+            <div v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0" :class="['mb-3 pb-3 border-b', isCOE ? 'border-orange-300' : isSOM ? 'border-green-300' : 'border-blue-300']">
+              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Selected: {{ selectedEvent.assigned_users.length }} student(s)</p>
               <div class="flex flex-wrap gap-2">
-                <div v-for="userItem in selectedEventDisplayUsers" :key="typeof userItem === 'string' ? userItem : userItem._id" :class="['text-xs font-medium flex items-center gap-2 px-3 py-1 rounded-full', isCOE ? 'bg-orange-200 text-orange-800' : isSOM ? 'bg-green-200 text-green-800' : 'bg-purple-200 text-purple-800']">
+                <div v-for="userItem in selectedEventDisplayUsers" :key="typeof userItem === 'string' ? userItem : userItem._id" :class="['text-xs font-medium flex items-center gap-2 px-3 py-1 rounded-full', isCOE ? 'bg-orange-200 text-orange-800' : isSOM ? 'bg-green-200 text-green-800' : 'bg-blue-200 text-blue-800']">
                   <span>{{ getSelectedEventUserName(userItem) }}</span>
-                  <button @click="selectedEvent.assigned_users = selectedEvent.assigned_users.filter(id => (typeof id === 'string' ? id : id._id) !== (typeof userItem === 'string' ? userItem : userItem._id))" type="button" :class="['hover:opacity-80', isCOE ? 'hover:text-orange-900' : isSOM ? 'hover:text-green-900' : 'hover:text-purple-900']">×</button>
+                  <button @click="selectedEvent.assigned_users = selectedEvent.assigned_users.filter(id => (typeof id === 'string' ? id : id._id) !== (typeof userItem === 'string' ? userItem : userItem._id))" type="button" :class="['hover:opacity-80', isCOE ? 'hover:text-orange-900' : isSOM ? 'hover:text-green-900' : 'hover:text-blue-900']">×</button>
                 </div>
               </div>
             </div>
@@ -4478,7 +4478,7 @@
           <div class="border-t pt-4 mt-4">
             <div class="flex items-center justify-between mb-3">
               <label class="block text-sm font-medium text-gray-700">Sessions</label>
-              <button @click="openAddSessionModal" type="button" :class="['text-xs px-3 py-1 rounded-lg transition flex items-center gap-1 font-medium', addSessionButtonAnimating ? (isCOE ? 'bg-orange-500 text-white scale-105 animate-pulse' : isSOM ? 'bg-green-500 text-white scale-105 animate-pulse' : 'bg-purple-500 text-white scale-105 animate-pulse') : (isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-purple-100 text-purple-700 hover:bg-purple-200')]">
+              <button @click="openAddSessionModal" type="button" :class="['text-xs px-3 py-1 rounded-lg transition flex items-center gap-1 font-medium', addSessionButtonAnimating ? (isCOE ? 'bg-orange-500 text-white scale-105 animate-pulse' : isSOM ? 'bg-green-500 text-white scale-105 animate-pulse' : 'bg-blue-500 text-white scale-105 animate-pulse') : (isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')]">
                 <svg :class="['w-4 h-4 transition-transform', addSessionButtonAnimating ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 {{ addSessionButtonAnimating ? 'Opening...' : 'Add Session' }}
               </button>
@@ -4503,7 +4503,7 @@
                   </div>
                 </div>
                 <div class="flex items-center gap-2">
-                  <button @click="openEditSessionModal(session)" type="button" :class="['p-1', isCOE ? 'text-orange-600 hover:text-orange-800' : isSOM ? 'text-green-600 hover:text-green-800' : 'text-purple-600 hover:text-purple-800']">
+                  <button @click="openEditSessionModal(session)" type="button" :class="['p-1', isCOE ? 'text-orange-600 hover:text-orange-800' : isSOM ? 'text-green-600 hover:text-green-800' : 'text-blue-600 hover:text-blue-800']">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                   </button>
                   <button @click="deleteSession(session._id)" type="button" class="text-red-500 hover:text-red-700 p-1">
@@ -4533,27 +4533,27 @@
     <div v-if="showSessionModal" class="fixed inset-0 flex items-center justify-center z-[80]" @click.self="showSessionModal = false">
       <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
       <div class="flex justify-between items-center mb-4">
-        <h3 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">{{ editingSession ? 'Edit Session' : 'Add Session' }}</h3>
+        <h3 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : 'text-blue-900']">{{ editingSession ? 'Edit Session' : 'Add Session' }}</h3>
         <button @click="showSessionModal = false" :class="['text-2xl transition', isCOE ? 'text-orange-500 hover:text-orange-700' : 'text-gray-500 hover:text-gray-700']">&times;</button>
       </div>
       <div class="space-y-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Session Label *</label>
-          <select v-model="newSession.label" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']">
+          <select v-model="newSession.label" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
             <option v-for="label in sessionLabels" :key="label" :value="label">{{ label }}</option>
           </select>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
-            <button @click="openTimePicker('session_start_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']">
+            <button @click="openTimePicker('session_start_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
               <span :class="newSession.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newSession.start_time) || 'Select time' }}</span>
               <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </button>
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">End Time *</label>
-            <button @click="openTimePicker('session_end_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']">
+            <button @click="openTimePicker('session_end_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
               <span :class="newSession.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newSession.end_time) || 'Select time' }}</span>
               <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </button>
@@ -4568,7 +4568,7 @@
               min="0" 
               max="480"
               placeholder="60"
-              :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-purple-600']"
+              :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']"
             />
             <span class="text-sm text-gray-500 whitespace-nowrap">minutes</span>
           </div>
@@ -4603,9 +4603,9 @@
       <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-6">
         <div>
-          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-purple-900']">
+          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : 'text-blue-900']">
             {{ selectedEvent.title }}
-            <span v-if="selectedSessionForLogs" :class="['text-lg font-medium', isCOE ? 'text-orange-600' : 'text-purple-600']"> - {{ selectedSessionForLogs.label }} Session</span>
+            <span v-if="selectedSessionForLogs" :class="['text-lg font-medium', isCOE ? 'text-orange-600' : 'text-blue-600']"> - {{ selectedSessionForLogs.label }} Session</span>
           </h3>
           <p class="text-gray-500 text-sm">
             Attendance Logs - {{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}
@@ -4628,7 +4628,7 @@
           <div class="flex-1" v-if="selectedPanel === 'logs'">
       <!-- Filters -->
       <div class="mb-6">
-        <input v-model="eventLogsFilter.search" type="text" placeholder="Search by name or ID..." :class="['w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : 'focus:ring-purple-600']" @input="selectedSessionForLogs ? fetchSessionLogs(selectedSessionForLogs._id) : fetchEventLogs(selectedEvent._id)" />
+        <input v-model="eventLogsFilter.search" type="text" placeholder="Search by name or ID..." :class="['w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : 'focus:ring-blue-600']" @input="selectedSessionForLogs ? fetchSessionLogs(selectedSessionForLogs._id) : fetchEventLogs(selectedEvent._id)" />
       </div>
 
       <!-- Stats Summary (responsive) -->
@@ -4653,9 +4653,9 @@
             <p class="text-xl sm:text-2xl font-bold text-red-600">{{ dynamicSessionStats.absent }}</p>
             <p class="text-xs sm:text-sm text-red-700">Absent</p>
           </div>
-          <div :class="['p-3 sm:p-4 rounded-lg text-center', isCOE ? 'bg-orange-50' : 'bg-purple-50']">
-            <p :class="['text-xl sm:text-2xl font-bold', isCOE ? 'text-orange-600' : 'text-purple-600']">{{ dynamicSessionStats.total }}<span v-if="dynamicSessionStats.totalStudents > 0" :class="['text-base sm:text-lg', isCOE ? 'text-orange-400' : 'text-purple-400']">/{{ dynamicSessionStats.totalStudents }}</span></p>
-            <p :class="['text-xs sm:text-sm', isCOE ? 'text-orange-700' : 'text-purple-700']">Total<span v-if="dynamicSessionStats.totalStudents > 0"> Attended</span></p>
+          <div :class="['p-3 sm:p-4 rounded-lg text-center', isCOE ? 'bg-orange-50' : 'bg-blue-50']">
+            <p :class="['text-xl sm:text-2xl font-bold', isCOE ? 'text-orange-600' : 'text-blue-600']">{{ dynamicSessionStats.total }}<span v-if="dynamicSessionStats.totalStudents > 0" :class="['text-base sm:text-lg', isCOE ? 'text-orange-400' : 'text-blue-400']">/{{ dynamicSessionStats.totalStudents }}</span></p>
+            <p :class="['text-xs sm:text-sm', isCOE ? 'text-orange-700' : 'text-blue-700']">Total<span v-if="dynamicSessionStats.totalStudents > 0"> Attended</span></p>
           </div>
         </div>
       </div>
@@ -4706,11 +4706,11 @@
         <div class="mb-4">
           <p class="text-sm font-medium text-gray-700 mb-2">Year Filter:</p>
           <div class="flex flex-wrap gap-2">
-            <button @click="selectAllYears()" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', selectedYearFilters.length === 0 ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border border-gray-200']">All</button>
+            <button @click="selectAllYears()" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', selectedYearFilters.length === 0 ? (isCOE ? 'bg-orange-600 text-white' : 'bg-blue-600 text-white') : 'bg-white border border-gray-200']">All</button>
             <button @click="toggleYearFilter('1st Year')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', yearFilterActive('1st Year') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-blue-600 text-white') : 'bg-white border border-gray-200']">1st</button>
             <button @click="toggleYearFilter('2nd Year')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', yearFilterActive('2nd Year') ? 'bg-green-600 text-white' : 'bg-white border border-gray-200']">2nd</button>
             <button @click="toggleYearFilter('3rd Year')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', yearFilterActive('3rd Year') ? 'bg-yellow-600 text-white' : 'bg-white border border-gray-200']">3rd</button>
-            <button @click="toggleYearFilter('4th Year')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', yearFilterActive('4th Year') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border border-gray-200']">4th</button>
+            <button @click="toggleYearFilter('4th Year')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', yearFilterActive('4th Year') ? (isCOE ? 'bg-orange-600 text-white' : 'bg-blue-600 text-white') : 'bg-white border border-gray-200']">4th</button>
           </div>
         </div>
 
@@ -4718,7 +4718,7 @@
         <div class="mb-4">
           <p class="text-sm font-medium text-gray-700 mb-2">Status Filter:</p>
           <div class="flex flex-wrap gap-2">
-            <button @click="selectAllStatuses()" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', selectedStatusFilters.length === 0 ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border border-gray-200']">All</button>
+            <button @click="selectAllStatuses()" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', selectedStatusFilters.length === 0 ? (isCOE ? 'bg-orange-600 text-white' : 'bg-blue-600 text-white') : 'bg-white border border-gray-200']">All</button>
             <button @click="toggleStatusFilter('Present')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', statusFilterActive('Present') ? 'bg-green-600 text-white' : 'bg-white border border-gray-200']">Present</button>
             <button @click="toggleStatusFilter('Incomplete')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', statusFilterActive('Incomplete') ? 'bg-orange-600 text-white' : 'bg-white border border-gray-200']">Incomplete</button>
             <button @click="toggleStatusFilter('Late')" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', statusFilterActive('Late') ? 'bg-yellow-600 text-white' : 'bg-white border border-gray-200']">Late</button>
@@ -4730,7 +4730,7 @@
         <div class="mb-4">
           <p class="text-sm font-medium text-gray-700 mb-2">Program Filter:</p>
           <div class="flex flex-wrap gap-2">
-            <button @click="selectAllPrograms()" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', selectedProgramFilters.length === 0 ? (isCOE ? 'bg-orange-600 text-white' : 'bg-purple-600 text-white') : 'bg-white border border-gray-200']">All</button>
+            <button @click="selectAllPrograms()" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', selectedProgramFilters.length === 0 ? (isCOE ? 'bg-orange-600 text-white' : 'bg-blue-600 text-white') : 'bg-white border border-gray-200']">All</button>
             <button v-for="prog in availablePrograms" :key="prog" @click="toggleProgramFilter(prog)" :class="['text-xs sm:text-sm hover:shadow transition px-3 py-1 rounded-lg', programFilterActive(prog) ? (isCOE ? 'bg-orange-600 text-white' : 'bg-indigo-600 text-white') : 'bg-white border border-gray-200']">{{ prog }}</button>
           </div>
         </div>
@@ -4772,19 +4772,19 @@
       <div class="overflow-x-auto">
         <table class="w-full border-collapse">
           <thead>
-            <tr :class="isCOE ? 'bg-orange-100 text-orange-900' : 'bg-purple-100 text-purple-900'">
-              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-left']">Student</th>
-              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-left']">Program</th>
-              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-left']">Year</th>
-              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">Check In</th>
-              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">Check Out</th>
-              <th :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">Status</th>
+            <tr :class="isCOE ? 'bg-orange-100 text-orange-900' : 'bg-blue-100 text-blue-900'">
+              <th :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3','text-left']">Student</th>
+              <th :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3','text-left']">Program</th>
+              <th :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3','text-left']">Year</th>
+              <th :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3','text-center']">Check In</th>
+              <th :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3','text-center']">Check Out</th>
+              <th :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3','text-center']">Status</th>
             </tr>
           </thead>
           <tbody>
             <tr v-if="attendanceLoading" class="text-center">
               <td colspan="6" class="py-8 text-gray-500">
-                <svg :class="['animate-spin h-8 w-8 mx-auto mb-2', isCOE ? 'text-orange-600' : 'text-purple-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <svg :class="['animate-spin h-8 w-8 mx-auto mb-2', isCOE ? 'text-orange-600' : 'text-blue-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
@@ -4795,9 +4795,9 @@
               <td colspan="6" class="py-8 text-gray-500">No attendance records found</td>
             </tr>
             <tr v-else v-for="log in filteredAttendanceLogs.slice(0, sessionLogsDisplayLimit)" :key="log.id" class="hover:shadow-md hover:rounded-lg transition-all duration-150">
-              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3']">
+              <td :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3']">
                 <div class="flex items-center gap-3">
-                  <div :class="['w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white text-sm shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+                  <div :class="['w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white text-sm shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-blue-400 to-blue-600']">
                     <img v-if="(log.student_image || log.student?.image || log.student?.photo || log.student?.avatar)" :src="log.student_image || log.student?.image || log.student?.photo || log.student?.avatar" class="w-full h-full object-cover" />
                     <span v-else>{{ ((log.student?.full_name || log.student_name || log.full_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || '?').charAt(0) }}</span>
                   </div>
@@ -4808,11 +4808,11 @@
                   </div>
                 </div>
               </td>
-              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3']">{{ log.program || '-' }}</td>
-              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3']">{{ log.year_level || '-' }}</td>
-              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString() : '-' }}</td>
-              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</td>
-              <td :class="[isCOE ? 'border-orange-300' : 'border-purple-300','px-4','py-3','text-center']">
+              <td :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3']">{{ log.program || '-' }}</td>
+              <td :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3']">{{ log.year_level || '-' }}</td>
+              <td :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3','text-center']">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString() : '-' }}</td>
+              <td :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3','text-center']">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</td>
+              <td :class="[isCOE ? 'border-orange-300' : 'border-blue-300','px-4','py-3','text-center']">
                   <div class="flex items-center justify-center gap-2">
                   <span :class="getAttendanceLogStatusClass(log)" class="px-2 py-1 rounded-full text-xs font-semibold">{{ getAttendanceLogStatusLabel(log) }}</span>
                   <button
@@ -4859,7 +4859,7 @@
           <!-- Excuse Management (separate panel) -->
         <div v-if="selectedPanel === 'excused'" class="w-full">
           <!-- Header with Theme Gradient -->
-          <div :class="['rounded-xl mb-4 p-4 shadow-lg', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600' : 'bg-gradient-to-r from-pink-500 to-purple-600']">
+          <div :class="['rounded-xl mb-4 p-4 shadow-lg', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600' : 'bg-gradient-to-r from-blue-500 to-blue-600']">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -4870,7 +4870,7 @@
                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                   </button>
                   <!-- Tooltip Content -->
-                  <div class="invisible group-hover:visible absolute left-0 top-full mt-2 w-72 p-4 rounded-lg shadow-xl z-40 transition-all bg-white border-l-4" :class="isCOE ? 'border-orange-500' : 'border-purple-500'">
+                  <div class="invisible group-hover:visible absolute left-0 top-full mt-2 w-72 p-4 rounded-lg shadow-xl z-40 transition-all bg-white border-l-4" :class="isCOE ? 'border-orange-500' : 'border-blue-500'">
                     <div class="space-y-3">
                       <div>
                         <p class="text-sm font-bold text-gray-900 flex items-center gap-2">
@@ -4880,7 +4880,7 @@
                         <p class="text-xs text-gray-600 mt-1">Mark absent students as excused with reasons and track who approved each excuse.</p>
                       </div>
                       
-                      <div class="border-t pt-3" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                      <div class="border-t pt-3" :class="isCOE ? 'border-orange-200' : 'border-blue-200'">
                         <p class="text-xs font-bold text-gray-900 mb-2">Excusable Tab:</p>
                         <ul class="space-y-1.5 text-xs text-gray-700">
                           <li class="flex gap-2">
@@ -4907,7 +4907,7 @@
                         </ul>
                       </div>
 
-                      <div class="border-t pt-3" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                      <div class="border-t pt-3" :class="isCOE ? 'border-orange-200' : 'border-blue-200'">
                         <p class="text-xs font-bold text-gray-900 mb-2">Excused Tab:</p>
                         <ul class="space-y-1.5 text-xs text-gray-700">
                           <li class="flex gap-2">
@@ -4944,12 +4944,12 @@
 
           <!-- Tabs with Theme Colors -->
           <div class="mb-4">
-            <div :class="['inline-flex rounded-xl p-1 shadow-md', isCOE ? 'bg-orange-100' : 'bg-purple-100']">
-              <button @click="selectedExcuseTab = 'excusable'" :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all', selectedExcuseTab === 'excusable' ? (isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg' : 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg') : (isCOE ? 'text-orange-700 hover:text-orange-900' : 'text-purple-700 hover:text-purple-900')]">
+            <div :class="['inline-flex rounded-xl p-1 shadow-md', isCOE ? 'bg-orange-100' : 'bg-blue-100']">
+              <button @click="selectedExcuseTab = 'excusable'" :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all', selectedExcuseTab === 'excusable' ? (isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg' : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg') : (isCOE ? 'text-orange-700 hover:text-orange-900' : 'text-blue-700 hover:text-blue-900')]">
                 <svg class="w-4 h-4 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0-10a4 4 0 100 8 4 4 0 000-8z"></path></svg>
                 Excusable
               </button>
-              <button @click="selectedExcuseTab = 'excused'" :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all', selectedExcuseTab === 'excused' ? (isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg' : 'bg-gradient-to-r from-pink-500 to-purple-600 text-white shadow-lg') : (isCOE ? 'text-orange-700 hover:text-orange-900' : 'text-purple-700 hover:text-purple-900')]">
+              <button @click="selectedExcuseTab = 'excused'" :class="['px-4 py-2 rounded-lg text-sm font-medium transition-all', selectedExcuseTab === 'excused' ? (isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 text-white shadow-lg' : 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg') : (isCOE ? 'text-orange-700 hover:text-orange-900' : 'text-blue-700 hover:text-blue-900')]">
                 <svg class="w-4 h-4 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 Excused
               </button>
@@ -4957,25 +4957,25 @@
           </div>
 
           <div v-if="selectedExcuseTab === 'excusable'">
-            <p :class="['text-sm mb-4 p-3 rounded-lg', isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800']">
+            <p :class="['text-sm mb-4 p-3 rounded-lg', isCOE ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800']">
               <svg class="w-4 h-4 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zm-11-1a1 1 0 11-2 0 1 1 0 012 0zm3 0a1 1 0 11-2 0 1 1 0 012 0zm3 0a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd"></path></svg>
               Mark which absent attendees can be excused. You can Apply as Excused or open individual excuse dialog.
             </p>
 
             <!-- Search & Filters Card -->
-            <div :class="['p-4 rounded-xl shadow-md mb-4', isCOE ? 'bg-orange-50 border border-orange-200' : 'bg-purple-50 border border-purple-200']">
+            <div :class="['p-4 rounded-xl shadow-md mb-4', isCOE ? 'bg-orange-50 border border-orange-200' : 'bg-blue-50 border border-blue-200']">
               <!-- Header with Info -->
               <div class="flex items-center justify-between mb-4">
-                <h5 class="font-bold text-sm" :class="isCOE ? 'text-orange-900' : 'text-purple-900'">
+                <h5 class="font-bold text-sm" :class="isCOE ? 'text-orange-900' : 'text-blue-900'">
                   <svg class="w-4 h-4 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
                   Search & Filters
                 </h5>
                 <div class="group relative">
-                  <button class="p-1 rounded-full transition-all" :class="isCOE ? 'hover:bg-orange-200 text-orange-700' : 'hover:bg-purple-200 text-purple-700'" title="Filter Info">
+                  <button class="p-1 rounded-full transition-all" :class="isCOE ? 'hover:bg-orange-200 text-orange-700' : 'hover:bg-blue-200 text-blue-700'" title="Filter Info">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                   </button>
                   <!-- Tooltip -->
-                  <div class="invisible group-hover:visible absolute right-0 top-full mt-2 w-56 p-3 rounded-lg shadow-xl z-40 transition-all bg-white border-l-4" :class="isCOE ? 'border-orange-500' : 'border-purple-500'">
+                  <div class="invisible group-hover:visible absolute right-0 top-full mt-2 w-56 p-3 rounded-lg shadow-xl z-40 transition-all bg-white border-l-4" :class="isCOE ? 'border-orange-500' : 'border-blue-500'">
                     <p class="text-xs font-bold text-gray-900 mb-2">Filter Options:</p>
                     <ul class="space-y-1.5 text-xs text-gray-700">
                       <li><span class="font-semibold">📝 Search Box:</span> Find students by name, year, or program</li>
@@ -4989,32 +4989,32 @@
               <div class="mb-4">
                 <div class="relative">
                   <svg class="absolute left-3 top-3 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                  <input v-model="excusableSearch" type="text" placeholder="Search name, program, or year..." :class="['w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'focus:ring-orange-500 border-orange-300' : 'focus:ring-purple-500 border-purple-300']" />
+                  <input v-model="excusableSearch" type="text" placeholder="Search name, program, or year..." :class="['w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'focus:ring-orange-500 border-orange-300' : 'focus:ring-blue-500 border-blue-300']" />
                 </div>
               </div>
 
               <!-- Program Filters -->
               <div class="mb-3">
-                <label :class="['text-xs font-bold mb-2 block', isCOE ? 'text-orange-800' : 'text-purple-800']">Programs:</label>
+                <label :class="['text-xs font-bold mb-2 block', isCOE ? 'text-orange-800' : 'text-blue-800']">Programs:</label>
                 <div class="flex flex-wrap gap-2">
-                  <button v-for="prog in availablePrograms" :key="prog" @click="toggleExcusableProgramFilter(prog)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableProgramFilterActive(prog) ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">{{ prog }}</button>
+                  <button v-for="prog in availablePrograms" :key="prog" @click="toggleExcusableProgramFilter(prog)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableProgramFilterActive(prog) ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-indigo-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-blue-700 border border-blue-300 hover:bg-blue-100')]">{{ prog }}</button>
                 </div>
               </div>
 
               <!-- Year Filters -->
               <div class="mb-4">
-                <label :class="['text-xs font-bold mb-2 block', isCOE ? 'text-orange-800' : 'text-purple-800']">Year Level:</label>
+                <label :class="['text-xs font-bold mb-2 block', isCOE ? 'text-orange-800' : 'text-blue-800']">Year Level:</label>
                 <div class="flex flex-wrap gap-2">
-                  <button @click="toggleExcusableYearFilter('1st Year')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableYearFilterActive('1st Year') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-purple-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">1st</button>
+                  <button @click="toggleExcusableYearFilter('1st Year')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableYearFilterActive('1st Year') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-blue-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-blue-700 border border-blue-300 hover:bg-blue-100')]">1st</button>
                   <button @click="toggleExcusableYearFilter('2nd Year')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableYearFilterActive('2nd Year') ? 'bg-emerald-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100']">2nd</button>
                   <button @click="toggleExcusableYearFilter('3rd Year')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableYearFilterActive('3rd Year') ? 'bg-amber-600 text-white shadow-md' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100']">3rd</button>
-                  <button @click="toggleExcusableYearFilter('4th Year')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableYearFilterActive('4th Year') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-purple-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100')]">4th</button>
+                  <button @click="toggleExcusableYearFilter('4th Year')" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', excusableYearFilterActive('4th Year') ? (isCOE ? 'bg-orange-600 text-white shadow-md' : 'bg-blue-600 text-white shadow-md') : (isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-blue-700 border border-blue-300 hover:bg-blue-100')]">4th</button>
                 </div>
               </div>
 
               <!-- Action Buttons -->
-              <div class="flex items-center gap-2 pt-3 border-t" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
-                <button @click="clearExcusableFilters" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-purple-700 border border-purple-300 hover:bg-purple-100']">
+              <div class="flex items-center gap-2 pt-3 border-t" :class="isCOE ? 'border-orange-200' : 'border-blue-200'">
+                <button @click="clearExcusableFilters" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all', isCOE ? 'bg-white text-orange-700 border border-orange-300 hover:bg-orange-100' : 'bg-white text-blue-700 border border-blue-300 hover:bg-blue-100']">
                   <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                   Clear Filters
                 </button>
@@ -5035,7 +5035,7 @@
               </div>
               
               <div class="group relative">
-                <button @click="clearAllExcusable" :class="['w-full px-4 py-3 rounded-xl text-sm font-bold transition-all transform hover:scale-105', isCOE ? 'bg-orange-100 text-orange-800 border border-orange-300 hover:bg-orange-200' : 'bg-purple-100 text-purple-800 border border-purple-300 hover:bg-purple-200']">
+                <button @click="clearAllExcusable" :class="['w-full px-4 py-3 rounded-xl text-sm font-bold transition-all transform hover:scale-105', isCOE ? 'bg-orange-100 text-orange-800 border border-orange-300 hover:bg-orange-200' : 'bg-blue-100 text-blue-800 border border-blue-300 hover:bg-blue-200']">
                   <svg class="w-4 h-4 inline-block mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                   Clear
                 </button>
@@ -5046,7 +5046,7 @@
               </div>
               
               <div class="group relative col-span-2 sm:col-span-1">
-                <button @click="applyExcusableAsExcused" :disabled="applyingBulkExcuse" :class="['w-full px-4 py-3 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 disabled:opacity-50' : 'bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 disabled:opacity-50']">
+                <button @click="applyExcusableAsExcused" :disabled="applyingBulkExcuse" :class="['w-full px-4 py-3 rounded-xl text-sm font-bold text-white shadow-lg hover:shadow-xl transition-all transform hover:scale-105 flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 disabled:opacity-50' : 'bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:opacity-50']">
                   <svg v-if="applyingBulkExcuse" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                   <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                   Apply
@@ -5060,25 +5060,25 @@
 
             <!-- Absent Students List -->
             <div>
-              <div :class="['text-xs font-bold mb-3 p-2 rounded-lg flex items-center gap-2', isCOE ? 'text-orange-800 bg-orange-100' : 'text-purple-800 bg-purple-100']">
+              <div :class="['text-xs font-bold mb-3 p-2 rounded-lg flex items-center gap-2', isCOE ? 'text-orange-800 bg-orange-100' : 'text-blue-800 bg-blue-100']">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.5 1.5H5.75A2.75 2.75 0 003 4.25v11.5A2.75 2.75 0 005.75 18.5h8.5a2.75 2.75 0 002.75-2.75V9.5m-8-8v8m4-4h4m0 0v4"></path></svg>
                 Absent Students ({{ filteredAbsentLogsForCurrentSession.length }})
               </div>
               <div class="max-h-96 overflow-y-auto space-y-2">
                 <transition-group tag="div" enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2" class="space-y-2">
-                  <div v-for="log in filteredAbsentLogsForCurrentSession" :key="log._id" :class="['flex items-center justify-between p-3 rounded-lg border-2 hover:shadow-md transform-gpu transition-all duration-200 hover:scale-[1.02]', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-purple-50 border-purple-200 hover:border-purple-400']">
+                  <div v-for="log in filteredAbsentLogsForCurrentSession" :key="log._id" :class="['flex items-center justify-between p-3 rounded-lg border-2 hover:shadow-md transform-gpu transition-all duration-200 hover:scale-[1.02]', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-blue-50 border-blue-200 hover:border-blue-400']">
                     <div class="flex items-center gap-3">
-                      <div :class="['w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white text-sm font-bold shadow-md', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+                      <div :class="['w-10 h-10 rounded-full overflow-hidden flex items-center justify-center text-white text-sm font-bold shadow-md', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-blue-400 to-blue-600']">
                         <img v-if="(log.student_image || log.student?.image || log.student?.photo || log.student?.avatar)" :src="log.student_image || log.student?.image || log.student?.photo || log.student?.avatar" class="w-full h-full object-cover" />
                         <span v-else>{{ ((log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || '?').charAt(0) }}</span>
                       </div>
                       <div class="text-sm">
                         <div class="font-semibold text-gray-900">{{ (log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || 'N/A' }}</div>
-                        <div :class="['text-xs', isCOE ? 'text-orange-700' : 'text-purple-700']">{{ log.program || log.student?.program || '-' }} · {{ log.year_level || log.student?.year_level || '-' }} · {{ log.student?.student_id || log.student_id_number || '' }}</div>
+                        <div :class="['text-xs', isCOE ? 'text-orange-700' : 'text-blue-700']">{{ log.program || log.student?.program || '-' }} · {{ log.year_level || log.student?.year_level || '-' }} · {{ log.student?.student_id || log.student_id_number || '' }}</div>
                       </div>
                     </div>
                     <div class="group relative">
-                      <button @click="openExcuseForLog(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all transform hover:scale-105', isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-md' : 'bg-purple-600 text-white hover:bg-purple-700 shadow-md']">
+                      <button @click="openExcuseForLog(log)" :class="['text-xs px-3 py-2 rounded-lg font-medium transition-all transform hover:scale-105', isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 shadow-md' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-md']">
                         <svg class="w-4 h-4 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                         Excuse
                       </button>
@@ -5089,7 +5089,7 @@
                     </div>
                   </div>
                 </transition-group>
-                <div v-if="filteredAbsentLogsForCurrentSession.length === 0" :class="['text-xs text-center py-6 rounded-lg', isCOE ? 'text-orange-600 bg-orange-100' : 'text-purple-600 bg-purple-100']">
+                <div v-if="filteredAbsentLogsForCurrentSession.length === 0" :class="['text-xs text-center py-6 rounded-lg', isCOE ? 'text-orange-600 bg-orange-100' : 'text-blue-600 bg-blue-100']">
                   <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
                   No absent records to excuse
                 </div>
@@ -5099,32 +5099,32 @@
 
           <transition name="fade-slide" v-else enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2">
             <div>
-              <p :class="['text-sm mb-4 p-3 rounded-lg', isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800']">
+              <p :class="['text-sm mb-4 p-3 rounded-lg', isCOE ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800']">
                 <svg class="w-4 h-4 inline-block mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                 Students already excused for this session. Click Details to view or edit the reason.
               </p>
               
               <!-- Excused Students List -->
               <div>
-                <div :class="['text-xs font-bold mb-3 p-2 rounded-lg flex items-center gap-2', isCOE ? 'text-orange-800 bg-orange-100' : 'text-purple-800 bg-purple-100']">
+                <div :class="['text-xs font-bold mb-3 p-2 rounded-lg flex items-center gap-2', isCOE ? 'text-orange-800 bg-orange-100' : 'text-blue-800 bg-blue-100']">
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                   Excused Records ({{ excusedLogsForCurrentSession.length }})
                 </div>
                 <div class="max-h-96 overflow-y-auto space-y-2">
                   <transition-group tag="div" enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2" class="space-y-2">
-                    <div v-for="log in excusedLogsForCurrentSession" :key="log._id" :class="['p-3 rounded-lg border-2 flex items-start justify-between gap-3 hover:shadow-md transform-gpu transition-all duration-250 hover:scale-[1.01]', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-purple-50 border-purple-200 hover:border-purple-400']">
+                    <div v-for="log in excusedLogsForCurrentSession" :key="log._id" :class="['p-3 rounded-lg border-2 flex items-start justify-between gap-3 hover:shadow-md transform-gpu transition-all duration-250 hover:scale-[1.01]', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-blue-50 border-blue-200 hover:border-blue-400']">
                       <div class="flex items-start gap-3 min-w-0 flex-1">
-                        <div :class="['w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-white text-sm shrink-0 font-bold shadow-md', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-pink-400 to-purple-600']">
+                        <div :class="['w-12 h-12 rounded-full overflow-hidden flex items-center justify-center text-white text-sm shrink-0 font-bold shadow-md', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-blue-400 to-blue-600']">
                           <img v-if="(log.student_image || log.student?.image || log.student?.photo || log.student?.avatar)" :src="log.student_image || log.student?.image || log.student?.photo || log.student?.avatar" class="w-full h-full object-cover" />
                           <span v-else>{{ ((log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || '?').charAt(0) }}</span>
                         </div>
                         <div class="text-sm min-w-0 flex-1">
                           <div class="font-semibold text-gray-900 truncate">{{ (log.student?.full_name || log.student_name || `${log.student?.first_name || ''} ${log.student?.last_name || ''}`).trim() || 'N/A' }}</div>
-                          <div :class="['text-xs truncate', isCOE ? 'text-orange-700' : 'text-purple-700']">{{ log.program || log.student?.program || '-' }} · {{ log.year_level || log.student?.year_level || '-' }}</div>
-                          <div v-if="log.excuse_reason" :class="['text-xs mt-1.5 p-2 rounded', isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800']">
+                          <div :class="['text-xs truncate', isCOE ? 'text-orange-700' : 'text-blue-700']">{{ log.program || log.student?.program || '-' }} · {{ log.year_level || log.student?.year_level || '-' }}</div>
+                          <div v-if="log.excuse_reason" :class="['text-xs mt-1.5 p-2 rounded', isCOE ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800']">
                             <span class="font-medium">Reason:</span> {{ log.excuse_reason }}
                           </div>
-                          <div v-if="log.excused_by_name || log.excused_by" :class="['text-xs mt-1', isCOE ? 'text-orange-600' : 'text-purple-600']">
+                          <div v-if="log.excused_by_name || log.excused_by" :class="['text-xs mt-1', isCOE ? 'text-orange-600' : 'text-blue-600']">
                             <svg class="w-3 h-3 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20"><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path></svg>
                             Excused by: <span class="font-medium">{{ log.excused_by_name || log.excused_by }}</span>
                           </div>
@@ -5154,7 +5154,7 @@
                       </div>
                     </div>
                   </transition-group>
-                  <div v-if="excusedLogsForCurrentSession.length === 0" :class="['text-xs text-center py-6 rounded-lg', isCOE ? 'text-orange-600 bg-orange-100' : 'text-purple-600 bg-purple-100']">
+                  <div v-if="excusedLogsForCurrentSession.length === 0" :class="['text-xs text-center py-6 rounded-lg', isCOE ? 'text-orange-600 bg-orange-100' : 'text-blue-600 bg-blue-100']">
                     <svg class="w-8 h-8 mx-auto mb-2 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m7 0a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                     No excused records yet.
                   </div>
@@ -5173,7 +5173,7 @@
         <button 
           v-if="attendanceLogs.length > sessionLogsDisplayLimit"
           @click="sessionLogsDisplayLimit += 20"
-          :class="['px-6 py-2 text-white rounded-lg transition font-medium text-sm flex items-center gap-2 mx-auto', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : 'bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-700 hover:to-pink-600']"
+          :class="['px-6 py-2 text-white rounded-lg transition font-medium text-sm flex items-center gap-2 mx-auto', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : 'bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600']"
         >
           <span>Show More</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -5326,7 +5326,7 @@
         <div v-if="helpTab === 'faq'" class="space-y-6">
           <!-- USER FAQs -->
           <div>
-            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-purple-900 border-purple-200']">For Students & General Users</h4>
+            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">For Students & General Users</h4>
             <div class="space-y-3">
               <div class="border-l-4 border-blue-300 pl-4">
                 <h5 class="font-semibold text-gray-900 mb-1">What is SSAAM?</h5>
@@ -5373,7 +5373,7 @@
 
           <!-- ADMIN FAQs -->
           <div v-if="currentUser.role === 'admin' || currentUser.isMaster">
-            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-purple-900 border-purple-200']">For Administrators</h4>
+            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">For Administrators</h4>
             <div class="space-y-3">
               <div class="border-l-4 border-green-300 pl-4">
                 <h5 class="font-semibold text-gray-900 mb-1">How do I create a new event?</h5>
@@ -9588,8 +9588,8 @@ const sidebarGradient = computed(() => {
   if (isCOE.value) return 'from-orange-700 to-red-600'
   if (isSOM.value) return 'from-green-700 to-yellow-600'  // darker yellow for SOM per UX feedback
   if (isCNAHS.value) return 'from-green-800 to-green-600'  // dark green gradient for CNAHS
-  // default/CCS
-  return 'from-purple-600 to-pink-400'
+  // default/CCS — blue matching login/register
+  return 'from-blue-800 via-blue-600 to-blue-400'
 })
 
 const themeColors = computed(() => {
@@ -9623,11 +9623,11 @@ const themeColors = computed(() => {
   }
   // default/CCS purple theme
   return {
-    headerBg: 'bg-purple-100',
-    headerText: 'border-purple-300 text-purple-900',
-    rowBorder: 'border-purple-300',
-    rowBgAlt: 'bg-purple-50',
-    rowBgAltText: 'border-purple-300 bg-purple-200'
+    headerBg: 'bg-blue-100',
+    headerText: 'border-blue-300 text-blue-900',
+    rowBorder: 'border-blue-300',
+    rowBgAlt: 'bg-blue-50',
+    rowBgAltText: 'border-blue-300 bg-blue-200'
   }
 })
 
@@ -9642,13 +9642,12 @@ const sidebarItemHover = computed(() => {
 const sidebarItemActive = 'bg-white bg-opacity-20 md:scale-105'
 
 const pageLoadingBgClass = computed(() => {
-  // For CCS keep the purple gradient overlay, for others use a neutral translucent overlay
-  if (isCCS.value) return 'fixed inset-0 bg-gradient-to-b from-purple-600 to-pink-400 flex items-center justify-center z-50'
+  if (isCCS.value) return 'fixed inset-0 bg-gradient-to-b from-blue-800 via-blue-600 to-blue-400 flex items-center justify-center z-50'
   return 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
 })
 
 const logoutBgClass = computed(() => {
-  if (isCCS.value) return 'fixed inset-0 bg-gradient-to-b from-purple-600 to-pink-400 flex items-center justify-center z-50'
+  if (isCCS.value) return 'fixed inset-0 bg-gradient-to-b from-blue-800 via-blue-600 to-blue-400 flex items-center justify-center z-50'
   return 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
 })
 
@@ -9676,14 +9675,14 @@ const primaryButtonGradient = computed(() => {
   if (isCOE.value) return 'from-orange-700 to-red-600'
   if (isSOM.value) return 'from-green-600 to-yellow-500'
   if (isCNAHS.value) return 'from-green-800 to-green-600'
-  return 'from-purple-600 to-pink-500'
+  return 'from-blue-800 to-blue-500'
 })
 
 const primaryButtonHover = computed(() => {
   if (isCOE.value) return 'hover:from-orange-800 hover:to-red-700'
   if (isSOM.value) return 'hover:from-green-700 hover:to-yellow-600'
   if (isCNAHS.value) return 'hover:from-green-900 hover:to-green-700'
-  return 'hover:from-purple-700 hover:to-pink-600'
+  return 'hover:from-blue-900 hover:to-blue-700'
 })
 
 // Handle user deletion across components
@@ -14055,7 +14054,7 @@ const getStatusBadgeClass = (status) => {
     case 'absent': return 'bg-red-100 text-red-800'
     case 'ongoing': return 'bg-blue-100 text-blue-800'
     case 'active': return 'bg-blue-100 text-blue-800'
-    case 'upcoming': return 'bg-purple-100 text-purple-800'
+    case 'upcoming': return 'bg-blue-100 text-blue-800'
     case 'draft': return 'bg-yellow-100 text-yellow-800'
     case 'closed': return isCOE ? 'bg-orange-100 text-orange-800' : isSOM ? 'bg-green-100 text-green-800' : isCNAHS ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
     case 'ended': return isCOE ? 'bg-orange-100 text-orange-800' : isSOM ? 'bg-green-100 text-green-800' : isCNAHS ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
@@ -14207,7 +14206,7 @@ const getOverallStatusClass = (status) => {
     case 'late': return 'bg-yellow-100 text-yellow-800'
     case 'incomplete': return 'bg-orange-100 text-orange-800'
     case 'absent': return 'bg-red-100 text-red-800'
-    case 'upcoming': return 'bg-purple-100 text-purple-800'
+    case 'upcoming': return 'bg-blue-100 text-blue-800'
     case 'ongoing': return 'bg-blue-100 text-blue-800'
     default: return 'bg-gray-100 text-gray-800'
   }
@@ -14396,7 +14395,7 @@ const getSessionAttendanceClass = (attendance, session = null, event = null) => 
   // Get the label first for consistent styling
   const label = getSessionAttendanceLabel(attendance, session, event)
   
-  if (label === 'Upcoming') return 'bg-purple-100 text-purple-800'
+  if (label === 'Upcoming') return 'bg-blue-100 text-blue-800'
   if (label === 'Ongoing') return 'bg-blue-100 text-blue-800'
   if (label === 'Present' || label === 'Present (Late)') {
     return label.includes('Late') ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'
@@ -14434,15 +14433,15 @@ const getSessionBadgeStyle = (sessionLabel) => {
     }
   } else if (label.includes('night') || label.includes('evening')) {
     return {
-      bgGradient: 'bg-gradient-to-br from-indigo-500 to-purple-600',
-      badge: 'bg-gradient-to-r from-indigo-100 to-purple-100 text-purple-800',
+      bgGradient: 'bg-gradient-to-br from-indigo-500 to-blue-600',
+      badge: 'bg-gradient-to-r from-indigo-100 to-blue-100 text-blue-800',
       displayText: 'Night',
       icon: '/sessions/night.svg'
     }
   } else if (label.includes('dawn') || label.includes('morning twilight')) {
     return {
-      bgGradient: 'bg-gradient-to-br from-pink-400 to-rose-500',
-      badge: 'bg-gradient-to-r from-pink-100 to-rose-100 text-rose-800',
+      bgGradient: 'bg-gradient-to-br from-blue-400 to-rose-500',
+      badge: 'bg-gradient-to-r from-blue-100 to-rose-100 text-rose-800',
       displayText: 'Dawn',
       icon: '/sessions/dawn.svg'
     }

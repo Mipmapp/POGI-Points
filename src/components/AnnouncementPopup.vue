@@ -11,7 +11,7 @@
           @touchmove="handleTouchMove"
           @touchend="handleTouchEnd"
         >
-        <div class="bg-gradient-to-r from-purple-600 via-pink-500 to-pink-600 px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between shadow-md">
+        <div class="bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between shadow-md">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 bg-white bg-opacity-20 rounded-full flex items-center justify-center hover:bg-opacity-30 transition">
               <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,16 +42,16 @@
               style="min-height: 150px; max-height: 65vh;"
             >
               <div class="flex items-start gap-4 mb-5">
-                <div :class="['w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden shadow-md', announcement.posted_by === 'admin' ? 'bg-gradient-to-br from-purple-500 to-pink-500' : 'bg-gradient-to-br from-yellow-500 to-amber-600']">
+                <div :class="['w-12 h-12 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden shadow-md', announcement.posted_by === 'admin' ? 'bg-gradient-to-br from-blue-500 to-blue-500' : 'bg-gradient-to-br from-yellow-500 to-amber-600']">
                   <img v-if="announcement.posted_by === 'admin'" src="/assets/ssaam_logo.jpg" alt="SSAAM" class="w-full h-full object-cover" />
                   <img v-else-if="announcement.posted_by === 'medpub'" src="/media_pub_logo.png" alt="Media and Publication" class="w-6 h-6 object-contain" />
                   <span v-else>{{ getInitials(announcement.posted_by_name) }}</span>
                 </div>
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 flex-wrap mb-1">
-                    <span :class="['font-bold text-sm', announcement.posted_by === 'admin' ? 'text-purple-900' : 'text-yellow-900']" v-html="formatPosterName(announcement)">
+                    <span :class="['font-bold text-sm', announcement.posted_by === 'admin' ? 'text-blue-900' : 'text-yellow-900']" v-html="formatPosterName(announcement)">
                     </span>
-                    <span :class="['px-2.5 py-0.5 rounded-full text-xs font-semibold', announcement.posted_by === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-amber-200 text-amber-800']">
+                    <span :class="['px-2.5 py-0.5 rounded-full text-xs font-semibold', announcement.posted_by === 'admin' ? 'bg-blue-100 text-blue-700' : 'bg-amber-200 text-amber-800']">
                       {{ announcement.posted_by === 'admin' ? 'Admin' : 'Organization' }}
                     </span>
                     <span v-if="announcement.priority === 'urgent'" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-red-100 text-red-700">
@@ -60,7 +60,7 @@
                   </div>
                   <div v-if="announcement.posted_by === 'medpub'" class="flex items-center gap-1.5 text-xs text-gray-600 mb-1">
                     <span>posted by</span>
-                    <div class="w-5 h-5 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-pink-400 to-purple-600 relative ring-1 ring-white">
+                    <div class="w-5 h-5 rounded-full overflow-hidden flex-shrink-0 bg-gradient-to-br from-blue-400 to-blue-600 relative ring-1 ring-white">
                       <span class="absolute inset-0 flex items-center justify-center text-[8px] font-bold text-white uppercase">{{ (announcement.posted_by_name || 'U').charAt(0) }}</span>
                       <img v-if="announcement.poster_photo" :src="announcement.poster_photo" :alt="announcement.posted_by_name" class="w-full h-full object-cover absolute inset-0 z-10" />
                     </div>
@@ -85,17 +85,17 @@
               <div class="flex items-center gap-4 mt-5 pt-4 border-t border-gray-100">
                 <button 
                   @click.stop="$emit('toggle-like', announcement)"
-                  class="flex items-center gap-2 text-gray-600 text-sm hover:text-pink-500 transition group px-3 py-2 -ml-3 rounded-lg hover:bg-pink-50 active:scale-95"
+                  class="flex items-center gap-2 text-gray-600 text-sm hover:text-blue-500 transition group px-3 py-2 -ml-3 rounded-lg hover:bg-blue-50 active:scale-95"
                 >
                   <svg 
-                    :class="['w-5 h-5 transition-all duration-300', isLiked(announcement) ? 'text-pink-500 scale-125' : 'group-hover:scale-110']" 
+                    :class="['w-5 h-5 transition-all duration-300', isLiked(announcement) ? 'text-blue-500 scale-125' : 'group-hover:scale-110']" 
                     :fill="isLiked(announcement) ? 'currentColor' : 'none'" 
                     stroke="currentColor" 
                     viewBox="0 0 24 24"
                   >
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
                   </svg>
-                  <span :class="['font-semibold text-sm', isLiked(announcement) ? 'text-pink-500' : 'text-gray-600']">{{ announcement.liked_by?.length || 0 }}</span>
+                  <span :class="['font-semibold text-sm', isLiked(announcement) ? 'text-blue-500' : 'text-gray-600']">{{ announcement.liked_by?.length || 0 }}</span>
                 </button>
               </div>
             </div>
@@ -106,7 +106,7 @@
           <button 
             @click="prevSlide" 
             :disabled="currentIndex === 0"
-            :class="['flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition', currentIndex === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-purple-600 hover:bg-purple-100 active:scale-95']"
+            :class="['flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition', currentIndex === 0 ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-100 active:scale-95']"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
@@ -119,14 +119,14 @@
               v-for="(_, index) in announcements" 
               :key="index"
               @click="goToSlide(index)"
-              :class="['rounded-full transition-all duration-300 hover:scale-110', index === currentIndex ? 'bg-gradient-to-r from-purple-600 to-pink-500 h-2.5 w-8 shadow-md' : 'bg-gray-300 h-2 w-2 hover:bg-gray-400 hover:scale-125']"
+              :class="['rounded-full transition-all duration-300 hover:scale-110', index === currentIndex ? 'bg-gradient-to-r from-blue-600 to-blue-500 h-2.5 w-8 shadow-md' : 'bg-gray-300 h-2 w-2 hover:bg-gray-400 hover:scale-125']"
             ></button>
           </div>
 
           <button 
             @click="nextSlide" 
             :disabled="currentIndex === announcements.length - 1"
-            :class="['flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition', currentIndex === announcements.length - 1 ? 'text-gray-400 cursor-not-allowed' : 'text-purple-600 hover:bg-purple-100 active:scale-95']"
+            :class="['flex items-center gap-2 px-4 py-2 rounded-lg font-semibold transition', currentIndex === announcements.length - 1 ? 'text-gray-400 cursor-not-allowed' : 'text-blue-600 hover:bg-blue-100 active:scale-95']"
           >
             <span class="hidden sm:inline">Next</span>
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -138,7 +138,7 @@
         <div class="px-4 sm:px-6 pb-4 sm:pb-5 bg-gray-50">
           <button 
             @click="close" 
-            class="w-full bg-gradient-to-r from-purple-600 via-pink-500 to-pink-600 text-white py-3 px-4 rounded-lg font-bold hover:from-purple-700 hover:via-pink-600 hover:to-pink-700 transition shadow-md hover:shadow-lg active:scale-95"
+            class="w-full bg-gradient-to-r from-blue-600 via-blue-500 to-blue-600 text-white py-3 px-4 rounded-lg font-bold hover:from-blue-700 hover:via-blue-600 hover:to-blue-700 transition shadow-md hover:shadow-lg active:scale-95"
           >
             Got it!
           </button>

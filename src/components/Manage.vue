@@ -2,7 +2,7 @@
   <div class="bg-white rounded-lg shadow-lg p-3 md:p-8">
     <!-- Loading State -->
     <div v-if="isLoading" class="flex items-center justify-center py-12">
-      <div :class="['animate-spin rounded-full h-12 w-12 border-b-2', isCOE ? 'border-orange-700' : isSOM ? 'border-green-600' : isCNAHS ? 'border-green-700' : 'border-purple-600']"></div>
+      <div :class="['animate-spin rounded-full h-12 w-12 border-b-2', isCOE ? 'border-orange-700' : isSOM ? 'border-green-600' : isCNAHS ? 'border-green-700' : 'border-blue-600']"></div>
     </div>
 
     <!-- Main Content -->
@@ -14,7 +14,7 @@
           <button 
             @click="refreshData" 
             :disabled="isRefreshing"
-            :class="['text-white px-4 md:px-6 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-medium flex items-center gap-2 disabled:opacity-70 text-sm md:text-base', isCOE ? 'bg-orange-700 hover:bg-orange-800' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-700 hover:bg-green-800' : 'bg-purple-600 hover:bg-purple-700']"
+            :class="['text-white px-4 md:px-6 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-medium flex items-center gap-2 disabled:opacity-70 text-sm md:text-base', isCOE ? 'bg-orange-700 hover:bg-orange-800' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-700 hover:bg-green-800' : 'bg-blue-600 hover:bg-blue-700']"
           >
             <svg v-if="isRefreshing" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -28,7 +28,7 @@
             :class="[
               'px-3 md:px-4 py-2 font-medium transition-all duration-200 border-b-2 text-sm md:text-base',
               activeTab === 'users'
-                ? [primaryTextColor, isCOE ? 'border-orange-700' : isSOM ? 'border-green-700' : isCNAHS ? 'border-green-700' : 'border-purple-600']
+                ? [primaryTextColor, isCOE ? 'border-orange-700' : isSOM ? 'border-green-700' : isCNAHS ? 'border-green-700' : 'border-blue-600']
                 : 'text-gray-600 border-transparent hover:text-gray-700'
             ]"
           >
@@ -39,7 +39,7 @@
             :class="[
               'px-3 md:px-4 py-2 font-medium transition-all duration-200 border-b-2 text-sm md:text-base',
               activeTab === 'roles'
-                ? [primaryTextColor, isCOE ? 'border-orange-700' : isSOM ? 'border-green-700' : isCNAHS ? 'border-green-700' : 'border-purple-600']
+                ? [primaryTextColor, isCOE ? 'border-orange-700' : isSOM ? 'border-green-700' : isCNAHS ? 'border-green-700' : 'border-blue-600']
                 : 'text-gray-600 border-transparent hover:text-gray-700'
             ]"
           >
@@ -51,10 +51,10 @@
       <!-- USERS TAB -->
       <div v-if="activeTab === 'users'" class="space-y-6">
         <!-- Users Search and Filter -->
-        <div :class="['rounded-lg md:rounded-xl p-4 md:p-6 mb-6 space-y-4 md:space-y-5 shadow-sm border', isCOE ? 'bg-gradient-to-br from-white via-orange-50 to-white border-orange-100' : isSOM ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : isCNAHS ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : 'bg-gradient-to-br from-white via-purple-50 to-white border-purple-100']"
+        <div :class="['rounded-lg md:rounded-xl p-4 md:p-6 mb-6 space-y-4 md:space-y-5 shadow-sm border', isCOE ? 'bg-gradient-to-br from-white via-orange-50 to-white border-orange-100' : isSOM ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : isCNAHS ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : 'bg-gradient-to-br from-white via-blue-50 to-white border-blue-100']"
           <!-- Search Input -->
           <div class="relative group">
-            <div :class="['absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none', isCOE ? 'text-gray-400 group-focus-within:text-orange-700' : isSOM ? 'text-gray-400 group-focus-within:text-green-700' : isCNAHS ? 'text-gray-400 group-focus-within:text-green-700' : 'text-gray-400 group-focus-within:text-purple-600', 'transition-colors duration-200']">
+            <div :class="['absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none', isCOE ? 'text-gray-400 group-focus-within:text-orange-700' : isSOM ? 'text-gray-400 group-focus-within:text-green-700' : isCNAHS ? 'text-gray-400 group-focus-within:text-green-700' : 'text-gray-400 group-focus-within:text-blue-600', 'transition-colors duration-200']">
               <svg class="w-4 md:w-5 h-4 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
               </svg>
@@ -63,7 +63,7 @@
               v-model="userSearchQuery"
               type="text"
               placeholder="Search by name, email, student ID, or RFID..."
-              :class="['w-full pl-9 md:pl-10 pr-4 py-2 md:py-3 border border-gray-200 rounded-lg outline-none bg-white text-sm md:text-base shadow-sm focus:shadow-md transition-all duration-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent hover:border-orange-300' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent hover:border-green-300' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent hover:border-green-300' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent hover:border-purple-300']"
+              :class="['w-full pl-9 md:pl-10 pr-4 py-2 md:py-3 border border-gray-200 rounded-lg outline-none bg-white text-sm md:text-base shadow-sm focus:shadow-md transition-all duration-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent hover:border-orange-300' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent hover:border-green-300' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent hover:border-green-300' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent hover:border-blue-300']"
             />
           </div>
           
@@ -73,25 +73,25 @@
             <div class="flex gap-2 flex-wrap">
               <button
                 @click="userRoleFilter = null"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === null ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === null ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 All Roles
               </button>
               <button
                 @click="userRoleFilter = 'student'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'student' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'student' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 Students
               </button>
               <button
                 @click="userRoleFilter = 'medpub'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'medpub' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'medpub' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 Medpub
               </button>
               <button
                 @click="userRoleFilter = 'treasurer'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'treasurer' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'treasurer' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 Treasurer
               </button>
@@ -141,25 +141,25 @@
             <div class="flex gap-2 flex-wrap">
               <button
                 @click="userProgramFilter = null"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === null ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === null ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 All Programs
               </button>
               <button
                 @click="userProgramFilter = 'BSCS'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSCS' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSCS' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 BSCS
               </button>
               <button
                 @click="userProgramFilter = 'BSIT'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSIT' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSIT' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 BSIT
               </button>
               <button
                 @click="userProgramFilter = 'BSIS'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSIS' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-purple-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSIS' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 BSIS
               </button>
@@ -249,14 +249,14 @@
 
         <!-- Users List -->
         <div v-if="filteredUsers.length > 0" class="space-y-3">
-          <div v-for="user in paginatedUsers" :key="user._id || user.id || user.student_id" :class="['bg-white rounded-xl border transition-all duration-300 overflow-hidden', isCOE ? 'hover:border-orange-300 hover:shadow-lg' : isSOM ? 'hover:border-green-300 hover:shadow-lg' : isCNAHS ? 'hover:border-green-300 hover:shadow-lg' : 'hover:border-purple-300 hover:shadow-lg']">
+          <div v-for="user in paginatedUsers" :key="user._id || user.id || user.student_id" :class="['bg-white rounded-xl border transition-all duration-300 overflow-hidden', isCOE ? 'hover:border-orange-300 hover:shadow-lg' : isSOM ? 'hover:border-green-300 hover:shadow-lg' : isCNAHS ? 'hover:border-green-300 hover:shadow-lg' : 'hover:border-blue-300 hover:shadow-lg']">
             <!-- Card Header with Profile -->
             <div class="p-4 md:p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-transparent">
               <div class="flex items-start justify-between gap-3">
                 <!-- Left: Profile Info -->
                 <div class="flex items-start gap-3 flex-1 min-w-0">
                   <!-- Profile Image -->
-                  <div :class="['w-12 h-12 md:w-14 md:h-14 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm md:text-base overflow-hidden shadow-md', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-purple-400 to-pink-400']">
+                  <div :class="['w-12 h-12 md:w-14 md:h-14 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm md:text-base overflow-hidden shadow-md', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-blue-400 to-blue-400']">
                     <img 
                       v-if="user.photo" 
                       :src="user.photo" 
@@ -281,7 +281,7 @@
                     </div>
                     <div class="flex flex-wrap gap-2 mt-2">
                       <!-- Role Badge -->
-                      <span v-if="user.role && user.role !== 'student'" :class="['px-2 py-1 rounded-full text-xs font-bold capitalize shadow-sm', isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700' : isSOM ? 'bg-gradient-to-r from-green-100 to-yellow-100 text-green-700' : isCNAHS ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-700' : 'bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700']">
+                      <span v-if="user.role && user.role !== 'student'" :class="['px-2 py-1 rounded-full text-xs font-bold capitalize shadow-sm', isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700' : isSOM ? 'bg-gradient-to-r from-green-100 to-yellow-100 text-green-700' : isCNAHS ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-700' : 'bg-gradient-to-r from-blue-100 to-blue-100 text-blue-700']">
                         {{ user.role }}
                       </span>
                       <span v-else class="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium capitalize shadow-sm">
@@ -499,19 +499,19 @@
           </div>
 
           <!-- Add Member Section -->
-          <div :class="[isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-purple-50', 'rounded-lg p-3 md:p-4 mb-4 md:mb-6 border-2', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-purple-200']">
+          <div :class="[isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50', 'rounded-lg p-3 md:p-4 mb-4 md:mb-6 border-2', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200']">
             <h4 :class="['font-semibold mb-3 md:mb-4 text-sm md:text-base', primaryDarkText]">Add User to {{ selectedRole }} Role</h4>
             <div class="flex gap-2 flex-col sm:flex-row items-stretch sm:items-center">
               <input
                 v-model="memberToAdd"
                 type="text"
                 placeholder="Search by name, email, student ID, or RFID..."
-                :class="['flex-1 px-4 py-2.5 md:py-2.5 border-2 rounded-lg outline-none text-sm md:text-base font-medium', isCOE ? 'border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : isSOM ? 'border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200' : isCNAHS ? 'border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200' : 'border-purple-300 focus:border-purple-500 focus:ring-2 focus:ring-purple-200']"
+                :class="['flex-1 px-4 py-2.5 md:py-2.5 border-2 rounded-lg outline-none text-sm md:text-base font-medium', isCOE ? 'border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : isSOM ? 'border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200' : isCNAHS ? 'border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200' : 'border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200']"
               />
               <button 
                 @click="addMemberToRole"
                 :disabled="!memberToAdd || isAddingMember"
-                :class="['px-4 md:px-6 py-2.5 md:py-2.5 rounded-lg transition font-bold text-sm md:text-base shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white disabled:from-gray-400 disabled:to-gray-500' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white disabled:from-gray-400 disabled:to-gray-500' : isCNAHS ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white disabled:from-gray-400 disabled:to-gray-500' : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white disabled:from-gray-400 disabled:to-gray-500', !memberToAdd || isAddingMember ? 'opacity-60 cursor-not-allowed' : '']"
+                :class="['px-4 md:px-6 py-2.5 md:py-2.5 rounded-lg transition font-bold text-sm md:text-base shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white disabled:from-gray-400 disabled:to-gray-500' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white disabled:from-gray-400 disabled:to-gray-500' : isCNAHS ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white disabled:from-gray-400 disabled:to-gray-500' : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white disabled:from-gray-400 disabled:to-gray-500', !memberToAdd || isAddingMember ? 'opacity-60 cursor-not-allowed' : '']"
               >
                 <svg v-if="isAddingMember" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
@@ -525,7 +525,7 @@
                 v-for="user in memberSearchResults"
                 :key="user._id || user.id || user.student_id"
                 @click="selectUserToAdd(user)"
-                :class="['px-3 md:px-4 py-2 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors text-sm', isCOE ? 'hover:bg-orange-100' : isSOM ? 'hover:bg-green-100' : isCNAHS ? 'hover:bg-green-100' : 'hover:bg-purple-100']"
+                :class="['px-3 md:px-4 py-2 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors text-sm', isCOE ? 'hover:bg-orange-100' : isSOM ? 'hover:bg-green-100' : isCNAHS ? 'hover:bg-green-100' : 'hover:bg-blue-100']"
               >
                 <p class="font-medium text-gray-900">{{ (user.first_name || user.firstName) }} {{ (user.last_name || user.lastName) }}</p>
                 <div class="flex items-center gap-2">
@@ -553,7 +553,7 @@
               <!-- Profile Image and Info -->
               <div class="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
                 <!-- Profile Image -->
-                <div :class="['w-9 md:w-12 h-9 md:h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-xs md:text-sm overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-purple-400 to-pink-400']">
+                <div :class="['w-9 md:w-12 h-9 md:h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-xs md:text-sm overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-blue-400 to-blue-400']">
                   <img 
                     v-if="member.photo" 
                     :src="member.photo" 
@@ -621,7 +621,7 @@
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
               <div class="flex items-start gap-4">
-                <div :class="['w-20 h-20 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-300', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-purple-400 to-pink-400']">
+                <div :class="['w-20 h-20 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-300', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-blue-400 to-blue-400']">
                   <img 
                     v-if="editingUser.photo" 
                     :src="editingUser.photo" 
@@ -635,7 +635,7 @@
                     type="file"
                     accept="image/*"
                     @change="handlePhotoUpload"
-                    :class="['block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium', isCOE ? 'file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100' : isSOM ? 'file:bg-green-50 file:text-green-700 hover:file:bg-green-100' : isCNAHS ? 'file:bg-green-50 file:text-green-700 hover:file:bg-green-100' : 'file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100']"
+                    :class="['block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium', isCOE ? 'file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100' : isSOM ? 'file:bg-green-50 file:text-green-700 hover:file:bg-green-100' : isCNAHS ? 'file:bg-green-50 file:text-green-700 hover:file:bg-green-100' : 'file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100']"
                   />
                   <p class="text-xs text-gray-500 mt-2">Accepted formats: JPG, PNG. Max 5MB</p>
                 </div>
@@ -648,7 +648,7 @@
                 <input 
                   v-model="editingUser.student_id"
                   type="text"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 />
               </div>
               <div>
@@ -656,7 +656,7 @@
                 <input 
                   v-model="editingUser.rfid_code"
                   type="text"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 />
                 <!-- Mark as Unreadable Button aligned under RFID -->
                 <button
@@ -679,7 +679,7 @@
                 <input 
                   v-model="editingUser.first_name"
                   type="text"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 />
               </div>
               <div>
@@ -687,7 +687,7 @@
                 <input 
                   v-model="editingUser.middle_name"
                   type="text"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 />
               </div>
               <div>
@@ -695,13 +695,13 @@
                 <input 
                   v-model="editingUser.last_name"
                   type="text"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 />
               </div>
               <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Suffix <span class="text-gray-500 text-xs">(optional)</span></label>
                 <div>
-                  <select v-model="editingUser.suffix" :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none appearance-none bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']">
+                  <select v-model="editingUser.suffix" :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none appearance-none bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']">
                     <option value="">None</option>
                     <option value="Jr.">Jr.</option>
                     <option value="Sr.">Sr.</option>
@@ -725,7 +725,7 @@
               <input 
                 v-model="editingUser.email"
                 type="email"
-                :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
+                :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
               />
             </div>
 
@@ -734,7 +734,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Program</label>
                 <select 
                   v-model="editingUser.program"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 >
                   <option value="N/A">N/A</option>
                   <option value="BSCS">BSCS</option>
@@ -746,7 +746,7 @@
                 <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
                 <select 
                   v-model="editingUser.year_level"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
+                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 >
                   <option value="N/A">N/A</option>
                   <option value="1st Year">1st Year</option>
@@ -761,7 +761,7 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Verification Status</label>
               <select 
                 v-model="editingUser.rfid_status"
-                :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-purple-600 focus:border-transparent']"
+                :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
               >
                 <option value="verified">Verified</option>
                 <option value="unverified">Unverified</option>
@@ -800,7 +800,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
               </svg>
             </div>
-            <h3 class="text-xl font-bold text-purple-900 mb-2">Delete User</h3>
+            <h3 class="text-xl font-bold text-blue-900 mb-2">Delete User</h3>
             <p class="text-gray-600">
               Are you sure you want to delete <strong>{{ (userToDelete.first_name || userToDelete.firstName) }} {{ (userToDelete.last_name || userToDelete.lastName) }}</strong>? This action cannot be undone.
             </p>
@@ -908,7 +908,7 @@
     <transition name="fade">
       <div v-if="notification.show" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click="closeNotification">
         <transition name="notification-pop" appear>
-          <div @click.stop :class="['bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-sm w-11/12 md:w-96 border-l-4', isCOE ? 'border-orange-500' : isSOM ? 'border-green-500' : 'border-purple-500']">
+          <div @click.stop :class="['bg-white rounded-2xl shadow-2xl p-6 md:p-8 max-w-sm w-11/12 md:w-96 border-l-4', isCOE ? 'border-orange-500' : isSOM ? 'border-green-500' : 'border-blue-500']">
             <!-- Close Button -->
             <button @click="closeNotification" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -921,8 +921,8 @@
               <div :class="[
                 'w-16 h-16 rounded-full flex items-center justify-center shadow-lg',
                 notification.type === 'success' ? (isCOE ? 'bg-gradient-to-br from-green-100 to-emerald-100' : isSOM ? 'bg-gradient-to-br from-green-100 to-emerald-100' : isCNAHS ? 'bg-gradient-to-br from-green-100 to-emerald-100' : 'bg-gradient-to-br from-green-100 to-emerald-100') : 
-                notification.type === 'error' ? (isCOE ? 'bg-gradient-to-br from-red-100 to-orange-100' : isSOM ? 'bg-gradient-to-br from-red-100 to-orange-100' : isCNAHS ? 'bg-gradient-to-br from-red-100 to-orange-100' : 'bg-gradient-to-br from-red-100 to-pink-100') : 
-                (isCOE ? 'bg-gradient-to-br from-orange-100 to-yellow-100' : isSOM ? 'bg-gradient-to-br from-green-100 to-yellow-100' : isCNAHS ? 'bg-gradient-to-br from-green-100 to-yellow-100' : 'bg-gradient-to-br from-purple-100 to-blue-100')
+                notification.type === 'error' ? (isCOE ? 'bg-gradient-to-br from-red-100 to-orange-100' : isSOM ? 'bg-gradient-to-br from-red-100 to-orange-100' : isCNAHS ? 'bg-gradient-to-br from-red-100 to-orange-100' : 'bg-gradient-to-br from-red-100 to-blue-100') : 
+                (isCOE ? 'bg-gradient-to-br from-orange-100 to-yellow-100' : isSOM ? 'bg-gradient-to-br from-green-100 to-yellow-100' : isCNAHS ? 'bg-gradient-to-br from-green-100 to-yellow-100' : 'bg-gradient-to-br from-blue-100 to-blue-100')
               ]">
                 <svg v-if="notification.type === 'success'" class="w-8 h-8 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
@@ -930,14 +930,14 @@
                 <svg v-else-if="notification.type === 'error'" :class="['w-8 h-8', isCOE ? 'text-red-600' : 'text-red-600']" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
                 </svg>
-                <svg v-else :class="['w-8 h-8', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-purple-600']" fill="currentColor" viewBox="0 0 20 20">
+                <svg v-else :class="['w-8 h-8', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="currentColor" viewBox="0 0 20 20">
                   <path fill-rule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2z" clip-rule="evenodd"></path>
                 </svg>
               </div>
             </div>
 
             <!-- Notification Message -->
-            <h3 :class="['text-lg md:text-xl font-bold text-center mb-2', notification.type === 'success' ? 'text-green-700' : notification.type === 'error' ? 'text-red-700' : (isCOE ? 'text-orange-700' : 'text-purple-700')]">
+            <h3 :class="['text-lg md:text-xl font-bold text-center mb-2', notification.type === 'success' ? 'text-green-700' : notification.type === 'error' ? 'text-red-700' : (isCOE ? 'text-orange-700' : 'text-blue-700')]">
               {{ notification.title }}
             </h3>
             <p class="text-center text-gray-600 text-sm md:text-base mb-6 leading-relaxed">{{ notification.message }}</p>
@@ -1047,31 +1047,31 @@ export default {
       if (this.isCOE) return 'from-orange-700 to-red-600'
       if (this.isSOM) return 'from-green-600 to-yellow-500'
       if (this.isCNAHS) return 'from-green-800 to-green-600'
-      return 'from-purple-600 to-pink-500'
+      return 'from-blue-600 to-blue-500'
     },
     primaryButtonHover() {
       if (this.isCOE) return 'hover:from-orange-800 hover:to-red-700'
       if (this.isSOM) return 'hover:from-green-700 hover:to-yellow-600'
       if (this.isCNAHS) return 'hover:from-green-900 hover:to-green-700'
-      return 'hover:from-purple-700 hover:to-pink-600'
+      return 'hover:from-blue-700 hover:to-blue-600'
     },
     primaryTextColor() {
       if (this.isCOE) return 'text-orange-700'
       if (this.isSOM) return 'text-green-600'
       if (this.isCNAHS) return 'text-green-800'
-      return 'text-purple-600'
+      return 'text-blue-600'
     },
     primaryTextHover() {
       if (this.isCOE) return 'hover:text-orange-800'
       if (this.isSOM) return 'hover:text-green-800'
       if (this.isCNAHS) return 'hover:text-green-900'
-      return 'hover:text-purple-800'
+      return 'hover:text-blue-800'
     },
     primaryDarkText() {
       if (this.isCOE) return 'text-orange-900'
       if (this.isSOM) return 'text-green-900'
       if (this.isCNAHS) return 'text-green-900'
-      return 'text-purple-900'
+      return 'text-blue-900'
     },
     // End theme helpers
 
