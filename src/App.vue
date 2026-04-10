@@ -28,7 +28,7 @@ const preventCopy = (e) => {
 onMounted(() => {
   setTimeout(() => {
     isLoading.value = false
-  }, 2000)
+  }, 3000)
   
   document.addEventListener('contextmenu', preventContextMenu)
   document.addEventListener('keydown', preventCopy)

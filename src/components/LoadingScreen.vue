@@ -108,13 +108,10 @@ const preloadImages = () => {
 }
 
 onMounted(async () => {
-  // Preload all images before proceeding
-  await preloadImages()
-  
-  // Give a small buffer to ensure rendering is complete
-  setTimeout(() => {
-    router.push('/')
-  }, 500)
+  const minWait = new Promise(resolve => setTimeout(resolve, 3000))
+  // Run preloading and minimum wait in parallel
+  await Promise.all([preloadImages(), minWait])
+  router.push('/')
 })
 </script>
 
