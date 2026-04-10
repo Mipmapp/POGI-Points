@@ -571,62 +571,86 @@
   <transition name="fade">
     <div v-if="showForgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeForgotPasswordModal">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-6">
-            <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-purple-900']">Reset Password</h3>
-            <button @click="closeForgotPasswordModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+          <!-- Gradient Header -->
+          <div class="bg-gradient-to-r from-blue-800 via-blue-600 to-blue-400 px-6 py-5 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white">Reset Password</h3>
+                <p class="text-blue-100 text-xs mt-0.5">
+                  {{ resetStep === 1 ? 'Step 1: Verify your identity' : resetStep === 2 ? 'Step 2: Enter your code' : 'Step 3: New password' }}
+                </p>
+              </div>
+            </div>
+            <button @click="closeForgotPasswordModal" class="text-white/70 hover:text-white text-2xl leading-none">&times;</button>
           </div>
 
-          <!-- Step 1: Enter Student ID and Email -->
-          <div v-if="resetStep === 1" class="space-y-4">
-            <p class="text-gray-600 text-sm">Enter your Student ID and registered email to receive a verification code.</p>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
-              <input v-model="resetStudentId" type="text" placeholder="25-A-12345" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-              <input v-model="resetEmail" type="email" placeholder="your.email@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
-            </div>
-            <button @click="requestResetCode" :disabled="resetLoading || !resetStudentId.trim() || !resetEmail.trim()" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-              <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              {{ resetLoading ? 'Sending...' : 'Send Code' }}
-            </button>
-            <p v-if="resetMessage" :class="['text-sm text-center', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
-          </div>
+          <!-- Scrollable Content -->
+          <div class="p-6 space-y-4 overflow-y-auto">
 
-          <!-- Step 2: Enter Verification Code -->
-          <div v-if="resetStep === 2" class="space-y-4">
-            <p class="text-gray-600 text-sm">Enter the 6-digit verification code sent to your email.</p>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
-              <input v-model="resetCode" type="text" placeholder="123456" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-center text-2xl tracking-widest" />
+            <!-- Step 1: Enter Student ID and Email -->
+            <div v-if="resetStep === 1" class="space-y-4">
+              <div class="bg-green-50 rounded-2xl p-4">
+                <p class="text-sm text-gray-600">Enter your Student ID and registered email to receive a verification code.</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
+                <input v-model="resetStudentId" type="text" placeholder="25-A-12345" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <input v-model="resetEmail" type="email" placeholder="your.email@example.com" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+              </div>
+              <button @click="requestResetCode" :disabled="resetLoading || !resetStudentId.trim() || !resetEmail.trim()" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                {{ resetLoading ? 'Sending...' : 'Send Code' }}
+              </button>
+              <p v-if="resetMessage" :class="['text-sm text-center font-medium', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
             </div>
-            <button @click="verifyResetCode" :disabled="resetLoading || resetCode.length !== 6" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-              <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              {{ resetLoading ? 'Verifying...' : 'Verify Code' }}
-            </button>
-            <button @click="resetStep = 1" :class="['w-full text-sm font-medium', isCOE ? 'text-orange-600 hover:text-orange-800' : isSOM ? 'text-green-600 hover:text-green-800' : 'text-purple-600 hover:text-purple-700']">Back to Step 1</button>
-            <p v-if="resetMessage" :class="['text-sm text-center', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
-          </div>
 
-          <!-- Step 3: Enter New Password -->
-          <div v-if="resetStep === 3" class="space-y-4">
-            <p class="text-gray-600 text-sm">Create a new password for your account.</p>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-              <input v-model="newPassword" type="password" placeholder="Enter new password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
+            <!-- Step 2: Enter Verification Code -->
+            <div v-if="resetStep === 2" class="space-y-4">
+              <div class="bg-green-50 rounded-2xl p-4">
+                <p class="text-sm text-gray-600">Enter the 6-digit verification code sent to your email.</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
+                <input v-model="resetCode" type="text" placeholder="123456" maxlength="6" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-center text-2xl tracking-widest transition" />
+              </div>
+              <button @click="verifyResetCode" :disabled="resetLoading || resetCode.length !== 6" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                {{ resetLoading ? 'Verifying...' : 'Verify Code' }}
+              </button>
+              <button @click="resetStep = 1" class="w-full text-sm font-medium text-blue-600 hover:text-blue-800 transition">← Back to Step 1</button>
+              <p v-if="resetMessage" :class="['text-sm text-center font-medium', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-              <input v-model="confirmNewPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
+
+            <!-- Step 3: Enter New Password -->
+            <div v-if="resetStep === 3" class="space-y-4">
+              <div class="bg-green-50 rounded-2xl p-4">
+                <p class="text-sm text-gray-600">Create a new password for your account.</p>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                <input v-model="newPassword" type="password" placeholder="Enter new password" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                <input v-model="confirmNewPassword" type="password" placeholder="Confirm new password" class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+              </div>
+              <button @click="completePasswordReset" :disabled="resetLoading || !newPassword || newPassword !== confirmNewPassword" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-full font-semibold hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                {{ resetLoading ? 'Resetting...' : 'Reset Password' }}
+              </button>
+              <p v-if="newPassword && confirmNewPassword && newPassword !== confirmNewPassword" class="text-sm text-red-600 text-center font-medium">Passwords do not match</p>
+              <p v-if="resetMessage" :class="['text-sm text-center font-medium', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
             </div>
-            <button @click="completePasswordReset" :disabled="resetLoading || !newPassword || newPassword !== confirmNewPassword" class="w-full bg-gradient-to-r from-blue-700 via-blue-600 to-blue-500 text-white py-3 px-6 rounded-lg font-medium hover:from-blue-800 hover:via-blue-700 hover:to-blue-600 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-              <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              {{ resetLoading ? 'Resetting...' : 'Reset Password' }}
-            </button>
-            <p v-if="newPassword && confirmNewPassword && newPassword !== confirmNewPassword" class="text-sm text-red-600 text-center">Passwords do not match</p>
-            <p v-if="resetMessage" :class="['text-sm text-center', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
+
           </div>
         </div>
       </transition>
