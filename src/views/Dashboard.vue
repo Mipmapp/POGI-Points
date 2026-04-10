@@ -504,7 +504,7 @@
   </div>
 
   <!-- Admin Key Modal - Always on top -->
-  <div v-if="isPageLoading" :class="pageLoadingBgClass">
+  <div v-if="isPageLoading" :class="pageLoadingBgClass" :style="pageLoadingBgStyle">
     <div class="text-center text-white">
       <svg class="animate-spin h-16 w-16 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -544,7 +544,7 @@
 
   <!-- Logout Animation -->
   <transition name="fade">
-    <div v-if="showLogoutAnimation" :class="logoutBgClass">
+    <div v-if="showLogoutAnimation" :class="logoutBgClass" :style="logoutBgStyle">
       <div class="text-center text-white">
         <svg class="animate-spin h-16 w-16 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -9667,13 +9667,31 @@ const sidebarItemActive = computed(() => {
 })
 
 const pageLoadingBgClass = computed(() => {
-  if (isCCS.value) return 'fixed inset-0 bg-gradient-to-b from-ssaam-dark to-ssaam-light flex items-center justify-center z-50'
-  return 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+  if (isCOE.value) return 'fixed inset-0 flex items-center justify-center z-50'
+  if (isSOM.value) return 'fixed inset-0 flex items-center justify-center z-50'
+  if (isCNAHS.value) return 'fixed inset-0 flex items-center justify-center z-50'
+  return 'fixed inset-0 flex items-center justify-center z-50'
+})
+
+const pageLoadingBgStyle = computed(() => {
+  if (isCOE.value) return { background: 'linear-gradient(to bottom, #4a1207, #7c2210)' }
+  if (isSOM.value) return { background: 'linear-gradient(to bottom, #0d3320, #5a3a08)' }
+  if (isCNAHS.value) return { background: 'linear-gradient(to bottom, #052e16, #14532d)' }
+  return { background: 'linear-gradient(to bottom, #080e2e, #0f1f6e)' }
 })
 
 const logoutBgClass = computed(() => {
-  if (isCCS.value) return 'fixed inset-0 bg-gradient-to-b from-ssaam-dark to-ssaam-light flex items-center justify-center z-50'
-  return 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50'
+  if (isCOE.value) return 'fixed inset-0 flex items-center justify-center z-50'
+  if (isSOM.value) return 'fixed inset-0 flex items-center justify-center z-50'
+  if (isCNAHS.value) return 'fixed inset-0 flex items-center justify-center z-50'
+  return 'fixed inset-0 flex items-center justify-center z-50'
+})
+
+const logoutBgStyle = computed(() => {
+  if (isCOE.value) return { background: 'linear-gradient(to bottom, #4a1207, #7c2210)' }
+  if (isSOM.value) return { background: 'linear-gradient(to bottom, #0d3320, #5a3a08)' }
+  if (isCNAHS.value) return { background: 'linear-gradient(to bottom, #052e16, #14532d)' }
+  return { background: 'linear-gradient(to bottom, #080e2e, #0f1f6e)' }
 })
 
 // Attendance Events Search & Pagination
