@@ -171,14 +171,14 @@
             <div 
               class="relative overflow-hidden group w-10 h-10 lg:w-16 lg:h-16"
               :style="{
-                mask: isCOE ? 'url(/icons/coe.svg) no-repeat center / contain' : isSOM ? 'url(/icons/som.svg) no-repeat center / contain' : 'url(/icons/ccs.svg) no-repeat center / contain',
-                webkitMask: isCOE ? 'url(/icons/coe.svg) no-repeat center / contain' : isSOM ? 'url(/icons/som.svg) no-repeat center / contain' : 'url(/icons/ccs.svg) no-repeat center / contain'
+                mask: isCOE ? 'url(/icons/coe.svg) no-repeat center / contain' : isSOM ? 'url(/icons/som.svg) no-repeat center / contain' : 'url(/jrmsu.svg) no-repeat center / contain',
+                webkitMask: isCOE ? 'url(/icons/coe.svg) no-repeat center / contain' : isSOM ? 'url(/icons/som.svg) no-repeat center / contain' : 'url(/jrmsu.svg) no-repeat center / contain'
               }"
             >
-              <img :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/icons/ccs.svg'" :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'CCS Logo'" class="w-full h-full object-contain relative z-10" />
+              <img :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/jrmsu.svg'" :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'" class="w-full h-full object-contain relative z-10" />
               <div :class="['absolute inset-0 -translate-x-full animate-sweep z-20 pointer-events-none', isCOE ? 'bg-gradient-to-r from-transparent via-red-300/40 to-transparent' : isSOM ? 'bg-gradient-to-r from-transparent via-yellow-300/40 to-transparent' : isCNAHS ? 'bg-gradient-to-r from-transparent via-green-300/40 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-300/40 to-transparent']"></div>
             </div>
-            <h1 class="text-2xl lg:text-4xl font-bold text-white">SSAAM</h1>
+            <h1 class="text-2xl lg:text-4xl font-extrabold italic text-white drop-shadow">SSAAM</h1>
           </div>
           <p class="text-white text-opacity-80 text-base lg:text-3xl font-medium">{{ selectedEvent?.title || 'Select an Event' }}</p>
           <p v-if="selectedEvent" class="text-white text-opacity-60 text-xs lg:text-sm">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
@@ -605,12 +605,15 @@
 
   <div class="flex h-screen flex-col md:flex-row">
     <!-- Sidebar (Hidden on mobile, visible on desktop) -->
-    <div :class="[ 'hidden md:flex w-64 bg-gradient-to-b text-white flex-col order-1 border-r-2 border-white border-opacity-20 h-screen', sidebarGradient ]">
-      <div class="p-4 border-b border-white border-opacity-20 flex-shrink-0">
-        <div class="flex items-center justify-center mb-1">
-          <img :src="userDepartmentLogo" alt="Department Logo" class="w-20 h-20 object-contain drop-shadow-xl" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
+    <div :class="[ 'hidden md:flex w-64 bg-gradient-to-b text-white flex-col order-1 border-r border-white/10 h-screen shadow-2xl', sidebarGradient ]">
+      <div class="px-5 py-5 border-b border-white/15 flex-shrink-0 bg-white/5 backdrop-blur-sm">
+        <div class="flex items-center gap-3">
+          <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-11 h-11 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
+          <div class="flex flex-col leading-tight">
+            <h1 class="text-2xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
+            <p class="text-white/50 text-[9px] uppercase tracking-widest">JRMSU</p>
+          </div>
         </div>
-        <h1 class="text-lg font-bold text-center">SSAAM</h1>
       </div>
 
       <div class="p-6 border-b border-white border-opacity-20 flex-shrink-0">
@@ -737,7 +740,13 @@
     <!-- Mobile Sidebar (Slide-in menu for mobile) with Animation -->
     <transition name="slide-in">
       <div v-if="showMobileMenu" :class="[ 'fixed left-0 top-0 h-screen w-64 bg-gradient-to-b text-white flex flex-col z-40 md:hidden shadow-2xl', sidebarGradient ]">
-        <button @click="showMobileMenu = false" class="p-4 text-right text-2xl hover:text-gray-200 flex-shrink-0">×</button>
+        <div class="flex items-center justify-between px-4 py-4 border-b border-white/15 bg-white/5 flex-shrink-0">
+          <div class="flex items-center gap-2.5">
+            <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-lg flex-shrink-0" />
+            <h1 class="text-xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
+          </div>
+          <button @click="showMobileMenu = false" class="text-2xl text-white/80 hover:text-white leading-none">×</button>
+        </div>
         
         <div class="p-4 md:p-6 border-b border-white border-opacity-20 flex-shrink-0 flex flex-col items-center text-center">
             <div v-if="currentUser.role !== 'admin' && !currentUser.isMaster" class="mb-4">
@@ -871,10 +880,13 @@
     </transition>
 
     <!-- Main Content Area -->
-    <div class="flex-1 bg-gray-100 overflow-auto order-2 md:order-2">
+    <div class="flex-1 bg-slate-50 overflow-auto order-2 md:order-2">
       <!-- Mobile Header with Hamburger Menu -->
-      <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-4 flex items-center justify-between z-20 shadow">
-        <h1 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">SSAAM</h1>
+      <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
+        <div class="flex items-center gap-2">
+          <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" />
+          <h1 :class="['text-xl font-extrabold italic', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">SSAAM</h1>
+        </div>
         <div class="flex items-center gap-2">
           <button @click="showContactModal = true" :class="['p-2 rounded-lg transition', isCOE ? 'hover:bg-orange-100' : isSOM ? 'hover:bg-green-100' : isCNAHS ? 'hover:bg-green-100' : 'hover:bg-blue-100']">
             <img src="/help.svg" alt="Help" :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" />
