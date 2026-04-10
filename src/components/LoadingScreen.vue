@@ -1,15 +1,18 @@
 <template>
   <div class="loading-screen" :style="loadingScreenStyle">
-    <div class="flex flex-col items-center justify-center gap-6 text-center">
+    <div class="flex flex-col items-center justify-center gap-4 text-center">
       <div class="w-32 h-32 flex items-center justify-center animate-bounce">
         <img :src="departmentLogo" :alt="isCOE ? 'COE Logo' : 'JRMSU CCS Logo'" class="w-full h-full object-contain drop-shadow-2xl" />
       </div>
       <div>
         <h1 class="text-6xl font-extrabold italic text-white mb-1 tracking-wide drop-shadow-lg">SSAAM</h1>
-        <p class="text-[10px] uppercase tracking-widest text-white/60 mb-1">JRMSU</p>
         <p class="text-base text-white opacity-90">Student School Activities Attendance Monitoring</p>
+        <div class="flex items-center justify-center gap-2 mt-3">
+          <img :src="departmentLogo" :alt="isCOE ? 'COE Logo' : 'JRMSU Logo'" class="w-6 h-6 object-contain drop-shadow" />
+          <p class="text-xs text-white/70">Jose Rizal Memorial State University</p>
+        </div>
       </div>
-      <div class="flex gap-2 mt-8">
+      <div class="flex gap-2 mt-4">
         <div class="w-3 h-3 rounded-full bg-white animate-pulse"></div>
         <div class="w-3 h-3 rounded-full bg-white animate-pulse" style="animation-delay: 0.2s;"></div>
         <div class="w-3 h-3 rounded-full bg-white animate-pulse" style="animation-delay: 0.4s;"></div>
