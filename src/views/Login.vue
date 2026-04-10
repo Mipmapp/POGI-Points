@@ -107,32 +107,6 @@
   </transition>
 
   <transition name="fade">
-    <div v-if="showCollegeMismatch" @click.self="showCollegeMismatch = false" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" aria-labelledby="mismatch-title">
-      <transition name="modal-bounce" appear>
-        <div ref="collegeMismatchModal" @keydown="handleMismatchKeydown" class="bg-white rounded-xl shadow-lg py-3 px-4 sm:py-6 sm:px-8 max-w-sm w-full mx-2 text-center transform transition-all overflow-visible" tabindex="-1">
-          <div class="relative">
-            <div class="absolute left-1/2 -translate-x-1/2 -top-12 sm:-top-20 pointer-events-none z-20">
-              <div class="w-20 h-20 sm:w-28 sm:h-28 rounded-full bg-white/95 backdrop-blur-sm flex items-center justify-center shadow-md border border-gray-100 overflow-visible modal-logo-container">
-                <img :src="mismatchLogo" :alt="`${mismatchCollege} logo`" class="w-12 h-12 sm:w-16 sm:h-16 object-contain modal-logo" />
-              </div>
-            </div>
-
-            <div class="pt-6 sm:pt-10 pb-3 max-h-[60vh] overflow-y-auto">
-              
-              <h3 class="text-xl sm:text-2xl font-extrabold text-gray-800 mt-2 sm:mt-3">Account College Mismatch</h3>
-              <p class="text-gray-600 mt-2 text-sm leading-snug px-3 sm:px-4 line-clamp-6">{{ mismatchMessage }}</p>
-              <div class="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center px-3 sm:px-4">
-                <button ref="mismatchPrimary" @click="goToCollegePortal" class="modal-primary w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-3 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-lg font-semibold shadow-sm transform transition duration-200 hover:-translate-y-0.5">Go to {{ mismatchCollege }} Login</button>
-                <button @click="showCollegeMismatch = false" class="modal-secondary w-full sm:w-auto px-3 py-2 sm:px-4 sm:py-3 border border-gray-200 rounded-lg bg-white text-gray-700 hover:bg-gray-50 transform transition duration-150">Try Again</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </transition>
-    </div>
-  </transition>
-
-  <transition name="fade">
     <div v-if="showErrorNotification" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 text-center transform transition-all border border-red-200">
@@ -214,156 +188,7 @@
     </div>
   </transition>
 
-  <!-- Department Selector Modal -->
-  <transition name="fade">
-    <div v-if="showDepartmentModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDepartmentModal = false">
-      <transition name="slide-up" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-4 sm:p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-          <!-- Programs Detail View with Slide Transition -->
-          <transition name="slide-left" mode="out-in">
-            <div v-if="selectedDepartment" :key="selectedDepartment.id" class="space-y-4 sm:space-y-6">
-              <!-- Profile-like Header -->
-              <div>
-                <button @click="selectedDepartment = null" :class="['mb-3 sm:mb-4 flex items-center gap-2 font-medium transition-colors text-sm sm:text-base',
-                  selectedDepartment.label === 'CCS' ? 'text-purple-600 hover:text-purple-800' :
-                  selectedDepartment.label === 'COE' ? 'text-orange-600 hover:text-orange-800' :
-                  selectedDepartment.label === 'SOM' ? 'text-green-600 hover:text-green-800' :
-                  selectedDepartment.label === 'CNAHS' ? 'text-green-600 hover:text-green-800' :
-                  'text-blue-600 hover:text-blue-800']">
-                  <svg class="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0 rotate-180">
-                    <path fill="currentColor" d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-                  Go Back
-                </button>
-                
-                <!-- Profile Card (glassmorphism) -->
-                <div :class="['p-1 rounded-lg bg-gradient-to-br',
-                  selectedDepartment.label === 'CCS' ? 'from-purple-600 to-purple-400' :
-                  selectedDepartment.label === 'COE' ? 'from-orange-600 to-orange-400' :
-                  selectedDepartment.label === 'SOM' ? 'from-green-600 to-green-400' :
-                  selectedDepartment.label === 'CNAHS' ? 'from-green-700 to-green-500' :
-                  'from-ssaam-dark to-ssaam-light']">
-                  <div class="bg-white/20 backdrop-blur-md rounded-lg p-3 sm:p-4 border border-white/30">
-                    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-2 sm:gap-3">
-                      <div class="flex-shrink-0">
-                        <img :src="selectedDepartment.logo" :alt="selectedDepartment.name" class="w-12 h-12 sm:w-16 sm:h-16 object-contain rounded-lg p-1" />
-                      </div>
-                      <div class="flex-1 text-center sm:text-left">
-                        <!-- college name with checkmark to indicate selection -->
-                        <div class="flex items-center justify-center sm:justify-start gap-1 mb-1">
-                          <h2 class="text-base sm:text-xl font-bold text-white leading-tight">{{ selectedDepartment.name }}</h2>
-                          <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                          </svg>
-                        </div>
-                        <p class="text-xs sm:text-sm text-gray-100 font-medium">{{ selectedDepartment.programs.length }} programs</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Programs List -->
-              <div class="space-y-3 sm:space-y-4">
-                <h3 class="text-base sm:text-lg font-bold text-gray-900 mb-2">Available Programs</h3>
-                <p class="text-xs sm:text-sm text-gray-600 mb-2">Please make sure your study program belongs to this college before confirming.</p>
-                <p v-if="currentUserProgram" :class="['text-xs sm:text-sm mb-4',
-                  isProgramAvailable ? 'text-green-700 font-medium' : 'text-red-700 font-medium']">
-                  {{ isProgramAvailable ? '✓ Your program is available in this college' : '✗ Your program is not available in this college' }}
-                </p>
-                <div class="bg-white/20 backdrop-blur-md p-2 sm:p-3 rounded-lg border border-white/30 max-h-[40vh] overflow-y-auto">
-                  <ul class="space-y-2">
-                    <li v-for="(program, idx) in selectedDepartment.programs" :key="idx" :class="['bg-white rounded-md p-2 sm:p-3 border border-gray-200 hover:border-gray-300 transition-all flex justify-between items-center',
-                      currentUserProgram && program.shortName === currentUserProgram ? 'ring-2 ring-green-300' : '']">
-                      <div>
-                        <p class="text-sm font-semibold text-gray-900">{{ program.fullName }}</p>
-                        <p class="text-xs text-gray-500 mt-1">Code: <span class="font-mono font-bold">{{ program.shortName }}</span></p>
-                      </div>
-                      <span v-if="currentUserProgram && program.shortName === currentUserProgram" class="text-green-500 font-bold text-lg">✓</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-
-              <!-- Action Buttons -->
-              <div class="flex flex-col sm:flex-row gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-white/20">
-                <button @click="confirmDepartment" :class="['flex-1 px-4 sm:px-6 py-2 sm:py-3 text-white text-sm sm:text-base rounded-lg font-semibold transition-all shadow-md hover:shadow-lg bg-gradient-to-r',
-                  selectedDepartment.label === 'CCS' ? 'from-purple-600 via-purple-500 to-purple-400 hover:from-purple-700 hover:via-purple-600 hover:to-purple-500' :
-                  selectedDepartment.label === 'COE' ? 'from-orange-600 via-orange-500 to-orange-400 hover:from-orange-700 hover:via-orange-600 hover:to-orange-500' :
-                  selectedDepartment.label === 'SOM' ? 'from-green-600 via-green-500 to-green-400 hover:from-green-700 hover:via-green-600 hover:to-green-500' :
-                  selectedDepartment.label === 'CNAHS' ? 'from-green-700 via-green-600 to-green-500 hover:from-green-800 hover:via-green-700 hover:to-green-600' :
-                  'from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light']">
-                  Confirm
-                </button>
-                <button @click="selectedDepartment = null" :class="['flex-1 px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition border',
-                  selectedDepartment.label === 'CCS' ? 'bg-purple-50 text-purple-800 border-purple-300 hover:bg-purple-100' :
-                  selectedDepartment.label === 'COE' ? 'bg-orange-50 text-orange-800 border-orange-300 hover:bg-orange-100' :
-                  selectedDepartment.label === 'SOM' ? 'bg-green-50 text-green-800 border-green-300 hover:bg-green-100' :
-                  selectedDepartment.label === 'CNAHS' ? 'bg-green-50 text-green-800 border-green-300 hover:bg-green-100' :
-                  'bg-blue-50 text-blue-800 border-blue-300 hover:bg-blue-100']">
-                  Back
-                </button>
-              </div>
-            </div>
-            <!-- Departments Grid -->
-            <div v-else :key="'departments'" class="space-y-3 sm:space-y-4">
-              <h2 class="text-xl sm:text-2xl font-bold text-blue-900 mb-4 sm:mb-6">Select College</h2>
-              <button 
-                v-for="dept in departments" 
-                :key="dept.id"
-                @click="selectedDepartment = dept"
-                :class="['w-full group p-4 sm:p-6 border-2 rounded-lg sm:rounded-xl hover:shadow-xl transition-all duration-300 text-left',
-                  dept.label === 'CCS' ? 'bg-purple-50 border-purple-200 hover:border-purple-400' :
-                  dept.label === 'COE' ? 'bg-orange-50 border-orange-200 hover:border-orange-400' :
-                  dept.label === 'SOM' ? 'bg-green-50 border-green-200 hover:border-green-400' :
-                  dept.label === 'CNAHS' ? 'bg-green-50 border-green-200 hover:border-green-400' :
-                  'bg-white border-blue-200 hover:border-blue-400']"
-              >
-                <div class="flex items-center gap-3 sm:gap-5">
-                  <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14">
-                    <img :src="dept.logo" :alt="dept.name" class="w-full h-full object-contain" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h3 :class="['text-sm sm:text-base font-bold transition-colors truncate',
-                      dept.label === 'CCS' ? 'text-purple-900 group-hover:text-purple-700' :
-                      dept.label === 'COE' ? 'text-orange-900 group-hover:text-orange-700' :
-                      dept.label === 'SOM' ? 'text-green-900 group-hover:text-green-700' :
-                      dept.label === 'CNAHS' ? 'text-green-900 group-hover:text-green-700' :
-                      'text-blue-900 group-hover:text-blue-600']">{{ dept.name }}</h3>
-                    <div class="mt-1.5 sm:mt-2 flex flex-wrap items-center gap-1.5 sm:gap-2">
-                      <span :class="['inline-block px-2 sm:px-3 py-0.5 sm:py-1 bg-gradient-to-r text-white text-xs font-bold rounded-full shadow-sm',
-                        dept.label === 'CCS' ? 'from-purple-700 via-purple-600 to-pink-600' :
-                        dept.label === 'COE' ? 'from-orange-700 via-orange-600 to-red-600' :
-                        dept.label === 'SOM' ? 'from-green-700 via-green-600 to-yellow-600' :
-                        dept.label === 'CNAHS' ? 'from-green-800 via-green-700 to-green-600' :
-                        'from-ssaam-dark to-ssaam-light']">{{ dept.label }}</span>
-                      <span class="text-xs text-gray-500 font-medium">{{ dept.programs.length }} program<span v-if="dept.programs.length !== 1">s</span></span>
-                    </div>
-                  </div>
-                  <svg :class="['w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition-transform flex-shrink-0',
-                    dept.label === 'CCS' ? 'text-purple-600' :
-                    dept.label === 'COE' ? 'text-orange-600' :
-                    dept.label === 'SOM' ? 'text-green-600' :
-                    dept.label === 'CNAHS' ? 'text-green-600' :
-                    'text-blue-600']">                    
-                    <path fill="currentColor" d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
-                  </svg>
-                </div>
-              </button>
-
-              <div class="flex gap-2 sm:gap-3 pt-3 sm:pt-4">
-                <button @click="showDepartmentModal = false; selectedDepartment = null" class="w-full px-4 sm:px-6 py-2 sm:py-2 bg-gray-200 text-gray-800 text-sm sm:text-base rounded-lg font-medium hover:bg-gray-300 transition">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </transition>
-        </div>
-      </transition>
-    </div>
-  </transition>
-
-  <ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" :theme="chosenDepartment ? chosenDepartment.label : ''" @complete="handleLoadingComplete" />
+  <ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" theme="" @complete="handleLoadingComplete" />
   <div class="hidden md:flex min-h-screen bg-white w-full">
     <div class="w-2/5 desktop-bg-panel flex-shrink-0">
       <div class="relative z-10 text-center">
@@ -401,33 +226,13 @@
               <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-80 opacity-65', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
             </div>
 
-            <button type="button" @click="showDepartmentModal = true" :class="['w-full py-3 px-6 rounded-full font-medium transition-all duration-300 flex items-center justify-center gap-3',
-              chosenDepartment ? 
-                (chosenDepartment.label === 'CCS' ? 'bg-purple-50 text-purple-900 hover:bg-purple-100' :
-                 chosenDepartment.label === 'COE' ? 'bg-orange-50 text-orange-900 hover:bg-orange-100' :
-                 chosenDepartment.label === 'SOM' ? 'bg-green-50 text-green-900 hover:bg-green-100' :
-                 chosenDepartment.label === 'CNAHS' ? 'bg-green-50 text-green-900 hover:bg-green-100' :
-                 'bg-blue-50 text-blue-900 hover:bg-blue-100')
-              : 'bg-green-50 text-gray-500 hover:bg-green-100']">
-              <template v-if="chosenDepartment">
-                <img :src="chosenDepartment.logo" :alt="chosenDepartment.name" class="w-6 h-6 object-contain rounded-md" />
-                <div class="text-left text-sm">
-                  <div class="font-semibold">{{ chosenDepartment.name }}</div>
-                </div>
-              </template>
-              <template v-else>
-                <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain opacity-65" />
-                <span class="text-sm">Select College</span>
-              </template>
-            </button>
-
             <div class="text-center">
               <button type="button" @click="showForgotPasswordModal = true" class="text-sm text-blue-500 hover:text-blue-700 font-medium">
                 Forgot your password?
               </button>
             </div>
 
-            <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
+            <button type="submit" :disabled="isLoading" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
               {{ isLoading ? 'Logging in...' : 'Log In' }}
             </button>
 
@@ -484,33 +289,13 @@
             <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-80 opacity-65', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
           </div>
 
-          <button type="button" @click="showDepartmentModal = true" :class="['w-full py-3 px-6 rounded-full font-medium transition-all duration-300 flex items-center justify-center gap-3',
-            chosenDepartment ? 
-              (chosenDepartment.label === 'CCS' ? 'bg-purple-50 text-purple-900 hover:bg-purple-100' :
-               chosenDepartment.label === 'COE' ? 'bg-orange-50 text-orange-900 hover:bg-orange-100' :
-               chosenDepartment.label === 'SOM' ? 'bg-green-50 text-green-900 hover:bg-green-100' :
-               chosenDepartment.label === 'CNAHS' ? 'bg-green-50 text-green-900 hover:bg-green-100' :
-               'bg-blue-50 text-blue-900 hover:bg-blue-100')
-            : 'bg-green-50 text-gray-500 hover:bg-green-100']">
-            <template v-if="chosenDepartment">
-              <img :src="chosenDepartment.logo" :alt="chosenDepartment.name" class="w-6 h-6 object-contain rounded-md" />
-              <div class="text-left text-sm">
-                <div class="font-semibold">{{ chosenDepartment.name }}</div>
-              </div>
-            </template>
-            <template v-else>
-              <img src="/department.svg" alt="Department" class="w-5 h-5 object-contain opacity-65" />
-              <span class="text-sm">Select College</span>
-            </template>
-          </button>
-
           <div class="text-center">
             <button type="button" @click="showForgotPasswordModal = true" class="text-sm text-blue-500 hover:text-blue-700 font-medium">
               Forgot your password?
             </button>
           </div>
 
-          <button type="submit" :disabled="isLoading || !chosenDepartment" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
+          <button type="submit" :disabled="isLoading" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
             {{ isLoading ? 'Logging in...' : 'Log In' }}
           </button>
 
@@ -666,22 +451,6 @@ const isSOM = computed(() => {
   return false
 })
 
-// Get current user's program for program availability checking
-const currentUserProgram = computed(() => {
-  try {
-    const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
-    const user = userJson ? JSON.parse(userJson) : {}
-    return user.program || null
-  } catch (e) {}
-  return null
-})
-
-// Check if current user's program is available in selected department
-const isProgramAvailable = computed(() => {
-  if (!currentUserProgram.value || !selectedDepartment.value) return false
-  return selectedDepartment.value.programs.some(p => p.shortName === currentUserProgram.value)
-})
-
 const router = useRouter()
 const studentId = ref('')
 const password = ref('')
@@ -696,9 +465,6 @@ const handleLoadingComplete = () => {
 
 const showDevelopersPopup = ref(false)
 const showErrorNotification = ref(false)
-const showCollegeMismatch = ref(false)
-const mismatchCollege = ref('')
-const mismatchMessage = ref('')
 const showContactModal = ref(false)
 const errorMessage = ref('')
 const showPassword = ref(false)
@@ -711,52 +477,6 @@ const verificationInputs = ref([])
 const verificationError = ref(false)
 const verificationErrorMessage = ref('')
 let pendingUser = null
-
-const mismatchLogo = computed(() => {
-  try {
-    const label = (mismatchCollege.value || '').toUpperCase()
-    const dept = departments.find(d => d.label === label)
-    return dept ? dept.logo : '/icons/ccs.svg'
-  } catch (e) {
-    return '/icons/ccs.svg'
-  }
-})
-
-const goToCollegePortal = () => {
-  try {
-    const label = (mismatchCollege.value || '').toUpperCase()
-    const dept = departments.find(d => d.label === label)
-    if (dept) {
-      chosenDepartment.value = dept
-      try { localStorage.setItem('loginChosenDepartment', dept.label) } catch (e) {}
-    }
-  } finally {
-    showCollegeMismatch.value = false
-  }
-}
-
-// Accessibility & focus management for mismatch modal
-const collegeMismatchModal = ref(null)
-const mismatchPrimary = ref(null)
-
-const handleMismatchKeydown = (e) => {
-  if (!showCollegeMismatch.value) return
-  if (e.key === 'Escape') {
-    showCollegeMismatch.value = false
-  }
-}
-
-watch(showCollegeMismatch, async (val) => {
-  if (val) {
-    await nextTick()
-    // prefer focusing primary action for quick keyboard access
-    if (mismatchPrimary.value && typeof mismatchPrimary.value.focus === 'function') {
-      mismatchPrimary.value.focus()
-    } else if (collegeMismatchModal.value && typeof collegeMismatchModal.value.focus === 'function') {
-      collegeMismatchModal.value.focus()
-    }
-  }
-})
 
 const handleDigitInput = (index, event) => {
   const val = event.target.value;
@@ -791,48 +511,7 @@ const resetLoading = ref(false)
 const resetMessage = ref('')
 const resetSuccess = ref(false)
 
-// Department Selector
-const showDepartmentModal = ref(false)
-const selectedDepartment = ref(null)
-
-// chosen selections to show on main UI
-const chosenDepartment = ref(null)
-const chosenProgram = ref(null)
 const apiFallbackUsed = ref(false)
-
-const chooseDepartment = (dept) => {
-  // choose the department and auto-select the first program
-  chosenDepartment.value = dept
-  chosenProgram.value = (dept.programs && dept.programs.length) ? dept.programs[0] : null
-  showDepartmentModal.value = false
-  // clear any transient selection state
-  selectedDepartment.value = null
-  // persist selection so API module can pick COE endpoint pre-login
-  try { localStorage.setItem('loginChosenDepartment', dept.label) } catch (e) {}
-  if (chosenProgram.value) try { localStorage.setItem('loginChosenProgram', chosenProgram.value.shortName) } catch (e) {}
-}
-
-const selectProgram = (program) => {
-  console.log('Selected program:', program)
-  // set chosen program and close modal
-  chosenProgram.value = program
-  // ensure chosenDepartment is set (in case user navigated to programs)
-  if (selectedDepartment.value) chosenDepartment.value = selectedDepartment.value
-  showDepartmentModal.value = false
-  selectedDepartment.value = null
-  try { localStorage.setItem('loginChosenProgram', program.shortName) } catch (e) {}
-  if (chosenDepartment.value) try { localStorage.setItem('loginChosenDepartment', chosenDepartment.value.label) } catch (e) {}
-}
-
-const confirmDepartment = () => {
-  // set the chosen department only, no program selection
-  chosenDepartment.value = selectedDepartment.value
-  chosenProgram.value = null
-  showDepartmentModal.value = false
-  selectedDepartment.value = null
-  try { localStorage.setItem('loginChosenDepartment', chosenDepartment.value ? chosenDepartment.value.label : '') } catch (e) {}
-  try { localStorage.removeItem('loginChosenProgram') } catch (e) {}
-}
 
 const closeForgotPasswordModal = () => {
   showForgotPasswordModal.value = false
@@ -1023,13 +702,6 @@ onMounted(async () => {
 })
 
 const handleLogin = async () => {
-  // Check if department is selected
-  if (!chosenDepartment.value) {
-    errorMessage.value = "Please select a department to continue."
-    showErrorNotification.value = true
-    return
-  }
-
   // Check if login is disabled (for students only)
   const enteredId = studentId.value.trim();
   const startsWithLetter = /^[a-zA-Z]/.test(enteredId);
@@ -1100,10 +772,7 @@ const handleLogin = async () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer SSAAMRegJRMSU`,
-          // include college selection so backend knows where to store the session
-          // token (previously masters always went to CCS because no header was sent)
-          'X-SSAAM-College': chosenDepartment.value ? chosenDepartment.value.label : ''
+          'Authorization': `Bearer SSAAMRegJRMSU`
         },
         body: JSON.stringify({
           username: enteredId,
@@ -1124,44 +793,58 @@ const handleLogin = async () => {
         return;
       }
     } else {
-      // Use POST login endpoint for students (safeFetch will fallback if network fails)
-      const response = await safeFetch('/apis/students/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer SSAAMStudents`,
-          'X-SSAAM-College': chosenDepartment.value.label
-        },
-        body: JSON.stringify({
-          student_id: enteredId,
-          last_name: enteredPass,
-          _ssaam_access_token: encodeTimestamp()
-        })
-      });
-      const data = await response.json();
-      console.log("API STUDENT LOGIN RESPONSE:", data);
+      // Auto-detect college: try each college in order until login succeeds
+      const collegeOrder = ['CCS', 'COE', 'SOM', 'CNAHS', 'CAS', 'CBA', 'CJPA', 'CED']
+      let finalResponse = null
+      let finalData = null
+      let detectedCollege = null
 
-      // If backend returned 403 and a college-mismatch message, show dedicated modal
-      if (response.status === 403 && data && typeof data.message === 'string' && /belongs to the/i.test(data.message)) {
-        const match = data.message.match(/belongs to the ([A-Za-z]+)/i);
-        mismatchCollege.value = match ? match[1].toUpperCase() : (chosenDepartment.value ? chosenDepartment.value.label : 'CCS');
-        mismatchMessage.value = data.message;
-        showCollegeMismatch.value = true;
-        isLoading.value = false;
-        return;
+      for (const college of collegeOrder) {
+        const resp = await safeFetch('/apis/students/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer SSAAMStudents`,
+            'X-SSAAM-College': college
+          },
+          body: JSON.stringify({
+            student_id: enteredId,
+            last_name: enteredPass,
+            _ssaam_access_token: encodeTimestamp()
+          })
+        })
+        const d = await resp.json()
+        console.log(`API STUDENT LOGIN RESPONSE (${college}):`, d)
+
+        if (d.student && d.message === 'Login successful') {
+          finalResponse = resp
+          finalData = d
+          detectedCollege = college
+          break
+        }
+        // 403 mismatch means this college is wrong — try the next one
+        if (resp.status === 403 && d && typeof d.message === 'string' && /belongs to the/i.test(d.message)) {
+          continue
+        }
+        // Any other error (wrong password, not found, pending) — surface immediately
+        finalResponse = resp
+        finalData = d
+        break
       }
 
-      if (data.student && data.message === "Login successful") {
-        user = data.student;
-        user.token = data.token; // Token is returned at top level, not inside student object
-        user.requiresPasswordUpdate = data.requiresPasswordUpdate || false;
+      const data = finalData || {}
+      if (data.student && data.message === 'Login successful') {
+        user = data.student
+        user.token = finalData.token
+        user.requiresPasswordUpdate = finalData.requiresPasswordUpdate || false
+        user._detectedCollege = detectedCollege
       } else if (data.message) {
-        errorMessage.value = data.accountPending 
-          ? "Your account is pending approval. Please wait for an admin to approve your registration. You will receive an email notification once approved."
-          : data.message;
-        showErrorNotification.value = true;
-        isLoading.value = false;
-        return;
+        errorMessage.value = data.accountPending
+          ? 'Your account is pending approval. Please wait for an admin to approve your registration. You will receive an email notification once approved.'
+          : data.message
+        showErrorNotification.value = true
+        isLoading.value = false
+        return
       }
     }
 
@@ -1187,7 +870,9 @@ const handleLogin = async () => {
         isMaster: startsWithLetter,
         token: user.token || '',
         requiresPasswordUpdate: user.requiresPasswordUpdate || false,
-        selectedDepartment: chosenDepartment.value
+        selectedDepartment: user._detectedCollege
+          ? (departments.find(d => d.label === user._detectedCollege) || null)
+          : null
       };
       localStorage.removeItem('likeActionTimestamps')
       localStorage.removeItem('likeBanUntil')
