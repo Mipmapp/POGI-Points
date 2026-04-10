@@ -5,8 +5,9 @@
         <img :src="departmentLogo" :alt="isCOE ? 'COE Logo' : 'JRMSU CCS Logo'" class="w-full h-full object-contain drop-shadow-2xl" />
       </div>
       <div>
-        <h1 class="text-4xl font-bold text-white mb-2">SSAAM</h1>
-        <p class="text-lg text-white opacity-90">Student School Activities Attendance Monitoring</p>
+        <h1 class="text-6xl font-extrabold italic text-white mb-1 tracking-wide drop-shadow-lg">SSAAM</h1>
+        <p class="text-[10px] uppercase tracking-widest text-white/60 mb-1">JRMSU</p>
+        <p class="text-base text-white opacity-90">Student School Activities Attendance Monitoring</p>
       </div>
       <div class="flex gap-2 mt-8">
         <div class="w-3 h-3 rounded-full bg-white animate-pulse"></div>

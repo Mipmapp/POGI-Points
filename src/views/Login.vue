@@ -109,17 +109,21 @@
   <transition name="fade">
     <div v-if="showErrorNotification" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-sm w-full mx-4 text-center transform transition-all border border-red-200">
-          <div class="w-20 h-20 mx-auto mb-4 bg-red-50 rounded-full flex items-center justify-center">
-            <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-            </svg>
+        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden">
+          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-4 flex items-center gap-3">
+            <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-white">Oops!</h3>
           </div>
-          <h3 class="text-xl font-bold text-red-600 mb-2">Oops!</h3>
-          <p class="text-red-700 font-medium px-4">{{ errorMessage }}</p>
-          <button @click="showErrorNotification = false" class="mt-6 px-6 py-2 bg-gradient-to-r from-red-600 to-red-500 text-white rounded-lg font-medium hover:from-red-700 hover:to-red-600 transition duration-300">
-            Try Again
-          </button>
+          <div class="p-6 text-center">
+            <p class="text-gray-700 font-medium px-2">{{ errorMessage }}</p>
+            <button @click="showErrorNotification = false" class="mt-6 px-8 py-2.5 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-full font-semibold hover:opacity-90 transition duration-300 shadow-md">
+              Try Again
+            </button>
+          </div>
         </div>
       </transition>
     </div>
