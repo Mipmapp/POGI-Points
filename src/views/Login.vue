@@ -1306,7 +1306,7 @@ const verifyAdminCode = () => {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(135deg, #1300bf 0%, #311bf5 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1e3bdb 0%, #4f62ff 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   display: flex;
@@ -1321,7 +1321,7 @@ const verifyAdminCode = () => {
 }
 
 .mobile-bg-panel {
-  background: linear-gradient(135deg, #1300bf 0%, #311bf5 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1e3bdb 0%, #4f62ff 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   position: relative;
@@ -1450,7 +1450,7 @@ const verifyAdminCode = () => {
 
 /* Button hover glow and subtle gradient animation */
 .modal-primary {
-  background-image: linear-gradient(90deg, #1300bf 0%, #311bf5 100%);
+  background-image: linear-gradient(90deg, #1e3bdb 0%, #4f62ff 100%);
 }
 .modal-primary:hover { box-shadow: 0 12px 30px rgba(37,99,235,0.18); }
 .modal-secondary:hover { box-shadow: 0 8px 20px rgba(15,23,42,0.06); }

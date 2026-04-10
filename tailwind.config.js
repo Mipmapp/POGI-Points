@@ -23,8 +23,8 @@ export default {
         'som-green': '#0ea5a4',
         'som-yellow': '#facc15',
         /* SSAAM brand gradient colors */
-        'ssaam-dark': '#1300bf',
-        'ssaam-light': '#311bf5',
+        'ssaam-dark': '#1e3bdb',
+        'ssaam-light': '#4f62ff',
       },
     },
   },

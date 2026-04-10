@@ -1522,7 +1522,7 @@ const goToLogin = () => {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(135deg, #1300bf 0%, #311bf5 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1e3bdb 0%, #4f62ff 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   width: 40%;
@@ -1540,7 +1540,7 @@ const goToLogin = () => {
 }
 
 .mobile-bg-panel {
-  background: linear-gradient(135deg, #1300bf 0%, #311bf5 100%), url('/classroom-bg.jpg');
+  background: linear-gradient(135deg, #1e3bdb 0%, #4f62ff 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
   position: relative;

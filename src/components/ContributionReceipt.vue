@@ -72,7 +72,7 @@
                   </div>
 
                   <!-- Student Information Section -->
-                  <div style="background: linear-gradient(to right, #1300bf, #311bf5); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                  <div style="background: linear-gradient(to right, #1e3bdb, #4f62ff); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
                     <h3 style="margin: 0 0 0.75rem 0; font-size: 14px; font-weight: bold; text-transform: uppercase;">Student Information</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 12px;">
                       <div>
@@ -211,7 +211,7 @@
         </div>
 
         <!-- Student Information Section -->
-        <div style="background: linear-gradient(to right, #1300bf, #311bf5); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+        <div style="background: linear-gradient(to right, #1e3bdb, #4f62ff); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
           <h3 style="margin: 0 0 0.75rem 0; font-size: 14px; font-weight: bold; text-transform: uppercase;">Student Information</h3>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 12px;">
             <div>
