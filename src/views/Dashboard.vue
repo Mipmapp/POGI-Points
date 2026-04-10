@@ -546,12 +546,12 @@
   <transition name="fade">
     <div v-if="showLogoutAnimation" :class="logoutBgClass" :style="logoutBgStyle">
       <div class="text-center text-white flex flex-col items-center gap-4">
-        <div class="w-20 h-20 flex items-center justify-center drop-shadow-2xl">
-          <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-full h-full object-contain" />
-        </div>
-        <div class="leading-tight">
-          <h1 class="text-5xl font-extrabold italic tracking-wide drop-shadow-lg">SSAAM</h1>
-          <p class="text-[10px] uppercase tracking-widest text-white/60 mt-0.5">JRMSU</p>
+        <div class="flex items-center gap-3">
+          <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-14 h-14 object-contain drop-shadow-2xl flex-shrink-0" />
+          <div class="leading-tight text-left">
+            <h1 class="text-5xl font-extrabold italic tracking-wide drop-shadow-lg">SSAAM</h1>
+            <p class="text-xs text-white/60 mt-0.5">Student School Activities Attendance Monitoring</p>
+          </div>
         </div>
         <p class="text-lg font-semibold opacity-90">Logging Out</p>
         <svg class="animate-spin h-10 w-10 text-white opacity-80" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
