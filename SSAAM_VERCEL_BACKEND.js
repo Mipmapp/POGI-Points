@@ -298,7 +298,7 @@ const VALID_PROGRAMS = ['BSCS', 'BSIT', 'BSIS', 'BSM'];
 const VALID_SUFFIXES = ['', 'Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const VALID_SEMESTERS = ['1st Sem', '2nd Sem'];
 const VALID_YEAR_LEVELS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
-const VALID_ROLES = ['student', 'medpub', 'treasurer'];
+const VALID_ROLES = ['student'];
 const VALID_RFID_STATUS = ['verified', 'unverified', 'Unreadable'];
 
 // Rate limiting for likes (in-memory, resets on serverless cold start)
@@ -833,7 +833,7 @@ app.get('/apis/contributions/transparency', async (req, res) => {
 // ==================== PAYMENT ENDPOINTS ====================
 
 // Create new payment
-app.post('/apis/payments', adminOrTreasurerAuth, async (req, res) => {
+app.post('/apis/payments', auth, async (req, res) => {
     try {
         const { title, description, type, amount_due, deadline } = req.body;
 
@@ -1040,7 +1040,7 @@ const autoFixStudentIds = async (college) => {
 };
 
 // Migrate old student IDs (ObjectId) to proper student IDs (like 25-A-XXXXX)
-app.post('/apis/payments/migrate/fix-student-ids', adminOrTreasurerAuth, async (req, res) => {
+app.post('/apis/payments/migrate/fix-student-ids', auth, async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
@@ -1153,7 +1153,7 @@ app.get('/apis/payments/:id', auth, async (req, res) => {
 });
 
 // Mark student as paid using RFID or Student ID
-app.put('/apis/payments/:paymentId/mark-paid', adminOrTreasurerAuth, async (req, res) => {
+app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
     try {
         const { student_id_input, amount_paid, notes, payment_method } = req.body;
         const { paymentId } = req.params;
@@ -1250,7 +1250,7 @@ app.put('/apis/payments/:paymentId/mark-paid', adminOrTreasurerAuth, async (req,
 });
 
 // Mark student as unpaid
-app.put('/apis/payments/:paymentId/mark-unpaid', adminOrTreasurerAuth, async (req, res) => {
+app.put('/apis/payments/:paymentId/mark-unpaid', auth, async (req, res) => {
     try {
         const { student_id_input } = req.body;
         const { paymentId } = req.params;
@@ -1341,7 +1341,7 @@ app.get('/apis/payments/:paymentId/student/:studentId', async (req, res) => {
 });
 
 // Apply discount to payment record
-app.put('/apis/payments/:paymentId/apply-discount', adminOrTreasurerAuth, async (req, res) => {
+app.put('/apis/payments/:paymentId/apply-discount', auth, async (req, res) => {
     try {
         const { paymentId } = req.params;
         const { studentId, discountType, discountPercentage, discountFixedAmount, discountReason } = req.body;
@@ -1409,7 +1409,7 @@ app.put('/apis/payments/:paymentId/apply-discount', adminOrTreasurerAuth, async 
 });
 
 // Update payment status (close/archive)
-app.put('/apis/payments/:id', adminOrTreasurerAuth, async (req, res) => {
+app.put('/apis/payments/:id', auth, async (req, res) => {
     try {
         const { status, description } = req.body;
 
@@ -1436,7 +1436,7 @@ app.put('/apis/payments/:id', adminOrTreasurerAuth, async (req, res) => {
 });
 
 // Delete payment record for a student
-app.delete('/apis/payments/:paymentId/student/:studentId', adminOrTreasurerAuth, async (req, res) => {
+app.delete('/apis/payments/:paymentId/student/:studentId', auth, async (req, res) => {
     try {
         const { paymentId, studentId } = req.params;
 
@@ -1488,7 +1488,7 @@ app.delete('/apis/payments/:paymentId/student/:studentId', adminOrTreasurerAuth,
 });
 
 // Delete entire payment campaign
-app.delete('/apis/payments/:paymentId', adminOrTreasurerAuth, async (req, res) => {
+app.delete('/apis/payments/:paymentId', auth, async (req, res) => {
     try {
         const { paymentId } = req.params;
 
@@ -1544,7 +1544,7 @@ app.delete('/apis/payments/:paymentId', adminOrTreasurerAuth, async (req, res) =
 });
 
 // Update payment campaign status (Active/Closed)
-app.put('/apis/payments/:paymentId/status', adminOrTreasurerAuth, async (req, res) => {
+app.put('/apis/payments/:paymentId/status', auth, async (req, res) => {
     try {
         const { paymentId } = req.params;
         const { status } = req.body;
@@ -1615,7 +1615,7 @@ app.put('/apis/payments/:paymentId/status', adminOrTreasurerAuth, async (req, re
 });
 
 // Sync payment campaign with all approved students (add missing students)
-app.post('/apis/payments/:paymentId/sync-students', adminOrTreasurerAuth, async (req, res) => {
+app.post('/apis/payments/:paymentId/sync-students', auth, async (req, res) => {
     try {
         const { paymentId } = req.params;
 
@@ -1689,7 +1689,7 @@ app.post('/apis/payments/:paymentId/sync-students', adminOrTreasurerAuth, async 
 });
 
 // Deduplicate payment records (remove duplicate campaigns within consolidated records)
-app.post('/apis/payments/:paymentId/deduplicate', adminOrTreasurerAuth, async (req, res) => {
+app.post('/apis/payments/:paymentId/deduplicate', auth, async (req, res) => {
     try {
         const { paymentId } = req.params;
 
@@ -2198,7 +2198,12 @@ const masterSchema = new mongoose.Schema({
     password: { type: String, required: true },
     role: { type: String, enum: ['admin', 'co-admin'], default: 'admin' },
     college: { type: String, enum: ['CCS', 'COE', 'SOM', 'CNAHS'], default: 'CCS' },
-    created_at: { type: Date, default: Date.now }
+    full_name: { type: String, default: null },
+    phone: { type: String, default: null },
+    photo: { type: String, default: null },
+    bio: { type: String, default: null },
+    created_at: { type: Date, default: Date.now },
+    updated_at: { type: Date, default: Date.now }
 });
 
 masterSchema.methods.toJSON = function () {
@@ -2262,7 +2267,7 @@ const notificationSchema = new mongoose.Schema({
     title: { type: String, required: true, maxlength: 200 },
     image_url: { type: String, default: null },
     message: { type: String, required: true, maxlength: 2000 },
-    posted_by: { type: String, required: true, enum: ['admin', 'medpub'] },
+    posted_by: { type: String, required: true, enum: ['admin', 'co-admin'] },
     posted_by_name: { type: String, required: true },
     posted_by_id: { type: mongoose.Schema.Types.ObjectId, required: true },
     priority: { type: String, enum: ['normal', 'important', 'urgent'], default: 'normal' },
@@ -2785,16 +2790,6 @@ async function studentAuthWithToken(req, res, next) {
             return res.status(404).json({ message: "Student not found" });
         }
 
-        if (decoded.role === 'medpub') {
-            if (student.role !== 'medpub') {
-                await SessionTokenModel.updateOne({ _id: sessionToken._id }, { is_revoked: true });
-                return res.status(403).json({
-                    message: "Your MedPub access has been revoked. Please login again.",
-                    code: 'MEDPUB_ACCESS_REVOKED'
-                });
-            }
-        }
-
         req.user = decoded;
         req.student = student;
         req.sessionToken = sessionToken;
@@ -2868,124 +2863,8 @@ function enforceCoAdminCollege(req, res, next) {
 
 
 
-// Middleware for treasurer role authorization
-async function treasurerAuth(req, res, next) {
-    const token = extractToken(req);
-
-    if (!token) {
-        return res.status(401).json({ message: "Unauthorized: No token provided" });
-    }
-
-    try {
-        const decoded = jwt.verify(token, SSAAM_API_KEY);
-
-        const tokenHash = hashToken(token);
-        const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, req.college);
-        const sessionToken = await SessionTokenModel.findOneAndUpdate(
-            {
-                token_hash: tokenHash,
-                is_revoked: false,
-                expires_at: { $gt: new Date() }
-            },
-            { last_used_at: new Date() },
-            { new: true }
-        );
-
-        if (!sessionToken) {
-            return res.status(401).json({ message: "Session expired or invalid. Please login again." });
-        }
-
-        // Fetch the full student document (college-aware)
-        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-        const student = await StudentModel.findOne({ student_id: decoded.student_id });
-        if (!student) {
-            return res.status(404).json({ message: "Student not found" });
-        }
-
-        // Check if user has treasurer role
-        if (student.role !== 'treasurer') {
-            return res.status(403).json({
-                message: "Access denied. Treasurer role required.",
-                code: 'TREASURER_ACCESS_REQUIRED'
-            });
-        }
-
-        req.user = decoded;
-        req.student = student;
-        req.sessionToken = sessionToken;
-        next();
-    } catch (err) {
-        return res.status(401).json({ message: "Invalid token." });
-    }
-}
-
-// Middleware for both admin and treasurer authorization
-async function adminOrTreasurerAuth(req, res, next) {
-    const token = extractToken(req);
-
-    if (!token) {
-        return res.status(401).json({ message: "Unauthorized: No token provided" });
-    }
-
-    try {
-        const decoded = jwt.verify(token, SSAAM_API_KEY);
-
-        const tokenHash = hashToken(token);
-        const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, req.college);
-        const sessionToken = await SessionTokenModel.findOneAndUpdate(
-            {
-                token_hash: tokenHash,
-                is_revoked: false,
-                expires_at: { $gt: new Date() }
-            },
-            { last_used_at: new Date() },
-            { new: true }
-        );
-
-        if (!sessionToken) {
-            return res.status(401).json({ message: "Session expired or invalid. Please login again." });
-        }
-
-        // Check if this is an admin/master login
-        if (decoded.isMaster) {
-            // For admin/master users, verify from Master collection
-            const master = await Master.findById(decoded.id);
-            if (!master) {
-                return res.status(404).json({ message: "Admin user not found" });
-            }
-            req.user = decoded;
-            req.master = master;
-            req.sessionToken = sessionToken;
-            next();
-        } else {
-            // For treasurer logins, verify from Student collection (college-aware)
-            const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-            const student = await StudentModel.findOne({ student_id: decoded.student_id });
-            if (!student) {
-                return res.status(404).json({ message: "Student not found" });
-            }
-
-            // Check if user has treasurer role
-            if (student.role !== 'treasurer' && student.role !== 'admin') {
-                return res.status(403).json({
-                    message: "Access denied. Treasurer role required.",
-                    code: 'TREASURER_ACCESS_REQUIRED'
-                });
-            }
-
-            req.user = decoded;
-            req.student = student;
-            req.sessionToken = sessionToken;
-            next();
-        }
-    } catch (err) {
-        return res.status(401).json({ message: "Invalid token." });
-    }
-}
-
-// Middleware that allows student, medpub, and treasurer roles to search
-// Non-treasurers can only search for their own student_id
-async function studentMedpubTreasurerAuth(req, res, next) {
+// Middleware that allows students to search — students can only access their own data
+async function studentSearchAuth(req, res, next) {
     const token = req.headers.authorization?.split(" ")[1];
 
     if (!token) {
@@ -3011,9 +2890,7 @@ async function studentMedpubTreasurerAuth(req, res, next) {
             return res.status(401).json({ message: "Session expired or invalid. Please login again." });
         }
 
-        // Check if this is an admin/master login
         if (decoded.isMaster) {
-            // For admin/master users, verify from Master collection
             const master = await Master.findById(decoded.id);
             if (!master) {
                 return res.status(404).json({ message: "Admin user not found" });
@@ -3021,34 +2898,27 @@ async function studentMedpubTreasurerAuth(req, res, next) {
             req.user = decoded;
             req.master = master;
             req.sessionToken = sessionToken;
-            req.isTreasurer = true;
+            req.isAdmin = true;
             next();
         } else {
-            // For non-admin logins, verify from Student collection (college-aware)
             const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
             const student = await StudentModel.findOne({ student_id: decoded.student_id });
             if (!student) {
                 return res.status(401).json({ message: "Student not found" });
             }
 
-            // Verify token student_id matches database record
-            // This prevents token tampering or session hijacking
             if (student.student_id !== decoded.student_id) {
                 console.warn(`[SECURITY] Token/Database mismatch for student ${decoded.student_id}`);
                 return res.status(401).json({ message: "Session validation failed. Please login again." });
             }
 
-            // Check if user has student, medpub, or treasurer role
-            const allowedRoles = ['student', 'medpub', 'treasurer', 'admin'];
-            if (!allowedRoles.includes(student.role)) {
+            if (!VALID_ROLES.includes(student.role)) {
                 return res.status(403).json({
-                    message: "Access denied. Student, medpub, or treasurer role required.",
+                    message: "Access denied. Valid student role required.",
                     code: 'INSUFFICIENT_ROLE'
                 });
             }
 
-            // Verify session token belongs to this student
-            // Compare as strings to handle ObjectId properly
             if (sessionToken.user_id) {
                 const tokenUserId = sessionToken.user_id.toString();
                 const studentId = student._id.toString();
@@ -3061,7 +2931,7 @@ async function studentMedpubTreasurerAuth(req, res, next) {
             req.user = decoded;
             req.student = student;
             req.sessionToken = sessionToken;
-            req.isTreasurer = student.role === 'treasurer' || student.role === 'admin';
+            req.isAdmin = false;
             next();
         }
     } catch (err) {
@@ -3496,7 +3366,7 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
 });
 
 // Get all students with full names for custom event selection
-app.get('/apis/students/list/all', adminOrTreasurerAuth, async (req, res) => {
+app.get('/apis/students/list/all', auth, async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
@@ -3529,7 +3399,7 @@ app.get('/apis/students/list/all', adminOrTreasurerAuth, async (req, res) => {
 });
 
 // Search for student by ID or RFID (POST endpoint for payment verification)
-app.post('/apis/students/search', adminOrTreasurerAuth, async (req, res) => {
+app.post('/apis/students/search', auth, async (req, res) => {
     try {
         const { search_query } = req.body;
 
@@ -3567,7 +3437,7 @@ app.post('/apis/students/search', adminOrTreasurerAuth, async (req, res) => {
     }
 });
 
-app.get('/apis/students/search', studentMedpubTreasurerAuth, async (req, res) => {
+app.get('/apis/students/search', studentSearchAuth, async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const page = parseInt(req.query.page) || 1;
@@ -3580,8 +3450,8 @@ app.get('/apis/students/search', studentMedpubTreasurerAuth, async (req, res) =>
 
         const filter = { status: 'approved' };
 
-        // If user is not a treasurer, restrict to their own student_id
-        if (!req.isTreasurer) {
+        // Students can only access their own data; admins can search all
+        if (!req.isAdmin) {
             const userStudentId = req.student?.student_id;
             if (!userStudentId) {
                 return res.status(403).json({
@@ -3603,7 +3473,7 @@ app.get('/apis/students/search', studentMedpubTreasurerAuth, async (req, res) =>
                 });
             }
         } else {
-            // For treasurers, apply search filter if provided
+            // Admin: apply search filter if provided
             if (search.trim()) {
                 const escapedSearch = escapeRegex(search.trim());
                 filter.$or = [
@@ -3655,8 +3525,8 @@ app.get('/apis/students/search', studentMedpubTreasurerAuth, async (req, res) =>
             .limit(limit)
             .sort({ created_date: -1 });
 
-        // Additional security: for non-treasurers, verify all returned results belong to them
-        if (!req.isTreasurer) {
+        // Additional security: for students, verify all returned results belong to them
+        if (!req.isAdmin) {
             const userStudentId = req.student?.student_id;
             for (const student of students) {
                 if (student.student_id !== userStudentId) {
@@ -5008,6 +4878,134 @@ app.delete('/apis/co-admin/:id', auth, requireMaster, requireSuperAdmin, async (
     }
 });
 
+// Transfer co-admin role to another master account (super admin only)
+// Allows the super admin to move a college's co-admin assignment to a different account
+app.post('/apis/co-admin/:id/transfer', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+    try {
+        const { target_id, target_username } = req.body;
+
+        const sourceCoAdmin = await Master.findOne({ _id: req.params.id, role: 'co-admin' });
+        if (!sourceCoAdmin) return res.status(404).json({ message: "Source co-admin not found" });
+
+        let targetMaster;
+        if (target_id) {
+            targetMaster = await Master.findById(target_id);
+        } else if (target_username) {
+            targetMaster = await Master.findOne({ username: target_username });
+        }
+
+        if (!targetMaster) return res.status(404).json({ message: "Target account not found" });
+        if (targetMaster._id.toString() === sourceCoAdmin._id.toString()) {
+            return res.status(400).json({ message: "Source and target accounts are the same" });
+        }
+
+        const college = sourceCoAdmin.college;
+
+        // Demote source co-admin (or delete if they have no other purpose)
+        await Master.deleteOne({ _id: sourceCoAdmin._id });
+
+        // Assign the co-admin role and college to the target
+        targetMaster.role = 'co-admin';
+        targetMaster.college = college;
+        targetMaster.updated_at = new Date();
+        await targetMaster.save();
+
+        res.json({
+            message: `Co-admin role for ${college} transferred to ${targetMaster.username}`,
+            co_admin: targetMaster
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Co-admin self-transfer: only the co-admin can transfer their own role
+app.post('/apis/co-admin/me/transfer', auth, requireMaster, async (req, res) => {
+    try {
+        const callerId = req.master.id || req.master._id;
+        const caller = await Master.findById(callerId);
+        if (!caller || caller.role !== 'co-admin') {
+            return res.status(403).json({ message: "Only co-admins can self-transfer their role" });
+        }
+
+        const { target_username } = req.body;
+        if (!target_username) return res.status(400).json({ message: "target_username is required" });
+
+        const target = await Master.findOne({ username: target_username });
+        if (!target) return res.status(404).json({ message: "Target account not found" });
+        if (target._id.toString() === caller._id.toString()) {
+            return res.status(400).json({ message: "Cannot transfer role to yourself" });
+        }
+
+        const college = caller.college;
+
+        // Remove source co-admin record
+        await Master.deleteOne({ _id: caller._id });
+
+        // Grant co-admin role and college to the target
+        target.role = 'co-admin';
+        target.college = college;
+        target.updated_at = new Date();
+        await target.save();
+
+        res.json({ message: `Co-admin role for ${college} transferred to ${target.username}` });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ==================== ADMIN PROFILE ENDPOINTS ====================
+
+// Get current admin/co-admin own profile
+app.get('/apis/admin/me', auth, requireMaster, async (req, res) => {
+    try {
+        const master = await Master.findById(req.master.id || req.master._id).select('-password');
+        if (!master) return res.status(404).json({ message: "Admin account not found" });
+        res.json(master);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Update current admin/co-admin own profile
+app.put('/apis/admin/me', auth, requireMaster, async (req, res) => {
+    try {
+        const { full_name, phone, bio, photo, current_password, new_password } = req.body;
+
+        const master = await Master.findById(req.master.id || req.master._id);
+        if (!master) return res.status(404).json({ message: "Admin account not found" });
+
+        if (typeof full_name === 'string') master.full_name = full_name.trim() || null;
+        if (typeof phone === 'string') master.phone = phone.trim() || null;
+        if (typeof bio === 'string') master.bio = bio.trim() || null;
+        if (typeof photo === 'string') master.photo = photo.trim() || null;
+
+        if (new_password) {
+            if (!current_password) {
+                return res.status(400).json({ message: "Current password is required to set a new password" });
+            }
+            const passwordMatch = await bcrypt.compare(current_password, master.password);
+            if (!passwordMatch) {
+                return res.status(400).json({ message: "Current password is incorrect" });
+            }
+            if (new_password.length < 8) {
+                return res.status(400).json({ message: "New password must be at least 8 characters" });
+            }
+            master.password = await bcrypt.hash(new_password, 12);
+        }
+
+        master.updated_at = new Date();
+        await master.save();
+
+        res.json({
+            message: "Profile updated successfully",
+            profile: master
+        });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 app.post('/apis/validate-token', async (req, res) => {
     try {
         const token = extractToken(req);
@@ -5572,28 +5570,12 @@ app.post('/apis/upload-image', canPostNotification, async (req, res) => {
 app.get('/apis/notifications', studentAuth, async (req, res) => {
     try {
         const NotificationModel = Notification;
-        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
         const notifications = await NotificationModel.find()
             .select('title message priority image_url posted_by posted_by_id posted_by_name liked_by was_edited created_at updated_at')
             .sort({ created_at: -1 })
             .limit(50)
             .lean();
-
-        const medpubPosterIds = notifications
-            .filter(n => n.posted_by === 'medpub' && n.posted_by_id)
-            .map(n => n.posted_by_id);
-
-        let posterPhotos = {};
-        if (medpubPosterIds.length > 0) {
-            const posters = await StudentModel.find({ _id: { $in: medpubPosterIds } })
-                .select('_id photo')
-                .lean();
-            posterPhotos = posters.reduce((acc, p) => {
-                acc[p._id.toString()] = p.photo || null;
-                return acc;
-            }, {});
-        }
 
         const cleanNotifications = notifications.map(notif => ({
             _id: notif._id,
@@ -5604,9 +5586,6 @@ app.get('/apis/notifications', studentAuth, async (req, res) => {
             posted_by: notif.posted_by,
             posted_by_name: notif.posted_by_name,
             posted_by_id: notif.posted_by_id,
-            poster_photo: notif.posted_by === 'medpub' && notif.posted_by_id
-                ? posterPhotos[notif.posted_by_id.toString()] || null
-                : null,
             liked_by: notif.liked_by || [],
             was_edited: notif.was_edited || false,
             created_at: notif.created_at,
@@ -5708,7 +5687,7 @@ async function uploadToImgBB(base64Image) {
     return result.data.url;
 }
 
-// Create notification (admin or medpub only)
+// Create notification (super admin only)
 app.post('/apis/notifications', canPostNotification, async (req, res) => {
     try {
         const { title, message, priority, image, image_url } = req.body;
@@ -6608,7 +6587,7 @@ app.delete('/apis/attendance/events/:id', auth, async (req, res) => {
 });
 
 // Create custom event for specific users
-app.post('/apis/attendance/events/custom/create', adminOrTreasurerAuth, async (req, res) => {
+app.post('/apis/attendance/events/custom/create', auth, async (req, res) => {
     try {
         const { title, event_date, date, start_time, end_time, description, location, assigned_users } = req.body;
 
@@ -6663,7 +6642,7 @@ app.post('/apis/attendance/events/custom/create', adminOrTreasurerAuth, async (r
 });
 
 // Update custom event
-app.put('/apis/attendance/events/custom/:id', adminOrTreasurerAuth, async (req, res) => {
+app.put('/apis/attendance/events/custom/:id', auth, async (req, res) => {
     try {
         const { title, event_date, date, start_time, end_time, description, location, assigned_users } = req.body;
 
@@ -6731,7 +6710,7 @@ app.get('/apis/events/:id/stats', auth, async (req, res) => {
 });
 
 // Get attendance export as Excel with custom columns
-app.get('/apis/attendance/events/:eventId/export-excel', treasurerAuth, async (req, res) => {
+app.get('/apis/attendance/events/:eventId/export-excel', auth, async (req, res) => {
     try {
         const logs = await AttendanceLog.find({ event_id: req.params.eventId })
             .populate('student_id', 'full_name student_id')
@@ -7831,7 +7810,7 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
 
 // Initialize contributions for an event (Treasurer Only)
 // Creates contribution records for all registered students in an event
-app.post('/apis/contributions/initialize/:eventId', treasurerAuth, async (req, res) => {
+app.post('/apis/contributions/initialize/:eventId', auth, async (req, res) => {
     try {
         const eventId = req.params.eventId;
         const EventModel = getCollegeModel(AttendanceEvent, CCS_AttendanceEvent, COE_AttendanceEvent, req.college);
@@ -7889,7 +7868,7 @@ app.post('/apis/contributions/initialize/:eventId', treasurerAuth, async (req, r
 });
 
 // Get all contributions for an event (Treasurer Only)
-app.get('/apis/contributions/event/:eventId', treasurerAuth, async (req, res) => {
+app.get('/apis/contributions/event/:eventId', auth, async (req, res) => {
     try {
         const { search, paymentStatus, program, yearLevel, page = 1, limit = 50 } = req.query;
 
@@ -7954,7 +7933,7 @@ app.get('/apis/contributions/event/:eventId', treasurerAuth, async (req, res) =>
 
 // Mark student payment as paid (Treasurer Only)
 // Can be called with student_id or rfid_code
-app.post('/apis/contributions/event/:eventId/mark-paid', treasurerAuth, async (req, res) => {
+app.post('/apis/contributions/event/:eventId/mark-paid', auth, async (req, res) => {
     try {
         const { student_id_number, rfid_code, notes } = req.body;
 
@@ -8037,7 +8016,7 @@ app.post('/apis/contributions/event/:eventId/mark-paid', treasurerAuth, async (r
 });
 
 // Mark student payment as unpaid (Treasurer Only)
-app.post('/apis/contributions/event/:eventId/mark-unpaid', treasurerAuth, async (req, res) => {
+app.post('/apis/contributions/event/:eventId/mark-unpaid', auth, async (req, res) => {
     try {
         const { student_id_number } = req.body;
 
@@ -8119,7 +8098,7 @@ app.get('/apis/contributions/student/:eventId', studentAuthWithToken, async (req
 });
 
 // Export contributions as CSV/JSON (Treasurer Only)
-app.get('/apis/contributions/event/:eventId/export', treasurerAuth, async (req, res) => {
+app.get('/apis/contributions/event/:eventId/export', auth, async (req, res) => {
     try {
         const { format = 'json' } = req.query;
         const EventContributionModel = getCollegeModel(EventContribution, CCS_EventContribution, COE_EventContribution, req.college);
@@ -8176,7 +8155,7 @@ app.get('/apis/contributions/event/:eventId/export', treasurerAuth, async (req, 
 });
 
 // Apply discount to contribution
-app.post('/apis/contributions/event/:eventId/apply-discount', treasurerAuth, async (req, res) => {
+app.post('/apis/contributions/event/:eventId/apply-discount', auth, async (req, res) => {
     try {
         const { student_id_number, discount_type, discount_value, original_amount } = req.body;
 
@@ -8233,7 +8212,7 @@ app.post('/apis/contributions/event/:eventId/apply-discount', treasurerAuth, asy
 });
 
 // Enhanced search for contributions with RFID support
-app.get('/apis/contributions/search', treasurerAuth, async (req, res) => {
+app.get('/apis/contributions/search', auth, async (req, res) => {
     try {
         const { query, year_level, program, status, limit = 50, page = 1 } = req.query;
 
@@ -8302,7 +8281,7 @@ app.get('/apis/contributions/search', treasurerAuth, async (req, res) => {
 });
 
 // Download payment records as Excel
-app.get('/apis/contributions/download/excel', treasurerAuth, async (req, res) => {
+app.get('/apis/contributions/download/excel', auth, async (req, res) => {
     try {
         const { status, year_level = '', program = '' } = req.query;
 
@@ -8367,7 +8346,7 @@ app.get('/apis/contributions/download/excel', treasurerAuth, async (req, res) =>
 });
 
 // Get contribution statistics by level and program
-app.get('/apis/contributions/stats', treasurerAuth, async (req, res) => {
+app.get('/apis/contributions/stats', auth, async (req, res) => {
     try {
         const EventContributionModel = getCollegeModel(EventContribution, CCS_EventContribution, COE_EventContribution, req.college);
 

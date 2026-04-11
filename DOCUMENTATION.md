@@ -24,7 +24,7 @@
 
 ## 1. Project Overview
 
-SSAAM allows students to register and manage their profiles, attend school events via RFID scanning, and track contribution/payment requirements. Administrators and treasurers can create events, manage student records, export attendance reports, and send announcements.
+SSAAM allows students to register and manage their profiles, attend school events via RFID scanning, and track contribution/payment requirements. Administrators and co-admins can create events, manage student records, export attendance reports, and send announcements.
 
 ### Key Features
 
@@ -34,12 +34,13 @@ SSAAM allows students to register and manage their profiles, attend school event
 | RFID Attendance | Real-time event check-in using RFID card scanning |
 | Contribution Management | Create payment requirements, mark students paid/unpaid, apply discounts |
 | Announcements | Post/edit notifications with image support and reaction (like) system |
-| Role-Based Access | Different views and permissions per role (Student, Medpub, Treasurer, Master/Admin) |
+| Role-Based Access | Different views and permissions per role (Student, Admin, Co-Admin) |
 | Multi-College Support | CCS, COE, SOM, CNAHS colleges share one backend with isolated data collections |
-| Excel Export | Treasurer can export attendance records as `.xlsx` files |
+| Excel Export | Admin/Co-Admin can export attendance records as `.xlsx` files |
 | PDF Receipts | Auto-generate contribution receipts as downloadable PDFs |
-| Dynamic Theming | UI colors shift based on the selected college (blue for CCS/COE, green/yellow for SOM) |
 | Password Reset | Email-based OTP password reset flow |
+| Admin Profile | Admins and co-admins can manage their own profile info and change password |
+| Co-Admin Transfer | Co-admins can transfer their role to another account |
 
 ---
 
@@ -109,7 +110,7 @@ ssaam/
 │   │   ├── Attendance.vue         # RFID attendance check-in interface
 │   │   └── EventDetails.vue       # Single event detail view
 │   ├── App.vue                    # Root component
-│   └── main.js                    # App entry point + dynamic theme switcher
+│   └── main.js                    # App entry point
 │
 ├── SSAAM_VERCEL_BACKEND.js        # Full backend API source (Express + MongoDB)
 ├── server.js                      # Local dev server entry point
@@ -145,8 +146,8 @@ Data isolation is achieved by prefixing MongoDB collection names: `ccs_students`
 | Role | Description | Access Level |
 |---|---|---|
 | `student` | Registered student | View own profile, attendance, and contributions |
-| `medpub` | Media/publication officer | College-level role; can manage their own profile |
-| `treasurer` | College treasurer | Manage payments, export reports for their college |
+
+> **Note:** The `medpub` and `treasurer` roles have been removed from the system. All student accounts use the `student` role only.
 
 ### Admin Roles (stored in shared `masters` collection)
 
@@ -165,7 +166,10 @@ Data isolation is achieved by prefixing MongoDB collection names: `ccs_students`
 | Manage payments | ✅ All colleges | ✅ Own college only |
 | View co-admin list | ✅ Yes | ❌ No |
 | Create co-admin accounts | ✅ Yes | ❌ No |
-| Access other admin areas | ✅ Yes | ❌ No |
+| Assign co-admin per college | ✅ Yes | ❌ No |
+| Access system settings | ✅ Yes | ❌ No |
+| Manage own profile | ✅ Yes | ✅ Yes |
+| Transfer role to another user | ❌ No | ✅ Yes (own role only) |
 
 The college of the logged-in user is determined by:
 1. `X-SSAAM-College` request header (set by frontend)
@@ -197,14 +201,7 @@ The frontend determines the active college through a priority chain:
 
 The college code is sent on every API request via the `X-SSAAM-College` header.
 
-### Dynamic Theme Switching (`src/main.js`)
-
-When a user selects SOM, the theme automatically replaces Tailwind blue gradient classes with SOM's green/yellow palette:
-
-- `from-blue-*` → `from-som-green`
-- `to-blue-*` / `to-cyan-*` → `to-som-yellow`
-
-A `MutationObserver` continuously monitors the DOM for newly added elements and re-applies the theme in real time.
+> **Note:** College detection is used only for backend routing (selecting the correct database collection). The UI does not apply any college-specific color theming — all users see the same SSAAM blue/navy theme regardless of college.
 
 ### Token Handling (`src/utils/tokenHandler.js`)
 
@@ -231,13 +228,12 @@ The entire backend lives in `SSAAM_VERCEL_BACKEND.js` — a single Express appli
 
 | Middleware | Description |
 |---|---|
-| `auth` | Verifies JWT; accepts students, medpub, treasurer, and masters |
+| `auth` | Verifies JWT; accepts students and masters |
 | `studentAuth` | Validates the request is from a legitimate student token |
 | `studentAuthWithToken` | Like `studentAuth` but also extracts the raw token for logout |
-| `adminOrTreasurerAuth` | Restricts to admin or treasurer roles only |
-| `treasurerAuth` | Treasurer-only endpoints |
-| `studentMedpubTreasurerAuth` | Students, medpub, and treasurers |
-| `requireMaster` | Restricts to master/admin accounts |
+| `studentSearchAuth` | Students and admin/co-admin; used for search and listing endpoints |
+| `requireMaster` | Restricts to master/admin accounts (both `admin` and `co-admin`) |
+| `requireSuperAdmin` | Restricts to super admin (`role === 'admin'`) only; blocks co-admins |
 | `timestampAuth` | Validates `X-SSAAM-TS` header to prevent replay attacks |
 | `antiBotProtection` | Rate limiting for sensitive operations |
 
@@ -291,10 +287,10 @@ All endpoints are prefixed with `/apis`.
 |---|---|---|---|
 | GET | `/apis/students` | Student | Get own profile |
 | GET | `/apis/students/stats` | Student | Student statistics |
-| GET | `/apis/students/list/all` | Admin/Treasurer | List all students |
+| GET | `/apis/students/list/all` | Admin | List all students |
 | GET | `/apis/students/pending` | Student | Get pending students |
-| POST | `/apis/students/search` | Admin/Treasurer | Search students |
-| GET | `/apis/students/search` | Student/Medpub/Treasurer | Public student search |
+| POST | `/apis/students/search` | Admin | Search students (admin access) |
+| GET | `/apis/students/search` | Student/Admin | Public student search |
 | PUT | `/apis/students/:id/approve` | Admin | Approve student registration |
 | PUT | `/apis/students/:id/reject` | Admin | Reject student registration |
 | PUT | `/apis/students/:id/rfid` | Admin | Assign RFID to student |
@@ -326,10 +322,10 @@ All endpoints are prefixed with `/apis`.
 | POST | `/apis/attendance/events` | Auth | Create event |
 | PUT | `/apis/attendance/events/:id` | Auth | Update event |
 | DELETE | `/apis/attendance/events/:id` | Auth | Delete event |
-| POST | `/apis/attendance/events/custom/create` | Admin/Treasurer | Create custom event |
-| PUT | `/apis/attendance/events/custom/:id` | Admin/Treasurer | Update custom event |
+| POST | `/apis/attendance/events/custom/create` | Admin | Create custom event |
+| PUT | `/apis/attendance/events/custom/:id` | Admin | Update custom event |
 | GET | `/apis/events/:id/stats` | Auth | Event statistics |
-| GET | `/apis/attendance/events/:id/export-excel` | Treasurer | Export attendance as Excel |
+| GET | `/apis/attendance/events/:id/export-excel` | Admin | Export attendance as Excel |
 | POST | `/apis/attendance/events/:id/sessions` | Auth | Create attendance session |
 | GET | `/apis/attendance/events/:id/sessions` | Auth | Get event sessions |
 | PUT | `/apis/attendance/sessions/:id` | Auth | Update session (RFID check-in) |
@@ -340,39 +336,36 @@ All endpoints are prefixed with `/apis`.
 |---|---|---|---|
 | POST | `/apis/admin/contributions` | Admin | Create contribution requirement |
 | GET | `/apis/contributions/transparency` | None | Public contribution transparency |
-| POST | `/apis/payments` | Admin/Treasurer | Create payment record |
+| POST | `/apis/payments` | Admin | Create payment record |
 | GET | `/apis/payments` | Auth | List payments |
 | GET | `/apis/payments/:id` | Auth | Get payment by ID |
-| PUT | `/apis/payments/:id/mark-paid` | Admin/Treasurer | Mark student as paid |
-| PUT | `/apis/payments/:id/mark-unpaid` | Admin/Treasurer | Mark student as unpaid |
-| PUT | `/apis/payments/:id/apply-discount` | Admin/Treasurer | Apply discount |
-| PUT | `/apis/payments/:id/status` | Admin/Treasurer | Update payment status |
-| PUT | `/apis/payments/:id` | Admin/Treasurer | Update payment record |
-| DELETE | `/apis/payments/:id/student/:studentId` | Admin/Treasurer | Remove student from payment |
-| DELETE | `/apis/payments/:id` | Admin/Treasurer | Delete payment record |
-| POST | `/apis/payments/:id/sync-students` | Admin/Treasurer | Sync student list |
-| POST | `/apis/payments/:id/deduplicate` | Admin/Treasurer | Remove duplicate entries |
+| PUT | `/apis/payments/:id/mark-paid` | Admin | Mark student as paid |
+| PUT | `/apis/payments/:id/mark-unpaid` | Admin | Mark student as unpaid |
+| PUT | `/apis/payments/:id/apply-discount` | Admin | Apply discount |
+| PUT | `/apis/payments/:id/status` | Admin | Update payment status |
+| PUT | `/apis/payments/:id` | Admin | Update payment record |
+| DELETE | `/apis/payments/:id/student/:studentId` | Admin | Remove student from payment |
+| DELETE | `/apis/payments/:id` | Admin | Delete payment record |
+| POST | `/apis/payments/:id/sync-students` | Admin | Sync student list |
+| POST | `/apis/payments/:id/deduplicate` | Admin | Remove duplicate entries |
 | GET | `/apis/my-payments` | Auth | Get own payment records |
 
 ### Notifications & Announcements
 
-Notifications follow a **two-tier architecture**:
+Notifications follow a **single-tier architecture**:
 
 | Tier | Collection | Who Posts | Who Sees |
 |---|---|---|---|
-| **Global** | `notifications` | Super Admin only | All colleges (every student) |
-| **College-specific** | `ccs_notifications`, `coe_notifications`, `som_notifications`, `cnahs_notifications` | College-level users (Medpub) | Only that college's students |
+| **Global** | `notifications` | Super Admin and Co-Admin | All students (or college-specific based on header) |
 
-- The **Global** tier is for platform-wide announcements made by the super Admin. Every student across all colleges receives these.
-- Each college still has its **own notification collection** for college-specific announcements posted by Medpub officers. Students only see their own college's posts.
-- When a student loads their notifications, the frontend fetches **both** the global notifications and their college-specific notifications and merges them together.
+All announcements are posted through the shared `notifications` collection. The `posted_by` field on each notification records whether it was created by `admin` or `co-admin`.
 
 | Method | Endpoint | Auth | Description |
 |---|---|---|---|
-| GET | `/apis/notifications` | All authenticated | List global notifications (all colleges see these) |
-| POST | `/apis/notifications` | Admin only | Create global notification |
-| PUT | `/apis/notifications/:id` | Admin only | Update global notification |
-| DELETE | `/apis/notifications/:id` | Admin only | Delete global notification |
+| GET | `/apis/notifications` | All authenticated | List notifications |
+| POST | `/apis/notifications` | Admin/Co-Admin | Create notification |
+| PUT | `/apis/notifications/:id` | Admin/Co-Admin | Update notification |
+| DELETE | `/apis/notifications/:id` | Admin/Co-Admin | Delete notification |
 | POST | `/apis/notifications/mark-seen` | None | Mark notifications as seen |
 | GET | `/apis/notifications/seen` | None | Get seen notification IDs |
 | POST | `/apis/notifications/:id/like` | None | Toggle like on notification |
@@ -386,6 +379,7 @@ Notifications follow a **two-tier architecture**:
 | GET | `/apis/co-admin/:id` | Admin | Get a specific co-admin |
 | PUT | `/apis/co-admin/:id` | Admin | Update co-admin (username, email, password, college) |
 | DELETE | `/apis/co-admin/:id` | Admin | Delete a co-admin account |
+| POST | `/apis/co-admin/:id/transfer` | Admin | Transfer a co-admin's role to another account |
 
 **Create co-admin request body:**
 ```json
@@ -398,6 +392,39 @@ Notifications follow a **two-tier architecture**:
 ```
 College must be one of: `CCS`, `COE`, `SOM`, `CNAHS`.
 
+### Admin / Co-Admin Profile
+
+Both `admin` and `co-admin` accounts can manage their own profiles via these endpoints.
+
+| Method | Endpoint | Auth | Description |
+|---|---|---|---|
+| GET | `/apis/admin/me` | Admin/Co-Admin | Get own profile (excludes password) |
+| PUT | `/apis/admin/me` | Admin/Co-Admin | Update own profile (name, phone, bio, photo, password) |
+| POST | `/apis/co-admin/me/transfer` | Co-Admin only | Self-transfer co-admin role to another account |
+
+**Update profile request body (`PUT /apis/admin/me`):**
+```json
+{
+  "full_name": "Juan Dela Cruz",
+  "phone": "09171234567",
+  "bio": "College administrator for CCS.",
+  "photo": "https://cdn.example.com/photo.jpg",
+  "current_password": "oldpassword",
+  "new_password": "newpassword123"
+}
+```
+- Password fields are optional. If `new_password` is provided, `current_password` must also be provided.
+- New password must be at least 8 characters.
+
+**Transfer role request body (`POST /apis/co-admin/me/transfer`):**
+```json
+{
+  "target_username": "new_ccs_admin"
+}
+```
+- The calling co-admin's account is deleted and the target account receives the `co-admin` role and college assignment.
+- The target account must already exist in the `masters` collection.
+
 ### Settings & Admin
 
 | Method | Endpoint | Auth | Description |
@@ -405,7 +432,7 @@ College must be one of: `CCS`, `COE`, `SOM`, `CNAHS`.
 | GET | `/apis/settings` | Student | Get system settings |
 | PUT | `/apis/settings` | Admin | Update system settings |
 | POST | `/apis/admin/verify` | Admin | Verify admin credentials |
-| POST | `/apis/upload-image` | Medpub/Admin | Upload image to Cloudinary |
+| POST | `/apis/upload-image` | Admin | Upload image to Cloudinary |
 | POST | `/apis/admin/cleanup-unused-fields` | Admin | Database field cleanup |
 | POST | `/apis/admin/migrate-database` | Admin | Run database migrations |
 
@@ -438,16 +465,9 @@ coe_settings            → COE system settings
 som_settings            → SOM system settings
 cnahs_settings          → CNAHS system settings
 
-── NOTIFICATIONS (college-specific) ──────────────────────────────────────────
-ccs_notifications       → CCS announcements (posted by CCS Medpub)
-coe_notifications       → COE announcements (posted by COE Medpub)
-som_notifications       → SOM announcements (posted by SOM Medpub)
-cnahs_notifications     → CNAHS announcements (posted by CNAHS Medpub)
-
-ccs_notificationseens   → CCS seen-tracking for college notifications
-coe_notificationseens   → COE seen-tracking for college notifications
-som_notificationseens   → SOM seen-tracking for college notifications
-cnahs_notificationseens → CNAHS seen-tracking for college notifications
+── NOTIFICATIONS ─────────────────────────────────────────────────────────────
+notifications           → Global announcements posted by admin/co-admin
+notification_seen       → Global seen-tracking for notifications
 
 ── ATTENDANCE ────────────────────────────────────────────────────────────────
 ccs_attendanceevents    → CCS attendance events
@@ -493,7 +513,7 @@ som_studentapplications     → SOM student applications
 cnahs_studentapplications   → CNAHS student applications
 
 ── GLOBAL (shared, no college prefix) ────────────────────────────────────────
-notifications       → Global announcements posted by super Admin (all colleges see these)
+notifications       → Global announcements posted by admin/co-admin
 notification_seen   → Global seen-tracking for admin announcements
 masters             → Admin + Co-Admin accounts
 settings            → Global system settings
@@ -528,12 +548,18 @@ settings            → Global system settings
   "email": "ccs@jrmsu.edu.ph",
   "role": "co-admin",
   "college": "CCS",
-  "created_at": "2024-01-01T00:00:00.000Z"
+  "full_name": "Juan Dela Cruz",
+  "phone": "09171234567",
+  "bio": "CCS College Administrator",
+  "photo": "https://cdn.example.com/photo.jpg",
+  "created_at": "2024-01-01T00:00:00.000Z",
+  "updated_at": "2024-06-01T00:00:00.000Z"
 }
 ```
 - `role` is either `"admin"` (super admin) or `"co-admin"` (department admin)
-- `college` is one of `CCS`, `COE`, `SOM`, `CNAHS`
+- `college` is one of `CCS`, `COE`, `SOM`, `CNAHS` (required for co-admins; ignored for admin)
 - Co-admin's `college` restricts which college's data they can manage (enforced server-side via JWT)
+- `full_name`, `phone`, `bio`, `photo` are optional profile fields editable via `PUT /apis/admin/me`
 
 **Event**
 ```json

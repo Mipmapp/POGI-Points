@@ -658,24 +658,6 @@
               <p class="font-bold text-lg leading-tight" v-else>{{ displayName }}!</p>
             </div>
             <div class="flex flex-wrap justify-center gap-1.5 mt-2" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
-              <!-- Treasurer Badge -->
-              <div v-if="currentUser.role === 'treasurer'" class="relative group">
-                <div class="absolute inset-0 bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300 animate-pulse"></div>
-                <span class="relative inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-500 text-blue-900 text-xs font-bold rounded-full shadow-md hover:shadow-lg transition overflow-hidden whitespace-nowrap">
-                  <div class="absolute inset-0 light-sweep-badge"></div>
-                  <img src="/treasurer.svg" alt="Treasurer" class="w-2.5 h-2.5 relative z-10" style="filter: brightness(0) invert(1);" />
-                  <span class="relative z-10">Treasurer</span>
-                </span>
-              </div>
-              <!-- Medpub Badge -->
-              <div v-if="currentUser.role === 'medpub'" class="relative group">
-                <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300"></div>
-                <span class="relative inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-yellow-900 text-xs font-bold rounded-full shadow-md hover:shadow-lg transition overflow-hidden whitespace-nowrap">
-                  <div class="absolute inset-0 light-sweep-badge"></div>
-                  <img src="/medpub.svg" alt="Medpub" class="w-2.5 h-2.5 relative z-10" style="filter: brightness(0) invert(1);" />
-                  <span class="relative z-10">Medpub</span>
-                </span>
-              </div>
               <!-- Verification Badge -->
               <div :class="['relative group', currentUser.rfid_status === 'verified' ? 'verified-badge' : '']">
                 <div v-if="currentUser.rfid_status === 'verified'" class="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300"></div>
@@ -718,6 +700,10 @@
         <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'settings'; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
           <span>Settings</span>
+        </button>
+        <button v-if="currentUser.isMaster" @click="currentPage = 'admin-profile'; fetchAdminProfile()" :class="[sidebarItemBase, 'mt-2', currentPage === 'admin-profile' ? sidebarItemActive : sidebarItemHover]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+          <span>My Profile</span>
         </button>
         <button @click="currentPage = 'attendance'; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
@@ -794,24 +780,6 @@
               <p class="font-bold text-lg text-white" v-else>{{ displayName }}!</p>
               
               <div class="flex flex-wrap justify-center gap-1.5 mt-1" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
-                <!-- Treasurer Badge -->
-                <div v-if="currentUser.role === 'treasurer'" class="relative group">
-                  <div class="absolute inset-0 bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300 animate-pulse"></div>
-                  <span class="relative inline-flex items-center gap-1 px-3 py-1 bg-gradient-to-r from-blue-400 via-cyan-400 to-teal-500 text-blue-900 text-xs font-bold rounded-full shadow-md transition overflow-hidden whitespace-nowrap">
-                    <div class="absolute inset-0 light-sweep-badge"></div>
-                    <img src="/treasurer.svg" alt="Treasurer" class="w-3 h-3 relative z-10" style="filter: brightness(0) invert(1);" />
-                    <span class="relative z-10">Treasurer</span>
-                  </span>
-                </div>
-                <!-- Medpub Badge -->
-                <div v-if="currentUser.role === 'medpub'" class="relative group">
-                  <div class="absolute inset-0 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300"></div>
-                  <span class="relative inline-flex items-center gap-1 px-2.5 py-1 bg-gradient-to-r from-yellow-400 to-amber-500 text-yellow-900 text-xs font-bold rounded-full shadow-md transition overflow-hidden whitespace-nowrap">
-                    <div class="absolute inset-0 light-sweep-badge"></div>
-                    <img src="/medpub.svg" alt="Medpub" class="w-3 h-3 relative z-10" style="filter: brightness(0) invert(1);" />
-                    <span class="relative z-10">Medpub</span>
-                  </span>
-                </div>
                 <!-- Verification Badge -->
                 <div :class="['relative group', currentUser.rfid_status === 'verified' ? 'verified-badge' : '']">
                   <div v-if="currentUser.rfid_status === 'verified'" class="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full opacity-75 group-hover:opacity-100 blur transition duration-300"></div>
@@ -859,6 +827,10 @@
           <button @click="currentPage = 'attendance'; showMobileMenu = false; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
             <span>Attendance</span>
+          </button>
+          <button v-if="currentUser.isMaster" @click="currentPage = 'admin-profile'; showMobileMenu = false; fetchAdminProfile()" :class="[sidebarItemBase, 'mt-2', currentPage === 'admin-profile' ? sidebarItemActive : sidebarItemHover]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <span>My Profile</span>
           </button>
 
           <button 
@@ -916,7 +888,7 @@
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'admin-profile' ? 'My Profile' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-4 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-xl flex items-center gap-3">
@@ -1291,7 +1263,7 @@
 
         <!-- Attendance Page -->
         <!-- Contributions Page (Student View) -->
-        <div v-if="currentPage === 'transparency' && (currentUser.role === 'student' || currentUser.role === 'medpub' || currentUser.student_id)">
+        <div v-if="currentPage === 'transparency' && (currentUser.role === 'student' || currentUser.student_id)">
           <StudentContributionsView />
         </div>
 
@@ -1861,17 +1833,6 @@
                         </div>
                       </div>
                       <div class="flex items-center gap-2 ml-0 sm:ml-6" @click.stop>
-                        <button 
-                          v-if="currentUser.role === 'treasurer'"
-                          @click="openContributionsModal(event._id, event.title)" 
-                          :class="['px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg transition text-xs sm:text-sm flex items-center gap-1', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : isCNAHS ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200']" 
-                          title="View Contributions"
-                        >
-                          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                          </svg>
-                          <span class="not-sr-only sm:block">Contributions</span>
-                        </button>
                         <button @click="duplicateEvent(event)" class="bg-blue-100 text-blue-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-blue-200 transition text-xs sm:text-sm flex items-center gap-1" title="Duplicate">
                           <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                           <span class="sr-only sm:not-sr-only">Duplicate</span>
@@ -3119,6 +3080,94 @@
         <!-- Manage Page (Roles & Users) -->
         <Manage ref="manageComponent" v-if="currentPage === 'manage' && (currentUser.role === 'admin' || currentUser.isMaster)" />
 
+        <!-- Admin / Co-Admin Profile Page -->
+        <div v-if="currentPage === 'admin-profile' && currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
+          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+              <h2 class="text-xl md:text-2xl font-bold text-blue-900">My Profile</h2>
+              <p class="text-sm text-gray-500 mt-1">Manage your account information and password.</p>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold" :class="currentUser.role === 'co-admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'">
+              {{ currentUser.role === 'co-admin' ? 'Co-Admin' : 'Super Admin' }}
+              <span v-if="currentUser.role === 'co-admin' && currentUser.college" class="font-normal opacity-70">({{ currentUser.college }})</span>
+            </span>
+          </div>
+
+          <div v-if="adminProfileLoading" class="flex items-center justify-center py-16">
+            <svg class="animate-spin w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          </div>
+
+          <div v-else-if="adminProfile" class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Avatar Column -->
+            <div class="flex flex-col items-center gap-4">
+              <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-blue-100 shadow-lg bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center">
+                <img v-if="adminProfile.photo" :src="adminProfile.photo" alt="Profile Photo" class="w-full h-full object-cover" />
+                <span v-else class="text-3xl font-bold text-white">{{ (adminProfile.username || 'A').charAt(0).toUpperCase() }}</span>
+              </div>
+              <div class="text-center">
+                <p class="font-bold text-gray-900 text-lg">{{ adminProfile.full_name || adminProfile.username }}</p>
+                <p class="text-sm text-gray-500">{{ adminProfile.email }}</p>
+                <p class="text-xs text-gray-400 mt-1">@{{ adminProfile.username }}</p>
+              </div>
+            </div>
+
+            <!-- Edit Form Column -->
+            <div class="md:col-span-2 space-y-4">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <input v-model="adminProfileForm.full_name" type="text" placeholder="Your full name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                  <input v-model="adminProfileForm.phone" type="text" placeholder="Contact number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                <textarea v-model="adminProfileForm.bio" rows="3" placeholder="Brief description about yourself..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none"></textarea>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Photo URL</label>
+                <input v-model="adminProfileForm.photo" type="text" placeholder="https://..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+              </div>
+
+              <div class="border-t pt-4 mt-2">
+                <h4 class="text-sm font-semibold text-gray-700 mb-3">Change Password</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">Current Password</label>
+                    <input v-model="adminProfileForm.current_password" type="password" placeholder="Current password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-600 mb-1">New Password</label>
+                    <input v-model="adminProfileForm.new_password" type="password" placeholder="New password (min 8 chars)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex gap-3 mt-4">
+                <button @click="saveAdminProfile" :disabled="adminProfileSaving" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-2 px-4 rounded-lg font-medium transition flex items-center justify-center gap-2 disabled:opacity-60">
+                  <svg v-if="adminProfileSaving" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  {{ adminProfileSaving ? 'Saving...' : 'Save Changes' }}
+                </button>
+              </div>
+
+              <!-- Co-Admin Transfer Role Section -->
+              <div v-if="currentUser.role === 'co-admin'" class="border-t pt-4 mt-2">
+                <h4 class="text-sm font-semibold text-gray-700 mb-1">Transfer Role</h4>
+                <p class="text-xs text-gray-500 mb-3">You can transfer your co-admin responsibilities to another account. You will be removed and the target account will take over.</p>
+                <div class="flex gap-2">
+                  <input v-model="transferTargetUsername" type="text" placeholder="Target username" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-sm" />
+                  <button @click="requestTransferRole" :disabled="transferringRole" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-60">
+                    {{ transferringRole ? 'Transferring...' : 'Transfer' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Active Attendance Event Banner for Students -->
         <div v-if="currentPage === 'dashboard' && currentUser.role !== 'admin' && !currentUser.isMaster && activeUnattendedEvents.length > 0" class="mb-4 space-y-2">
           <div v-for="event in activeUnattendedEvents" :key="event._id" :class="['rounded-xl px-4 py-3 text-white flex items-center gap-3 shadow-md', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-r from-green-700 to-teal-600' : isCNAHS ? 'bg-gradient-to-r from-green-700 to-green-600' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
@@ -3586,11 +3635,7 @@
           <label class="block text-sm font-medium text-gray-700 mb-2">Role</label>
           <select v-model="editingUser.role" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none">
             <option value="student">Student</option>
-            <option value="medpub">Medpub</option>
-            <option value="treasurer">Treasurer</option>
           </select>
-          <p v-if="editingUser.role === 'medpub'" class="text-xs text-yellow-600 mt-1">Medpub users can post announcements and notifications.</p>
-          <p v-else-if="editingUser.role === 'treasurer'" class="text-xs text-blue-600 mt-1">Treasurer users can manage payments and contributions.</p>
         </div>
         <div class="flex gap-3 mt-6">
           <div class="flex-1">
@@ -5412,7 +5457,7 @@
               </div>
               <div class="border-l-4 border-green-300 pl-4">
                 <h5 class="font-semibold text-gray-900 mb-1">How do I manage user accounts?</h5>
-                <p class="text-gray-700 text-sm">Go to Manage > Users. View all users, edit roles (student, treasurer, medpub, admin), update permissions, and manage RFID verification status.</p>
+                <p class="text-gray-700 text-sm">Go to Manage > Users. View all users, edit roles (student, admin), update permissions, and manage RFID verification status.</p>
               </div>
               <div class="border-l-4 border-green-300 pl-4">
                 <h5 class="font-semibold text-gray-900 mb-1">How do I manage roles and permissions?</h5>
@@ -5436,7 +5481,7 @@
               </div>
               <div class="border-l-4 border-green-300 pl-4">
                 <h5 class="font-semibold text-gray-900 mb-1">How do I manage contribution payment types?</h5>
-                <p class="text-gray-700 text-sm">Go to Settings > Contributions. Add or edit payment types (fees, donations, etc.) that treasurers can use to record student contributions.</p>
+                <p class="text-gray-700 text-sm">Go to Settings > Contributions. Add or edit payment types (fees, donations, etc.) that admins can use to record student contributions.</p>
               </div>
               <div class="border-l-4 border-green-300 pl-4">
                 <h5 class="font-semibold text-gray-900 mb-1">How do I duplicate or delete an event?</h5>
@@ -5514,6 +5559,13 @@ const allEventUsers = ref([]) // Store all students loaded for event modals
 const loggingOut = ref(false)
 const isPageLoading = ref(false)
 const statsLoading = ref(false)
+
+const adminProfile = ref(null)
+const adminProfileLoading = ref(false)
+const adminProfileSaving = ref(false)
+const adminProfileForm = ref({ full_name: '', phone: '', bio: '', photo: '', current_password: '', new_password: '' })
+const transferTargetUsername = ref('')
+const transferringRole = ref(false)
 
 // ============================================
 // SIDEBAR SECTION CACHE TRACKING
@@ -5796,8 +5848,8 @@ const fetchTransparencyBoard = async () => {
 
 // Fetch all payments
 const fetchPayments = async (skipAutoSync = false) => {
-  // Only admin/treasurer should fetch all payments; regular students should use fetchMyPayments
-  if (currentUser.value.role !== 'admin' && !currentUser.value.isMaster && currentUser.value.role !== 'treasurer') {
+  // Only admin/co-admin should fetch all payments; regular students should use fetchMyPayments
+  if (currentUser.value.role !== 'admin' && !currentUser.value.isMaster) {
     // Skip payment list fetch for students - they use My Payments instead
     return
   }
@@ -5897,7 +5949,7 @@ const fetchMyPayments = async () => {
 const refreshAllData = async () => {
   paymentsLoading.value = true
   try {
-    const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster || currentUser.value.role === 'treasurer'
+    const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster
     
     if (isAdmin) {
       // ADMIN: Fetch all payments for management
@@ -6243,7 +6295,7 @@ const confirmMarkPaymentAsPaid = async () => {
       // Check if it's an "already paid" error
       if (result.alreadyPaid) {
         const paidDate = result.paidAt ? new Date(result.paidAt).toLocaleString() : 'unknown date'
-        const paidBy = result.paidBy || 'a treasurer'
+        const paidBy = result.paidBy || 'an admin'
         showNotification(`${result.message}\n\nAlready paid on: ${paidDate}\nBy: ${paidBy}`, 'warning')
       } else {
         showNotification(result.message || 'Failed to mark payment', 'error')
@@ -9549,86 +9601,38 @@ const userDepartmentLogo = computed(() => {
   return '/src/assets/jrmsu-logo.webp'
 })
 
-const isCCS = computed(() => {
-  return (userDepartment.value && userDepartment.value.label === 'CCS')
-})
+const isCCS = computed(() => true)
 
-const isCOE = computed(() => {
-  return (userDepartment.value && userDepartment.value.label === 'COE')
-})
+// College-specific theme computed properties are removed.
+// All colleges now share the same SSAAM default theme (blue/navy).
+const isCOE = computed(() => false)
+const isSOM = computed(() => false)
+const isCNAHS = computed(() => false)
 
-const isSOM = computed(() => {
-  return (userDepartment.value && userDepartment.value.label === 'SOM')
-})
-
-const isCNAHS = computed(() => {
-  return (userDepartment.value && userDepartment.value.label === 'CNAHS')
-})
-
-// human-readable college name for UI messages
+// Human-readable college name derived from the user's actual college assignment
 const collegeName = computed(() => {
-  if (isCOE.value) return 'COE'
-  if (isSOM.value) return 'SOM'
-  if (isCNAHS.value) return 'CNAHS'
-  return 'CCS'
+  const college = currentUser.value?.college || userDepartment.value?.label || 'CCS'
+  return college
 })
 
 const isCOEorAdmin = computed(() => {
-  return isCOE.value || (currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster))
+  return (currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster))
 })
 
 // Get available programs based on user department
 const availablePrograms = computed(() => {
-  if (isCOE.value) {
-    return ['BSCE', 'BSEE', 'BSECE', 'BSCpE']
-  }
-  if (isSOM.value) {
-    return ['BSM']
-  }
-  if (isCNAHS.value) {
-    return ['BSN']
-  }
+  const college = currentUser.value?.college || userDepartment.value?.label || 'CCS'
+  if (college === 'COE') return ['BSCE', 'BSEE', 'BSECE', 'BSCpE']
+  if (college === 'SOM') return ['BSM']
+  if (college === 'CNAHS') return ['BSN']
   return ['BSCS', 'BSIT', 'BSIS']
 })
 
 const sidebarGradient = computed(() => {
-  if (isCOE.value) return 'from-[#4a1207] to-[#7c2210]'
-  if (isSOM.value) return 'from-[#0d3320] to-[#5a3a08]'
-  if (isCNAHS.value) return 'from-[#052e16] to-[#14532d]'
-  // default/CCS — deep dark navy (refined, not overwhelming)
   return 'from-[#080e2e] to-[#0f1f6e]'
 })
 
 const themeColors = computed(() => {
-  // Returns color classes for the current department theme
-  if (isCOE.value) {
-    return {
-      headerBg: 'bg-orange-100',
-      headerText: 'border-orange-300 text-orange-900',
-      rowBorder: 'border-orange-300',
-      rowBgAlt: 'bg-orange-50',
-      rowBgAltText: 'border-orange-300 bg-orange-200'
-    }
-  }
-  if (isSOM.value) {
-    return {
-      headerBg: 'bg-green-100',
-      headerText: 'border-green-300 text-green-900',
-      rowBorder: 'border-green-300',
-      rowBgAlt: 'bg-green-50',
-      rowBgAltText: 'border-green-300 bg-green-200'
-    }
-  }
-  if (isCNAHS.value) {
-    return {
-      headerBg: 'bg-green-200',
-      headerText: 'border-green-400 text-green-900',
-      rowBorder: 'border-green-300',
-      rowBgAlt: 'bg-green-100',
-      rowBgAltText: 'border-green-400 bg-green-300'
-    }
-  }
-  // default/CCS purple theme
   return {
     headerBg: 'bg-blue-100',
     headerText: 'border-blue-300 text-blue-900',
@@ -9641,15 +9645,9 @@ const themeColors = computed(() => {
 // sidebar item helpers used in nav buttons
 const sidebarItemBase = 'flex items-center space-x-3 px-4 py-2.5 rounded-xl w-full text-left transition-all duration-200 ease-in-out text-sm font-medium border-l-4 border-transparent'
 const sidebarItemHover = computed(() => {
-  if (isCOE.value) return 'hover:bg-white/10 hover:border-l-4 hover:border-orange-300/60 hover:translate-x-0.5'
-  if (isSOM.value) return 'hover:bg-white/10 hover:border-l-4 hover:border-green-300/60 hover:translate-x-0.5'
-  if (isCNAHS.value) return 'hover:bg-white/10 hover:border-l-4 hover:border-emerald-300/60 hover:translate-x-0.5'
   return 'hover:bg-white/10 hover:border-l-4 hover:border-blue-300/60 hover:translate-x-0.5'
 })
 const sidebarItemActive = computed(() => {
-  if (isCOE.value) return 'bg-white/15 border-l-4 border-orange-300 shadow-sm text-white'
-  if (isSOM.value) return 'bg-white/15 border-l-4 border-green-300 shadow-sm text-white'
-  if (isCNAHS.value) return 'bg-white/15 border-l-4 border-emerald-300 shadow-sm text-white'
   return 'bg-white/15 border-l-4 border-blue-300 shadow-sm text-white'
 })
 
@@ -10272,7 +10270,7 @@ const fetchStats = async () => {
 
       // after stats are refreshed, ensure payment campaigns are synced
       // so the student count shown on contribution cards stays accurate
-      if (currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster || currentUser.value.role === 'treasurer')) {
+      if (currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster)) {
         autoSyncPayments().catch(err => console.error('Auto-sync after stats fetch failed:', err))
       }
     }
@@ -10593,7 +10591,7 @@ const unreadableCount = computed(() => {
 // case).
 watch(totalStudents, async (newVal, oldVal) => {
   if (newVal === oldVal) return
-  if (currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster || currentUser.value.role === 'treasurer')) {
+  if (currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster)) {
     try {
       await autoSyncPayments()
     } catch (err) {
@@ -10718,6 +10716,100 @@ const refreshStudents = async () => {
     console.error('Failed to refresh students:', error)
   } finally {
     isRefreshing.value = false
+  }
+}
+
+// ============================================
+// ADMIN / CO-ADMIN PROFILE
+// ============================================
+const fetchAdminProfile = async () => {
+  adminProfileLoading.value = true
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch(buildAPIUrl('/apis/admin/me'), {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (res.ok) {
+      adminProfile.value = data
+      adminProfileForm.value = {
+        full_name: data.full_name || '',
+        phone: data.phone || '',
+        bio: data.bio || '',
+        photo: data.photo || '',
+        current_password: '',
+        new_password: ''
+      }
+    } else {
+      showNotification(data.message || 'Failed to load profile', 'error')
+    }
+  } catch {
+    showNotification('Network error loading profile', 'error')
+  } finally {
+    adminProfileLoading.value = false
+  }
+}
+
+const saveAdminProfile = async () => {
+  adminProfileSaving.value = true
+  try {
+    const token = localStorage.getItem('token')
+    const payload = {
+      full_name: adminProfileForm.value.full_name,
+      phone: adminProfileForm.value.phone,
+      bio: adminProfileForm.value.bio,
+      photo: adminProfileForm.value.photo
+    }
+    if (adminProfileForm.value.new_password) {
+      payload.current_password = adminProfileForm.value.current_password
+      payload.new_password = adminProfileForm.value.new_password
+    }
+    const res = await fetch(buildAPIUrl('/apis/admin/me'), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload)
+    })
+    const data = await res.json()
+    if (res.ok) {
+      showNotification('Profile updated successfully', 'success')
+      adminProfile.value = { ...adminProfile.value, ...payload }
+      adminProfileForm.value.current_password = ''
+      adminProfileForm.value.new_password = ''
+    } else {
+      showNotification(data.message || 'Failed to save profile', 'error')
+    }
+  } catch {
+    showNotification('Network error saving profile', 'error')
+  } finally {
+    adminProfileSaving.value = false
+  }
+}
+
+const requestTransferRole = async () => {
+  if (!transferTargetUsername.value.trim()) {
+    showNotification('Please enter a target username', 'error')
+    return
+  }
+  if (!confirm(`Transfer your co-admin role to "${transferTargetUsername.value}"? This action cannot be undone.`)) return
+  transferringRole.value = true
+  try {
+    const token = localStorage.getItem('token')
+    const res = await fetch(buildAPIUrl('/apis/co-admin/me/transfer'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ target_username: transferTargetUsername.value.trim() })
+    })
+    const data = await res.json()
+    if (res.ok) {
+      showNotification('Role transferred successfully. You will be logged out.', 'success')
+      setTimeout(() => handleLogoutWithAnimation(), 2000)
+    } else {
+      showNotification(data.message || 'Transfer failed', 'error')
+    }
+  } catch {
+    showNotification('Network error during transfer', 'error')
+  } finally {
+    transferringRole.value = false
   }
 }
 
