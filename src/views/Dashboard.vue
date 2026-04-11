@@ -12,8 +12,8 @@
 
   <transition name="fade">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" @click.self="showDevelopersPopup = false">
-      <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300 dev-modal-scroll">
-        <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl p-6 flex items-center justify-between">
+      <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col transform transition-all duration-300">
+        <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl p-6 flex items-center justify-between flex-shrink-0">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
               <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -25,7 +25,7 @@
           </div>
           <button @click="showDevelopersPopup = false" class="text-white/70 hover:text-white text-2xl leading-none transition">&times;</button>
         </div>
-        <div class="p-6">
+        <div class="p-6 overflow-y-auto dev-modal-scroll">
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 mb-6">
             <div v-for="(dev, index) in developers" :key="dev.name" class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300 bg-green-50 rounded-2xl p-3" :style="{ transitionDelay: `${index * 50}ms` }">
               <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl shadow-lg mb-2 overflow-hidden flex-shrink-0 ring-2 ring-blue-200 bg-gradient-to-br from-ssaam-dark to-ssaam-light">
@@ -613,7 +613,7 @@
     <div :class="[ 'hidden md:flex w-64 bg-gradient-to-b text-white flex-col order-1 border-r border-white/10 h-screen shadow-2xl', sidebarGradient ]">
       <div class="px-5 py-5 border-b border-white/15 flex-shrink-0 bg-white/5 backdrop-blur-sm">
         <div class="flex items-center gap-3">
-          <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-11 h-11 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
+          <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU Logo" class="w-11 h-11 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
           <div class="flex flex-col leading-tight">
             <h1 class="text-2xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
             <p class="text-white/50 text-[9px] uppercase tracking-widest">JRMSU</p>
@@ -750,7 +750,7 @@
       <div v-if="showMobileMenu" :class="[ 'fixed left-0 top-0 h-screen w-64 bg-gradient-to-b text-white flex flex-col z-40 md:hidden shadow-2xl', sidebarGradient ]">
         <div class="flex items-center justify-between px-4 py-4 border-b border-white/15 bg-white/5 flex-shrink-0">
           <div class="flex items-center gap-2.5">
-            <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-lg flex-shrink-0" />
+            <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-lg flex-shrink-0" />
             <h1 class="text-xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
           </div>
           <button @click="showMobileMenu = false" class="text-2xl text-white/80 hover:text-white leading-none">×</button>
@@ -897,7 +897,7 @@
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
-          <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" />
+          <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" />
           <h1 :class="['text-xl font-extrabold italic', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">SSAAM</h1>
         </div>
         <div class="flex items-center gap-2">

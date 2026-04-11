@@ -1203,20 +1203,15 @@ input[type="password"]::placeholder {
 }
 .dev-modal-scroll::-webkit-scrollbar-track {
   background: #f1f5f9;
-  border-radius: 0 0 1.5rem 0;
 }
 .dev-modal-scroll::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #1e3bdb, #4f62ff);
+  background: #c0c0c0;
   border-radius: 3px;
 }
 .dev-modal-scroll::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #1630c0, #3d4fe0);
-}
-.dev-modal-scroll::-webkit-scrollbar-button {
-  background: #1e3bdb;
-  height: 6px;
+  background: #a0a0a0;
 }
 .dev-modal-scroll {
   scrollbar-width: thin;
-  scrollbar-color: #1e3bdb #f1f5f9;
+  scrollbar-color: #c0c0c0 #f1f5f9;
 }
