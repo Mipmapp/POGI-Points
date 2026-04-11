@@ -747,7 +747,7 @@
 
     <!-- Mobile Sidebar (Slide-in menu for mobile) with Animation -->
     <transition name="slide-in">
-      <div v-if="showMobileMenu" :class="[ 'fixed left-0 top-0 h-screen w-64 bg-gradient-to-b text-white flex flex-col z-40 md:hidden shadow-2xl', sidebarGradient ]">
+      <div v-if="showMobileMenu" :class="[ 'fixed left-0 top-0 h-screen w-72 bg-gradient-to-b text-white flex flex-col z-40 md:hidden shadow-2xl', sidebarGradient ]">
         <div class="flex items-center justify-between px-4 py-4 border-b border-white/15 bg-white/5 flex-shrink-0">
           <div class="flex items-center gap-2.5">
             <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-lg flex-shrink-0" />
@@ -5273,8 +5273,8 @@
   <!-- Contact/Help Modal -->
   <transition name="fade">
     <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" @click.self="showContactModal = false">
-      <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl p-6 flex items-center justify-between">
+      <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl p-6 flex items-center justify-between flex-shrink-0">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
               <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -5287,7 +5287,7 @@
           <button @click="showContactModal = false" class="text-white/70 hover:text-white text-2xl leading-none transition">&times;</button>
         </div>
 
-        <div class="p-6">
+        <div class="p-6 overflow-y-auto dev-modal-scroll">
         <!-- Tabs -->
         <div class="flex gap-1 mb-6 bg-blue-50 rounded-2xl p-1">
           <button 
