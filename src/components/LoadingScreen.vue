@@ -6,7 +6,7 @@
       </div>
       <div>
         <h1 class="text-6xl font-extrabold italic text-white mb-1 tracking-wide drop-shadow-lg">SSAAM</h1>
-        <p class="text-base text-white opacity-90">Student School Activities Attendance Monitoring</p>
+        <p class="text-xs sm:text-sm md:text-base text-white opacity-90 px-8">Student School Activities Attendance Monitoring</p>
         <p class="text-xs text-white/70 mt-3">Jose Rizal Memorial State University</p>
       </div>
       <div class="flex gap-2 mt-4">

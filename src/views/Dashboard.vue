@@ -5474,7 +5474,7 @@
             <div class="flex-1">
               <p class="font-semibold text-gray-900 text-sm">Meet Our Developers</p>
               <p class="text-gray-600 text-xs mb-2">CCS - Creatives Committee</p>
-              <button @click="showDevelopersPopup = true; showContactModal = false" class="text-sm font-semibold px-4 py-2 rounded-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white hover:from-ssaam-dark hover:to-ssaam-light transition shadow-sm">View Development Team →</button>
+              <button @click="showDevelopersPopup = true; showContactModal = false" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white hover:from-ssaam-dark hover:to-ssaam-light transition shadow-sm">View Development Team →</button>
             </div>
           </div>
         </div>
@@ -9675,10 +9675,11 @@ const logoutBgClass = computed(() => {
 })
 
 const logoutBgStyle = computed(() => {
-  if (isCOE.value) return { background: 'linear-gradient(to bottom, #4a1207, #7c2210)' }
-  if (isSOM.value) return { background: 'linear-gradient(to bottom, #0d3320, #5a3a08)' }
-  if (isCNAHS.value) return { background: 'linear-gradient(to bottom, #052e16, #14532d)' }
-  return { background: 'linear-gradient(to bottom, #080e2e, #0f1f6e)' }
+  const base = { backgroundSize: 'cover', backgroundPosition: 'center' }
+  if (isCOE.value) return { ...base, background: 'linear-gradient(135deg, rgba(74, 18, 7, 0.85) 0%, rgba(124, 34, 16, 0.85) 100%), url(/assets/classroom-bg.jpg)' }
+  if (isSOM.value) return { ...base, background: 'linear-gradient(135deg, rgba(13, 51, 32, 0.85) 0%, rgba(90, 58, 8, 0.85) 100%), url(/assets/classroom-bg.jpg)' }
+  if (isCNAHS.value) return { ...base, background: 'linear-gradient(135deg, rgba(5, 46, 22, 0.85) 0%, rgba(20, 83, 45, 0.85) 100%), url(/assets/classroom-bg.jpg)' }
+  return { ...base, background: 'linear-gradient(135deg, rgba(8, 14, 46, 0.85) 0%, rgba(15, 31, 110, 0.85) 100%), url(/assets/classroom-bg.jpg)' }
 })
 
 // Attendance Events Search & Pagination
