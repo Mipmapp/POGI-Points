@@ -12,7 +12,7 @@
 
   <transition name="fade">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" @click.self="showDevelopersPopup = false">
-      <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300">
+      <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto transform transition-all duration-300 dev-modal-scroll">
         <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl p-6 flex items-center justify-between">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">

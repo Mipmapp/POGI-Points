@@ -2,7 +2,7 @@
   <transition name="fade">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto dev-modal-scroll">
           <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl px-6 py-5 text-center relative">
             <h3 class="text-xl font-bold text-white">Meet Our Developers</h3>
             <p class="text-blue-100 text-xs mt-0.5">CCS - Creatives Committee</p>
