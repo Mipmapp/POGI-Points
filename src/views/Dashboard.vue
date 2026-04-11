@@ -550,7 +550,6 @@
           <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-20 h-20 object-contain drop-shadow-2xl flex-shrink-0" />
           <div class="leading-tight text-left">
             <h1 class="text-6xl font-extrabold italic tracking-wide drop-shadow-lg">SSAAM</h1>
-            <p class="text-sm text-white/65 mt-1">Student School Activities Attendance Monitoring</p>
           </div>
         </div>
         <p class="text-lg font-semibold opacity-90">Logging Out</p>

@@ -2,8 +2,8 @@
   <transition name="fade">
     <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40" @click.self="showContactModal = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden">
-          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center justify-between">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col max-h-[90vh]">
+          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
               <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
                 <div class="w-5 h-5" style="-webkit-mask: url(/help.svg) center/contain no-repeat; mask: url(/help.svg) center/contain no-repeat; background-color: white;"></div>
@@ -13,7 +13,7 @@
             <button @click="showContactModal = false" class="text-white/70 hover:text-white text-2xl leading-none">&times;</button>
           </div>
 
-          <div class="p-6 space-y-4">
+          <div class="p-6 space-y-4 overflow-y-auto help-modal-scroll">
             <div class="grid grid-cols-3 gap-3">
               <div class="flex flex-col items-center text-center p-3 bg-green-50 rounded-2xl">
                 <div class="w-10 h-10 mb-2 bg-blue-100 rounded-full flex items-center justify-center">
@@ -1146,5 +1146,25 @@ const verifyAdminCode = () => {
 
 /* Ensure modal content doesn't get clipped on very small screens */
 .modal-primary, .modal-secondary { min-height: 44px; }
+
+/* Need Help modal scrollbar styled to match gradient header */
+.help-modal-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.help-modal-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 0 0 1rem 0;
+}
+.help-modal-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #1e3bdb, #4f62ff);
+  border-radius: 3px;
+}
+.help-modal-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #1630c0, #3d4fe0);
+}
+.help-modal-scroll::-webkit-scrollbar-button {
+  background: #1e3bdb;
+  height: 6px;
+}
 
 </style>
