@@ -34,13 +34,16 @@ SSAAM allows students to register and manage their profiles, attend school event
 | RFID Attendance | Real-time event check-in using RFID card scanning |
 | Contribution Management | Create payment requirements, mark students paid/unpaid, apply discounts |
 | Announcements | Post/edit notifications with image support and reaction (like) system |
-| Role-Based Access | Different views and permissions per role (Student, Admin, Co-Admin) |
+| Role-Based Access | Different views and permissions per role (Student, Admin, Co-Admin, Super Admin) |
 | Multi-College Support | CCS, COE, SOM, CNAHS colleges share one backend with isolated data collections |
 | Excel Export | Admin/Co-Admin can export attendance records as `.xlsx` files |
 | PDF Receipts | Auto-generate contribution receipts as downloadable PDFs |
 | Password Reset | Email-based OTP password reset flow |
 | Admin Profile | Admins and co-admins can manage their own profile info and change password |
 | Co-Admin Transfer | Co-admins can transfer their role to another account |
+| Co-Admin Management | Super admin can assign/remove co-admins per college (CCS, COE, SOM, CNAHS) |
+| Student Request System | Students can submit name-change or department-change requests; admins and co-admins review and approve/reject |
+| Statistics View | Admin dashboard renamed "Statistics" and shows student registration counts per program and year level |
 
 ---
 

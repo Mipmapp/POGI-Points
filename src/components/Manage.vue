@@ -83,18 +83,6 @@
               >
                 Students
               </button>
-              <button
-                @click="userRoleFilter = 'medpub'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'medpub' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                Medpub
-              </button>
-              <button
-                @click="userRoleFilter = 'treasurer'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'treasurer' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                Treasurer
-              </button>
             </div>
           </div>
 

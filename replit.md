@@ -37,6 +37,12 @@ The application is a Vue 3 SPA utilizing the Composition API and Vite 5. Styling
 - **Duplicate Records Search:** Admin feature to search for duplicate student records by RFID, Student ID, or Email, with categorized matches and options to edit/delete duplicates.
 - **Registration Restrictions:** Registration is restricted to Gmail addresses only, with case-insensitive duplicate email prevention.
 
+- **Student Request System:** Students have a "Request" page to submit name-change or department/college-change requests. Name changes route to the admin; department changes route to the co-admin of the target college. Requests show status (pending/approved/rejected) and admin notes.
+- **Co-Admin Management:** Super admin has a "Co-Admins" page to assign/remove co-admins per college (CCS, COE, SOM, CNAHS) using their username. Each college card shows current co-admin with remove option.
+- **Statistics Nav:** For admin and super admin users, the first sidebar item is labeled "Statistics" (not "Dashboard") and shows the student registration statistics table.
+- **Manage Filters Cleaned:** Removed Medpub and Treasurer role filter buttons from Manage → Users tab.
+- **Logout Animation Fixed:** Logout animation background uses solid college-themed gradients (no broken image references).
+
 **System Design Choices:**
 - **Efficient Pagination:** Frontend displays current page only, with all search and filtering server-side. Statistics fetched separately for complete data.
 - **Security:** Robust validation, anti-bot measures, timestamp-based authentication, restricted CORS origins, Regex injection prevention, XSS prevention, and required environment secrets. Implemented security headers (`X-Content-Type-Options`, `X-Frame-Options`, `X-XSS-Protection`, `Strict-Transport-Security`, `Content-Security-Policy`).
