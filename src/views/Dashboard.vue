@@ -685,7 +685,8 @@
       <nav class="flex-1 px-3 py-4 overflow-y-auto min-h-0 sidebar-scroll">
         <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Menu</p>
         <button @click="currentPage = 'dashboard'" :class="[sidebarItemBase, currentPage === 'dashboard' ? sidebarItemActive : sidebarItemHover]">
-          <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
+          <svg v-if="currentUser.role === 'admin' || currentUser.isMaster" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          <img v-else src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>{{ (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</span>
         </button>
 
@@ -816,7 +817,8 @@
         <nav class="flex-1 px-3 py-4 overflow-y-auto min-h-0 sidebar-scroll">
           <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Menu</p>
           <button @click="currentPage = 'dashboard'; showMobileMenu = false" :class="[sidebarItemBase, currentPage === 'dashboard' ? sidebarItemActive : sidebarItemHover]">
-            <img src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
+            <svg v-if="currentUser.role === 'admin' || currentUser.isMaster" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <img v-else src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>{{ (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</span>
           </button>
 
@@ -3134,16 +3136,24 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
               <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email</p>
-                <p class="text-gray-900 font-semibold text-sm truncate">{{ adminProfile.email || 'Not set' }}</p>
+                <p v-if="adminProfile.email" class="text-gray-900 font-semibold text-sm truncate">{{ adminProfile.email }}</p>
+                <p v-else class="text-gray-400 text-sm italic">No email set</p>
               </div>
               <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Phone</p>
-                <p class="text-gray-900 font-semibold text-sm">{{ adminProfile.phone || 'Not set' }}</p>
+                <p v-if="adminProfile.phone" class="text-gray-900 font-semibold text-sm">{{ adminProfile.phone }}</p>
+                <p v-else class="text-gray-400 text-sm italic">No phone set</p>
               </div>
               <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
                 <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">College</p>
                 <p class="text-gray-900 font-semibold text-sm">{{ adminProfile.college || currentUser.college || 'All Colleges' }}</p>
               </div>
+            </div>
+
+            <!-- Bio Card -->
+            <div v-if="adminProfile.bio || adminProfileForm.bio" class="mb-8 p-4 bg-blue-50/40 rounded-2xl border border-blue-100">
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">About</p>
+              <p class="text-gray-700 text-sm leading-relaxed">{{ adminProfile.bio || '—' }}</p>
             </div>
 
             <!-- Edit Form -->
@@ -3218,89 +3228,146 @@
         </div>
 
         <!-- Student Request Section -->
-        <div v-if="currentPage === 'request' && currentUser.role !== 'admin' && !currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <div>
-              <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Submit a Request</h2>
-              <p class="text-sm text-gray-500 mt-1">Request changes to your name or college/department. An admin will review your request.</p>
+        <div v-if="currentPage === 'request' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-6">
+          <!-- Header Banner -->
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <div class="light-sweep"></div>
+              <div class="absolute inset-0 flex items-center px-6 md:px-8 gap-4">
+                <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-white/20' : isSOM ? 'bg-white/20' : isCNAHS ? 'bg-white/20' : 'bg-white/20']">
+                  <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                </div>
+                <div>
+                  <h2 class="text-2xl font-extrabold text-white tracking-tight">Submit a Request</h2>
+                  <p class="text-white/70 text-sm mt-0.5">Request changes to your name or college/department.</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <!-- Past requests -->
-          <div v-if="studentRequests.length > 0" class="mb-8">
-            <h3 :class="['text-base font-semibold mb-3', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Your Requests</h3>
-            <div class="space-y-3">
-              <div v-for="req in studentRequests" :key="req._id" :class="['rounded-xl border p-4 text-sm', req.status === 'approved' ? 'bg-green-50 border-green-200' : req.status === 'rejected' ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-200']">
-                <div class="flex items-start justify-between gap-2 flex-wrap">
-                  <div>
-                    <span class="font-semibold capitalize text-gray-800">{{ req.type === 'name' ? 'Name Change' : 'Department Change' }}</span>
-                    <p class="text-gray-600 mt-1">{{ req.reason }}</p>
-                    <p v-if="req.new_value" class="text-gray-500 text-xs mt-1">Requested value: <span class="font-medium">{{ req.new_value }}</span></p>
+          <!-- Past Requests -->
+          <div v-if="studentRequests.length > 0" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="px-6 md:px-8 py-5 border-b border-gray-100 flex items-center gap-2">
+              <div :class="['w-1 h-5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : isCNAHS ? 'bg-emerald-500' : 'bg-blue-600']"></div>
+              <h3 :class="['text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-blue-800']">Your Past Requests</h3>
+            </div>
+            <div class="p-4 md:p-6 space-y-3">
+              <div v-for="req in studentRequests" :key="req._id" :class="['rounded-2xl border p-4 text-sm transition hover:shadow-sm', req.status === 'approved' ? 'bg-green-50 border-green-200' : req.status === 'rejected' ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200']">
+                <div class="flex items-start justify-between gap-3 flex-wrap">
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2 mb-1">
+                      <svg v-if="req.type === 'name'" class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                      <svg v-else class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                      <span class="font-semibold text-gray-800">{{ req.type === 'name' ? 'Name Change' : 'Department Change' }}</span>
+                    </div>
+                    <p class="text-gray-500 text-xs leading-relaxed">{{ req.reason }}</p>
+                    <p v-if="req.new_value" class="text-gray-500 text-xs mt-1.5">New value: <span class="font-semibold text-gray-700">{{ req.new_value }}</span></p>
+                    <p v-if="req.admin_note" class="mt-1.5 text-xs text-gray-500 italic">Admin note: {{ req.admin_note }}</p>
+                    <p class="text-[10px] text-gray-400 mt-2">{{ new Date(req.created_at).toLocaleString() }}</p>
                   </div>
-                  <span :class="['px-2.5 py-1 rounded-full text-xs font-bold whitespace-nowrap', req.status === 'approved' ? 'bg-green-100 text-green-700' : req.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700']">
-                    {{ req.status === 'approved' ? 'Approved' : req.status === 'rejected' ? 'Rejected' : 'Pending' }}
+                  <span :class="['px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap flex-shrink-0', req.status === 'approved' ? 'bg-green-100 text-green-700' : req.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700']">
+                    {{ req.status === 'approved' ? '✓ Approved' : req.status === 'rejected' ? '✕ Rejected' : '⏳ Pending' }}
                   </span>
                 </div>
-                <p v-if="req.admin_note" class="mt-2 text-xs text-gray-500 italic">Admin note: {{ req.admin_note }}</p>
-                <p class="text-xs text-gray-400 mt-2">{{ new Date(req.created_at).toLocaleString() }}</p>
               </div>
             </div>
           </div>
 
           <!-- New Request Form -->
-          <div :class="['rounded-xl border p-5 md:p-6 space-y-5', isCOE ? 'border-orange-100 bg-orange-50/30' : isSOM ? 'border-green-100 bg-green-50/30' : isCNAHS ? 'border-green-100 bg-green-50/30' : 'border-blue-100 bg-blue-50/30']">
-            <h3 :class="['text-base font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">New Request</h3>
-
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Request Type</label>
-              <div class="flex gap-3 flex-wrap">
-                <button @click="newRequest.type = 'name'" :class="['px-4 py-2 rounded-lg text-sm font-medium border transition', newRequest.type === 'name' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white border-transparent'] : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400']">Name Change</button>
-                <button @click="newRequest.type = 'department'" :class="['px-4 py-2 rounded-lg text-sm font-medium border transition', newRequest.type === 'department' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white border-transparent'] : 'bg-white border-gray-300 text-gray-700 hover:border-gray-400']">Department / College Change</button>
-              </div>
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="px-6 md:px-8 py-5 border-b border-gray-100 flex items-center gap-2">
+              <div :class="['w-1 h-5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : isCNAHS ? 'bg-emerald-500' : 'bg-blue-600']"></div>
+              <h3 :class="['text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-blue-800']">New Request</h3>
             </div>
 
-            <div v-if="newRequest.type === 'name'" class="space-y-3">
-              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">First Name <span class="text-red-500">*</span></label>
-                  <input v-model="newRequest.first_name" type="text" placeholder="First name" :class="['w-full px-4 py-2.5 border rounded-lg outline-none text-sm', isCOE ? 'focus:ring-2 focus:ring-orange-400 border-gray-300' : isSOM ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : isCNAHS ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : 'focus:ring-2 focus:ring-blue-400 border-gray-300']" />
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Middle Name <span class="text-gray-400">(optional)</span></label>
-                  <input v-model="newRequest.middle_name" type="text" placeholder="Middle name" :class="['w-full px-4 py-2.5 border rounded-lg outline-none text-sm', isCOE ? 'focus:ring-2 focus:ring-orange-400 border-gray-300' : isSOM ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : isCNAHS ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : 'focus:ring-2 focus:ring-blue-400 border-gray-300']" />
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Last Name <span class="text-red-500">*</span></label>
-                  <input v-model="newRequest.last_name" type="text" placeholder="Last name" :class="['w-full px-4 py-2.5 border rounded-lg outline-none text-sm', isCOE ? 'focus:ring-2 focus:ring-orange-400 border-gray-300' : isSOM ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : isCNAHS ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : 'focus:ring-2 focus:ring-blue-400 border-gray-300']" />
+            <div class="p-6 md:p-8 space-y-6">
+              <!-- Request Type Toggle -->
+              <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Request Type</label>
+                <div class="grid grid-cols-2 gap-3">
+                  <button @click="newRequest.type = 'name'" :class="['flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all text-sm font-semibold', newRequest.type === 'name' ? (isCOE ? 'bg-orange-50 border-orange-400 text-orange-700' : isSOM ? 'bg-green-50 border-green-400 text-green-700' : isCNAHS ? 'bg-emerald-50 border-emerald-400 text-emerald-700' : 'bg-blue-50 border-blue-500 text-blue-700') : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300']">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <span>Name Change</span>
+                  </button>
+                  <button @click="newRequest.type = 'department'" :class="['flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all text-sm font-semibold', newRequest.type === 'department' ? (isCOE ? 'bg-orange-50 border-orange-400 text-orange-700' : isSOM ? 'bg-green-50 border-green-400 text-green-700' : isCNAHS ? 'bg-emerald-50 border-emerald-400 text-emerald-700' : 'bg-blue-50 border-blue-500 text-blue-700') : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300']">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                    <span>College Change</span>
+                  </button>
                 </div>
               </div>
-              <div v-if="newRequest.first_name || newRequest.middle_name || newRequest.last_name" :class="['text-xs font-medium px-3 py-1.5 rounded-lg inline-block', isCOE ? 'bg-orange-50 text-orange-700' : isSOM ? 'bg-green-50 text-green-700' : isCNAHS ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700']">
-                Preview: {{ [newRequest.first_name, newRequest.middle_name, newRequest.last_name].filter(v => v.trim()).join(' ') }}
+
+              <!-- Name Change Fields -->
+              <div v-if="newRequest.type === 'name'" class="space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label :class="['block text-xs font-bold mb-1.5', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-blue-700']">First Name <span class="text-red-500">*</span></label>
+                    <input v-model="newRequest.first_name" type="text" placeholder="e.g. Juan" :class="['w-full px-4 py-3 border-2 rounded-2xl outline-none text-sm font-medium transition bg-gray-50 focus:bg-white', isCOE ? 'focus:ring-0 focus:border-orange-400 border-gray-200' : isSOM ? 'focus:ring-0 focus:border-green-400 border-gray-200' : isCNAHS ? 'focus:ring-0 focus:border-emerald-400 border-gray-200' : 'focus:ring-0 focus:border-blue-400 border-gray-200']" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold mb-1.5 text-gray-400">Middle Name <span class="font-normal">(optional)</span></label>
+                    <input v-model="newRequest.middle_name" type="text" placeholder="e.g. Dela Cruz" :class="['w-full px-4 py-3 border-2 rounded-2xl outline-none text-sm font-medium transition bg-gray-50 focus:bg-white', isCOE ? 'focus:ring-0 focus:border-orange-400 border-gray-200' : isSOM ? 'focus:ring-0 focus:border-green-400 border-gray-200' : isCNAHS ? 'focus:ring-0 focus:border-emerald-400 border-gray-200' : 'focus:ring-0 focus:border-blue-400 border-gray-200']" />
+                  </div>
+                  <div>
+                    <label :class="['block text-xs font-bold mb-1.5', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-blue-700']">Last Name <span class="text-red-500">*</span></label>
+                    <input v-model="newRequest.last_name" type="text" placeholder="e.g. Santos" :class="['w-full px-4 py-3 border-2 rounded-2xl outline-none text-sm font-medium transition bg-gray-50 focus:bg-white', isCOE ? 'focus:ring-0 focus:border-orange-400 border-gray-200' : isSOM ? 'focus:ring-0 focus:border-green-400 border-gray-200' : isCNAHS ? 'focus:ring-0 focus:border-emerald-400 border-gray-200' : 'focus:ring-0 focus:border-blue-400 border-gray-200']" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-bold mb-1.5 text-gray-400">Suffix <span class="font-normal">(optional)</span></label>
+                    <select v-model="newRequest.suffix" :class="['w-full px-4 py-3 border-2 rounded-2xl outline-none text-sm font-medium transition bg-gray-50 focus:bg-white', isCOE ? 'focus:ring-0 focus:border-orange-400 border-gray-200' : isSOM ? 'focus:ring-0 focus:border-green-400 border-gray-200' : isCNAHS ? 'focus:ring-0 focus:border-emerald-400 border-gray-200' : 'focus:ring-0 focus:border-blue-400 border-gray-200']">
+                      <option value="">None</option>
+                      <option>Jr.</option>
+                      <option>Sr.</option>
+                      <option>II</option>
+                      <option>III</option>
+                      <option>IV</option>
+                      <option>V</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Live Preview -->
+                <div v-if="newRequest.first_name || newRequest.last_name" :class="['p-4 rounded-2xl border-2 border-dashed', isCOE ? 'border-orange-200 bg-orange-50/50' : isSOM ? 'border-green-200 bg-green-50/50' : isCNAHS ? 'border-emerald-200 bg-emerald-50/50' : 'border-blue-200 bg-blue-50/50']">
+                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Live Preview</p>
+                  <p :class="['text-base font-bold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-blue-700']">
+                    {{ [newRequest.first_name, newRequest.middle_name, newRequest.last_name, newRequest.suffix].filter(v => v && v.trim()).join(' ') }}
+                  </p>
+                  <p class="text-[10px] text-gray-400 mt-1">This is how your name will appear after the request is approved.</p>
+                </div>
+                <p class="text-xs text-gray-400">This request will be sent to your college admin for review.</p>
               </div>
-              <p class="text-xs text-gray-400">This request will be sent to your college admin for review.</p>
-            </div>
 
-            <div v-if="newRequest.type === 'department'">
-              <label class="block text-sm font-medium text-gray-700 mb-2">New Department / College</label>
-              <select v-model="newRequest.new_value" :class="['w-full px-4 py-2.5 border rounded-lg outline-none text-sm bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-400 border-gray-300' : isSOM ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : isCNAHS ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : 'focus:ring-2 focus:ring-blue-400 border-gray-300']">
-                <option value="">-- Select College --</option>
-                <option value="CCS">CCS – College of Computer Studies</option>
-                <option value="COE">COE – College of Engineering</option>
-                <option value="SOM">SOM – School of Management</option>
-                <option value="CNAHS">CNAHS – College of Nursing, Allied Health Sciences</option>
-              </select>
-              <p class="text-xs text-gray-400 mt-1">Department change requests are reviewed by the co-admin of the target college.</p>
-            </div>
+              <!-- Department Change Field -->
+              <div v-if="newRequest.type === 'department'" class="space-y-3">
+                <label :class="['block text-xs font-bold mb-1.5 uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-blue-700']">Select New College / Department</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <button v-for="col in [{v:'CCS',label:'College of Computing Studies',color:'blue'},{v:'COE',label:'College of Engineering',color:'orange'},{v:'SOM',label:'School of Midwifery',color:'green'},{v:'CNAHS',label:'College of Nursing and Allied Health Sciences',color:'emerald'}]" :key="col.v" @click="newRequest.new_value = col.v" :class="['flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left', newRequest.new_value === col.v ? `bg-${col.color}-50 border-${col.color}-400` : 'bg-gray-50 border-gray-200 hover:border-gray-300']">
+                    <img :src="`/icons/${col.v.toLowerCase()}.svg`" :alt="col.v" class="w-9 h-9 object-contain flex-shrink-0" />
+                    <div>
+                      <p :class="['text-sm font-bold', newRequest.new_value === col.v ? `text-${col.color}-700` : 'text-gray-700']">{{ col.v }}</p>
+                      <p :class="['text-[10px] leading-tight', newRequest.new_value === col.v ? `text-${col.color}-500` : 'text-gray-400']">{{ col.label }}</p>
+                    </div>
+                    <svg v-if="newRequest.new_value === col.v" :class="[`text-${col.color}-500`, 'w-5 h-5 ml-auto flex-shrink-0']" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                  </button>
+                </div>
+                <p class="text-xs text-gray-400">Department change requests are reviewed by the co-admin of the target college.</p>
+              </div>
 
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Reason</label>
-              <textarea v-model="newRequest.reason" rows="3" placeholder="Briefly explain why you are requesting this change..." :class="['w-full px-4 py-2.5 border rounded-lg outline-none text-sm resize-none', isCOE ? 'focus:ring-2 focus:ring-orange-400 border-gray-300' : isSOM ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : isCNAHS ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : 'focus:ring-2 focus:ring-blue-400 border-gray-300']"></textarea>
-            </div>
+              <!-- Reason -->
+              <div>
+                <label :class="['block text-xs font-bold mb-1.5 uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-blue-700']">Reason <span class="text-red-500">*</span></label>
+                <textarea v-model="newRequest.reason" rows="4" placeholder="Briefly explain why you are requesting this change..." :class="['w-full px-4 py-3 border-2 rounded-2xl outline-none text-sm resize-none transition bg-gray-50 focus:bg-white', isCOE ? 'focus:border-orange-400 border-gray-200' : isSOM ? 'focus:border-green-400 border-gray-200' : isCNAHS ? 'focus:border-emerald-400 border-gray-200' : 'focus:border-blue-400 border-gray-200']"></textarea>
+                <p class="text-[10px] text-gray-400 mt-1">{{ (newRequest.reason || '').length }}/500 characters</p>
+              </div>
 
-            <div class="flex justify-end">
-              <button @click="submitStudentRequest" :disabled="requestSubmitting || !newRequest.type || !newRequest.reason.trim() || (newRequest.type === 'name' ? (!newRequest.first_name.trim() || !newRequest.last_name.trim()) : !newRequest.new_value.trim())" :class="['px-6 py-2.5 rounded-lg text-white text-sm font-medium transition bg-gradient-to-r disabled:opacity-50 disabled:cursor-not-allowed', primaryButtonGradient, primaryButtonHover]">
-                {{ requestSubmitting ? 'Submitting...' : 'Submit Request' }}
-              </button>
+              <!-- Submit Button -->
+              <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <button @click="submitStudentRequest" :disabled="requestSubmitting || !newRequest.type || !newRequest.reason.trim() || (newRequest.type === 'name' ? (!newRequest.first_name.trim() || !newRequest.last_name.trim()) : !newRequest.new_value.trim())" :class="['flex-1 py-3 px-6 rounded-2xl text-white font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 shadow-lg', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 shadow-orange-200' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-600 shadow-green-200' : isCNAHS ? 'bg-gradient-to-r from-emerald-500 to-green-700 shadow-emerald-200' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light shadow-blue-200']">
+                  <svg v-if="requestSubmitting" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                  {{ requestSubmitting ? 'Submitting...' : 'Submit Request' }}
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -3315,7 +3382,7 @@
               <div class="absolute inset-0 flex items-center px-8 gap-4">
                 <svg class="w-10 h-10 text-white/90 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                 <div>
-                  <h2 class="text-2xl font-extrabold text-white tracking-tight">Promote Co-Admins</h2>
+                  <h2 class="text-2xl font-extrabold text-white tracking-tight">Assign Co-Admins</h2>
                   <p class="text-white/70 text-sm">Assign or remove co-admins for each college department.</p>
                 </div>
                 <div class="ml-auto">
@@ -3340,7 +3407,7 @@
                 <img src="/icons/ccs.svg" alt="CCS" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
                 <div class="absolute top-4 left-5">
                   <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">CCS</h3>
-                  <p class="text-white/70 text-xs">College of Computer Studies</p>
+                  <p class="text-white/70 text-xs">College of Computing Studies</p>
                 </div>
                 <span :class="['absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold', getCoAdminForCollege('CCS') ? 'bg-green-400/90 text-white' : 'bg-white/30 text-white']">
                   {{ getCoAdminForCollege('CCS') ? 'Active' : 'Vacant' }}
@@ -3363,9 +3430,9 @@
                   No co-admin assigned yet
                 </div>
                 <div class="flex gap-2">
-                  <input v-model="coAdminAssignInputs['CCS']" type="text" placeholder="Enter username to promote" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('CCS')" />
+                  <input v-model="coAdminAssignInputs['CCS']" type="text" placeholder="Enter Student ID" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('CCS')" />
                   <button @click="assignCoAdmin('CCS')" :disabled="coAdminActionLoading === 'CCS' || !coAdminAssignInputs['CCS']?.trim()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
-                    {{ coAdminActionLoading === 'CCS' ? '...' : 'Promote' }}
+                    {{ coAdminActionLoading === 'CCS' ? '...' : 'Assign' }}
                   </button>
                 </div>
               </div>
@@ -3401,9 +3468,9 @@
                   No co-admin assigned yet
                 </div>
                 <div class="flex gap-2">
-                  <input v-model="coAdminAssignInputs['COE']" type="text" placeholder="Enter username to promote" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('COE')" />
+                  <input v-model="coAdminAssignInputs['COE']" type="text" placeholder="Enter Student ID" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('COE')" />
                   <button @click="assignCoAdmin('COE')" :disabled="coAdminActionLoading === 'COE' || !coAdminAssignInputs['COE']?.trim()" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
-                    {{ coAdminActionLoading === 'COE' ? '...' : 'Promote' }}
+                    {{ coAdminActionLoading === 'COE' ? '...' : 'Assign' }}
                   </button>
                 </div>
               </div>
@@ -3416,7 +3483,7 @@
                 <img src="/icons/som.svg" alt="SOM" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
                 <div class="absolute top-4 left-5">
                   <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">SOM</h3>
-                  <p class="text-white/70 text-xs">School of Management</p>
+                  <p class="text-white/70 text-xs">School of Midwifery</p>
                 </div>
                 <span :class="['absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold', getCoAdminForCollege('SOM') ? 'bg-green-400/90 text-white' : 'bg-white/30 text-white']">
                   {{ getCoAdminForCollege('SOM') ? 'Active' : 'Vacant' }}
@@ -3439,9 +3506,9 @@
                   No co-admin assigned yet
                 </div>
                 <div class="flex gap-2">
-                  <input v-model="coAdminAssignInputs['SOM']" type="text" placeholder="Enter username to promote" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('SOM')" />
+                  <input v-model="coAdminAssignInputs['SOM']" type="text" placeholder="Enter Student ID" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('SOM')" />
                   <button @click="assignCoAdmin('SOM')" :disabled="coAdminActionLoading === 'SOM' || !coAdminAssignInputs['SOM']?.trim()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
-                    {{ coAdminActionLoading === 'SOM' ? '...' : 'Promote' }}
+                    {{ coAdminActionLoading === 'SOM' ? '...' : 'Assign' }}
                   </button>
                 </div>
               </div>
@@ -3454,7 +3521,7 @@
                 <img src="/icons/cnahs.svg" alt="CNAHS" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
                 <div class="absolute top-4 left-5">
                   <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">CNAHS</h3>
-                  <p class="text-white/70 text-xs">Nursing & Allied Health</p>
+                  <p class="text-white/70 text-xs">College of Nursing and Allied Health Sciences</p>
                 </div>
                 <span :class="['absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold', getCoAdminForCollege('CNAHS') ? 'bg-green-400/90 text-white' : 'bg-white/30 text-white']">
                   {{ getCoAdminForCollege('CNAHS') ? 'Active' : 'Vacant' }}
@@ -3477,9 +3544,9 @@
                   No co-admin assigned yet
                 </div>
                 <div class="flex gap-2">
-                  <input v-model="coAdminAssignInputs['CNAHS']" type="text" placeholder="Enter username to promote" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('CNAHS')" />
+                  <input v-model="coAdminAssignInputs['CNAHS']" type="text" placeholder="Enter Student ID" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('CNAHS')" />
                   <button @click="assignCoAdmin('CNAHS')" :disabled="coAdminActionLoading === 'CNAHS' || !coAdminAssignInputs['CNAHS']?.trim()" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
-                    {{ coAdminActionLoading === 'CNAHS' ? '...' : 'Promote' }}
+                    {{ coAdminActionLoading === 'CNAHS' ? '...' : 'Assign' }}
                   </button>
                 </div>
               </div>
@@ -3883,7 +3950,7 @@
                     <img src="/icons/ccs.svg" alt="CCS" class="h-10 w-10 object-contain opacity-90" />
                     <div>
                       <p class="text-white font-extrabold text-base">CCS</p>
-                      <p class="text-white/70 text-[10px]">Computer Studies</p>
+                      <p class="text-white/70 text-[10px]">College of Computing Studies</p>
                     </div>
                   </div>
                   <div class="p-4 bg-blue-50/30">
@@ -3891,9 +3958,11 @@
                       <p class="text-3xl font-extrabold text-blue-700">{{ allCollegesStats.CCS.total }}</p>
                       <p class="text-xs text-gray-500 mt-1">Registered Students</p>
                       <div class="mt-3 space-y-1">
-                        <div v-for="(count, prog) in allCollegesStats.CCS.stats" :key="prog" class="flex justify-between text-xs text-gray-600">
-                          <span>{{ prog }}</span><span class="font-semibold text-blue-700">{{ count.total || 0 }}</span>
-                        </div>
+                        <template v-for="(count, prog) in allCollegesStats.CCS.stats" :key="prog">
+                          <div v-if="count.total > 0" class="flex justify-between text-xs text-gray-600">
+                            <span>{{ prog }}</span><span class="font-semibold text-blue-700">{{ count.total || 0 }}</span>
+                          </div>
+                        </template>
                       </div>
                     </div>
                     <div v-else class="text-center py-4 text-gray-400 text-sm">No data</div>
@@ -3906,7 +3975,7 @@
                     <img src="/icons/coe.svg" alt="COE" class="h-10 w-10 object-contain opacity-90" />
                     <div>
                       <p class="text-white font-extrabold text-base">COE</p>
-                      <p class="text-white/70 text-[10px]">Engineering</p>
+                      <p class="text-white/70 text-[10px]">College of Engineering</p>
                     </div>
                   </div>
                   <div class="p-4 bg-orange-50/30">
@@ -3914,9 +3983,11 @@
                       <p class="text-3xl font-extrabold text-orange-600">{{ allCollegesStats.COE.total }}</p>
                       <p class="text-xs text-gray-500 mt-1">Registered Students</p>
                       <div class="mt-3 space-y-1">
-                        <div v-for="(count, prog) in allCollegesStats.COE.stats" :key="prog" class="flex justify-between text-xs text-gray-600">
-                          <span>{{ prog }}</span><span class="font-semibold text-orange-600">{{ count.total || 0 }}</span>
-                        </div>
+                        <template v-for="(count, prog) in allCollegesStats.COE.stats" :key="prog">
+                          <div v-if="count.total > 0" class="flex justify-between text-xs text-gray-600">
+                            <span>{{ prog }}</span><span class="font-semibold text-orange-600">{{ count.total || 0 }}</span>
+                          </div>
+                        </template>
                       </div>
                     </div>
                     <div v-else class="text-center py-4 text-gray-400 text-sm">No data</div>
@@ -3929,7 +4000,7 @@
                     <img src="/icons/som.svg" alt="SOM" class="h-10 w-10 object-contain opacity-90" />
                     <div>
                       <p class="text-white font-extrabold text-base">SOM</p>
-                      <p class="text-white/70 text-[10px]">Management</p>
+                      <p class="text-white/70 text-[10px]">School of Midwifery</p>
                     </div>
                   </div>
                   <div class="p-4 bg-green-50/30">
@@ -3937,9 +4008,11 @@
                       <p class="text-3xl font-extrabold text-green-600">{{ allCollegesStats.SOM.total }}</p>
                       <p class="text-xs text-gray-500 mt-1">Registered Students</p>
                       <div class="mt-3 space-y-1">
-                        <div v-for="(count, prog) in allCollegesStats.SOM.stats" :key="prog" class="flex justify-between text-xs text-gray-600">
-                          <span>{{ prog }}</span><span class="font-semibold text-green-600">{{ count.total || 0 }}</span>
-                        </div>
+                        <template v-for="(count, prog) in allCollegesStats.SOM.stats" :key="prog">
+                          <div v-if="count.total > 0" class="flex justify-between text-xs text-gray-600">
+                            <span>{{ prog }}</span><span class="font-semibold text-green-600">{{ count.total || 0 }}</span>
+                          </div>
+                        </template>
                       </div>
                     </div>
                     <div v-else class="text-center py-4 text-gray-400 text-sm">No data</div>
@@ -3952,7 +4025,7 @@
                     <img src="/icons/cnahs.svg" alt="CNAHS" class="h-10 w-10 object-contain opacity-90" />
                     <div>
                       <p class="text-white font-extrabold text-base">CNAHS</p>
-                      <p class="text-white/70 text-[10px]">Nursing & Allied Health</p>
+                      <p class="text-white/70 text-[10px]">College of Nursing and Allied Health Sciences</p>
                     </div>
                   </div>
                   <div class="p-4 bg-emerald-50/30">
@@ -3960,9 +4033,11 @@
                       <p class="text-3xl font-extrabold text-emerald-600">{{ allCollegesStats.CNAHS.total }}</p>
                       <p class="text-xs text-gray-500 mt-1">Registered Students</p>
                       <div class="mt-3 space-y-1">
-                        <div v-for="(count, prog) in allCollegesStats.CNAHS.stats" :key="prog" class="flex justify-between text-xs text-gray-600">
-                          <span>{{ prog }}</span><span class="font-semibold text-emerald-600">{{ count.total || 0 }}</span>
-                        </div>
+                        <template v-for="(count, prog) in allCollegesStats.CNAHS.stats" :key="prog">
+                          <div v-if="count.total > 0" class="flex justify-between text-xs text-gray-600">
+                            <span>{{ prog }}</span><span class="font-semibold text-emerald-600">{{ count.total || 0 }}</span>
+                          </div>
+                        </template>
                       </div>
                     </div>
                     <div v-else class="text-center py-4 text-gray-400 text-sm">No data</div>
@@ -6016,7 +6091,7 @@ const transferringRole = ref(false)
 
 // Student Request System
 const studentRequests = ref([])
-const newRequest = ref({ type: '', new_value: '', first_name: '', middle_name: '', last_name: '', reason: '' })
+const newRequest = ref({ type: '', new_value: '', first_name: '', middle_name: '', last_name: '', suffix: '', reason: '' })
 const allCollegesStats = ref({ CCS: null, COE: null, SOM: null, CNAHS: null })
 const allCollegesLoading = ref(false)
 const requestSubmitting = ref(false)
@@ -10079,8 +10154,15 @@ const isCOEorAdmin = computed(() => {
   return (currentUser.value && (currentUser.value.role === 'admin' || currentUser.value.isMaster))
 })
 
-// Get available programs based on user department
+// Get available programs based on actual stats data (dynamic per college)
 const availablePrograms = computed(() => {
+  if (statsData.value) {
+    const keys = Object.keys(statsData.value).filter(k =>
+      !['verifiedCount', 'unverifiedCount', 'unreadableCount', 'verified_count', 'unverified_count'].includes(k)
+      && typeof statsData.value[k] === 'object' && statsData.value[k] !== null
+    )
+    if (keys.length > 0) return keys.sort()
+  }
   const college = currentUser.value?.college || userDepartment.value?.label || 'CCS'
   if (college === 'COE') return ['BSCE', 'BSEE', 'BSECE', 'BSCpE']
   if (college === 'SOM') return ['BSM']
@@ -11054,6 +11136,7 @@ const stats = computed(() => {
 })
 
 const totalStudents = computed(() => {
+  if (statsData.value?.totalStudents !== undefined) return statsData.value.totalStudents
   if (!stats.value) return 0
   return availablePrograms.value.reduce((sum, prog) => {
     return sum + (stats.value[prog]?.total || 0)
@@ -11229,10 +11312,41 @@ const fetchAdminProfile = async () => {
         new_password: ''
       }
     } else {
-      showNotification(data.message || 'Failed to load profile', 'error')
+      // Fallback to current user data so profile never appears blank
+      adminProfile.value = {
+        username: currentUser.value?.username || 'admin',
+        full_name: currentUser.value?.full_name || currentUser.value?.username || '',
+        email: currentUser.value?.email || '',
+        phone: currentUser.value?.phone || '',
+        bio: currentUser.value?.bio || '',
+        photo: currentUser.value?.photo || '',
+        college: currentUser.value?.college || '',
+        role: currentUser.value?.role || 'admin'
+      }
+      adminProfileForm.value = {
+        full_name: adminProfile.value.full_name,
+        phone: adminProfile.value.phone,
+        bio: adminProfile.value.bio,
+        photo: adminProfile.value.photo,
+        current_password: '',
+        new_password: ''
+      }
+      showNotification(data.message || 'Could not load full profile — showing cached data.', 'warning')
     }
   } catch {
-    showNotification('Network error loading profile', 'error')
+    // Use currentUser as fallback
+    adminProfile.value = {
+      username: currentUser.value?.username || 'admin',
+      full_name: currentUser.value?.full_name || currentUser.value?.username || '',
+      email: currentUser.value?.email || '',
+      phone: '',
+      bio: '',
+      photo: '',
+      college: currentUser.value?.college || '',
+      role: currentUser.value?.role || 'admin'
+    }
+    adminProfileForm.value = { full_name: adminProfile.value.full_name, phone: '', bio: '', photo: '', current_password: '', new_password: '' }
+    showNotification('Network error — showing cached data.', 'warning')
   } finally {
     adminProfileLoading.value = false
   }
@@ -11325,7 +11439,7 @@ const submitStudentRequest = async () => {
       showNotification('Please fill in at least first name, last name, and reason.', 'error')
       return
     }
-    const parts = [newRequest.value.first_name.trim(), newRequest.value.middle_name.trim(), newRequest.value.last_name.trim()].filter(Boolean)
+    const parts = [newRequest.value.first_name.trim(), newRequest.value.middle_name.trim(), newRequest.value.last_name.trim(), newRequest.value.suffix.trim()].filter(Boolean)
     newRequest.value.new_value = parts.join(' ')
   } else if (!newRequest.value.type || !newRequest.value.reason.trim() || !newRequest.value.new_value.trim()) {
     showNotification('Please fill in all fields before submitting.', 'error')
@@ -11343,13 +11457,14 @@ const submitStudentRequest = async () => {
         first_name: newRequest.value.first_name.trim(),
         middle_name: newRequest.value.middle_name.trim(),
         last_name: newRequest.value.last_name.trim(),
+        suffix: newRequest.value.suffix.trim(),
         reason: newRequest.value.reason.trim()
       })
     })
     const data = await res.json()
     if (res.ok) {
       showNotification('Request submitted successfully! An admin will review it shortly.', 'success')
-      newRequest.value = { type: '', new_value: '', first_name: '', middle_name: '', last_name: '', reason: '' }
+      newRequest.value = { type: '', new_value: '', first_name: '', middle_name: '', last_name: '', suffix: '', reason: '' }
       await fetchStudentRequests()
     } else {
       showNotification(data.message || 'Failed to submit request', 'error')
@@ -11387,15 +11502,15 @@ const getCoAdminForCollege = (college) => {
 }
 
 const assignCoAdmin = async (college) => {
-  const username = coAdminAssignInputs.value[college]?.trim()
-  if (!username) return
+  const student_id = coAdminAssignInputs.value[college]?.trim()
+  if (!student_id) return
   coAdminActionLoading.value = college
   try {
     const token = localStorage.getItem('token')
     const res = await fetch(buildAPIUrl('/apis/co-admin/assign'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ username, college })
+      body: JSON.stringify({ student_id, college })
     })
     const data = await res.json()
     if (res.ok) {
@@ -11481,6 +11596,10 @@ const fetchSettings = async () => {
   } finally {
     settingsLoading.value = false
   }
+}
+
+const fetchAvailablePayments = async () => {
+  // Stub — no separate "available payments" endpoint exists yet
 }
 
 // Save settings to API (internal implementation)

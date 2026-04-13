@@ -686,3 +686,31 @@ The project is deployed on **Vercel**:
 
 ### Replit Deployment
 When running on Replit, the frontend is served on port `5000` via the `Start application` workflow (`npm run dev`). API calls proxy to the live Vercel backend unless a local backend server is also running.
+
+---
+
+## 14. Changelog
+
+### Session — April 13, 2026
+
+#### Dashboard.vue
+
+| Area | Change |
+|---|---|
+| Master Admin Dashboard | Added `fetchAllCollegesStats()` to fetch stats for all four colleges. Added an all-colleges overview section with one card per college and a grand-total row. |
+| Submit a Request | Redesigned the section with a banner header, interactive type toggle buttons, a grid-based college selector with SVG icons, a suffix dropdown, a live full-name preview, and a character counter. |
+| Submit a Request — Suffix | Added `suffix` field to `newRequest` ref. Suffix is now included when assembling `new_value` from name parts (`first_name + middle_name + last_name + suffix`). Suffix is sent to the `/apis/requests` endpoint and the form is reset properly on success. |
+| Assign Co-Admins | Renamed from "Promote" to "Assign Co-Admins". Input changed from username to Student ID. Backend call sends `student_id`. |
+| My Profile — Blank State | `fetchAdminProfile` now falls back to `currentUser` data when the `/apis/admin/me` endpoint fails or returns a non-OK status. Profile section never shows blank after this change. |
+| My Profile — Empty Fields | Info cards for Email and Phone use `v-if` / `v-else` to show italic placeholder text ("No email set", "No phone set") instead of leaving the field blank. An "About" card is shown only when bio is present. |
+| CCS College Name | Fixed one remaining label that said "College of Computer Studies" to "College of Computing Studies" in the Assign Co-Admins section. |
+| Statistics Sidebar Icon | Changed the Statistics sidebar icon from home.svg to a bar-chart SVG for admin/master roles. |
+| College Full Names | Corrected all college full names across the UI: SOM = School of Midwifery, CNAHS = College of Nursing and Allied Health Sciences, CCS = College of Computing Studies, COE = College of Engineering. |
+| Available Programs | `availablePrograms` computed property now derives program keys dynamically from actual `statsData` object keys instead of hardcoded lists. Falls back to per-college hardcoded list when no data is present. |
+
+#### Backend (server.js / SSAAM_VERCEL_BACKEND.js)
+
+| Area | Change |
+|---|---|
+| `/apis/co-admin/assign` | New POST endpoint. Accepts `student_id` and `college`. Looks up user by `username === student_id`, validates they are not already an admin/co-admin, and promotes them to `co-admin` for the given college. |
+| `/apis/stats` | Stats endpoint now counts programs dynamically from actual student records instead of hardcoded BSCS/BSIS/BSIT lists. |

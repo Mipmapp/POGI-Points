@@ -3290,39 +3290,24 @@ app.get('/apis/students', studentAuth, async (req, res) => {
 
 app.get('/apis/students/stats', studentAuth, async (req, res) => {
     try {
-        const stats = {
-            BSCS: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, total: 0 },
-            BSIS: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, total: 0 },
-            BSIT: { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, total: 0 }
-        };
-
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
         const yearLevelMap = {
-            '1ST YEAR': '1st Year',
-            '1ST': '1st Year',
-            '1': '1st Year',
-            'FIRST YEAR': '1st Year',
-            'FIRST': '1st Year',
-            '2ND YEAR': '2nd Year',
-            '2ND': '2nd Year',
-            '2': '2nd Year',
-            'SECOND YEAR': '2nd Year',
-            'SECOND': '2nd Year',
-            '3RD YEAR': '3rd Year',
-            '3RD': '3rd Year',
-            '3': '3rd Year',
-            'THIRD YEAR': '3rd Year',
-            'THIRD': '3rd Year',
-            '4TH YEAR': '4th Year',
-            '4TH': '4th Year',
-            '4': '4th Year',
-            'FOURTH YEAR': '4th Year',
-            'FOURTH': '4th Year'
+            '1ST YEAR': '1st Year', '1ST': '1st Year', '1': '1st Year',
+            'FIRST YEAR': '1st Year', 'FIRST': '1st Year',
+            '2ND YEAR': '2nd Year', '2ND': '2nd Year', '2': '2nd Year',
+            'SECOND YEAR': '2nd Year', 'SECOND': '2nd Year',
+            '3RD YEAR': '3rd Year', '3RD': '3rd Year', '3': '3rd Year',
+            'THIRD YEAR': '3rd Year', 'THIRD': '3rd Year',
+            '4TH YEAR': '4th Year', '4TH': '4th Year', '4': '4th Year',
+            'FOURTH YEAR': '4th Year', 'FOURTH': '4th Year'
         };
+        const YEAR_LEVELS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
         const allStudents = await StudentModel.find({ status: 'approved' });
 
+        // Dynamically discover all programs in this college's data
+        const stats = {};
         let verifiedCount = 0;
         let unverifiedCount = 0;
         let unreadableCount = 0;
@@ -3330,31 +3315,33 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
         allStudents.forEach(student => {
             const rawProgram = (student.program || '').trim().toUpperCase();
             const rawYearLevel = (student.year_level || '').trim().toUpperCase();
-
-            const program = VALID_PROGRAMS.includes(rawProgram) ? rawProgram : null;
+            const program = rawProgram || null;
             const yearLevel = yearLevelMap[rawYearLevel] ||
-                (VALID_YEAR_LEVELS.includes(student.year_level) ? student.year_level : null);
+                (YEAR_LEVELS.includes(student.year_level) ? student.year_level : null);
 
-            if (program && stats[program] && yearLevel && stats[program][yearLevel] !== undefined) {
-                stats[program][yearLevel]++;
+            if (program) {
+                if (!stats[program]) {
+                    stats[program] = { '1st Year': 0, '2nd Year': 0, '3rd Year': 0, '4th Year': 0, total: 0 };
+                }
+                if (yearLevel && stats[program][yearLevel] !== undefined) {
+                    stats[program][yearLevel]++;
+                }
                 stats[program].total++;
             }
 
             const rfidStatus = student.rfid_status;
-            if (rfidStatus === 'verified') {
-                verifiedCount++;
-            } else if (rfidStatus === 'Unreadable') {
-                unreadableCount++;
-            } else if (rfidStatus === 'unverified' || !rfidStatus || rfidStatus === '' || rfidStatus === null) {
-                unverifiedCount++;
-            }
+            if (rfidStatus === 'verified') verifiedCount++;
+            else if (rfidStatus === 'Unreadable') unreadableCount++;
+            else unverifiedCount++;
         });
 
         const pendingCount = await StudentModel.countDocuments({ status: 'pending' });
+        const totalCount = allStudents.length;
 
         res.json({
             stats,
-            totalStudents: allStudents.length,
+            totalStudents: totalCount,
+            totalCount,
             pendingCount,
             verifiedCount,
             unverifiedCount,
@@ -4859,6 +4846,37 @@ app.put('/apis/co-admin/:id', auth, requireMaster, requireSuperAdmin, async (req
             message: "Co-admin updated successfully",
             co_admin: coAdmin
         });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Assign an existing Master account as co-admin by student_id/username (super admin only)
+app.post('/apis/co-admin/assign', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+    try {
+        const { student_id, college } = req.body;
+        if (!student_id || !college) {
+            return res.status(400).json({ message: "student_id and college are required" });
+        }
+        const validColleges = ['CCS', 'COE', 'SOM', 'CNAHS'];
+        if (!validColleges.includes(college)) {
+            return res.status(400).json({ message: `College must be one of: ${validColleges.join(', ')}` });
+        }
+        // Find existing Master account where username matches the student_id
+        const master = await Master.findOne({ username: student_id });
+        if (!master) {
+            return res.status(404).json({ message: `No admin account found with Student ID "${student_id}". The account must already be registered as an admin.` });
+        }
+        // Check if another co-admin is already assigned to this college
+        const existing = await Master.findOne({ role: 'co-admin', college, _id: { $ne: master._id } });
+        if (existing) {
+            return res.status(400).json({ message: `College ${college} already has a co-admin. Remove the existing co-admin first.` });
+        }
+        master.role = 'co-admin';
+        master.college = college;
+        master.updated_at = new Date();
+        await master.save();
+        res.json({ message: `${master.username} assigned as co-admin for ${college}`, co_admin: master });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
