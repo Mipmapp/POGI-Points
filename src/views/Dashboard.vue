@@ -702,8 +702,8 @@
           <span>Settings</span>
         </button>
         <button v-if="currentUser.isMaster" @click="currentPage = 'co-admins'; fetchCoAdmins()" :class="[sidebarItemBase, 'mt-2', currentPage === 'co-admins' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-          <span>Co-Admins</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+          <span>Promote</span>
         </button>
         <button @click="currentPage = 'attendance'; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
@@ -716,6 +716,10 @@
 
         <div class="mt-3 border-t border-white/10 pt-3">
           <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
+          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'admin-profile'; fetchAdminProfile()" :class="[sidebarItemBase, 'mb-1', currentPage === 'admin-profile' ? sidebarItemActive : sidebarItemHover]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <span>My Profile</span>
+          </button>
           <button 
             @click="handleLogoutWithAnimation"
             :class="[
@@ -829,8 +833,8 @@
             <span>Settings</span>
           </button>
           <button v-if="currentUser.isMaster" @click="currentPage = 'co-admins'; showMobileMenu = false; fetchCoAdmins()" :class="[sidebarItemBase, 'mt-2', currentPage === 'co-admins' ? sidebarItemActive : sidebarItemHover]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-            <span>Co-Admins</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+            <span>Promote</span>
           </button>
           <button @click="currentPage = 'attendance'; showMobileMenu = false; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
@@ -852,6 +856,10 @@
           </button>
           <div class="mt-3 border-t border-white/10 pt-3">
             <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
+            <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'admin-profile'; showMobileMenu = false; fetchAdminProfile()" :class="[sidebarItemBase, 'mb-1', currentPage === 'admin-profile' ? sidebarItemActive : sidebarItemHover]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+              <span>My Profile</span>
+            </button>
             <button 
               @click="handleLogoutWithAnimation"
               :class="[
@@ -896,7 +904,7 @@
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Co-Admin Management' : currentPage === 'request' ? 'Request' : currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-4 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-xl flex items-center gap-3">
@@ -3089,85 +3097,118 @@
         <Manage ref="manageComponent" v-if="currentPage === 'manage' && (currentUser.role === 'admin' || currentUser.isMaster)" />
 
         <!-- Admin / Co-Admin Profile Page -->
-        <div v-if="currentPage === 'admin-profile' && currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <div>
-              <h2 class="text-xl md:text-2xl font-bold text-blue-900">My Profile</h2>
-              <p class="text-sm text-gray-500 mt-1">Manage your account information and password.</p>
-            </div>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold" :class="currentUser.role === 'co-admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'">
-              {{ currentUser.role === 'co-admin' ? 'Co-Admin' : 'Super Admin' }}
-              <span v-if="currentUser.role === 'co-admin' && currentUser.college" class="font-normal opacity-70">({{ currentUser.college }})</span>
-            </span>
+        <div v-if="currentPage === 'admin-profile' && (currentUser.isMaster || currentUser.role === 'admin')" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+          <!-- Profile Banner -->
+          <div class="relative h-40 bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light overflow-hidden">
+            <div class="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+            <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-blue-500/20 blur-3xl animate-pulse"></div>
+            <div class="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-blue-400/20 blur-3xl animate-pulse-slow"></div>
+            <div class="light-sweep"></div>
           </div>
 
           <div v-if="adminProfileLoading" class="flex items-center justify-center py-16">
             <svg class="animate-spin w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
           </div>
 
-          <div v-else-if="adminProfile" class="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <!-- Avatar Column -->
-            <div class="flex flex-col items-center gap-4">
-              <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-blue-100 shadow-lg bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center">
-                <img v-if="adminProfile.photo" :src="adminProfile.photo" alt="Profile Photo" class="w-full h-full object-cover" />
-                <span v-else class="text-3xl font-bold text-white">{{ (adminProfile.username || 'A').charAt(0).toUpperCase() }}</span>
+          <div v-else-if="adminProfile" class="px-6 md:px-8 pb-8">
+            <!-- Avatar + Name Row -->
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-16 mb-8">
+              <div class="flex items-end gap-4">
+                <div class="w-28 h-28 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center flex-shrink-0">
+                  <img v-if="adminProfile.photo || adminProfileForm.photo" :src="adminProfileForm.photo || adminProfile.photo" alt="Profile Photo" class="w-full h-full object-cover" @error="(e) => e.target.style.display='none'" />
+                  <span v-else class="text-4xl font-bold text-white">{{ (adminProfile.username || 'A').charAt(0).toUpperCase() }}</span>
+                </div>
+                <div class="pb-1">
+                  <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">{{ adminProfile.full_name || adminProfile.username }}</h2>
+                  <p class="text-sm text-gray-500">@{{ adminProfile.username }}</p>
+                </div>
               </div>
-              <div class="text-center">
-                <p class="font-bold text-gray-900 text-lg">{{ adminProfile.full_name || adminProfile.username }}</p>
-                <p class="text-sm text-gray-500">{{ adminProfile.email }}</p>
-                <p class="text-xs text-gray-400 mt-1">@{{ adminProfile.username }}</p>
+              <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold shadow-sm self-start sm:self-auto" :class="currentUser.isMaster ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white' : 'bg-blue-100 text-blue-700'">
+                <img v-if="currentUser.isMaster" src="/crown.svg" alt="" class="w-3.5 h-3.5 brightness-0 invert" />
+                {{ currentUser.isMaster ? 'Super Admin' : currentUser.role === 'co-admin' ? 'Co-Admin' : 'Admin' }}
+                <span v-if="currentUser.role === 'co-admin' && currentUser.college" class="font-normal opacity-80">({{ currentUser.college }})</span>
+              </span>
+            </div>
+
+            <!-- Info Cards Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email</p>
+                <p class="text-gray-900 font-semibold text-sm truncate">{{ adminProfile.email || 'Not set' }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Phone</p>
+                <p class="text-gray-900 font-semibold text-sm">{{ adminProfile.phone || 'Not set' }}</p>
+              </div>
+              <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">College</p>
+                <p class="text-gray-900 font-semibold text-sm">{{ adminProfile.college || currentUser.college || 'All Colleges' }}</p>
               </div>
             </div>
 
-            <!-- Edit Form Column -->
-            <div class="md:col-span-2 space-y-4">
-              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                  <input v-model="adminProfileForm.full_name" type="text" placeholder="Your full name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                  <input v-model="adminProfileForm.phone" type="text" placeholder="Contact number" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
-                </div>
-              </div>
+            <!-- Edit Form -->
+            <div class="space-y-6">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
-                <textarea v-model="adminProfileForm.bio" rows="3" placeholder="Brief description about yourself..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm resize-none"></textarea>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">Photo URL</label>
-                <input v-model="adminProfileForm.photo" type="text" placeholder="https://..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
-              </div>
-
-              <div class="border-t pt-4 mt-2">
-                <h4 class="text-sm font-semibold text-gray-700 mb-3">Change Password</h4>
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-1 h-6 rounded-full bg-blue-600"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Edit Profile</h3>
+                </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">Current Password</label>
-                    <input v-model="adminProfileForm.current_password" type="password" placeholder="Current password" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+                    <input v-model="adminProfileForm.full_name" type="text" placeholder="Your full name" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition" />
                   </div>
                   <div>
-                    <label class="block text-xs font-medium text-gray-600 mb-1">New Password</label>
-                    <input v-model="adminProfileForm.new_password" type="password" placeholder="New password (min 8 chars)" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm" />
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Phone</label>
+                    <input v-model="adminProfileForm.phone" type="text" placeholder="Contact number" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition" />
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Bio</label>
+                  <textarea v-model="adminProfileForm.bio" rows="3" placeholder="Brief description about yourself..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm resize-none bg-gray-50 focus:bg-white transition"></textarea>
+                </div>
+                <div class="mt-4">
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Photo URL</label>
+                  <input v-model="adminProfileForm.photo" type="text" placeholder="https://..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition" />
+                </div>
+              </div>
+
+              <div class="border-t border-gray-100 pt-6">
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-1 h-6 rounded-full bg-blue-600"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Security</h3>
+                </div>
+                <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-600 mb-1">Current Password</label>
+                      <input v-model="adminProfileForm.current_password" type="password" placeholder="Current password" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm bg-white transition" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-600 mb-1">New Password</label>
+                      <input v-model="adminProfileForm.new_password" type="password" placeholder="New password (min 8 chars)" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm bg-white transition" />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div class="flex gap-3 mt-4">
-                <button @click="saveAdminProfile" :disabled="adminProfileSaving" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-2 px-4 rounded-lg font-medium transition flex items-center justify-center gap-2 disabled:opacity-60">
+              <div class="flex flex-col sm:flex-row gap-3">
+                <button @click="saveAdminProfile" :disabled="adminProfileSaving" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-2.5 px-6 rounded-xl font-bold transition-all hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg shadow-blue-200">
                   <svg v-if="adminProfileSaving" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                   {{ adminProfileSaving ? 'Saving...' : 'Save Changes' }}
                 </button>
               </div>
 
               <!-- Co-Admin Transfer Role Section -->
-              <div v-if="currentUser.role === 'co-admin'" class="border-t pt-4 mt-2">
-                <h4 class="text-sm font-semibold text-gray-700 mb-1">Transfer Role</h4>
-                <p class="text-xs text-gray-500 mb-3">You can transfer your co-admin responsibilities to another account. You will be removed and the target account will take over.</p>
+              <div v-if="currentUser.role === 'co-admin'" class="border-t border-gray-100 pt-6">
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-1 h-6 rounded-full bg-orange-500"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Transfer Role</h3>
+                </div>
+                <p class="text-xs text-gray-500 mb-3">Transfer your co-admin responsibilities to another account. You will be removed and the target account will take over.</p>
                 <div class="flex gap-2">
-                  <input v-model="transferTargetUsername" type="text" placeholder="Target username" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 outline-none text-sm" />
-                  <button @click="requestTransferRole" :disabled="transferringRole" class="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-60">
+                  <input v-model="transferTargetUsername" type="text" placeholder="Target username" class="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 outline-none text-sm bg-gray-50" />
+                  <button @click="requestTransferRole" :disabled="transferringRole" class="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-sm font-bold transition disabled:opacity-60">
                     {{ transferringRole ? 'Transferring...' : 'Transfer' }}
                   </button>
                 </div>
@@ -3218,10 +3259,25 @@
               </div>
             </div>
 
-            <div v-if="newRequest.type === 'name'">
-              <label class="block text-sm font-medium text-gray-700 mb-2">New Full Name</label>
-              <input v-model="newRequest.new_value" type="text" placeholder="Enter your correct full name" :class="['w-full px-4 py-2.5 border rounded-lg outline-none text-sm', isCOE ? 'focus:ring-2 focus:ring-orange-400 border-gray-300' : isSOM ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : isCNAHS ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : 'focus:ring-2 focus:ring-blue-400 border-gray-300']" />
-              <p class="text-xs text-gray-400 mt-1">This request will be reviewed by the admin.</p>
+            <div v-if="newRequest.type === 'name'" class="space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">First Name <span class="text-red-500">*</span></label>
+                  <input v-model="newRequest.first_name" type="text" placeholder="First name" :class="['w-full px-4 py-2.5 border rounded-lg outline-none text-sm', isCOE ? 'focus:ring-2 focus:ring-orange-400 border-gray-300' : isSOM ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : isCNAHS ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : 'focus:ring-2 focus:ring-blue-400 border-gray-300']" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Middle Name <span class="text-gray-400">(optional)</span></label>
+                  <input v-model="newRequest.middle_name" type="text" placeholder="Middle name" :class="['w-full px-4 py-2.5 border rounded-lg outline-none text-sm', isCOE ? 'focus:ring-2 focus:ring-orange-400 border-gray-300' : isSOM ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : isCNAHS ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : 'focus:ring-2 focus:ring-blue-400 border-gray-300']" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Last Name <span class="text-red-500">*</span></label>
+                  <input v-model="newRequest.last_name" type="text" placeholder="Last name" :class="['w-full px-4 py-2.5 border rounded-lg outline-none text-sm', isCOE ? 'focus:ring-2 focus:ring-orange-400 border-gray-300' : isSOM ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : isCNAHS ? 'focus:ring-2 focus:ring-green-400 border-gray-300' : 'focus:ring-2 focus:ring-blue-400 border-gray-300']" />
+                </div>
+              </div>
+              <div v-if="newRequest.first_name || newRequest.middle_name || newRequest.last_name" :class="['text-xs font-medium px-3 py-1.5 rounded-lg inline-block', isCOE ? 'bg-orange-50 text-orange-700' : isSOM ? 'bg-green-50 text-green-700' : isCNAHS ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-blue-700']">
+                Preview: {{ [newRequest.first_name, newRequest.middle_name, newRequest.last_name].filter(v => v.trim()).join(' ') }}
+              </div>
+              <p class="text-xs text-gray-400">This request will be sent to your college admin for review.</p>
             </div>
 
             <div v-if="newRequest.type === 'department'">
@@ -3242,63 +3298,188 @@
             </div>
 
             <div class="flex justify-end">
-              <button @click="submitStudentRequest" :disabled="requestSubmitting || !newRequest.type || !newRequest.reason.trim() || !newRequest.new_value.trim()" :class="['px-6 py-2.5 rounded-lg text-white text-sm font-medium transition bg-gradient-to-r disabled:opacity-50 disabled:cursor-not-allowed', primaryButtonGradient, primaryButtonHover]">
+              <button @click="submitStudentRequest" :disabled="requestSubmitting || !newRequest.type || !newRequest.reason.trim() || (newRequest.type === 'name' ? (!newRequest.first_name.trim() || !newRequest.last_name.trim()) : !newRequest.new_value.trim())" :class="['px-6 py-2.5 rounded-lg text-white text-sm font-medium transition bg-gradient-to-r disabled:opacity-50 disabled:cursor-not-allowed', primaryButtonGradient, primaryButtonHover]">
                 {{ requestSubmitting ? 'Submitting...' : 'Submit Request' }}
               </button>
             </div>
           </div>
         </div>
 
-        <!-- Co-Admin Management Section (isMaster only) -->
-        <div v-if="currentPage === 'co-admins' && currentUser.isMaster" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <div>
-              <h2 class="text-xl md:text-2xl font-bold text-blue-900">Co-Admin Management</h2>
-              <p class="text-sm text-gray-500 mt-1">Manage co-admins for each college. Each college can have one active co-admin.</p>
+        <!-- Promote / Co-Admin Management Section (isMaster only) -->
+        <div v-if="currentPage === 'co-admins' && currentUser.isMaster" class="space-y-6">
+          <!-- Header Card -->
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="relative h-28 bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light overflow-hidden">
+              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <div class="light-sweep"></div>
+              <div class="absolute inset-0 flex items-center px-8 gap-4">
+                <svg class="w-10 h-10 text-white/90 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                <div>
+                  <h2 class="text-2xl font-extrabold text-white tracking-tight">Promote Co-Admins</h2>
+                  <p class="text-white/70 text-sm">Assign or remove co-admins for each college department.</p>
+                </div>
+                <div class="ml-auto">
+                  <button @click="fetchCoAdmins" :disabled="coAdminsLoading" class="px-4 py-2 rounded-xl text-white text-sm font-semibold bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/20 transition flex items-center gap-2 disabled:opacity-60">
+                    <svg :class="['w-4 h-4', coAdminsLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    {{ coAdminsLoading ? 'Loading...' : 'Refresh' }}
+                  </button>
+                </div>
+              </div>
             </div>
-            <button @click="fetchCoAdmins" :disabled="coAdminsLoading" class="px-4 py-2 rounded-lg text-white text-sm font-medium bg-blue-600 hover:bg-blue-700 transition flex items-center gap-2 disabled:opacity-60">
-              <svg :class="['w-4 h-4', coAdminsLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              {{ coAdminsLoading ? 'Loading...' : 'Refresh' }}
-            </button>
           </div>
 
-          <div v-if="coAdminsLoading" class="flex items-center justify-center py-12">
-            <svg class="animate-spin h-10 w-10 text-blue-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          <div v-if="coAdminsLoading" class="flex items-center justify-center py-16">
+            <svg class="animate-spin h-12 w-12 text-blue-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
           </div>
 
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div v-for="college in ['CCS', 'COE', 'SOM', 'CNAHS']" :key="college" :class="['rounded-xl border p-5 space-y-4', college === 'COE' ? 'border-orange-200 bg-orange-50/30' : college === 'SOM' ? 'border-green-200 bg-green-50/30' : college === 'CNAHS' ? 'border-emerald-200 bg-emerald-50/30' : 'border-blue-200 bg-blue-50/30']">
-              <div class="flex items-center justify-between">
-                <h3 :class="['font-bold text-lg', college === 'COE' ? 'text-orange-800' : college === 'SOM' ? 'text-green-800' : college === 'CNAHS' ? 'text-emerald-800' : 'text-blue-800']">{{ college }}</h3>
-                <span :class="['px-2.5 py-1 rounded-full text-xs font-semibold', getCoAdminForCollege(college) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500']">
-                  {{ getCoAdminForCollege(college) ? 'Active' : 'No Co-Admin' }}
+          <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <!-- CCS Card -->
+            <div class="bg-white rounded-3xl border border-blue-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+              <div class="relative h-24 bg-gradient-to-br from-blue-700 to-ssaam-light overflow-hidden">
+                <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+                <img src="/icons/ccs.svg" alt="CCS" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
+                <div class="absolute top-4 left-5">
+                  <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">CCS</h3>
+                  <p class="text-white/70 text-xs">College of Computer Studies</p>
+                </div>
+                <span :class="['absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold', getCoAdminForCollege('CCS') ? 'bg-green-400/90 text-white' : 'bg-white/30 text-white']">
+                  {{ getCoAdminForCollege('CCS') ? 'Active' : 'Vacant' }}
                 </span>
               </div>
-
-              <!-- Current co-admin display -->
-              <div v-if="getCoAdminForCollege(college)" class="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
-                <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0', college === 'COE' ? 'bg-gradient-to-br from-orange-400 to-red-500' : college === 'SOM' ? 'bg-gradient-to-br from-green-400 to-teal-500' : college === 'CNAHS' ? 'bg-gradient-to-br from-emerald-500 to-green-700' : 'bg-gradient-to-br from-blue-500 to-blue-700']">
-                  {{ (getCoAdminForCollege(college).full_name || getCoAdminForCollege(college).username || '?').charAt(0).toUpperCase() }}
+              <div class="p-5 space-y-3">
+                <div v-if="getCoAdminForCollege('CCS')" class="flex items-center gap-3 p-3 bg-blue-50 rounded-2xl border border-blue-100">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-700">
+                    {{ (getCoAdminForCollege('CCS').full_name || getCoAdminForCollege('CCS').username || '?').charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('CCS').full_name || getCoAdminForCollege('CCS').username }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('CCS').email }}</p>
+                  </div>
+                  <button @click="removeCoAdmin(getCoAdminForCollege('CCS')._id, 'CCS')" :disabled="coAdminActionLoading === 'CCS'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege(college).full_name || getCoAdminForCollege(college).username }}</p>
-                  <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege(college).email }}</p>
+                <div v-else class="p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center text-xs text-gray-400">
+                  No co-admin assigned yet
                 </div>
-                <button @click="removeCoAdmin(getCoAdminForCollege(college)._id, college)" :disabled="coAdminActionLoading === college" class="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition text-xs flex-shrink-0" title="Remove co-admin">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-              </div>
-              <div v-else class="p-3 bg-gray-50 rounded-lg border border-dashed border-gray-300 text-center text-sm text-gray-400">
-                No co-admin assigned
-              </div>
-
-              <!-- Add co-admin form -->
-              <div class="space-y-2">
-                <label class="block text-xs font-medium text-gray-600">Assign Co-Admin by Username</label>
                 <div class="flex gap-2">
-                  <input v-model="coAdminAssignInputs[college]" type="text" :placeholder="`Username for ${college}`" class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-400" @keyup.enter="assignCoAdmin(college)" />
-                  <button @click="assignCoAdmin(college)" :disabled="coAdminActionLoading === college || !coAdminAssignInputs[college]?.trim()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium transition disabled:opacity-50">
-                    {{ coAdminActionLoading === college ? '...' : 'Assign' }}
+                  <input v-model="coAdminAssignInputs['CCS']" type="text" placeholder="Enter username to promote" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('CCS')" />
+                  <button @click="assignCoAdmin('CCS')" :disabled="coAdminActionLoading === 'CCS' || !coAdminAssignInputs['CCS']?.trim()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
+                    {{ coAdminActionLoading === 'CCS' ? '...' : 'Promote' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- COE Card -->
+            <div class="bg-white rounded-3xl border border-orange-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+              <div class="relative h-24 bg-gradient-to-br from-orange-600 to-red-600 overflow-hidden">
+                <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+                <img src="/icons/coe.svg" alt="COE" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
+                <div class="absolute top-4 left-5">
+                  <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">COE</h3>
+                  <p class="text-white/70 text-xs">College of Engineering</p>
+                </div>
+                <span :class="['absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold', getCoAdminForCollege('COE') ? 'bg-green-400/90 text-white' : 'bg-white/30 text-white']">
+                  {{ getCoAdminForCollege('COE') ? 'Active' : 'Vacant' }}
+                </span>
+              </div>
+              <div class="p-5 space-y-3">
+                <div v-if="getCoAdminForCollege('COE')" class="flex items-center gap-3 p-3 bg-orange-50 rounded-2xl border border-orange-100">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 bg-gradient-to-br from-orange-400 to-red-500">
+                    {{ (getCoAdminForCollege('COE').full_name || getCoAdminForCollege('COE').username || '?').charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('COE').full_name || getCoAdminForCollege('COE').username }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('COE').email }}</p>
+                  </div>
+                  <button @click="removeCoAdmin(getCoAdminForCollege('COE')._id, 'COE')" :disabled="coAdminActionLoading === 'COE'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+                </div>
+                <div v-else class="p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center text-xs text-gray-400">
+                  No co-admin assigned yet
+                </div>
+                <div class="flex gap-2">
+                  <input v-model="coAdminAssignInputs['COE']" type="text" placeholder="Enter username to promote" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('COE')" />
+                  <button @click="assignCoAdmin('COE')" :disabled="coAdminActionLoading === 'COE' || !coAdminAssignInputs['COE']?.trim()" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
+                    {{ coAdminActionLoading === 'COE' ? '...' : 'Promote' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- SOM Card -->
+            <div class="bg-white rounded-3xl border border-green-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+              <div class="relative h-24 bg-gradient-to-br from-green-600 to-teal-600 overflow-hidden">
+                <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+                <img src="/icons/som.svg" alt="SOM" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
+                <div class="absolute top-4 left-5">
+                  <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">SOM</h3>
+                  <p class="text-white/70 text-xs">School of Management</p>
+                </div>
+                <span :class="['absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold', getCoAdminForCollege('SOM') ? 'bg-green-400/90 text-white' : 'bg-white/30 text-white']">
+                  {{ getCoAdminForCollege('SOM') ? 'Active' : 'Vacant' }}
+                </span>
+              </div>
+              <div class="p-5 space-y-3">
+                <div v-if="getCoAdminForCollege('SOM')" class="flex items-center gap-3 p-3 bg-green-50 rounded-2xl border border-green-100">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 bg-gradient-to-br from-green-400 to-teal-500">
+                    {{ (getCoAdminForCollege('SOM').full_name || getCoAdminForCollege('SOM').username || '?').charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('SOM').full_name || getCoAdminForCollege('SOM').username }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('SOM').email }}</p>
+                  </div>
+                  <button @click="removeCoAdmin(getCoAdminForCollege('SOM')._id, 'SOM')" :disabled="coAdminActionLoading === 'SOM'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+                </div>
+                <div v-else class="p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center text-xs text-gray-400">
+                  No co-admin assigned yet
+                </div>
+                <div class="flex gap-2">
+                  <input v-model="coAdminAssignInputs['SOM']" type="text" placeholder="Enter username to promote" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('SOM')" />
+                  <button @click="assignCoAdmin('SOM')" :disabled="coAdminActionLoading === 'SOM' || !coAdminAssignInputs['SOM']?.trim()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
+                    {{ coAdminActionLoading === 'SOM' ? '...' : 'Promote' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- CNAHS Card -->
+            <div class="bg-white rounded-3xl border border-emerald-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
+              <div class="relative h-24 bg-gradient-to-br from-emerald-600 to-green-700 overflow-hidden">
+                <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+                <img src="/icons/cnahs.svg" alt="CNAHS" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
+                <div class="absolute top-4 left-5">
+                  <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">CNAHS</h3>
+                  <p class="text-white/70 text-xs">Nursing & Allied Health</p>
+                </div>
+                <span :class="['absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold', getCoAdminForCollege('CNAHS') ? 'bg-green-400/90 text-white' : 'bg-white/30 text-white']">
+                  {{ getCoAdminForCollege('CNAHS') ? 'Active' : 'Vacant' }}
+                </span>
+              </div>
+              <div class="p-5 space-y-3">
+                <div v-if="getCoAdminForCollege('CNAHS')" class="flex items-center gap-3 p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
+                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 bg-gradient-to-br from-emerald-500 to-green-700">
+                    {{ (getCoAdminForCollege('CNAHS').full_name || getCoAdminForCollege('CNAHS').username || '?').charAt(0).toUpperCase() }}
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('CNAHS').full_name || getCoAdminForCollege('CNAHS').username }}</p>
+                    <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('CNAHS').email }}</p>
+                  </div>
+                  <button @click="removeCoAdmin(getCoAdminForCollege('CNAHS')._id, 'CNAHS')" :disabled="coAdminActionLoading === 'CNAHS'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  </button>
+                </div>
+                <div v-else class="p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center text-xs text-gray-400">
+                  No co-admin assigned yet
+                </div>
+                <div class="flex gap-2">
+                  <input v-model="coAdminAssignInputs['CNAHS']" type="text" placeholder="Enter username to promote" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('CNAHS')" />
+                  <button @click="assignCoAdmin('CNAHS')" :disabled="coAdminActionLoading === 'CNAHS' || !coAdminAssignInputs['CNAHS']?.trim()" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
+                    {{ coAdminActionLoading === 'CNAHS' ? '...' : 'Promote' }}
                   </button>
                 </div>
               </div>
@@ -3668,6 +3849,134 @@
                 <button @click="loadMoreRfidUsers" :class="['px-6 py-2 rounded-lg transition font-medium text-sm', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : isCNAHS ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200']">
                   Load More ({{ rfidListFilteredUsers.length - rfidListDisplayUsers.length }} remaining)
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- All Colleges Statistics (Master Admin Only) -->
+        <div v-if="currentPage === 'dashboard' && currentUser.isMaster" class="mt-6">
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="relative h-24 bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light overflow-hidden">
+              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <div class="light-sweep"></div>
+              <div class="absolute inset-0 flex items-center justify-between px-6 md:px-8">
+                <div>
+                  <h2 class="text-xl md:text-2xl font-extrabold text-white tracking-tight">All Colleges Overview</h2>
+                  <p class="text-white/70 text-sm">Registered students across all departments</p>
+                </div>
+                <button @click="fetchAllCollegesStats" :disabled="allCollegesLoading" class="px-4 py-2 rounded-xl text-white text-sm font-semibold bg-white/20 hover:bg-white/30 border border-white/20 transition flex items-center gap-2 disabled:opacity-60">
+                  <svg :class="['w-4 h-4', allCollegesLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  {{ allCollegesLoading ? 'Loading...' : 'Refresh' }}
+                </button>
+              </div>
+            </div>
+
+            <div class="p-4 md:p-6">
+              <div v-if="allCollegesLoading" class="flex items-center justify-center py-12">
+                <svg class="animate-spin h-10 w-10 text-blue-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              </div>
+              <div v-else class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <!-- CCS -->
+                <div class="rounded-2xl border border-blue-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div class="relative h-16 bg-gradient-to-br from-blue-700 to-ssaam-light overflow-hidden flex items-center gap-3 px-4">
+                    <img src="/icons/ccs.svg" alt="CCS" class="h-10 w-10 object-contain opacity-90" />
+                    <div>
+                      <p class="text-white font-extrabold text-base">CCS</p>
+                      <p class="text-white/70 text-[10px]">Computer Studies</p>
+                    </div>
+                  </div>
+                  <div class="p-4 bg-blue-50/30">
+                    <div v-if="allCollegesStats.CCS">
+                      <p class="text-3xl font-extrabold text-blue-700">{{ allCollegesStats.CCS.total }}</p>
+                      <p class="text-xs text-gray-500 mt-1">Registered Students</p>
+                      <div class="mt-3 space-y-1">
+                        <div v-for="(count, prog) in allCollegesStats.CCS.stats" :key="prog" class="flex justify-between text-xs text-gray-600">
+                          <span>{{ prog }}</span><span class="font-semibold text-blue-700">{{ count.total || 0 }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="text-center py-4 text-gray-400 text-sm">No data</div>
+                  </div>
+                </div>
+
+                <!-- COE -->
+                <div class="rounded-2xl border border-orange-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div class="relative h-16 bg-gradient-to-br from-orange-600 to-red-600 overflow-hidden flex items-center gap-3 px-4">
+                    <img src="/icons/coe.svg" alt="COE" class="h-10 w-10 object-contain opacity-90" />
+                    <div>
+                      <p class="text-white font-extrabold text-base">COE</p>
+                      <p class="text-white/70 text-[10px]">Engineering</p>
+                    </div>
+                  </div>
+                  <div class="p-4 bg-orange-50/30">
+                    <div v-if="allCollegesStats.COE">
+                      <p class="text-3xl font-extrabold text-orange-600">{{ allCollegesStats.COE.total }}</p>
+                      <p class="text-xs text-gray-500 mt-1">Registered Students</p>
+                      <div class="mt-3 space-y-1">
+                        <div v-for="(count, prog) in allCollegesStats.COE.stats" :key="prog" class="flex justify-between text-xs text-gray-600">
+                          <span>{{ prog }}</span><span class="font-semibold text-orange-600">{{ count.total || 0 }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="text-center py-4 text-gray-400 text-sm">No data</div>
+                  </div>
+                </div>
+
+                <!-- SOM -->
+                <div class="rounded-2xl border border-green-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div class="relative h-16 bg-gradient-to-br from-green-600 to-teal-600 overflow-hidden flex items-center gap-3 px-4">
+                    <img src="/icons/som.svg" alt="SOM" class="h-10 w-10 object-contain opacity-90" />
+                    <div>
+                      <p class="text-white font-extrabold text-base">SOM</p>
+                      <p class="text-white/70 text-[10px]">Management</p>
+                    </div>
+                  </div>
+                  <div class="p-4 bg-green-50/30">
+                    <div v-if="allCollegesStats.SOM">
+                      <p class="text-3xl font-extrabold text-green-600">{{ allCollegesStats.SOM.total }}</p>
+                      <p class="text-xs text-gray-500 mt-1">Registered Students</p>
+                      <div class="mt-3 space-y-1">
+                        <div v-for="(count, prog) in allCollegesStats.SOM.stats" :key="prog" class="flex justify-between text-xs text-gray-600">
+                          <span>{{ prog }}</span><span class="font-semibold text-green-600">{{ count.total || 0 }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="text-center py-4 text-gray-400 text-sm">No data</div>
+                  </div>
+                </div>
+
+                <!-- CNAHS -->
+                <div class="rounded-2xl border border-emerald-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                  <div class="relative h-16 bg-gradient-to-br from-emerald-600 to-green-700 overflow-hidden flex items-center gap-3 px-4">
+                    <img src="/icons/cnahs.svg" alt="CNAHS" class="h-10 w-10 object-contain opacity-90" />
+                    <div>
+                      <p class="text-white font-extrabold text-base">CNAHS</p>
+                      <p class="text-white/70 text-[10px]">Nursing & Allied Health</p>
+                    </div>
+                  </div>
+                  <div class="p-4 bg-emerald-50/30">
+                    <div v-if="allCollegesStats.CNAHS">
+                      <p class="text-3xl font-extrabold text-emerald-600">{{ allCollegesStats.CNAHS.total }}</p>
+                      <p class="text-xs text-gray-500 mt-1">Registered Students</p>
+                      <div class="mt-3 space-y-1">
+                        <div v-for="(count, prog) in allCollegesStats.CNAHS.stats" :key="prog" class="flex justify-between text-xs text-gray-600">
+                          <span>{{ prog }}</span><span class="font-semibold text-emerald-600">{{ count.total || 0 }}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else class="text-center py-4 text-gray-400 text-sm">No data</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Grand Total -->
+              <div v-if="!allCollegesLoading && (allCollegesStats.CCS || allCollegesStats.COE || allCollegesStats.SOM || allCollegesStats.CNAHS)" class="mt-5 p-4 bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-2xl text-white text-center">
+                <p class="text-sm font-medium text-white/80">Grand Total — All Colleges</p>
+                <p class="text-4xl font-extrabold mt-1">
+                  {{ (allCollegesStats.CCS?.total || 0) + (allCollegesStats.COE?.total || 0) + (allCollegesStats.SOM?.total || 0) + (allCollegesStats.CNAHS?.total || 0) }}
+                </p>
+                <p class="text-white/60 text-xs mt-1">Registered students across JRMSU</p>
               </div>
             </div>
           </div>
@@ -5707,7 +6016,9 @@ const transferringRole = ref(false)
 
 // Student Request System
 const studentRequests = ref([])
-const newRequest = ref({ type: '', new_value: '', reason: '' })
+const newRequest = ref({ type: '', new_value: '', first_name: '', middle_name: '', last_name: '', reason: '' })
+const allCollegesStats = ref({ CCS: null, COE: null, SOM: null, CNAHS: null })
+const allCollegesLoading = ref(false)
 const requestSubmitting = ref(false)
 
 // Co-Admin Management (isMaster only)
@@ -9992,6 +10303,7 @@ onMounted(async () => {
     // Fetch statistics and pending count separately
     fetchStats()
     fetchPendingStudents()
+    if (currentUser.value?.isMaster) fetchAllCollegesStats()
   } else {
     // Student path — do not auto-fetch attendance here. Attendance data
     // will be fetched when the user opens the Attendance view.
@@ -10307,6 +10619,7 @@ watch(() => applicationDashboardModal.show.value, (isOpen) => {
 const handleStatsRefresh = async () => {
   try {
     await fetchStats()
+    if (currentUser.value?.isMaster) await fetchAllCollegesStats()
     showNotification('Statistics refreshed successfully!', 'success')
   } catch (error) {
     console.error('Stats refresh error:', error)
@@ -10429,6 +10742,33 @@ const fetchStats = async () => {
     }
   } finally {
     statsLoading.value = false
+  }
+}
+
+const fetchAllCollegesStats = async () => {
+  if (!currentUser.value?.isMaster) return
+  allCollegesLoading.value = true
+  const colleges = ['CCS', 'COE', 'SOM', 'CNAHS']
+  try {
+    const results = await Promise.allSettled(colleges.map(college =>
+      fetch(buildAPIUrl('/apis/students/stats'), {
+        method: 'GET',
+        headers: { ...getFetchHeaders({ 'Authorization': 'Bearer SSAAMStudents' }), 'X-SSAAM-College': college }
+      }).then(r => r.ok ? r.json() : null)
+    ))
+    const newStats = {}
+    results.forEach((result, i) => {
+      if (result.status === 'fulfilled' && result.value?.stats) {
+        newStats[colleges[i]] = { stats: result.value.stats, total: result.value.totalCount || 0, verified: result.value.verifiedCount || 0 }
+      } else {
+        newStats[colleges[i]] = null
+      }
+    })
+    allCollegesStats.value = newStats
+  } catch (e) {
+    console.error('Failed to fetch all colleges stats', e)
+  } finally {
+    allCollegesLoading.value = false
   }
 }
 
@@ -10980,7 +11320,14 @@ const fetchStudentRequests = async () => {
 }
 
 const submitStudentRequest = async () => {
-  if (!newRequest.value.type || !newRequest.value.reason.trim() || !newRequest.value.new_value.trim()) {
+  if (newRequest.value.type === 'name') {
+    if (!newRequest.value.first_name.trim() || !newRequest.value.last_name.trim() || !newRequest.value.reason.trim()) {
+      showNotification('Please fill in at least first name, last name, and reason.', 'error')
+      return
+    }
+    const parts = [newRequest.value.first_name.trim(), newRequest.value.middle_name.trim(), newRequest.value.last_name.trim()].filter(Boolean)
+    newRequest.value.new_value = parts.join(' ')
+  } else if (!newRequest.value.type || !newRequest.value.reason.trim() || !newRequest.value.new_value.trim()) {
     showNotification('Please fill in all fields before submitting.', 'error')
     return
   }
@@ -10993,13 +11340,16 @@ const submitStudentRequest = async () => {
       body: JSON.stringify({
         type: newRequest.value.type,
         new_value: newRequest.value.new_value.trim(),
+        first_name: newRequest.value.first_name.trim(),
+        middle_name: newRequest.value.middle_name.trim(),
+        last_name: newRequest.value.last_name.trim(),
         reason: newRequest.value.reason.trim()
       })
     })
     const data = await res.json()
     if (res.ok) {
       showNotification('Request submitted successfully! An admin will review it shortly.', 'success')
-      newRequest.value = { type: '', new_value: '', reason: '' }
+      newRequest.value = { type: '', new_value: '', first_name: '', middle_name: '', last_name: '', reason: '' }
       await fetchStudentRequests()
     } else {
       showNotification(data.message || 'Failed to submit request', 'error')
@@ -16274,5 +16624,51 @@ onUnmounted(() => {
 .carouselSlide-left-leave-to {
   opacity: 0;
   transform: translateX(-40px);
+}
+
+/* Gray Scrollbar (global) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c5cc transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #c1c5cc;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #a0a6b0;
+}
+
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 999px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.25);
 }
 </style>
