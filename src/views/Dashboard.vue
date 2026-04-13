@@ -158,7 +158,7 @@
     </div>
 
     <!-- RFID Scanner Fullscreen Modal - Enhanced Kiosk Layout -->
-    <div v-if="rfidFullscreenMode" :class="['fixed inset-0 z-[70] overflow-hidden bg-gradient-to-br', isCOE ? 'from-orange-900 via-orange-800 to-red-900' : isSOM ? 'from-green-900 via-green-800 to-yellow-900' : isCNAHS ? 'from-green-900 via-green-700 to-green-900' : 'from-ssaam-dark to-ssaam-dark']">
+    <div v-if="rfidFullscreenMode" class="fixed inset-0 z-[70] overflow-hidden bg-gradient-to-b from-[#080e2e] to-[#0f1f6e]">
     <button @click="rfidFullscreenMode = false" :class="['absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all hover:bg-white/25 hover:scale-110 active:scale-95', isCOE ? 'hover:border-red-300 hover:text-red-200' : isSOM ? 'hover:border-yellow-300 hover:text-yellow-200' : isCNAHS ? 'hover:border-green-300 hover:text-green-200' : 'hover:border-blue-300 hover:text-blue-200']" title="Close (ESC)">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
@@ -169,15 +169,13 @@
 
         <!-- SSAAM Logo + Title -->
         <div class="flex items-center gap-3 mb-5">
-          <div 
-            class="relative overflow-hidden w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0"
-            :style="{
-              mask: isCOE ? 'url(/icons/coe.svg) no-repeat center / contain' : isSOM ? 'url(/icons/som.svg) no-repeat center / contain' : 'url(/jrmsu.svg) no-repeat center / contain',
-              webkitMask: isCOE ? 'url(/icons/coe.svg) no-repeat center / contain' : isSOM ? 'url(/icons/som.svg) no-repeat center / contain' : 'url(/jrmsu.svg) no-repeat center / contain'
-            }"
-          >
-            <img :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/jrmsu.svg'" :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'" class="w-full h-full object-contain relative z-10" />
-            <div :class="['absolute inset-0 -translate-x-full animate-sweep z-20 pointer-events-none', isCOE ? 'bg-gradient-to-r from-transparent via-red-300/40 to-transparent' : isSOM ? 'bg-gradient-to-r from-transparent via-yellow-300/40 to-transparent' : isCNAHS ? 'bg-gradient-to-r from-transparent via-green-300/40 to-transparent' : 'bg-gradient-to-r from-transparent via-blue-300/40 to-transparent']"></div>
+          <div class="relative w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0">
+            <img
+              :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'"
+              :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'"
+              class="w-full h-full object-contain drop-shadow-xl"
+            />
+            <div class="absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
           </div>
           <h1 class="text-2xl lg:text-4xl font-extrabold italic text-white drop-shadow tracking-wide">SSAAM</h1>
         </div>
@@ -247,7 +245,7 @@
               @keydown="handleRfidKeydown"
               type="text"
               placeholder="Scan RFID or enter Student ID..."
-              :class="['flex-1 px-4 py-3 text-center text-sm lg:text-base bg-white/15 border-2 rounded-xl outline-none text-white placeholder-white/40 transition-all font-mono tracking-wider',
+              :class="['flex-1 min-w-0 px-3 py-3 text-center text-sm bg-white/15 border-2 rounded-xl outline-none text-white placeholder-white/50 transition-all',
                 isCOE ? 'border-orange-400/60 focus:border-orange-300 focus:ring-4 focus:ring-orange-300/20'
                 : isSOM ? 'border-green-400/60 focus:border-green-300 focus:ring-4 focus:ring-green-300/20'
                 : isCNAHS ? 'border-teal-400/60 focus:border-teal-300 focus:ring-4 focus:ring-teal-300/20'
@@ -8611,6 +8609,10 @@ watch(rfidFullscreenMode, (newValue) => {
       clearInterval(fsClockInterval.value)
       fsClockInterval.value = null
     }
+    // Exit browser fullscreen when overlay closes
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {})
+    }
     // Clear pending focus timeout when exiting fullscreen
     if (rfidFocusTimeout.value) {
       clearTimeout(rfidFocusTimeout.value)
@@ -12250,6 +12252,12 @@ const enterFullscreenMode = () => {
     return
   }
   rfidFullscreenMode.value = true
+  const el = document.documentElement
+  if (el.requestFullscreen) {
+    el.requestFullscreen().catch(() => {})
+  } else if (el.webkitRequestFullscreen) {
+    el.webkitRequestFullscreen()
+  }
   setTimeout(() => {
     rfidFullscreenInputRef.value?.focus()
   }, 100)
