@@ -2421,6 +2421,7 @@ const attendanceSessionSchema = new mongoose.Schema({
     },
     check_in_locked: { type: Boolean, default: false },
     check_out_locked: { type: Boolean, default: false },
+    check_in_only: { type: Boolean, default: false },
     late_timer_minutes: { type: Number, default: 0 },
     rfidScanner: { type: mongoose.Schema.Types.Mixed, default: {} },
     created_at: { type: Date, default: Date.now },
@@ -6759,7 +6760,7 @@ app.get('/apis/attendance/events/:eventId/export-excel', auth, async (req, res) 
 // Create session for an event (admin only)
 app.post('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
     try {
-        const { label, start_time, end_time, status, late_timer_minutes } = req.body;
+        const { label, start_time, end_time, status, late_timer_minutes, check_in_only } = req.body;
 
         if (!label || !start_time || !end_time) {
             return res.status(400).json({ message: "Label, start time, and end time are required" });
@@ -6788,6 +6789,7 @@ app.post('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => 
             start_time,
             end_time,
             late_timer_minutes: late_timer_minutes || 0,
+            check_in_only: !!check_in_only,
             status: status || (event.status === 'active' ? 'active' : 'draft')
         });
 
@@ -6813,7 +6815,7 @@ app.get('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
 // Update session (admin only)
 app.put('/apis/attendance/sessions/:id', auth, async (req, res) => {
     try {
-        const { label, start_time, end_time, status, check_in_locked, check_out_locked, late_timer_minutes, rfidScanner } = req.body;
+        const { label, start_time, end_time, status, check_in_locked, check_out_locked, check_in_only, late_timer_minutes, rfidScanner } = req.body;
 
         const SessionModel = getCollegeModel(AttendanceSession, CCS_AttendanceSession, COE_AttendanceSession, req.college);
         const session = await SessionModel.findById(req.params.id);
@@ -6838,6 +6840,7 @@ app.put('/apis/attendance/sessions/:id', auth, async (req, res) => {
         if (status) session.status = status;
         if (check_in_locked !== undefined) session.check_in_locked = check_in_locked;
         if (check_out_locked !== undefined) session.check_out_locked = check_out_locked;
+        if (check_in_only !== undefined) session.check_in_only = check_in_only;
         if (late_timer_minutes !== undefined) session.late_timer_minutes = late_timer_minutes;
         if (rfidScanner !== undefined) session.rfidScanner = rfidScanner;
 
