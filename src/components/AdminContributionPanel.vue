@@ -627,6 +627,7 @@ export default {
         if (response.ok) {
           const data = await response.json();
           this.contributions = data.data || [];
+          this.serverFilteredCount = data.pagination ? data.pagination.total : this.contributions.length;
         } else {
           this.loadSampleData();
         }
