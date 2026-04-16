@@ -531,7 +531,8 @@ export default {
       searchQuery: '',
       contributions: [],
       selectedStudent: null,
-      campaignFee: 780,
+      activePayment: null,
+      campaignFee: 0,
       discountType: 'amount',
       discountValue: 0,
       filterYearLevel: '',
@@ -606,9 +607,28 @@ export default {
     filterYearLevel() { this.loadAllContributions(); }
   },
   mounted() {
+    this.loadActivePayment();
     this.loadAllContributions();
   },
   methods: {
+    async loadActivePayment() {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(buildAPIUrl('/apis/payments'), {
+          headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-College': getCollege() }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const payments = (data.payments || data.data || []).filter(p => p.amount_due > 0);
+          if (payments.length > 0) {
+            this.activePayment = payments[0];
+            this.campaignFee = payments[0].amount_due;
+          }
+        }
+      } catch (e) {
+        console.error('Error loading active payment:', e);
+      }
+    },
     async loadAllContributions() {
       try {
         const token = localStorage.getItem('authToken');
@@ -705,6 +725,7 @@ export default {
         if (response.ok) {
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Contribution event "${payload.title}" created successfully!`, type: 'success' } }));
           this.closeCreateEventModal();
+          this.loadActivePayment();
           this.loadAllContributions();
         } else {
           this.createEventError = data.message || 'Failed to create event. Please try again.';
