@@ -3801,6 +3801,82 @@
                   </button>
                 </div>
               </section>
+
+              <!-- Contribution Records Section -->
+              <section>
+                <div class="flex items-center justify-between mb-4">
+                  <div class="flex items-center gap-2">
+                    <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Contribution Records</h3>
+                  </div>
+                  <button @click="fetchMyPayments" :disabled="loadingMyPayments" :class="[isCOE ? 'text-orange-600 hover:bg-orange-50' : isSOM ? 'text-green-600 hover:bg-green-50' : isCNAHS ? 'text-green-700 hover:bg-green-50' : 'text-blue-600 hover:bg-blue-50', 'p-1.5 rounded-lg transition-colors']" title="Refresh">
+                    <svg :class="['w-4 h-4', loadingMyPayments ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  </button>
+                </div>
+
+                <!-- Loading state -->
+                <div v-if="loadingMyPayments" class="flex items-center justify-center py-10">
+                  <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-500']" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  </svg>
+                </div>
+
+                <!-- Empty state -->
+                <div v-else-if="myPayments.length === 0" :class="['rounded-2xl border-2 border-dashed p-8 text-center', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-green-100' : 'border-blue-100']">
+                  <div :class="['w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                    <svg :class="['w-6 h-6', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-green-500' : 'text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                  </div>
+                  <p class="text-sm font-semibold text-gray-500">No contribution records yet</p>
+                  <p class="text-xs text-gray-400 mt-1">Your payment records will appear here once fees are assigned.</p>
+                </div>
+
+                <!-- Records table -->
+                <div v-else class="overflow-hidden rounded-2xl border border-gray-100 shadow-sm">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr :class="[isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                        <th :class="['text-left px-4 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Description</th>
+                        <th :class="['text-right px-4 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Amount</th>
+                        <th :class="['text-center px-4 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Status</th>
+                        <th :class="['text-right px-4 py-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Deadline</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr v-for="record in myPayments" :key="record._id" class="hover:bg-gray-50 transition-colors">
+                        <td class="px-4 py-3">
+                          <p class="font-semibold text-gray-900">{{ record.title }}</p>
+                          <p v-if="record.description" class="text-xs text-gray-500 mt-0.5 line-clamp-1">{{ record.description }}</p>
+                        </td>
+                        <td class="px-4 py-3 text-right">
+                          <span class="font-bold text-gray-900">₱{{ Number(record.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                          <p v-if="record.is_paid && record.amount_paid" class="text-xs text-gray-400 mt-0.5">Paid: ₱{{ Number(record.amount_paid).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</p>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <span :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold',
+                            record.is_paid ? 'bg-green-100 text-green-700' :
+                            record.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700']">
+                            <svg v-if="record.is_paid" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            {{ record.is_paid ? 'Paid' : record.payment_status === 'pending' ? 'Pending' : 'Unpaid' }}
+                          </span>
+                          <p v-if="record.is_paid && record.paid_date" class="text-[10px] text-gray-400 mt-0.5">{{ new Date(record.paid_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</p>
+                        </td>
+                        <td class="px-4 py-3 text-right hidden sm:table-cell">
+                          <span v-if="record.deadline" class="text-xs text-gray-500">{{ new Date(record.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
+                          <span v-else class="text-xs text-gray-400">—</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <div :class="['px-4 py-3 flex items-center justify-between border-t border-gray-100', isCOE ? 'bg-orange-50/50' : isSOM ? 'bg-green-50/50' : isCNAHS ? 'bg-green-50/50' : 'bg-blue-50/50']">
+                    <span class="text-xs text-gray-500">{{ myPayments.filter(p => p.is_paid).length }} of {{ myPayments.length }} paid</span>
+                    <span :class="['text-xs font-bold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">
+                      Total: ₱{{ myPayments.reduce((s, p) => s + (p.amount_due || 0), 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
+                    </span>
+                  </div>
+                </div>
+              </section>
             </div>
           </div>
         </div>
@@ -3972,6 +4048,61 @@
                   Load More ({{ rfidListFilteredUsers.length - rfidListDisplayUsers.length }} remaining)
                 </button>
               </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions: Create Event -->
+          <div class="mt-6 px-4 pb-4 md:px-8 md:pb-8">
+            <div class="flex items-center gap-2 mb-4">
+              <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
+              <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Quick Actions</h3>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <!-- Create Event Card -->
+              <button @click="openCreateEventModal" :class="['group relative overflow-hidden rounded-2xl border-2 p-5 text-left transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-95',
+                isCOE ? 'border-orange-100 bg-orange-50 hover:border-orange-300' :
+                isSOM ? 'border-green-100 bg-green-50 hover:border-green-300' :
+                isCNAHS ? 'border-green-100 bg-green-50 hover:border-green-300' :
+                'border-blue-100 bg-blue-50 hover:border-blue-300']">
+                <div :class="['absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity', isCOE ? 'bg-gradient-to-br from-orange-100/60 to-transparent' : isSOM ? 'bg-gradient-to-br from-green-100/60 to-transparent' : isCNAHS ? 'bg-gradient-to-br from-green-100/60 to-transparent' : 'bg-gradient-to-br from-blue-100/60 to-transparent']"></div>
+                <div class="relative">
+                  <div :class="['w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-sm', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  </div>
+                  <p :class="['font-bold text-gray-900 mb-0.5']">Create Event</p>
+                  <p class="text-xs text-gray-500">Schedule a new attendance event with sessions</p>
+                </div>
+              </button>
+              <!-- Go to Attendance -->
+              <button @click="currentPage = 'attendance'; fetchAttendanceData()" :class="['group relative overflow-hidden rounded-2xl border-2 p-5 text-left transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-95',
+                isCOE ? 'border-orange-100 bg-orange-50 hover:border-orange-300' :
+                isSOM ? 'border-green-100 bg-green-50 hover:border-green-300' :
+                isCNAHS ? 'border-green-100 bg-green-50 hover:border-green-300' :
+                'border-blue-100 bg-blue-50 hover:border-blue-300']">
+                <div :class="['absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity', isCOE ? 'bg-gradient-to-br from-orange-100/60 to-transparent' : isSOM ? 'bg-gradient-to-br from-green-100/60 to-transparent' : isCNAHS ? 'bg-gradient-to-br from-green-100/60 to-transparent' : 'bg-gradient-to-br from-blue-100/60 to-transparent']"></div>
+                <div class="relative">
+                  <div :class="['w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-sm', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                  </div>
+                  <p class="font-bold text-gray-900 mb-0.5">Manage Attendance</p>
+                  <p class="text-xs text-gray-500">View events, sessions, and attendance logs</p>
+                </div>
+              </button>
+              <!-- Go to Contributions -->
+              <button @click="currentPage = 'contributions'" :class="['group relative overflow-hidden rounded-2xl border-2 p-5 text-left transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-95',
+                isCOE ? 'border-orange-100 bg-orange-50 hover:border-orange-300' :
+                isSOM ? 'border-green-100 bg-green-50 hover:border-green-300' :
+                isCNAHS ? 'border-green-100 bg-green-50 hover:border-green-300' :
+                'border-blue-100 bg-blue-50 hover:border-blue-300']">
+                <div :class="['absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity', isCOE ? 'bg-gradient-to-br from-orange-100/60 to-transparent' : isSOM ? 'bg-gradient-to-br from-green-100/60 to-transparent' : isCNAHS ? 'bg-gradient-to-br from-green-100/60 to-transparent' : 'bg-gradient-to-br from-blue-100/60 to-transparent']"></div>
+                <div class="relative">
+                  <div :class="['w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-sm', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                  </div>
+                  <p class="font-bold text-gray-900 mb-0.5">Contributions</p>
+                  <p class="text-xs text-gray-500">Track and manage student payment records</p>
+                </div>
+              </button>
             </div>
           </div>
         </div>
