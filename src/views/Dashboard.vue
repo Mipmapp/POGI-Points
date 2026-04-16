@@ -159,8 +159,6 @@
 
     <!-- RFID Scanner Fullscreen Modal - Enhanced Kiosk Layout -->
     <div v-if="rfidFullscreenMode" class="fixed inset-0 z-[70] overflow-hidden bg-gradient-to-b from-[#080e2e] to-[#0f1f6e]">
-    <!-- Glowing Particle Canvas -->
-    <canvas ref="particleCanvasRef" class="absolute inset-0 w-full h-full pointer-events-none z-0"></canvas>
     <button @click="rfidFullscreenMode = false" :class="['absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all hover:bg-white/25 hover:scale-110 active:scale-95', isCOE ? 'hover:border-red-300 hover:text-red-200' : isSOM ? 'hover:border-yellow-300 hover:text-yellow-200' : isCNAHS ? 'hover:border-green-300 hover:text-green-200' : 'hover:border-blue-300 hover:text-blue-200']" title="Close (ESC)">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
@@ -199,32 +197,26 @@
         <div class="w-full max-w-sm mb-4">
           <div class="flex gap-1 p-1 bg-black/20 rounded-2xl border border-white/15">
             <button 
-              @click="activateCheckIn()"
+              @click="setRfidOperation('in')"
               :class="['flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-bold transition-all duration-200 select-none',
-                effectiveRfid.checkInEnabled
+                rfidOperationType === 'in'
                   ? 'bg-green-500 text-white shadow-lg shadow-green-500/40 scale-[1.02]'
                   : 'text-white/50 hover:text-white/80 hover:bg-white/5 active:scale-95']"
             >
-              <div :class="['w-2 h-2 rounded-full flex-shrink-0 transition-all', effectiveRfid.checkInEnabled ? 'bg-white animate-pulse' : 'bg-white/30']"></div>
+              <div :class="['w-2 h-2 rounded-full flex-shrink-0 transition-all', rfidOperationType === 'in' ? 'bg-white animate-pulse' : 'bg-white/30']"></div>
               Check-In
             </button>
             <button 
-              v-if="!selectedSession?.check_in_only"
-              @click="activateCheckOut()"
+              @click="setRfidOperation('out')"
               :class="['flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-bold transition-all duration-200 select-none',
-                effectiveRfid.checkOutEnabled
+                rfidOperationType === 'out'
                   ? (isCOE ? 'bg-red-500' : isSOM ? 'bg-yellow-500' : isCNAHS ? 'bg-teal-500' : 'bg-orange-500') + ' text-white shadow-lg scale-[1.02]'
                   : 'text-white/50 hover:text-white/80 hover:bg-white/5 active:scale-95']"
             >
-              <div :class="['w-2 h-2 rounded-full flex-shrink-0 transition-all', effectiveRfid.checkOutEnabled ? 'bg-white animate-pulse' : 'bg-white/30']"></div>
+              <div :class="['w-2 h-2 rounded-full flex-shrink-0 transition-all', rfidOperationType === 'out' ? 'bg-white animate-pulse' : 'bg-white/30']"></div>
               Check-Out
             </button>
-            <div v-else class="flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-bold text-white/25 select-none cursor-not-allowed">
-              <div class="w-2 h-2 rounded-full flex-shrink-0 bg-white/15"></div>
-              Check-Out
-            </div>
           </div>
-          <p v-if="selectedSession?.check_in_only" class="text-center text-white/40 text-xs mt-2">Check-out disabled (Check-In Only session)</p>
         </div>
 
         <!-- Scanner Box -->
@@ -282,8 +274,8 @@
           </div>
           <div class="flex-1 bg-white/10 border border-white/15 rounded-xl p-3 text-center backdrop-blur-sm">
             <p class="text-white/45 text-xs uppercase tracking-wider mb-1">Active Mode</p>
-            <p :class="['text-sm font-extrabold tracking-wider uppercase', effectiveRfid.checkInEnabled ? 'text-green-300' : effectiveRfid.checkOutEnabled ? (isCOE ? 'text-red-300' : isSOM ? 'text-yellow-300' : 'text-orange-300') : 'text-white/40']">
-              {{ effectiveRfid.checkInEnabled ? 'Check-In' : effectiveRfid.checkOutEnabled ? 'Check-Out' : 'None' }}
+            <p :class="['text-sm font-extrabold tracking-wider uppercase', rfidOperationType === 'in' ? 'text-green-300' : isCOE ? 'text-red-300' : isSOM ? 'text-yellow-300' : 'text-orange-300']">
+              {{ rfidOperationType === 'in' ? 'Check-In' : 'Check-Out' }}
             </p>
           </div>
         </div>
@@ -2049,167 +2041,68 @@
                 </div>
               </div>
               <div v-else class="space-y-4">
-                <!-- Active Session Header Banner -->
-                <div :class="['relative overflow-hidden rounded-2xl shadow-lg text-white', isCOE ? 'bg-gradient-to-br from-orange-700 to-red-800' : isSOM ? 'bg-gradient-to-br from-green-700 to-teal-800' : isCNAHS ? 'bg-gradient-to-br from-emerald-700 to-green-800' : 'bg-gradient-to-br from-ssaam-dark to-blue-800']">
-                  <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-                  <div class="relative flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 sm:p-5">
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2 mb-1">
-                        <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse flex-shrink-0"></span>
-                        <span class="text-xs font-semibold text-white/70 uppercase tracking-wider">Active Session</span>
-                        <span v-if="selectedSession.check_in_only" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white">Check-In Only</span>
-                      </div>
-                      <h3 class="font-bold text-white text-base sm:text-lg truncate">{{ selectedEvent.title }}</h3>
+                <div :class="['bg-gradient-to-r border rounded-lg p-3 sm:p-4', isCOE ? 'from-orange-50 to-red-50 border-orange-200' : 'from-blue-50 to-blue-50 border-blue-200']">
+                  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                    <div class="flex-1 text-left sm:text-left">
+                      <h3 :class="['font-semibold text-sm sm:text-base', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ selectedEvent.title }}</h3>
+                      <p :class="['text-xs sm:text-sm', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
                       <div class="flex flex-wrap items-center gap-2 mt-1">
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-white/20 text-white">{{ selectedSession.label }}</span>
-                        <span class="text-xs text-white/60">{{ formatDisplayTime(selectedSession.start_time) }} – {{ formatDisplayTime(selectedSession.end_time) }}</span>
+                        <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : isCNAHS ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700']">{{ selectedSession.label }}</span>
+                        <span class="text-xs text-gray-500 truncate">{{ formatDisplayTime(selectedSession.start_time) }} - {{ formatDisplayTime(selectedSession.end_time) }}</span>
                       </div>
                     </div>
-                    <div class="flex items-center gap-2 flex-shrink-0">
-                      <button @click="enterFullscreenMode" class="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-xl text-white text-sm font-bold transition-all border border-white/20 active:scale-95">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"/></svg>
-                        Kiosk
+                    <div class="flex items-center gap-2 w-full sm:w-auto">
+                      <button @click="enterFullscreenMode" :class="['text-white px-3 sm:px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 bg-gradient-to-r flex-1 sm:flex-none text-sm sm:text-base', primaryButtonGradient, primaryButtonHover]">
+                        <svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                        <span class="hidden sm:inline">Fullscreen</span>
                       </button>
-                      <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" class="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white transition border border-white/15" title="Change session">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                      <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" :class="['p-2 rounded-lg transition', isCOE ? 'text-orange-600 hover:text-orange-800 hover:bg-orange-100' : isSOM ? 'text-green-600 hover:text-green-800 hover:bg-green-50' : isCNAHS ? 'text-green-600 hover:text-green-800 hover:bg-green-50' : 'text-blue-600 hover:text-blue-800 hover:bg-blue-100']">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                       </button>
                     </div>
                   </div>
                 </div>
 
-                <!-- Mode Control + Scan Input Grid -->
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  <!-- Mode Control Panel -->
-                  <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                    <h3 class="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
-                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                      Attendance Mode
-                    </h3>
-                    <!-- Current mode indicator -->
-                    <div :class="['flex items-center gap-3 p-3 rounded-xl mb-4 transition-all', effectiveRfid.checkInEnabled ? 'bg-green-50 border border-green-200' : effectiveRfid.checkOutEnabled ? 'bg-blue-50 border border-blue-200' : 'bg-gray-50 border border-gray-200']">
-                      <div :class="['w-2.5 h-2.5 rounded-full flex-shrink-0', effectiveRfid.checkInEnabled ? 'bg-green-500 animate-pulse' : effectiveRfid.checkOutEnabled ? 'bg-blue-500 animate-pulse' : 'bg-gray-300']"></div>
-                      <div>
-                        <p :class="['text-sm font-bold', effectiveRfid.checkInEnabled ? 'text-green-700' : effectiveRfid.checkOutEnabled ? 'text-blue-700' : 'text-gray-500']">
-                          {{ effectiveRfid.checkInEnabled ? 'Check-In Mode Active' : effectiveRfid.checkOutEnabled ? 'Check-Out Mode Active' : 'No Mode Selected' }}
-                        </p>
-                        <p :class="['text-xs mt-0.5', effectiveRfid.checkInEnabled ? 'text-green-600' : effectiveRfid.checkOutEnabled ? 'text-blue-600' : 'text-gray-400']">
-                          {{ effectiveRfid.checkInEnabled ? 'Scanning marks students as present' : effectiveRfid.checkOutEnabled ? 'Scanning marks students as checked out' : 'Select a mode to enable scanning' }}
-                        </p>
-                      </div>
-                    </div>
-                    <div :class="['grid gap-3', selectedSession.check_in_only ? 'grid-cols-1' : 'grid-cols-2']">
-                      <!-- Check-In card -->
-                      <div @click="!rfidScannerSaving && !checkToggleCooldown && (selectedEvent || selectedSession) && toggleCheckIn()" :class="['rounded-xl p-4 border-2 transition-all select-none', (selectedEvent || selectedSession) && !rfidScannerSaving ? 'cursor-pointer' : 'cursor-not-allowed opacity-60', effectiveRfid.checkInEnabled ? 'bg-green-50 border-green-400 shadow-sm' : 'bg-gray-50 border-gray-200 hover:border-green-200']">
-                        <div class="flex items-center justify-between mb-3">
-                          <div :class="['w-9 h-9 rounded-xl flex items-center justify-center transition-all', effectiveRfid.checkInEnabled ? 'bg-green-500' : 'bg-gray-200']">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
-                          </div>
-                          <span :class="['text-xs font-bold px-2.5 py-1 rounded-full', effectiveRfid.checkInEnabled ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500']">
-                            {{ effectiveRfid.checkInEnabled ? 'ON' : 'OFF' }}
-                          </span>
-                        </div>
-                        <p class="text-sm font-bold text-gray-800">Check-In</p>
-                        <p :class="['text-xs mt-0.5', effectiveRfid.checkInEnabled ? 'text-green-600' : 'text-gray-400']">{{ effectiveRfid.checkInEnabled ? 'Recording arrivals' : 'Tap to activate' }}</p>
-                      </div>
-                      <!-- Check-Out card -->
-                      <div v-if="!selectedSession.check_in_only" @click="!rfidScannerSaving && !checkToggleCooldown && (selectedEvent || selectedSession) && toggleCheckOut()" :class="['rounded-xl p-4 border-2 transition-all select-none', (selectedEvent || selectedSession) && !rfidScannerSaving ? 'cursor-pointer' : 'cursor-not-allowed opacity-60', effectiveRfid.checkOutEnabled ? 'bg-blue-50 border-blue-400 shadow-sm' : 'bg-gray-50 border-gray-200 hover:border-blue-200']">
-                        <div class="flex items-center justify-between mb-3">
-                          <div :class="['w-9 h-9 rounded-xl flex items-center justify-center transition-all', effectiveRfid.checkOutEnabled ? 'bg-blue-500' : 'bg-gray-200']">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-                          </div>
-                          <span :class="['text-xs font-bold px-2.5 py-1 rounded-full', effectiveRfid.checkOutEnabled ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500']">
-                            {{ effectiveRfid.checkOutEnabled ? 'ON' : 'OFF' }}
-                          </span>
-                        </div>
-                        <p class="text-sm font-bold text-gray-800">Check-Out</p>
-                        <p :class="['text-xs mt-0.5', effectiveRfid.checkOutEnabled ? 'text-blue-600' : 'text-gray-400']">{{ effectiveRfid.checkOutEnabled ? 'Recording departures' : 'Tap to activate' }}</p>
-                      </div>
-                      <div v-else class="rounded-xl p-4 border-2 border-dashed border-gray-200 bg-gray-50 flex flex-col items-center justify-center gap-1.5 opacity-50">
-                        <svg class="w-6 h-6 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
-                        <p class="text-xs text-gray-400 text-center font-medium">Check-Out<br/>Disabled</p>
-                      </div>
-                    </div>
-                    <div class="mt-3 space-y-1">
-                      <p v-if="lastAutoSwitchedFromCheckIn" class="text-xs text-blue-700 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-lg">Auto-switched to Check-Out when Check-In was turned off.</p>
-                      <p v-if="checkToggleCooldown" class="text-xs text-gray-400">Cooldown: {{ cooldownSeconds }}s</p>
+                <div :class="['bg-gradient-to-br border-2 border-dashed rounded-lg p-4 sm:p-8 text-center', isCOE ? 'from-orange-50 to-red-50 border-orange-300' : isSOM ? 'from-green-50 to-teal-50 border-green-300' : isCNAHS ? 'from-green-50 to-teal-50 border-green-300' : 'from-blue-50 to-blue-50 border-blue-300']">
+                  <!-- Combined input info -->
+                  <div class="flex justify-center mb-3 sm:mb-4">
+                    <div class="inline-flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg bg-white bg-opacity-10 border border-white border-opacity-10">
+                      <svg class="w-4 h-4 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 1.657-1.343 3-3 3S6 12.657 6 11s1.343-3 3-3 3 1.343 3 3zM18 11c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z"></path></svg>
+                      <span class="text-xs sm:text-sm text-gray-700">Scan RFID or type Student ID</span>
                     </div>
                   </div>
-
-                  <!-- Scan Input Card -->
-                  <div :class="['relative overflow-hidden rounded-2xl p-5 sm:p-6 shadow-xl text-white', isCOE ? 'bg-gradient-to-br from-orange-800 to-red-900' : isSOM ? 'bg-gradient-to-br from-green-800 to-teal-900' : isCNAHS ? 'bg-gradient-to-br from-emerald-800 to-green-900' : 'bg-gradient-to-br from-slate-900 to-blue-950']">
-                    <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-                    <div class="relative flex flex-col h-full">
-                      <!-- RFID pulse rings -->
-                      <div class="flex justify-center items-center mb-5">
-                        <div class="relative w-20 h-20">
-                          <div :class="['absolute inset-0 rounded-full border-2 opacity-20 animate-ping', isCOE ? 'border-orange-400' : isSOM ? 'border-green-400' : 'border-blue-400']"></div>
-                          <div :class="['absolute inset-3 rounded-full border-2 opacity-30 animate-ping', isCOE ? 'border-orange-300' : isSOM ? 'border-green-300' : 'border-blue-300']" style="animation-delay:0.5s"></div>
-                          <div :class="['absolute inset-6 rounded-full flex items-center justify-center border-2', isCOE ? 'bg-orange-500/40 border-orange-400/60' : isSOM ? 'bg-green-500/40 border-green-400/60' : 'bg-blue-500/40 border-blue-400/60']">
-                            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"/>
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
-                      <p class="text-center font-bold text-white text-sm sm:text-base mb-0.5">Scan RFID or Enter Student ID</p>
-                      <p class="text-center text-xs text-white/45 mb-5">Both RFID cards and manual entry are accepted</p>
-                      <div class="flex gap-2">
-                        <input
-                          ref="rfidInputRef"
-                          v-model="rfidInput"
-                          @input="onRfidInput"
-                          @keydown="handleRfidKeydown"
-                          type="text"
-                          placeholder="Scan card or type ID..."
-                          :class="['flex-1 min-w-0 px-4 py-3 text-center text-sm bg-white/10 border-2 rounded-xl outline-none text-white placeholder-white/30 transition-all focus:bg-white/15',
-                            isCOE ? 'border-orange-400/40 focus:border-orange-300 focus:ring-2 focus:ring-orange-300/20'
-                            : isSOM ? 'border-green-400/40 focus:border-green-300 focus:ring-2 focus:ring-green-300/20'
-                            : isCNAHS ? 'border-teal-400/40 focus:border-teal-300 focus:ring-2 focus:ring-teal-300/20'
-                            : 'border-blue-400/30 focus:border-blue-300 focus:ring-2 focus:ring-blue-300/20']"
-                          :disabled="rfidProcessing"
-                        />
-                        <button
-                          @click="manualRfidSubmit"
-                          :disabled="rfidProcessing || !rfidInput.trim()"
-                          :class="['flex-shrink-0 px-4 py-3 rounded-xl font-bold transition-all flex items-center justify-center gap-2 text-sm text-white disabled:opacity-40 active:scale-95',
-                            isCOE ? 'bg-orange-500 hover:bg-orange-400'
-                            : isSOM ? 'bg-green-500 hover:bg-green-400'
-                            : isCNAHS ? 'bg-teal-500 hover:bg-teal-400'
-                            : 'bg-blue-500 hover:bg-blue-400']"
-                        >
-                          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                          <span class="hidden sm:inline">Submit</span>
-                        </button>
-                      </div>
-                      <!-- Mode badge -->
-                      <div class="flex justify-center mt-4">
-                        <span :class="['inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold',
-                          effectiveRfid.checkInEnabled ? 'bg-green-500/25 text-green-200'
-                          : effectiveRfid.checkOutEnabled ? 'bg-blue-500/25 text-blue-200'
-                          : 'bg-gray-500/25 text-gray-300']">
-                          <span :class="['w-1.5 h-1.5 rounded-full', effectiveRfid.checkInEnabled ? 'bg-green-300 animate-pulse' : effectiveRfid.checkOutEnabled ? 'bg-blue-300 animate-pulse' : 'bg-gray-400']"></span>
-                          {{ effectiveRfid.checkInEnabled ? 'CHECK-IN ACTIVE' : effectiveRfid.checkOutEnabled ? 'CHECK-OUT ACTIVE' : 'NO MODE ACTIVE' }}
-                        </span>
-                      </div>
-                    </div>
+                  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-center sm:gap-2 max-w-md mx-auto">
+                    <input 
+                      ref="rfidInputRef"
+                      v-model="rfidInput"
+                      @input="onRfidInput"
+                      @keydown="handleRfidKeydown"
+                      type="text"
+                      :placeholder="'Scan or ID'"
+                      :class="['flex-1 px-2 sm:px-4 py-1.5 sm:py-3 text-center text-xs sm:text-lg border-2 rounded-lg focus:ring-2 outline-none uppercase', isCOE ? 'border-orange-300 focus:border-red-500 focus:ring-red-200' : isSOM ? 'border-green-300 focus:border-yellow-500 focus:ring-yellow-200' : isCNAHS ? 'border-green-300 focus:border-green-500 focus:ring-green-200' : 'border-blue-300 focus:border-blue-500 focus:ring-blue-200']"
+                      :disabled="rfidProcessing"
+                    />
+                    <button 
+                      @click="manualRfidSubmit"
+                      :disabled="rfidProcessing || !rfidInput.trim()"
+                      :class="['px-2 sm:px-4 py-1.5 sm:py-3 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 sm:gap-2 bg-gradient-to-r whitespace-nowrap w-full sm:w-auto', primaryButtonGradient, primaryButtonHover]"
+                    >
+                      <svg class="w-3 sm:w-5 h-3 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                      <span class="text-xs sm:text-base">Enter</span>
+                    </button>
                   </div>
+                  <!-- inline loading removed per request -->
                 </div>
 
                 <!-- Recent Logs -->
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                    <h4 class="font-semibold text-gray-800 text-sm flex items-center gap-2">
-                      <svg :class="['w-4 h-4', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                      Recent Attendance Logs
-                      <span v-if="selectedEvent?.title" class="text-xs text-gray-400 font-normal">— {{ selectedEvent.title }}</span>
-                    </h4>
-                    <span v-if="attendanceLogs.length > 0" :class="['px-2.5 py-0.5 rounded-full text-xs font-bold', isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700']">{{ attendanceLogs.length }}</span>
-                  </div>
-                  <div class="p-4 sm:p-5">
-                  <div v-if="attendanceLogs.length === 0" class="text-center py-8 text-gray-400">
-                    <svg class="w-12 h-12 mx-auto mb-3 opacity-25" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                    <p class="text-sm font-medium">No records yet</p>
-                    <p class="text-xs mt-1 opacity-60">Records appear here when students scan</p>
+                <div class="mt-6">
+                  <h4 class="font-medium text-gray-700 mb-3 flex items-center gap-2">
+                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    Recent Attendance Logs
+                    <span v-if="selectedEvent?.title" :class="['text-sm font-normal', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']">- {{ selectedEvent.title }}</span>
+                  </h4>
+                  <div v-if="attendanceLogs.length === 0" class="text-center py-4 text-gray-500">
+                    No attendance records yet for this event.
                   </div>
                   <!-- Mobile Card View -->
                   <div v-else class="block sm:hidden space-y-3">
@@ -3260,30 +3153,8 @@
                   <textarea v-model="adminProfileForm.bio" rows="3" placeholder="Brief description about yourself..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm resize-none bg-gray-50 focus:bg-white transition"></textarea>
                 </div>
                 <div class="mt-4">
-                  <label class="block text-xs font-semibold text-gray-600 mb-2">Profile Photo</label>
-                  <div class="flex items-center gap-4">
-                    <div @click="adminPhotoInputRef?.click()" class="relative w-20 h-20 rounded-2xl overflow-hidden cursor-pointer group border-2 border-dashed border-gray-200 hover:border-blue-400 transition-all flex-shrink-0">
-                      <img v-if="adminProfileForm.photo" :src="adminProfileForm.photo" class="w-full h-full object-cover" />
-                      <div v-else class="w-full h-full flex items-center justify-center bg-gray-50 text-gray-400">
-                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                      </div>
-                      <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
-                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                      </div>
-                    </div>
-                    <div class="flex-1">
-                      <button @click="adminPhotoInputRef?.click()" type="button" class="w-full px-4 py-2.5 border-2 border-dashed border-gray-200 hover:border-blue-400 rounded-xl text-sm text-gray-500 hover:text-blue-500 transition-all font-medium flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                        Upload Photo
-                      </button>
-                      <p class="text-[10px] text-gray-400 mt-1.5 text-center">JPG, PNG or GIF · Compressed automatically</p>
-                      <button v-if="adminProfileForm.photo" @click="adminProfileForm.photo = ''" type="button" class="mt-2 w-full text-xs text-red-400 hover:text-red-600 transition flex items-center justify-center gap-1">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        Remove photo
-                      </button>
-                    </div>
-                  </div>
-                  <input ref="adminPhotoInputRef" type="file" accept="image/*" class="hidden" @change="handleAdminPhotoUpload" />
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Photo URL</label>
+                  <input v-model="adminProfileForm.photo" type="text" placeholder="https://..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition" />
                 </div>
               </div>
 
@@ -5176,7 +5047,6 @@
                   <p class="text-xs text-gray-500">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
                   <div class="flex flex-wrap gap-2 mt-1">
                     <span class="text-xs text-orange-600">Late after {{ session.late_timer_minutes || 60 }} mins</span>
-                    <span v-if="session.check_in_only" class="text-xs font-semibold text-purple-600">Check-In Only</span>
                     <span v-if="session.check_in_locked" class="text-xs text-red-600">Check-in locked</span>
                     <span v-if="session.check_out_locked" class="text-xs text-red-600">Check-out locked</span>
                   </div>
@@ -5252,16 +5122,6 @@
             <span class="text-sm text-gray-500 whitespace-nowrap">minutes</span>
           </div>
           <p class="text-xs text-gray-500 mt-1">Check-ins after {{ newSession.late_timer_minutes || 60 }} minutes from session start will be marked as late</p>
-        </div>
-        <!-- Check-In Only Toggle -->
-        <div :class="['flex items-center justify-between p-3 rounded-xl border-2 transition-all', newSession.check_in_only ? (isCOE ? 'bg-orange-50 border-orange-300' : isSOM ? 'bg-green-50 border-green-300' : 'bg-blue-50 border-blue-300') : 'bg-gray-50 border-gray-200']">
-          <div class="flex-1 pr-3">
-            <p class="text-sm font-semibold text-gray-800">Check-In Only</p>
-            <p class="text-xs text-gray-500 mt-0.5">Disable check-out scanning for this session. Students are only recorded when entering.</p>
-          </div>
-          <button @click="newSession.check_in_only = !newSession.check_in_only" type="button" :class="['relative w-11 h-6 rounded-full transition-all flex-shrink-0', newSession.check_in_only ? (isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500') : 'bg-gray-300']">
-            <span :class="['absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform', newSession.check_in_only ? 'translate-x-5' : 'translate-x-0']"></span>
-          </button>
         </div>
         <div v-if="sessionTimeError" class="bg-red-50 border border-red-200 rounded-lg p-3">
           <p class="text-sm text-red-700">{{ sessionTimeError }}</p>
@@ -6168,7 +6028,6 @@
       </div>
     </div>
   </transition>
-</div>
 </template>
 
 <script setup>
@@ -6199,7 +6058,6 @@ const isPageLoading = ref(false)
 const statsLoading = ref(false)
 
 const adminProfile = ref(null)
-const adminPhotoInputRef = ref(null)
 const adminProfileLoading = ref(false)
 const adminProfileSaving = ref(false)
 const adminProfileForm = ref({ full_name: '', phone: '', bio: '', photo: '', current_password: '', new_password: '' })
@@ -8674,12 +8532,10 @@ watch(duplicateSearchQuery, (newValue) => {
 // RFID Fullscreen mode
 const rfidFullscreenMode = ref(false)
 const rfidFullscreenInputRef = ref(null)
-const particleCanvasRef = ref(null)
 const fullscreenLogoRef = ref(null)
 const logoFlipping = ref(false)
 const logoFlipInterval = ref(null)
 const rfidFocusTimeout = ref(null)
-let particleAnimFrame = null
 
 // Fullscreen live clock
 const fsLiveClock = ref('')
@@ -8733,61 +8589,9 @@ const stopLogoFlipAnimation = () => {
   logoFlipping.value = false
 }
 
-const startParticles = async () => {
-  await nextTick()
-  const canvas = particleCanvasRef.value
-  if (!canvas) return
-  canvas.width = window.innerWidth
-  canvas.height = window.innerHeight
-  const ctx = canvas.getContext('2d')
-  const isCOEv = isCOE.value
-  const isSOMv = isSOM.value
-  const isCNAHSv = isCNAHS.value
-  const primaryColor = isCOEv ? '255,140,50' : isSOMv ? '60,200,100' : isCNAHSv ? '40,210,160' : '100,160,255'
-  const secondaryColor = isCOEv ? '255,80,80' : isSOMv ? '100,240,180' : isCNAHSv ? '80,255,200' : '180,100,255'
-  const particles = Array.from({ length: 80 }, () => ({
-    x: Math.random() * canvas.width,
-    y: Math.random() * canvas.height,
-    r: Math.random() * 2.2 + 0.4,
-    vx: (Math.random() - 0.5) * 0.4,
-    vy: (Math.random() - 0.5) * 0.4,
-    pulse: Math.random() * Math.PI * 2,
-    baseAlpha: Math.random() * 0.55 + 0.15,
-    color: Math.random() > 0.5 ? primaryColor : secondaryColor
-  }))
-  const frame = () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    particles.forEach(p => {
-      p.x += p.vx; p.y += p.vy; p.pulse += 0.018
-      if (p.x < 0) p.x = canvas.width
-      if (p.x > canvas.width) p.x = 0
-      if (p.y < 0) p.y = canvas.height
-      if (p.y > canvas.height) p.y = 0
-      const a = p.baseAlpha * (0.5 + 0.5 * Math.sin(p.pulse))
-      const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 6)
-      grd.addColorStop(0, `rgba(${p.color},${a})`)
-      grd.addColorStop(1, `rgba(${p.color},0)`)
-      ctx.beginPath()
-      ctx.arc(p.x, p.y, p.r * 6, 0, Math.PI * 2)
-      ctx.fillStyle = grd
-      ctx.fill()
-    })
-    particleAnimFrame = requestAnimationFrame(frame)
-  }
-  frame()
-}
-
-const stopParticles = () => {
-  if (particleAnimFrame) {
-    cancelAnimationFrame(particleAnimFrame)
-    particleAnimFrame = null
-  }
-}
-
 watch(rfidFullscreenMode, (newValue) => {
   if (newValue) {
     startLogoFlipAnimation()
-    startParticles()
     updateFsClock()
     fsClockInterval.value = setInterval(updateFsClock, 1000)
     // Auto-focus the input when fullscreen mode is enabled
@@ -8801,7 +8605,6 @@ watch(rfidFullscreenMode, (newValue) => {
     }, 100)
   } else {
     stopLogoFlipAnimation()
-    stopParticles()
     if (fsClockInterval.value) {
       clearInterval(fsClockInterval.value)
       fsClockInterval.value = null
@@ -9147,7 +8950,7 @@ const sessionsLoading = ref(false)
 const showSessionModal = ref(false)
 const expandedEvents = ref({})
 const expandedEventSessions = ref({})
-const newSession = ref({ label: 'Morning', start_time: '', end_time: '', status: 'active', late_timer_minutes: 60, check_in_only: false })
+const newSession = ref({ label: 'Morning', start_time: '', end_time: '', status: 'active', late_timer_minutes: 60 })
 const savingSession = ref(false)
 const editingSession = ref(null)
 const addSessionButtonAnimating = ref(false)
@@ -11483,19 +11286,6 @@ const refreshStudents = async () => {
 // ============================================
 // ADMIN / CO-ADMIN PROFILE
 // ============================================
-const handleAdminPhotoUpload = async (event) => {
-  const file = event.target.files[0]
-  if (!file) return
-  try {
-    const compressed = await compressImage(file)
-    adminProfileForm.value.photo = compressed
-    if (adminProfile.value) adminProfile.value.photo = compressed
-  } catch {
-    showNotification('Failed to process image. Try a smaller file.', 'error')
-  }
-  if (adminPhotoInputRef.value) adminPhotoInputRef.value.value = ''
-}
-
 const fetchAdminProfile = async () => {
   adminProfileLoading.value = true
   try {
@@ -11984,15 +11774,6 @@ const startToggleCooldown = (seconds = 3) => {
       checkToggleCooldown.value = false
     }
   }, 1000)
-}
-
-// Force-set check-in or check-out mode (used by fullscreen buttons)
-// These activate the mode if it's not already active, ensuring fullscreen stays in sync
-const activateCheckIn = async () => {
-  if (!effectiveRfid.value.checkInEnabled) await toggleCheckIn()
-}
-const activateCheckOut = async () => {
-  if (!effectiveRfid.value.checkOutEnabled) await toggleCheckOut()
 }
 
 const toggleCheckIn = async () => {
@@ -13662,7 +13443,7 @@ const openAddSessionModal = () => {
   }, 600)
   
   editingSession.value = null
-  newSession.value = { label: 'Morning', start_time: '', end_time: '', status: 'active', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60, check_in_only: false }
+  newSession.value = { label: 'Morning', start_time: '', end_time: '', status: 'active', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60 }
   showSessionModal.value = true
 }
 
