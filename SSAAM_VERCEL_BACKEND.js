@@ -1203,11 +1203,12 @@ app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
             return res.status(404).json({ message: 'Student not found' });
         }
 
-        // Find or create consolidated payment record
-        let paymentRecord = await PaymentRecordModel.findOne({ student_id: student.student_id });
+        // Find or create consolidated payment record (college-aware)
+        const CollegePaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
+        let paymentRecord = await CollegePaymentRecordModel.findOne({ student_id: student.student_id });
 
         if (!paymentRecord) {
-            paymentRecord = new PaymentRecordModel({
+            paymentRecord = new CollegePaymentRecordModel({
                 student_id: student.student_id,
                 student_id_number: student.student_id,
                 student_name: student.full_name || `${student.first_name} ${student.last_name}`,
@@ -1240,7 +1241,7 @@ app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
             payment_status: 'paid',
             amount_paid: amount_paid || 0,
             paid_at: new Date(),
-            paid_by_treasurer: req.master ? req.master.username : req.user.username,
+            paid_by_treasurer: req.master?.username || req.student?.student_id || 'admin',
             notes: notes || '',
             payment_method: payment_method || null,
             created_at: campaignIndex >= 0 ? paymentRecord.campaigns[campaignIndex].created_at : new Date(),
@@ -8353,42 +8354,59 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
     try {
         const { query, year_level, program, status, limit = 1000, page = 1 } = req.query;
 
-        const EventContributionModel = getCollegeModel(EventContribution, CCS_EventContribution, COE_EventContribution, req.college);
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        const CollegePaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
+        const CollegePaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
 
-        // Fetch all EventContribution records for this college
-        const allRecords = await EventContributionModel.find({}).lean();
-        const recordedStudentIds = new Set(allRecords.map(r => r.student_id_number || r.student_id?.toString()));
+        // Get the latest active payment event
+        const latestPayment = await CollegePaymentModel.findOne({ amount_due: { $gt: 0 } }).sort({ created_at: -1 }).lean();
 
-        // Fetch all approved students not already in EventContribution
+        // Build a map of student_id -> campaign status from PaymentRecord
+        const paymentRecords = await CollegePaymentRecordModel.find({}).lean();
+        const paymentStatusMap = {};
+        for (const rec of paymentRecords) {
+            if (!latestPayment) break;
+            const campaign = rec.campaigns?.find(c => c.payment_id?.toString() === latestPayment._id?.toString());
+            if (campaign) {
+                paymentStatusMap[rec.student_id] = {
+                    payment_status: campaign.payment_status || 'unpaid',
+                    amount_paid: campaign.amount_paid || 0,
+                    paid_at: campaign.paid_at || null,
+                    paid_by_treasurer: campaign.paid_by_treasurer || null
+                };
+            }
+        }
+
+        // Fetch all approved students
         const studentFilter = { status: 'approved' };
-        if (year_level) studentFilter.year_level = year_level;
-        if (program) studentFilter.program = program;
         const allStudents = await StudentModel.find(studentFilter, {
             student_id: 1, first_name: 1, last_name: 1, full_name: 1,
             program: 1, year_level: 1
         }).lean();
 
-        // Build synthetic "unpaid" entries for students with no EventContribution record
-        const syntheticRecords = allStudents
-            .filter(s => !recordedStudentIds.has(s.student_id))
-            .map(s => ({
-                _id: `synthetic_${s.student_id}`,
+        // Build records for every student, using PaymentRecord status when available
+        const merged_records = allStudents.map(s => {
+            const pr = paymentStatusMap[s.student_id] || {};
+            return {
+                _id: `rec_${s.student_id}`,
                 student_id: s._id,
                 student_id_number: s.student_id,
                 student_name: s.full_name || `${s.first_name || ''} ${s.last_name || ''}`.trim(),
                 program: s.program,
                 year_level: s.year_level,
-                payment_status: 'unpaid',
-                original_amount: 0,
+                payment_status: pr.payment_status || 'unpaid',
+                original_amount: latestPayment?.amount_due || 0,
                 discount_value: 0,
-                target_amount: 0,
-                paid_at: null,
+                target_amount: latestPayment?.amount_due || 0,
+                amount_paid: pr.amount_paid || 0,
+                paid_at: pr.paid_at || null,
+                paid_by_treasurer: pr.paid_by_treasurer || null,
                 created_at: new Date()
-            }));
+            };
+        });
 
         // Merge real records + synthetic entries
-        let merged = [...allRecords, ...syntheticRecords];
+        let merged = merged_records;
 
         // Apply filters
         if (status) {
@@ -8413,7 +8431,7 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
         const skip = (parseInt(page) - 1) * parseInt(limit);
         const paginated = merged.slice(skip, skip + parseInt(limit));
 
-        console.log(`[CONTRIB SEARCH] total merged: ${total} (${allRecords.length} records + ${syntheticRecords.length} synthetic)`);
+        console.log(`[CONTRIB SEARCH] total: ${total}, paid: ${merged_records.filter(r => r.payment_status === 'paid').length}, unpaid: ${merged_records.filter(r => r.payment_status !== 'paid').length}`);
 
         res.json({
             success: true,

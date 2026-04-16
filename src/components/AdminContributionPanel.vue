@@ -742,32 +742,48 @@ export default {
     },
     async markAsPayment(contribution) {
       if (!this.selectedStudent && !contribution) return;
+
+      if (!this.activePayment?._id) {
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'No active payment event found. Please create one first.', type: 'warning' } }));
+        return;
+      }
+
       const isRow = !!contribution;
-      const processingId = isRow ? (contribution._id || contribution.student_id) : 'global';
+      const processingId = isRow ? (contribution._id || contribution.student_id_number) : 'global';
       try {
         if (isRow) { this.processingPaymentId = processingId; }
         else { this.isProcessingPaymentGlobal = true; }
 
         const token = localStorage.getItem('authToken');
-        const studentId = this.selectedStudent?.student_id || contribution.student_id;
-        const response = await fetch(buildAPIUrl('/apis/payments/mark-paid'), {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        const studentIdInput = isRow
+          ? (contribution.student_id_number || contribution.student_id)
+          : this.selectedStudent.student_id;
+
+        const paymentId = this.activePayment._id;
+        const amountPaid = isRow ? (this.activePayment.amount_due || 0) : this.targetPayment;
+
+        const response = await fetch(buildAPIUrl(`/apis/payments/${paymentId}/mark-paid`), {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'X-SSAAM-College': getCollege()
+          },
           body: JSON.stringify({
-            student_id: studentId,
-            amount_paid: this.targetPayment,
-            discount_value: this.calculatedDiscount,
-            discount_type: this.discountType,
+            student_id_input: studentIdInput,
+            amount_paid: amountPaid,
             notes: 'Payment recorded via admin panel'
           })
         });
+
+        const data = await response.json();
         if (response.ok) {
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Payment recorded successfully', type: 'success' } }));
           this.discountValue = 0;
           this.selectedStudent = null;
-          await this.loadAllContributions();
+          this.loadAllContributions();
         } else {
-          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Error recording payment', type: 'error' } }));
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: data.message || 'Error recording payment', type: 'error' } }));
         }
       } catch (error) {
         console.error('Error recording payment:', error);
