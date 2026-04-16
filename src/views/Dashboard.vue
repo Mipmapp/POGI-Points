@@ -700,6 +700,10 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
           <span>Request</span>
         </button>
+        <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'my-contributions'; fetchMyPayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-contributions' ? sidebarItemActive : sidebarItemHover]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          <span>Contributions</span>
+        </button>
 
         <div class="mt-3 border-t border-white/10 pt-3">
           <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
@@ -836,6 +840,10 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             <span>Request</span>
           </button>
+          <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'my-contributions'; showMobileMenu = false; fetchMyPayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-contributions' ? sidebarItemActive : sidebarItemHover]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            <span>Contributions</span>
+          </button>
 
           <button 
             @click="refreshCurrentUser(); showMobileMenu = false"
@@ -896,7 +904,7 @@
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-4 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-xl flex items-center gap-3">
@@ -3802,81 +3810,121 @@
                 </div>
               </section>
 
-              <!-- Contribution Records Section -->
-              <section>
-                <div class="flex items-center justify-between mb-4">
-                  <div class="flex items-center gap-2">
-                    <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
-                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Contribution Records</h3>
-                  </div>
-                  <button @click="fetchMyPayments" :disabled="loadingMyPayments" :class="[isCOE ? 'text-orange-600 hover:bg-orange-50' : isSOM ? 'text-green-600 hover:bg-green-50' : isCNAHS ? 'text-green-700 hover:bg-green-50' : 'text-blue-600 hover:bg-blue-50', 'p-1.5 rounded-lg transition-colors']" title="Refresh">
-                    <svg :class="['w-4 h-4', loadingMyPayments ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                  </button>
-                </div>
+            </div>
+          </div>
+        </div>
 
-                <!-- Loading state -->
-                <div v-if="loadingMyPayments" class="flex items-center justify-center py-10">
-                  <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-500']" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                  </svg>
+        <!-- My Contributions Page (Students) -->
+        <div v-if="currentPage === 'my-contributions' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-6">
+          <!-- Header Banner -->
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <div class="light-sweep"></div>
+              <div class="relative z-10 p-6 flex items-center gap-4 h-full">
+                <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
+                <div>
+                  <h2 class="text-xl font-bold text-white">My Contributions</h2>
+                  <p class="text-white/70 text-sm">Track your contribution fees and payment status</p>
+                </div>
+              </div>
+            </div>
 
-                <!-- Empty state -->
-                <div v-else-if="myPayments.length === 0" :class="['rounded-2xl border-2 border-dashed p-8 text-center', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-green-100' : 'border-blue-100']">
-                  <div :class="['w-12 h-12 mx-auto mb-3 rounded-full flex items-center justify-center', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
-                    <svg :class="['w-6 h-6', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-green-500' : 'text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                  </div>
-                  <p class="text-sm font-semibold text-gray-500">No contribution records yet</p>
-                  <p class="text-xs text-gray-400 mt-1">Your payment records will appear here once fees are assigned.</p>
-                </div>
+            <!-- Summary Cards -->
+            <div class="p-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div :class="['rounded-2xl p-4 text-center', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                <p class="text-2xl font-bold text-gray-800">{{ myPayments.length }}</p>
+                <p class="text-xs text-gray-500 mt-1 font-medium">Total Records</p>
+              </div>
+              <div class="rounded-2xl p-4 text-center bg-green-50">
+                <p class="text-2xl font-bold text-green-700">{{ myPayments.filter(p => p.is_paid).length }}</p>
+                <p class="text-xs text-gray-500 mt-1 font-medium">Paid</p>
+              </div>
+              <div class="rounded-2xl p-4 text-center bg-red-50 col-span-2 sm:col-span-1">
+                <p class="text-2xl font-bold text-red-600">{{ myPayments.filter(p => !p.is_paid).length }}</p>
+                <p class="text-xs text-gray-500 mt-1 font-medium">Outstanding</p>
+              </div>
+            </div>
+          </div>
 
-                <!-- Records table -->
-                <div v-else class="overflow-hidden rounded-2xl border border-gray-100 shadow-sm">
-                  <table class="w-full text-sm">
-                    <thead>
-                      <tr :class="[isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
-                        <th :class="['text-left px-4 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Description</th>
-                        <th :class="['text-right px-4 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Amount</th>
-                        <th :class="['text-center px-4 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Status</th>
-                        <th :class="['text-right px-4 py-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Deadline</th>
-                      </tr>
-                    </thead>
-                    <tbody class="divide-y divide-gray-100">
-                      <tr v-for="record in myPayments" :key="record._id" class="hover:bg-gray-50 transition-colors">
-                        <td class="px-4 py-3">
-                          <p class="font-semibold text-gray-900">{{ record.title }}</p>
-                          <p v-if="record.description" class="text-xs text-gray-500 mt-0.5 line-clamp-1">{{ record.description }}</p>
-                        </td>
-                        <td class="px-4 py-3 text-right">
-                          <span class="font-bold text-gray-900">₱{{ Number(record.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
-                          <p v-if="record.is_paid && record.amount_paid" class="text-xs text-gray-400 mt-0.5">Paid: ₱{{ Number(record.amount_paid).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</p>
-                        </td>
-                        <td class="px-4 py-3 text-center">
-                          <span :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold',
-                            record.is_paid ? 'bg-green-100 text-green-700' :
-                            record.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700']">
-                            <svg v-if="record.is_paid" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                            {{ record.is_paid ? 'Paid' : record.payment_status === 'pending' ? 'Pending' : 'Unpaid' }}
-                          </span>
-                          <p v-if="record.is_paid && record.paid_date" class="text-[10px] text-gray-400 mt-0.5">{{ new Date(record.paid_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</p>
-                        </td>
-                        <td class="px-4 py-3 text-right hidden sm:table-cell">
-                          <span v-if="record.deadline" class="text-xs text-gray-500">{{ new Date(record.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
-                          <span v-else class="text-xs text-gray-400">—</span>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <div :class="['px-4 py-3 flex items-center justify-between border-t border-gray-100', isCOE ? 'bg-orange-50/50' : isSOM ? 'bg-green-50/50' : isCNAHS ? 'bg-green-50/50' : 'bg-blue-50/50']">
-                    <span class="text-xs text-gray-500">{{ myPayments.filter(p => p.is_paid).length }} of {{ myPayments.length }} paid</span>
-                    <span :class="['text-xs font-bold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">
-                      Total: ₱{{ myPayments.reduce((s, p) => s + (p.amount_due || 0), 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
-                    </span>
-                  </div>
-                </div>
-              </section>
+          <!-- Records Card -->
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div class="flex items-center gap-2">
+                <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full']"></div>
+                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-widest">Payment Records</h3>
+              </div>
+              <button @click="fetchMyPayments" :disabled="loadingMyPayments" :class="[isCOE ? 'text-orange-600 hover:bg-orange-50' : isSOM ? 'text-green-600 hover:bg-green-50' : isCNAHS ? 'text-green-700 hover:bg-green-50' : 'text-blue-600 hover:bg-blue-50', 'p-2 rounded-xl transition-colors flex items-center gap-1.5 text-xs font-medium']" title="Refresh">
+                <svg :class="['w-4 h-4', loadingMyPayments ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Refresh
+              </button>
+            </div>
+
+            <!-- Loading -->
+            <div v-if="loadingMyPayments" class="flex items-center justify-center py-16">
+              <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-green-500' : 'text-blue-400']" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            </div>
+
+            <!-- Empty -->
+            <div v-else-if="myPayments.length === 0" class="p-12 text-center">
+              <div :class="['w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                <svg :class="['w-8 h-8', isCOE ? 'text-orange-300' : isSOM ? 'text-green-300' : isCNAHS ? 'text-green-400' : 'text-blue-300']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+              </div>
+              <p class="text-base font-semibold text-gray-500">No contribution records yet</p>
+              <p class="text-sm text-gray-400 mt-1">Your payment records will appear here once fees are assigned by your college admin.</p>
+            </div>
+
+            <!-- Table -->
+            <div v-else>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead>
+                    <tr :class="[isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                      <th :class="['text-left px-5 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Description</th>
+                      <th :class="['text-right px-5 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Amount</th>
+                      <th :class="['text-center px-5 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Status</th>
+                      <th :class="['text-right px-5 py-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Deadline</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-gray-100">
+                    <tr v-for="record in myPayments" :key="record._id" class="hover:bg-gray-50 transition-colors">
+                      <td class="px-5 py-4">
+                        <p class="font-semibold text-gray-900">{{ record.title }}</p>
+                        <p v-if="record.description" class="text-xs text-gray-500 mt-0.5 line-clamp-2">{{ record.description }}</p>
+                      </td>
+                      <td class="px-5 py-4 text-right">
+                        <span class="font-bold text-gray-900">₱{{ Number(record.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                        <p v-if="record.is_paid && record.amount_paid" class="text-xs text-gray-400 mt-0.5">Paid: ₱{{ Number(record.amount_paid).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</p>
+                      </td>
+                      <td class="px-5 py-4 text-center">
+                        <span :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold',
+                          record.is_paid ? 'bg-green-100 text-green-700' :
+                          record.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700']">
+                          <svg v-if="record.is_paid" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                          {{ record.is_paid ? 'Paid' : record.payment_status === 'pending' ? 'Pending' : 'Unpaid' }}
+                        </span>
+                        <p v-if="record.is_paid && record.paid_date" class="text-[10px] text-gray-400 mt-1">{{ new Date(record.paid_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</p>
+                      </td>
+                      <td class="px-5 py-4 text-right hidden sm:table-cell">
+                        <span v-if="record.deadline" class="text-xs text-gray-600">{{ new Date(record.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
+                        <span v-else class="text-xs text-gray-400">—</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div :class="['px-5 py-3 flex items-center justify-between border-t border-gray-100', isCOE ? 'bg-orange-50/50' : isSOM ? 'bg-green-50/50' : isCNAHS ? 'bg-green-50/50' : 'bg-blue-50/50']">
+                <span class="text-xs text-gray-500">{{ myPayments.filter(p => p.is_paid).length }} of {{ myPayments.length }} paid</span>
+                <span :class="['text-xs font-bold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">
+                  Total: ₱{{ myPayments.reduce((s, p) => s + (p.amount_due || 0), 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
