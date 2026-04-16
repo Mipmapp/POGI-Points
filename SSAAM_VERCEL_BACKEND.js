@@ -3354,6 +3354,27 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
     }
 });
 
+// Get all students from all colleges — super admin only
+app.get('/apis/students/all-colleges', auth, async (req, res) => {
+    try {
+        if (!req.isMaster || req.master?.role === 'co-admin') {
+            return res.status(403).json({ message: 'Access denied. Super admin required.' });
+        }
+        const colleges = ['CCS', 'COE', 'SOM', 'CNAHS'];
+        const allStudents = [];
+        for (const college of colleges) {
+            const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
+            const students = await StudentModel.find({ status: 'approved' })
+                .select('_id student_id first_name middle_name last_name suffix email program year_level role rfid_code rfid_status photo')
+                .lean();
+            students.forEach(s => { s.college = college; allStudents.push(s); });
+        }
+        res.json(allStudents);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 // Get all students with full names for custom event selection
 app.get('/apis/students/list/all', auth, async (req, res) => {
     try {
@@ -4198,15 +4219,26 @@ app.put('/apis/students/:student_id', auth, timestampAuth, async (req, res) => {
 
 app.delete('/apis/students/:student_id', auth, async (req, res) => {
     try {
-        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-        const NotificationModel = getCollegeModel(Notification, CCS_Notification, COE_Notification, req.college);
-        const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, req.college);
-        const EventContributionModel = getCollegeModel(EventContribution, CCS_EventContribution, COE_EventContribution, req.college);
+        let foundCollege = req.college;
+        let StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, foundCollege);
+        let deleted = await StudentModel.findOneAndDelete({ student_id: req.params.student_id });
 
-        const deleted = await StudentModel.findOneAndDelete({ student_id: req.params.student_id });
+        // If not found and user is super admin, search across all other colleges
+        if (!deleted && req.isMaster && req.master?.role !== 'co-admin') {
+            for (const college of ['CCS', 'COE', 'SOM', 'CNAHS']) {
+                if (college === foundCollege) continue;
+                const AltModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
+                const candidate = await AltModel.findOneAndDelete({ student_id: req.params.student_id });
+                if (candidate) { deleted = candidate; foundCollege = college; StudentModel = AltModel; break; }
+            }
+        }
 
         if (!deleted)
             return res.status(404).json({ message: "Student not found." });
+
+        const NotificationModel = getCollegeModel(Notification, CCS_Notification, COE_Notification, foundCollege);
+        const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, foundCollege);
+        const EventContributionModel = getCollegeModel(EventContribution, CCS_EventContribution, COE_EventContribution, foundCollege);
 
         // Clean up: Remove this user's likes from all notifications
         const userId = deleted._id.toString();
@@ -5586,18 +5618,25 @@ app.post('/apis/upload-image', canPostNotification, async (req, res) => {
 
 // ==================== NOTIFICATIONS ENDPOINTS ====================
 
-// Get all notifications — global collection, visible to all authenticated users across all colleges
+// Get all notifications — merges global admin announcements + college-specific notifications
 app.get('/apis/notifications', studentAuth, async (req, res) => {
     try {
-        const NotificationModel = Notification;
-
-        const notifications = await NotificationModel.find()
+        // 1. Fetch global admin notifications (from shared `notifications` collection)
+        const globalNotifs = await Notification.find()
             .select('title message priority image_url posted_by posted_by_id posted_by_name liked_by was_edited created_at updated_at')
             .sort({ created_at: -1 })
             .limit(50)
             .lean();
 
-        const cleanNotifications = notifications.map(notif => ({
+        // 2. Fetch college-specific notifications (from e.g. ccs_notifications)
+        const CollegeNotifModel = getCollegeModel(Notification, CCS_Notification, COE_Notification, req.college);
+        const collegeNotifs = await CollegeNotifModel.find()
+            .select('title message priority image_url posted_by posted_by_id posted_by_name liked_by was_edited created_at updated_at')
+            .sort({ created_at: -1 })
+            .limit(50)
+            .lean();
+
+        const formatNotif = (notif, source) => ({
             _id: notif._id,
             title: notif.title,
             message: notif.message,
@@ -5609,12 +5648,45 @@ app.get('/apis/notifications', studentAuth, async (req, res) => {
             liked_by: notif.liked_by || [],
             was_edited: notif.was_edited || false,
             created_at: notif.created_at,
-            updated_at: notif.updated_at
-        }));
+            updated_at: notif.updated_at,
+            source // 'global' or 'college'
+        });
 
-        res.json({ data: cleanNotifications });
+        // Merge: global first, then college-specific. Deduplicate by _id.
+        const seenIds = new Set();
+        const merged = [];
+        for (const n of globalNotifs) { if (!seenIds.has(String(n._id))) { seenIds.add(String(n._id)); merged.push(formatNotif(n, 'global')); } }
+        for (const n of collegeNotifs) { if (!seenIds.has(String(n._id))) { seenIds.add(String(n._id)); merged.push(formatNotif(n, 'college')); } }
+        // Sort merged result by created_at descending
+        merged.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+        res.json({ data: merged });
     } catch (err) {
         console.error("Fetch notifications error:", err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Post a college-specific notification — medpub/admin of a college can post here
+app.post('/apis/notifications/college', studentAuth, async (req, res) => {
+    try {
+        if (!req.isAdmin && req.student?.role !== 'medpub') {
+            return res.status(403).json({ message: 'Access denied. Only medpub or admin can post college notifications.' });
+        }
+        const { title, message, priority, image_url } = req.body;
+        if (!title || !message) return res.status(400).json({ message: 'Title and message are required.' });
+        const CollegeNotifModel = getCollegeModel(Notification, CCS_Notification, COE_Notification, req.college);
+        const notif = new CollegeNotifModel({
+            title, message,
+            priority: priority || 'normal',
+            image_url: image_url || null,
+            posted_by: req.isAdmin ? 'admin' : 'medpub',
+            posted_by_name: req.isAdmin ? (req.master?.username || 'Admin') : (req.student?.first_name || 'Medpub'),
+            posted_by_id: req.isAdmin ? req.master?._id?.toString() : req.student?._id?.toString()
+        });
+        await notif.save();
+        res.status(201).json({ message: 'College notification posted.', data: notif });
+    } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });

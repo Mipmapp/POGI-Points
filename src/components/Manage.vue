@@ -154,6 +154,18 @@
             </div>
           </div>
 
+          <!-- Filter by College (super admin only) -->
+          <div v-if="isMaster" class="space-y-3 animate-fade-in-delay-2">
+            <p class="text-xs font-bold text-gray-600 uppercase tracking-wider">College</p>
+            <div class="flex gap-2 flex-wrap">
+              <button @click="userCollegeFilter = null; currentPage = 1" :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userCollegeFilter === null ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']">All Colleges</button>
+              <button @click="userCollegeFilter = 'CCS'; currentPage = 1" :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userCollegeFilter === 'CCS' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-md']">CCS</button>
+              <button @click="userCollegeFilter = 'COE'; currentPage = 1" :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userCollegeFilter === 'COE' ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-orange-300 hover:shadow-md']">COE</button>
+              <button @click="userCollegeFilter = 'SOM'; currentPage = 1" :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userCollegeFilter === 'SOM' ? 'bg-green-500 text-white shadow-lg shadow-green-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-green-300 hover:shadow-md']">SOM</button>
+              <button @click="userCollegeFilter = 'CNAHS'; currentPage = 1" :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userCollegeFilter === 'CNAHS' ? 'bg-teal-500 text-white shadow-lg shadow-teal-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-teal-300 hover:shadow-md']">CNAHS</button>
+            </div>
+          </div>
+
           <!-- Filter by Verification Status -->
           <div class="space-y-3 animate-fade-in-delay-3">
             <p class="text-xs font-bold text-gray-600 uppercase tracking-wider">Verification Status</p>
@@ -269,11 +281,15 @@
                     </div>
                     <div class="flex flex-wrap gap-2 mt-2">
                       <!-- Role Badge -->
-                      <span v-if="user.role && user.role !== 'student'" :class="['px-2 py-1 rounded-full text-xs font-bold capitalize shadow-sm', isCOE ? 'bg-gradient-to-r from-orange-100 to-red-100 text-orange-700' : isSOM ? 'bg-gradient-to-r from-green-100 to-yellow-100 text-green-700' : isCNAHS ? 'bg-gradient-to-r from-green-100 to-green-200 text-green-700' : 'bg-gradient-to-r from-blue-100 to-blue-100 text-blue-700']">
+                      <span v-if="user.role && user.role !== 'student'" class="px-2 py-1 rounded-full text-xs font-bold capitalize shadow-sm bg-gradient-to-r from-blue-100 to-blue-100 text-blue-700">
                         {{ user.role }}
                       </span>
                       <span v-else class="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium capitalize shadow-sm">
                         Student
+                      </span>
+                      <!-- College Badge (super admin only) -->
+                      <span v-if="isMaster && user.college" :class="['px-2 py-1 rounded-full text-xs font-bold shadow-sm', user.college === 'COE' ? 'bg-orange-100 text-orange-700' : user.college === 'SOM' ? 'bg-green-100 text-green-700' : user.college === 'CNAHS' ? 'bg-teal-100 text-teal-700' : 'bg-blue-100 text-blue-700']">
+                        {{ user.college }}
                       </span>
                       <!-- Verification Badge -->
                       <span v-if="getAutoVerificationStatus(user) === true" class="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold shadow-sm flex items-center gap-1">
@@ -971,6 +987,7 @@ export default {
       userYearFilter: null,
       userProgramFilter: null,
       userStatusFilter: null,
+      userCollegeFilter: null,
       showEditUserModal: false,
       editingUser: null,
       isSavingUser: false,
@@ -1019,48 +1036,16 @@ export default {
       }
       return null
     },
-    isCOE() {
-      return checkDepartment('COE', departments)
-    },
-    isSOM() {
-      return checkDepartment('SOM', departments)
-    },
-    isCCS() {
-      return checkDepartment('CCS', departments)
-    },
-    isCNAHS() {
-      return checkDepartment('CNAHS', departments)
-    },
-    primaryButtonGradient() {
-      if (this.isCOE) return 'from-orange-700 to-red-600'
-      if (this.isSOM) return 'from-green-600 to-yellow-500'
-      if (this.isCNAHS) return 'from-green-800 to-green-600'
-      return 'from-ssaam-dark to-ssaam-light'
-    },
-    primaryButtonHover() {
-      if (this.isCOE) return 'hover:from-orange-800 hover:to-red-700'
-      if (this.isSOM) return 'hover:from-green-700 hover:to-yellow-600'
-      if (this.isCNAHS) return 'hover:from-green-900 hover:to-green-700'
-      return 'hover:from-ssaam-dark hover:to-ssaam-light'
-    },
-    primaryTextColor() {
-      if (this.isCOE) return 'text-orange-700'
-      if (this.isSOM) return 'text-green-600'
-      if (this.isCNAHS) return 'text-green-800'
-      return 'text-blue-600'
-    },
-    primaryTextHover() {
-      if (this.isCOE) return 'hover:text-orange-800'
-      if (this.isSOM) return 'hover:text-green-800'
-      if (this.isCNAHS) return 'hover:text-green-900'
-      return 'hover:text-blue-800'
-    },
-    primaryDarkText() {
-      if (this.isCOE) return 'text-orange-900'
-      if (this.isSOM) return 'text-green-900'
-      if (this.isCNAHS) return 'text-green-900'
-      return 'text-blue-900'
-    },
+    isCOE() { return false },
+    isSOM() { return false },
+    isCCS() { return true },
+    isCNAHS() { return false },
+    primaryButtonGradient() { return 'from-ssaam-dark to-ssaam-light' },
+    primaryButtonHover() { return 'hover:from-ssaam-dark hover:to-ssaam-light' },
+    primaryTextColor() { return 'text-blue-600' },
+    primaryTextHover() { return 'hover:text-blue-800' },
+    primaryDarkText() { return 'text-blue-900' },
+    isMaster() { return this.currentUser?.isMaster === true },
     // End theme helpers
 
     availableUsers() {
@@ -1117,6 +1102,11 @@ export default {
           const userProgram = (user.program || '').toUpperCase()
           return userProgram === this.userProgramFilter.toUpperCase()
         })
+      }
+
+      // Apply college filter (super admin only)
+      if (this.userCollegeFilter !== null) {
+        filtered = filtered.filter(user => (user.college || 'CCS') === this.userCollegeFilter)
       }
 
       return filtered
@@ -1266,37 +1256,36 @@ export default {
       return this.allUsers.filter(user => (user.role || '').toLowerCase() === roleValue).length
     },
     async fetchAllUsers() {
-      // Prevent duplicate concurrent requests
       if (this.isFetchingUsers) {
         console.warn('fetchAllUsers already in progress, skipping duplicate call')
         return
       }
-
       try {
         this.isFetchingUsers = true
-        // Get the JWT token from localStorage (adminToken for admin users)
-        const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-        
+        const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken')
         if (!token) {
-          console.error('No authentication token found')
           this.showNotification('error', 'Authentication Error', 'Authentication required. Please login again.')
           return
         }
 
-        const response = await fetch(buildAPIUrl('/apis/students/search?limit=1000&fields=_id,student_id,first_name,last_name,email,program,year_level,role,rfid_code,rfid_status,photo'), {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
+        // Super admin fetches ALL colleges at once; co-admin fetches own college only
+        const isMaster = this.currentUser?.isMaster === true
+        const isCoAdmin = this.currentUser?.role === 'co-admin'
+        const college = this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
+
+        let url, headers
+        if (isMaster && !isCoAdmin) {
+          url = buildAPIUrl('/apis/students/all-colleges')
+          headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-SSAAM-College': 'CCS' }
+        } else {
+          url = buildAPIUrl('/apis/students/search?limit=1000')
+          headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-SSAAM-College': college }
+        }
+
+        const response = await fetch(url, { headers })
         if (response.ok) {
           const data = await response.json()
-          // Handle both array response and object with data property
           this.allUsers = Array.isArray(data) ? data : (data.data || [])
-          console.log('Fetched users:', this.allUsers)
-          // Log a sample user to check RFID field
-          if (this.allUsers.length > 0) {
-            console.log('Sample user data:', this.allUsers[0])
-          }
         } else {
           const errorData = await response.json()
           console.error('Failed to fetch users:', response.status, errorData)
@@ -1650,12 +1639,14 @@ export default {
           role: 'student'
         }
 
+        const userCollege = this.editingUser.college || this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
         const timestamp = encodeTimestamp()
         const response = await fetch(buildAPIUrl(`/apis/students/${userId}`), {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`,
+            'X-SSAAM-College': userCollege,
             'X-SSAAM-TS': timestamp,
             'X-SSAAM-Original-Student-Id': userId
           },
@@ -1702,11 +1693,14 @@ export default {
         }
 
         const userId = this.userToDelete.student_id || this.userToDelete._id || this.userToDelete.id
-        
+        const deleteCollege = this.userToDelete.college || this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
+
         const response = await fetch(buildAPIUrl(`/apis/students/${userId}`), {
           method: 'DELETE',
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'X-SSAAM-College': deleteCollege,
+            'Content-Type': 'application/json'
           }
         })
 

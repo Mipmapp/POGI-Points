@@ -187,7 +187,11 @@ input, textarea, select {
 }
 
 .login-submit-btn {
-  @apply w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-lg font-medium hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center;
+  @apply w-full text-white py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center;
+  background-image: linear-gradient(to right, #1e3bdb, #4f62ff);
+}
+.login-submit-btn:hover {
+  background-image: linear-gradient(to right, #1830c4, #3d50ee);
 }
 
 .login-help-section {
@@ -388,7 +392,11 @@ input, textarea, select {
 }
 
 .register-button-primary {
-  @apply bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white hover:from-ssaam-dark hover:to-ssaam-light;
+  @apply text-white;
+  background-image: linear-gradient(to right, #1e3bdb, #4f62ff);
+}
+.register-button-primary:hover {
+  background-image: linear-gradient(to right, #1830c4, #3d50ee);
 }
 
 .register-button-secondary {
@@ -757,7 +765,11 @@ input, textarea, select {
 }
 
 .btn-primary {
-  @apply bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white hover:from-ssaam-dark hover:to-ssaam-light;
+  @apply text-white;
+  background-image: linear-gradient(to right, #1e3bdb, #4f62ff);
+}
+.btn-primary:hover {
+  background-image: linear-gradient(to right, #1830c4, #3d50ee);
 }
 
 .btn-secondary {

@@ -1,7 +1,24 @@
 <template>
-  <div class="p-6">
-    <h1 class="text-3xl font-bold text-purple-900 mb-6">My Contribution Status</h1>
-    
+  <div class="min-h-screen bg-gray-50">
+    <!-- Header Banner -->
+    <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-8 shadow-md">
+      <div class="max-w-5xl mx-auto">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
+            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl font-extrabold text-white tracking-tight">My Contribution Status</h1>
+            <p class="text-blue-100 text-sm mt-0.5">Track your event payments and download receipts</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-5xl mx-auto px-4 md:px-6 py-6">
+
     <div v-if="loadingEvents" class="flex items-center justify-center h-64">
       <div class="text-center">
         <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mb-4"></div>
@@ -85,6 +102,7 @@
         </div>
       </div>
     </div>
+    </div><!-- end max-w-5xl -->
   </div>
 </template>
 

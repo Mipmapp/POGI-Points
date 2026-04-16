@@ -3167,11 +3167,6 @@
                   <p :class="['text-xs font-medium mt-1', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']">{{ adminProfile.college || currentUser.college || 'All Colleges' }}</p>
                 </div>
               </div>
-              <!-- Upload photo button (mobile-friendly alternative) -->
-              <button @click="adminPhotoFileRef && adminPhotoFileRef.click()" :class="['flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-all self-start sm:self-auto', isCOE ? 'border-orange-300 text-orange-700 hover:bg-orange-50' : isSOM ? 'border-green-300 text-green-700 hover:bg-green-50' : isCNAHS ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-blue-300 text-blue-700 hover:bg-blue-50']" type="button">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
-                Change Photo
-              </button>
             </div>
 
             <!-- Info Cards Row -->
@@ -11501,7 +11496,7 @@ const refreshStudents = async () => {
 const fetchAdminProfile = async () => {
   adminProfileLoading.value = true
   try {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
     const res = await fetch(buildAPIUrl('/apis/admin/me'), {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -11560,7 +11555,7 @@ const fetchAdminProfile = async () => {
 const saveAdminProfile = async () => {
   adminProfileSaving.value = true
   try {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
     const payload = {
       full_name: adminProfileForm.value.full_name,
       phone: adminProfileForm.value.phone,
@@ -11600,7 +11595,7 @@ const requestTransferRole = async () => {
   if (!confirm(`Transfer your co-admin role to "${transferTargetUsername.value}"? This action cannot be undone.`)) return
   transferringRole.value = true
   try {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
     const res = await fetch(buildAPIUrl('/apis/co-admin/me/transfer'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
@@ -11625,7 +11620,7 @@ const requestTransferRole = async () => {
 // ============================================
 const fetchStudentRequests = async () => {
   try {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
     const res = await fetch(buildAPIUrl('/apis/requests/my'), {
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -11652,7 +11647,7 @@ const submitStudentRequest = async () => {
   }
   requestSubmitting.value = true
   try {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
     const res = await fetch(buildAPIUrl('/apis/requests'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -11687,7 +11682,7 @@ const submitStudentRequest = async () => {
 const fetchCoAdmins = async () => {
   coAdminsLoading.value = true
   try {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
     const res = await fetch(buildAPIUrl('/apis/co-admin'), {
       headers: { 'Authorization': `Bearer ${token}` }
     })
@@ -11711,7 +11706,7 @@ const assignCoAdmin = async (college) => {
   if (!student_id) return
   coAdminActionLoading.value = college
   try {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
     const res = await fetch(buildAPIUrl('/apis/co-admin/assign'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -11736,7 +11731,7 @@ const removeCoAdmin = async (id, college) => {
   if (!confirm(`Remove co-admin for ${college}? This cannot be undone.`)) return
   coAdminActionLoading.value = college
   try {
-    const token = localStorage.getItem('token')
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
     const res = await fetch(buildAPIUrl(`/apis/co-admin/${id}`), {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${token}` }
