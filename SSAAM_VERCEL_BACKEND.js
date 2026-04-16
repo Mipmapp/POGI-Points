@@ -685,18 +685,31 @@ async function sendRFIDVerificationEmail(toEmail, studentName, rfidCode, verifie
     return emailService.sendMail(mailOptions);
 }
 
-function decodeTimestamp(encodedString) {
+const KNOWN_CRYPTO_KEYS = ['SSAAM2025CCS'];
+
+function decodeTimestampWithKey(encodedString, key) {
     try {
         const decoded = Buffer.from(encodedString, 'base64').toString('binary');
         let timestamp = '';
         for (let i = 0; i < decoded.length; i++) {
-            const charCode = decoded.charCodeAt(i) ^ SSAAM_CRYPTO_KEY.charCodeAt(i % SSAAM_CRYPTO_KEY.length);
+            const charCode = decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length);
             timestamp += String.fromCharCode(charCode);
         }
         return timestamp;
     } catch (e) {
         return null;
     }
+}
+
+function decodeTimestamp(encodedString) {
+    // Try the configured env key first
+    const keysToTry = [SSAAM_CRYPTO_KEY, ...KNOWN_CRYPTO_KEYS.filter(k => k !== SSAAM_CRYPTO_KEY)];
+    for (const key of keysToTry) {
+        if (!key) continue;
+        const ts = decodeTimestampWithKey(encodedString, key);
+        if (ts && !isNaN(new Date(ts).getTime())) return ts;
+    }
+    return null;
 }
 
 function isValidTimestamp(encodedString, maxAgeMinutes = 5) {
