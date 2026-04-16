@@ -838,18 +838,24 @@ app.post('/apis/payments', auth, async (req, res) => {
     try {
         const { title, description, type, amount_due, deadline } = req.body;
 
-        if (!title) {
+        if (!title || !title.trim()) {
             return res.status(400).json({ message: 'Payment title is required' });
+        }
+        if (!amount_due || Number(amount_due) <= 0) {
+            return res.status(400).json({ message: 'A valid amount greater than 0 is required' });
         }
 
         // Get creator identifier - could be admin (master) or treasurer (student)
-        const createdBy = req.master ? req.master.username : req.student.student_id;
+        const createdBy = req.master?.username || req.master?.id || req.student?.student_id || 'admin';
 
-        const payment = new Payment({
-            title,
-            description: description || '',
+        // Use college-specific Payment model (consistent with all other payment routes)
+        const PaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
+
+        const payment = new PaymentModel({
+            title: title.trim(),
+            description: description ? description.trim() : '',
             type: type || 'fee',
-            amount_due: amount_due || 0,
+            amount_due: Number(amount_due),
             deadline: deadline || null,
             created_by: createdBy
         });
@@ -2537,7 +2543,7 @@ const paymentSchema = new mongoose.Schema({
     description: { type: String, default: "" },
     type: {
         type: String,
-        enum: ['membership', 'donation', 'fee', 'other'],
+        enum: ['membership', 'donation', 'fee', 'other', 'contribution', 'fundraiser', 'event'],
         default: 'fee'
     },
     amount_due: { type: Number, default: 0 }, // Amount each student should pay (0 if flexible)

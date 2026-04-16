@@ -375,9 +375,9 @@
                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Type</label>
                 <select v-model="newEventForm.type" class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition">
                   <option value="fee">Fee</option>
-                  <option value="contribution">Contribution</option>
-                  <option value="fundraiser">Fundraiser</option>
-                  <option value="event">Event</option>
+                  <option value="membership">Membership</option>
+                  <option value="donation">Donation</option>
+                  <option value="other">Other / Event</option>
                 </select>
               </div>
             </div>
@@ -522,7 +522,7 @@
 
 <script>
 import * as XLSX from 'xlsx'
-import { buildAPIUrl } from '../config/api.js'
+import { buildAPIUrl, getCollege } from '../config/api.js'
 
 export default {
   name: 'AdminContributionPanel',
@@ -693,7 +693,11 @@ export default {
         };
         const response = await fetch(buildAPIUrl('/apis/payments'), {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'X-SSAAM-College': getCollege()
+          },
           body: JSON.stringify(payload)
         });
         const data = await response.json();
