@@ -37,15 +37,24 @@
           <div class="w-1 h-5 rounded-full bg-blue-600"></div>
           <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Filters &amp; Search</h3>
         </div>
-        <button
-          @click="downloadPaymentExcel"
-          :disabled="isDownloading"
-          class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all font-semibold text-sm disabled:opacity-70 shadow-md shadow-green-200 active:scale-95"
-        >
-          <svg v-if="isDownloading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-          <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-          {{ isDownloading ? 'Preparing...' : 'Export Excel' }}
-        </button>
+        <div class="flex items-center gap-2 flex-wrap">
+          <button
+            @click="showCreateEventModal = true"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-xl hover:opacity-90 transition-all font-semibold text-sm shadow-md shadow-blue-200 active:scale-95"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Create Event
+          </button>
+          <button
+            @click="downloadPaymentExcel"
+            :disabled="isDownloading"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all font-semibold text-sm disabled:opacity-70 shadow-md shadow-green-200 active:scale-95"
+          >
+            <svg v-if="isDownloading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            {{ isDownloading ? 'Preparing...' : 'Export Excel' }}
+          </button>
+        </div>
       </div>
 
       <!-- Search & Filters -->
@@ -302,6 +311,116 @@
       </div>
     </div>
 
+    <!-- Create Contribution Event Modal -->
+    <transition name="fade">
+      <div v-if="showCreateEventModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeCreateEventModal"></div>
+        <div class="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <!-- Modal Header -->
+          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-extrabold text-white">Create Contribution Event</h3>
+                <p class="text-white/70 text-sm mt-0.5">Set up a new payment event for students</p>
+              </div>
+            </div>
+            <button @click="closeCreateEventModal" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <div class="p-6 space-y-4">
+            <!-- Event Title -->
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Event Title <span class="text-red-500">*</span></label>
+              <input
+                v-model="newEventForm.title"
+                type="text"
+                placeholder="e.g., CCS General Assembly Fee, Sportsfest 2025"
+                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition"
+              />
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Description <span class="text-gray-400 font-normal">(optional)</span></label>
+              <textarea
+                v-model="newEventForm.description"
+                rows="2"
+                placeholder="Brief description of the event or fee..."
+                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition resize-none"
+              ></textarea>
+            </div>
+
+            <!-- Amount & Type Row -->
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Amount (₱) <span class="text-red-500">*</span></label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">₱</span>
+                  <input
+                    v-model.number="newEventForm.amount_due"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="0.00"
+                    class="w-full pl-7 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition"
+                  />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Type</label>
+                <select v-model="newEventForm.type" class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition">
+                  <option value="fee">Fee</option>
+                  <option value="contribution">Contribution</option>
+                  <option value="fundraiser">Fundraiser</option>
+                  <option value="event">Event</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Deadline -->
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Deadline <span class="text-gray-400 font-normal">(optional)</span></label>
+              <input
+                v-model="newEventForm.deadline"
+                type="date"
+                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition"
+              />
+            </div>
+
+            <!-- Info Banner -->
+            <div class="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-2xl p-4">
+              <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <p class="text-sm text-blue-700">This will create a payment campaign and automatically assign it to <strong>all approved students</strong>. You can then track and mark individual payments.</p>
+            </div>
+
+            <!-- Error message -->
+            <p v-if="createEventError" class="text-sm text-red-600 font-medium">{{ createEventError }}</p>
+
+            <!-- Actions -->
+            <div class="flex gap-3 pt-1">
+              <button @click="closeCreateEventModal" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-700 transition">
+                Cancel
+              </button>
+              <button
+                @click="createContributionEvent"
+                :disabled="!newEventForm.title.trim() || !newEventForm.amount_due || isCreatingEvent"
+                class="flex-1 px-4 py-2.5 bg-gradient-to-r from-ssaam-dark to-ssaam-light hover:opacity-90 text-white rounded-xl text-sm font-bold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md shadow-blue-200"
+              >
+                <svg v-if="isCreatingEvent" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                {{ isCreatingEvent ? 'Creating...' : 'Create Event' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <!-- Download Confirmation Modal -->
     <transition name="fade">
       <div v-if="showDownloadConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -425,7 +544,17 @@ export default {
       downloadPreviewRecords: [],
       serverFilteredCount: null,
       isProcessingPaymentGlobal: false,
-      processingPaymentId: null
+      processingPaymentId: null,
+      showCreateEventModal: false,
+      isCreatingEvent: false,
+      createEventError: '',
+      newEventForm: {
+        title: '',
+        description: '',
+        amount_due: '',
+        type: 'fee',
+        deadline: ''
+      }
     };
   },
   computed: {
@@ -535,6 +664,51 @@ export default {
       } catch (error) {
         console.error('Error searching student:', error);
         window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Error searching student', type: 'error' } }));
+      }
+    },
+    closeCreateEventModal() {
+      this.showCreateEventModal = false;
+      this.createEventError = '';
+      this.newEventForm = { title: '', description: '', amount_due: '', type: 'fee', deadline: '' };
+    },
+    async createContributionEvent() {
+      this.createEventError = '';
+      if (!this.newEventForm.title.trim()) {
+        this.createEventError = 'Event title is required.';
+        return;
+      }
+      if (!this.newEventForm.amount_due || Number(this.newEventForm.amount_due) <= 0) {
+        this.createEventError = 'Please enter a valid amount greater than 0.';
+        return;
+      }
+      this.isCreatingEvent = true;
+      try {
+        const token = localStorage.getItem('authToken');
+        const payload = {
+          title: this.newEventForm.title.trim(),
+          description: this.newEventForm.description.trim(),
+          type: this.newEventForm.type,
+          amount_due: Number(this.newEventForm.amount_due),
+          deadline: this.newEventForm.deadline || null
+        };
+        const response = await fetch(buildAPIUrl('/apis/payments'), {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (response.ok) {
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Contribution event "${payload.title}" created successfully!`, type: 'success' } }));
+          this.closeCreateEventModal();
+          await this.loadAllContributions();
+        } else {
+          this.createEventError = data.message || 'Failed to create event. Please try again.';
+        }
+      } catch (error) {
+        console.error('Error creating contribution event:', error);
+        this.createEventError = 'Network error. Please try again.';
+      } finally {
+        this.isCreatingEvent = false;
       }
     },
     applyDiscount(contribution) {
