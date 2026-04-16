@@ -704,7 +704,7 @@ export default {
         if (response.ok) {
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Contribution event "${payload.title}" created successfully!`, type: 'success' } }));
           this.closeCreateEventModal();
-          await this.loadAllContributions();
+          this.loadAllContributions();
         } else {
           this.createEventError = data.message || 'Failed to create event. Please try again.';
         }

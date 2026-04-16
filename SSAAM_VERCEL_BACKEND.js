@@ -862,62 +862,70 @@ app.post('/apis/payments', auth, async (req, res) => {
 
         await payment.save();
 
-        // Initialize payment campaigns for all approved students (consolidated approach)
-        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-        const students = await StudentModel.find({ status: 'approved' });
-
-        // Bulk-update payment records to avoid N+1 individual saves
-        const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
-        if (students.length > 0) {
-            const now = new Date();
-            const campaignEntry = {
-                payment_id: payment._id,
-                payment_status: 'pending',
-                created_at: now,
-                updated_at: now
-            };
-
-            const existingRecords = await PaymentRecordModel.find(
-                { student_id: { $in: students.map(s => s.student_id) } },
-                { student_id: 1 }
-            ).lean();
-            const existingIds = new Set(existingRecords.map(r => r.student_id));
-
-            const bulkOps = students.map(student => {
-                if (existingIds.has(student.student_id)) {
-                    return {
-                        updateOne: {
-                            filter: { student_id: student.student_id },
-                            update: {
-                                $push: { campaigns: campaignEntry },
-                                $inc: { total_campaigns: 1 },
-                                $set: { updated_at: now }
-                            }
-                        }
-                    };
-                } else {
-                    return {
-                        insertOne: {
-                            document: {
-                                student_id: student.student_id,
-                                student_id_number: student.student_id,
-                                student_name: student.full_name || `${student.first_name} ${student.last_name}`,
-                                program: student.program,
-                                year_level: student.year_level,
-                                campaigns: [campaignEntry],
-                                total_campaigns: 1,
-                                created_at: now,
-                                updated_at: now
-                            }
-                        }
-                    };
-                }
-            });
-
-            await PaymentRecordModel.bulkWrite(bulkOps, { ordered: false });
-        }
-
+        // Respond immediately so the UI doesn't hang — student assignment runs in the background
         res.json({ success: true, data: payment, message: 'Payment created and records initialized' });
+
+        // Background: assign payment campaign to all approved students (fire-and-forget)
+        const college = req.college;
+        setImmediate(async () => {
+            try {
+                const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
+                const students = await StudentModel.find({ status: 'approved' }).lean();
+
+                const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, college);
+                if (students.length === 0) return;
+
+                const now = new Date();
+                const campaignEntry = {
+                    payment_id: payment._id,
+                    payment_status: 'pending',
+                    created_at: now,
+                    updated_at: now
+                };
+
+                const existingRecords = await PaymentRecordModel.find(
+                    { student_id: { $in: students.map(s => s.student_id) } },
+                    { student_id: 1 }
+                ).lean();
+                const existingIds = new Set(existingRecords.map(r => r.student_id));
+
+                const bulkOps = students.map(student => {
+                    if (existingIds.has(student.student_id)) {
+                        return {
+                            updateOne: {
+                                filter: { student_id: student.student_id },
+                                update: {
+                                    $push: { campaigns: campaignEntry },
+                                    $inc: { total_campaigns: 1 },
+                                    $set: { updated_at: now }
+                                }
+                            }
+                        };
+                    } else {
+                        return {
+                            insertOne: {
+                                document: {
+                                    student_id: student.student_id,
+                                    student_id_number: student.student_id,
+                                    student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+                                    program: student.program,
+                                    year_level: student.year_level,
+                                    campaigns: [campaignEntry],
+                                    total_campaigns: 1,
+                                    created_at: now,
+                                    updated_at: now
+                                }
+                            }
+                        };
+                    }
+                });
+
+                await PaymentRecordModel.bulkWrite(bulkOps, { ordered: false });
+                console.log(`[payments] Background assignment done for "${payment.title}": ${students.length} students updated`);
+            } catch (bgErr) {
+                console.error('[payments] Background student assignment failed:', bgErr.message);
+            }
+        });
     } catch (err) {
         console.error('Error creating payment:', err);
         res.status(500).json({ message: err.message });
@@ -8343,60 +8351,73 @@ app.post('/apis/contributions/event/:eventId/apply-discount', auth, async (req, 
 // Enhanced search for contributions with RFID support
 app.get('/apis/contributions/search', auth, async (req, res) => {
     try {
-        const { query, year_level, program, status, limit = 50, page = 1 } = req.query;
-
-        const filter = {};
-        if (year_level) filter.year_level = year_level;
-        if (program) filter.program = program;
-
-        // Build clauses to combine status and query without overwriting
-        const clauses = [];
-        if (status) {
-            const s = String(status).toLowerCase();
-            if (s === 'unpaid') {
-                // Include unpaid, pending, and records with missing/null payment_status
-                clauses.push({
-                    $or: [
-                        { payment_status: { $regex: '^unpaid$', $options: 'i' } },
-                        { payment_status: { $regex: '^pending$', $options: 'i' } },
-                        { payment_status: { $exists: false } },
-                        { payment_status: null }
-                    ]
-                });
-            } else {
-                clauses.push({ payment_status: { $regex: `^${s}$`, $options: 'i' } });
-            }
-        }
-
-        if (query) {
-            const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            clauses.push({
-                $or: [
-                    { student_id_number: { $regex: escapedQuery, $options: 'i' } },
-                    { student_name: { $regex: escapedQuery, $options: 'i' } }
-                ]
-            });
-        }
-
-        if (clauses.length) {
-            filter.$and = clauses;
-        }
-        // Log computed filter for debugging export/search mismatches
-        console.log('[CONTRIB SEARCH] computed filter:', JSON.stringify(filter), 'page:', page, 'limit:', limit);
+        const { query, year_level, program, status, limit = 1000, page = 1 } = req.query;
 
         const EventContributionModel = getCollegeModel(EventContribution, CCS_EventContribution, COE_EventContribution, req.college);
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
+        // Fetch all EventContribution records for this college
+        const allRecords = await EventContributionModel.find({}).lean();
+        const recordedStudentIds = new Set(allRecords.map(r => r.student_id_number || r.student_id?.toString()));
+
+        // Fetch all approved students not already in EventContribution
+        const studentFilter = { status: 'approved' };
+        if (year_level) studentFilter.year_level = year_level;
+        if (program) studentFilter.program = program;
+        const allStudents = await StudentModel.find(studentFilter, {
+            student_id: 1, first_name: 1, last_name: 1, full_name: 1,
+            program: 1, year_level: 1
+        }).lean();
+
+        // Build synthetic "unpaid" entries for students with no EventContribution record
+        const syntheticRecords = allStudents
+            .filter(s => !recordedStudentIds.has(s.student_id))
+            .map(s => ({
+                _id: `synthetic_${s.student_id}`,
+                student_id: s._id,
+                student_id_number: s.student_id,
+                student_name: s.full_name || `${s.first_name || ''} ${s.last_name || ''}`.trim(),
+                program: s.program,
+                year_level: s.year_level,
+                payment_status: 'unpaid',
+                original_amount: 0,
+                discount_value: 0,
+                target_amount: 0,
+                paid_at: null,
+                created_at: new Date()
+            }));
+
+        // Merge real records + synthetic entries
+        let merged = [...allRecords, ...syntheticRecords];
+
+        // Apply filters
+        if (status) {
+            const s = status.toLowerCase();
+            if (s === 'unpaid') {
+                merged = merged.filter(r => !r.payment_status || ['unpaid', 'pending'].includes((r.payment_status || '').toLowerCase()));
+            } else {
+                merged = merged.filter(r => (r.payment_status || '').toLowerCase() === s);
+            }
+        }
+        if (year_level) merged = merged.filter(r => r.year_level === year_level);
+        if (program) merged = merged.filter(r => r.program === program);
+        if (query) {
+            const q = query.toLowerCase();
+            merged = merged.filter(r =>
+                (r.student_id_number || '').toLowerCase().includes(q) ||
+                (r.student_name || '').toLowerCase().includes(q)
+            );
+        }
+
+        const total = merged.length;
         const skip = (parseInt(page) - 1) * parseInt(limit);
-        const total = await EventContributionModel.countDocuments(filter);
-        console.log('[CONTRIB SEARCH] matched total:', total);
-        const contributions = await EventContributionModel.find(filter)
-            .sort({ created_at: -1 })
-            .skip(skip)
-            .limit(parseInt(limit));
+        const paginated = merged.slice(skip, skip + parseInt(limit));
+
+        console.log(`[CONTRIB SEARCH] total merged: ${total} (${allRecords.length} records + ${syntheticRecords.length} synthetic)`);
 
         res.json({
             success: true,
-            data: contributions,
+            data: paginated,
             pagination: {
                 total,
                 page: parseInt(page),
