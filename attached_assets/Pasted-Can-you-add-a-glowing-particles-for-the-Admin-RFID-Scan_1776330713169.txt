@@ -1,0 +1,72 @@
+Can you add a glowing particles for the Admin > RFID Scanner > Fullscreen mode making it more interesting? Additionaly, fix the My Profile in Admin to make it similar to a user Dashboard design. Dont use photo url and let it upload an image. Also make sure the RFID Scanner UI Design that connects both the check-in and check-out in fullscreen mode and the check-in and check-out in RFID Scanner UI. If check out/in is clicked in Fullscreen mode then let it change too in the RFID Scanner.
+
+Redesign the RFID Scanner UI design make it more appealing and user-friendly. Dont forget to apply mobile responsive too.
+
+Also I want you to add an event/session that allows only one check-in and no check-out, just check-in.
+
+SSAAM Contribution Tracking Feature Documentation
+Overview
+We've added a new "Contributions" button as a separate feature to track student payments for events. This is a treasurer-only feature that works completely independently from the attendance system. Students can view their payment status in their own portal.
+What's New?
+The "Contributions" Button (Treasurer Only)
+A new standalone button that opens a separate interface for tracking which students have paid their event contributions. Only the College Treasurer can access and modify this feature.
+Student Payment Status View
+Students can now see their contribution payment status for events in their own portal to track whether they've paid or not.
+
+Access Control
+Who Can Access?
+Treasurer (Full Access):
+•	✓ Can see "Contributions" button
+•	✓ Can mark students as paid using RFID
+•	✓ Can view all students' payment status
+•	✓ Can export payment reports
+Students (View Only):
+•	✓ Can see their own payment status
+•	✗ Cannot modify payment records
+•	✗ Cannot see other students' payment status
+Others (No Access):
+•	✗ Regular Admins - Cannot see or access
+•	✗ Other staff - Cannot see or access
+
+How It Works
+For Treasurer
+1. Accessing Contributions
+•	Treasurer logs into SSAAM
+•	Navigates to the event page
+•	Clicks the "Contributions" button (only visible to treasurer)
+•	Opens a separate window/modal showing all registered students
+2. The Contributions Interface
+What the Treasurer Sees:
+•	Complete list of ALL registered students (regardless of attendance)
+•	Each student row shows: 
+o	Student Name
+o	Student ID
+o	Program
+o	Year Level
+o	Payment Status (blank or "PAID")
+3. Recording Payments
+Using RFID Reader:
+1.	Student approaches treasurer with payment
+2.	Treasurer collects the payment
+3.	Treasurer taps student's RFID card on the reader
+4.	System automatically finds the student in the list
+5.	The blank payment field updates to "PAID"
+6.	Timestamp is recorded
+7.	Student can immediately see the update in their portal
+
+Key Features
+✓ Treasurer-Only Access - Only college treasurer can record payments
+✓ Student Visibility - Students can view their own payment status
+✓ Independent System - Completely separate from attendance check-in/check-out
+✓ All Students Listed - Shows every registered student (treasurer view)
+✓ RFID Integration - Quick payment recording using existing RFID cards
+✓ Real-time Updates - Payment status updates immediately for both treasurer and student
+✓ Export Ready - Generate reports of paid vs unpaid students (treasurer only)
+
+Important Notes
+•	Treasurer-only modification - Only treasurer can mark payments, students can only view
+•	Not connected to attendance - Students can be marked "PAID" even if they haven't attended yet
+•	Separate tracking - Contributions and attendance are independent
+•	Student transparency - Students can verify their payment status anytime
+•	RFID usage - Same RFID cards used for attendance, but different purpose
+•	Security - Other admins cannot access or modify contribution records
