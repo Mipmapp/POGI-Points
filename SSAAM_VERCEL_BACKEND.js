@@ -57,7 +57,8 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Middleware to ensure database connection is active
 app.use(async (req, res, next) => {
@@ -2422,6 +2423,7 @@ const attendanceSessionSchema = new mongoose.Schema({
     check_in_locked: { type: Boolean, default: false },
     check_out_locked: { type: Boolean, default: false },
     late_timer_minutes: { type: Number, default: 0 },
+    check_in_only: { type: Boolean, default: false },
     rfidScanner: { type: mongoose.Schema.Types.Mixed, default: {} },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
@@ -7551,6 +7553,24 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
                     student_name: log.student_name,
                     cooldown_remaining: remainingSeconds,
                     warning: 'duplicate_check_in_attempt',
+                    student: {
+                        full_name: log.student_name,
+                        photo: student.photo,
+                        student_id: student.student_id,
+                        program: log.program || student.program,
+                        year_level: log.year_level || student.year_level
+                    }
+                });
+            }
+
+            // Block check-out if session is check-in only
+            if (session.check_in_only) {
+                return res.status(200).json({
+                    message: `${studentFullName} is already checked in. This session is check-in only — no check-out required.`,
+                    action: 'already_checked_in',
+                    success: true,
+                    check_in_only: true,
+                    student_name: log.student_name,
                     student: {
                         full_name: log.student_name,
                         photo: student.photo,

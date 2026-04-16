@@ -159,11 +159,13 @@
 
     <!-- RFID Scanner Fullscreen Modal - Enhanced Kiosk Layout -->
     <div v-if="rfidFullscreenMode" class="fixed inset-0 z-[70] overflow-hidden bg-gradient-to-b from-[#080e2e] to-[#0f1f6e]">
+    <!-- Glowing particle canvas -->
+    <canvas ref="particleCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0" style="opacity:0.85"></canvas>
     <button @click="rfidFullscreenMode = false" :class="['absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all hover:bg-white/25 hover:scale-110 active:scale-95', isCOE ? 'hover:border-red-300 hover:text-red-200' : isSOM ? 'hover:border-yellow-300 hover:text-yellow-200' : isCNAHS ? 'hover:border-green-300 hover:text-green-200' : 'hover:border-blue-300 hover:text-blue-200']" title="Close (ESC)">
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
     
-    <div class="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden">
+    <div class="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden relative z-10">
       <!-- Left Panel - Scanner (Kiosk Style) -->
       <div class="lg:w-[460px] xl:w-1/2 flex-shrink-0 min-h-max lg:h-full flex flex-col items-center justify-center px-5 py-8 lg:py-10 border-b lg:border-b-0 lg:border-r border-white/20">
 
@@ -195,7 +197,12 @@
 
         <!-- Interactive Mode Toggle -->
         <div class="w-full max-w-sm mb-4">
-          <div class="flex gap-1 p-1 bg-black/20 rounded-2xl border border-white/15">
+          <!-- Check-In Only Badge -->
+          <div v-if="selectedSession && selectedSession.check_in_only" class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl bg-blue-500/25 border border-blue-400/50 text-blue-200 text-sm font-bold">
+            <div class="w-2 h-2 rounded-full bg-blue-300 animate-pulse flex-shrink-0"></div>
+            Check-In Only Session
+          </div>
+          <div v-else class="flex gap-1 p-1 bg-black/20 rounded-2xl border border-white/15">
             <button 
               @click="setRfidOperation('in')"
               :class="['flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-bold transition-all duration-200 select-none',
@@ -274,8 +281,8 @@
           </div>
           <div class="flex-1 bg-white/10 border border-white/15 rounded-xl p-3 text-center backdrop-blur-sm">
             <p class="text-white/45 text-xs uppercase tracking-wider mb-1">Active Mode</p>
-            <p :class="['text-sm font-extrabold tracking-wider uppercase', rfidOperationType === 'in' ? 'text-green-300' : isCOE ? 'text-red-300' : isSOM ? 'text-yellow-300' : 'text-orange-300']">
-              {{ rfidOperationType === 'in' ? 'Check-In' : 'Check-Out' }}
+            <p :class="['text-sm font-extrabold tracking-wider uppercase', (selectedSession && selectedSession.check_in_only) ? 'text-blue-300' : rfidOperationType === 'in' ? 'text-green-300' : isCOE ? 'text-red-300' : isSOM ? 'text-yellow-300' : 'text-orange-300']">
+              {{ (selectedSession && selectedSession.check_in_only) ? 'Check-In Only' : rfidOperationType === 'in' ? 'Check-In' : 'Check-Out' }}
             </p>
           </div>
         </div>
@@ -685,6 +692,10 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
           <span>Attendance</span>
         </button>
+        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'contributions'" :class="[sidebarItemBase, 'mt-2', currentPage === 'contributions' ? sidebarItemActive : sidebarItemHover]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          <span>Contributions</span>
+        </button>
         <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'request'; fetchStudentRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'request' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
           <span>Request</span>
@@ -817,6 +828,10 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
             <span>Attendance</span>
           </button>
+          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'contributions'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'contributions' ? sidebarItemActive : sidebarItemHover]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            <span>Contributions</span>
+          </button>
           <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'request'; showMobileMenu = false; fetchStudentRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'request' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             <span>Request</span>
@@ -881,7 +896,7 @@
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-4 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-xl flex items-center gap-3">
@@ -2063,35 +2078,66 @@
                   </div>
                 </div>
 
-                <div :class="['bg-gradient-to-br border-2 border-dashed rounded-lg p-4 sm:p-8 text-center', isCOE ? 'from-orange-50 to-red-50 border-orange-300' : isSOM ? 'from-green-50 to-teal-50 border-green-300' : isCNAHS ? 'from-green-50 to-teal-50 border-green-300' : 'from-blue-50 to-blue-50 border-blue-300']">
-                  <!-- Combined input info -->
-                  <div class="flex justify-center mb-3 sm:mb-4">
-                    <div class="inline-flex items-center gap-2 px-2 sm:px-3 py-1 sm:py-2 rounded-lg bg-white bg-opacity-10 border border-white border-opacity-10">
-                      <svg class="w-4 h-4 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 1.657-1.343 3-3 3S6 12.657 6 11s1.343-3 3-3 3 1.343 3 3zM18 11c0 1.657-1.343 3-3 3s-3-1.343-3-3 1.343-3 3-3 3 1.343 3 3z"></path></svg>
-                      <span class="text-xs sm:text-sm text-gray-700">Scan RFID or type Student ID</span>
+                <!-- RFID Scanner Card - Redesigned -->
+                <div :class="['rounded-2xl overflow-hidden shadow-lg border', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200']">
+                  <!-- Scanner Header -->
+                  <div :class="['px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-700' : isSOM ? 'from-green-600 to-teal-700' : isCNAHS ? 'from-emerald-600 to-green-700' : 'from-ssaam-dark to-ssaam-light']">
+                    <div class="flex items-center gap-3">
+                      <!-- Animated pulse rings -->
+                      <div class="relative w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center flex-shrink-0">
+                        <div class="absolute inset-0 rounded-full border border-white/30 animate-ping"></div>
+                        <div class="absolute inset-0 rounded-full border border-white/20 animate-ping" style="animation-delay:0.4s"></div>
+                        <div class="w-full h-full rounded-full bg-white/20 flex items-center justify-center">
+                          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 3v4M19 3v4M3 9h18M4 21h16a1 1 0 001-1V9H3v11a1 1 0 001 1z"/></svg>
+                        </div>
+                      </div>
+                      <div>
+                        <p class="text-white font-bold text-sm sm:text-base leading-tight">RFID Scanner</p>
+                        <p class="text-white/70 text-xs">Scan card or enter Student ID</p>
+                      </div>
+                    </div>
+                    <!-- Check-In Only badge or Mode indicator -->
+                    <div v-if="selectedSession && selectedSession.check_in_only" class="flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1.5">
+                      <div class="w-1.5 h-1.5 rounded-full bg-blue-200 animate-pulse"></div>
+                      <span class="text-white text-xs font-semibold">Check-In Only</span>
+                    </div>
+                    <div v-else-if="effectiveRfid.checkInEnabled" class="flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1.5">
+                      <div class="w-1.5 h-1.5 rounded-full bg-green-300 animate-pulse"></div>
+                      <span class="text-white text-xs font-semibold">Check-In</span>
+                    </div>
+                    <div v-else-if="effectiveRfid.checkOutEnabled" class="flex items-center gap-1.5 bg-white/20 rounded-full px-3 py-1.5">
+                      <div class="w-1.5 h-1.5 rounded-full bg-yellow-300 animate-pulse"></div>
+                      <span class="text-white text-xs font-semibold">Check-Out</span>
                     </div>
                   </div>
-                  <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-center sm:gap-2 max-w-md mx-auto">
-                    <input 
-                      ref="rfidInputRef"
-                      v-model="rfidInput"
-                      @input="onRfidInput"
-                      @keydown="handleRfidKeydown"
-                      type="text"
-                      :placeholder="'Scan or ID'"
-                      :class="['flex-1 px-2 sm:px-4 py-1.5 sm:py-3 text-center text-xs sm:text-lg border-2 rounded-lg focus:ring-2 outline-none uppercase', isCOE ? 'border-orange-300 focus:border-red-500 focus:ring-red-200' : isSOM ? 'border-green-300 focus:border-yellow-500 focus:ring-yellow-200' : isCNAHS ? 'border-green-300 focus:border-green-500 focus:ring-green-200' : 'border-blue-300 focus:border-blue-500 focus:ring-blue-200']"
-                      :disabled="rfidProcessing"
-                    />
-                    <button 
-                      @click="manualRfidSubmit"
-                      :disabled="rfidProcessing || !rfidInput.trim()"
-                      :class="['px-2 sm:px-4 py-1.5 sm:py-3 text-white rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1 sm:gap-2 bg-gradient-to-r whitespace-nowrap w-full sm:w-auto', primaryButtonGradient, primaryButtonHover]"
-                    >
-                      <svg class="w-3 sm:w-5 h-3 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                      <span class="text-xs sm:text-base">Enter</span>
-                    </button>
+                  <!-- Scanner Body -->
+                  <div class="bg-white px-4 py-5 sm:px-6 sm:py-6">
+                    <div class="flex flex-col sm:flex-row gap-3 items-stretch">
+                      <div class="flex-1 relative">
+                        <input 
+                          ref="rfidInputRef"
+                          v-model="rfidInput"
+                          @input="onRfidInput"
+                          @keydown="handleRfidKeydown"
+                          type="text"
+                          placeholder="Scan RFID card or type Student ID..."
+                          :class="['w-full pl-10 pr-4 py-3 text-sm sm:text-base border-2 rounded-xl focus:ring-2 outline-none transition-all', isCOE ? 'border-orange-200 focus:border-orange-500 focus:ring-orange-100' : isSOM ? 'border-green-200 focus:border-green-500 focus:ring-green-100' : isCNAHS ? 'border-green-200 focus:border-green-500 focus:ring-green-100' : 'border-blue-200 focus:border-blue-500 focus:ring-blue-100']"
+                          :disabled="rfidProcessing"
+                        />
+                        <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                      </div>
+                      <button 
+                        @click="manualRfidSubmit"
+                        :disabled="rfidProcessing || !rfidInput.trim()"
+                        :class="['flex items-center justify-center gap-2 px-5 py-3 text-white rounded-xl font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r active:scale-95 hover:scale-[1.02] shadow-md', primaryButtonGradient, primaryButtonHover]"
+                      >
+                        <svg v-if="rfidProcessing" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        <span>{{ rfidProcessing ? 'Processing...' : 'Submit' }}</span>
+                      </button>
+                    </div>
+                    <p class="text-xs text-gray-400 mt-2 text-center">Press Enter to submit automatically after scanning</p>
                   </div>
-                  <!-- inline loading removed per request -->
                 </div>
 
                 <!-- Recent Logs -->
@@ -3066,45 +3112,66 @@
           </div>
         </div>
 
-        <!-- Admin Contribution Panel (New Advanced Features) -->
-        <!-- New Admin Contribution Panel (HIDDEN) -->
-        <AdminContributionPanel v-if="false" />
+        <!-- Admin Contribution Panel - visible for admin/co-admin -->
+        <AdminContributionPanel v-if="currentPage === 'contributions' && (currentUser.role === 'admin' || currentUser.isMaster)" />
 
         <!-- Manage Page (Roles & Users) -->
         <Manage ref="manageComponent" v-if="currentPage === 'manage' && (currentUser.role === 'admin' || currentUser.isMaster)" />
 
         <!-- Admin / Co-Admin Profile Page -->
         <div v-if="currentPage === 'admin-profile' && (currentUser.isMaster || currentUser.role === 'admin')" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-          <!-- Profile Banner -->
-          <div class="relative h-40 bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light overflow-hidden">
-            <div class="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-            <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full bg-blue-500/20 blur-3xl animate-pulse"></div>
-            <div class="absolute -bottom-20 -left-20 w-64 h-64 rounded-full bg-blue-400/20 blur-3xl animate-pulse-slow"></div>
+          <!-- Hidden file input for photo upload -->
+          <input ref="adminPhotoFileRef" type="file" accept="image/*" class="hidden" @change="handleAdminPhotoUpload" />
+
+          <!-- Profile Banner with college-aware gradient -->
+          <div :class="['relative h-44 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 via-red-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 via-teal-600 to-teal-700' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 via-green-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+            <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+            <div :class="['absolute -top-20 -right-20 w-72 h-72 rounded-full blur-3xl animate-pulse', isCOE ? 'bg-red-400/20' : isSOM ? 'bg-teal-400/20' : isCNAHS ? 'bg-green-400/20' : 'bg-blue-500/20']"></div>
+            <div :class="['absolute -bottom-20 -left-20 w-72 h-72 rounded-full blur-3xl animate-pulse-slow', isCOE ? 'bg-orange-400/20' : isSOM ? 'bg-green-400/20' : isCNAHS ? 'bg-emerald-400/20' : 'bg-blue-400/20']"></div>
             <div class="light-sweep"></div>
+            <!-- Role badge in banner -->
+            <div class="absolute top-4 right-4">
+              <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold shadow-lg" :class="currentUser.isMaster ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white' : 'bg-white/20 text-white border border-white/30'">
+                <img v-if="currentUser.isMaster" src="/crown.svg" alt="" class="w-3.5 h-3.5 brightness-0 invert" />
+                {{ currentUser.isMaster ? 'Super Admin' : currentUser.role === 'co-admin' ? 'Co-Admin' : 'Admin' }}
+                <span v-if="currentUser.role === 'co-admin' && currentUser.college" class="font-normal opacity-80">({{ currentUser.college }})</span>
+              </span>
+            </div>
           </div>
 
           <div v-if="adminProfileLoading" class="flex items-center justify-center py-16">
-            <svg class="animate-spin w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg :class="['animate-spin w-10 h-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
           </div>
 
           <div v-else-if="adminProfile" class="px-6 md:px-8 pb-8">
             <!-- Avatar + Name Row -->
             <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-16 mb-8">
               <div class="flex items-end gap-4">
-                <div class="w-28 h-28 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center flex-shrink-0">
-                  <img v-if="adminProfile.photo || adminProfileForm.photo" :src="adminProfileForm.photo || adminProfile.photo" alt="Profile Photo" class="w-full h-full object-cover" @error="(e) => e.target.style.display='none'" />
-                  <span v-else class="text-4xl font-bold text-white">{{ (adminProfile.username || 'A').charAt(0).toUpperCase() }}</span>
+                <!-- Avatar with upload overlay -->
+                <div class="relative group flex-shrink-0">
+                  <div :class="['w-28 h-28 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+                    <img v-if="adminProfileForm.photo || adminProfile.photo" :src="adminProfileForm.photo || adminProfile.photo" alt="Profile Photo" class="w-full h-full object-cover" @error="(e) => e.target.style.display='none'" />
+                    <span v-else class="text-4xl font-bold text-white">{{ (adminProfile.username || 'A').charAt(0).toUpperCase() }}</span>
+                  </div>
+                  <!-- Upload overlay -->
+                  <button @click="adminPhotoFileRef && adminPhotoFileRef.click()" class="absolute inset-0 rounded-3xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" type="button">
+                    <div class="text-center">
+                      <svg class="w-6 h-6 text-white mx-auto mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                      <p class="text-white text-[10px] font-bold">Upload</p>
+                    </div>
+                  </button>
                 </div>
                 <div class="pb-1">
                   <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">{{ adminProfile.full_name || adminProfile.username }}</h2>
                   <p class="text-sm text-gray-500">@{{ adminProfile.username }}</p>
+                  <p :class="['text-xs font-medium mt-1', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']">{{ adminProfile.college || currentUser.college || 'All Colleges' }}</p>
                 </div>
               </div>
-              <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold shadow-sm self-start sm:self-auto" :class="currentUser.isMaster ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white' : 'bg-blue-100 text-blue-700'">
-                <img v-if="currentUser.isMaster" src="/crown.svg" alt="" class="w-3.5 h-3.5 brightness-0 invert" />
-                {{ currentUser.isMaster ? 'Super Admin' : currentUser.role === 'co-admin' ? 'Co-Admin' : 'Admin' }}
-                <span v-if="currentUser.role === 'co-admin' && currentUser.college" class="font-normal opacity-80">({{ currentUser.college }})</span>
-              </span>
+              <!-- Upload photo button (mobile-friendly alternative) -->
+              <button @click="adminPhotoFileRef && adminPhotoFileRef.click()" :class="['flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-all self-start sm:self-auto', isCOE ? 'border-orange-300 text-orange-700 hover:bg-orange-50' : isSOM ? 'border-green-300 text-green-700 hover:bg-green-50' : isCNAHS ? 'border-green-300 text-green-700 hover:bg-green-50' : 'border-blue-300 text-blue-700 hover:bg-blue-50']" type="button">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Change Photo
+              </button>
             </div>
 
             <!-- Info Cards Row -->
@@ -3135,26 +3202,43 @@
             <div class="space-y-6">
               <div>
                 <div class="flex items-center gap-2 mb-4">
-                  <div class="w-1 h-6 rounded-full bg-blue-600"></div>
-                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Edit Profile</h3>
+                  <div :class="['w-1 h-6 rounded-full', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-600' : 'bg-blue-600']"></div>
+                  <h3 :class="['text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-green-400' : 'text-gray-400']">Edit Profile</h3>
+                </div>
+                <!-- Photo Upload Section -->
+                <div class="mb-4 p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                  <p class="text-xs font-semibold text-gray-600 mb-3">Profile Photo</p>
+                  <div class="flex items-center gap-4">
+                    <div :class="['w-16 h-16 rounded-2xl overflow-hidden ring-2 ring-white shadow-md flex items-center justify-center flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+                      <img v-if="adminProfileForm.photo || adminProfile.photo" :src="adminProfileForm.photo || adminProfile.photo" alt="" class="w-full h-full object-cover" @error="(e) => e.target.style.display='none'" />
+                      <svg v-else class="w-7 h-7 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <button @click="adminPhotoFileRef && adminPhotoFileRef.click()" :class="['w-full py-2.5 px-4 border-2 border-dashed rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2', isCOE ? 'border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400' : isSOM ? 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400' : isCNAHS ? 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400' : 'border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400']" type="button">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        Choose Photo
+                      </button>
+                      <p v-if="adminProfileForm.photo && adminProfileForm.photo.startsWith('data:')" class="text-xs text-green-600 mt-1.5 font-medium text-center">✓ New photo selected — save to apply</p>
+                      <p v-else class="text-xs text-gray-400 mt-1.5 text-center">JPG, PNG or GIF · Max 5MB</p>
+                    </div>
+                    <button v-if="adminProfileForm.photo" @click="adminProfileForm.photo = ''" type="button" class="p-1.5 text-gray-400 hover:text-red-500 transition flex-shrink-0" title="Remove photo">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
-                    <input v-model="adminProfileForm.full_name" type="text" placeholder="Your full name" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition" />
+                    <input v-model="adminProfileForm.full_name" type="text" placeholder="Your full name" :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 outline-none text-sm bg-gray-50 focus:bg-white transition', isCOE ? 'focus:ring-orange-300 focus:border-orange-400' : isSOM ? 'focus:ring-green-300 focus:border-green-400' : isCNAHS ? 'focus:ring-green-300 focus:border-green-400' : 'focus:ring-blue-400']" />
                   </div>
                   <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Phone</label>
-                    <input v-model="adminProfileForm.phone" type="text" placeholder="Contact number" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition" />
+                    <input v-model="adminProfileForm.phone" type="text" placeholder="Contact number" :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 outline-none text-sm bg-gray-50 focus:bg-white transition', isCOE ? 'focus:ring-orange-300 focus:border-orange-400' : isSOM ? 'focus:ring-green-300 focus:border-green-400' : isCNAHS ? 'focus:ring-green-300 focus:border-green-400' : 'focus:ring-blue-400']" />
                   </div>
                 </div>
                 <div class="mt-4">
                   <label class="block text-xs font-semibold text-gray-600 mb-1">Bio</label>
-                  <textarea v-model="adminProfileForm.bio" rows="3" placeholder="Brief description about yourself..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm resize-none bg-gray-50 focus:bg-white transition"></textarea>
-                </div>
-                <div class="mt-4">
-                  <label class="block text-xs font-semibold text-gray-600 mb-1">Photo URL</label>
-                  <input v-model="adminProfileForm.photo" type="text" placeholder="https://..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition" />
+                  <textarea v-model="adminProfileForm.bio" rows="3" placeholder="Brief description about yourself..." :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 outline-none text-sm resize-none bg-gray-50 focus:bg-white transition', isCOE ? 'focus:ring-orange-300 focus:border-orange-400' : isSOM ? 'focus:ring-green-300 focus:border-green-400' : isCNAHS ? 'focus:ring-green-300 focus:border-green-400' : 'focus:ring-blue-400']"></textarea>
                 </div>
               </div>
 
@@ -3178,8 +3262,9 @@
               </div>
 
               <div class="flex flex-col sm:flex-row gap-3">
-                <button @click="saveAdminProfile" :disabled="adminProfileSaving" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-2.5 px-6 rounded-xl font-bold transition-all hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg shadow-blue-200">
+                <button @click="saveAdminProfile" :disabled="adminProfileSaving" :class="['flex-1 text-white py-2.5 px-6 rounded-xl font-bold transition-all hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-700 shadow-orange-200' : isSOM ? 'from-green-600 to-teal-700 shadow-green-200' : isCNAHS ? 'from-emerald-600 to-green-700 shadow-green-200' : 'from-ssaam-dark to-ssaam-light shadow-blue-200']">
                   <svg v-if="adminProfileSaving" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                   {{ adminProfileSaving ? 'Saving...' : 'Save Changes' }}
                 </button>
               </div>
@@ -5122,6 +5207,15 @@
             <span class="text-sm text-gray-500 whitespace-nowrap">minutes</span>
           </div>
           <p class="text-xs text-gray-500 mt-1">Check-ins after {{ newSession.late_timer_minutes || 60 }} minutes from session start will be marked as late</p>
+        </div>
+        <div :class="['flex items-center justify-between p-4 rounded-xl border-2 transition-all', newSession.check_in_only ? 'bg-blue-50 border-blue-300' : 'bg-gray-50 border-gray-200']">
+          <div>
+            <p class="text-sm font-semibold text-gray-800">Check-In Only Mode</p>
+            <p class="text-xs text-gray-500 mt-0.5">Students scan once to check-in. No check-out required.</p>
+          </div>
+          <button type="button" @click="newSession.check_in_only = !newSession.check_in_only" :class="['relative inline-flex h-7 w-12 items-center rounded-full transition-colors duration-300 flex-shrink-0', newSession.check_in_only ? 'bg-blue-500' : 'bg-gray-300']">
+            <span :class="['inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-300', newSession.check_in_only ? 'translate-x-6' : 'translate-x-1']"></span>
+          </button>
         </div>
         <div v-if="sessionTimeError" class="bg-red-50 border border-red-200 rounded-lg p-3">
           <p class="text-sm text-red-700">{{ sessionTimeError }}</p>
@@ -8537,6 +8631,122 @@ const logoFlipping = ref(false)
 const logoFlipInterval = ref(null)
 const rfidFocusTimeout = ref(null)
 
+// Particle animation for fullscreen RFID scanner
+const particleCanvas = ref(null)
+let particleAnimFrame = null
+const particleList = []
+
+const initParticles = (canvas) => {
+  particleList.length = 0
+  const count = Math.min(70, Math.floor((canvas.width * canvas.height) / 14000))
+  for (let i = 0; i < count; i++) {
+    const hue = Math.random() * 60 + 180
+    particleList.push({
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      radius: Math.random() * 2.5 + 0.8,
+      vx: (Math.random() - 0.5) * 0.4,
+      vy: (Math.random() - 0.5) * 0.4,
+      opacity: Math.random() * 0.5 + 0.2,
+      opacityDir: (Math.random() > 0.5 ? 1 : -1) * 0.004,
+      color: `hsl(${hue}, 90%, 70%)`
+    })
+  }
+}
+
+const drawParticles = () => {
+  const canvas = particleCanvas.value
+  if (!canvas) return
+  const ctx = canvas.getContext('2d')
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  for (const p of particleList) {
+    p.x += p.vx
+    p.y += p.vy
+    if (p.x < 0) p.x = canvas.width
+    if (p.x > canvas.width) p.x = 0
+    if (p.y < 0) p.y = canvas.height
+    if (p.y > canvas.height) p.y = 0
+    p.opacity += p.opacityDir
+    if (p.opacity > 0.85 || p.opacity < 0.1) p.opacityDir *= -1
+    ctx.save()
+    ctx.globalAlpha = p.opacity
+    const grd = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.radius * 5)
+    grd.addColorStop(0, p.color)
+    grd.addColorStop(1, 'transparent')
+    ctx.fillStyle = grd
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, p.radius * 5, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+    ctx.save()
+    ctx.globalAlpha = p.opacity * 1.2
+    ctx.fillStyle = '#fff'
+    ctx.beginPath()
+    ctx.arc(p.x, p.y, p.radius * 0.7, 0, Math.PI * 2)
+    ctx.fill()
+    ctx.restore()
+  }
+  // Draw faint connection lines
+  for (let i = 0; i < particleList.length; i++) {
+    for (let j = i + 1; j < particleList.length; j++) {
+      const dx = particleList[i].x - particleList[j].x
+      const dy = particleList[i].y - particleList[j].y
+      const dist = Math.sqrt(dx * dx + dy * dy)
+      if (dist < 100) {
+        ctx.save()
+        ctx.globalAlpha = (1 - dist / 100) * 0.12
+        ctx.strokeStyle = particleList[i].color
+        ctx.lineWidth = 0.6
+        ctx.beginPath()
+        ctx.moveTo(particleList[i].x, particleList[i].y)
+        ctx.lineTo(particleList[j].x, particleList[j].y)
+        ctx.stroke()
+        ctx.restore()
+      }
+    }
+  }
+  particleAnimFrame = requestAnimationFrame(drawParticles)
+}
+
+const startParticles = () => {
+  stopParticles()
+  nextTick(() => {
+    const canvas = particleCanvas.value
+    if (!canvas) return
+    canvas.width = canvas.offsetWidth
+    canvas.height = canvas.offsetHeight
+    initParticles(canvas)
+    drawParticles()
+  })
+}
+
+const stopParticles = () => {
+  if (particleAnimFrame) {
+    cancelAnimationFrame(particleAnimFrame)
+    particleAnimFrame = null
+  }
+}
+
+// Admin photo upload helper
+const adminPhotoFileRef = ref(null)
+const handleAdminPhotoUpload = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    showNotification('Please select a valid image file', 'error')
+    return
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showNotification('Image must be smaller than 5MB', 'error')
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    adminProfileForm.value.photo = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
+
 // Fullscreen live clock
 const fsLiveClock = ref('')
 const fsClockInterval = ref(null)
@@ -8592,6 +8802,7 @@ const stopLogoFlipAnimation = () => {
 watch(rfidFullscreenMode, (newValue) => {
   if (newValue) {
     startLogoFlipAnimation()
+    startParticles()
     updateFsClock()
     fsClockInterval.value = setInterval(updateFsClock, 1000)
     // Auto-focus the input when fullscreen mode is enabled
@@ -8605,6 +8816,7 @@ watch(rfidFullscreenMode, (newValue) => {
     }, 100)
   } else {
     stopLogoFlipAnimation()
+    stopParticles()
     if (fsClockInterval.value) {
       clearInterval(fsClockInterval.value)
       fsClockInterval.value = null
@@ -8950,7 +9162,7 @@ const sessionsLoading = ref(false)
 const showSessionModal = ref(false)
 const expandedEvents = ref({})
 const expandedEventSessions = ref({})
-const newSession = ref({ label: 'Morning', start_time: '', end_time: '', status: 'active', late_timer_minutes: 60 })
+const newSession = ref({ label: 'Morning', start_time: '', end_time: '', status: 'active', late_timer_minutes: 60, check_in_only: false })
 const savingSession = ref(false)
 const editingSession = ref(null)
 const addSessionButtonAnimating = ref(false)
@@ -13443,7 +13655,7 @@ const openAddSessionModal = () => {
   }, 600)
   
   editingSession.value = null
-  newSession.value = { label: 'Morning', start_time: '', end_time: '', status: 'active', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60 }
+  newSession.value = { label: 'Morning', start_time: '', end_time: '', status: 'active', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60, check_in_only: false }
   showSessionModal.value = true
 }
 
