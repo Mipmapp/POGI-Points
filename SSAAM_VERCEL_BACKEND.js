@@ -866,42 +866,55 @@ app.post('/apis/payments', auth, async (req, res) => {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const students = await StudentModel.find({ status: 'approved' });
 
-        // Create or update payment records for existing students (college-aware)
+        // Bulk-update payment records to avoid N+1 individual saves
         const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
-        for (const student of students) {
-            let paymentRecord = await PaymentRecordModel.findOne({ student_id: student.student_id });
+        if (students.length > 0) {
+            const now = new Date();
+            const campaignEntry = {
+                payment_id: payment._id,
+                payment_status: 'pending',
+                created_at: now,
+                updated_at: now
+            };
 
-            if (!paymentRecord) {
-                // Create new consolidated record
-                paymentRecord = new PaymentRecordModel({
-                    student_id: student.student_id,
-                    student_id_number: student.student_id,
-                    student_name: student.full_name || `${student.first_name} ${student.last_name}`,
-                    program: student.program,
-                    year_level: student.year_level,
-                    campaigns: [{
-                        payment_id: payment._id,
-                        payment_status: 'pending',
-                        created_at: new Date(),
-                        updated_at: new Date()
-                    }],
-                    total_campaigns: 1,
-                    created_at: new Date(),
-                    updated_at: new Date()
-                });
-                await paymentRecord.save();
-            } else {
-                // Add campaign to existing record
-                paymentRecord.campaigns.push({
-                    payment_id: payment._id,
-                    payment_status: 'pending',
-                    created_at: new Date(),
-                    updated_at: new Date()
-                });
-                paymentRecord.total_campaigns = paymentRecord.campaigns.length;
-                paymentRecord.updated_at = new Date();
-                await paymentRecord.save();
-            }
+            const existingRecords = await PaymentRecordModel.find(
+                { student_id: { $in: students.map(s => s.student_id) } },
+                { student_id: 1 }
+            ).lean();
+            const existingIds = new Set(existingRecords.map(r => r.student_id));
+
+            const bulkOps = students.map(student => {
+                if (existingIds.has(student.student_id)) {
+                    return {
+                        updateOne: {
+                            filter: { student_id: student.student_id },
+                            update: {
+                                $push: { campaigns: campaignEntry },
+                                $inc: { total_campaigns: 1 },
+                                $set: { updated_at: now }
+                            }
+                        }
+                    };
+                } else {
+                    return {
+                        insertOne: {
+                            document: {
+                                student_id: student.student_id,
+                                student_id_number: student.student_id,
+                                student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+                                program: student.program,
+                                year_level: student.year_level,
+                                campaigns: [campaignEntry],
+                                total_campaigns: 1,
+                                created_at: now,
+                                updated_at: now
+                            }
+                        }
+                    };
+                }
+            });
+
+            await PaymentRecordModel.bulkWrite(bulkOps, { ordered: false });
         }
 
         res.json({ success: true, data: payment, message: 'Payment created and records initialized' });
