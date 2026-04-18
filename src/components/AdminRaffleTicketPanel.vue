@@ -336,11 +336,14 @@ function formatDate(date) {
   return new Date(date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
+function getAuthToken() {
+  return localStorage.getItem('authToken') || localStorage.getItem('token') || ''
+}
+
 function getAuthHeaders() {
-  const token = localStorage.getItem('token') || localStorage.getItem('authToken') || ''
   return {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    'Authorization': `Bearer ${getAuthToken()}`,
     'X-SSAAM-College': getCollege()
   }
 }
@@ -351,21 +354,23 @@ async function searchStudent() {
   isSearching.value = true
   errorMsg.value = ''
   successMsg.value = ''
+  selectedStudent.value = null
   try {
-    const isRfid = /^[A-Z0-9]{8,}$/i.test(q) && !q.includes('-')
-    const param = isRfid ? `rfid_code=${encodeURIComponent(q)}` : `student_id=${encodeURIComponent(q)}`
-    const res = await fetch(buildAPIUrl(`/apis/students/search?${param}`), { headers: getAuthHeaders() })
+    const res = await fetch(buildAPIUrl('/apis/students/search'), {
+      method: 'POST',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ search_query: q })
+    })
     const data = await res.json()
-    if (data.success && (data.student || data.data)) {
-      selectedStudent.value = data.student || data.data
+    if (res.ok && data.student) {
+      selectedStudent.value = data.student
       ticketType.value = ''
       ticketCount.value = null
     } else {
       errorMsg.value = data.message || 'Student not found'
-      selectedStudent.value = null
     }
   } catch (e) {
-    errorMsg.value = 'Failed to search student'
+    errorMsg.value = 'Failed to search student. Please try again.'
   } finally {
     isSearching.value = false
   }
