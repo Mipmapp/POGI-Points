@@ -1,7 +1,7 @@
 # SSAAM - Student School Activities Attendance Monitoring
 
 ## Overview
-SSAAM is a Vue 3 + Vite frontend application for monitoring student attendance at school activities. This Single Page Application (SPA) integrates with a backend API to provide dual-role authentication (Students and Masters/Teachers), comprehensive student data management with CRUD operations, and features like RFID code support for attendance. The project aims to provide a robust, scalable, and secure system for schools to track student engagement in activities efficiently, addressing performance concerns with large datasets through optimized pagination and server-side filtering.
+SSAAM is a Vue 3 + Vite frontend application for monitoring student attendance at school activities, with contribution management, and raffle ticket tracking. This Single Page Application (SPA) integrates with a backend API to provide dual-role authentication (Students and Masters/Teachers), comprehensive student data management with CRUD operations, and features like RFID code support for attendance. The project aims to provide a robust, scalable, and secure system for schools to track student engagement in activities efficiently, addressing performance concerns with large datasets through optimized pagination and server-side filtering.
 
 ## User Preferences
 - I want iterative development.

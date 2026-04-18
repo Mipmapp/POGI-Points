@@ -2570,6 +2570,38 @@ const COE_EventContribution = mongoose.model("COE_EventContribution", eventContr
 const SOM_EventContribution = mongoose.model("SOM_EventContribution", eventContributionSchema, 'som_eventcontributions');
 const CNAHS_EventContribution = mongoose.model("CNAHS_EventContribution", eventContributionSchema, 'cnahs_eventcontributions');
 
+// ==================== RAFFLE TICKET SCHEMAS ====================
+
+const raffleTicketSchema = new mongoose.Schema({
+    student_id_number: { type: String, required: true },
+    student_name: { type: String, required: true },
+    program: { type: String, default: '' },
+    year_level: { type: String, default: '' },
+    ticket_type: { type: String, enum: ['red', 'green'], required: true }, // red = Rural, green = Evergood
+    ticket_count: { type: Number, required: true },
+    category: { type: String, enum: ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'none'], default: 'none' },
+    submitted_by: { type: String, default: '' },
+    submitted_at: { type: Date, default: Date.now }
+});
+
+raffleTicketSchema.index({ student_id_number: 1, ticket_type: 1 });
+raffleTicketSchema.index({ category: 1 });
+
+const RaffleTicket = mongoose.model("RaffleTicket", raffleTicketSchema);
+const CCS_RaffleTicket = mongoose.model("CCS_RaffleTicket", raffleTicketSchema, 'ccs_raffletickets');
+const COE_RaffleTicket = mongoose.model("COE_RaffleTicket", raffleTicketSchema, 'coe_raffletickets');
+const SOM_RaffleTicket = mongoose.model("SOM_RaffleTicket", raffleTicketSchema, 'som_raffletickets');
+const CNAHS_RaffleTicket = mongoose.model("CNAHS_RaffleTicket", raffleTicketSchema, 'cnahs_raffletickets');
+
+function getRaffleCategory(count) {
+    if (count >= 20 && count <= 25) return 'bronze';
+    if (count >= 26 && count <= 50) return 'silver';
+    if (count >= 51 && count <= 80) return 'gold';
+    if (count >= 81 && count <= 110) return 'platinum';
+    if (count >= 150 && count <= 200) return 'diamond';
+    return 'none';
+}
+
 // ==================== PAYMENT SCHEMAS ====================
 
 // Payment Schema - Create payment periods/campaigns to track contributions
@@ -8547,6 +8579,87 @@ app.get('/apis/contributions/stats', auth, async (req, res) => {
         ]);
 
         res.json({ success: true, data: stats });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ==================== RAFFLE TICKET ENDPOINTS ====================
+
+// Submit raffle tickets for a student
+app.post('/apis/admin/raffle-tickets', auth, async (req, res) => {
+    try {
+        const { student_id, rfid_code, ticket_type, ticket_count, admin_username } = req.body;
+
+        if (!ticket_type || !['red', 'green'].includes(ticket_type)) {
+            return res.status(400).json({ message: 'Ticket type must be "red" (Rural) or "green" (Evergood)' });
+        }
+        const count = parseInt(ticket_count);
+        if (isNaN(count) || count < 1) {
+            return res.status(400).json({ message: 'Ticket count must be a positive number' });
+        }
+
+        let query = {};
+        if (student_id) query.student_id = student_id;
+        else if (rfid_code) query.rfid_code = rfid_code;
+        else return res.status(400).json({ message: 'Student ID or RFID required' });
+
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        const student = await StudentModel.findOne(query);
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+
+        const category = getRaffleCategory(count);
+        const RaffleTicketModel = getCollegeModel(RaffleTicket, CCS_RaffleTicket, COE_RaffleTicket, req.college);
+
+        const existing = await RaffleTicketModel.findOne({
+            student_id_number: student.student_id,
+            ticket_type
+        });
+        if (existing) {
+            existing.ticket_count = count;
+            existing.category = category;
+            existing.submitted_by = admin_username || '';
+            existing.submitted_at = new Date();
+            await existing.save();
+            return res.json({ success: true, message: 'Raffle ticket entry updated', entry: existing, category });
+        }
+
+        const entry = new RaffleTicketModel({
+            student_id_number: student.student_id,
+            student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+            program: student.program || '',
+            year_level: student.year_level || '',
+            ticket_type,
+            ticket_count: count,
+            category,
+            submitted_by: admin_username || '',
+            submitted_at: new Date()
+        });
+        await entry.save();
+        res.json({ success: true, message: 'Raffle ticket entry recorded', entry, category });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Get all raffle ticket entries
+app.get('/apis/admin/raffle-tickets', auth, async (req, res) => {
+    try {
+        const RaffleTicketModel = getCollegeModel(RaffleTicket, CCS_RaffleTicket, COE_RaffleTicket, req.college);
+        const entries = await RaffleTicketModel.find({}).sort({ submitted_at: -1 });
+        res.json({ success: true, data: entries });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Delete a raffle ticket entry
+app.delete('/apis/admin/raffle-tickets/:id', auth, async (req, res) => {
+    try {
+        const RaffleTicketModel = getCollegeModel(RaffleTicket, CCS_RaffleTicket, COE_RaffleTicket, req.college);
+        const deleted = await RaffleTicketModel.findByIdAndDelete(req.params.id);
+        if (!deleted) return res.status(404).json({ message: 'Entry not found' });
+        res.json({ success: true, message: 'Raffle ticket entry deleted' });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
