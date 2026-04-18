@@ -41,6 +41,15 @@
           <div class="w-1 h-5 rounded-full bg-purple-600"></div>
           <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Submit Tickets</h3>
         </div>
+        <button
+          @click="downloadExcel"
+          :disabled="isDownloading || entries.length === 0"
+          class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all font-semibold text-sm disabled:opacity-60 shadow-md shadow-green-200 active:scale-95"
+        >
+          <svg v-if="isDownloading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+          {{ isDownloading ? 'Preparing...' : 'Export Excel' }}
+        </button>
       </div>
 
       <!-- Submit Form -->
@@ -275,6 +284,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { buildAPIUrl, getCollege } from '../config/api.js'
+import * as XLSX from 'xlsx'
 
 const searchQuery = ref('')
 const selectedStudent = ref(null)
@@ -283,6 +293,7 @@ const ticketCount = ref(null)
 const isSearching = ref(false)
 const isSubmitting = ref(false)
 const isLoading = ref(false)
+const isDownloading = ref(false)
 const successMsg = ref('')
 const errorMsg = ref('')
 const entries = ref([])
@@ -439,6 +450,73 @@ async function fetchEntries() {
     console.error('Failed to fetch raffle entries', e)
   } finally {
     isLoading.value = false
+  }
+}
+
+function buildSheetRows(list) {
+  return list.map((e, i) => ({
+    'No.': i + 1,
+    'Student ID': e.student_id_number,
+    'Name': e.student_name,
+    'Program': e.program || '—',
+    'Year Level': e.year_level || '—',
+    'Ticket Type': e.ticket_type === 'red' ? 'Red (Rural)' : 'Green (Evergood)',
+    'Ticket Count': e.ticket_count,
+    'Category': e.category !== 'none' ? (categoryInfo(e.category).icon + ' ' + categoryInfo(e.category).label) : 'No Category',
+    'Submitted By': e.submitted_by || '—',
+    'Date Submitted': e.submitted_at ? new Date(e.submitted_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'
+  }))
+}
+
+function autoWidth(ws, rows) {
+  if (!rows.length) return
+  const cols = Object.keys(rows[0])
+  ws['!cols'] = cols.map(col => ({
+    wch: Math.max(col.length, ...rows.map(r => String(r[col] ?? '').length)) + 2
+  }))
+}
+
+function downloadExcel() {
+  if (isDownloading.value || entries.value.length === 0) return
+  isDownloading.value = true
+  try {
+    const wb = XLSX.utils.book_new()
+    const dateSuffix = new Date().toISOString().split('T')[0]
+
+    const allRows = buildSheetRows(entries.value)
+    const wsAll = XLSX.utils.json_to_sheet(allRows)
+    autoWidth(wsAll, allRows)
+    XLSX.utils.book_append_sheet(wb, wsAll, 'All Entries')
+
+    const catOrder = [
+      { key: 'bronze',   label: 'Bronze',   icon: '🥉' },
+      { key: 'silver',   label: 'Silver',   icon: '🥈' },
+      { key: 'gold',     label: 'Gold',     icon: '🥇' },
+      { key: 'platinum', label: 'Platinum', icon: '💠' },
+      { key: 'diamond',  label: 'Diamond',  icon: '💎' },
+      { key: 'none',     label: 'No Category', icon: '' },
+    ]
+
+    catOrder.forEach(cat => {
+      const filtered = entries.value.filter(e => e.category === cat.key)
+      if (filtered.length === 0) return
+      const rows = buildSheetRows(filtered)
+      const ws = XLSX.utils.json_to_sheet(rows)
+      autoWidth(ws, rows)
+      XLSX.utils.book_append_sheet(wb, ws, cat.label)
+    })
+
+    XLSX.writeFile(wb, `RaffleTickets_${dateSuffix}.xlsx`)
+    window.dispatchEvent(new CustomEvent('app-notification', {
+      detail: { message: `Exported ${entries.value.length} raffle ticket record(s)`, type: 'success' }
+    }))
+  } catch (e) {
+    console.error('Export failed', e)
+    window.dispatchEvent(new CustomEvent('app-notification', {
+      detail: { message: 'Failed to export Excel file', type: 'error' }
+    }))
+  } finally {
+    isDownloading.value = false
   }
 }
 
