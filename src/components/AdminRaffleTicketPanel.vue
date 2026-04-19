@@ -279,7 +279,39 @@
       </div>
     </div>
   </div>
+
+  <!-- Delete Confirmation Modal -->
+  <Teleport to="body">
+    <Transition name="fade">
+      <div v-if="pendingDeleteId" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="pendingDeleteId = null"></div>
+        <div class="relative bg-white rounded-3xl shadow-2xl border border-gray-100 w-full max-w-sm p-6 text-center">
+          <div class="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
+            <svg class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-extrabold text-gray-800 mb-1">Delete Entry?</h3>
+          <p class="text-sm text-gray-500 mb-6">This raffle ticket entry will be permanently removed. This action cannot be undone.</p>
+          <div class="flex gap-3">
+            <button @click="pendingDeleteId = null" class="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-semibold text-sm hover:bg-gray-50 transition-colors">
+              Cancel
+            </button>
+            <button @click="executeDelete" :disabled="isDeleting" class="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2">
+              <svg v-if="isDeleting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              {{ isDeleting ? 'Deleting...' : 'Delete' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
+
+<style scoped>
+.fade-enter-active, .fade-leave-active { transition: opacity 0.15s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+</style>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
@@ -299,6 +331,8 @@ const errorMsg = ref('')
 const entries = ref([])
 const filterCategory = ref('')
 const filterType = ref('')
+const pendingDeleteId = ref(null)
+const isDeleting = ref(false)
 
 const categories = [
   { key: 'bronze', icon: '🥉', label: 'Bronze', range: '20–25 tickets', classes: 'bg-amber-50 border-amber-300 text-amber-700' },
@@ -424,19 +458,31 @@ async function submitTicket() {
   }
 }
 
-async function deleteEntry(id) {
-  if (!confirm('Delete this raffle ticket entry?')) return
+function deleteEntry(id) {
+  pendingDeleteId.value = id
+}
+
+async function executeDelete() {
+  if (!pendingDeleteId.value) return
+  isDeleting.value = true
   try {
-    const res = await fetch(buildAPIUrl(`/apis/admin/raffle-tickets/${id}`), {
+    const res = await fetch(buildAPIUrl(`/apis/admin/raffle-tickets/${pendingDeleteId.value}`), {
       method: 'DELETE',
       headers: getAuthHeaders()
     })
     const data = await res.json()
     if (data.success) {
-      entries.value = entries.value.filter(e => e._id !== id)
+      entries.value = entries.value.filter(e => e._id !== pendingDeleteId.value)
+      pendingDeleteId.value = null
+    } else {
+      errorMsg.value = data.message || 'Failed to delete entry'
+      pendingDeleteId.value = null
     }
   } catch (e) {
-    alert('Failed to delete entry')
+    errorMsg.value = 'Failed to delete entry. Please try again.'
+    pendingDeleteId.value = null
+  } finally {
+    isDeleting.value = false
   }
 }
 
