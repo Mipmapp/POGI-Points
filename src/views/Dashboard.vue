@@ -708,6 +708,10 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
           <span>Contributions</span>
         </button>
+        <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'my-raffle'" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-raffle' ? sidebarItemActive : sidebarItemHover]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
+          <span>My Raffle</span>
+        </button>
 
         <div class="mt-3 border-t border-white/10 pt-3">
           <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
@@ -852,6 +856,10 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <span>Contributions</span>
           </button>
+          <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'my-raffle'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-raffle' ? sidebarItemActive : sidebarItemHover]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
+            <span>My Raffle</span>
+          </button>
 
           <button 
             @click="refreshCurrentUser(); showMobileMenu = false"
@@ -912,7 +920,7 @@
       </div>
 
       <div class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'raffle-tickets' ? 'Raffle Ticket' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'raffle-tickets' ? 'Raffle Ticket' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'my-raffle' ? 'My Raffle Results' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'dashboard' && (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-4 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-xl flex items-center gap-3">
@@ -3133,6 +3141,9 @@
 
         <!-- Admin Raffle Ticket Panel - visible for admin/co-admin -->
         <AdminRaffleTicketPanel v-if="currentPage === 'raffle-tickets' && (currentUser.role === 'admin' || currentUser.isMaster)" />
+
+        <!-- Student Raffle Results - visible for students only -->
+        <StudentRaffleResultsView v-if="currentPage === 'my-raffle' && currentUser.role !== 'admin' && !currentUser.isMaster" />
 
         <!-- Manage Page (Roles & Users) -->
         <Manage ref="manageComponent" v-if="currentPage === 'manage' && (currentUser.role === 'admin' || currentUser.isMaster)" />
@@ -6321,6 +6332,7 @@ import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 import SessionExpiredModal from '../components/SessionExpiredModal.vue'
 import ContributionsModal from '../components/ContributionsModal.vue'
 import StudentContributionsView from '../components/StudentContributionsView.vue'
+import StudentRaffleResultsView from '../components/StudentRaffleResultsView.vue'
 import AdminContributionPanel from '../components/AdminContributionPanel.vue'
 import AdminRaffleTicketPanel from '../components/AdminRaffleTicketPanel.vue'
 import Manage from '../components/Manage.vue'

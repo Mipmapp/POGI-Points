@@ -8665,4 +8665,17 @@ app.delete('/apis/admin/raffle-tickets/:id', auth, async (req, res) => {
     }
 });
 
+// Get the logged-in student's own raffle ticket entries
+app.get('/apis/student/raffle-ticket', studentAuthWithToken, async (req, res) => {
+    try {
+        const RaffleTicketModel = getCollegeModel(RaffleTicket, CCS_RaffleTicket, COE_RaffleTicket, req.college);
+        const entries = await RaffleTicketModel.find({
+            student_id_number: req.student.student_id
+        }).sort({ submitted_at: -1 });
+        res.json({ success: true, data: entries });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 export default app;
