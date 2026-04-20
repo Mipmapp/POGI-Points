@@ -631,7 +631,17 @@
             <p class="text-sm mb-1.5 opacity-90">Welcome back,</p>
             <div class="flex flex-col items-center gap-2">
               <p class="font-bold text-lg" v-if="currentUser.role === 'admin' || currentUser.isMaster">
-                <span class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-xs font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden group">
+                <span v-if="isTreasurer" class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-cyan-500 via-teal-500 to-cyan-600 text-white text-xs font-black rounded-full shadow-[0_0_20px_rgba(6,182,212,0.7)] border border-cyan-300/40 overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
+                  <svg class="w-4 h-4 brightness-0 invert" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                  <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Treasurer</span>
+                </span>
+                <span v-else-if="isCoAdmin" class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-violet-500 via-purple-500 to-violet-600 text-white text-xs font-black rounded-full shadow-[0_0_20px_rgba(139,92,246,0.7)] border border-violet-300/40 overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
+                  <svg class="w-4 h-4 brightness-0 invert" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                  <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Co-Admin</span>
+                </span>
+                <span v-else class="relative inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-xs font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden group">
                   <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
                   <img src="/crown.svg" alt="Admin" class="w-4 h-4 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
                   <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
@@ -672,23 +682,23 @@
           <span>{{ (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</span>
         </button>
 
-        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="[sidebarItemBase, 'mt-2', currentPage === 'manage' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="[sidebarItemBase, 'mt-2', currentPage === 'manage' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
           <span>Manage</span>
         </button>
-        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'pending'; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'pending'; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
         </button>
-        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'settings'; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'settings'; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
           <span>Settings</span>
         </button>
-        <button v-if="currentUser.isMaster" @click="currentPage = 'co-admins'; fetchCoAdmins()" :class="[sidebarItemBase, 'mt-2', currentPage === 'co-admins' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="isSuperAdmin" @click="currentPage = 'co-admins'; fetchCoAdmins()" :class="[sidebarItemBase, 'mt-2', currentPage === 'co-admins' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-          <span>Promote</span>
+          <span>Assign</span>
         </button>
-        <button @click="currentPage = 'attendance'; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="!isTreasurer" @click="currentPage = 'attendance'; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
           <span>Attendance</span>
         </button>
@@ -696,7 +706,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
           <span>Contributions</span>
         </button>
-        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'raffle-tickets'" :class="[sidebarItemBase, 'mt-2', currentPage === 'raffle-tickets' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'raffle-tickets'" :class="[sidebarItemBase, 'mt-2', currentPage === 'raffle-tickets' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
           <span>Raffle Ticket</span>
         </button>
@@ -820,23 +830,23 @@
             <span>{{ (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</span>
           </button>
 
-          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="[sidebarItemBase, 'mt-2', currentPage === 'manage' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="[sidebarItemBase, 'mt-2', currentPage === 'manage' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
             <span>Manage</span>
           </button>
-          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'pending'; showMobileMenu = false; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'pending'; showMobileMenu = false; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
           </button>
-          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'settings'; showMobileMenu = false; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'settings'; showMobileMenu = false; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             <span>Settings</span>
           </button>
-          <button v-if="currentUser.isMaster" @click="currentPage = 'co-admins'; showMobileMenu = false; fetchCoAdmins()" :class="[sidebarItemBase, 'mt-2', currentPage === 'co-admins' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="isSuperAdmin" @click="currentPage = 'co-admins'; showMobileMenu = false; fetchCoAdmins()" :class="[sidebarItemBase, 'mt-2', currentPage === 'co-admins' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-            <span>Promote</span>
+            <span>Assign</span>
           </button>
-          <button @click="currentPage = 'attendance'; showMobileMenu = false; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="!isTreasurer" @click="currentPage = 'attendance'; showMobileMenu = false; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
             <span>Attendance</span>
           </button>
@@ -844,7 +854,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <span>Contributions</span>
           </button>
-          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'raffle-tickets'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'raffle-tickets' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'raffle-tickets'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'raffle-tickets' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
             <span>Raffle Ticket</span>
           </button>
@@ -3467,8 +3477,8 @@
               <div class="absolute inset-0 flex items-center px-8 gap-4">
                 <svg class="w-10 h-10 text-white/90 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                 <div>
-                  <h2 class="text-2xl font-extrabold text-white tracking-tight">Assign Co-Admins</h2>
-                  <p class="text-white/70 text-sm">Assign or remove co-admins for each college department.</p>
+                  <h2 class="text-2xl font-extrabold text-white tracking-tight">Assign Admin Roles</h2>
+                  <p class="text-white/70 text-sm">Assign Co-Admins and Treasurers per college department.</p>
                 </div>
                 <div class="ml-auto">
                   <button @click="fetchCoAdmins" :disabled="coAdminsLoading" class="px-4 py-2 rounded-xl text-white text-sm font-semibold bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/20 transition flex items-center gap-2 disabled:opacity-60">
@@ -3485,6 +3495,7 @@
           </div>
 
           <div v-else class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+
             <!-- CCS Card -->
             <div class="bg-white rounded-3xl border border-blue-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
               <div class="relative h-24 bg-gradient-to-br from-blue-700 to-ssaam-light overflow-hidden">
@@ -3494,31 +3505,57 @@
                   <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">CCS</h3>
                   <p class="text-white/70 text-xs">College of Computing Studies</p>
                 </div>
-                <span :class="['absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold', getCoAdminForCollege('CCS') ? 'bg-green-400/90 text-white' : 'bg-white/30 text-white']">
-                  {{ getCoAdminForCollege('CCS') ? 'Active' : 'Vacant' }}
+                <span class="absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white">
+                  {{ (getCoAdminForCollege('CCS') ? 1 : 0) + (getTreasurerForCollege('CCS') ? 1 : 0) }}/2 roles
                 </span>
               </div>
               <div class="p-5 space-y-3">
-                <div v-if="getCoAdminForCollege('CCS')" class="flex items-center gap-3 p-3 bg-blue-50 rounded-2xl border border-blue-100">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 bg-gradient-to-br from-blue-500 to-blue-700">
-                    {{ (getCoAdminForCollege('CCS').full_name || getCoAdminForCollege('CCS').username || '?').charAt(0).toUpperCase() }}
+                <!-- Co-Admin Slot -->
+                <div class="space-y-1.5">
+                  <p class="text-[10px] font-bold text-violet-600 uppercase tracking-widest flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-violet-500"></span>Co-Admin</p>
+                  <div v-if="getCoAdminForCollege('CCS')" class="flex items-center gap-3 p-3 bg-violet-50 rounded-2xl border border-violet-100">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 bg-gradient-to-br from-violet-500 to-purple-700">
+                      {{ (getCoAdminForCollege('CCS').full_name || getCoAdminForCollege('CCS').username || '?').charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('CCS').full_name || getCoAdminForCollege('CCS').username }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('CCS').email }}</p>
+                    </div>
+                    <button @click="removeCoAdmin(getCoAdminForCollege('CCS')._id, 'CCS')" :disabled="coAdminActionLoading === 'CCS'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                   </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('CCS').full_name || getCoAdminForCollege('CCS').username }}</p>
-                    <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('CCS').email }}</p>
+                  <div v-else class="p-2.5 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-xs text-gray-400">No co-admin assigned</div>
+                </div>
+                <!-- Treasurer Slot -->
+                <div class="space-y-1.5">
+                  <p class="text-[10px] font-bold text-cyan-600 uppercase tracking-widest flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-cyan-500"></span>Treasurer</p>
+                  <div v-if="getTreasurerForCollege('CCS')" class="flex items-center gap-3 p-3 bg-cyan-50 rounded-2xl border border-cyan-100">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 bg-gradient-to-br from-cyan-500 to-teal-600">
+                      {{ (getTreasurerForCollege('CCS').full_name || getTreasurerForCollege('CCS').username || '?').charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('CCS').full_name || getTreasurerForCollege('CCS').username }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ getTreasurerForCollege('CCS').email }}</p>
+                    </div>
+                    <button @click="removeTreasurer(getTreasurerForCollege('CCS')._id, 'CCS')" :disabled="coAdminActionLoading === 'CCS-treasurer'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                   </div>
-                  <button @click="removeCoAdmin(getCoAdminForCollege('CCS')._id, 'CCS')" :disabled="coAdminActionLoading === 'CCS'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  </button>
+                  <div v-else class="p-2.5 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-xs text-gray-400">No treasurer assigned</div>
                 </div>
-                <div v-else class="p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center text-xs text-gray-400">
-                  No co-admin assigned yet
-                </div>
-                <div class="flex gap-2">
-                  <input v-model="coAdminAssignInputs['CCS']" type="text" placeholder="Enter Student ID" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('CCS')" />
-                  <button @click="assignCoAdmin('CCS')" :disabled="coAdminActionLoading === 'CCS' || !coAdminAssignInputs['CCS']?.trim()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
-                    {{ coAdminActionLoading === 'CCS' ? '...' : 'Assign' }}
-                  </button>
+                <!-- Assign Form -->
+                <div class="pt-1 border-t border-gray-100 space-y-2">
+                  <input v-model="roleAssignInputs['CCS'].studentId" type="text" placeholder="Enter Student ID to assign" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignAdminRole('CCS')" />
+                  <div class="flex gap-2">
+                    <select v-model="roleAssignInputs['CCS'].role" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-400 bg-gray-50 focus:bg-white transition appearance-none">
+                      <option value="co-admin">Co-Admin</option>
+                      <option value="treasurer">Treasurer</option>
+                    </select>
+                    <button @click="assignAdminRole('CCS')" :disabled="coAdminActionLoading === 'CCS-co-admin' || coAdminActionLoading === 'CCS-treasurer' || !roleAssignInputs['CCS']?.studentId?.trim()" class="px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
+                      {{ (coAdminActionLoading === 'CCS-co-admin' || coAdminActionLoading === 'CCS-treasurer') ? '...' : 'Assign' }}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3532,31 +3569,54 @@
                   <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">COE</h3>
                   <p class="text-white/70 text-xs">College of Engineering</p>
                 </div>
-                <span :class="['absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold', getCoAdminForCollege('COE') ? 'bg-green-400/90 text-white' : 'bg-white/30 text-white']">
-                  {{ getCoAdminForCollege('COE') ? 'Active' : 'Vacant' }}
+                <span class="absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white">
+                  {{ (getCoAdminForCollege('COE') ? 1 : 0) + (getTreasurerForCollege('COE') ? 1 : 0) }}/2 roles
                 </span>
               </div>
               <div class="p-5 space-y-3">
-                <div v-if="getCoAdminForCollege('COE')" class="flex items-center gap-3 p-3 bg-orange-50 rounded-2xl border border-orange-100">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 bg-gradient-to-br from-orange-400 to-red-500">
-                    {{ (getCoAdminForCollege('COE').full_name || getCoAdminForCollege('COE').username || '?').charAt(0).toUpperCase() }}
+                <div class="space-y-1.5">
+                  <p class="text-[10px] font-bold text-violet-600 uppercase tracking-widest flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-violet-500"></span>Co-Admin</p>
+                  <div v-if="getCoAdminForCollege('COE')" class="flex items-center gap-3 p-3 bg-violet-50 rounded-2xl border border-violet-100">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 bg-gradient-to-br from-violet-500 to-purple-700">
+                      {{ (getCoAdminForCollege('COE').full_name || getCoAdminForCollege('COE').username || '?').charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('COE').full_name || getCoAdminForCollege('COE').username }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('COE').email }}</p>
+                    </div>
+                    <button @click="removeCoAdmin(getCoAdminForCollege('COE')._id, 'COE')" :disabled="coAdminActionLoading === 'COE'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                   </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('COE').full_name || getCoAdminForCollege('COE').username }}</p>
-                    <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('COE').email }}</p>
+                  <div v-else class="p-2.5 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-xs text-gray-400">No co-admin assigned</div>
+                </div>
+                <div class="space-y-1.5">
+                  <p class="text-[10px] font-bold text-cyan-600 uppercase tracking-widest flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-cyan-500"></span>Treasurer</p>
+                  <div v-if="getTreasurerForCollege('COE')" class="flex items-center gap-3 p-3 bg-cyan-50 rounded-2xl border border-cyan-100">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 bg-gradient-to-br from-cyan-500 to-teal-600">
+                      {{ (getTreasurerForCollege('COE').full_name || getTreasurerForCollege('COE').username || '?').charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('COE').full_name || getTreasurerForCollege('COE').username }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ getTreasurerForCollege('COE').email }}</p>
+                    </div>
+                    <button @click="removeTreasurer(getTreasurerForCollege('COE')._id, 'COE')" :disabled="coAdminActionLoading === 'COE-treasurer'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                   </div>
-                  <button @click="removeCoAdmin(getCoAdminForCollege('COE')._id, 'COE')" :disabled="coAdminActionLoading === 'COE'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  </button>
+                  <div v-else class="p-2.5 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-xs text-gray-400">No treasurer assigned</div>
                 </div>
-                <div v-else class="p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center text-xs text-gray-400">
-                  No co-admin assigned yet
-                </div>
-                <div class="flex gap-2">
-                  <input v-model="coAdminAssignInputs['COE']" type="text" placeholder="Enter Student ID" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('COE')" />
-                  <button @click="assignCoAdmin('COE')" :disabled="coAdminActionLoading === 'COE' || !coAdminAssignInputs['COE']?.trim()" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
-                    {{ coAdminActionLoading === 'COE' ? '...' : 'Assign' }}
-                  </button>
+                <div class="pt-1 border-t border-gray-100 space-y-2">
+                  <input v-model="roleAssignInputs['COE'].studentId" type="text" placeholder="Enter Student ID to assign" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignAdminRole('COE')" />
+                  <div class="flex gap-2">
+                    <select v-model="roleAssignInputs['COE'].role" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-orange-400 bg-gray-50 focus:bg-white transition appearance-none">
+                      <option value="co-admin">Co-Admin</option>
+                      <option value="treasurer">Treasurer</option>
+                    </select>
+                    <button @click="assignAdminRole('COE')" :disabled="coAdminActionLoading === 'COE-co-admin' || coAdminActionLoading === 'COE-treasurer' || !roleAssignInputs['COE']?.studentId?.trim()" class="px-4 py-2 bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
+                      {{ (coAdminActionLoading === 'COE-co-admin' || coAdminActionLoading === 'COE-treasurer') ? '...' : 'Assign' }}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3570,31 +3630,54 @@
                   <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">SOM</h3>
                   <p class="text-white/70 text-xs">School of Midwifery</p>
                 </div>
-                <span :class="['absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold', getCoAdminForCollege('SOM') ? 'bg-green-400/90 text-white' : 'bg-white/30 text-white']">
-                  {{ getCoAdminForCollege('SOM') ? 'Active' : 'Vacant' }}
+                <span class="absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white">
+                  {{ (getCoAdminForCollege('SOM') ? 1 : 0) + (getTreasurerForCollege('SOM') ? 1 : 0) }}/2 roles
                 </span>
               </div>
               <div class="p-5 space-y-3">
-                <div v-if="getCoAdminForCollege('SOM')" class="flex items-center gap-3 p-3 bg-green-50 rounded-2xl border border-green-100">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 bg-gradient-to-br from-green-400 to-teal-500">
-                    {{ (getCoAdminForCollege('SOM').full_name || getCoAdminForCollege('SOM').username || '?').charAt(0).toUpperCase() }}
+                <div class="space-y-1.5">
+                  <p class="text-[10px] font-bold text-violet-600 uppercase tracking-widest flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-violet-500"></span>Co-Admin</p>
+                  <div v-if="getCoAdminForCollege('SOM')" class="flex items-center gap-3 p-3 bg-violet-50 rounded-2xl border border-violet-100">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 bg-gradient-to-br from-violet-500 to-purple-700">
+                      {{ (getCoAdminForCollege('SOM').full_name || getCoAdminForCollege('SOM').username || '?').charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('SOM').full_name || getCoAdminForCollege('SOM').username }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('SOM').email }}</p>
+                    </div>
+                    <button @click="removeCoAdmin(getCoAdminForCollege('SOM')._id, 'SOM')" :disabled="coAdminActionLoading === 'SOM'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                   </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('SOM').full_name || getCoAdminForCollege('SOM').username }}</p>
-                    <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('SOM').email }}</p>
+                  <div v-else class="p-2.5 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-xs text-gray-400">No co-admin assigned</div>
+                </div>
+                <div class="space-y-1.5">
+                  <p class="text-[10px] font-bold text-cyan-600 uppercase tracking-widest flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-cyan-500"></span>Treasurer</p>
+                  <div v-if="getTreasurerForCollege('SOM')" class="flex items-center gap-3 p-3 bg-cyan-50 rounded-2xl border border-cyan-100">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 bg-gradient-to-br from-cyan-500 to-teal-600">
+                      {{ (getTreasurerForCollege('SOM').full_name || getTreasurerForCollege('SOM').username || '?').charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('SOM').full_name || getTreasurerForCollege('SOM').username }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ getTreasurerForCollege('SOM').email }}</p>
+                    </div>
+                    <button @click="removeTreasurer(getTreasurerForCollege('SOM')._id, 'SOM')" :disabled="coAdminActionLoading === 'SOM-treasurer'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                   </div>
-                  <button @click="removeCoAdmin(getCoAdminForCollege('SOM')._id, 'SOM')" :disabled="coAdminActionLoading === 'SOM'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  </button>
+                  <div v-else class="p-2.5 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-xs text-gray-400">No treasurer assigned</div>
                 </div>
-                <div v-else class="p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center text-xs text-gray-400">
-                  No co-admin assigned yet
-                </div>
-                <div class="flex gap-2">
-                  <input v-model="coAdminAssignInputs['SOM']" type="text" placeholder="Enter Student ID" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('SOM')" />
-                  <button @click="assignCoAdmin('SOM')" :disabled="coAdminActionLoading === 'SOM' || !coAdminAssignInputs['SOM']?.trim()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
-                    {{ coAdminActionLoading === 'SOM' ? '...' : 'Assign' }}
-                  </button>
+                <div class="pt-1 border-t border-gray-100 space-y-2">
+                  <input v-model="roleAssignInputs['SOM'].studentId" type="text" placeholder="Enter Student ID to assign" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignAdminRole('SOM')" />
+                  <div class="flex gap-2">
+                    <select v-model="roleAssignInputs['SOM'].role" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-400 bg-gray-50 focus:bg-white transition appearance-none">
+                      <option value="co-admin">Co-Admin</option>
+                      <option value="treasurer">Treasurer</option>
+                    </select>
+                    <button @click="assignAdminRole('SOM')" :disabled="coAdminActionLoading === 'SOM-co-admin' || coAdminActionLoading === 'SOM-treasurer' || !roleAssignInputs['SOM']?.studentId?.trim()" class="px-4 py-2 bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
+                      {{ (coAdminActionLoading === 'SOM-co-admin' || coAdminActionLoading === 'SOM-treasurer') ? '...' : 'Assign' }}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -3608,34 +3691,58 @@
                   <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">CNAHS</h3>
                   <p class="text-white/70 text-xs">College of Nursing and Allied Health Sciences</p>
                 </div>
-                <span :class="['absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold', getCoAdminForCollege('CNAHS') ? 'bg-green-400/90 text-white' : 'bg-white/30 text-white']">
-                  {{ getCoAdminForCollege('CNAHS') ? 'Active' : 'Vacant' }}
+                <span class="absolute top-4 right-4 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white">
+                  {{ (getCoAdminForCollege('CNAHS') ? 1 : 0) + (getTreasurerForCollege('CNAHS') ? 1 : 0) }}/2 roles
                 </span>
               </div>
               <div class="p-5 space-y-3">
-                <div v-if="getCoAdminForCollege('CNAHS')" class="flex items-center gap-3 p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
-                  <div class="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 bg-gradient-to-br from-emerald-500 to-green-700">
-                    {{ (getCoAdminForCollege('CNAHS').full_name || getCoAdminForCollege('CNAHS').username || '?').charAt(0).toUpperCase() }}
+                <div class="space-y-1.5">
+                  <p class="text-[10px] font-bold text-violet-600 uppercase tracking-widest flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-violet-500"></span>Co-Admin</p>
+                  <div v-if="getCoAdminForCollege('CNAHS')" class="flex items-center gap-3 p-3 bg-violet-50 rounded-2xl border border-violet-100">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 bg-gradient-to-br from-violet-500 to-purple-700">
+                      {{ (getCoAdminForCollege('CNAHS').full_name || getCoAdminForCollege('CNAHS').username || '?').charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('CNAHS').full_name || getCoAdminForCollege('CNAHS').username }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('CNAHS').email }}</p>
+                    </div>
+                    <button @click="removeCoAdmin(getCoAdminForCollege('CNAHS')._id, 'CNAHS')" :disabled="coAdminActionLoading === 'CNAHS'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                   </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('CNAHS').full_name || getCoAdminForCollege('CNAHS').username }}</p>
-                    <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('CNAHS').email }}</p>
+                  <div v-else class="p-2.5 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-xs text-gray-400">No co-admin assigned</div>
+                </div>
+                <div class="space-y-1.5">
+                  <p class="text-[10px] font-bold text-cyan-600 uppercase tracking-widest flex items-center gap-1.5"><span class="inline-block w-2 h-2 rounded-full bg-cyan-500"></span>Treasurer</p>
+                  <div v-if="getTreasurerForCollege('CNAHS')" class="flex items-center gap-3 p-3 bg-cyan-50 rounded-2xl border border-cyan-100">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white font-bold text-xs flex-shrink-0 bg-gradient-to-br from-cyan-500 to-teal-600">
+                      {{ (getTreasurerForCollege('CNAHS').full_name || getTreasurerForCollege('CNAHS').username || '?').charAt(0).toUpperCase() }}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('CNAHS').full_name || getTreasurerForCollege('CNAHS').username }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ getTreasurerForCollege('CNAHS').email }}</p>
+                    </div>
+                    <button @click="removeTreasurer(getTreasurerForCollege('CNAHS')._id, 'CNAHS')" :disabled="coAdminActionLoading === 'CNAHS-treasurer'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
                   </div>
-                  <button @click="removeCoAdmin(getCoAdminForCollege('CNAHS')._id, 'CNAHS')" :disabled="coAdminActionLoading === 'CNAHS'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                  </button>
+                  <div v-else class="p-2.5 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-center text-xs text-gray-400">No treasurer assigned</div>
                 </div>
-                <div v-else class="p-3 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center text-xs text-gray-400">
-                  No co-admin assigned yet
-                </div>
-                <div class="flex gap-2">
-                  <input v-model="coAdminAssignInputs['CNAHS']" type="text" placeholder="Enter Student ID" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignCoAdmin('CNAHS')" />
-                  <button @click="assignCoAdmin('CNAHS')" :disabled="coAdminActionLoading === 'CNAHS' || !coAdminAssignInputs['CNAHS']?.trim()" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
-                    {{ coAdminActionLoading === 'CNAHS' ? '...' : 'Assign' }}
-                  </button>
+                <div class="pt-1 border-t border-gray-100 space-y-2">
+                  <input v-model="roleAssignInputs['CNAHS'].studentId" type="text" placeholder="Enter Student ID to assign" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-400 bg-gray-50 focus:bg-white transition" @keyup.enter="assignAdminRole('CNAHS')" />
+                  <div class="flex gap-2">
+                    <select v-model="roleAssignInputs['CNAHS'].role" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-400 bg-gray-50 focus:bg-white transition appearance-none">
+                      <option value="co-admin">Co-Admin</option>
+                      <option value="treasurer">Treasurer</option>
+                    </select>
+                    <button @click="assignAdminRole('CNAHS')" :disabled="coAdminActionLoading === 'CNAHS-co-admin' || coAdminActionLoading === 'CNAHS-treasurer' || !roleAssignInputs['CNAHS']?.studentId?.trim()" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white rounded-xl text-sm font-semibold transition disabled:opacity-50 whitespace-nowrap">
+                      {{ (coAdminActionLoading === 'CNAHS-co-admin' || coAdminActionLoading === 'CNAHS-treasurer') ? '...' : 'Assign' }}
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
 
@@ -6365,9 +6472,16 @@ const requestSubmitting = ref(false)
 
 // Co-Admin Management (isMaster only)
 const coAdmins = ref([])
+const treasurers = ref([])
 const coAdminsLoading = ref(false)
 const coAdminActionLoading = ref(null)
 const coAdminAssignInputs = ref({ CCS: '', COE: '', SOM: '', CNAHS: '' })
+const roleAssignInputs = ref({
+  CCS: { studentId: '', role: 'co-admin' },
+  COE: { studentId: '', role: 'co-admin' },
+  SOM: { studentId: '', role: 'co-admin' },
+  CNAHS: { studentId: '', role: 'co-admin' }
+})
 
 // ============================================
 // SIDEBAR SECTION CACHE TRACKING
@@ -10547,6 +10661,11 @@ const isCOE = computed(() => false)
 const isSOM = computed(() => false)
 const isCNAHS = computed(() => false)
 
+// Admin role helpers
+const isTreasurer = computed(() => !!(currentUser.value.isMaster && currentUser.value.role === 'treasurer'))
+const isSuperAdmin = computed(() => !!(currentUser.value.isMaster && currentUser.value.role === 'admin'))
+const isCoAdmin = computed(() => !!(currentUser.value.isMaster && currentUser.value.role === 'co-admin'))
+
 // Human-readable college name derived from the user's actual college assignment
 const collegeName = computed(() => {
   const college = currentUser.value?.college || userDepartment.value?.label || 'CCS'
@@ -11891,10 +12010,11 @@ const fetchCoAdmins = async () => {
     })
     if (res.ok) {
       const data = await res.json()
-      coAdmins.value = Array.isArray(data) ? data : (data.coadmins || data.co_admins || [])
+      coAdmins.value = Array.isArray(data) ? data : (data.co_admins || [])
+      treasurers.value = Array.isArray(data) ? [] : (data.treasurers || [])
     }
   } catch {
-    showNotification('Failed to load co-admins', 'error')
+    showNotification('Failed to load admin roles', 'error')
   } finally {
     coAdminsLoading.value = false
   }
@@ -11902,6 +12022,10 @@ const fetchCoAdmins = async () => {
 
 const getCoAdminForCollege = (college) => {
   return coAdmins.value.find(ca => ca.college === college || ca.assigned_college === college) || null
+}
+
+const getTreasurerForCollege = (college) => {
+  return treasurers.value.find(t => t.college === college || t.assigned_college === college) || null
 }
 
 const assignCoAdmin = async (college) => {
@@ -11913,7 +12037,7 @@ const assignCoAdmin = async (college) => {
     const res = await fetch(buildAPIUrl('/apis/co-admin/assign'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ student_id, college })
+      body: JSON.stringify({ student_id, college, role: 'co-admin' })
     })
     const data = await res.json()
     if (res.ok) {
@@ -11922,6 +12046,35 @@ const assignCoAdmin = async (college) => {
       await fetchCoAdmins()
     } else {
       showNotification(data.message || 'Failed to assign co-admin', 'error')
+    }
+  } catch {
+    showNotification('Network error. Please try again.', 'error')
+  } finally {
+    coAdminActionLoading.value = null
+  }
+}
+
+const assignAdminRole = async (college) => {
+  const input = roleAssignInputs.value[college]
+  const student_id = input?.studentId?.trim()
+  const role = input?.role || 'co-admin'
+  if (!student_id) return
+  coAdminActionLoading.value = `${college}-${role}`
+  try {
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
+    const res = await fetch(buildAPIUrl('/apis/co-admin/assign'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ student_id, college, role })
+    })
+    const data = await res.json()
+    if (res.ok) {
+      const roleName = role === 'treasurer' ? 'Treasurer' : 'Co-Admin'
+      showNotification(`${roleName} assigned to ${college} successfully!`, 'success')
+      roleAssignInputs.value[college] = { studentId: '', role: 'co-admin' }
+      await fetchCoAdmins()
+    } else {
+      showNotification(data.message || 'Failed to assign role', 'error')
     }
   } catch {
     showNotification('Network error. Please try again.', 'error')
@@ -11945,6 +12098,29 @@ const removeCoAdmin = async (id, college) => {
       await fetchCoAdmins()
     } else {
       showNotification(data.message || 'Failed to remove co-admin', 'error')
+    }
+  } catch {
+    showNotification('Network error. Please try again.', 'error')
+  } finally {
+    coAdminActionLoading.value = null
+  }
+}
+
+const removeTreasurer = async (id, college) => {
+  if (!confirm(`Remove treasurer for ${college}? This cannot be undone.`)) return
+  coAdminActionLoading.value = `${college}-treasurer`
+  try {
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
+    const res = await fetch(buildAPIUrl(`/apis/co-admin/${id}`), {
+      method: 'DELETE',
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (res.ok) {
+      showNotification(`Treasurer removed from ${college}.`, 'success')
+      await fetchCoAdmins()
+    } else {
+      showNotification(data.message || 'Failed to remove treasurer', 'error')
     }
   } catch {
     showNotification('Network error. Please try again.', 'error')

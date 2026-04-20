@@ -205,7 +205,7 @@ app.use('/apis', (req, res, next) => {
         const token = extractToken(req);
         if (token) {
             const decoded = jwt.verify(token, SSAAM_API_KEY);
-            if (decoded && decoded.isMaster && decoded.role === 'co-admin' && decoded.college) {
+            if (decoded && decoded.isMaster && (decoded.role === 'co-admin' || decoded.role === 'treasurer') && decoded.college) {
                 req.college = decoded.college;
             }
         }
@@ -2238,7 +2238,7 @@ const masterSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['admin', 'co-admin'], default: 'admin' },
+    role: { type: String, enum: ['admin', 'co-admin', 'treasurer'], default: 'admin' },
     college: { type: String, enum: ['CCS', 'COE', 'SOM', 'CNAHS'], default: 'CCS' },
     full_name: { type: String, default: null },
     phone: { type: String, default: null },
@@ -2929,11 +2929,23 @@ async function requireSuperAdmin(req, res, next) {
     next();
 }
 
-// Enforces that co-admin users can only operate on their own college's data.
+// Enforces that co-admin and treasurer users can only operate on their own college's data.
 // Full admins are unrestricted. Apply this after `auth` on any route that manages college data.
 function enforceCoAdminCollege(req, res, next) {
-    if (req.master && req.master.isMaster && req.master.role === 'co-admin') {
+    if (req.master && req.master.isMaster && (req.master.role === 'co-admin' || req.master.role === 'treasurer')) {
         req.college = req.master.college || 'CCS';
+    }
+    next();
+}
+
+// Blocks treasurer role from performing co-admin-level or higher operations.
+// Apply on routes that co-admins can use but treasurers cannot (attendance, student management, etc.).
+function requireCoAdminOrAbove(req, res, next) {
+    if (req.master && req.master.isMaster && req.master.role === 'treasurer') {
+        return res.status(403).json({
+            message: "Access denied. Treasurer accounts cannot perform this action.",
+            code: 'NOT_CO_ADMIN'
+        });
     }
     next();
 }
@@ -3885,7 +3897,7 @@ app.post('/apis/students/verify-and-register', studentAuth, timestampAuth, async
     }
 });
 
-app.put('/apis/students/:student_id/approve', auth, timestampAuth, async (req, res) => {
+app.put('/apis/students/:student_id/approve', auth, requireCoAdminOrAbove, timestampAuth, async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const student = await StudentModel.findOneAndUpdate(
@@ -3925,7 +3937,7 @@ app.put('/apis/students/:student_id/approve', auth, timestampAuth, async (req, r
     }
 });
 
-app.put('/apis/students/:student_id/reject', auth, timestampAuth, async (req, res) => {
+app.put('/apis/students/:student_id/reject', auth, requireCoAdminOrAbove, timestampAuth, async (req, res) => {
     try {
         const { reason } = req.body;
 
@@ -3973,7 +3985,7 @@ app.put('/apis/students/:student_id/reject', auth, timestampAuth, async (req, re
     }
 });
 
-app.put('/apis/students/:student_id/rfid', auth, timestampAuth, async (req, res) => {
+app.put('/apis/students/:student_id/rfid', auth, requireCoAdminOrAbove, timestampAuth, async (req, res) => {
     try {
         const { rfid_code, admin_verification_token } = req.body;
 
@@ -4048,7 +4060,7 @@ app.put('/apis/students/:student_id/rfid', auth, timestampAuth, async (req, res)
 
 
 
-app.put('/apis/students/:student_id/role', auth, timestampAuth, async (req, res) => {
+app.put('/apis/students/:student_id/role', auth, requireCoAdminOrAbove, timestampAuth, async (req, res) => {
     try {
         const { role } = req.body;
 
@@ -4172,7 +4184,7 @@ app.get('/apis/students/:student_id/photo', async (req, res) => {
     }
 });
 
-app.put('/apis/students/:student_id', auth, timestampAuth, async (req, res) => {
+app.put('/apis/students/:student_id', auth, requireCoAdminOrAbove, timestampAuth, async (req, res) => {
     try {
         const updates = { ...req.body };
         delete updates.status;
@@ -4292,7 +4304,7 @@ app.put('/apis/students/:student_id', auth, timestampAuth, async (req, res) => {
     }
 });
 
-app.delete('/apis/students/:student_id', auth, async (req, res) => {
+app.delete('/apis/students/:student_id', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         let foundCollege = req.college;
         let StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, foundCollege);
@@ -4890,11 +4902,12 @@ app.post('/apis/co-admin', auth, requireMaster, requireSuperAdmin, async (req, r
     }
 });
 
-// List all co-admins (super admin only)
+// List all co-admins and treasurers (super admin only)
 app.get('/apis/co-admin', auth, requireMaster, requireSuperAdmin, async (req, res) => {
     try {
         const coAdmins = await Master.find({ role: 'co-admin' }).select('-password');
-        res.json({ co_admins: coAdmins });
+        const treasurers = await Master.find({ role: 'treasurer' }).select('-password');
+        res.json({ co_admins: coAdmins, treasurers });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -4960,10 +4973,10 @@ app.put('/apis/co-admin/:id', auth, requireMaster, requireSuperAdmin, async (req
     }
 });
 
-// Assign an existing Master account as co-admin by student_id/username (super admin only)
+// Assign an existing Master account as co-admin or treasurer by student_id/username (super admin only)
 app.post('/apis/co-admin/assign', auth, requireMaster, requireSuperAdmin, async (req, res) => {
     try {
-        const { student_id, college } = req.body;
+        const { student_id, college, role: assignedRole } = req.body;
         if (!student_id || !college) {
             return res.status(400).json({ message: "student_id and college are required" });
         }
@@ -4971,35 +4984,39 @@ app.post('/apis/co-admin/assign', auth, requireMaster, requireSuperAdmin, async 
         if (!validColleges.includes(college)) {
             return res.status(400).json({ message: `College must be one of: ${validColleges.join(', ')}` });
         }
+        const targetRole = assignedRole === 'treasurer' ? 'treasurer' : 'co-admin';
         // Find existing Master account where username matches the student_id
         const master = await Master.findOne({ username: student_id });
         if (!master) {
             return res.status(404).json({ message: `No admin account found with Student ID "${student_id}". The account must already be registered as an admin.` });
         }
-        // Check if another co-admin is already assigned to this college
-        const existing = await Master.findOne({ role: 'co-admin', college, _id: { $ne: master._id } });
+        // Check if another account with this same role is already assigned to this college
+        const existing = await Master.findOne({ role: targetRole, college, _id: { $ne: master._id } });
         if (existing) {
-            return res.status(400).json({ message: `College ${college} already has a co-admin. Remove the existing co-admin first.` });
+            const roleName = targetRole === 'treasurer' ? 'treasurer' : 'co-admin';
+            return res.status(400).json({ message: `College ${college} already has a ${roleName}. Remove the existing ${roleName} first.` });
         }
-        master.role = 'co-admin';
+        master.role = targetRole;
         master.college = college;
         master.updated_at = new Date();
         await master.save();
-        res.json({ message: `${master.username} assigned as co-admin for ${college}`, co_admin: master });
+        const roleName = targetRole === 'treasurer' ? 'treasurer' : 'co-admin';
+        res.json({ message: `${master.username} assigned as ${roleName} for ${college}`, co_admin: master });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
-// Delete a co-admin (super admin only)
+// Delete a co-admin or treasurer (super admin only)
 app.delete('/apis/co-admin/:id', auth, requireMaster, requireSuperAdmin, async (req, res) => {
     try {
-        const coAdmin = await Master.findOne({ _id: req.params.id, role: 'co-admin' });
-        if (!coAdmin) return res.status(404).json({ message: "Co-admin not found" });
+        const target = await Master.findOne({ _id: req.params.id, role: { $in: ['co-admin', 'treasurer'] } });
+        if (!target) return res.status(404).json({ message: "Co-admin or treasurer not found" });
 
         await Master.deleteOne({ _id: req.params.id });
 
-        res.json({ message: `Co-admin ${coAdmin.username} deleted successfully` });
+        const roleName = target.role === 'treasurer' ? 'Treasurer' : 'Co-admin';
+        res.json({ message: `${roleName} ${target.username} deleted successfully` });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
@@ -5246,7 +5263,7 @@ app.get('/apis/settings', studentAuth, async (req, res) => {
     }
 });
 
-app.put('/apis/settings', auth, async (req, res) => {
+app.put('/apis/settings', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const { userRegister, userLogin, rfidScanner } = req.body;
 
@@ -6626,7 +6643,7 @@ app.get('/apis/attendance/events/:id', auth, async (req, res) => {
 });
 
 // Create attendance event (admin only)
-app.post('/apis/attendance/events', auth, async (req, res) => {
+app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const { title, description, location, event_date, year_level, status, start_time, end_time, is_custom, assigned_users } = req.body;
 
@@ -6666,7 +6683,7 @@ app.post('/apis/attendance/events', auth, async (req, res) => {
 });
 
 // Update attendance event (admin only)
-app.put('/apis/attendance/events/:id', auth, async (req, res) => {
+app.put('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const { title, description, location, event_date, year_level, status, start_time, end_time, is_custom, assigned_users } = req.body;
 
@@ -6731,7 +6748,7 @@ app.put('/apis/attendance/events/:id', auth, async (req, res) => {
 });
 
 // Delete attendance event (admin only)
-app.delete('/apis/attendance/events/:id', auth, async (req, res) => {
+app.delete('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const EventModel = getCollegeModel(AttendanceEvent, CCS_AttendanceEvent, COE_AttendanceEvent, req.college);
         const SessionModel = getCollegeModel(AttendanceSession, CCS_AttendanceSession, COE_AttendanceSession, req.college);
@@ -6754,7 +6771,7 @@ app.delete('/apis/attendance/events/:id', auth, async (req, res) => {
 });
 
 // Create custom event for specific users
-app.post('/apis/attendance/events/custom/create', auth, async (req, res) => {
+app.post('/apis/attendance/events/custom/create', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const { title, event_date, date, start_time, end_time, description, location, assigned_users } = req.body;
 
@@ -6809,7 +6826,7 @@ app.post('/apis/attendance/events/custom/create', auth, async (req, res) => {
 });
 
 // Update custom event
-app.put('/apis/attendance/events/custom/:id', auth, async (req, res) => {
+app.put('/apis/attendance/events/custom/:id', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const { title, event_date, date, start_time, end_time, description, location, assigned_users } = req.body;
 
@@ -6906,7 +6923,7 @@ app.get('/apis/attendance/events/:eventId/export-excel', auth, async (req, res) 
 // ==================== SESSION CRUD ENDPOINTS ====================
 
 // Create session for an event (admin only)
-app.post('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
+app.post('/apis/attendance/events/:eventId/sessions', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const { label, start_time, end_time, status, late_timer_minutes } = req.body;
 
@@ -6960,7 +6977,7 @@ app.get('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
 });
 
 // Update session (admin only)
-app.put('/apis/attendance/sessions/:id', auth, async (req, res) => {
+app.put('/apis/attendance/sessions/:id', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const { label, start_time, end_time, status, check_in_locked, check_out_locked, late_timer_minutes, rfidScanner } = req.body;
 
@@ -7002,7 +7019,7 @@ app.put('/apis/attendance/sessions/:id', auth, async (req, res) => {
 });
 
 // Delete session (admin only)
-app.delete('/apis/attendance/sessions/:id', auth, async (req, res) => {
+app.delete('/apis/attendance/sessions/:id', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const SessionModel = getCollegeModel(AttendanceSession, CCS_AttendanceSession, COE_AttendanceSession, req.college);
         const session = await SessionModel.findById(req.params.id);
@@ -7406,7 +7423,7 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
 });
 
 // PATCH endpoint to update individual attendance log (supports is_late, excused, excuse_reason)
-app.patch('/apis/attendance/logs/:id', auth, async (req, res) => {
+app.patch('/apis/attendance/logs/:id', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const { is_late, excused, excuse_reason, excused_by, excused_by_id, excused_by_model } = req.body;
 
