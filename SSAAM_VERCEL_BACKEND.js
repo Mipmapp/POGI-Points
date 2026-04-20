@@ -299,7 +299,7 @@ const VALID_PROGRAMS = ['BSCS', 'BSIT', 'BSIS', 'BSM'];
 const VALID_SUFFIXES = ['', 'Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const VALID_SEMESTERS = ['1st Sem', '2nd Sem'];
 const VALID_YEAR_LEVELS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
-const VALID_ROLES = ['student'];
+const VALID_ROLES = ['student', 'president', 'vice-president', 'secretary', 'treasurer', 'auditor', 'pro', 'representative', 'officer'];
 const VALID_RFID_STATUS = ['verified', 'unverified', 'Unreadable'];
 
 // Rate limiting for likes (in-memory, resets on serverless cold start)
@@ -4068,11 +4068,25 @@ app.put('/apis/students/:student_id/role', auth, requireCoAdminOrAbove, timestam
             return res.status(400).json({ message: `Role must be one of: ${VALID_ROLES.join(', ')}` });
         }
 
-        const updated = await Student.findOneAndUpdate(
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        let updated = await StudentModel.findOneAndUpdate(
             { student_id: req.params.student_id },
             { role },
-            { new: true }
+            { new: true, returnDocument: 'after' }
         );
+
+        if (!updated && req.master?.isMaster) {
+            for (const college of ['CCS', 'COE', 'SOM', 'CNAHS']) {
+                if (college === req.college) continue;
+                const AltModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
+                updated = await AltModel.findOneAndUpdate(
+                    { student_id: req.params.student_id },
+                    { role },
+                    { new: true, returnDocument: 'after' }
+                );
+                if (updated) break;
+            }
+        }
 
         if (!updated) {
             return res.status(404).json({ message: "Student not found" });

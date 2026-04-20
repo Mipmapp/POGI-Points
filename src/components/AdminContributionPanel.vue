@@ -210,7 +210,10 @@
               </div>
               <div class="min-w-0 flex-1">
                 <p class="font-bold text-gray-900 text-sm truncate">{{ c.student_name }}</p>
-                <p class="text-gray-400 text-xs truncate">{{ c.student_id }}</p>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <p class="text-gray-400 text-xs truncate">{{ c.student_id }}</p>
+                  <span v-if="isMaster && c.college" :class="['inline-flex px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0', c.college === 'COE' ? 'bg-orange-100 text-orange-700' : c.college === 'SOM' ? 'bg-green-100 text-green-700' : c.college === 'CNAHS' ? 'bg-teal-100 text-teal-700' : 'bg-blue-100 text-blue-700']">{{ c.college }}</span>
+                </div>
               </div>
             </div>
             <span :class="['px-2.5 py-1 rounded-full text-xs font-bold flex-shrink-0', c.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600']">
@@ -258,6 +261,7 @@
             <tr class="bg-gradient-to-r from-ssaam-dark to-ssaam-light">
               <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Student ID</th>
               <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Name</th>
+              <th v-if="isMaster" class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">College</th>
               <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Program</th>
               <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Year</th>
               <th class="px-4 py-3 text-right text-xs font-bold text-white uppercase tracking-wider">Original</th>
@@ -269,13 +273,16 @@
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-if="filteredContributions.length === 0">
-              <td colspan="9" class="px-4 py-12 text-center text-gray-400 text-sm">
+              <td :colspan="isMaster ? 10 : 9" class="px-4 py-12 text-center text-gray-400 text-sm">
                 No records match the current filters.
               </td>
             </tr>
             <tr v-for="c in filteredContributions" :key="c._id" class="hover:bg-blue-50/40 transition-colors">
               <td class="px-4 py-3 text-sm font-semibold text-gray-700">{{ c.student_id }}</td>
               <td class="px-4 py-3 text-sm text-gray-900 font-medium">{{ c.student_name }}</td>
+              <td v-if="isMaster" class="px-4 py-3 text-sm">
+                <span :class="['inline-flex px-2 py-0.5 rounded-full text-xs font-bold', c.college === 'COE' ? 'bg-orange-100 text-orange-700' : c.college === 'SOM' ? 'bg-green-100 text-green-700' : c.college === 'CNAHS' ? 'bg-teal-100 text-teal-700' : 'bg-blue-100 text-blue-700']">{{ c.college || '—' }}</span>
+              </td>
               <td class="px-4 py-3 text-sm text-gray-600">{{ c.program || '—' }}</td>
               <td class="px-4 py-3 text-sm text-gray-600">{{ c.year_level || '—' }}</td>
               <td class="px-4 py-3 text-sm text-right text-gray-700">₱{{ c.original_amount?.toFixed(2) || '0.00' }}</td>
@@ -559,6 +566,14 @@ export default {
     };
   },
   computed: {
+    isMaster() {
+      try {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}')
+        return user.isMaster === true
+      } catch {
+        return false
+      }
+    },
     calculatedDiscount() {
       if (this.discountType === 'percentage') {
         return (this.campaignFee * this.discountValue) / 100;
@@ -573,7 +588,7 @@ export default {
       const fy = this.filterYearLevel;
       const fp = this.filterProgram;
 
-      return this.contributions.filter(c => {
+      const filtered = this.contributions.filter(c => {
         const cStatus = (c.payment_status || '').toString().toLowerCase();
         const matchesLevel = !fy || c.year_level === fy;
         const matchesProgram = !fp || (c.program || '').toString() === fp;
@@ -588,6 +603,12 @@ export default {
         }
 
         return matchesLevel && matchesProgram && matchesStatus;
+      });
+
+      return filtered.sort((a, b) => {
+        const aPaid = a.payment_status === 'paid' ? 0 : 1;
+        const bPaid = b.payment_status === 'paid' ? 0 : 1;
+        return aPaid - bPaid;
       });
     },
     filteredCount() {
@@ -646,7 +667,8 @@ export default {
 
         if (response.ok) {
           const data = await response.json();
-          this.contributions = data.data || [];
+          const college = getCollege();
+          this.contributions = (data.data || []).map(c => ({ ...c, college: c.college || college }));
           this.serverFilteredCount = data.pagination ? data.pagination.total : this.contributions.length;
         } else {
           this.loadSampleData();

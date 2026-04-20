@@ -34,6 +34,17 @@
           >
             Users
           </button>
+          <button
+            @click="activeTab = 'roles'"
+            :class="[
+              'px-3 md:px-4 py-2 font-medium transition-all duration-200 border-b-2 text-sm md:text-base',
+              activeTab === 'roles'
+                ? [primaryTextColor, isCOE ? 'border-orange-700' : isSOM ? 'border-green-700' : isCNAHS ? 'border-green-700' : 'border-blue-600']
+                : 'text-gray-600 border-transparent hover:text-gray-700'
+            ]"
+          >
+            Roles
+          </button>
         </div>
       </div>
 
@@ -401,6 +412,116 @@
 
     </div>
 
+    <!-- ROLES TAB -->
+    <div v-if="activeTab === 'roles'" class="space-y-6">
+      <!-- Assign Role Section -->
+      <div :class="['rounded-xl p-5 md:p-6 shadow-sm border space-y-5', isCOE ? 'bg-gradient-to-br from-white via-orange-50 to-white border-orange-100' : isSOM ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : isCNAHS ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : 'bg-gradient-to-br from-white via-blue-50 to-white border-blue-100']">
+        <div class="flex items-center gap-2 mb-1">
+          <div :class="['w-1 h-5 rounded-full', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']"></div>
+          <h3 :class="['text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Assign Student Role</h3>
+        </div>
+        <p class="text-xs text-gray-500">Search for a student by ID or name, then assign them a role.</p>
+
+        <!-- Search Row -->
+        <div class="flex gap-2">
+          <div class="flex-1 relative">
+            <input
+              v-model="roleSearchQuery"
+              type="text"
+              placeholder="Enter Student ID or name..."
+              @keydown.enter="searchStudentForRole"
+              :class="['w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 outline-none text-sm bg-gray-50 focus:bg-white transition', isCOE ? 'focus:ring-orange-300 focus:border-orange-400' : isSOM ? 'focus:ring-green-300 focus:border-green-400' : isCNAHS ? 'focus:ring-green-300 focus:border-green-400' : 'focus:ring-blue-300 focus:border-blue-400']"
+            />
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </div>
+          <button
+            @click="searchStudentForRole"
+            :disabled="isSearchingRole"
+            :class="['px-5 py-2.5 text-white rounded-xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-md whitespace-nowrap disabled:opacity-60 bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-600 shadow-orange-200' : isSOM ? 'from-green-600 to-teal-600 shadow-green-200' : isCNAHS ? 'from-green-700 to-green-600 shadow-green-200' : 'from-ssaam-dark to-ssaam-light shadow-blue-200']"
+          >
+            <svg v-if="isSearchingRole" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <span v-else>Search</span>
+          </button>
+        </div>
+
+        <!-- Found Student Card -->
+        <div v-if="roleTargetStudent" class="bg-white border-2 border-blue-200 rounded-2xl p-4 space-y-4">
+          <div class="flex items-center gap-3">
+            <div :class="['w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0 overflow-hidden shadow-md', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+              <img v-if="roleTargetStudent.photo" :src="roleTargetStudent.photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+              <span v-else>{{ getInitials(roleTargetStudent) }}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h4 class="font-bold text-gray-900 text-sm">{{ roleTargetStudent.first_name }} {{ roleTargetStudent.middle_name ? roleTargetStudent.middle_name + ' ' : '' }}{{ roleTargetStudent.last_name }}{{ roleTargetStudent.suffix ? ' ' + roleTargetStudent.suffix : '' }}</h4>
+              <p class="text-xs text-gray-500">{{ roleTargetStudent.student_id }} · {{ roleTargetStudent.program }} – {{ roleTargetStudent.year_level }}</p>
+              <div class="mt-1 flex items-center gap-1.5">
+                <span class="text-[10px] text-gray-400 font-medium">Current role:</span>
+                <span :class="['px-2 py-0.5 rounded-full text-[10px] font-bold capitalize', roleTargetStudent.role && roleTargetStudent.role !== 'student' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600']">{{ roleTargetStudent.role || 'student' }}</span>
+              </div>
+            </div>
+            <button @click="roleTargetStudent = null; roleSearchQuery = ''" class="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition flex-shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- Role Selector -->
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Assign New Role</label>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="r in availableStudentRoles"
+                :key="r.value"
+                @click="selectedNewRole = r.value"
+                :class="['px-3 py-1.5 rounded-lg text-xs font-bold transition-all border', selectedNewRole === r.value ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white border-transparent shadow-md shadow-blue-200' : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-sm']"
+              >
+                {{ r.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Assign Button -->
+          <button
+            @click="assignStudentRole"
+            :disabled="!selectedNewRole || isAssigningRole"
+            :class="['w-full py-2.5 rounded-xl font-bold text-sm text-white transition-all flex items-center justify-center gap-2 shadow-md disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-600 shadow-orange-200 hover:from-orange-700 hover:to-red-700' : isSOM ? 'from-green-600 to-teal-600 shadow-green-200 hover:from-green-700 hover:to-teal-700' : isCNAHS ? 'from-green-700 to-green-600 shadow-green-200 hover:from-green-800 hover:to-green-700' : 'from-ssaam-dark to-ssaam-light shadow-blue-200 hover:opacity-90']"
+          >
+            <svg v-if="isAssigningRole" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+            {{ isAssigningRole ? 'Assigning...' : `Assign as ${availableStudentRoles.find(r => r.value === selectedNewRole)?.label || ''}` }}
+          </button>
+
+          <!-- Role error message -->
+          <p v-if="roleAssignError" class="text-xs text-red-600 font-medium text-center">{{ roleAssignError }}</p>
+        </div>
+
+        <!-- Empty search state -->
+        <div v-else-if="!isSearchingRole && roleSearchQuery && !roleTargetStudent" class="text-center py-6 text-gray-400 text-sm">
+          No student found. Try a different ID or name.
+        </div>
+      </div>
+
+      <!-- Recently Assigned Roles List -->
+      <div v-if="recentRoleAssignments.length > 0" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
+          <div :class="['w-1 h-5 rounded-full', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']"></div>
+          <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Recently Assigned</h3>
+        </div>
+        <div class="divide-y divide-gray-100">
+          <div v-for="assignment in recentRoleAssignments" :key="assignment.student_id" class="px-5 py-3 flex items-center gap-3">
+            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+              {{ (assignment.name || '?').charAt(0).toUpperCase() }}
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-gray-900 text-sm truncate">{{ assignment.name }}</p>
+              <p class="text-xs text-gray-500">{{ assignment.student_id }}</p>
+            </div>
+            <span :class="['px-2.5 py-1 rounded-full text-xs font-bold capitalize', assignment.role !== 'student' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500']">{{ assignment.role }}</span>
+            <span class="text-[10px] text-gray-400 flex-shrink-0">{{ assignment.time }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Edit User Modal -->
     <div v-if="showEditUserModal && editingUser" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeEditUserModal">
       <transition name="modal-bounce" appear>
@@ -708,7 +829,25 @@ export default {
         title: '',
         message: ''
       },
-      handleUserDeletedEvent: null
+      handleUserDeletedEvent: null,
+      roleSearchQuery: '',
+      isSearchingRole: false,
+      roleTargetStudent: null,
+      selectedNewRole: null,
+      isAssigningRole: false,
+      roleAssignError: '',
+      recentRoleAssignments: [],
+      availableStudentRoles: [
+        { value: 'student', label: 'Student' },
+        { value: 'president', label: 'President' },
+        { value: 'vice-president', label: 'Vice President' },
+        { value: 'secretary', label: 'Secretary' },
+        { value: 'treasurer', label: 'Treasurer' },
+        { value: 'auditor', label: 'Auditor' },
+        { value: 'pro', label: 'PRO' },
+        { value: 'representative', label: 'Representative' },
+        { value: 'officer', label: 'Officer' }
+      ]
     }
   },
   computed: {
@@ -1109,6 +1248,80 @@ export default {
         this.showNotification('error', 'Error', 'Error updating user')
       } finally {
         this.isSavingUser = false
+      }
+    },
+    async searchStudentForRole() {
+      if (!this.roleSearchQuery.trim()) return
+      this.isSearchingRole = true
+      this.roleTargetStudent = null
+      this.selectedNewRole = null
+      this.roleAssignError = ''
+      try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+        const college = this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
+        const response = await fetch(buildAPIUrl('/apis/students/search'), {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'X-SSAAM-College': college
+          },
+          body: JSON.stringify({ search_query: this.roleSearchQuery.trim() })
+        })
+        if (response.ok) {
+          const data = await response.json()
+          this.roleTargetStudent = data.student || null
+        } else {
+          this.roleTargetStudent = null
+        }
+      } catch (e) {
+        console.error('Error searching student for role:', e)
+        this.roleTargetStudent = null
+      } finally {
+        this.isSearchingRole = false
+      }
+    },
+    async assignStudentRole() {
+      if (!this.roleTargetStudent || !this.selectedNewRole) return
+      this.isAssigningRole = true
+      this.roleAssignError = ''
+      try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+        const college = this.roleTargetStudent.college || this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
+        const { encodeTimestamp } = await import('../utils/ssaamCrypto.js')
+        const timestamp = encodeTimestamp()
+        const studentId = this.roleTargetStudent.student_id
+        const response = await fetch(buildAPIUrl(`/apis/students/${studentId}/role`), {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'X-SSAAM-College': college,
+            'X-SSAAM-TS': timestamp
+          },
+          body: JSON.stringify({ role: this.selectedNewRole })
+        })
+        const data = await response.json()
+        if (response.ok) {
+          const roleLabel = this.availableStudentRoles.find(r => r.value === this.selectedNewRole)?.label || this.selectedNewRole
+          this.recentRoleAssignments.unshift({
+            student_id: studentId,
+            name: `${this.roleTargetStudent.first_name} ${this.roleTargetStudent.last_name}`,
+            role: this.selectedNewRole,
+            time: new Date().toLocaleTimeString()
+          })
+          if (this.recentRoleAssignments.length > 10) this.recentRoleAssignments.pop()
+          this.roleTargetStudent = { ...this.roleTargetStudent, role: this.selectedNewRole }
+          this.showNotification('success', 'Role Assigned', `${this.roleTargetStudent.first_name} is now a ${roleLabel}.`)
+          this.selectedNewRole = null
+        } else {
+          this.roleAssignError = data.message || 'Failed to assign role.'
+        }
+      } catch (e) {
+        console.error('Error assigning role:', e)
+        this.roleAssignError = 'Network error. Please try again.'
+      } finally {
+        this.isAssigningRole = false
       }
     },
     confirmDeleteUser(user) {
