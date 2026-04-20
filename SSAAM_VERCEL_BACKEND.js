@@ -8597,6 +8597,9 @@ app.post('/apis/admin/raffle-tickets', auth, async (req, res) => {
         const evergoodCount = parseInt(evergood_count) || 0;
         const totalCount = ruralCount + evergoodCount;
 
+        if (ruralCount > 500 || evergoodCount > 500) {
+            return res.status(400).json({ message: 'Each ticket type cannot exceed 500' });
+        }
         if (totalCount < 1) {
             return res.status(400).json({ message: 'Total ticket count must be at least 1' });
         }

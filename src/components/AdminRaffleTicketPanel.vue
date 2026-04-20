@@ -121,7 +121,11 @@
                   v-model.number="ruralCount"
                   type="number"
                   min="0"
+                  max="500"
+                  step="1"
                   placeholder="0"
+                  @keydown="blockNonInteger"
+                  @input="clampValue('ruralCount')"
                   class="w-full px-4 py-2.5 border-2 border-red-200 rounded-xl focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none text-sm bg-red-50 focus:bg-white transition text-center font-bold text-red-700 placeholder:text-red-300"
                 />
               </div>
@@ -135,7 +139,11 @@
                   v-model.number="evergoodCount"
                   type="number"
                   min="0"
+                  max="500"
+                  step="1"
                   placeholder="0"
+                  @keydown="blockNonInteger"
+                  @input="clampValue('evergoodCount')"
                   class="w-full px-4 py-2.5 border-2 border-green-200 rounded-xl focus:ring-2 focus:ring-green-200 focus:border-green-400 outline-none text-sm bg-green-50 focus:bg-white transition text-center font-bold text-green-700 placeholder:text-green-300"
                 />
               </div>
@@ -437,6 +445,20 @@ function getAuthHeaders() {
     'Authorization': `Bearer ${getAuthToken()}`,
     'X-SSAAM-College': getCollege()
   }
+}
+
+function blockNonInteger(e) {
+  const allowed = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Tab', 'Enter', 'Home', 'End']
+  if (allowed.includes(e.key)) return
+  if (!/^\d$/.test(e.key)) e.preventDefault()
+}
+
+function clampValue(field) {
+  const val = field === 'ruralCount' ? ruralCount.value : evergoodCount.value
+  if (val === null || val === undefined || isNaN(val)) return
+  const clamped = Math.max(0, Math.min(500, Math.floor(val)))
+  if (field === 'ruralCount') ruralCount.value = clamped
+  else evergoodCount.value = clamped
 }
 
 async function searchStudent() {
