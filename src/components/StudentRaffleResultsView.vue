@@ -16,9 +16,17 @@
             <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">My Raffle Results</h2>
             <p class="text-white/70 text-sm mt-0.5">View your raffle ticket entries and category standing</p>
           </div>
-          <div v-if="!loading && entries.length > 0" class="flex-shrink-0 hidden sm:flex items-center gap-3">
-            <div class="text-center bg-white/15 rounded-2xl px-4 py-2 border border-white/20">
-              <p class="text-white/70 text-[10px] uppercase tracking-wider">Total Tickets</p>
+          <div v-if="!loading && entries.length > 0" class="flex-shrink-0 hidden sm:flex items-center gap-2">
+            <div class="text-center bg-red-500/20 rounded-2xl px-3 py-2 border border-red-300/30">
+              <p class="text-white/70 text-[10px] uppercase tracking-wider">Rural</p>
+              <p class="text-white font-extrabold text-xl">{{ totalRural }}</p>
+            </div>
+            <div class="text-center bg-green-500/20 rounded-2xl px-3 py-2 border border-green-300/30">
+              <p class="text-white/70 text-[10px] uppercase tracking-wider">Evergood</p>
+              <p class="text-white font-extrabold text-xl">{{ totalEvergood }}</p>
+            </div>
+            <div class="text-center bg-white/15 rounded-2xl px-3 py-2 border border-white/20">
+              <p class="text-white/70 text-[10px] uppercase tracking-wider">Total</p>
               <p class="text-white font-extrabold text-xl">{{ totalTickets }}</p>
             </div>
           </div>
@@ -120,20 +128,36 @@
           </div>
 
           <!-- Stats Row -->
-          <div class="mt-5 grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <div class="bg-gray-50 rounded-2xl p-4 text-center border border-gray-100">
-              <p class="text-2xl font-extrabold text-gray-800">{{ entry.ticket_count }}</p>
-              <p class="text-xs text-gray-400 mt-0.5 font-medium">Tickets Submitted</p>
+          <div class="mt-5 space-y-3">
+            <!-- Ticket Breakdown -->
+            <div class="rounded-2xl border border-gray-100 overflow-hidden">
+              <div class="grid grid-cols-3 divide-x divide-gray-100">
+                <div class="bg-red-50 p-4 text-center">
+                  <p class="text-2xl font-extrabold text-red-600">{{ entry.rural_count || 0 }}</p>
+                  <p class="text-[11px] text-red-400 mt-0.5 font-bold uppercase tracking-wide">🔴 Rural</p>
+                </div>
+                <div class="bg-green-50 p-4 text-center">
+                  <p class="text-2xl font-extrabold text-green-600">{{ entry.evergood_count || 0 }}</p>
+                  <p class="text-[11px] text-green-400 mt-0.5 font-bold uppercase tracking-wide">🟢 Evergood</p>
+                </div>
+                <div class="bg-purple-50 p-4 text-center">
+                  <p class="text-2xl font-extrabold text-purple-700">{{ entry.ticket_count }}</p>
+                  <p class="text-[11px] text-purple-400 mt-0.5 font-bold uppercase tracking-wide">Total</p>
+                </div>
+              </div>
             </div>
-            <div class="bg-purple-50 rounded-2xl p-4 text-center border border-purple-100">
-              <p class="text-lg font-extrabold" :class="entry.category !== 'none' ? 'text-purple-700' : 'text-gray-400'">
-                {{ entry.category !== 'none' ? capitalize(entry.category) : 'None' }}
-              </p>
-              <p class="text-xs text-gray-400 mt-0.5 font-medium">Raffle Category</p>
-            </div>
-            <div class="bg-gray-50 rounded-2xl p-4 text-center border border-gray-100 col-span-2 sm:col-span-1">
-              <p class="text-sm font-bold text-gray-700 truncate">{{ entry.submitted_by || '—' }}</p>
-              <p class="text-xs text-gray-400 mt-0.5 font-medium">Recorded By</p>
+            <!-- Category & Recorded By -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-purple-50 rounded-2xl p-4 text-center border border-purple-100">
+                <p class="text-lg font-extrabold" :class="entry.category !== 'none' ? 'text-purple-700' : 'text-gray-400'">
+                  {{ entry.category !== 'none' ? capitalize(entry.category) : 'None' }}
+                </p>
+                <p class="text-xs text-gray-400 mt-0.5 font-medium">Raffle Category</p>
+              </div>
+              <div class="bg-gray-50 rounded-2xl p-4 text-center border border-gray-100">
+                <p class="text-sm font-bold text-gray-700 truncate">{{ entry.submitted_by || '—' }}</p>
+                <p class="text-xs text-gray-400 mt-0.5 font-medium">Recorded By</p>
+              </div>
             </div>
           </div>
         </div>
@@ -157,11 +181,17 @@ export default {
         { key: 'silver',   label: 'Silver',   range: '26–50',   icon: '🥈', classes: 'bg-slate-50 text-slate-600 border-slate-200' },
         { key: 'gold',     label: 'Gold',     range: '51–80',   icon: '🥇', classes: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
         { key: 'platinum', label: 'Platinum', range: '81–110',  icon: '💎', classes: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
-        { key: 'diamond',  label: 'Diamond',  range: '150–200', icon: '✨', classes: 'bg-purple-50 text-purple-700 border-purple-200' },
+        { key: 'diamond',  label: 'Diamond',  range: '150+', icon: '✨', classes: 'bg-purple-50 text-purple-700 border-purple-200' },
       ]
     }
   },
   computed: {
+    totalRural() {
+      return this.entries.reduce((sum, e) => sum + (e.rural_count || 0), 0)
+    },
+    totalEvergood() {
+      return this.entries.reduce((sum, e) => sum + (e.evergood_count || 0), 0)
+    },
     totalTickets() {
       return this.entries.reduce((sum, e) => sum + (e.ticket_count || 0), 0)
     }

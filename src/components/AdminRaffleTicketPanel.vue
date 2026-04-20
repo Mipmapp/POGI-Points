@@ -14,7 +14,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Raffle Ticket Management</h2>
-            <p class="text-white/70 text-sm mt-0.5">Record bus ticket submissions and raffle category assignments</p>
+            <p class="text-white/70 text-sm mt-0.5">Record Rural & Evergood bus tickets and raffle category assignments</p>
           </div>
           <div class="flex-shrink-0 hidden sm:flex items-center gap-3">
             <div class="text-center bg-white/15 rounded-2xl px-4 py-2 border border-white/20">
@@ -52,7 +52,7 @@
         </button>
       </div>
 
-      <!-- Submit Form -->
+      <!-- Search Bar -->
       <div class="px-4 sm:px-6 md:px-8 py-5 space-y-4">
         <div class="flex gap-2">
           <div class="flex-1 relative">
@@ -77,72 +77,106 @@
 
       <!-- Selected Student Ticket Submission -->
       <div v-if="selectedStudent" class="mx-4 sm:mx-6 md:mx-8 mb-6 bg-white rounded-2xl border border-purple-200 shadow overflow-hidden">
+        <!-- Student Header -->
         <div class="px-5 py-4 bg-gradient-to-r from-purple-50 to-violet-50 border-b border-purple-200 flex items-center justify-between gap-3">
           <div class="flex items-center gap-3 min-w-0">
-            <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-purple-700 to-violet-700 flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-              {{ (selectedStudent.full_name || selectedStudent.first_name || '?').charAt(0).toUpperCase() }}
+            <!-- Student Photo -->
+            <div class="w-12 h-12 rounded-2xl flex-shrink-0 overflow-hidden border-2 border-purple-200 shadow-sm">
+              <img
+                v-if="selectedStudent.photo"
+                :src="selectedStudent.photo"
+                :alt="selectedStudent.full_name || selectedStudent.first_name"
+                class="w-full h-full object-cover"
+                @error="photoError = true"
+              />
+              <div
+                v-else
+                class="w-full h-full bg-gradient-to-br from-purple-700 to-violet-700 flex items-center justify-center text-white font-bold text-lg"
+              >
+                {{ (selectedStudent.full_name || selectedStudent.first_name || '?').charAt(0).toUpperCase() }}
+              </div>
             </div>
             <div class="min-w-0">
               <h3 class="font-extrabold text-gray-900 text-sm sm:text-base truncate">{{ selectedStudent.full_name || (selectedStudent.first_name + ' ' + selectedStudent.last_name) }}</h3>
               <p class="text-gray-500 text-xs truncate">{{ selectedStudent.student_id }} · {{ selectedStudent.program }} – {{ selectedStudent.year_level }}</p>
             </div>
           </div>
-          <button @click="selectedStudent = null" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-white rounded-xl transition flex-shrink-0">
+          <button @click="selectedStudent = null; ruralCount = null; evergoodCount = null" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-white rounded-xl transition flex-shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
           </button>
         </div>
 
         <div class="p-5 space-y-4">
-          <!-- Ticket Type -->
+          <!-- Ticket Counts - Two separate inputs -->
           <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Bus Ticket Type</label>
-            <div class="flex gap-3">
-              <button
-                @click="ticketType = 'red'"
-                :class="['flex-1 py-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2',
-                  ticketType === 'red' ? 'border-red-500 bg-red-50 text-red-700' : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-red-300']"
-              >
-                <span class="w-4 h-4 rounded-full bg-red-500 inline-block flex-shrink-0"></span>
-                Red (Rural)
-              </button>
-              <button
-                @click="ticketType = 'green'"
-                :class="['flex-1 py-3 rounded-xl border-2 font-bold text-sm transition-all flex items-center justify-center gap-2',
-                  ticketType === 'green' ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-green-300']"
-              >
-                <span class="w-4 h-4 rounded-full bg-green-500 inline-block flex-shrink-0"></span>
-                Green (Evergood)
-              </button>
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Bus Ticket Counts</label>
+            <div class="grid grid-cols-2 gap-3">
+              <!-- Rural (Red) -->
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-1.5 mb-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-red-500 inline-block flex-shrink-0"></span>
+                  <span class="text-xs font-bold text-red-600 uppercase tracking-wide">Rural (Red)</span>
+                </div>
+                <input
+                  v-model.number="ruralCount"
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  class="w-full px-4 py-2.5 border-2 border-red-200 rounded-xl focus:ring-2 focus:ring-red-200 focus:border-red-400 outline-none text-sm bg-red-50 focus:bg-white transition text-center font-bold text-red-700 placeholder:text-red-300"
+                />
+              </div>
+              <!-- Evergood (Green) -->
+              <div class="space-y-1.5">
+                <div class="flex items-center gap-1.5 mb-1">
+                  <span class="w-3.5 h-3.5 rounded-full bg-green-500 inline-block flex-shrink-0"></span>
+                  <span class="text-xs font-bold text-green-600 uppercase tracking-wide">Evergood (Green)</span>
+                </div>
+                <input
+                  v-model.number="evergoodCount"
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  class="w-full px-4 py-2.5 border-2 border-green-200 rounded-xl focus:ring-2 focus:ring-green-200 focus:border-green-400 outline-none text-sm bg-green-50 focus:bg-white transition text-center font-bold text-green-700 placeholder:text-green-300"
+                />
+              </div>
             </div>
           </div>
 
-          <!-- Ticket Count -->
-          <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Number of Tickets</label>
-            <input
-              v-model.number="ticketCount"
-              type="number"
-              min="1"
-              max="200"
-              placeholder="e.g. 35"
-              class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-purple-400 outline-none text-sm bg-gray-50 focus:bg-white transition"
-            />
+          <!-- Ticket Summary -->
+          <div v-if="totalTickets > 0" class="rounded-2xl border border-purple-100 bg-purple-50/50 overflow-hidden">
+            <div class="px-4 py-2 bg-purple-100/60 border-b border-purple-100">
+              <p class="text-xs font-bold text-purple-500 uppercase tracking-wider">Ticket Summary</p>
+            </div>
+            <div class="grid grid-cols-3 divide-x divide-purple-100">
+              <div class="px-4 py-3 text-center">
+                <p class="text-xl font-extrabold text-red-600">{{ ruralCount || 0 }}</p>
+                <p class="text-[10px] font-bold text-red-400 uppercase tracking-wider mt-0.5">Rural</p>
+              </div>
+              <div class="px-4 py-3 text-center">
+                <p class="text-xl font-extrabold text-green-600">{{ evergoodCount || 0 }}</p>
+                <p class="text-[10px] font-bold text-green-400 uppercase tracking-wider mt-0.5">Evergood</p>
+              </div>
+              <div class="px-4 py-3 text-center bg-purple-100/40">
+                <p class="text-xl font-extrabold text-purple-700">{{ totalTickets }}</p>
+                <p class="text-[10px] font-bold text-purple-400 uppercase tracking-wider mt-0.5">Total</p>
+              </div>
+            </div>
           </div>
 
           <!-- Category Preview -->
-          <div v-if="ticketCount >= 1" class="p-4 rounded-2xl border" :class="previewCategory ? categoryStyle(previewCategory).bg : 'bg-gray-50 border-gray-200'">
+          <div v-if="totalTickets >= 1" class="p-4 rounded-2xl border" :class="previewCategory ? categoryStyle(previewCategory).bg : 'bg-gray-50 border-gray-200'">
             <p class="text-xs font-bold uppercase tracking-wider mb-1" :class="previewCategory ? categoryStyle(previewCategory).label : 'text-gray-400'">Raffle Category</p>
             <p class="text-xl font-extrabold" :class="previewCategory ? categoryStyle(previewCategory).text : 'text-gray-400'">
               {{ previewCategory ? categoryInfo(previewCategory).icon + ' ' + categoryInfo(previewCategory).label : 'No category (count out of range)' }}
             </p>
             <p v-if="previewCategory" class="text-xs mt-1" :class="categoryStyle(previewCategory).label">{{ categoryInfo(previewCategory).range }}</p>
-            <p v-else class="text-xs mt-1 text-gray-400">Valid ranges: 20–25, 26–50, 51–80, 81–110, 150–200</p>
+            <p v-else class="text-xs mt-1 text-gray-400">Valid ranges: 20–25, 26–50, 51–80, 81–110, 150+</p>
           </div>
 
           <!-- Submit Button -->
           <button
             @click="submitTicket"
-            :disabled="!ticketType || !ticketCount || ticketCount < 1 || isSubmitting"
+            :disabled="totalTickets < 1 || isSubmitting"
             class="w-full py-3 px-4 bg-gradient-to-r from-purple-700 to-violet-700 text-white rounded-2xl font-bold text-sm transition-all hover:from-purple-800 hover:to-violet-800 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-purple-200 active:scale-[0.99]"
           >
             <svg v-if="isSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
@@ -177,15 +211,10 @@
           <option v-for="cat in categories" :key="cat.key" :value="cat.key">{{ cat.icon }} {{ cat.label }}</option>
           <option value="none">No Category</option>
         </select>
-        <select v-model="filterType" class="ml-1 px-3 py-1.5 border-2 border-gray-200 rounded-xl text-xs font-semibold bg-gray-50 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 outline-none transition">
-          <option value="">All Types</option>
-          <option value="red">Red (Rural)</option>
-          <option value="green">Green (Evergood)</option>
-        </select>
       </div>
 
       <!-- Empty State -->
-      <div v-if="filteredEntries.length === 0" class="flex flex-col items-center justify-center py-16 px-6 text-center">
+      <div v-if="filteredEntries.length === 0 && !isLoading" class="flex flex-col items-center justify-center py-16 px-6 text-center">
         <div class="w-16 h-16 rounded-3xl bg-purple-50 border border-purple-100 flex items-center justify-center mb-4">
           <svg class="w-8 h-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
@@ -217,11 +246,15 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
             </button>
           </div>
-          <div class="flex items-center gap-2 flex-wrap">
-            <span :class="['px-2.5 py-1 rounded-full text-xs font-bold', entry.ticket_type === 'red' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700']">
-              {{ entry.ticket_type === 'red' ? '🔴 Rural' : '🟢 Evergood' }}
+          <!-- Ticket Breakdown -->
+          <div class="flex items-center gap-2 flex-wrap mt-2">
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 flex items-center gap-1">
+              🔴 Rural: {{ entry.rural_count || 0 }}
             </span>
-            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">{{ entry.ticket_count }} tickets</span>
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 flex items-center gap-1">
+              🟢 Evergood: {{ entry.evergood_count || 0 }}
+            </span>
+            <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700">Total: {{ entry.ticket_count }} tickets</span>
             <span v-if="entry.category !== 'none'" :class="['px-2.5 py-1 rounded-full text-xs font-bold', categoryStyle(entry.category).badge]">
               {{ categoryInfo(entry.category).icon }} {{ categoryInfo(entry.category).label }}
             </span>
@@ -239,8 +272,9 @@
               <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Name</th>
               <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Program</th>
               <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Year</th>
-              <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Ticket Type</th>
-              <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Count</th>
+              <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">🔴 Rural</th>
+              <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">🟢 Evergood</th>
+              <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Total</th>
               <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Category</th>
               <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Date</th>
               <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Action</th>
@@ -248,7 +282,7 @@
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-if="filteredEntries.length === 0">
-              <td colspan="9" class="px-4 py-12 text-center text-gray-400 text-sm">No records match the current filters.</td>
+              <td colspan="10" class="px-4 py-12 text-center text-gray-400 text-sm">No records match the current filters.</td>
             </tr>
             <tr v-for="entry in filteredEntries" :key="entry._id" class="hover:bg-purple-50/30 transition-colors">
               <td class="px-4 py-3 text-sm font-semibold text-gray-700">{{ entry.student_id_number }}</td>
@@ -256,11 +290,20 @@
               <td class="px-4 py-3 text-sm text-gray-600">{{ entry.program || '—' }}</td>
               <td class="px-4 py-3 text-sm text-gray-600">{{ entry.year_level || '—' }}</td>
               <td class="px-4 py-3 text-center">
-                <span :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold', entry.ticket_type === 'red' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700']">
-                  {{ entry.ticket_type === 'red' ? '🔴 Rural' : '🟢 Evergood' }}
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">
+                  {{ entry.rural_count || 0 }}
                 </span>
               </td>
-              <td class="px-4 py-3 text-center text-sm font-bold text-gray-700">{{ entry.ticket_count }}</td>
+              <td class="px-4 py-3 text-center">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                  {{ entry.evergood_count || 0 }}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-center">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-purple-700">
+                  {{ entry.ticket_count }}
+                </span>
+              </td>
               <td class="px-4 py-3 text-center">
                 <span v-if="entry.category !== 'none'" :class="['inline-flex px-2.5 py-1 rounded-full text-xs font-bold', categoryStyle(entry.category).badge]">
                   {{ categoryInfo(entry.category).icon }} {{ categoryInfo(entry.category).label }}
@@ -320,8 +363,9 @@ import * as XLSX from 'xlsx'
 
 const searchQuery = ref('')
 const selectedStudent = ref(null)
-const ticketType = ref('')
-const ticketCount = ref(null)
+const ruralCount = ref(null)
+const evergoodCount = ref(null)
+const photoError = ref(false)
 const isSearching = ref(false)
 const isSubmitting = ref(false)
 const isLoading = ref(false)
@@ -330,7 +374,6 @@ const successMsg = ref('')
 const errorMsg = ref('')
 const entries = ref([])
 const filterCategory = ref('')
-const filterType = ref('')
 const pendingDeleteId = ref(null)
 const isDeleting = ref(false)
 
@@ -339,7 +382,7 @@ const categories = [
   { key: 'silver', icon: '🥈', label: 'Silver', range: '26–50 tickets', classes: 'bg-slate-50 border-slate-300 text-slate-600' },
   { key: 'gold', icon: '🥇', label: 'Gold', range: '51–80 tickets', classes: 'bg-yellow-50 border-yellow-400 text-yellow-700' },
   { key: 'platinum', icon: '💠', label: 'Platinum', range: '81–110 tickets', classes: 'bg-cyan-50 border-cyan-400 text-cyan-700' },
-  { key: 'diamond', icon: '💎', label: 'Diamond', range: '150–200 tickets', classes: 'bg-blue-50 border-blue-400 text-blue-700' },
+  { key: 'diamond', icon: '💎', label: 'Diamond', range: '150+ tickets', classes: 'bg-blue-50 border-blue-400 text-blue-700' },
 ]
 
 function categoryInfo(key) {
@@ -348,30 +391,33 @@ function categoryInfo(key) {
 
 function categoryStyle(key) {
   const styles = {
-    bronze: { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', label: 'text-amber-500', badge: 'bg-amber-100 text-amber-700' },
-    silver: { bg: 'bg-slate-50 border-slate-200', text: 'text-slate-600', label: 'text-slate-400', badge: 'bg-slate-100 text-slate-600' },
-    gold:   { bg: 'bg-yellow-50 border-yellow-200', text: 'text-yellow-700', label: 'text-yellow-500', badge: 'bg-yellow-100 text-yellow-700' },
+    bronze:   { bg: 'bg-amber-50 border-amber-200', text: 'text-amber-700', label: 'text-amber-500', badge: 'bg-amber-100 text-amber-700' },
+    silver:   { bg: 'bg-slate-50 border-slate-200', text: 'text-slate-600', label: 'text-slate-400', badge: 'bg-slate-100 text-slate-600' },
+    gold:     { bg: 'bg-yellow-50 border-yellow-200', text: 'text-yellow-700', label: 'text-yellow-500', badge: 'bg-yellow-100 text-yellow-700' },
     platinum: { bg: 'bg-cyan-50 border-cyan-200', text: 'text-cyan-700', label: 'text-cyan-500', badge: 'bg-cyan-100 text-cyan-700' },
-    diamond: { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'text-blue-500', badge: 'bg-blue-100 text-blue-700' },
+    diamond:  { bg: 'bg-blue-50 border-blue-200', text: 'text-blue-700', label: 'text-blue-500', badge: 'bg-blue-100 text-blue-700' },
   }
   return styles[key] || { bg: 'bg-gray-50 border-gray-200', text: 'text-gray-600', label: 'text-gray-400', badge: 'bg-gray-100 text-gray-500' }
 }
 
+const totalTickets = computed(() => {
+  return (ruralCount.value || 0) + (evergoodCount.value || 0)
+})
+
 const previewCategory = computed(() => {
-  const count = ticketCount.value
+  const count = totalTickets.value
   if (!count || count < 1) return null
   if (count >= 20 && count <= 25) return 'bronze'
   if (count >= 26 && count <= 50) return 'silver'
   if (count >= 51 && count <= 80) return 'gold'
   if (count >= 81 && count <= 110) return 'platinum'
-  if (count >= 150 && count <= 200) return 'diamond'
+  if (count >= 150) return 'diamond'
   return null
 })
 
 const filteredEntries = computed(() => {
   return entries.value.filter(e => {
     if (filterCategory.value && e.category !== filterCategory.value) return false
-    if (filterType.value && e.ticket_type !== filterType.value) return false
     return true
   })
 })
@@ -400,6 +446,7 @@ async function searchStudent() {
   errorMsg.value = ''
   successMsg.value = ''
   selectedStudent.value = null
+  photoError.value = false
   try {
     const res = await fetch(buildAPIUrl('/apis/students/search'), {
       method: 'POST',
@@ -409,8 +456,8 @@ async function searchStudent() {
     const data = await res.json()
     if (res.ok && data.student) {
       selectedStudent.value = data.student
-      ticketType.value = ''
-      ticketCount.value = null
+      ruralCount.value = null
+      evergoodCount.value = null
     } else {
       errorMsg.value = data.message || 'Student not found'
     }
@@ -422,7 +469,7 @@ async function searchStudent() {
 }
 
 async function submitTicket() {
-  if (!selectedStudent.value || !ticketType.value || !ticketCount.value) return
+  if (!selectedStudent.value || totalTickets.value < 1) return
   isSubmitting.value = true
   successMsg.value = ''
   errorMsg.value = ''
@@ -430,8 +477,8 @@ async function submitTicket() {
     const user = JSON.parse(localStorage.getItem('currentUser') || localStorage.getItem('user') || '{}')
     const body = {
       student_id: selectedStudent.value.student_id,
-      ticket_type: ticketType.value,
-      ticket_count: ticketCount.value,
+      rural_count: ruralCount.value || 0,
+      evergood_count: evergoodCount.value || 0,
       admin_username: user.username || user.email || ''
     }
     const res = await fetch(buildAPIUrl('/apis/admin/raffle-tickets'), {
@@ -445,8 +492,8 @@ async function submitTicket() {
       successMsg.value = catInfo
         ? `Recorded! ${catInfo.icon} Assigned to ${catInfo.label} category.`
         : 'Recorded! (Ticket count is outside a valid raffle range)'
-      ticketType.value = ''
-      ticketCount.value = null
+      ruralCount.value = null
+      evergoodCount.value = null
       await fetchEntries()
     } else {
       errorMsg.value = data.message || 'Failed to record entry'
@@ -506,8 +553,9 @@ function buildSheetRows(list) {
     'Name': e.student_name,
     'Program': e.program || '—',
     'Year Level': e.year_level || '—',
-    'Ticket Type': e.ticket_type === 'red' ? 'Red (Rural)' : 'Green (Evergood)',
-    'Ticket Count': e.ticket_count,
+    'Rural (Red) Tickets': e.rural_count || 0,
+    'Evergood (Green) Tickets': e.evergood_count || 0,
+    'Total Tickets': e.ticket_count,
     'Category': e.category !== 'none' ? (categoryInfo(e.category).icon + ' ' + categoryInfo(e.category).label) : 'No Category',
     'Submitted By': e.submitted_by || '—',
     'Date Submitted': e.submitted_at ? new Date(e.submitted_at).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) : '—'

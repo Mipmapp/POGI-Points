@@ -2577,14 +2577,16 @@ const raffleTicketSchema = new mongoose.Schema({
     student_name: { type: String, required: true },
     program: { type: String, default: '' },
     year_level: { type: String, default: '' },
-    ticket_type: { type: String, enum: ['red', 'green'], required: true }, // red = Rural, green = Evergood
+    ticket_type: { type: String, enum: ['red', 'green', 'both'], default: 'both' },
+    rural_count: { type: Number, default: 0 },
+    evergood_count: { type: Number, default: 0 },
     ticket_count: { type: Number, required: true },
     category: { type: String, enum: ['bronze', 'silver', 'gold', 'platinum', 'diamond', 'none'], default: 'none' },
     submitted_by: { type: String, default: '' },
     submitted_at: { type: Date, default: Date.now }
 });
 
-raffleTicketSchema.index({ student_id_number: 1, ticket_type: 1 });
+raffleTicketSchema.index({ student_id_number: 1 });
 raffleTicketSchema.index({ category: 1 });
 
 const RaffleTicket = mongoose.model("RaffleTicket", raffleTicketSchema);
@@ -2598,7 +2600,7 @@ function getRaffleCategory(count) {
     if (count >= 26 && count <= 50) return 'silver';
     if (count >= 51 && count <= 80) return 'gold';
     if (count >= 81 && count <= 110) return 'platinum';
-    if (count >= 150 && count <= 200) return 'diamond';
+    if (count >= 150) return 'diamond';
     return 'none';
 }
 
@@ -8589,14 +8591,14 @@ app.get('/apis/contributions/stats', auth, async (req, res) => {
 // Submit raffle tickets for a student
 app.post('/apis/admin/raffle-tickets', auth, async (req, res) => {
     try {
-        const { student_id, rfid_code, ticket_type, ticket_count, admin_username } = req.body;
+        const { student_id, rfid_code, rural_count, evergood_count, admin_username } = req.body;
 
-        if (!ticket_type || !['red', 'green'].includes(ticket_type)) {
-            return res.status(400).json({ message: 'Ticket type must be "red" (Rural) or "green" (Evergood)' });
-        }
-        const count = parseInt(ticket_count);
-        if (isNaN(count) || count < 1) {
-            return res.status(400).json({ message: 'Ticket count must be a positive number' });
+        const ruralCount = parseInt(rural_count) || 0;
+        const evergoodCount = parseInt(evergood_count) || 0;
+        const totalCount = ruralCount + evergoodCount;
+
+        if (totalCount < 1) {
+            return res.status(400).json({ message: 'Total ticket count must be at least 1' });
         }
 
         let query = {};
@@ -8608,15 +8610,17 @@ app.post('/apis/admin/raffle-tickets', auth, async (req, res) => {
         const student = await StudentModel.findOne(query);
         if (!student) return res.status(404).json({ message: 'Student not found' });
 
-        const category = getRaffleCategory(count);
+        const category = getRaffleCategory(totalCount);
         const RaffleTicketModel = getCollegeModel(RaffleTicket, CCS_RaffleTicket, COE_RaffleTicket, req.college);
 
         const existing = await RaffleTicketModel.findOne({
-            student_id_number: student.student_id,
-            ticket_type
+            student_id_number: student.student_id
         });
         if (existing) {
-            existing.ticket_count = count;
+            existing.rural_count = ruralCount;
+            existing.evergood_count = evergoodCount;
+            existing.ticket_count = totalCount;
+            existing.ticket_type = 'both';
             existing.category = category;
             existing.submitted_by = admin_username || '';
             existing.submitted_at = new Date();
@@ -8629,8 +8633,10 @@ app.post('/apis/admin/raffle-tickets', auth, async (req, res) => {
             student_name: student.full_name || `${student.first_name} ${student.last_name}`,
             program: student.program || '',
             year_level: student.year_level || '',
-            ticket_type,
-            ticket_count: count,
+            ticket_type: 'both',
+            rural_count: ruralCount,
+            evergood_count: evergoodCount,
+            ticket_count: totalCount,
             category,
             submitted_by: admin_username || '',
             submitted_at: new Date()
