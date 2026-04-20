@@ -80,7 +80,7 @@
         </div>
 
         <!-- Filter Row -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div :class="['grid gap-3 grid-cols-1 sm:grid-cols-2', isMaster ? 'md:grid-cols-4' : 'md:grid-cols-3']">
           <div>
             <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Year Level</label>
             <select v-model="filterYearLevel" class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition">
@@ -107,6 +107,16 @@
               <option value="paid">Paid</option>
               <option value="unpaid">Unpaid</option>
               <option value="pending">Pending</option>
+            </select>
+          </div>
+          <div v-if="isMaster">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">College</label>
+            <select v-model="filterCollege" class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition">
+              <option value="">All Colleges</option>
+              <option value="CCS">CCS</option>
+              <option value="COE">COE</option>
+              <option value="SOM">SOM</option>
+              <option value="CNAHS">CNAHS</option>
             </select>
           </div>
         </div>
@@ -545,6 +555,7 @@ export default {
       filterYearLevel: '',
       filterProgram: '',
       filterStatus: '',
+      filterCollege: '',
       isDownloading: false,
       showDownloadConfirm: false,
       downloadPreviewLimit: 5,
@@ -588,10 +599,13 @@ export default {
       const fy = this.filterYearLevel;
       const fp = this.filterProgram;
 
+      const fc = (this.filterCollege || '').toUpperCase();
+
       const filtered = this.contributions.filter(c => {
         const cStatus = (c.payment_status || '').toString().toLowerCase();
         const matchesLevel = !fy || c.year_level === fy;
         const matchesProgram = !fp || (c.program || '').toString() === fp;
+        const matchesCollege = !fc || (c.college || '').toUpperCase() === fc;
 
         let matchesStatus = true;
         if (fs) {
@@ -602,7 +616,7 @@ export default {
           }
         }
 
-        return matchesLevel && matchesProgram && matchesStatus;
+        return matchesLevel && matchesProgram && matchesStatus && matchesCollege;
       });
 
       return filtered.sort((a, b) => {
@@ -625,7 +639,8 @@ export default {
   watch: {
     filterStatus() { this.loadAllContributions(); },
     filterProgram() { this.loadAllContributions(); },
-    filterYearLevel() { this.loadAllContributions(); }
+    filterYearLevel() { this.loadAllContributions(); },
+    filterCollege() { this.loadAllContributions(); }
   },
   mounted() {
     this.loadActivePayment();

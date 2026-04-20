@@ -8467,7 +8467,7 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
             const pr = paymentStatusMap[s.student_id] || {};
             return {
                 _id: `rec_${s.student_id}`,
-                student_id: s._id,
+                student_id: s.student_id,
                 student_id_number: s.student_id,
                 student_name: s.full_name || `${s.first_name || ''} ${s.last_name || ''}`.trim(),
                 program: s.program,
