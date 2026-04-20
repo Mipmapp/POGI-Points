@@ -34,17 +34,6 @@
           >
             Users
           </button>
-          <button
-            @click="activeTab = 'roles'"
-            :class="[
-              'px-3 md:px-4 py-2 font-medium transition-all duration-200 border-b-2 text-sm md:text-base',
-              activeTab === 'roles'
-                ? [primaryTextColor, isCOE ? 'border-orange-700' : isSOM ? 'border-green-700' : isCNAHS ? 'border-green-700' : 'border-blue-600']
-                : 'text-gray-600 border-transparent hover:text-gray-700'
-            ]"
-          >
-            Roles
-          </button>
         </div>
       </div>
 
@@ -410,204 +399,6 @@
         </div>
       </div>
 
-      <!-- ROLES TAB -->
-      <div v-if="activeTab === 'roles'" class="space-y-6">
-        <!-- Roles Grid -->
-        <div class="flex justify-center">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8 w-full max-w-4xl">
-          <!-- Medpub Card -->
-          <div 
-            class="relative bg-gradient-to-br from-yellow-50 via-orange-50 to-yellow-50 border-2 border-yellow-300 rounded-xl md:rounded-2xl p-5 md:p-8 hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 group overflow-hidden"
-            @click="viewRoleMembers('Medpub')"
-          >
-            <!-- Light sweep effect -->
-            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-40 animate-sweep pointer-events-none rounded-xl md:rounded-2xl"></div>
-            
-            <!-- Icon -->
-            <div class="flex justify-center mb-4 md:mb-6 relative z-10">
-              <div class="bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full p-3 md:p-4 shadow-lg group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
-                <img src="/medpub.svg" alt="Medpub" class="w-8 md:w-12 h-8 md:h-12 text-white" />
-              </div>
-            </div>
-
-            <!-- Role Header -->
-            <div class="text-center mb-4 md:mb-6 relative z-10">
-              <h3 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-yellow-600 to-orange-500 bg-clip-text text-transparent mb-1 md:mb-2">Medpub</h3>
-              <p class="text-xs md:text-sm text-gray-600">{{ getRoleDescription('Medpub') }}</p>
-            </div>
-
-            <!-- Members Count -->
-            <div class="bg-white bg-opacity-70 rounded-lg md:rounded-xl p-3 md:p-4 mb-4 md:mb-6 border border-yellow-200 relative z-10">
-              <div class="flex items-center justify-center">
-                <span class="text-gray-700 font-medium text-sm md:text-base mr-2 md:mr-3">Members</span>
-                <span class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-yellow-600 to-orange-500 bg-clip-text text-transparent">{{ getRoleMemberCount('Medpub') }}</span>
-              </div>
-            </div>
-
-            <!-- Manage Members Button -->
-            <button 
-              class="w-full relative z-10 bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 rounded-lg md:rounded-xl hover:from-yellow-600 hover:to-orange-600 transition-all duration-300 font-bold text-sm md:text-base shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
-            >
-              Manage Members
-            </button>
-          </div>
-
-          <!-- Treasurer Card -->
-          <div 
-            class="relative bg-gradient-to-br from-cyan-50 via-teal-50 to-cyan-50 border-2 border-cyan-300 rounded-xl md:rounded-2xl p-5 md:p-8 hover:shadow-2xl transition-all duration-300 cursor-pointer transform hover:scale-105 group overflow-hidden"
-            @click="viewRoleMembers('Treasurer')"
-          >
-            <!-- Light sweep effect -->
-            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-0 group-hover:opacity-40 animate-sweep pointer-events-none rounded-xl md:rounded-2xl"></div>
-            
-            <!-- Icon -->
-            <div class="flex justify-center mb-4 md:mb-6 relative z-10">
-              <div class="bg-gradient-to-br from-cyan-500 to-teal-600 rounded-full p-3 md:p-4 shadow-lg group-hover:shadow-2xl transition-all duration-300 transform group-hover:scale-110">
-                <img src="/treasurer.svg" alt="Treasurer" class="w-8 md:w-12 h-8 md:h-12 text-white" />
-              </div>
-            </div>
-
-            <!-- Role Header -->
-            <div class="text-center mb-4 md:mb-6 relative z-10">
-              <h3 class="text-2xl md:text-3xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent mb-1 md:mb-2">Treasurer</h3>
-              <p class="text-xs md:text-sm text-gray-600">{{ getRoleDescription('Treasurer') }}</p>
-            </div>
-
-            <!-- Members Count -->
-            <div class="bg-white bg-opacity-70 rounded-lg md:rounded-xl p-3 md:p-4 mb-4 md:mb-6 border border-cyan-200 relative z-10">
-              <div class="flex items-center justify-center">
-                <span class="text-gray-700 font-medium text-sm md:text-base mr-2 md:mr-3">Members</span>
-                <span class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-cyan-600 to-teal-600 bg-clip-text text-transparent">{{ getRoleMemberCount('Treasurer') }}</span>
-              </div>
-            </div>
-
-            <!-- Manage Members Button -->
-            <button 
-              class="w-full relative z-10 bg-gradient-to-r from-cyan-600 to-teal-600 text-white py-2 md:py-3 px-4 rounded-lg md:rounded-xl hover:from-cyan-700 hover:to-teal-700 transition-all duration-300 font-bold text-sm md:text-base shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95"
-            >
-              Manage Members
-            </button>
-          </div>
-        </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- View Members Modal -->
-    <div v-if="showMembersModal && selectedRole" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeMembersModal">
-      <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-lg md:rounded-2xl shadow-2xl p-4 md:p-8 max-w-2xl w-full mx-3 md:mx-4 max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-4 md:mb-6">
-            <h3 :class="['text-lg md:text-2xl font-bold capitalize', primaryDarkText]">{{ selectedRole }} Members</h3>
-            <button @click="closeMembersModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
-          </div>
-
-          <!-- Add Member Section -->
-          <div :class="[isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50', 'rounded-lg p-3 md:p-4 mb-4 md:mb-6 border-2', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200']">
-            <h4 :class="['font-semibold mb-3 md:mb-4 text-sm md:text-base', primaryDarkText]">Add User to {{ selectedRole }} Role</h4>
-            <div class="flex gap-2 flex-col sm:flex-row items-stretch sm:items-center">
-              <input
-                v-model="memberToAdd"
-                type="text"
-                placeholder="Search by name, email, student ID, or RFID..."
-                :class="['flex-1 px-4 py-2.5 md:py-2.5 border-2 rounded-lg outline-none text-sm md:text-base font-medium', isCOE ? 'border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : isSOM ? 'border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200' : isCNAHS ? 'border-green-300 focus:border-green-500 focus:ring-2 focus:ring-green-200' : 'border-blue-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-200']"
-              />
-              <button 
-                @click="addMemberToRole"
-                :disabled="!memberToAdd || isAddingMember"
-                :class="['px-4 md:px-6 py-2.5 md:py-2.5 rounded-lg transition font-bold text-sm md:text-base shadow-md hover:shadow-lg active:scale-95 flex-shrink-0 flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white disabled:from-gray-400 disabled:to-gray-500' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white disabled:from-gray-400 disabled:to-gray-500' : isCNAHS ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white disabled:from-gray-400 disabled:to-gray-500' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light text-white disabled:from-gray-400 disabled:to-gray-500', !memberToAdd || isAddingMember ? 'opacity-60 cursor-not-allowed' : '']"
-              >
-                <svg v-if="isAddingMember" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                <span>{{ isAddingMember ? 'Adding...' : 'Add Member' }}</span>
-              </button>
-            </div>
-            
-            <!-- Filtered User Suggestions -->
-            <div v-if="memberToAdd && memberSearchResults.length > 0" class="mt-3 border-2 border-gray-300 rounded-lg overflow-y-auto max-h-40 md:max-h-48 z-10 bg-white shadow-lg">
-              <div
-                v-for="user in memberSearchResults"
-                :key="user._id || user.id || user.student_id"
-                @click="selectUserToAdd(user)"
-                :class="['px-3 md:px-4 py-2 cursor-pointer border-b border-gray-200 last:border-b-0 transition-colors text-sm', isCOE ? 'hover:bg-orange-100' : isSOM ? 'hover:bg-green-100' : isCNAHS ? 'hover:bg-green-100' : 'hover:bg-blue-100']"
-              >
-                <p class="font-medium text-gray-900">{{ (user.first_name || user.firstName) }} {{ (user.last_name || user.lastName) }}</p>
-                <div class="flex items-center gap-2">
-                  <p class="text-xs text-gray-600 font-mono">{{ user.student_id }}</p>
-                  <button 
-                    @click.stop="copyToClipboard(user.student_id)"
-                    class="p-1 rounded hover:bg-gray-100 transition-colors duration-200 text-gray-500 hover:text-gray-700"
-                    title="Copy Student ID"
-                  >
-                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                  </button>
-                  <span class="text-xs text-gray-600">• {{ user.email }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Members List -->
-          <div class="space-y-2">
-            <h4 class="font-semibold text-gray-700 mb-2 md:mb-3 text-sm md:text-base">Current Members ({{ roleMembers.length }})</h4>
-            <div v-if="roleMembers.length === 0" class="text-center py-6 md:py-8 text-gray-600 text-sm">
-              <p>No members assigned to this role yet</p>
-            </div>
-            <div v-for="member in roleMembers" :key="member.student_id || member._id || member.id" class="flex items-center justify-between gap-2 md:gap-4 bg-gray-50 p-3 md:p-4 rounded-lg border border-gray-200 hover:shadow-md transition-all duration-200">
-              <!-- Profile Image and Info -->
-              <div class="flex items-center gap-2 md:gap-4 flex-1 min-w-0">
-                <!-- Profile Image -->
-                <div :class="['w-9 md:w-12 h-9 md:h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-xs md:text-sm overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-                  <img 
-                    v-if="member.photo" 
-                    :src="member.photo" 
-                    :alt="`${member.first_name} ${member.last_name}`"
-                    class="w-full h-full object-cover"
-                    @error="$event.target.style.display='none'"
-                  />
-                  <span v-else>{{ getInitials(member) }}</span>
-                </div>
-                <!-- Member Info -->
-                <div class="flex-1 min-w-0">
-                  <p class="font-medium text-gray-900 truncate text-sm md:text-base">{{ (member.first_name || member.firstName) }} {{ (member.last_name || member.lastName) }}</p>
-                  <div class="flex items-center gap-2 flex-1 min-w-0">
-                    <p class="text-xs md:text-sm text-gray-600 font-mono">{{ member.student_id }}</p>
-                    <button 
-                      @click="copyToClipboard(member.student_id)"
-                      class="p-1 rounded hover:bg-gray-200 transition-colors duration-200 text-gray-500 hover:text-gray-700 flex-shrink-0"
-                      title="Copy Student ID"
-                    >
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                    </button>
-                    <span class="text-xs md:text-sm text-gray-600 truncate">• {{ member.email }}</span>
-                  </div>
-                  <p v-if="member.program" class="text-xs text-gray-500">{{ member.program }} - {{ member.year_level }}</p>
-                </div>
-              </div>
-              <!-- Remove Button -->
-              <button 
-                @click="showRemoveRoleMemberConfirmation(member)"
-                class="bg-red-500 text-white p-1.5 md:p-2 rounded-lg hover:bg-red-600 transition-all duration-200 hover:scale-110 active:scale-95 flex-shrink-0"
-                title="Remove Member"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Close Button -->
-          <div class="mt-4 md:mt-6 pt-4 border-t border-gray-200">
-            <button 
-              @click="closeMembersModal"
-              class="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition text-sm md:text-base"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </transition>
     </div>
 
     <!-- Edit User Modal -->
@@ -828,85 +619,6 @@
       </transition>
     </div>
 
-    <!-- Remove Role Member Confirmation Modal -->
-    <transition name="fade">
-      <div v-if="showRemoveRoleMemberConfirmModal && memberToRemoveFromRole" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeRemoveRoleMemberConfirmation">
-        <transition name="notification-pop" appear>
-          <div class="bg-white rounded-lg shadow-2xl p-6 max-w-sm w-11/12 md:w-96">
-            <!-- Confirmation Icon -->
-            <div class="flex justify-center mb-4">
-              <div class="w-16 h-16 rounded-full flex items-center justify-center bg-yellow-100">
-                <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                </svg>
-              </div>
-            </div>
-
-            <!-- Confirmation Message -->
-            <h3 class="text-lg font-bold text-center text-gray-900 mb-2">Remove Member?</h3>
-            <p class="text-center text-gray-600 text-sm mb-6">
-              Are you sure you want to remove <strong>{{ (memberToRemoveFromRole.first_name || memberToRemoveFromRole.firstName) }} {{ (memberToRemoveFromRole.last_name || memberToRemoveFromRole.lastName) }}</strong> from the <strong>{{ selectedRole }}</strong> role?
-            </p>
-
-            <!-- Confirmation Buttons -->
-            <div class="flex gap-3">
-              <button 
-                @click="closeRemoveRoleMemberConfirmation"
-                class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-all duration-200 font-medium"
-              >
-                Cancel
-              </button>
-              <button 
-                @click="confirmRemoveRoleMember"
-                class="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-all duration-200 font-medium"
-              >
-                Remove
-              </button>
-            </div>
-          </div>
-        </transition>
-      </div>
-    </transition>
-
-    <!-- Role Switch Confirmation Modal -->
-    <div v-if="showRoleSwitchConfirmModal && roleSwitchData.user" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeSwitchRoleConfirmation">
-      <transition name="notification-pop" appear>
-        <div class="bg-white rounded-lg shadow-2xl p-6 max-w-sm w-11/12 md:w-96">
-          <!-- Warning Icon -->
-          <div class="flex justify-center mb-4">
-            <div class="w-16 h-16 rounded-full flex items-center justify-center bg-yellow-100">
-              <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-              </svg>
-            </div>
-          </div>
-
-          <!-- Confirmation Message -->
-          <h3 class="text-lg font-bold text-center text-gray-900 mb-2">Switch Role?</h3>
-          <p class="text-center text-gray-600 text-sm mb-6">
-            <strong>{{ (roleSwitchData.user.first_name || roleSwitchData.user.firstName) }} {{ (roleSwitchData.user.last_name || roleSwitchData.user.lastName) }}</strong> is currently a <strong>{{ roleSwitchData.oldRole }}</strong>. 
-            <br><br>
-            Switching to <strong>{{ roleSwitchData.newRole }}</strong> will remove access to <strong>{{ roleSwitchData.oldRole }}</strong> role functions. Continue?
-          </p>
-
-          <!-- Confirmation Buttons -->
-          <div class="flex gap-3">
-            <button 
-              @click="closeSwitchRoleConfirmation"
-              class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-300 transition-all duration-200 font-medium"
-            >
-              Cancel
-            </button>
-            <button 
-              @click="confirmRoleSwitch"
-              class="flex-1 bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-all duration-200 font-medium"
-            >
-              Switch Role
-            </button>
-          </div>
-        </div>
-      </transition>
-    </div>
 
     <!-- Notification Modal -->
     <transition name="fade">
@@ -972,16 +684,10 @@ export default {
   data() {
     return {
       activeTab: 'users',
-      roles: ['Medpub', 'Treasurer'],
-      roleMembers: [],
       allUsers: [],
       isLoading: false,
       isRefreshing: false,
       isFetchingUsers: false,
-      isAddingMember: false,
-      showMembersModal: false,
-      selectedRole: null,
-      memberToAdd: '',
       userSearchQuery: '',
       userRoleFilter: null,
       userYearFilter: null,
@@ -998,17 +704,9 @@ export default {
       usersPerPage: 10,
       notification: {
         show: false,
-        type: 'success', // 'success', 'error', 'info'
+        type: 'success',
         title: '',
         message: ''
-      },
-      showRemoveRoleMemberConfirmModal: false,
-      memberToRemoveFromRole: null,
-      showRoleSwitchConfirmModal: false,
-      roleSwitchData: {
-        user: null,
-        newRole: null,
-        oldRole: null
       },
       handleUserDeletedEvent: null
     }
@@ -1048,12 +746,6 @@ export default {
     isMaster() { return this.currentUser?.isMaster === true },
     // End theme helpers
 
-    availableUsers() {
-      // Return users not already in the current role
-      if (!this.selectedRole) return this.allUsers
-      const roleUserIds = this.roleMembers.map(m => m._id || m.id)
-      return this.allUsers.filter(user => !roleUserIds.includes(user._id || user.id))
-    },
     filteredUsers() {
       let filtered = this.allUsers
 
@@ -1162,17 +854,6 @@ export default {
       
       return pages
     },
-    memberSearchResults() {
-      if (!this.memberToAdd.trim()) return []
-      const query = this.memberToAdd.toLowerCase()
-      return this.availableUsers.filter(user => {
-        const fullName = `${(user.first_name || user.firstName) || ''} ${(user.last_name || user.lastName) || ''}`.toLowerCase()
-        const studentId = (user.student_id || '').toLowerCase()
-        const email = (user.email || '').toLowerCase()
-        const rfid = (user.rfid_code || '').toLowerCase()
-        return fullName.includes(query) || studentId.includes(query) || email.includes(query) || rfid.includes(query)
-      })
-    }
   },
   watch: {
     userSearchQuery() {
@@ -1214,13 +895,6 @@ export default {
         this.showNotification('error', 'Failed', 'Could not copy to clipboard')
       })
     },
-    getRoleDescription(role) {
-      const descriptions = {
-        'Medpub': 'Media and Publication team member',
-        'Treasurer': 'Manages organization finances'
-      }
-      return descriptions[role] || ''
-    },
     getInitials(user) {
       const firstName = user.first_name || user.firstName || ''
       const lastName = user.last_name || user.lastName || ''
@@ -1249,11 +923,6 @@ export default {
       }
       // Default to unverified
       return false
-    },
-    getRoleMemberCount(role) {
-      // Get users with this role from allUsers, comparing lowercase
-      const roleValue = role.toLowerCase()
-      return this.allUsers.filter(user => (user.role || '').toLowerCase() === roleValue).length
     },
     async fetchAllUsers() {
       if (this.isFetchingUsers) {
@@ -1296,241 +965,10 @@ export default {
         this.isFetchingUsers = false
       }
     },
-    async fetchRoleMembers(role) {
-      try {
-        // Get members with this role, comparing lowercase
-        const roleValue = role.toLowerCase()
-        this.roleMembers = this.allUsers.filter(user => (user.role || '').toLowerCase() === roleValue)
-        console.log(`Fetched ${this.roleMembers.length} members for role ${role}:`, this.roleMembers)
-      } catch (error) {
-        console.error('Error fetching role members:', error)
-      }
-    },
-    async viewRoleMembers(role) {
-      this.selectedRole = role
-      this.memberToAdd = ''
-      this.fetchRoleMembers(role)
-      this.showMembersModal = true
-    },
-    closeMembersModal() {
-      this.showMembersModal = false
-      this.selectedRole = null
-      this.roleMembers = []
-      this.memberToAdd = ''
-    },
-    selectUserToAdd(user) {
-      this.memberToAdd = (user.first_name || user.firstName) + ' ' + (user.last_name || user.lastName)
-    },
-    async addMemberToRole() {
-      if (!this.memberToAdd || !this.selectedRole) {
-        return
-      }
-
-      this.isAddingMember = true
-      try {
-        // Get the JWT token
-        const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-        if (!token) {
-          this.showNotification('error', 'Authentication Error', 'Authentication required. Please login again.')
-          return
-        }
-
-        // Find user by name, email, student_id, or rfid
-        const query = this.memberToAdd.toLowerCase()
-        let user = this.availableUsers.find(u => {
-          const fullName = `${(u.first_name || u.firstName) || ''} ${(u.last_name || u.lastName) || ''}`.toLowerCase()
-          const studentId = (u.student_id || '').toLowerCase()
-          const email = (u.email || '').toLowerCase()
-          const rfid = (u.rfid_code || '').toLowerCase()
-          return fullName === query || studentId === query || email === query || rfid === query
-        })
-
-        // If not found by exact match, try partial match
-        if (!user) {
-          user = this.availableUsers.find(u => {
-            const fullName = `${(u.first_name || u.firstName) || ''} ${(u.last_name || u.lastName) || ''}`.toLowerCase()
-            const studentId = (u.student_id || '').toLowerCase()
-            const email = (u.email || '').toLowerCase()
-            const rfid = (u.rfid_code || '').toLowerCase()
-            return fullName.includes(query) || studentId.includes(query) || email.includes(query) || rfid.includes(query)
-          })
-        }
-
-        if (!user) {
-          this.showNotification('error', 'User Not Found', 'User not found')
-          return
-        }
-
-        // Use student_id for the API endpoint
-        const studentId = user.student_id || user._id || user.id
-        const roleValue = this.selectedRole.toLowerCase()
-
-        // Check if user already has a different role
-        const currentRole = user.role ? user.role.toLowerCase() : 'student'
-        if (currentRole !== 'student' && currentRole !== roleValue) {
-          // Show confirmation modal for role switch
-          this.roleSwitchData = {
-            user: user,
-            newRole: roleValue,
-            oldRole: currentRole
-          }
-          this.showRoleSwitchConfirmModal = true
-          return
-        }
-
-        // If user is just a student, proceed directly without confirmation
-        await this.performRoleAssignment(user, roleValue)
-      } catch (error) {
-        console.error('Error adding member:', error)
-        this.showNotification('error', 'Error', 'Error adding member to role')
-      } finally {
-        this.isAddingMember = false
-      }
-    },
-    async removeMemberFromRole(userId) {
-      try {
-        console.log('Removing member with ID:', userId)
-        
-        // Get the JWT token
-        const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-        if (!token) {
-          console.error('No authentication token found')
-          this.showNotification('error', 'Authentication Error', 'Authentication required. Please login again.')
-          return
-        }
-
-        // Find the user to get their student_id
-        let user = this.roleMembers.find(u => {
-          const memberId = u.student_id || u._id || u.id
-          return String(memberId) === String(userId)
-        })
-        
-        if (!user) {
-          console.error('User not found in roleMembers:', userId, 'Available:', this.roleMembers.map(u => u.student_id || u._id || u.id))
-          this.showNotification('error', 'User Not Found', 'Could not find the user to remove')
-          return
-        }
-
-        const studentId = user.student_id || user._id || user.id
-        console.log('Calling API with studentId:', studentId, 'and role: student')
-        
-        // Update user role to 'student' (default role - everyone is a student)
-        const apiUrl = buildAPIUrl(`/apis/students/${studentId}/role`)
-        console.log('API URL:', apiUrl)
-        
-        const timestamp = encodeTimestamp()
-        console.log('Timestamp:', timestamp)
-        
-        const response = await fetch(apiUrl, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'X-SSAAM-TS': timestamp
-          },
-          body: JSON.stringify({ role: 'student' })
-        })
-
-        console.log('API Response status:', response.status)
-        
-        if (response.ok) {
-                   console.log('API call successful')
-          // Update local data
-          if (user) {
-            user.role = 'student'
-          }
-          await this.fetchRoleMembers(this.selectedRole)
-          this.showNotification('success', 'Success', 'User removed from role successfully')
-        } else {
-          const errorData = await response.json()
-          console.error('API error response:', errorData)
-          this.showNotification('error', 'Failed', 'Failed to remove user from role: ' + (errorData.message || 'Unknown error'))
-        }
-      } catch (error) {
-        console.error('Error removing member:', error)
-        this.showNotification('error', 'Error', 'Error removing user from role: ' + error.message)
-      }
-    },
-    showRemoveRoleMemberConfirmation(member) {
-      this.memberToRemoveFromRole = member
-      this.showRemoveRoleMemberConfirmModal = true
-    },
-    closeRemoveRoleMemberConfirmation() {
-      this.showRemoveRoleMemberConfirmModal = false
-      this.memberToRemoveFromRole = null
-    },
-    confirmRemoveRoleMember() {
-      console.log('confirmRemoveRoleMember called')
-      console.log('memberToRemoveFromRole:', this.memberToRemoveFromRole)
-      
-      if (this.memberToRemoveFromRole) {
-        const userId = this.memberToRemoveFromRole.student_id || this.memberToRemoveFromRole._id || this.memberToRemoveFromRole.id
-        console.log('Extracted userId:', userId)
-        
-        this.closeRemoveRoleMemberConfirmation()
-        this.removeMemberFromRole(userId)
-      } else {
-        console.error('memberToRemoveFromRole is null or undefined')
-      }
-    },
-    closeSwitchRoleConfirmation() {
-      this.showRoleSwitchConfirmModal = false
-      this.roleSwitchData = {
-        user: null,
-        newRole: null,
-        oldRole: null
-      }
-    },
-    confirmRoleSwitch() {
-      if (this.roleSwitchData.user) {
-        const user = this.roleSwitchData.user
-        const roleValue = this.roleSwitchData.newRole
-        this.closeSwitchRoleConfirmation()
-        this.performRoleAssignment(user, roleValue)
-      }
-    },
-    async performRoleAssignment(user, roleValue) {
-      try {
-        const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-        if (!token) {
-          this.showNotification('error', 'Authentication Error', 'Authentication required. Please login again.')
-          return
-        }
-
-        const studentId = user.student_id || user._id || user.id
-        const timestamp = encodeTimestamp()
-        
-        const response = await fetch(buildAPIUrl(`/apis/students/${studentId}/role`), {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'X-SSAAM-TS': timestamp
-          },
-          body: JSON.stringify({ role: roleValue })
-        })
-
-        if (response.ok) {
-          user.role = roleValue
-          await this.fetchRoleMembers(this.selectedRole)
-          this.memberToAdd = ''
-          this.showNotification('success', 'Success', 'User added to role successfully')
-        } else {
-          const errorData = await response.json()
-          this.showNotification('error', 'Failed', 'Failed to add user to role: ' + (errorData.message || 'Unknown error'))
-        }
-      } catch (error) {
-        console.error('Error assigning role:', error)
-        this.showNotification('error', 'Error', 'Error assigning role to user')
-      }
-    },
     async refreshData() {
       this.isRefreshing = true
       try {
         await this.fetchAllUsers()
-        if (this.selectedRole) {
-          await this.fetchRoleMembers(this.selectedRole)
-        }
       } finally {
         this.isRefreshing = false
       }
