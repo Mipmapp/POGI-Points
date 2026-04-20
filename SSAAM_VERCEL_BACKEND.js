@@ -3444,7 +3444,7 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
 // Get all students from all colleges — super admin only
 app.get('/apis/students/all-colleges', auth, async (req, res) => {
     try {
-        if (!req.isMaster || req.master?.role === 'co-admin') {
+        if (!req.master?.isMaster || req.master?.role === 'co-admin') {
             return res.status(403).json({ message: 'Access denied. Super admin required.' });
         }
         const colleges = ['CCS', 'COE', 'SOM', 'CNAHS'];
@@ -4311,7 +4311,7 @@ app.delete('/apis/students/:student_id', auth, requireCoAdminOrAbove, async (req
         let deleted = await StudentModel.findOneAndDelete({ student_id: req.params.student_id });
 
         // If not found and user is super admin, search across all other colleges
-        if (!deleted && req.isMaster && req.master?.role !== 'co-admin') {
+        if (!deleted && req.master?.isMaster && req.master?.role !== 'co-admin') {
             for (const college of ['CCS', 'COE', 'SOM', 'CNAHS']) {
                 if (college === foundCollege) continue;
                 const AltModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
