@@ -4021,7 +4021,7 @@
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-100">
-                    <tr v-for="record in myPayments" :key="record._id" class="hover:bg-gray-50 transition-colors">
+                    <tr v-for="record in myPayments.slice(0, myPaymentsLimit)" :key="record._id" class="hover:bg-gray-50 transition-colors">
                       <td class="px-5 py-4">
                         <p class="font-semibold text-gray-900">{{ record.title }}</p>
                         <p v-if="record.description" class="text-xs text-gray-500 mt-0.5 line-clamp-2">{{ record.description }}</p>
@@ -4048,6 +4048,12 @@
                   </tbody>
                 </table>
               </div>
+              <!-- Load More -->
+              <div v-if="myPayments.length > myPaymentsLimit" class="px-5 py-3 border-t border-gray-100 text-center">
+                <button @click="myPaymentsLimit += 10" :class="['px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95', isCOE ? 'bg-orange-50 text-orange-700 hover:bg-orange-100' : isSOM ? 'bg-green-50 text-green-700 hover:bg-green-100' : isCNAHS ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-blue-50 text-blue-700 hover:bg-blue-100']">
+                  Load More ({{ myPayments.length - myPaymentsLimit }} remaining)
+                </button>
+              </div>
               <div :class="['px-5 py-3 flex items-center justify-between border-t border-gray-100', isCOE ? 'bg-orange-50/50' : isSOM ? 'bg-green-50/50' : isCNAHS ? 'bg-green-50/50' : 'bg-blue-50/50']">
                 <span class="text-xs text-gray-500">{{ myPayments.filter(p => p.is_paid).length }} of {{ myPayments.length }} paid</span>
                 <span :class="['text-xs font-bold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">
@@ -4068,25 +4074,35 @@
             </button>
           </div>
 
-          <div class="overflow-x-auto text-sm md:text-base">
+          <!-- College Tabs (Master Admin only) -->
+          <div v-if="currentUser.isMaster" class="flex flex-wrap gap-2 mb-5">
+            <button @click="statsViewCollege = null" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === null ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300']">All</button>
+            <button @click="statsViewCollege = 'CCS'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'CCS' ? 'bg-blue-600 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300']">CCS</button>
+            <button @click="statsViewCollege = 'COE'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'COE' ? 'bg-orange-500 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-orange-300']">COE</button>
+            <button @click="statsViewCollege = 'SOM'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'SOM' ? 'bg-green-600 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-green-300']">SOM</button>
+            <button @click="statsViewCollege = 'CNAHS'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'CNAHS' ? 'bg-teal-600 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-teal-300']">CNAHS</button>
+          </div>
+
+          <!-- Table: show when not "All" for isMaster, or always for regular admin -->
+          <div v-if="!currentUser.isMaster || statsViewCollege !== null" class="overflow-x-auto text-sm md:text-base">
             <table class="w-full border-collapse">
               <thead>
                 <tr :class="themeColors.headerBg">
                   <th :class="['border px-6 py-3 text-left font-semibold', themeColors.headerText]"></th>
-                  <th v-for="prog in availablePrograms" :key="prog" :class="['border px-6 py-3 text-center font-semibold', themeColors.headerText]">{{ prog }}</th>
+                  <th v-for="prog in displayPrograms" :key="prog" :class="['border px-6 py-3 text-center font-semibold', themeColors.headerText]">{{ prog }}</th>
                   <th :class="['border px-6 py-3 text-center font-semibold', themeColors.headerText]">Total</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="year in ['1st Year', '2nd Year', '3rd Year', '4th Year']" :key="year" class="hover:bg-gray-50">
                   <td :class="['border px-6 py-4 font-medium text-gray-700', themeColors.rowBorder]">{{ year.toLowerCase().replace('year', 'years') }}</td>
-                  <td v-for="prog in availablePrograms" :key="prog" :class="['border px-6 py-4 text-center', themeColors.rowBorder]">{{ stats[prog]?.[year] || 0 }}</td>
-                  <td :class="`border px-6 py-4 text-center font-bold ${themeColors.rowBorder} ${isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700'}`">{{ availablePrograms.reduce((sum, prog) => sum + (stats[prog]?.[year] || 0), 0) }}</td>
+                  <td v-for="prog in displayPrograms" :key="prog" :class="['border px-6 py-4 text-center', themeColors.rowBorder]">{{ displayStats[prog]?.[year] || 0 }}</td>
+                  <td :class="`border px-6 py-4 text-center font-bold ${themeColors.rowBorder} ${isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700'}`">{{ displayPrograms.reduce((sum, prog) => sum + (displayStats[prog]?.[year] || 0), 0) }}</td>
                 </tr>
                 <tr :class="`font-bold ${themeColors.rowBgAlt}`">
                   <td :class="['border px-6 py-4 font-bold text-gray-900', themeColors.rowBorder]">All year levels</td>
-                  <td v-for="prog in availablePrograms" :key="prog" :class="['border px-6 py-4 text-center', themeColors.rowBorder]">{{ stats[prog]?.total || 0 }}</td>
-                  <td :class="`border px-6 py-4 text-center ${themeColors.rowBgAltText}`">{{ totalStudents }}</td>
+                  <td v-for="prog in displayPrograms" :key="prog" :class="['border px-6 py-4 text-center', themeColors.rowBorder]">{{ displayStats[prog]?.total || 0 }}</td>
+                  <td :class="`border px-6 py-4 text-center ${themeColors.rowBgAltText}`">{{ displayTotal }}</td>
                 </tr>
               </tbody>
             </table>
@@ -4094,7 +4110,7 @@
 
           <div class="mt-6 text-center">
             <p :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
-              Total Registered Students: <span class="text-2xl">{{ totalStudents }}</span>
+              Total Registered Students: <span class="text-2xl">{{ currentUser.isMaster && statsViewCollege ? displayTotal : totalStudents }}</span>
             </p>
           </div>
           
@@ -6468,6 +6484,7 @@ const studentRequests = ref([])
 const newRequest = ref({ type: '', new_value: '', first_name: '', middle_name: '', last_name: '', suffix: '', reason: '' })
 const allCollegesStats = ref({ CCS: null, COE: null, SOM: null, CNAHS: null })
 const allCollegesLoading = ref(false)
+const statsViewCollege = ref(null)
 const requestSubmitting = ref(false)
 
 // Co-Admin Management (isMaster only)
@@ -6710,6 +6727,7 @@ const paymentTab = ref('active') // 'active' or 'closed'
 
 // Student contributions/receipts state
 const myPayments = ref([])
+const myPaymentsLimit = ref(10)
 const loadingMyPayments = ref(false)
 
 const newPaymentData = ref({
@@ -11663,6 +11681,31 @@ const totalStudents = computed(() => {
   return availablePrograms.value.reduce((sum, prog) => {
     return sum + (stats.value[prog]?.total || 0)
   }, 0)
+})
+
+const displayStatsCollegeData = computed(() => {
+  if (currentUser.value?.isMaster && statsViewCollege.value) {
+    return allCollegesStats.value[statsViewCollege.value] || null
+  }
+  return null
+})
+
+const displayStats = computed(() => {
+  const d = displayStatsCollegeData.value
+  if (d) return d.stats || {}
+  return stats.value
+})
+
+const displayPrograms = computed(() => {
+  const d = displayStatsCollegeData.value
+  if (d) return Object.keys(d.stats || {}).sort()
+  return availablePrograms.value
+})
+
+const displayTotal = computed(() => {
+  const d = displayStatsCollegeData.value
+  if (d) return d.total || 0
+  return totalStudents.value
 })
 
 const verifiedCount = computed(() => {

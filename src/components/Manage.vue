@@ -92,31 +92,31 @@
             <div class="flex gap-2 flex-wrap">
               <button
                 @click="userYearFilter = null"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === null ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === null ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 All Years
               </button>
               <button
                 @click="userYearFilter = '1st year'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '1st year' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '1st year' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 1st Year
               </button>
               <button
                 @click="userYearFilter = '2nd year'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '2nd year' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '2nd year' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 2nd Year
               </button>
               <button
                 @click="userYearFilter = '3rd year'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '3rd year' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '3rd year' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 3rd Year
               </button>
               <button
                 @click="userYearFilter = '4th year'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '4th year' ? 'bg-blue-600 text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-md']"
+                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '4th year' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
               >
                 4th Year
               </button>
@@ -462,6 +462,18 @@
             <button @click="roleTargetStudent = null; roleSearchQuery = ''" class="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 transition flex-shrink-0">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
+          </div>
+
+          <!-- College Dept (isMaster only) -->
+          <div v-if="isMaster" class="space-y-2">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">College Department</label>
+            <div class="flex flex-wrap gap-2">
+              <button v-for="col in ['CCS','COE','SOM','CNAHS']" :key="col" @click="roleTargetCollegeDept = col"
+                :class="['px-3 py-1.5 rounded-lg text-xs font-bold transition-all border',
+                  roleTargetCollegeDept === col
+                    ? col === 'CCS' ? 'bg-blue-600 text-white border-transparent shadow-md' : col === 'COE' ? 'bg-orange-500 text-white border-transparent shadow-md' : col === 'SOM' ? 'bg-green-600 text-white border-transparent shadow-md' : 'bg-teal-600 text-white border-transparent shadow-md'
+                    : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300']">{{ col }}</button>
+            </div>
           </div>
 
           <!-- Role Selector -->
@@ -834,6 +846,7 @@ export default {
       isSearchingRole: false,
       roleTargetStudent: null,
       selectedNewRole: null,
+      roleTargetCollegeDept: '',
       isAssigningRole: false,
       roleAssignError: '',
       recentRoleAssignments: [],
@@ -1271,6 +1284,9 @@ export default {
         if (response.ok) {
           const data = await response.json()
           this.roleTargetStudent = data.student || null
+          if (this.roleTargetStudent) {
+            this.roleTargetCollegeDept = this.roleTargetStudent.college || this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
+          }
         } else {
           this.roleTargetStudent = null
         }
@@ -1287,7 +1303,7 @@ export default {
       this.roleAssignError = ''
       try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-        const college = this.roleTargetStudent.college || this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
+        const college = this.roleTargetCollegeDept || this.roleTargetStudent.college || this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
         const { encodeTimestamp } = await import('../utils/ssaamCrypto.js')
         const timestamp = encodeTimestamp()
         const studentId = this.roleTargetStudent.student_id

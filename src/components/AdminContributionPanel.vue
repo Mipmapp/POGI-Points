@@ -201,8 +201,21 @@
         <span class="ml-auto text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">{{ filteredContributions.length }}</span>
       </div>
 
+      <!-- Loading Skeleton -->
+      <div v-if="isLoading" class="p-4 space-y-3">
+        <div v-for="i in 8" :key="i" class="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 animate-pulse">
+          <div class="w-9 h-9 rounded-xl bg-gray-200 flex-shrink-0"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-3 bg-gray-200 rounded-full w-1/3"></div>
+            <div class="h-2.5 bg-gray-100 rounded-full w-1/4"></div>
+          </div>
+          <div class="h-3 bg-gray-200 rounded-full w-16"></div>
+          <div class="h-6 bg-gray-100 rounded-full w-14"></div>
+        </div>
+      </div>
+
       <!-- Empty State -->
-      <div v-if="filteredContributions.length === 0" class="flex flex-col items-center justify-center py-16 px-6 text-center">
+      <div v-else-if="filteredContributions.length === 0" class="flex flex-col items-center justify-center py-16 px-6 text-center">
         <div class="w-16 h-16 rounded-3xl bg-blue-50 border border-blue-100 flex items-center justify-center mb-4">
           <svg class="w-8 h-8 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
         </div>
@@ -556,6 +569,7 @@ export default {
       filterProgram: '',
       filterStatus: '',
       filterCollege: '',
+      isLoading: false,
       isDownloading: false,
       showDownloadConfirm: false,
       downloadPreviewLimit: 5,
@@ -666,6 +680,7 @@ export default {
       }
     },
     async loadAllContributions() {
+      this.isLoading = true;
       try {
         const token = localStorage.getItem('authToken');
         const params = new URLSearchParams();
@@ -691,6 +706,8 @@ export default {
       } catch (error) {
         console.error('Error loading contributions:', error);
         this.loadSampleData();
+      } finally {
+        this.isLoading = false;
       }
     },
     loadSampleData() {
