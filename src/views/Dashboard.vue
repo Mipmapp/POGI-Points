@@ -647,6 +647,9 @@
                   <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                 </span>
               </p>
+              <p class="text-xs opacity-70 mt-0.5 tracking-wide" v-if="currentUser.isMaster">
+                {{ currentUser.college || 'All Colleges' }}
+              </p>
               <p class="font-bold text-lg leading-tight" v-else>{{ displayName }}!</p>
             </div>
             <div class="flex flex-wrap justify-center gap-1.5 mt-2" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
@@ -788,11 +791,24 @@
             <p class="text-sm mb-2 opacity-90 text-white">Welcome back,</p>
             <div class="flex flex-col items-center gap-2">
               <p class="font-bold text-lg" v-if="currentUser.role === 'admin' || currentUser.isMaster">
-                <span class="relative inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-sm font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden group">
+                <span v-if="isTreasurer" class="relative inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-cyan-500 via-teal-500 to-cyan-600 text-white text-sm font-black rounded-full shadow-[0_0_20px_rgba(6,182,212,0.7)] border border-cyan-300/40 overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
+                  <svg class="w-5 h-5 brightness-0 invert" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                  <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Treasurer</span>
+                </span>
+                <span v-else-if="isCoAdmin" class="relative inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-violet-500 via-purple-500 to-violet-600 text-white text-sm font-black rounded-full shadow-[0_0_20px_rgba(139,92,246,0.7)] border border-violet-300/40 overflow-hidden">
+                  <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
+                  <svg class="w-5 h-5 brightness-0 invert" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                  <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Co-Admin</span>
+                </span>
+                <span v-else class="relative inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-sm font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden group">
                   <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
                   <img src="/crown.svg" alt="Admin" class="w-5 h-5 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
                   <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                 </span>
+              </p>
+              <p class="text-xs opacity-70 mt-0.5 tracking-wide text-white" v-if="currentUser.isMaster">
+                {{ currentUser.college || 'All Colleges' }}
               </p>
               <p class="font-bold text-lg text-white" v-else>{{ displayName }}!</p>
               
