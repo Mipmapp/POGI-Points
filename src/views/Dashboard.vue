@@ -647,10 +647,10 @@
                   <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                 </span>
               </p>
-              <p class="text-xs opacity-70 mt-0.5 tracking-wide" v-if="currentUser.isMaster">
-                {{ currentUser.college || 'All Colleges' }}
+              <p class="text-xs opacity-70 mt-0.5 tracking-wide" v-if="currentUser.isMaster && (currentUser.role === 'co-admin' || currentUser.role === 'treasurer')">
+                {{ currentUser.college }}
               </p>
-              <p class="font-bold text-lg leading-tight" v-else>{{ displayName }}!</p>
+              <p class="font-bold text-lg leading-tight" v-else-if="!currentUser.isMaster">{{ displayName }}!</p>
             </div>
             <div class="flex flex-wrap justify-center gap-1.5 mt-2" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
               <!-- Verification Badge -->
@@ -807,10 +807,10 @@
                   <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                 </span>
               </p>
-              <p class="text-xs opacity-70 mt-0.5 tracking-wide text-white" v-if="currentUser.isMaster">
-                {{ currentUser.college || 'All Colleges' }}
+              <p class="text-xs opacity-70 mt-0.5 tracking-wide text-white" v-if="currentUser.isMaster && (currentUser.role === 'co-admin' || currentUser.role === 'treasurer')">
+                {{ currentUser.college }}
               </p>
-              <p class="font-bold text-lg text-white" v-else>{{ displayName }}!</p>
+              <p class="font-bold text-lg text-white" v-else-if="!currentUser.isMaster">{{ displayName }}!</p>
               
               <div class="flex flex-wrap justify-center gap-1.5 mt-1" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
                 <!-- Verification Badge -->
