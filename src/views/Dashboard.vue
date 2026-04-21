@@ -647,13 +647,12 @@
                   <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                 </span>
               </p>
-              <span v-if="!isSuperAdmin && currentUser.isMaster && currentUser.college"
-                :class="['inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-1',
-                  isTreasurer ? 'bg-cyan-400/20 text-cyan-100 border border-cyan-300/30' : 'bg-violet-400/20 text-violet-100 border border-violet-300/30']">
-                <svg class="w-3 h-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                {{ currentUser.college }}
-              </span>
-              <p class="font-bold text-lg leading-tight" v-else-if="!currentUser.isMaster">{{ displayName }}!</p>
+              <p class="font-bold text-lg leading-tight" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">{{ displayName }}!</p>
+            </div>
+            <!-- View switcher (Co-Admin / Treasurer only) -->
+            <div v-if="canSwitchView" class="mt-3 inline-flex bg-white/10 rounded-full p-0.5 border border-white/15 text-[10px] font-bold">
+              <button @click="roleViewMode = 'role'" :class="['px-2.5 py-1 rounded-full transition-all', roleViewMode === 'role' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">Role View</button>
+              <button @click="roleViewMode = 'user'" :class="['px-2.5 py-1 rounded-full transition-all', roleViewMode === 'user' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">User View</button>
             </div>
             <div class="flex flex-wrap justify-center gap-1.5 mt-2" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
               <!-- Verification Badge -->
@@ -683,20 +682,20 @@
       <nav class="flex-1 px-3 py-4 overflow-y-auto min-h-0 sidebar-scroll">
         <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Menu</p>
         <button @click="currentPage = 'dashboard'" :class="[sidebarItemBase, currentPage === 'dashboard' ? sidebarItemActive : sidebarItemHover]">
-          <svg v-if="currentUser.role === 'admin' || currentUser.isMaster" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          <svg v-if="(currentUser.role === 'admin' || currentUser.isMaster) && inRoleView" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
           <img v-else src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
-          <span>{{ (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</span>
+          <span>{{ ((currentUser.role === 'admin' || currentUser.isMaster) && inRoleView) ? 'Statistics' : 'Dashboard' }}</span>
         </button>
 
-        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="[sidebarItemBase, 'mt-2', currentPage === 'manage' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer && inRoleView" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="[sidebarItemBase, 'mt-2', currentPage === 'manage' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
           <span>Manage</span>
         </button>
-        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'pending'; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer && inRoleView" @click="currentPage = 'pending'; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
         </button>
-        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'settings'; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer && !isCoAdmin && inRoleView" @click="currentPage = 'settings'; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
           <span>Settings</span>
         </button>
@@ -704,27 +703,27 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
           <span>Assign</span>
         </button>
-        <button v-if="!isTreasurer" @click="currentPage = 'attendance'; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="!isTreasurer && (!currentUser.isMaster || inRoleView)" @click="currentPage = 'attendance'; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
           <span>Attendance</span>
         </button>
-        <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'contributions'" :class="[sidebarItemBase, 'mt-2', currentPage === 'contributions' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && inRoleView" @click="currentPage = 'contributions'" :class="[sidebarItemBase, 'mt-2', currentPage === 'contributions' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
           <span>Contributions</span>
         </button>
-        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'raffle-tickets'" :class="[sidebarItemBase, 'mt-2', currentPage === 'raffle-tickets' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && inRoleView" @click="currentPage = 'raffle-tickets'" :class="[sidebarItemBase, 'mt-2', currentPage === 'raffle-tickets' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
           <span>Raffle Ticket</span>
         </button>
-        <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'request'; fetchStudentRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'request' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role !== 'admin' && !currentUser.isMaster) || inUserView" @click="currentPage = 'request'; fetchStudentRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'request' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
           <span>Request</span>
         </button>
-        <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'my-contributions'; fetchMyPayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-contributions' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role !== 'admin' && !currentUser.isMaster) || inUserView" @click="currentPage = 'my-contributions'; fetchMyPayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-contributions' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
           <span>Contributions</span>
         </button>
-        <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'my-raffle'" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-raffle' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(currentUser.role !== 'admin' && !currentUser.isMaster) || inUserView" @click="currentPage = 'my-raffle'" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-raffle' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
           <span>My Raffle</span>
         </button>
@@ -810,13 +809,12 @@
                   <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                 </span>
               </p>
-              <span v-if="!isSuperAdmin && currentUser.isMaster && currentUser.college"
-                :class="['inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-1',
-                  isTreasurer ? 'bg-cyan-400/20 text-cyan-100 border border-cyan-300/30' : 'bg-violet-400/20 text-violet-100 border border-violet-300/30']">
-                <svg class="w-3 h-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
-                {{ currentUser.college }}
-              </span>
-              <p class="font-bold text-lg text-white" v-else-if="!currentUser.isMaster">{{ displayName }}!</p>
+              <p class="font-bold text-lg text-white" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">{{ displayName }}!</p>
+              <!-- View switcher (Co-Admin / Treasurer only) -->
+              <div v-if="canSwitchView" class="mt-2 inline-flex bg-white/10 rounded-full p-0.5 border border-white/15 text-[10px] font-bold">
+                <button @click="roleViewMode = 'role'" :class="['px-2.5 py-1 rounded-full transition-all', roleViewMode === 'role' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">Role View</button>
+                <button @click="roleViewMode = 'user'" :class="['px-2.5 py-1 rounded-full transition-all', roleViewMode === 'user' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">User View</button>
+              </div>
               
               <div class="flex flex-wrap justify-center gap-1.5 mt-1" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
                 <!-- Verification Badge -->
@@ -847,20 +845,20 @@
         <nav class="flex-1 px-3 py-4 overflow-y-auto min-h-0 sidebar-scroll">
           <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Menu</p>
           <button @click="currentPage = 'dashboard'; showMobileMenu = false" :class="[sidebarItemBase, currentPage === 'dashboard' ? sidebarItemActive : sidebarItemHover]">
-            <svg v-if="currentUser.role === 'admin' || currentUser.isMaster" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+            <svg v-if="(currentUser.role === 'admin' || currentUser.isMaster) && inRoleView" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
             <img v-else src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
-            <span>{{ (currentUser.role === 'admin' || currentUser.isMaster) ? 'Statistics' : 'Dashboard' }}</span>
+            <span>{{ ((currentUser.role === 'admin' || currentUser.isMaster) && inRoleView) ? 'Statistics' : 'Dashboard' }}</span>
           </button>
 
-          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="[sidebarItemBase, 'mt-2', currentPage === 'manage' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer && inRoleView" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="[sidebarItemBase, 'mt-2', currentPage === 'manage' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
             <span>Manage</span>
           </button>
-          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'pending'; showMobileMenu = false; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer && inRoleView" @click="currentPage = 'pending'; showMobileMenu = false; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
           </button>
-          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'settings'; showMobileMenu = false; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role === 'admin' || isSuperAdmin) && inRoleView" @click="currentPage = 'settings'; showMobileMenu = false; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             <span>Settings</span>
           </button>
@@ -868,27 +866,27 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
             <span>Assign</span>
           </button>
-          <button v-if="!isTreasurer" @click="currentPage = 'attendance'; showMobileMenu = false; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="!isTreasurer && (!currentUser.isMaster || inRoleView)" @click="currentPage = 'attendance'; showMobileMenu = false; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
             <span>Attendance</span>
           </button>
-          <button v-if="currentUser.role === 'admin' || currentUser.isMaster" @click="currentPage = 'contributions'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'contributions' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && inRoleView" @click="currentPage = 'contributions'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'contributions' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <span>Contributions</span>
           </button>
-          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && !isTreasurer" @click="currentPage = 'raffle-tickets'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'raffle-tickets' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role === 'admin' || currentUser.isMaster) && inRoleView" @click="currentPage = 'raffle-tickets'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'raffle-tickets' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
             <span>Raffle Ticket</span>
           </button>
-          <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'request'; showMobileMenu = false; fetchStudentRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'request' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role !== 'admin' && !currentUser.isMaster) || inUserView" @click="currentPage = 'request'; showMobileMenu = false; fetchStudentRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'request' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             <span>Request</span>
           </button>
-          <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'my-contributions'; showMobileMenu = false; fetchMyPayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-contributions' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role !== 'admin' && !currentUser.isMaster) || inUserView" @click="currentPage = 'my-contributions'; showMobileMenu = false; fetchMyPayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-contributions' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <span>Contributions</span>
           </button>
-          <button v-if="currentUser.role !== 'admin' && !currentUser.isMaster" @click="currentPage = 'my-raffle'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-raffle' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(currentUser.role !== 'admin' && !currentUser.isMaster) || inUserView" @click="currentPage = 'my-raffle'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-raffle' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
             <span>My Raffle</span>
           </button>
@@ -4096,8 +4094,8 @@
             </button>
           </div>
 
-          <!-- College Tabs (Master Admin only) -->
-          <div v-if="currentUser.isMaster" class="flex flex-wrap gap-2 mb-5">
+          <!-- College Tabs (Super Admin only) -->
+          <div v-if="currentUser.isMaster && !isCoAdmin && !isTreasurer" class="flex flex-wrap gap-2 mb-5">
             <button @click="statsViewCollege = null" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === null ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300']">All</button>
             <button @click="statsViewCollege = 'CCS'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'CCS' ? 'bg-blue-600 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300']">CCS</button>
             <button @click="statsViewCollege = 'COE'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'COE' ? 'bg-orange-500 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-orange-300']">COE</button>
@@ -4105,8 +4103,8 @@
             <button @click="statsViewCollege = 'CNAHS'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'CNAHS' ? 'bg-teal-600 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-teal-300']">CNAHS</button>
           </div>
 
-          <!-- Table: show when not "All" for isMaster, or always for regular admin -->
-          <div v-if="!currentUser.isMaster || statsViewCollege !== null" class="overflow-x-auto text-sm md:text-base">
+          <!-- Table: show when not "All" for isMaster, or always for regular admin / co-admin / treasurer -->
+          <div v-if="!currentUser.isMaster || statsViewCollege !== null || isCoAdmin || isTreasurer" class="overflow-x-auto text-sm md:text-base">
             <table class="w-full border-collapse">
               <thead>
                 <tr :class="themeColors.headerBg">
@@ -4322,8 +4320,8 @@
           </div>
         </div>
 
-        <!-- All Colleges Statistics (Master Admin Only) -->
-        <div v-if="currentPage === 'dashboard' && currentUser.isMaster" class="mt-6">
+        <!-- All Colleges Statistics (Super Admin Only) -->
+        <div v-if="currentPage === 'dashboard' && currentUser.isMaster && !isCoAdmin && !isTreasurer" class="mt-6">
           <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
             <div class="relative h-24 bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light overflow-hidden">
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
@@ -10705,6 +10703,12 @@ const isCNAHS = computed(() => false)
 const isTreasurer = computed(() => !!(currentUser.value.isMaster && currentUser.value.role === 'treasurer'))
 const isSuperAdmin = computed(() => !!(currentUser.value.isMaster && currentUser.value.role === 'admin'))
 const isCoAdmin = computed(() => !!(currentUser.value.isMaster && currentUser.value.role === 'co-admin'))
+const canSwitchView = computed(() => isCoAdmin.value || isTreasurer.value)
+const roleViewMode = ref('role')
+const inRoleView = computed(() => !canSwitchView.value || roleViewMode.value === 'role')
+const inUserView = computed(() => canSwitchView.value && roleViewMode.value === 'user')
+watch(canSwitchView, (v) => { if (!v) roleViewMode.value = 'role' })
+watch(roleViewMode, () => { currentPage.value = 'dashboard' })
 
 // Human-readable college name derived from the user's actual college assignment
 const collegeName = computed(() => {

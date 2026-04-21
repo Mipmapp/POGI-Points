@@ -155,7 +155,7 @@
           </div>
 
           <!-- Filter by College (super admin only) -->
-          <div v-if="isMaster" class="space-y-3 animate-fade-in-delay-2">
+          <div v-if="isMaster && !isCoAdmin && !isTreasurer" class="space-y-3 animate-fade-in-delay-2">
             <p class="text-xs font-bold text-gray-600 uppercase tracking-wider">College</p>
             <div class="flex gap-2 flex-wrap">
               <button @click="userCollegeFilter = null; currentPage = 1" :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userCollegeFilter === null ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']">All Colleges</button>
@@ -518,9 +518,9 @@
           <div :class="['w-1 h-5 rounded-full', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']"></div>
           <h3 :class="['text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Role Members by College</h3>
         </div>
-        <div :class="['grid gap-3', isMaster ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1']">
+        <div :class="['grid gap-3', (isMaster && !isCoAdmin && !isTreasurer) ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1']">
           <button
-            v-for="col in (isMaster ? ['CCS','COE','SOM','CNAHS'] : [currentUser.college || 'CCS'])"
+            v-for="col in ((isMaster && !isCoAdmin && !isTreasurer) ? ['CCS','COE','SOM','CNAHS'] : [currentUser.college || 'CCS'])"
             :key="col"
             @click="fetchCollegeMembers(col)"
             :class="['rounded-xl p-4 text-left transition-all hover:scale-[1.02] active:scale-95 shadow-sm border-2 border-transparent hover:border-opacity-50',
@@ -1000,6 +1000,8 @@ export default {
     primaryTextHover() { return 'hover:text-blue-800' },
     primaryDarkText() { return 'text-blue-900' },
     isMaster() { return this.currentUser?.isMaster === true },
+    isCoAdmin() { return this.currentUser?.isMaster === true && this.currentUser?.role === 'co-admin' },
+    isTreasurer() { return this.currentUser?.isMaster === true && this.currentUser?.role === 'treasurer' },
     // End theme helpers
 
     filteredUsers() {
