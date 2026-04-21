@@ -82,19 +82,28 @@
 
         <!-- Events List -->
         <div v-else class="flex gap-2.5 overflow-x-auto pb-1 no-scrollbar">
-          <button
+          <div
             v-for="event in paymentEvents"
             :key="event._id"
-            @click="selectEvent(event)"
             :class="[
-              'flex-shrink-0 w-52 text-left rounded-2xl border-2 p-3.5 transition-all duration-150 active:scale-[0.98]',
+              'relative flex-shrink-0 w-52 rounded-2xl border-2 p-3.5 transition-all duration-150 cursor-pointer group',
               activePayment && activePayment._id === event._id
                 ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100'
                 : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50'
             ]"
+            @click="selectEvent(event)"
           >
-            <div class="flex items-start justify-between gap-1 mb-2">
-              <p :class="['font-bold text-sm leading-tight line-clamp-2', activePayment && activePayment._id === event._id ? 'text-purple-800' : 'text-gray-800']">{{ event.title }}</p>
+            <!-- Delete button -->
+            <button
+              @click.stop="confirmDeleteEvent(event)"
+              class="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-100 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-150 z-10"
+              title="Delete event"
+            >
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+
+            <div class="flex items-start gap-1 mb-2 pr-4">
+              <p :class="['font-bold text-sm leading-tight line-clamp-2 flex-1', activePayment && activePayment._id === event._id ? 'text-purple-800' : 'text-gray-800']">{{ event.title }}</p>
               <div v-if="activePayment && activePayment._id === event._id" class="flex-shrink-0 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center mt-0.5">
                 <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
               </div>
@@ -111,7 +120,7 @@
             <div v-if="event.deadline" class="mt-1.5 text-[10px] text-gray-400 font-medium">
               Due: {{ new Date(event.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}
             </div>
-          </button>
+          </div>
         </div>
       </div>
 
@@ -401,6 +410,33 @@
       </div>
     </div>
 
+    <!-- Delete Event Confirmation Modal -->
+    <transition name="fade">
+      <div v-if="showDeleteEventConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showDeleteEventConfirm = false"></div>
+        <div class="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <div class="p-6 text-center">
+            <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+              <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </div>
+            <h3 class="text-lg font-extrabold text-gray-900 mb-1">Delete Event?</h3>
+            <p class="text-sm text-gray-500 mb-1">You are about to delete:</p>
+            <p class="text-sm font-bold text-gray-800 mb-1">{{ eventToDelete?.title }}</p>
+            <p class="text-xs text-red-500 font-medium mb-5">This will also remove all payment records linked to this event. This cannot be undone.</p>
+            <div class="flex gap-3">
+              <button @click="showDeleteEventConfirm = false" :disabled="isDeletingEvent" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-700 transition">
+                Cancel
+              </button>
+              <button @click="deleteEvent" :disabled="isDeletingEvent" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 disabled:opacity-60">
+                <svg v-if="isDeletingEvent" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                {{ isDeletingEvent ? 'Deleting...' : 'Delete Event' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <!-- Create Contribution Event Modal -->
     <transition name="fade">
       <div v-if="showCreateEventModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -643,6 +679,9 @@ export default {
       createEventError: '',
       paymentEvents: [],
       isLoadingEvents: false,
+      showDeleteEventConfirm: false,
+      eventToDelete: null,
+      isDeletingEvent: false,
       newEventForm: {
         title: '',
         description: '',
@@ -752,12 +791,47 @@ export default {
       this.discountValue = 0;
       this.loadAllContributions();
     },
+    confirmDeleteEvent(event) {
+      this.eventToDelete = event;
+      this.showDeleteEventConfirm = true;
+    },
+    async deleteEvent() {
+      if (!this.eventToDelete) return;
+      this.isDeletingEvent = true;
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(buildAPIUrl(`/apis/payments/${this.eventToDelete._id}`), {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-College': getCollege() }
+        });
+        const data = await response.json();
+        if (response.ok) {
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Event "${this.eventToDelete.title}" deleted.`, type: 'success' } }));
+          if (this.activePayment?._id === this.eventToDelete._id) {
+            this.activePayment = null;
+            this.campaignFee = 0;
+          }
+          this.showDeleteEventConfirm = false;
+          this.eventToDelete = null;
+          await this.loadAllPaymentEvents();
+          this.loadAllContributions();
+        } else {
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: data.message || 'Failed to delete event.', type: 'error' } }));
+        }
+      } catch (e) {
+        console.error('Error deleting event:', e);
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Network error while deleting.', type: 'error' } }));
+      } finally {
+        this.isDeletingEvent = false;
+      }
+    },
     async loadAllContributions() {
       this.isLoading = true;
       try {
         const token = localStorage.getItem('authToken');
         const params = new URLSearchParams();
         params.set('limit', '1000');
+        if (this.activePayment?._id) params.set('payment_id', this.activePayment._id);
         if (this.filterStatus) params.set('status', this.filterStatus);
         if (this.filterYearLevel) params.set('year_level', this.filterYearLevel);
         if (this.filterProgram) params.set('program', this.filterProgram);

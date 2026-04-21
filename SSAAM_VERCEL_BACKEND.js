@@ -8430,14 +8430,20 @@ app.post('/apis/contributions/event/:eventId/apply-discount', auth, async (req, 
 // Enhanced search for contributions with RFID support
 app.get('/apis/contributions/search', auth, async (req, res) => {
     try {
-        const { query, year_level, program, status, limit = 1000, page = 1 } = req.query;
+        const { query, year_level, program, status, limit = 1000, page = 1, payment_id } = req.query;
 
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const CollegePaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
         const CollegePaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
 
-        // Get the latest active payment event
-        const latestPayment = await CollegePaymentModel.findOne({ amount_due: { $gt: 0 } }).sort({ created_at: -1 }).lean();
+        // Use the specified payment event, or fall back to the latest
+        let latestPayment;
+        if (payment_id) {
+            latestPayment = await CollegePaymentModel.findById(payment_id).lean();
+        }
+        if (!latestPayment) {
+            latestPayment = await CollegePaymentModel.findOne({ amount_due: { $gt: 0 } }).sort({ created_at: -1 }).lean();
+        }
 
         // Build a map of student_id -> campaign status from PaymentRecord
         const paymentRecords = await CollegePaymentRecordModel.find({}).lean();
