@@ -57,6 +57,64 @@
         </div>
       </div>
 
+      <!-- Event Selector -->
+      <div class="px-4 sm:px-6 md:px-8 py-4 border-b border-gray-100">
+        <div class="flex items-center gap-2 mb-3">
+          <div class="w-1 h-5 rounded-full bg-purple-500"></div>
+          <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Active Event</h3>
+          <span v-if="activePayment" class="ml-auto inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-full">
+            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+            {{ activePayment.title }}
+          </span>
+          <span v-else-if="!isLoadingEvents" class="ml-auto text-xs text-gray-400 font-medium">No event selected</span>
+        </div>
+
+        <!-- Loading Events -->
+        <div v-if="isLoadingEvents" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <div v-for="i in 3" :key="i" class="flex-shrink-0 h-20 w-48 rounded-2xl bg-gray-100 animate-pulse"></div>
+        </div>
+
+        <!-- No Events -->
+        <div v-else-if="paymentEvents.length === 0" class="flex items-center gap-3 bg-gray-50 border border-dashed border-gray-300 rounded-2xl px-4 py-3">
+          <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+          <p class="text-sm text-gray-500">No events created yet. Click <strong>Create Event</strong> to get started.</p>
+        </div>
+
+        <!-- Events List -->
+        <div v-else class="flex gap-2.5 overflow-x-auto pb-1 no-scrollbar">
+          <button
+            v-for="event in paymentEvents"
+            :key="event._id"
+            @click="selectEvent(event)"
+            :class="[
+              'flex-shrink-0 w-52 text-left rounded-2xl border-2 p-3.5 transition-all duration-150 active:scale-[0.98]',
+              activePayment && activePayment._id === event._id
+                ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100'
+                : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50'
+            ]"
+          >
+            <div class="flex items-start justify-between gap-1 mb-2">
+              <p :class="['font-bold text-sm leading-tight line-clamp-2', activePayment && activePayment._id === event._id ? 'text-purple-800' : 'text-gray-800']">{{ event.title }}</p>
+              <div v-if="activePayment && activePayment._id === event._id" class="flex-shrink-0 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center mt-0.5">
+                <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              </div>
+            </div>
+            <div class="flex items-center justify-between gap-1">
+              <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold capitalize',
+                event.type === 'fee' ? 'bg-blue-100 text-blue-700' :
+                event.type === 'membership' ? 'bg-green-100 text-green-700' :
+                event.type === 'donation' ? 'bg-orange-100 text-orange-700' :
+                'bg-gray-200 text-gray-600'
+              ]">{{ event.type || 'event' }}</span>
+              <span :class="['font-extrabold text-sm', activePayment && activePayment._id === event._id ? 'text-purple-700' : 'text-blue-700']">₱{{ Number(event.amount_due || 0).toFixed(2) }}</span>
+            </div>
+            <div v-if="event.deadline" class="mt-1.5 text-[10px] text-gray-400 font-medium">
+              Due: {{ new Date(event.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}
+            </div>
+          </button>
+        </div>
+      </div>
+
       <!-- Search & Filters -->
       <div class="px-4 sm:px-6 md:px-8 py-5 space-y-4">
         <!-- Search Row -->
@@ -146,6 +204,8 @@
           <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200">
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Campaign Fee</p>
             <p class="text-2xl font-extrabold text-ssaam-dark">₱{{ campaignFee.toFixed(2) }}</p>
+            <p v-if="activePayment" class="text-[10px] text-purple-600 font-semibold mt-1 truncate">{{ activePayment.title }}</p>
+            <p v-else class="text-[10px] text-red-400 font-semibold mt-1">No event selected</p>
           </div>
           <!-- Discount -->
           <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200 space-y-2">
@@ -581,6 +641,8 @@ export default {
       showCreateEventModal: false,
       isCreatingEvent: false,
       createEventError: '',
+      paymentEvents: [],
+      isLoadingEvents: false,
       newEventForm: {
         title: '',
         description: '',
@@ -657,11 +719,12 @@ export default {
     filterCollege() { this.loadAllContributions(); }
   },
   mounted() {
-    this.loadActivePayment();
+    this.loadAllPaymentEvents();
     this.loadAllContributions();
   },
   methods: {
-    async loadActivePayment() {
+    async loadAllPaymentEvents() {
+      this.isLoadingEvents = true;
       try {
         const token = localStorage.getItem('authToken');
         const response = await fetch(buildAPIUrl('/apis/payments'), {
@@ -670,14 +733,24 @@ export default {
         if (response.ok) {
           const data = await response.json();
           const payments = (data.payments || data.data || []).filter(p => p.amount_due > 0);
-          if (payments.length > 0) {
+          this.paymentEvents = payments;
+          if (payments.length > 0 && !this.activePayment) {
             this.activePayment = payments[0];
             this.campaignFee = payments[0].amount_due;
           }
         }
       } catch (e) {
-        console.error('Error loading active payment:', e);
+        console.error('Error loading payment events:', e);
+      } finally {
+        this.isLoadingEvents = false;
       }
+    },
+    selectEvent(event) {
+      this.activePayment = event;
+      this.campaignFee = event.amount_due || 0;
+      this.selectedStudent = null;
+      this.discountValue = 0;
+      this.loadAllContributions();
     },
     async loadAllContributions() {
       this.isLoading = true;
@@ -779,7 +852,8 @@ export default {
         if (response.ok) {
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Contribution event "${payload.title}" created successfully!`, type: 'success' } }));
           this.closeCreateEventModal();
-          this.loadActivePayment();
+          this.activePayment = null;
+          await this.loadAllPaymentEvents();
           this.loadAllContributions();
         } else {
           this.createEventError = data.message || 'Failed to create event. Please try again.';
@@ -923,4 +997,6 @@ export default {
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 </style>
