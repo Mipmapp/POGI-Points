@@ -4071,6 +4071,21 @@ app.put('/apis/students/:student_id/rfid', auth, requireCoAdminOrAbove, timestam
 
 
 
+app.get('/apis/students/role-members', auth, requireCoAdminOrAbove, async (req, res) => {
+    try {
+        const college = req.query.college || req.college;
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
+        const members = await StudentModel.find({
+            status: 'approved',
+            role: { $in: ['treasurer', 'co-admin'] }
+        }).select('student_id first_name last_name middle_name suffix photo role program year_level').sort({ role: 1, last_name: 1 });
+        res.json({ members, college });
+    } catch (err) {
+        console.error('Error fetching role members:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 app.put('/apis/students/:student_id/role', auth, requireCoAdminOrAbove, timestampAuth, async (req, res) => {
     try {
         const { role } = req.body;

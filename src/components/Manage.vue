@@ -512,6 +512,33 @@
         </div>
       </div>
 
+      <!-- College Role Members Cards -->
+      <div class="space-y-3">
+        <div class="flex items-center gap-2">
+          <div :class="['w-1 h-5 rounded-full', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']"></div>
+          <h3 :class="['text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Role Members by College</h3>
+        </div>
+        <div :class="['grid gap-3', isMaster ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1']">
+          <button
+            v-for="col in (isMaster ? ['CCS','COE','SOM','CNAHS'] : [currentUser.college || 'CCS'])"
+            :key="col"
+            @click="fetchCollegeMembers(col)"
+            :class="['rounded-xl p-4 text-left transition-all hover:scale-[1.02] active:scale-95 shadow-sm border-2 border-transparent hover:border-opacity-50',
+              col === 'COE' ? 'bg-gradient-to-br from-orange-500 to-red-600 hover:border-orange-300' :
+              col === 'SOM' ? 'bg-gradient-to-br from-green-600 to-emerald-700 hover:border-green-300' :
+              col === 'CNAHS' ? 'bg-gradient-to-br from-teal-500 to-green-600 hover:border-teal-300' :
+              'bg-gradient-to-br from-blue-600 to-indigo-700 hover:border-blue-300']"
+          >
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-white font-black text-base tracking-wide">{{ col }}</span>
+              <svg class="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <p class="text-white/80 text-xs font-medium">View Assigned Roles</p>
+            <p class="text-white/60 text-[10px] mt-0.5">Treasurers &amp; Co-Admins</p>
+          </button>
+        </div>
+      </div>
+
       <!-- Recently Assigned Roles List -->
       <div v-if="recentRoleAssignments.length > 0" class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
         <div class="px-5 py-4 border-b border-gray-100 flex items-center gap-2">
@@ -532,6 +559,85 @@
           </div>
         </div>
       </div>
+    </div>
+
+    <!-- College Members Modal -->
+    <div v-if="showCollegeMembersModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4" @click.self="showCollegeMembersModal = false">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+          <!-- Modal Header -->
+          <div :class="['px-6 py-4 flex items-center justify-between flex-shrink-0',
+            collegeMembersModalData.college === 'COE' ? 'bg-gradient-to-r from-orange-500 to-red-600' :
+            collegeMembersModalData.college === 'SOM' ? 'bg-gradient-to-r from-green-600 to-emerald-700' :
+            collegeMembersModalData.college === 'CNAHS' ? 'bg-gradient-to-r from-teal-500 to-green-600' :
+            'bg-gradient-to-r from-blue-600 to-indigo-700']">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <div>
+                <h3 class="text-white font-black text-lg">{{ collegeMembersModalData.college }}</h3>
+                <p class="text-white/70 text-xs">Assigned Role Members</p>
+              </div>
+            </div>
+            <button @click="showCollegeMembersModal = false" class="text-white/70 hover:text-white transition p-1 rounded-lg hover:bg-white/10">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- Loading State -->
+          <div v-if="loadingCollegeMembers" class="flex-1 flex items-center justify-center py-12">
+            <svg class="w-8 h-8 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else-if="!collegeMembersModalData.members.length" class="flex-1 flex flex-col items-center justify-center py-12 text-gray-400">
+            <svg class="w-12 h-12 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <p class="text-sm font-medium">No role members assigned yet</p>
+            <p class="text-xs mt-1">Use the form above to assign Treasurer or Co-Admin roles.</p>
+          </div>
+
+          <!-- Members List -->
+          <div v-else class="flex-1 overflow-y-auto divide-y divide-gray-100">
+            <!-- Role group headers -->
+            <template v-for="roleGroup in ['co-admin', 'treasurer']" :key="roleGroup">
+              <div v-if="collegeMembersModalData.members.filter(m => m.role === roleGroup).length > 0">
+                <div :class="['px-5 py-2 text-[10px] font-black uppercase tracking-widest sticky top-0 z-10',
+                  roleGroup === 'co-admin' ? 'bg-violet-50 text-violet-600' : 'bg-cyan-50 text-cyan-600']">
+                  {{ roleGroup === 'co-admin' ? 'Co-Admins' : 'Treasurers' }}
+                  <span class="ml-1 opacity-60">({{ collegeMembersModalData.members.filter(m => m.role === roleGroup).length }})</span>
+                </div>
+                <div v-for="member in collegeMembersModalData.members.filter(m => m.role === roleGroup)" :key="member.student_id"
+                  class="px-5 py-3 flex items-center gap-3 hover:bg-gray-50 transition">
+                  <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden shadow-sm',
+                    collegeMembersModalData.college === 'COE' ? 'bg-gradient-to-br from-orange-400 to-red-500' :
+                    collegeMembersModalData.college === 'SOM' ? 'bg-gradient-to-br from-green-400 to-yellow-500' :
+                    collegeMembersModalData.college === 'CNAHS' ? 'bg-gradient-to-br from-teal-400 to-green-500' :
+                    'bg-gradient-to-br from-blue-500 to-indigo-600']">
+                    <img v-if="member.photo" :src="member.photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+                    <span v-else>{{ (member.first_name || '?').charAt(0).toUpperCase() }}{{ (member.last_name || '').charAt(0).toUpperCase() }}</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-gray-900 text-sm truncate">
+                      {{ member.first_name }} {{ member.middle_name ? member.middle_name.charAt(0) + '. ' : '' }}{{ member.last_name }}{{ member.suffix ? ' ' + member.suffix : '' }}
+                    </p>
+                    <p class="text-xs text-gray-400 truncate">{{ member.student_id }} · {{ member.program }} – {{ member.year_level }}</p>
+                  </div>
+                  <span :class="['px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide flex-shrink-0',
+                    member.role === 'co-admin' ? 'bg-violet-100 text-violet-700' : 'bg-cyan-100 text-cyan-700']">
+                    {{ member.role === 'co-admin' ? 'Co-Admin' : 'Treasurer' }}
+                  </span>
+                </div>
+              </div>
+            </template>
+          </div>
+
+          <!-- Footer -->
+          <div class="px-6 py-3 border-t border-gray-100 flex-shrink-0">
+            <p class="text-xs text-gray-400 text-center">{{ collegeMembersModalData.members.length }} assigned member{{ collegeMembersModalData.members.length !== 1 ? 's' : '' }} in {{ collegeMembersModalData.college }}</p>
+          </div>
+        </div>
+      </transition>
     </div>
 
     <!-- Edit User Modal -->
@@ -850,6 +956,9 @@ export default {
       isAssigningRole: false,
       roleAssignError: '',
       recentRoleAssignments: [],
+      showCollegeMembersModal: false,
+      collegeMembersModalData: { college: '', members: [] },
+      loadingCollegeMembers: false,
       availableStudentRoles: [
         { value: 'student', label: 'Student' },
         { value: 'treasurer', label: 'Treasurer' },
@@ -1332,6 +1441,28 @@ export default {
         this.roleAssignError = 'Network error. Please try again.'
       } finally {
         this.isAssigningRole = false
+      }
+    },
+    async fetchCollegeMembers(college) {
+      this.collegeMembersModalData = { college, members: [] }
+      this.showCollegeMembersModal = true
+      this.loadingCollegeMembers = true
+      try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+        const response = await fetch(buildAPIUrl(`/apis/students/role-members?college=${college}`), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-SSAAM-College': college
+          }
+        })
+        if (response.ok) {
+          const data = await response.json()
+          this.collegeMembersModalData = { college, members: data.members || [] }
+        }
+      } catch (e) {
+        console.error('Error fetching college members:', e)
+      } finally {
+        this.loadingCollegeMembers = false
       }
     },
     confirmDeleteUser(user) {
