@@ -3526,7 +3526,7 @@ app.post('/apis/students/search', auth, async (req, res) => {
                 { student_id: { $regex: escapedSearch, $options: 'i' } },
                 { rfid_code: { $regex: escapedSearch, $options: 'i' } }
             ]
-        }).select('student_id first_name last_name middle_name suffix full_name program year_level email rfid_status');
+        }).select('student_id first_name last_name middle_name suffix full_name program year_level email rfid_status role photo college');
 
         if (!student) {
             return res.status(404).json({
