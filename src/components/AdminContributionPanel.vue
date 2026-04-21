@@ -117,7 +117,8 @@
               ]">{{ event.type || 'event' }}</span>
               <span :class="['font-extrabold text-sm', activePayment && activePayment._id === event._id ? 'text-purple-700' : 'text-blue-700']">₱{{ Number(event.amount_due || 0).toFixed(2) }}</span>
             </div>
-            <div v-if="event.deadline" class="mt-1.5 text-[10px] text-gray-400 font-medium">
+            <div v-if="event.description" class="mt-1.5 text-[10px] text-gray-500 line-clamp-2 leading-relaxed">{{ event.description }}</div>
+            <div v-if="event.deadline" class="mt-1 text-[10px] text-gray-400 font-medium">
               Due: {{ new Date(event.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}
             </div>
           </div>
