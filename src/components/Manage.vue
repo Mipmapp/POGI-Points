@@ -852,14 +852,8 @@ export default {
       recentRoleAssignments: [],
       availableStudentRoles: [
         { value: 'student', label: 'Student' },
-        { value: 'president', label: 'President' },
-        { value: 'vice-president', label: 'Vice President' },
-        { value: 'secretary', label: 'Secretary' },
         { value: 'treasurer', label: 'Treasurer' },
-        { value: 'auditor', label: 'Auditor' },
-        { value: 'pro', label: 'PRO' },
-        { value: 'representative', label: 'Representative' },
-        { value: 'officer', label: 'Officer' }
+        { value: 'co-admin', label: 'Co-Admin' }
       ]
     }
   },

@@ -299,7 +299,7 @@ const VALID_PROGRAMS = ['BSCS', 'BSIT', 'BSIS', 'BSM'];
 const VALID_SUFFIXES = ['', 'Jr.', 'Sr.', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 const VALID_SEMESTERS = ['1st Sem', '2nd Sem'];
 const VALID_YEAR_LEVELS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
-const VALID_ROLES = ['student', 'president', 'vice-president', 'secretary', 'treasurer', 'auditor', 'pro', 'representative', 'officer'];
+const VALID_ROLES = ['student', 'treasurer', 'co-admin'];
 const VALID_RFID_STATUS = ['verified', 'unverified', 'Unreadable'];
 
 // Rate limiting for likes (in-memory, resets on serverless cold start)
