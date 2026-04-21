@@ -3519,12 +3519,15 @@ app.post('/apis/students/search', auth, async (req, res) => {
 
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
-        // Search by student_id or rfid_code
+        // Search by student_id, rfid_code, or name fields
         const student = await StudentModel.findOne({
             status: 'approved',
             $or: [
                 { student_id: { $regex: escapedSearch, $options: 'i' } },
-                { rfid_code: { $regex: escapedSearch, $options: 'i' } }
+                { rfid_code: { $regex: escapedSearch, $options: 'i' } },
+                { first_name: { $regex: escapedSearch, $options: 'i' } },
+                { last_name: { $regex: escapedSearch, $options: 'i' } },
+                { full_name: { $regex: escapedSearch, $options: 'i' } }
             ]
         }).select('student_id first_name last_name middle_name suffix full_name program year_level email rfid_status role photo college');
 

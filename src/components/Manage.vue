@@ -549,8 +549,9 @@
         </div>
         <div class="divide-y divide-gray-100">
           <div v-for="assignment in recentRoleAssignments" :key="assignment.student_id" class="px-5 py-3 flex items-center gap-3">
-            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-              {{ (assignment.name || '?').charAt(0).toUpperCase() }}
+            <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+              <img v-if="assignment.photo" :src="assignment.photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+              <span v-else>{{ (assignment.name || '?').charAt(0).toUpperCase() }}</span>
             </div>
             <div class="flex-1 min-w-0">
               <p class="font-bold text-gray-900 text-sm truncate">{{ assignment.name }}</p>
@@ -1426,6 +1427,7 @@ export default {
           this.recentRoleAssignments.unshift({
             student_id: studentId,
             name: `${this.roleTargetStudent.first_name} ${this.roleTargetStudent.last_name}`,
+            photo: this.roleTargetStudent.photo || '',
             role: this.selectedNewRole,
             time: new Date().toLocaleTimeString()
           })
