@@ -647,9 +647,12 @@
                   <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                 </span>
               </p>
-              <p class="text-xs opacity-70 mt-0.5 tracking-wide" v-if="currentUser.isMaster && (currentUser.role === 'co-admin' || currentUser.role === 'treasurer')">
+              <span v-if="!isSuperAdmin && currentUser.isMaster && currentUser.college"
+                :class="['inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-1',
+                  isTreasurer ? 'bg-cyan-400/20 text-cyan-100 border border-cyan-300/30' : 'bg-violet-400/20 text-violet-100 border border-violet-300/30']">
+                <svg class="w-3 h-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 {{ currentUser.college }}
-              </p>
+              </span>
               <p class="font-bold text-lg leading-tight" v-else-if="!currentUser.isMaster">{{ displayName }}!</p>
             </div>
             <div class="flex flex-wrap justify-center gap-1.5 mt-2" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
@@ -807,9 +810,12 @@
                   <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
                 </span>
               </p>
-              <p class="text-xs opacity-70 mt-0.5 tracking-wide text-white" v-if="currentUser.isMaster && (currentUser.role === 'co-admin' || currentUser.role === 'treasurer')">
+              <span v-if="!isSuperAdmin && currentUser.isMaster && currentUser.college"
+                :class="['inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold mt-1',
+                  isTreasurer ? 'bg-cyan-400/20 text-cyan-100 border border-cyan-300/30' : 'bg-violet-400/20 text-violet-100 border border-violet-300/30']">
+                <svg class="w-3 h-3 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-2 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
                 {{ currentUser.college }}
-              </p>
+              </span>
               <p class="font-bold text-lg text-white" v-else-if="!currentUser.isMaster">{{ displayName }}!</p>
               
               <div class="flex flex-wrap justify-center gap-1.5 mt-1" v-if="!currentUser.isMaster && currentUser.role !== 'admin'">
