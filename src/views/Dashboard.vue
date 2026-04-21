@@ -604,46 +604,49 @@
       </div>
 
       <div class="px-3 py-3 border-b border-white/10 flex-shrink-0">
-        <div class="bg-white/[0.06] rounded-xl px-2.5 py-2.5 border border-white/10">
+        <!-- Admin (master) keeps the original centered card -->
+        <div v-if="currentUser.isMaster || currentUser.role === 'admin'" class="flex flex-col items-center bg-white/[0.06] rounded-2xl px-3 py-4 border border-white/10">
+          <p class="text-sm mb-2 opacity-90 text-white">Welcome back,</p>
+          <span class="relative inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-sm font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
+            <img src="/crown.svg" alt="Admin" class="w-5 h-5 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
+            <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
+          </span>
+        </div>
+        <!-- Compact card for co-admin / treasurer / student -->
+        <div v-else class="bg-white/[0.06] rounded-xl px-2.5 py-2.5 border border-white/10">
           <div class="flex items-center gap-2.5">
-            <!-- Compact avatar -->
             <div :class="['w-10 h-10 aspect-square rounded-full flex items-center justify-center overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
-              <img v-if="currentUser.isMaster && currentUser.role === 'admin'" src="/crown.svg" alt="Admin" class="w-5 h-5 brightness-0 invert" />
-              <span v-else class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
+              <span class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
             </div>
-            <!-- Name + role -->
             <div class="flex-1 min-w-0">
               <p class="text-white text-[13px] font-semibold leading-tight truncate" :title="displayName">{{ displayName }}</p>
               <div class="mt-0.5 flex items-center gap-1.5 flex-wrap">
                 <span v-if="isTreasurer" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">
-                  <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                  <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
                   Treasurer
                 </span>
                 <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full">
-                  <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                  <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
                   Co-Admin
                 </span>
-                <span v-else-if="isSuperAdmin" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">
-                  <img src="/crown.svg" alt="Admin" class="w-2.5 h-2.5 brightness-0 invert" />
-                  Admin
-                </span>
                 <span v-else class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10">
+                  <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
                   Student
                 </span>
-                <span v-if="!currentUser.isMaster && currentUser.role !== 'admin' && currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full" title="Verified">
+                <span v-if="currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full" title="Verified">
                   <img src="/verified.svg" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
                   Verified
                 </span>
-                <span v-else-if="!currentUser.isMaster && currentUser.role !== 'admin' && (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE')))" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-500/90 text-white text-[9px] font-bold rounded-full" title="Unreadable">
+                <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-500/90 text-white text-[9px] font-bold rounded-full" title="Unreadable">
                   Unreadable
                 </span>
-                <span v-else-if="!currentUser.isMaster && currentUser.role !== 'admin'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/90 text-white text-[9px] font-bold rounded-full" title="Unverified">
+                <span v-else class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/90 text-white text-[9px] font-bold rounded-full" title="Unverified">
                   Unverified
                 </span>
               </div>
             </div>
           </div>
-          <!-- View switcher (Co-Admin / Treasurer only) -->
           <div v-if="canSwitchView" class="mt-2.5 flex bg-white/10 rounded-full p-0.5 border border-white/15 text-[10px] font-bold">
             <button @click="roleViewMode = 'role'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'role' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">Role View</button>
             <button @click="roleViewMode = 'user'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'user' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">User View</button>
@@ -702,7 +705,7 @@
 
         <div class="mt-3 border-t border-white/10 pt-3">
           <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
-          <button v-if="currentUser.isMaster" @click="currentPage = 'admin-profile'; fetchAdminProfile()" :class="[sidebarItemBase, 'mb-1', currentPage === 'admin-profile' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="false" @click="currentPage = 'admin-profile'; fetchAdminProfile()" :class="[sidebarItemBase, 'mb-1', currentPage === 'admin-profile' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
             <span>My Profile</span>
           </button>
@@ -737,36 +740,40 @@
         </div>
         
         <div class="px-4 py-4 border-b border-white/10 flex-shrink-0">
-          <div class="bg-white/[0.06] rounded-xl px-2.5 py-2.5 border border-white/10">
+          <div v-if="currentUser.isMaster || currentUser.role === 'admin'" class="flex flex-col items-center bg-white/[0.06] rounded-2xl px-3 py-4 border border-white/10">
+            <p class="text-sm mb-2 opacity-90 text-white">Welcome back,</p>
+            <span class="relative inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-sm font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
+              <img src="/crown.svg" alt="Admin" class="w-5 h-5 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
+              <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
+            </span>
+          </div>
+          <div v-else class="bg-white/[0.06] rounded-xl px-2.5 py-2.5 border border-white/10">
             <div class="flex items-center gap-2.5">
               <div :class="['w-10 h-10 aspect-square rounded-full flex items-center justify-center overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
-                <img v-if="currentUser.isMaster && currentUser.role === 'admin'" src="/crown.svg" alt="Admin" class="w-5 h-5 brightness-0 invert" />
-                <span v-else class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
+                <span class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-white text-[13px] font-semibold leading-tight truncate" :title="displayName">{{ displayName }}</p>
                 <div class="mt-0.5 flex items-center gap-1.5 flex-wrap">
                   <span v-if="isTreasurer" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">
-                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                    <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
                     Treasurer
                   </span>
                   <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full">
-                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
                     Co-Admin
                   </span>
-                  <span v-else-if="isSuperAdmin" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-yellow-400 to-amber-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">
-                    <img src="/crown.svg" alt="Admin" class="w-2.5 h-2.5 brightness-0 invert" />
-                    Admin
-                  </span>
                   <span v-else class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10">
+                    <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
                     Student
                   </span>
-                  <span v-if="!currentUser.isMaster && currentUser.role !== 'admin' && currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full">
+                  <span v-if="currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full">
                     <img src="/verified.svg" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
                     Verified
                   </span>
-                  <span v-else-if="!currentUser.isMaster && currentUser.role !== 'admin' && (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE')))" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-500/90 text-white text-[9px] font-bold rounded-full">Unreadable</span>
-                  <span v-else-if="!currentUser.isMaster && currentUser.role !== 'admin'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/90 text-white text-[9px] font-bold rounded-full">Unverified</span>
+                  <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-500/90 text-white text-[9px] font-bold rounded-full">Unreadable</span>
+                  <span v-else class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/90 text-white text-[9px] font-bold rounded-full">Unverified</span>
                 </div>
               </div>
             </div>
@@ -837,7 +844,7 @@
           </button>
           <div class="mt-3 border-t border-white/10 pt-3">
             <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
-            <button v-if="currentUser.isMaster" @click="currentPage = 'admin-profile'; showMobileMenu = false; fetchAdminProfile()" :class="[sidebarItemBase, 'mb-1', currentPage === 'admin-profile' ? sidebarItemActive : sidebarItemHover]">
+            <button v-if="false" @click="currentPage = 'admin-profile'; showMobileMenu = false; fetchAdminProfile()" :class="[sidebarItemBase, 'mb-1', currentPage === 'admin-profile' ? sidebarItemActive : sidebarItemHover]">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
               <span>My Profile</span>
             </button>
@@ -3114,7 +3121,7 @@
         <Manage ref="manageComponent" v-if="currentPage === 'manage' && (isAdminLike)" />
 
         <!-- Admin / Co-Admin Profile Page -->
-        <div v-if="currentPage === 'admin-profile' && (currentUser.isMaster || currentUser.role === 'admin')" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+        <div v-if="false" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
           <!-- Hidden file input for photo upload -->
           <input ref="adminPhotoFileRef" type="file" accept="image/*" class="hidden" @change="handleAdminPhotoUpload" />
 
@@ -10637,6 +10644,11 @@ const isCNAHS = computed(() => false)
 // Admin role helpers
 const isTreasurer = computed(() => currentUser.value.role === 'treasurer')
 const isSuperAdmin = computed(() => !!(currentUser.value.isMaster && currentUser.value.role === 'admin'))
+const userCollegeIcon = computed(() => {
+  const c = (currentUser.value.college || '').toString().toLowerCase()
+  if (c === 'ccs' || c === 'coe' || c === 'som' || c === 'cnahs') return `/icons/${c}.svg`
+  return ''
+})
 const isCoAdmin = computed(() => currentUser.value.role === 'co-admin')
 const isAdminLike = computed(() => currentUser.value.role === 'admin' || currentUser.value.isMaster || isCoAdmin.value || isTreasurer.value)
 const canSwitchView = computed(() => isCoAdmin.value || isTreasurer.value)
