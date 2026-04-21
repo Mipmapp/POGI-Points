@@ -1544,28 +1544,39 @@ app.delete('/apis/payments/:paymentId', auth, async (req, res) => {
 
         const paymentTitle = payment.title;
 
-        // Remove this payment campaign from all consolidated records (college-aware)
+        // Remove this payment campaign from all consolidated records using a single bulk operation
         const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
+
+        // First, find only the records that actually have this campaign
+        const affectedRecords = await PaymentRecordModel.find({
+            'campaigns.payment_id': new mongoose.Types.ObjectId(paymentId)
+        }).lean();
+
         let recordsModified = 0;
-        const allRecords = await PaymentRecordModel.find({});
-
-        for (const record of allRecords) {
-            const campaignIndex = record.campaigns.findIndex(c => c.payment_id.toString() === paymentId);
-            if (campaignIndex >= 0) {
-                record.campaigns.splice(campaignIndex, 1);
-
-                // Update summary fields
-                record.total_campaigns = record.campaigns.length;
-                record.campaigns_paid = record.campaigns.filter(c => c.payment_status === 'paid').length;
-                record.total_amount_paid = record.campaigns.reduce((sum, c) => sum + (c.amount_paid || 0), 0);
-                record.last_payment_at = record.campaigns
+        if (affectedRecords.length > 0) {
+            const bulkOps = affectedRecords.map(record => {
+                const remaining = record.campaigns.filter(c => c.payment_id.toString() !== paymentId);
+                const lastPaid = remaining
                     .filter(c => c.paid_at)
                     .sort((a, b) => new Date(b.paid_at) - new Date(a.paid_at))[0]?.paid_at || null;
-                record.updated_at = new Date();
-
-                await record.save();
-                recordsModified++;
-            }
+                return {
+                    updateOne: {
+                        filter: { _id: record._id },
+                        update: {
+                            $set: {
+                                campaigns: remaining,
+                                total_campaigns: remaining.length,
+                                campaigns_paid: remaining.filter(c => c.payment_status === 'paid').length,
+                                total_amount_paid: remaining.reduce((sum, c) => sum + (c.amount_paid || 0), 0),
+                                last_payment_at: lastPaid,
+                                updated_at: new Date()
+                            }
+                        }
+                    }
+                };
+            });
+            await PaymentRecordModel.bulkWrite(bulkOps);
+            recordsModified = affectedRecords.length;
         }
 
         // Delete the payment campaign itself (college-aware)
