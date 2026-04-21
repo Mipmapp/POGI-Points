@@ -529,12 +529,14 @@
               col === 'CNAHS' ? 'bg-gradient-to-br from-teal-500 to-green-600 hover:border-teal-300' :
               'bg-gradient-to-br from-blue-600 to-indigo-700 hover:border-blue-300']"
           >
-            <div class="flex items-center justify-between mb-2">
-              <span class="text-white font-black text-base tracking-wide">{{ col }}</span>
-              <svg class="w-5 h-5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <img :src="`/icons/${col.toLowerCase()}.svg`" :alt="col" class="w-8 h-8 object-contain drop-shadow-md" />
+                <span class="text-white font-black text-base tracking-wide">{{ col }}</span>
+              </div>
+              <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
-            <p class="text-white/80 text-xs font-medium">View Assigned Roles</p>
-            <p class="text-white/60 text-[10px] mt-0.5">Treasurers &amp; Co-Admins</p>
+            <p class="text-white/70 text-[10px] font-medium mt-2">Treasurers &amp; Co-Admins</p>
           </button>
         </div>
       </div>
@@ -572,9 +574,7 @@
             collegeMembersModalData.college === 'CNAHS' ? 'bg-gradient-to-r from-teal-500 to-green-600' :
             'bg-gradient-to-r from-blue-600 to-indigo-700']">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-              </div>
+              <img :src="`/icons/${collegeMembersModalData.college.toLowerCase()}.svg`" :alt="collegeMembersModalData.college" class="w-10 h-10 object-contain drop-shadow-md flex-shrink-0" />
               <div>
                 <h3 class="text-white font-black text-lg">{{ collegeMembersModalData.college }}</h3>
                 <p class="text-white/70 text-xs">Assigned Role Members</p>
