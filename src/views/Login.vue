@@ -161,7 +161,7 @@
                   class="absolute inset-0 w-full h-full object-cover face-mirror"
                   :class="faceStep === 'scanning' || faceStep === 'matched' ? 'opacity-100' : 'opacity-0'"
                 ></video>
-                <canvas id="face-login-canvas" class="absolute inset-0 w-full h-full pointer-events-none face-mirror"></canvas>
+                <canvas id="face-login-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
 
                 <!-- Scan-line animation while scanning -->
                 <div v-if="faceStep === 'scanning'" class="ssaam-face-scanline absolute left-0 right-0 h-[2px] bg-ssaam-light shadow-[0_0_12px_2px_rgba(79,98,255,0.8)] pointer-events-none"></div>
@@ -755,30 +755,34 @@ async function runFaceLoginLoop() {
         faceMatchStreak.value = 0
       }
 
+      // Mirror X so the overlay aligns with the CSS-flipped video
+      // (video has scaleX(-1) via CSS; canvas does not, so we flip coords manually)
+      const bw = box.width * sx
+      const bx = w - (box.x + box.width) * sx  // mirrored left edge
+
       // Draw bounding box — green while streak building, indigo otherwise
       ctx.strokeStyle = frameMatched ? '#22c55e' : '#6366f1'
       ctx.lineWidth = 3
-      ctx.strokeRect(box.x * sx, box.y * sy, box.width * sx, box.height * sy)
+      ctx.strokeRect(bx, box.y * sy, bw, box.height * sy)
 
       // Streak progress bar along the bottom edge of the box
       if (faceMatchStreak.value > 0) {
-        const barW = box.width * sx
-        const barFill = barW * Math.min(faceMatchStreak.value / FACE_MATCH_STREAK_NEEDED, 1)
+        const barFill = bw * Math.min(faceMatchStreak.value / FACE_MATCH_STREAK_NEEDED, 1)
         ctx.fillStyle = 'rgba(34,197,94,0.25)'
-        ctx.fillRect(box.x * sx, (box.y + box.height) * sy - 5, barW, 5)
+        ctx.fillRect(bx, (box.y + box.height) * sy - 5, bw, 5)
         ctx.fillStyle = 'rgba(34,197,94,0.9)'
-        ctx.fillRect(box.x * sx, (box.y + box.height) * sy - 5, barFill, 5)
+        ctx.fillRect(bx, (box.y + box.height) * sy - 5, barFill, 5)
       }
 
-      // Label tag above the box
+      // Label tag above the box — drawn at mirrored position, text reads left-to-right
       const streakPct = Math.round((faceMatchStreak.value / FACE_MATCH_STREAK_NEEDED) * 100)
       const tag = frameMatched ? `${streakPct}% — Hold still…` : 'Scanning…'
       ctx.font = '12px ui-sans-serif, system-ui, sans-serif'
       const pad = 6, tw = ctx.measureText(tag).width + pad * 2
       ctx.fillStyle = frameMatched ? 'rgba(34,197,94,0.92)' : 'rgba(99,102,241,0.85)'
-      ctx.fillRect(box.x * sx, box.y * sy - 22, tw, 20)
+      ctx.fillRect(bx, box.y * sy - 22, tw, 20)
       ctx.fillStyle = '#fff'
-      ctx.fillText(tag, box.x * sx + pad, box.y * sy - 8)
+      ctx.fillText(tag, bx + pad, box.y * sy - 8)
 
       // Only confirm after FACE_MATCH_STREAK_NEEDED consecutive matching frames
       if (faceMatchStreak.value >= FACE_MATCH_STREAK_NEEDED) {

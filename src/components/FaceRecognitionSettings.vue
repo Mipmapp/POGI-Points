@@ -56,7 +56,7 @@
             class="absolute inset-0 w-full h-full object-cover transition-opacity duration-200 face-mirror"
             :class="cameraOn ? 'opacity-100' : 'opacity-0'"
           ></video>
-          <canvas ref="overlayEl" class="absolute inset-0 w-full h-full pointer-events-none face-mirror"></canvas>
+          <canvas ref="overlayEl" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
 
           <!-- Animated scan-line when actively scanning -->
           <div
@@ -464,21 +464,25 @@ export default {
             ? (best.dist < MATCH_THRESHOLD ? `Recognized: ${best.label}` : 'Face detected · not recognized')
             : 'Face detected · capture to enroll';
 
+          // Mirror X so the overlay aligns with the CSS-flipped video
+          const bw = box.width * sx;
+          const bx = w - (box.x + box.width) * sx;  // mirrored left edge
+
           // Draw box
           const matched = best && best.dist < MATCH_THRESHOLD;
           ctx.strokeStyle = matched ? '#10b981' : '#a855f7';
           ctx.lineWidth = 3;
-          ctx.strokeRect(box.x * sx, box.y * sy, box.width * sx, box.height * sy);
+          ctx.strokeRect(bx, box.y * sy, bw, box.height * sy);
 
-          // Label tag
+          // Label tag — drawn at mirrored position, text reads left-to-right
           const label = matched ? `✓ ${best.label}` : (best ? `${(best.dist).toFixed(2)} away` : 'New face');
           ctx.font = '12px ui-sans-serif, system-ui, sans-serif';
           const padding = 6;
           const tw = ctx.measureText(label).width + padding * 2;
           ctx.fillStyle = matched ? 'rgba(16,185,129,0.9)' : 'rgba(168,85,247,0.9)';
-          ctx.fillRect(box.x * sx, box.y * sy - 22, tw, 20);
+          ctx.fillRect(bx, box.y * sy - 22, tw, 20);
           ctx.fillStyle = '#fff';
-          ctx.fillText(label, box.x * sx + padding, box.y * sy - 8);
+          ctx.fillText(label, bx + padding, box.y * sy - 8);
         } else {
           this.lastDetection = null;
           this.liveDistance = null;
