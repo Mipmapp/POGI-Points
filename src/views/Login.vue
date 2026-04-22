@@ -614,7 +614,9 @@ const faceModelsReady = ref(false)
 const faceLoadError = ref('')
 let faceapiLoginPromise = null
 
-const FACE_THRESHOLD = 0.5
+const FACE_THRESHOLD = 0.38        // strict — only accept high-confidence matches
+const FACE_MATCH_STREAK_NEEDED = 5  // must match this many consecutive frames to pass
+const faceMatchStreak = ref(0)      // current consecutive-match counter
 const FACE_MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'
 
 function loadFaceApiLogin() {
@@ -631,6 +633,7 @@ async function startFaceVerification() {
   faceLoadError.value = ''
   faceMatchLabel.value = ''
   faceConfidence.value = null
+  faceMatchStreak.value = 0
 
   try {
     // 1. Load saved faces using the pending user token
@@ -742,32 +745,56 @@ async function runFaceLoginLoop() {
         const dist = euclideanFace(detection.descriptor, f.descriptor)
         if (best === null || dist < best.dist) best = { dist, label: f.label }
       }
-      const matched = best && best.dist < FACE_THRESHOLD
+      const frameMatched = best && best.dist < FACE_THRESHOLD
 
-      // Draw box
-      ctx.strokeStyle = matched ? '#22c55e' : '#6366f1'
+      // Increment or reset the consecutive-match streak
+      if (frameMatched) {
+        faceMatchStreak.value++
+      } else {
+        faceMatchStreak.value = 0
+      }
+
+      // Draw bounding box — green while streak building, indigo otherwise
+      ctx.strokeStyle = frameMatched ? '#22c55e' : '#6366f1'
       ctx.lineWidth = 3
       ctx.strokeRect(box.x * sx, box.y * sy, box.width * sx, box.height * sy)
-      const tag = matched ? `✓ ${best.label}` : 'Verifying…'
+
+      // Streak progress bar along the bottom edge of the box
+      if (faceMatchStreak.value > 0) {
+        const barW = box.width * sx
+        const barFill = barW * Math.min(faceMatchStreak.value / FACE_MATCH_STREAK_NEEDED, 1)
+        ctx.fillStyle = 'rgba(34,197,94,0.25)'
+        ctx.fillRect(box.x * sx, (box.y + box.height) * sy - 5, barW, 5)
+        ctx.fillStyle = 'rgba(34,197,94,0.9)'
+        ctx.fillRect(box.x * sx, (box.y + box.height) * sy - 5, barFill, 5)
+      }
+
+      // Label tag above the box
+      const streakPct = Math.round((faceMatchStreak.value / FACE_MATCH_STREAK_NEEDED) * 100)
+      const tag = frameMatched ? `${streakPct}% — Hold still…` : 'Scanning…'
       ctx.font = '12px ui-sans-serif, system-ui, sans-serif'
       const pad = 6, tw = ctx.measureText(tag).width + pad * 2
-      ctx.fillStyle = matched ? 'rgba(34,197,94,0.92)' : 'rgba(99,102,241,0.85)'
+      ctx.fillStyle = frameMatched ? 'rgba(34,197,94,0.92)' : 'rgba(99,102,241,0.85)'
       ctx.fillRect(box.x * sx, box.y * sy - 22, tw, 20)
       ctx.fillStyle = '#fff'
       ctx.fillText(tag, box.x * sx + pad, box.y * sy - 8)
 
-      if (matched) {
+      // Only confirm after FACE_MATCH_STREAK_NEEDED consecutive matching frames
+      if (faceMatchStreak.value >= FACE_MATCH_STREAK_NEEDED) {
         faceMatchLabel.value = best.label
         faceConfidence.value = Math.round((1 - best.dist) * 100)
         faceStep.value = 'matched'
-        faceStatusText.value = `Recognized: ${best.label}`
+        faceStatusText.value = `Identity confirmed: ${best.label}`
         stopFaceCamera()
         setTimeout(() => completeFaceLogin(), 1800)
         return
       }
 
-      faceStatusText.value = 'Face detected — matching…'
+      faceStatusText.value = frameMatched
+        ? `Verifying… ${faceMatchStreak.value}/${FACE_MATCH_STREAK_NEEDED}`
+        : 'Face detected — align & hold still'
     } else {
+      faceMatchStreak.value = 0  // lost face — reset streak
       faceStatusText.value = 'Look at the camera…'
     }
   } catch (_) { /* transient */ }
