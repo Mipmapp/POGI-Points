@@ -10658,7 +10658,13 @@ const roleViewMode = ref('role')
 const inRoleView = computed(() => !canSwitchView.value || roleViewMode.value === 'role')
 const inUserView = computed(() => canSwitchView.value && roleViewMode.value === 'user')
 watch(canSwitchView, (v) => { if (!v) roleViewMode.value = 'role' })
-watch(roleViewMode, () => { currentPage.value = 'dashboard' })
+watch(roleViewMode, () => {
+  currentPage.value = 'dashboard'
+  if (sectionDataCache.value && sectionDataCache.value['attendance']) {
+    sectionDataCache.value['attendance'].fetched = false
+  }
+  attendanceEvents.value = []
+})
 
 // Human-readable college name derived from the user's actual college assignment
 const collegeName = computed(() => {
@@ -13510,7 +13516,8 @@ const fetchAttendanceData = async () => {
   attendanceFetching.value = true
   attendanceLoading.value = true
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-  const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster
+  const u = currentUser.value || {}
+  const isAdmin = (u.role === 'admin' || u.isMaster || u.role === 'co-admin' || u.role === 'treasurer') && inRoleView.value
   
   try {
     if (!token) {
