@@ -2249,7 +2249,10 @@ const masterSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    role: { type: String, enum: ['admin', 'co-admin', 'treasurer'], default: 'admin' },
+    // 'administrator' is a legacy alias of 'admin' kept here so old records
+    // (created before the enum was tightened) still validate. All
+    // role-based checks elsewhere treat it the same as 'admin'.
+    role: { type: String, enum: ['admin', 'administrator', 'co-admin', 'treasurer'], default: 'admin' },
     college: { type: String, enum: ['CCS', 'COE', 'SOM', 'CNAHS'], default: 'CCS' },
     full_name: { type: String, default: null },
     phone: { type: String, default: null },
