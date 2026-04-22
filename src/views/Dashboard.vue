@@ -1690,7 +1690,7 @@
         <!-- Attendance Page -->
         <div v-if="currentPage === 'attendance'" class="space-y-6">
           <!-- Admin Attendance Management -->
-          <div v-if="isAdminLike" class="bg-white rounded-lg shadow-lg p-4 md:p-6">
+          <div v-if="isAdminLike && inRoleView" class="bg-white rounded-lg shadow-lg p-4 md:p-6">
             <div class="flex flex-col gap-4 mb-6">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
