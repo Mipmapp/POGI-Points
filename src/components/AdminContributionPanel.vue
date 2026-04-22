@@ -272,6 +272,45 @@
         <span class="ml-auto text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">{{ filteredContributions.length }}</span>
       </div>
 
+      <!-- Top Pagination Controls -->
+      <div v-if="!isLoading && filteredContributions.length > 0" class="flex flex-wrap items-center justify-between gap-3 px-5 sm:px-6 md:px-8 py-3 border-b border-gray-100">
+        <div class="text-sm text-gray-600">
+          Showing {{ (paymentsPage - 1) * paymentsPerPage + 1 }} to {{ Math.min(paymentsPage * paymentsPerPage, filteredContributions.length) }} of {{ filteredContributions.length }} records
+        </div>
+        <div class="flex gap-2 items-center">
+          <button
+            @click="paymentsPage = Math.max(1, paymentsPage - 1)"
+            :disabled="paymentsPage === 1"
+            class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Previous
+          </button>
+          <div class="flex gap-1 items-center">
+            <button
+              v-for="page in paymentsPaginationRange"
+              :key="page"
+              @click="page !== '...' && (paymentsPage = page)"
+              :disabled="page === '...'"
+              :class="[
+                'w-9 h-9 rounded-lg text-sm font-medium transition-all duration-200',
+                page === '...' ? 'cursor-default text-gray-400' :
+                paymentsPage === page ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' :
+                'border border-gray-300 text-gray-700 hover:bg-gray-50'
+              ]"
+            >{{ page }}</button>
+          </div>
+          <button
+            @click="paymentsPage = Math.min(paymentsTotalPages, paymentsPage + 1)"
+            :disabled="paymentsPage === paymentsTotalPages"
+            class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+          >
+            Next
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
       <!-- Loading Skeleton -->
       <div v-if="isLoading" class="p-4 space-y-3">
         <div v-for="i in 8" :key="i" class="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 animate-pulse">
@@ -296,7 +335,7 @@
 
       <!-- Mobile Card View -->
       <div v-else class="block md:hidden divide-y divide-gray-100">
-        <div v-for="c in filteredContributions" :key="c._id" class="p-4 hover:bg-gray-50 transition">
+        <div v-for="c in paginatedContributions" :key="c._id" class="p-4 hover:bg-gray-50 transition">
           <div class="flex items-start justify-between gap-3 mb-3">
             <div class="flex items-center gap-3 min-w-0 flex-1">
               <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
@@ -349,7 +388,7 @@
         </div>
       </div>
 
-      <!-- Desktop Table View -->
+      <!-- Desktop Table View (hidden on mobile) -->
       <div class="hidden md:block overflow-x-auto">
         <table class="w-full">
           <thead>
@@ -372,7 +411,7 @@
                 No records match the current filters.
               </td>
             </tr>
-            <tr v-for="c in filteredContributions" :key="c._id" class="hover:bg-blue-50/40 transition-colors">
+            <tr v-for="c in paginatedContributions" :key="c._id" class="hover:bg-blue-50/40 transition-colors">
               <td class="px-4 py-3 text-sm font-semibold text-gray-700">{{ c.student_id }}</td>
               <td class="px-4 py-3 text-sm text-gray-900 font-medium">
                 <div class="flex items-center gap-2.5">
@@ -418,6 +457,45 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Bottom Pagination Controls -->
+      <div v-if="!isLoading && filteredContributions.length > 0" class="flex flex-wrap items-center justify-between gap-3 px-5 sm:px-6 md:px-8 py-3 border-t border-gray-100">
+        <div class="text-sm text-gray-600">
+          Showing {{ (paymentsPage - 1) * paymentsPerPage + 1 }} to {{ Math.min(paymentsPage * paymentsPerPage, filteredContributions.length) }} of {{ filteredContributions.length }} records
+        </div>
+        <div class="flex gap-2 items-center">
+          <button
+            @click="paymentsPage = Math.max(1, paymentsPage - 1)"
+            :disabled="paymentsPage === 1"
+            class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            Previous
+          </button>
+          <div class="flex gap-1 items-center">
+            <button
+              v-for="page in paymentsPaginationRange"
+              :key="page"
+              @click="page !== '...' && (paymentsPage = page)"
+              :disabled="page === '...'"
+              :class="[
+                'w-9 h-9 rounded-lg text-sm font-medium transition-all duration-200',
+                page === '...' ? 'cursor-default text-gray-400' :
+                paymentsPage === page ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' :
+                'border border-gray-300 text-gray-700 hover:bg-gray-50'
+              ]"
+            >{{ page }}</button>
+          </div>
+          <button
+            @click="paymentsPage = Math.min(paymentsTotalPages, paymentsPage + 1)"
+            :disabled="paymentsPage === paymentsTotalPages"
+            class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+          >
+            Next
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -702,7 +780,9 @@ export default {
         amount_due: '',
         type: 'fee',
         deadline: ''
-      }
+      },
+      paymentsPage: 1,
+      paymentsPerPage: 10,
     };
   },
   computed: {
@@ -780,9 +860,34 @@ export default {
         year: this.filterYearLevel || 'All',
         program: this.filterProgram || 'All'
       }
-    }
+    },
+    paginatedContributions() {
+      const start = (this.paymentsPage - 1) * this.paymentsPerPage;
+      return this.filteredContributions.slice(start, start + this.paymentsPerPage);
+    },
+    paymentsTotalPages() {
+      return Math.max(1, Math.ceil(this.filteredContributions.length / this.paymentsPerPage));
+    },
+    paymentsPaginationRange() {
+      const total = this.paymentsTotalPages;
+      const cur = this.paymentsPage;
+      const pages = [];
+      if (total <= 5) {
+        for (let i = 1; i <= total; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        let start = Math.max(2, cur - 1);
+        let end = Math.min(total - 1, cur + 1);
+        if (start > 2) pages.push('...');
+        for (let i = start; i <= end; i++) pages.push(i);
+        if (end < total - 1) pages.push('...');
+        if (!pages.includes(total)) pages.push(total);
+      }
+      return pages;
+    },
   },
   watch: {
+    filteredContributions() { this.paymentsPage = 1; },
     filterStatus() { this.loadAllContributions(); },
     filterProgram() { this.loadAllContributions(); },
     filterYearLevel() { this.loadAllContributions(); },
