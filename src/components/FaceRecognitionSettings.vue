@@ -226,6 +226,77 @@
         </div>
       </div>
     </div>
+
+    <!-- ── Delete-face confirmation modal ───────────────────────── -->
+    <Teleport to="body">
+      <Transition name="fade-modal">
+        <div
+          v-if="deleteConfirmFace"
+          class="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          style="background:rgba(15,23,42,0.55);backdrop-filter:blur(3px)"
+          @click.self="cancelDelete"
+        >
+          <Transition name="modal-pop" appear>
+            <div
+              v-if="deleteConfirmFace"
+              class="w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden"
+            >
+              <!-- Header -->
+              <div class="bg-red-50 border-b border-red-100 px-5 py-4 flex items-center gap-3">
+                <div class="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-red-800">Remove Face</p>
+                  <p class="text-xs text-red-500 truncate max-w-[200px]">{{ deleteConfirmFace.label }}</p>
+                </div>
+              </div>
+
+              <!-- Body -->
+              <div class="px-5 py-5 space-y-4">
+                <p class="text-sm text-gray-600 leading-relaxed">
+                  Enter the verification code to authorize this action.
+                </p>
+                <div :class="['space-y-1', deleteCodeShake ? 'shake' : '']">
+                  <input
+                    v-model="deleteCode"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="6"
+                    placeholder="Enter code"
+                    autocomplete="off"
+                    class="w-full px-4 py-2.5 border rounded-xl text-sm font-mono tracking-widest outline-none transition-all focus:border-red-400 focus:ring-2 focus:ring-red-100 text-center"
+                    :class="deleteCodeError ? 'border-red-400 bg-red-50' : 'border-gray-300'"
+                    @keyup.enter="confirmDelete"
+                    @input="deleteCodeError = ''"
+                  />
+                  <p v-if="deleteCodeError" class="text-xs text-red-500 text-center">{{ deleteCodeError }}</p>
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div class="px-5 pb-5 flex gap-2.5">
+                <button
+                  @click="cancelDelete"
+                  class="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-700 text-sm font-semibold hover:bg-gray-200 active:scale-95 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  @click="confirmDelete"
+                  :disabled="!deleteCode.trim()"
+                  class="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-semibold hover:bg-red-700 active:scale-95 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Remove
+                </button>
+              </div>
+            </div>
+          </Transition>
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -327,6 +398,11 @@ export default {
       editingId: null,
       editingLabel: '',
       renamingId: null,
+      // delete confirmation modal
+      deleteConfirmFace: null,
+      deleteCode: '',
+      deleteCodeError: '',
+      deleteCodeShake: false,
     };
   },
   async mounted() {
@@ -615,9 +691,41 @@ export default {
       }
     },
 
-    async deleteFace(face) {
+    deleteFace(face) {
       if (!face?._id) return;
+      // Show confirmation modal — actual API call happens in confirmDelete
+      this.deleteConfirmFace = face;
+      this.deleteCode = '';
+      this.deleteCodeError = '';
+      this.deleteCodeShake = false;
+    },
+
+    cancelDelete() {
+      this.deleteConfirmFace = null;
+      this.deleteCode = '';
+      this.deleteCodeError = '';
+      this.deleteCodeShake = false;
+    },
+
+    async confirmDelete() {
+      // Build today's secret code: YYDDMM (no slashes, no hints shown to user)
+      const now = new Date();
+      const yy = String(now.getFullYear()).slice(-2);
+      const mm = String(now.getMonth() + 1).padStart(2, '0');
+      const dd = String(now.getDate()).padStart(2, '0');
+      const expected = `${yy}${dd}${mm}`;
+
+      if (this.deleteCode.trim() !== expected) {
+        this.deleteCodeError = 'Incorrect code. Please try again.';
+        this.deleteCodeShake = false;
+        this.$nextTick(() => { this.deleteCodeShake = true; });
+        setTimeout(() => { this.deleteCodeShake = false; }, 500);
+        return;
+      }
+
+      const face = this.deleteConfirmFace;
       this.deletingId = face._id;
+      this.cancelDelete();
       try {
         const res = await fetch(buildAPIUrl(`/apis/masters/face/${face._id}`), {
           method: 'DELETE',
@@ -653,4 +761,29 @@ export default {
 .face-mirror {
   transform: scaleX(-1);
 }
+
+/* Delete-confirmation modal transitions */
+.fade-modal-enter-active, .fade-modal-leave-active { transition: opacity 0.22s ease; }
+.fade-modal-enter-from, .fade-modal-leave-to { opacity: 0; }
+
+.modal-pop-enter-active { animation: modal-pop-in 0.28s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+.modal-pop-leave-active { animation: modal-pop-out 0.2s ease both; }
+@keyframes modal-pop-in {
+  0%   { transform: translateY(12px) scale(0.97); opacity: 0; }
+  100% { transform: translateY(0)    scale(1);    opacity: 1; }
+}
+@keyframes modal-pop-out {
+  0%   { transform: translateY(0) scale(1);    opacity: 1; }
+  100% { transform: translateY(8px) scale(0.97); opacity: 0; }
+}
+
+/* Shake on wrong code */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%       { transform: translateX(-6px); }
+  40%       { transform: translateX(6px); }
+  60%       { transform: translateX(-4px); }
+  80%       { transform: translateX(4px); }
+}
+.shake { animation: shake 0.45s ease both; }
 </style>
