@@ -623,12 +623,17 @@
             <div class="flex-1 min-w-0">
               <p class="text-white text-[13px] font-semibold leading-tight truncate" :title="displayName">{{ displayName }}</p>
               <div class="mt-1 flex items-center gap-1 flex-wrap">
-                <span v-if="isTreasurer" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Treasurer</span>
-                <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Co-Admin</span>
-                <span v-else class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10">Student</span>
-                <span v-if="userCollegeCode" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm" :title="userCollegeCode">
-                  <img :src="userCollegeIcon" alt="College" class="w-3 h-3" />
-                  <span class="text-gray-800">{{ userCollegeCode }}</span>
+                <span v-if="isTreasurer" class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full" :title="userCollegeCode || 'Treasurer'">
+                  <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
+                  <span>Treasurer{{ userCollegeCode ? ' · ' + userCollegeCode : '' }}</span>
+                </span>
+                <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full" :title="userCollegeCode || 'Co-Admin'">
+                  <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
+                  <span>Co-Admin{{ userCollegeCode ? ' · ' + userCollegeCode : '' }}</span>
+                </span>
+                <span v-else class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10" :title="userCollegeCode || 'Student'">
+                  <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
+                  <span>Student{{ userCollegeCode ? ' · ' + userCollegeCode : '' }}</span>
                 </span>
                 <span v-if="currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full" title="Verified">
                   <img src="/verified.svg" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
@@ -749,12 +754,17 @@
               <div class="flex-1 min-w-0">
                 <p class="text-white text-[13px] font-semibold leading-tight truncate" :title="displayName">{{ displayName }}</p>
                 <div class="mt-1 flex items-center gap-1 flex-wrap">
-                  <span v-if="isTreasurer" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Treasurer</span>
-                  <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Co-Admin</span>
-                  <span v-else class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10">Student</span>
-                  <span v-if="userCollegeCode" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm" :title="userCollegeCode">
-                    <img :src="userCollegeIcon" alt="College" class="w-3 h-3" />
-                    <span class="text-gray-800">{{ userCollegeCode }}</span>
+                  <span v-if="isTreasurer" class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full" :title="userCollegeCode || 'Treasurer'">
+                    <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
+                    <span>Treasurer{{ userCollegeCode ? ' · ' + userCollegeCode : '' }}</span>
+                  </span>
+                  <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full" :title="userCollegeCode || 'Co-Admin'">
+                    <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
+                    <span>Co-Admin{{ userCollegeCode ? ' · ' + userCollegeCode : '' }}</span>
+                  </span>
+                  <span v-else class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10" :title="userCollegeCode || 'Student'">
+                    <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
+                    <span>Student{{ userCollegeCode ? ' · ' + userCollegeCode : '' }}</span>
                   </span>
                   <span v-if="currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full">
                     <img src="/verified.svg" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
