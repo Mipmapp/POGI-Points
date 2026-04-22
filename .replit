@@ -78,8 +78,8 @@ NODE_ENV = "development"
 [userenv.development]
 VITE_API_URL = ""
 SSAAM_API_KEY = "SSAAMRegJRMSU"
-SSAAM_CRYPTO_KEY = "SSAAMRegJRMSU"
-ADMIN_VERIFICATION_SECRET = "SSAAMRegJRMSU"
+SSAAM_CRYPTO_KEY = "SSAAM2025CCS"
+ADMIN_VERIFICATION_SECRET = "SSAAMAdminVerify"
 MONGODB_URL = "mongodb+srv://SSAAM:ssaam.admin.jrmsu@cluster0.bnwy9iy.mongodb.net/dbconnect?retryWrites=true&w=majority"
 
 [userenv.production]
