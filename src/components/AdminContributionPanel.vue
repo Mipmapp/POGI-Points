@@ -195,8 +195,9 @@
     <div v-if="selectedStudent" class="bg-white rounded-3xl shadow-xl border border-blue-200 overflow-hidden">
       <div class="px-5 sm:px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-            {{ (selectedStudent.full_name || selectedStudent.first_name || '?').charAt(0).toUpperCase() }}
+          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white font-bold text-lg flex-shrink-0 overflow-hidden">
+            <img v-if="selectedStudent.photo && !photoFailed['sel-' + (selectedStudent._id || selectedStudent.student_id)]" :src="selectedStudent.photo" :alt="selectedStudent.full_name" class="w-full h-full object-cover" @error="markPhotoFailed('sel-' + (selectedStudent._id || selectedStudent.student_id))" referrerpolicy="no-referrer" />
+            <span v-else>{{ (selectedStudent.full_name || selectedStudent.first_name || '?').charAt(0).toUpperCase() }}</span>
           </div>
           <div class="min-w-0">
             <h3 class="font-extrabold text-gray-900 text-sm sm:text-base truncate">{{ selectedStudent.full_name || (selectedStudent.first_name + ' ' + selectedStudent.last_name) }}</h3>
@@ -298,8 +299,9 @@
         <div v-for="c in filteredContributions" :key="c._id" class="p-4 hover:bg-gray-50 transition">
           <div class="flex items-start justify-between gap-3 mb-3">
             <div class="flex items-center gap-3 min-w-0 flex-1">
-              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                {{ (c.student_name || '?').charAt(0).toUpperCase() }}
+              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
+                <img v-if="c.photo && !photoFailed['c-' + (c._id || c.student_id)]" :src="c.photo" :alt="c.student_name" class="w-full h-full object-cover" @error="markPhotoFailed('c-' + (c._id || c.student_id))" referrerpolicy="no-referrer" />
+                <span v-else>{{ (c.student_name || '?').charAt(0).toUpperCase() }}</span>
               </div>
               <div class="min-w-0 flex-1">
                 <p class="font-bold text-gray-900 text-sm truncate">{{ c.student_name }}</p>
@@ -372,7 +374,15 @@
             </tr>
             <tr v-for="c in filteredContributions" :key="c._id" class="hover:bg-blue-50/40 transition-colors">
               <td class="px-4 py-3 text-sm font-semibold text-gray-700">{{ c.student_id }}</td>
-              <td class="px-4 py-3 text-sm text-gray-900 font-medium">{{ c.student_name }}</td>
+              <td class="px-4 py-3 text-sm text-gray-900 font-medium">
+                <div class="flex items-center gap-2.5">
+                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
+                    <img v-if="c.photo && !photoFailed['ct-' + (c._id || c.student_id)]" :src="c.photo" :alt="c.student_name" class="w-full h-full object-cover" @error="markPhotoFailed('ct-' + (c._id || c.student_id))" referrerpolicy="no-referrer" />
+                    <span v-else>{{ (c.student_name || '?').charAt(0).toUpperCase() }}</span>
+                  </div>
+                  <span class="truncate">{{ c.student_name }}</span>
+                </div>
+              </td>
               <td v-if="isMaster" class="px-4 py-3 text-sm">
                 <span :class="['inline-flex px-2 py-0.5 rounded-full text-xs font-bold', c.college === 'COE' ? 'bg-orange-100 text-orange-700' : c.college === 'SOM' ? 'bg-green-100 text-green-700' : c.college === 'CNAHS' ? 'bg-teal-100 text-teal-700' : 'bg-blue-100 text-blue-700']">{{ c.college || '—' }}</span>
               </td>
@@ -655,6 +665,9 @@ export default {
   name: 'AdminContributionPanel',
   data() {
     return {
+      // Reactive map of cache keys -> true when an avatar image fails to load,
+      // so the initials fallback inside the same circle becomes visible.
+      photoFailed: {},
       searchQuery: '',
       contributions: [],
       selectedStudent: null,
@@ -787,6 +800,10 @@ export default {
     this.loadAllContributions();
   },
   methods: {
+    markPhotoFailed(key) {
+      if (!key) return;
+      this.photoFailed = { ...this.photoFailed, [key]: true };
+    },
     async loadAllPaymentEvents() {
       this.isLoadingEvents = true;
       try {

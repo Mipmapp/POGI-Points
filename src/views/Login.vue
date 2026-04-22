@@ -945,7 +945,8 @@ const verifyAdminCode = () => {
   const day = String(now.getDate()).padStart(2, '0');
   const month = String(now.getMonth() + 1).padStart(2, '0');
   const year = String(now.getFullYear()).slice(-2);
-  const correctCode = `${day}${month}${year}`;
+  // MM/DD/YY format (e.g. April 22, 2026 -> 042226)
+  const correctCode = `${month}${day}${year}`;
   const enteredCode = verificationDigits.value.join('');
 
   if (enteredCode === correctCode) {

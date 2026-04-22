@@ -257,12 +257,13 @@
                 <div class="flex items-start gap-3 flex-1 min-w-0">
                   <!-- Profile Image -->
                   <div :class="['w-12 h-12 md:w-14 md:h-14 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-sm md:text-base overflow-hidden shadow-md', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-                    <img 
-                      v-if="user.photo" 
-                      :src="user.photo" 
+                    <img
+                      v-if="user.photo && !photoFailed[user._id || user.student_id]"
+                      :src="user.photo"
                       :alt="`${user.first_name} ${user.last_name}`"
                       class="w-full h-full object-cover"
-                      @error="$event.target.style.display='none'"
+                      @error="markPhotoFailed(user._id || user.student_id)"
+                      referrerpolicy="no-referrer"
                     />
                     <span v-else>{{ getInitials(user) }}</span>
                   </div>
@@ -448,7 +449,7 @@
         <div v-if="roleTargetStudent" class="bg-white border-2 border-blue-200 rounded-2xl p-4 space-y-4">
           <div class="flex items-center gap-3">
             <div :class="['w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-base flex-shrink-0 overflow-hidden shadow-md', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-              <img v-if="roleTargetStudent.photo" :src="roleTargetStudent.photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+              <img v-if="roleTargetStudent.photo && !photoFailed['role-' + (roleTargetStudent._id || roleTargetStudent.student_id)]" :src="roleTargetStudent.photo" class="w-full h-full object-cover" @error="markPhotoFailed('role-' + (roleTargetStudent._id || roleTargetStudent.student_id))" referrerpolicy="no-referrer" />
               <span v-else>{{ getInitials(roleTargetStudent) }}</span>
             </div>
             <div class="flex-1 min-w-0">
@@ -506,8 +507,29 @@
           <p v-if="roleAssignError" class="text-xs text-red-600 font-medium text-center">{{ roleAssignError }}</p>
         </div>
 
+        <!-- Multiple results — pick one -->
+        <div v-else-if="roleSearchResults.length > 0" class="space-y-2">
+          <p class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">{{ roleSearchResults.length }} {{ roleSearchResults.length === 1 ? 'match' : 'matches' }}</p>
+          <button
+            v-for="r in roleSearchResults"
+            :key="r._id || r.student_id"
+            @click="selectRoleResult(r)"
+            class="w-full flex items-center gap-3 p-3 rounded-xl bg-white border-2 border-gray-100 hover:border-blue-300 hover:shadow-sm text-left transition"
+          >
+            <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden shadow-sm', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+              <img v-if="r.photo && !photoFailed['rs-' + (r._id || r.student_id)]" :src="r.photo" class="w-full h-full object-cover" @error="markPhotoFailed('rs-' + (r._id || r.student_id))" referrerpolicy="no-referrer" />
+              <span v-else>{{ getInitials(r) }}</span>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-bold text-gray-900 truncate">{{ r.first_name }} {{ r.last_name }}</p>
+              <p class="text-[11px] text-gray-500 truncate">{{ r.student_id }} · {{ r.program || '—' }} · {{ r.year_level || '—' }}</p>
+            </div>
+            <span :class="['px-2 py-0.5 rounded-full text-[10px] font-bold capitalize flex-shrink-0', r.role && r.role !== 'student' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600']">{{ r.role || 'student' }}</span>
+          </button>
+        </div>
+
         <!-- Empty search state -->
-        <div v-else-if="!isSearchingRole && roleSearchQuery && !roleTargetStudent" class="text-center py-6 text-gray-400 text-sm">
+        <div v-else-if="!isSearchingRole && roleSearchQuery && !roleTargetStudent && roleSearchResults.length === 0" class="text-center py-6 text-gray-400 text-sm">
           No student found. Try a different ID or name.
         </div>
       </div>
@@ -550,7 +572,7 @@
         <div class="divide-y divide-gray-100">
           <div v-for="assignment in recentRoleAssignments" :key="assignment.student_id" class="px-5 py-3 flex items-center gap-3">
             <div :class="['w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-              <img v-if="assignment.photo" :src="assignment.photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+              <img v-if="assignment.photo && !photoFailed['asg-' + (assignment._id || assignment.student_id)]" :src="assignment.photo" class="w-full h-full object-cover" @error="markPhotoFailed('asg-' + (assignment._id || assignment.student_id))" referrerpolicy="no-referrer" />
               <span v-else>{{ (assignment.name || '?').charAt(0).toUpperCase() }}</span>
             </div>
             <div class="flex-1 min-w-0">
@@ -615,7 +637,7 @@
                     collegeMembersModalData.college === 'SOM' ? 'bg-gradient-to-br from-green-400 to-yellow-500' :
                     collegeMembersModalData.college === 'CNAHS' ? 'bg-gradient-to-br from-teal-400 to-green-500' :
                     'bg-gradient-to-br from-blue-500 to-indigo-600']">
-                    <img v-if="member.photo" :src="member.photo" class="w-full h-full object-cover" @error="$event.target.style.display='none'" />
+                    <img v-if="member.photo && !photoFailed['mem-' + (member._id || member.student_id)]" :src="member.photo" class="w-full h-full object-cover" @error="markPhotoFailed('mem-' + (member._id || member.student_id))" referrerpolicy="no-referrer" />
                     <span v-else>{{ (member.first_name || '?').charAt(0).toUpperCase() }}{{ (member.last_name || '').charAt(0).toUpperCase() }}</span>
                   </div>
                   <div class="flex-1 min-w-0">
@@ -657,11 +679,13 @@
               <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
               <div class="flex items-start gap-4">
                 <div :class="['w-20 h-20 rounded-full flex-shrink-0 flex items-center justify-center text-white font-semibold text-lg overflow-hidden border-2 border-gray-300', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-400' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-500' : isCNAHS ? 'bg-gradient-to-br from-green-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-                  <img 
-                    v-if="editingUser.photo" 
-                    :src="editingUser.photo" 
+                  <img
+                    v-if="editingUser.photo && !photoFailed['edit-' + (editingUser._id || editingUser.student_id)]"
+                    :src="editingUser.photo"
                     :alt="`${editingUser.first_name} ${editingUser.last_name}`"
                     class="w-full h-full object-cover"
+                    @error="markPhotoFailed('edit-' + (editingUser._id || editingUser.student_id))"
+                    referrerpolicy="no-referrer"
                   />
                   <span v-else>{{ getInitials(editingUser) }}</span>
                 </div>
@@ -949,8 +973,14 @@ export default {
         message: ''
       },
       handleUserDeletedEvent: null,
+      // Map of cache keys -> true when an avatar image fails to load. We need
+      // a reactive flag (rather than just `@error="display:none"`) so the
+      // initials fallback inside the same circle can show.
+      photoFailed: {},
       roleSearchQuery: '',
       isSearchingRole: false,
+      // List of matches when several students hit the same name query.
+      roleSearchResults: [],
       roleTargetStudent: null,
       selectedNewRole: null,
       roleTargetCollegeDept: '',
@@ -1369,16 +1399,28 @@ export default {
         this.isSavingUser = false
       }
     },
+    markPhotoFailed(key) {
+      if (!key) return
+      // Reactive set on a plain object using Vue 3 deep reactivity
+      this.photoFailed = { ...this.photoFailed, [key]: true }
+    },
+    selectRoleResult(student) {
+      this.roleTargetStudent = student
+      this.roleSearchResults = []
+      this.roleTargetCollegeDept = student?.college || this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
+    },
     async searchStudentForRole() {
       if (!this.roleSearchQuery.trim()) return
       this.isSearchingRole = true
       this.roleTargetStudent = null
+      this.roleSearchResults = []
       this.selectedNewRole = null
       this.roleAssignError = ''
       try {
         const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
         const college = this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
-        const response = await fetch(buildAPIUrl('/apis/students/search'), {
+        // Use multi-result search so name queries return up to 10 candidates.
+        const response = await fetch(buildAPIUrl('/apis/students/search-multi'), {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -1389,16 +1431,19 @@ export default {
         })
         if (response.ok) {
           const data = await response.json()
-          this.roleTargetStudent = data.student || null
-          if (this.roleTargetStudent) {
-            this.roleTargetCollegeDept = this.roleTargetStudent.college || this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
+          const results = Array.isArray(data.students) ? data.students : []
+          if (results.length === 1) {
+            // Auto-select on a unique match (e.g. exact student ID).
+            this.selectRoleResult(results[0])
+          } else {
+            this.roleSearchResults = results
           }
         } else {
-          this.roleTargetStudent = null
+          this.roleSearchResults = []
         }
       } catch (e) {
         console.error('Error searching student for role:', e)
-        this.roleTargetStudent = null
+        this.roleSearchResults = []
       } finally {
         this.isSearchingRole = false
       }

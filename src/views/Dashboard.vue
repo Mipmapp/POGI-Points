@@ -1246,7 +1246,11 @@
               </div>
             </div>
 
-
+            <!-- Facial Recognition (Super Admin only). Co-admins/treasurers
+                 are intentionally blocked from this section. -->
+            <FaceRecognitionSettings
+              v-if="currentUser && currentUser.isMaster && currentUser.role === 'admin'"
+            />
 
             <!-- Save Button -->
             <div class="flex justify-end pt-4">
@@ -6417,6 +6421,7 @@ import ContributionsModal from '../components/ContributionsModal.vue'
 import StudentContributionsView from '../components/StudentContributionsView.vue'
 import StudentRaffleResultsView from '../components/StudentRaffleResultsView.vue'
 import AdminContributionPanel from '../components/AdminContributionPanel.vue'
+import FaceRecognitionSettings from '../components/FaceRecognitionSettings.vue'
 import AdminRaffleTicketPanel from '../components/AdminRaffleTicketPanel.vue'
 import Manage from '../components/Manage.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'

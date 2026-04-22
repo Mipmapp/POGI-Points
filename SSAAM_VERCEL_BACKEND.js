@@ -91,7 +91,7 @@ app.use((req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 // Single MongoDB database - all colleges use same DB, separate collections by prefix
-const MONGO_URI = 'mongodb+srv://SSAAM:ssaam.admin.jrmsu@cluster0.bnwy9iy.mongodb.net/dbconnect?retryWrites=true&w=majority';
+const MONGO_URI = process.env.MONGODB_URL;
 
 // Helper to determine college from request and get collection prefix
 const VALID_COLLEGES = ['CCS', 'COE', 'SOM', 'CNAHS'];
@@ -2255,6 +2255,18 @@ const masterSchema = new mongoose.Schema({
     phone: { type: String, default: null },
     photo: { type: String, default: null },
     bio: { type: String, default: null },
+    // Facial recognition profiles (super admin only). Each entry holds a 128-float
+    // descriptor produced by face-api.js plus an optional photo and label so the UI
+    // can preview the enrolled face. Co-admins/treasurers never read or write these.
+    face_descriptors: {
+        type: [{
+            label: { type: String, default: 'Face' },
+            descriptor: { type: [Number], required: true },
+            photo: { type: String, default: null },
+            created_at: { type: Date, default: Date.now }
+        }],
+        default: []
+    },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
 });
@@ -2262,6 +2274,12 @@ const masterSchema = new mongoose.Schema({
 masterSchema.methods.toJSON = function () {
     const obj = this.toObject();
     delete obj.password;
+    // Never leak raw face descriptors through generic master responses; they must
+    // only be served by the dedicated GET /apis/masters/face endpoint.
+    if (Array.isArray(obj.face_descriptors)) {
+        obj.face_descriptors_count = obj.face_descriptors.length;
+        delete obj.face_descriptors;
+    }
     return obj;
 };
 
@@ -3544,6 +3562,41 @@ app.post('/apis/students/search', auth, async (req, res) => {
         });
     } catch (err) {
         console.error('Error searching student:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Multi-result student search (admins only) — used by Manage > Roles to pick
+// from a list when several students match a name. Mirrors the POST /search but
+// returns up to 10 candidates instead of a single record.
+app.post('/apis/students/search-multi', auth, async (req, res) => {
+    try {
+        const { search_query } = req.body;
+        if (!search_query || !search_query.trim()) {
+            return res.status(400).json({ message: 'Search query is required' });
+        }
+        const escapedSearch = escapeRegex(search_query.trim());
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+
+        const students = await StudentModel.find({
+            status: 'approved',
+            $or: [
+                { student_id: { $regex: escapedSearch, $options: 'i' } },
+                { rfid_code: { $regex: escapedSearch, $options: 'i' } },
+                { first_name: { $regex: escapedSearch, $options: 'i' } },
+                { middle_name: { $regex: escapedSearch, $options: 'i' } },
+                { last_name: { $regex: escapedSearch, $options: 'i' } },
+                { full_name: { $regex: escapedSearch, $options: 'i' } }
+            ]
+        })
+            .select('student_id first_name last_name middle_name suffix full_name program year_level email rfid_status role photo college')
+            .sort({ first_name: 1, last_name: 1 })
+            .limit(10)
+            .lean();
+
+        res.json({ message: 'OK', students, count: students.length });
+    } catch (err) {
+        console.error('Error in students/search-multi:', err);
         res.status(500).json({ message: err.message });
     }
 });
@@ -4873,8 +4926,106 @@ app.post('/apis/masters/logout', auth, async (req, res) => {
     }
 });
 
+// ============================================================
+// Facial Recognition (Super Admin only)
+// ------------------------------------------------------------
+// These endpoints let the active super admin manage their enrolled face
+// descriptors. Co-admins/treasurers are blocked by `requireSuperAdmin`.
+// Descriptors are 128-float arrays produced client-side by face-api.js;
+// the server only stores and returns them, no recognition is done on the
+// backend so we never need raw images on the server.
+// ============================================================
+app.get('/apis/masters/face', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+    try {
+        const master = await Master.findById(req.master._id || req.master.id).select('face_descriptors');
+        if (!master) return res.status(404).json({ message: 'Admin not found' });
 
+        const faces = (master.face_descriptors || []).map(f => ({
+            _id: f._id,
+            label: f.label,
+            descriptor: f.descriptor,
+            photo: f.photo || null,
+            created_at: f.created_at
+        }));
+        res.json({ faces, count: faces.length });
+    } catch (err) {
+        console.error('Face list error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
 
+app.post('/apis/masters/face', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+    try {
+        const { label, descriptor, photo } = req.body || {};
+
+        if (!Array.isArray(descriptor) || descriptor.length !== 128) {
+            return res.status(400).json({
+                message: 'descriptor must be a 128-element float array (face-api.js descriptor)'
+            });
+        }
+        if (!descriptor.every(n => typeof n === 'number' && Number.isFinite(n))) {
+            return res.status(400).json({ message: 'descriptor must contain finite numbers' });
+        }
+
+        const cleanLabel = (label || 'Face').toString().trim().slice(0, 64) || 'Face';
+        const cleanPhoto = typeof photo === 'string' && photo.startsWith('data:image')
+            ? photo.slice(0, 250000) // cap base64 thumbnail size
+            : null;
+
+        const master = await Master.findById(req.master._id || req.master.id);
+        if (!master) return res.status(404).json({ message: 'Admin not found' });
+
+        master.face_descriptors = master.face_descriptors || [];
+        if (master.face_descriptors.length >= 10) {
+            return res.status(400).json({
+                message: 'You can save up to 10 faces. Remove one before adding another.'
+            });
+        }
+
+        const entry = { label: cleanLabel, descriptor, photo: cleanPhoto, created_at: new Date() };
+        master.face_descriptors.push(entry);
+        master.updated_at = new Date();
+        await master.save();
+
+        const saved = master.face_descriptors[master.face_descriptors.length - 1];
+        res.json({
+            message: 'Face enrolled',
+            face: {
+                _id: saved._id,
+                label: saved.label,
+                descriptor: saved.descriptor,
+                photo: saved.photo,
+                created_at: saved.created_at
+            },
+            count: master.face_descriptors.length
+        });
+    } catch (err) {
+        console.error('Face enroll error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+app.delete('/apis/masters/face/:faceId', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+    try {
+        const { faceId } = req.params;
+        const master = await Master.findById(req.master._id || req.master.id);
+        if (!master) return res.status(404).json({ message: 'Admin not found' });
+
+        const before = (master.face_descriptors || []).length;
+        master.face_descriptors = (master.face_descriptors || []).filter(
+            f => f._id.toString() !== faceId
+        );
+        if (master.face_descriptors.length === before) {
+            return res.status(404).json({ message: 'Face not found' });
+        }
+        master.updated_at = new Date();
+        await master.save();
+        res.json({ message: 'Face removed', count: master.face_descriptors.length });
+    } catch (err) {
+        console.error('Face delete error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
 
 
 
@@ -8494,7 +8645,7 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
         const studentFilter = { status: 'approved' };
         const allStudents = await StudentModel.find(studentFilter, {
             student_id: 1, first_name: 1, last_name: 1, full_name: 1,
-            program: 1, year_level: 1
+            program: 1, year_level: 1, photo: 1
         }).lean();
 
         // Build records for every student, using PaymentRecord status when available
@@ -8505,6 +8656,7 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
                 student_id: s.student_id,
                 student_id_number: s.student_id,
                 student_name: s.full_name || `${s.first_name || ''} ${s.last_name || ''}`.trim(),
+                photo: s.photo || '',
                 program: s.program,
                 year_level: s.year_level,
                 payment_status: pr.payment_status || 'unpaid',
