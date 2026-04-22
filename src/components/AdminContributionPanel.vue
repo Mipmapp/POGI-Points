@@ -133,7 +133,7 @@
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Enter Student ID or RFID..."
+              placeholder="Search by Name, Student ID, or RFID..."
               @keydown.enter="searchStudent"
               class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition"
             />
@@ -716,6 +716,7 @@ export default {
       const fp = this.filterProgram;
 
       const fc = (this.filterCollege || '').toUpperCase();
+      const q = (this.searchQuery || '').toString().trim().toLowerCase();
 
       const filtered = this.contributions.filter(c => {
         const cStatus = (c.payment_status || '').toString().toLowerCase();
@@ -732,7 +733,23 @@ export default {
           }
         }
 
-        return matchesLevel && matchesProgram && matchesStatus && matchesCollege;
+        let matchesQuery = true;
+        if (q) {
+          const hay = [
+            c.name,
+            c.first_name,
+            c.middle_name,
+            c.last_name,
+            c.full_name,
+            c.student_id,
+            c.id_number,
+            c.rfid_code,
+            c.email
+          ].filter(Boolean).join(' ').toLowerCase();
+          matchesQuery = hay.includes(q);
+        }
+
+        return matchesLevel && matchesProgram && matchesStatus && matchesCollege && matchesQuery;
       });
 
       return filtered.sort((a, b) => {

@@ -59,7 +59,7 @@
             <input
               v-model="searchQuery"
               type="text"
-              placeholder="Enter Student ID or RFID..."
+              placeholder="Search by Name, Student ID, or RFID..."
               @keydown.enter="searchStudent"
               class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-300 focus:border-purple-400 outline-none text-sm bg-gray-50 focus:bg-white transition"
             />
@@ -424,8 +424,24 @@ const previewCategory = computed(() => {
 })
 
 const filteredEntries = computed(() => {
+  const q = (searchQuery.value || '').toString().trim().toLowerCase()
   return entries.value.filter(e => {
     if (filterCategory.value && e.category !== filterCategory.value) return false
+    if (q) {
+      const hay = [
+        e.name,
+        e.first_name,
+        e.middle_name,
+        e.last_name,
+        e.full_name,
+        e.student_name,
+        e.student_id,
+        e.id_number,
+        e.rfid_code,
+        e.email
+      ].filter(Boolean).join(' ').toLowerCase()
+      if (!hay.includes(q)) return false
+    }
     return true
   })
 })
