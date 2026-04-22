@@ -10665,6 +10665,12 @@ const roleViewMode = ref('role')
 const inRoleView = computed(() => !canSwitchView.value || roleViewMode.value === 'role')
 const inUserView = computed(() => canSwitchView.value && roleViewMode.value === 'user')
 watch(canSwitchView, (v) => { if (!v) roleViewMode.value = 'role' })
+
+// Persist active page across browser refreshes
+watch(currentPage, (newPage) => {
+  sessionStorage.setItem('ssaam_current_page', newPage)
+})
+
 watch(roleViewMode, () => {
   currentPage.value = 'dashboard'
   if (sectionDataCache.value && sectionDataCache.value['attendance']) {
@@ -10958,7 +10964,25 @@ onMounted(async () => {
   
   // Listen for user deletions from Manage component
   window.addEventListener('user-deleted', handleUserDeleted)
-  
+
+  // Restore the last visited page (persisted across browser refreshes)
+  const savedPage = sessionStorage.getItem('ssaam_current_page')
+  if (savedPage && savedPage !== 'dashboard') {
+    const isAdmin = currentUser.value.isMaster || currentUser.value.role === 'admin'
+    // Only restore pages the current role can actually access
+    const adminPages = ['manage', 'pending', 'attendance', 'contributions', 'settings', 'co-admins', 'raffle-tickets', 'notifications']
+    const studentPages = ['attendance', 'my-contributions', 'my-raffle', 'request', 'notifications']
+    const allowed = isAdmin ? adminPages : studentPages
+    if (allowed.includes(savedPage)) {
+      currentPage.value = savedPage
+      // Trigger fetches for pages that aren't child-component-driven
+      if (savedPage === 'attendance') fetchAttendanceData()
+      else if (savedPage === 'manage') handleManageClick()
+      else if (savedPage === 'co-admins') fetchCoAdmins()
+      else if (savedPage === 'request') fetchStudentRequests()
+    }
+  }
+
   isPageLoading.value = false
 })
 
@@ -12932,6 +12956,7 @@ const confirmLogout = async () => {
     localStorage.removeItem('likeActionTimestamps')
     localStorage.removeItem('likeBanUntil')
     localStorage.removeItem('likeWarningShown')
+    sessionStorage.removeItem('ssaam_current_page')
     router.push('/')
   }, 1500)
 }
