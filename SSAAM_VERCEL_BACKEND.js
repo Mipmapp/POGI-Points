@@ -4979,19 +4979,30 @@ app.post('/apis/masters/face', auth, requireMaster, async (req, res) => {
         const master = await Master.findById(req.master._id || req.master.id);
         if (!master) return res.status(404).json({ message: 'Admin not found' });
 
-        master.face_descriptors = master.face_descriptors || [];
-        if (master.face_descriptors.length >= 10) {
+        const existing = master.face_descriptors || [];
+        if (existing.length >= 10) {
             return res.status(400).json({
                 message: 'You can save up to 10 faces. Remove one before adding another.'
             });
         }
 
-        const entry = { label: cleanLabel, descriptor, photo: cleanPhoto, created_at: new Date() };
-        master.face_descriptors.push(entry);
-        master.updated_at = new Date();
-        await master.save();
+        // Use a direct $push update so we only modify face_descriptors. A
+        // plain master.save() would re-validate every field on the document
+        // (including legacy `role` values like 'administrator' that predate
+        // the current enum) and reject the write.
+        const entry = {
+            _id: new mongoose.Types.ObjectId(),
+            label: cleanLabel,
+            descriptor,
+            photo: cleanPhoto,
+            created_at: new Date(),
+        };
+        await Master.updateOne(
+            { _id: master._id },
+            { $push: { face_descriptors: entry }, $set: { updated_at: new Date() } }
+        );
 
-        const saved = master.face_descriptors[master.face_descriptors.length - 1];
+        const saved = entry;
         res.json({
             message: 'Face enrolled',
             face: {
@@ -5016,15 +5027,20 @@ app.delete('/apis/masters/face/:faceId', auth, requireMaster, async (req, res) =
         if (!master) return res.status(404).json({ message: 'Admin not found' });
 
         const before = (master.face_descriptors || []).length;
-        master.face_descriptors = (master.face_descriptors || []).filter(
+        const remaining = (master.face_descriptors || []).filter(
             f => f._id.toString() !== faceId
         );
-        if (master.face_descriptors.length === before) {
+        if (remaining.length === before) {
             return res.status(404).json({ message: 'Face not found' });
         }
-        master.updated_at = new Date();
-        await master.save();
-        res.json({ message: 'Face removed', count: master.face_descriptors.length });
+        // Direct update to avoid full-document validation against legacy
+        // fields (e.g. older `role` values not in the current enum).
+        await Master.updateOne(
+            { _id: master._id },
+            { $pull: { face_descriptors: { _id: new mongoose.Types.ObjectId(faceId) } },
+              $set: { updated_at: new Date() } }
+        );
+        res.json({ message: 'Face removed', count: remaining.length });
     } catch (err) {
         console.error('Face delete error:', err);
         res.status(500).json({ message: err.message });
