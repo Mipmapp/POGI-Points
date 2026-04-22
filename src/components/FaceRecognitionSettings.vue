@@ -96,18 +96,6 @@
           </div>
         </div>
 
-        <!-- Label input -->
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Label for this face</label>
-          <input
-            v-model="newLabel"
-            type="text"
-            maxlength="64"
-            placeholder="e.g. Daylight, Glasses on, Office light…"
-            :class="['w-full px-4 py-2 border rounded-lg outline-none transition-all', tint.input]"
-          />
-        </div>
-
         <!-- Camera controls -->
         <div class="flex flex-wrap gap-2">
           <button

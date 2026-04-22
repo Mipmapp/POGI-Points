@@ -188,13 +188,14 @@
               </div>
 
               <!-- Matched success banner -->
-              <div v-if="faceStep === 'matched'" class="flex items-center gap-2.5 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-                <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+              <div v-if="faceStep === 'matched'" class="flex items-center gap-3 p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm">
+                <div class="w-9 h-9 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0 shadow">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 </div>
-                <div>
-                  <p class="text-sm font-bold text-emerald-800">Identity Confirmed</p>
-                  <p class="text-xs text-emerald-600">Matched: {{ faceMatchLabel }} — Logging in…</p>
+                <div class="min-w-0">
+                  <p class="text-xs font-medium text-emerald-600 uppercase tracking-wide">Identity Confirmed</p>
+                  <p class="text-base font-bold text-emerald-900 truncate">Welcome, {{ faceMatchLabel }}!</p>
+                  <p class="text-[11px] text-emerald-500 mt-0.5">Logging in…</p>
                 </div>
               </div>
             </div>

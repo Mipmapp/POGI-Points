@@ -5023,6 +5023,35 @@ app.post('/apis/masters/face', auth, requireMaster, async (req, res) => {
     }
 });
 
+app.patch('/apis/masters/face/:faceId', auth, requireMaster, async (req, res) => {
+    try {
+        const { faceId } = req.params;
+        const { label } = req.body || {};
+
+        const cleanLabel = (label || '').toString().trim().slice(0, 64);
+        if (!cleanLabel) return res.status(400).json({ message: 'label is required' });
+
+        const master = await Master.findById(req.master._id || req.master.id);
+        if (!master) return res.status(404).json({ message: 'Admin not found' });
+
+        const face = (master.face_descriptors || []).find(f => f._id.toString() === faceId);
+        if (!face) return res.status(404).json({ message: 'Face not found' });
+
+        await Master.updateOne(
+            { _id: master._id, 'face_descriptors._id': new mongoose.Types.ObjectId(faceId) },
+            { $set: { 'face_descriptors.$.label': cleanLabel, updated_at: new Date() } }
+        );
+
+        res.json({
+            message: 'Face label updated',
+            face: { _id: face._id, label: cleanLabel }
+        });
+    } catch (err) {
+        console.error('Face rename error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
 app.delete('/apis/masters/face/:faceId', auth, requireMaster, async (req, res) => {
     try {
         const { faceId } = req.params;
