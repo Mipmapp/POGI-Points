@@ -106,6 +106,124 @@
     </div>
   </transition>
 
+  <!-- ══════════ FACE ID — 3rd Verification Step ══════════ -->
+  <transition name="fade">
+    <div v-if="showFaceModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[130]">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl w-[calc(100%-2rem)] max-w-sm overflow-hidden">
+
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center gap-3">
+            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
+              <!-- Face scan icon -->
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-white leading-tight">Face ID</h3>
+              <p class="text-blue-100 text-xs">Step 3 of 3 — Biometric Verification</p>
+            </div>
+            <!-- Step badge -->
+            <div class="ml-auto flex gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-white/40"></span>
+              <span class="w-2 h-2 rounded-full bg-white/40"></span>
+              <span class="w-2 h-2 rounded-full bg-white"></span>
+            </div>
+          </div>
+
+          <!-- Body -->
+          <div class="p-5 space-y-4">
+
+            <!-- Loading / no-faces / error states (no camera) -->
+            <div v-if="faceStep === 'loading' || faceStep === 'no-faces' || faceStep === 'error'" class="flex flex-col items-center gap-3 py-6">
+              <div v-if="faceStep === 'loading'" class="w-16 h-16 rounded-full bg-blue-50 border-2 border-blue-200 flex items-center justify-center">
+                <svg class="w-8 h-8 text-ssaam-dark animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+              </div>
+              <div v-else-if="faceStep === 'no-faces'" class="w-16 h-16 rounded-full bg-amber-50 border-2 border-amber-200 flex items-center justify-center">
+                <svg class="w-8 h-8 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div v-else-if="faceStep === 'error'" class="w-16 h-16 rounded-full bg-red-50 border-2 border-red-200 flex items-center justify-center">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              </div>
+              <p class="text-sm font-semibold text-gray-700 text-center">{{ faceStatusText }}</p>
+              <p v-if="faceLoadError" class="text-xs text-red-600 text-center">{{ faceLoadError }}</p>
+            </div>
+
+            <!-- Camera viewport (scanning / matched) -->
+            <div v-if="faceStep === 'scanning' || faceStep === 'matched'" class="space-y-3">
+              <div class="relative rounded-xl overflow-hidden bg-gray-900 aspect-[4/3] border-2 border-ssaam-dark/30 shadow-inner">
+                <video id="face-login-video" autoplay muted playsinline
+                  class="absolute inset-0 w-full h-full object-cover"
+                  :class="faceStep === 'scanning' || faceStep === 'matched' ? 'opacity-100' : 'opacity-0'"
+                ></video>
+                <canvas id="face-login-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+
+                <!-- Scan-line animation while scanning -->
+                <div v-if="faceStep === 'scanning'" class="ssaam-face-scanline absolute left-0 right-0 h-[2px] bg-ssaam-light shadow-[0_0_12px_2px_rgba(79,98,255,0.8)] pointer-events-none"></div>
+
+                <!-- Corner brackets -->
+                <div class="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-ssaam-light rounded-tl"></div>
+                <div class="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-ssaam-light rounded-tr"></div>
+                <div class="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-ssaam-light rounded-bl"></div>
+                <div class="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-ssaam-light rounded-br"></div>
+
+                <!-- Status HUD -->
+                <div class="absolute top-2 left-1/2 -translate-x-1/2">
+                  <span class="text-[10px] font-bold text-white bg-black/50 backdrop-blur px-2.5 py-1 rounded-full whitespace-nowrap">
+                    {{ faceStatusText }}
+                  </span>
+                </div>
+
+                <!-- Match confidence badge -->
+                <div v-if="faceStep === 'matched' && faceConfidence !== null" class="absolute bottom-2 left-1/2 -translate-x-1/2">
+                  <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/90 text-white backdrop-blur shadow">
+                    ✓ {{ faceConfidence }}% match
+                  </span>
+                </div>
+              </div>
+
+              <!-- Matched success banner -->
+              <div v-if="faceStep === 'matched'" class="flex items-center gap-2.5 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
+                <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-emerald-800">Identity Confirmed</p>
+                  <p class="text-xs text-emerald-600">Matched: {{ faceMatchLabel }} — Logging in…</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Footer actions -->
+          <div class="px-5 pb-5 flex gap-3" v-if="faceStep !== 'matched' && faceStep !== 'no-faces'">
+            <button
+              @click="cancelFaceVerification"
+              class="flex-1 py-2.5 rounded-xl bg-gray-100 text-gray-700 text-sm font-semibold hover:bg-gray-200 active:scale-95 transition"
+            >
+              Cancel
+            </button>
+            <button
+              v-if="faceStep === 'error'"
+              @click="startFaceVerification"
+              class="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white text-sm font-semibold hover:opacity-90 active:scale-95 transition shadow"
+            >
+              Retry
+            </button>
+          </div>
+
+        </div>
+      </transition>
+    </div>
+  </transition>
+  <!-- ══════════ END FACE ID ══════════ -->
+
   <transition name="fade">
     <div v-if="showErrorNotification" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <transition name="modal-bounce" appear>
@@ -481,6 +599,190 @@ const verificationInputs = ref([])
 const verificationError = ref(false)
 const verificationErrorMessage = ref('')
 let pendingUser = null
+
+// ── Face ID step (3rd verification) ──────────────────────────────
+const showFaceModal = ref(false)
+const faceStep = ref('loading') // 'loading' | 'scanning' | 'matched' | 'failed' | 'no-faces' | 'error'
+const faceStatusText = ref('Initializing…')
+const faceMatchLabel = ref('')
+const faceConfidence = ref(null)
+const faceSavedFaces = ref([])
+const faceStream = ref(null)
+const faceDetectLoopId = ref(null)
+const faceApiInst = ref(null)
+const faceModelsReady = ref(false)
+const faceLoadError = ref('')
+let faceapiLoginPromise = null
+
+const FACE_THRESHOLD = 0.5
+const FACE_MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models'
+
+function loadFaceApiLogin() {
+  if (!faceapiLoginPromise) {
+    faceapiLoginPromise = import('face-api.js').then(m => m.default || m)
+  }
+  return faceapiLoginPromise
+}
+
+async function startFaceVerification() {
+  showFaceModal.value = true
+  faceStep.value = 'loading'
+  faceStatusText.value = 'Loading face models…'
+  faceLoadError.value = ''
+  faceMatchLabel.value = ''
+  faceConfidence.value = null
+
+  try {
+    // 1. Load saved faces using the pending user token
+    const token = pendingUser?.token
+    const college = pendingUser?.selectedDepartment?.value || pendingUser?._detectedCollege || 'CCS'
+    const res = await fetch(buildAPIUrl('/apis/masters/face'), {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-College': college
+      }
+    })
+    if (!res.ok) {
+      faceStep.value = 'error'
+      faceStatusText.value = 'Could not load Face ID data.'
+      return
+    }
+    const data = await res.json()
+    faceSavedFaces.value = (data.faces || []).filter(f => Array.isArray(f.descriptor) && f.descriptor.length === 128)
+
+    if (faceSavedFaces.value.length === 0) {
+      // No faces enrolled — skip Face ID and log in directly
+      faceStep.value = 'no-faces'
+      faceStatusText.value = 'No Face IDs enrolled. Skipping…'
+      setTimeout(() => completeFaceLogin(), 1500)
+      return
+    }
+
+    // 2. Load face-api.js models
+    const faceapi = await loadFaceApiLogin()
+    faceApiInst.value = faceapi
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL),
+      faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL),
+      faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL),
+    ])
+    faceModelsReady.value = true
+
+    // 3. Start camera
+    faceStatusText.value = 'Starting camera…'
+    faceStream.value = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+      audio: false
+    })
+    await nextTick()
+    const video = document.getElementById('face-login-video')
+    if (video) {
+      video.srcObject = faceStream.value
+      await new Promise(resolve => { video.onloadedmetadata = () => video.play().then(resolve).catch(resolve) })
+    }
+
+    faceStep.value = 'scanning'
+    faceStatusText.value = 'Look at the camera…'
+    runFaceLoginLoop()
+
+  } catch (err) {
+    console.error('Face verification init error:', err)
+    faceStep.value = 'error'
+    faceLoadError.value = err.name === 'NotAllowedError'
+      ? 'Camera access denied. Allow camera and try again.'
+      : 'Face ID verification failed to start.'
+  }
+}
+
+function euclideanFace(a, b) {
+  let s = 0
+  for (let i = 0; i < a.length; i++) { const d = a[i] - b[i]; s += d * d }
+  return Math.sqrt(s)
+}
+
+function stopFaceCamera() {
+  if (faceDetectLoopId.value) { cancelAnimationFrame(faceDetectLoopId.value); faceDetectLoopId.value = null }
+  if (faceStream.value) { faceStream.value.getTracks().forEach(t => t.stop()); faceStream.value = null }
+  const video = document.getElementById('face-login-video')
+  if (video) video.srcObject = null
+}
+
+async function runFaceLoginLoop() {
+  if (faceStep.value !== 'scanning' || !faceApiInst.value) return
+  const video = document.getElementById('face-login-video')
+  const canvas = document.getElementById('face-login-canvas')
+  if (!video || !canvas || video.readyState < 2) {
+    faceDetectLoopId.value = requestAnimationFrame(runFaceLoginLoop)
+    return
+  }
+
+  try {
+    const detection = await faceApiInst.value
+      .detectSingleFace(video, new faceApiInst.value.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
+      .withFaceLandmarks()
+      .withFaceDescriptor()
+
+    const w = video.clientWidth, h = video.clientHeight
+    if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h }
+    const ctx = canvas.getContext('2d')
+    ctx.clearRect(0, 0, w, h)
+
+    if (detection) {
+      const box = detection.detection.box
+      const sx = w / video.videoWidth, sy = h / video.videoHeight
+      let best = null
+      for (const f of faceSavedFaces.value) {
+        const dist = euclideanFace(detection.descriptor, f.descriptor)
+        if (best === null || dist < best.dist) best = { dist, label: f.label }
+      }
+      const matched = best && best.dist < FACE_THRESHOLD
+
+      // Draw box
+      ctx.strokeStyle = matched ? '#22c55e' : '#6366f1'
+      ctx.lineWidth = 3
+      ctx.strokeRect(box.x * sx, box.y * sy, box.width * sx, box.height * sy)
+      const tag = matched ? `✓ ${best.label}` : 'Verifying…'
+      ctx.font = '12px ui-sans-serif, system-ui, sans-serif'
+      const pad = 6, tw = ctx.measureText(tag).width + pad * 2
+      ctx.fillStyle = matched ? 'rgba(34,197,94,0.92)' : 'rgba(99,102,241,0.85)'
+      ctx.fillRect(box.x * sx, box.y * sy - 22, tw, 20)
+      ctx.fillStyle = '#fff'
+      ctx.fillText(tag, box.x * sx + pad, box.y * sy - 8)
+
+      if (matched) {
+        faceMatchLabel.value = best.label
+        faceConfidence.value = Math.round((1 - best.dist) * 100)
+        faceStep.value = 'matched'
+        faceStatusText.value = `Recognized: ${best.label}`
+        stopFaceCamera()
+        setTimeout(() => completeFaceLogin(), 1800)
+        return
+      }
+
+      faceStatusText.value = 'Face detected — matching…'
+    } else {
+      faceStatusText.value = 'Look at the camera…'
+    }
+  } catch (_) { /* transient */ }
+
+  faceDetectLoopId.value = requestAnimationFrame(runFaceLoginLoop)
+}
+
+function completeFaceLogin() {
+  stopFaceCamera()
+  showFaceModal.value = false
+  localStorage.setItem('currentUser', JSON.stringify(pendingUser))
+  localStorage.setItem('authToken', pendingUser.token)
+  isLoading.value = true
+  isNavigationPending.value = true
+}
+
+function cancelFaceVerification() {
+  stopFaceCamera()
+  showFaceModal.value = false
+  faceStep.value = 'loading'
+  pendingUser = null
+}
 
 const handleDigitInput = (index, event) => {
   const val = event.target.value;
@@ -953,12 +1255,8 @@ const verifyAdminCode = () => {
     showVerificationModal.value = false;
     verificationError.value = false;
     verificationErrorMessage.value = '';
-    // Only now store the sensitive data
-    localStorage.setItem("currentUser", JSON.stringify(pendingUser));
-    localStorage.setItem("authToken", pendingUser.token);
-    console.log("Admin Verification Success. Navigating to dashboard...");
-    isLoading.value = true;
-    isNavigationPending.value = true;
+    // Proceed to Face ID step (step 3)
+    startFaceVerification();
   } else {
     verificationErrorMessage.value = "Invalid verification code. Please try again.";
     verificationError.value = true;
@@ -1163,4 +1461,15 @@ const verifyAdminCode = () => {
   background: #a0a0a0;
 }
 
+/* Face ID scan-line animation */
+@keyframes face-scan {
+  0%   { top: 8%;  opacity: 0; }
+  10%  { opacity: 0.9; }
+  50%  { top: 92%; opacity: 0.9; }
+  60%  { opacity: 0; }
+  100% { top: 8%;  opacity: 0; }
+}
+.ssaam-face-scanline {
+  animation: face-scan 2.4s linear infinite;
+}
 </style>
