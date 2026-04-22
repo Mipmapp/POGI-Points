@@ -80,6 +80,7 @@ VITE_API_URL = ""
 SSAAM_API_KEY = "SSAAMRegJRMSU"
 SSAAM_CRYPTO_KEY = "SSAAMRegJRMSU"
 ADMIN_VERIFICATION_SECRET = "SSAAMRegJRMSU"
+MONGODB_URL = "mongodb+srv://SSAAM:ssaam.admin.jrmsu@cluster0.bnwy9iy.mongodb.net/dbconnect?retryWrites=true&w=majority"
 
 [userenv.production]
 VITE_API_URL = "https://ssaam-api.vercel.app"

@@ -923,6 +923,14 @@
           </div>
 
           <div v-else class="space-y-8">
+            <!-- Facial Recognition — Super Admin only. Co-admins/treasurers
+                 never reach this page (sidebar hides Settings for them) and
+                 the backend also gates with requireSuperAdmin. -->
+            <FaceRecognitionSettings
+              v-if="currentUser && currentUser.isMaster"
+              :theme="isCOE ? 'orange' : isSOM ? 'green' : isCNAHS ? 'green' : 'blue'"
+            />
+
             <!-- User Registration Toggle -->
             <div class="border border-gray-200 rounded-xl p-6">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
@@ -1245,12 +1253,6 @@
                 <p class="text-xs text-red-600"><strong>Warning:</strong> This action will log out all users from the system immediately. They will need to log in again. Your current session will remain active.</p>
               </div>
             </div>
-
-            <!-- Facial Recognition (Super Admin only). Co-admins/treasurers
-                 are intentionally blocked from this section. -->
-            <FaceRecognitionSettings
-              v-if="currentUser && currentUser.isMaster && currentUser.role === 'admin'"
-            />
 
             <!-- Save Button -->
             <div class="flex justify-end pt-4">
