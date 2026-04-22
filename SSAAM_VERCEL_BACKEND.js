@@ -4935,7 +4935,11 @@ app.post('/apis/masters/logout', auth, async (req, res) => {
 // the server only stores and returns them, no recognition is done on the
 // backend so we never need raw images on the server.
 // ============================================================
-app.get('/apis/masters/face', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+// Face data is stored per-master on each master's own document, so the only
+// gate needed is `requireMaster` (a valid master JWT). The Settings sidebar
+// link itself is already hidden from co-admins and treasurers, and each
+// admin can only ever see/modify the faces on their OWN account.
+app.get('/apis/masters/face', auth, requireMaster, async (req, res) => {
     try {
         const master = await Master.findById(req.master._id || req.master.id).select('face_descriptors');
         if (!master) return res.status(404).json({ message: 'Admin not found' });
@@ -4954,7 +4958,7 @@ app.get('/apis/masters/face', auth, requireMaster, requireSuperAdmin, async (req
     }
 });
 
-app.post('/apis/masters/face', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+app.post('/apis/masters/face', auth, requireMaster, async (req, res) => {
     try {
         const { label, descriptor, photo } = req.body || {};
 
@@ -5005,7 +5009,7 @@ app.post('/apis/masters/face', auth, requireMaster, requireSuperAdmin, async (re
     }
 });
 
-app.delete('/apis/masters/face/:faceId', auth, requireMaster, requireSuperAdmin, async (req, res) => {
+app.delete('/apis/masters/face/:faceId', auth, requireMaster, async (req, res) => {
     try {
         const { faceId } = req.params;
         const master = await Master.findById(req.master._id || req.master.id);
