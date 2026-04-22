@@ -616,34 +616,26 @@
         <!-- Compact card for co-admin / treasurer / student -->
         <div v-else class="bg-white/[0.06] rounded-xl px-2.5 py-2.5 border border-white/10">
           <div class="flex items-center gap-2.5">
-            <div :class="['w-10 h-10 aspect-square rounded-full flex items-center justify-center overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
-              <span class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
+            <div :class="['relative w-10 h-10 aspect-square rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 ring-white/20', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
+              <img v-if="currentUser.image || currentUser.photo" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" />
+              <span v-else class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
             </div>
             <div class="flex-1 min-w-0">
               <p class="text-white text-[13px] font-semibold leading-tight truncate" :title="displayName">{{ displayName }}</p>
-              <div class="mt-0.5 flex items-center gap-1.5 flex-wrap">
-                <span v-if="isTreasurer" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">
-                  <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
-                  Treasurer
-                </span>
-                <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full">
-                  <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
-                  Co-Admin
-                </span>
-                <span v-else class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10">
-                  <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
-                  Student
+              <div class="mt-1 flex items-center gap-1 flex-wrap">
+                <span v-if="isTreasurer" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Treasurer</span>
+                <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Co-Admin</span>
+                <span v-else class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10">Student</span>
+                <span v-if="userCollegeIcon" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm" :title="(currentUser.college || '').toString().toUpperCase()">
+                  <img :src="userCollegeIcon" alt="College" class="w-3 h-3" />
+                  <span class="text-gray-800">{{ (currentUser.college || '').toString().toUpperCase() }}</span>
                 </span>
                 <span v-if="currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full" title="Verified">
                   <img src="/verified.svg" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
                   Verified
                 </span>
-                <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-500/90 text-white text-[9px] font-bold rounded-full" title="Unreadable">
-                  Unreadable
-                </span>
-                <span v-else class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/90 text-white text-[9px] font-bold rounded-full" title="Unverified">
-                  Unverified
-                </span>
+                <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-500/90 text-white text-[9px] font-bold rounded-full" title="Unreadable">Unreadable</span>
+                <span v-else class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/90 text-white text-[9px] font-bold rounded-full" title="Unverified">Unverified</span>
               </div>
             </div>
           </div>
@@ -750,23 +742,19 @@
           </div>
           <div v-else class="bg-white/[0.06] rounded-xl px-2.5 py-2.5 border border-white/10">
             <div class="flex items-center gap-2.5">
-              <div :class="['w-10 h-10 aspect-square rounded-full flex items-center justify-center overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
-                <span class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
+              <div :class="['relative w-10 h-10 aspect-square rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 ring-white/20', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
+                <img v-if="currentUser.image || currentUser.photo" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" />
+                <span v-else class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
               </div>
               <div class="flex-1 min-w-0">
                 <p class="text-white text-[13px] font-semibold leading-tight truncate" :title="displayName">{{ displayName }}</p>
-                <div class="mt-0.5 flex items-center gap-1.5 flex-wrap">
-                  <span v-if="isTreasurer" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">
-                    <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
-                    Treasurer
-                  </span>
-                  <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full">
-                    <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
-                    Co-Admin
-                  </span>
-                  <span v-else class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10">
-                    <img v-if="userCollegeIcon" :src="userCollegeIcon" alt="College" class="w-2.5 h-2.5 brightness-0 invert" />
-                    Student
+                <div class="mt-1 flex items-center gap-1 flex-wrap">
+                  <span v-if="isTreasurer" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Treasurer</span>
+                  <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full">Co-Admin</span>
+                  <span v-else class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10">Student</span>
+                  <span v-if="userCollegeIcon" class="inline-flex items-center gap-1 px-1.5 py-0.5 bg-white text-[9px] font-black uppercase tracking-wider rounded-full shadow-sm" :title="(currentUser.college || '').toString().toUpperCase()">
+                    <img :src="userCollegeIcon" alt="College" class="w-3 h-3" />
+                    <span class="text-gray-800">{{ (currentUser.college || '').toString().toUpperCase() }}</span>
                   </span>
                   <span v-if="currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full">
                     <img src="/verified.svg" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
