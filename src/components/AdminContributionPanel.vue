@@ -773,7 +773,14 @@ export default {
     filterStatus() { this.loadAllContributions(); },
     filterProgram() { this.loadAllContributions(); },
     filterYearLevel() { this.loadAllContributions(); },
-    filterCollege() { this.loadAllContributions(); }
+    filterCollege() { this.loadAllContributions(); },
+    searchQuery(val) {
+      const v = (val || '').toString().trim();
+      if (/^[A-Za-z0-9]{8,}$/.test(v) && !v.includes('-')) {
+        if (this._rfidAutoTimer) clearTimeout(this._rfidAutoTimer);
+        this._rfidAutoTimer = setTimeout(() => { this.searchStudent(); }, 150);
+      }
+    }
   },
   mounted() {
     this.loadAllPaymentEvents();

@@ -798,7 +798,7 @@ const handleLogin = async () => {
       }
     } else {
       // Auto-detect college: try each college in order until login succeeds
-      const collegeOrder = ['CCS', 'COE', 'SOM', 'CNAHS', 'CAS', 'CBA', 'CJPA', 'CED']
+      const collegeOrder = ['CCS', 'COE', 'SOM', 'CNAHS', 'CLAMS', 'CBA', 'CMJE', 'CME']
       let finalResponse = null
       let finalData = null
       let detectedCollege = null

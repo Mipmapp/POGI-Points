@@ -365,7 +365,7 @@
 </style>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { buildAPIUrl, getCollege } from '../config/api.js'
 import * as XLSX from 'xlsx'
 
@@ -476,6 +476,15 @@ function clampValue(field) {
   if (field === 'ruralCount') ruralCount.value = clamped
   else evergoodCount.value = clamped
 }
+
+let _rfidAutoTimer = null
+watch(searchQuery, (val) => {
+  const v = (val || '').toString().trim()
+  if (/^[A-Za-z0-9]{8,}$/.test(v) && !v.includes('-')) {
+    if (_rfidAutoTimer) clearTimeout(_rfidAutoTimer)
+    _rfidAutoTimer = setTimeout(() => { searchStudent() }, 150)
+  }
+})
 
 async function searchStudent() {
   const q = searchQuery.value.trim()
