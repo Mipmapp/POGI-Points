@@ -645,7 +645,7 @@
             </div>
           </div>
           <div v-if="canSwitchView" class="mt-2.5 flex bg-white/10 rounded-full p-0.5 border border-white/15 text-[10px] font-bold">
-            <button @click="roleViewMode = 'role'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'role' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">Role View</button>
+            <button @click="roleViewMode = 'role'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'role' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">Tools</button>
             <button @click="roleViewMode = 'user'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'user' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">User View</button>
           </div>
         </div>
@@ -776,7 +776,7 @@
               </div>
             </div>
             <div v-if="canSwitchView" class="mt-2.5 flex bg-white/10 rounded-full p-0.5 border border-white/15 text-[10px] font-bold">
-              <button @click="roleViewMode = 'role'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'role' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">Role View</button>
+              <button @click="roleViewMode = 'role'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'role' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">Tools</button>
               <button @click="roleViewMode = 'user'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'user' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">User View</button>
             </div>
           </div>
