@@ -53,10 +53,10 @@
             autoplay
             muted
             playsinline
-            class="absolute inset-0 w-full h-full object-cover transition-opacity duration-200"
+            class="absolute inset-0 w-full h-full object-cover transition-opacity duration-200 face-mirror"
             :class="cameraOn ? 'opacity-100' : 'opacity-0'"
           ></video>
-          <canvas ref="overlayEl" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+          <canvas ref="overlayEl" class="absolute inset-0 w-full h-full pointer-events-none face-mirror"></canvas>
 
           <!-- Animated scan-line when actively scanning -->
           <div
@@ -655,5 +655,10 @@ export default {
 }
 .ssaam-scanline {
   animation: ssaam-scan 2.6s linear infinite;
+}
+
+/* Mirror the camera feed so it feels natural (like a selfie) */
+.face-mirror {
+  transform: scaleX(-1);
 }
 </style>

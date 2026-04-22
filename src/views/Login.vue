@@ -158,10 +158,10 @@
             <div v-if="faceStep === 'scanning' || faceStep === 'matched'" class="space-y-3">
               <div class="relative rounded-xl overflow-hidden bg-gray-900 aspect-[4/3] border-2 border-ssaam-dark/30 shadow-inner">
                 <video id="face-login-video" autoplay muted playsinline
-                  class="absolute inset-0 w-full h-full object-cover"
+                  class="absolute inset-0 w-full h-full object-cover face-mirror"
                   :class="faceStep === 'scanning' || faceStep === 'matched' ? 'opacity-100' : 'opacity-0'"
                 ></video>
-                <canvas id="face-login-canvas" class="absolute inset-0 w-full h-full pointer-events-none"></canvas>
+                <canvas id="face-login-canvas" class="absolute inset-0 w-full h-full pointer-events-none face-mirror"></canvas>
 
                 <!-- Scan-line animation while scanning -->
                 <div v-if="faceStep === 'scanning'" class="ssaam-face-scanline absolute left-0 right-0 h-[2px] bg-ssaam-light shadow-[0_0_12px_2px_rgba(79,98,255,0.8)] pointer-events-none"></div>
@@ -1424,8 +1424,11 @@ const verifyAdminCode = () => {
   transition: all 0.5s ease-in-out;
 }
 
-</style> 
-<style scoped>
+/* Mirror the camera feed so it feels natural (like a selfie) */
+.face-mirror {
+  transform: scaleX(-1);
+}
+
 .modal-logo {
   animation: logo-pop 420ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
 }
