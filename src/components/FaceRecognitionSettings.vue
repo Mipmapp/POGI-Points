@@ -245,7 +245,7 @@
 import { buildAPIUrl, getCollege } from '@/config/api.js';
 
 const MODEL_URL = 'https://justadudewhohacks.github.io/face-api.js/models';
-const MATCH_THRESHOLD = 0.5; // lower = stricter
+const MATCH_THRESHOLD = 0.38; // lower = stricter — must match login threshold
 
 let faceapiPromise = null;
 function loadFaceApi() {
