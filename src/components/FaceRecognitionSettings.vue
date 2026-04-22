@@ -176,10 +176,49 @@
               <span v-else>{{ (face.label || 'F').charAt(0).toUpperCase() }}</span>
             </div>
             <div class="min-w-0 flex-1">
-              <p class="text-sm font-semibold text-gray-900 truncate">{{ face.label || 'Face' }}</p>
+              <!-- Inline rename mode -->
+              <div v-if="editingId === face._id" class="flex items-center gap-1.5">
+                <input
+                  v-model="editingLabel"
+                  type="text"
+                  maxlength="64"
+                  :class="['flex-1 min-w-0 px-2 py-0.5 text-sm border rounded-md outline-none transition-all', tint.input]"
+                  @keyup.enter="saveRename(face)"
+                  @keyup.escape="cancelRename"
+                  ref="renameInput"
+                />
+                <button
+                  @click="saveRename(face)"
+                  :disabled="renamingId === face._id"
+                  class="p-1 rounded text-emerald-600 hover:bg-emerald-50 transition disabled:opacity-50 flex-shrink-0"
+                  title="Save"
+                >
+                  <svg v-if="renamingId === face._id" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </button>
+                <button
+                  @click="cancelRename"
+                  class="p-1 rounded text-gray-400 hover:bg-gray-100 transition flex-shrink-0"
+                  title="Cancel"
+                >
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+              <!-- Display mode -->
+              <div v-else class="flex items-center gap-1.5 group">
+                <p class="text-sm font-semibold text-gray-900 truncate">{{ face.label || 'Face' }}</p>
+                <button
+                  @click="startRename(face)"
+                  :class="['p-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity', tint.icon]"
+                  title="Rename"
+                >
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                </button>
+              </div>
               <p class="text-[11px] text-gray-500">Enrolled {{ formatDate(face.created_at) }}</p>
             </div>
             <button
+              v-if="editingId !== face._id"
               @click="deleteFace(face)"
               :disabled="deletingId === face._id"
               class="px-2.5 py-1.5 rounded-md text-xs font-semibold text-red-600 bg-red-50 border border-red-200 hover:bg-red-100 transition disabled:opacity-50 flex-shrink-0"
@@ -297,6 +336,9 @@ export default {
       captureMessage: '',
       captureSuccess: false,
       deletingId: null,
+      editingId: null,
+      editingLabel: '',
+      renamingId: null,
     };
   },
   async mounted() {
@@ -533,6 +575,51 @@ export default {
         console.error('Failed to load faces:', err);
       } finally {
         this.loadingFaces = false;
+      }
+    },
+
+    startRename(face) {
+      this.editingId = face._id;
+      this.editingLabel = face.label || '';
+      this.$nextTick(() => {
+        const input = this.$refs.renameInput;
+        const el = Array.isArray(input) ? input[0] : input;
+        if (el) { el.focus(); el.select(); }
+      });
+    },
+
+    cancelRename() {
+      this.editingId = null;
+      this.editingLabel = '';
+    },
+
+    async saveRename(face) {
+      const newLabel = this.editingLabel.trim();
+      if (!newLabel || newLabel === face.label) {
+        this.cancelRename();
+        return;
+      }
+      this.renamingId = face._id;
+      try {
+        const res = await fetch(buildAPIUrl(`/apis/masters/face/${face._id}`), {
+          method: 'PATCH',
+          headers: this.authHeaders(),
+          body: JSON.stringify({ label: newLabel }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const idx = this.savedFaces.findIndex(f => f._id === face._id);
+          if (idx !== -1) this.savedFaces[idx] = { ...this.savedFaces[idx], label: data.face?.label ?? newLabel };
+          this.savedFaces = [...this.savedFaces];
+        } else {
+          const data = await res.json().catch(() => ({}));
+          console.error('Rename failed:', data.message);
+        }
+      } catch (err) {
+        console.error('Rename face failed:', err);
+      } finally {
+        this.renamingId = null;
+        this.cancelRename();
       }
     },
 
