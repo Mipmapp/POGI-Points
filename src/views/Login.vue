@@ -668,21 +668,28 @@ async function startFaceVerification() {
     ])
     faceModelsReady.value = true
 
-    // 3. Start camera
+    // 3. Start camera — switch to 'scanning' FIRST so the <video> element renders,
+    //    then attach the stream once the DOM element actually exists.
     faceStatusText.value = 'Starting camera…'
     faceStream.value = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
       audio: false
     })
+
+    // Switch state so Vue renders the <video> element
+    faceStep.value = 'scanning'
+    faceStatusText.value = 'Look at the camera…'
     await nextTick()
+
+    // Now the element is in the DOM — attach the stream
     const video = document.getElementById('face-login-video')
     if (video) {
       video.srcObject = faceStream.value
-      await new Promise(resolve => { video.onloadedmetadata = () => video.play().then(resolve).catch(resolve) })
+      await new Promise(resolve => {
+        video.onloadedmetadata = () => video.play().then(resolve).catch(resolve)
+      })
     }
 
-    faceStep.value = 'scanning'
-    faceStatusText.value = 'Look at the camera…'
     runFaceLoginLoop()
 
   } catch (err) {
