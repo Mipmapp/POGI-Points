@@ -2277,7 +2277,20 @@ const studentSchema = new mongoose.Schema({
         description: { type: String, required: true },
         date: { type: Date, default: Date.now },
         collected_by: { type: String }
-    }]
+    }],
+    // Optional facial recognition profiles for biometric attendance check-in.
+    // Each entry holds a 128-float descriptor produced client-side by face-api.js
+    // plus an optional photo and label. Students manage these themselves on
+    // their own dashboard. We cap to 3 to keep the matching corpus small.
+    face_descriptors: {
+        type: [{
+            label: { type: String, default: 'Face' },
+            descriptor: { type: [Number], required: true },
+            photo: { type: String, default: null },
+            created_at: { type: Date, default: Date.now }
+        }],
+        default: []
+    }
 });
 
 // Pre-save middleware to auto-generate full_name from parts
@@ -2289,6 +2302,17 @@ studentSchema.pre('save', function () {
         this.full_name = parts.join(' ').replace(/\s+/g, ' ').trim();
     }
 });
+
+// Strip raw face_descriptors from generic Student JSON responses; the dedicated
+// face endpoints are the only place they should ever leave the server.
+studentSchema.methods.toJSON = function () {
+    const obj = this.toObject();
+    if (Array.isArray(obj.face_descriptors)) {
+        obj.face_descriptors_count = obj.face_descriptors.length;
+        delete obj.face_descriptors;
+    }
+    return obj;
+};
 
 const Student = mongoose.model("Student", studentSchema);
 const CCS_Student = mongoose.model("CCS_Student", studentSchema, 'ccs_students');
@@ -5145,8 +5169,86 @@ app.delete('/apis/masters/face/:faceId', auth, requireMaster, async (req, res) =
     }
 });
 
+// ---------------------------------------------------------------------------
+// Student Face ID endpoints (self-service biometric enrollment).
+// Students manage their own faces; the cap is small (3) to keep the
+// per-college matching corpus light for the kiosk scanner.
+// ---------------------------------------------------------------------------
+const STUDENT_FACE_LIMIT = 3;
 
+app.get('/apis/students/face', studentAuthWithToken, async (req, res) => {
+    try {
+        const student = req.student;
+        const faces = (student.face_descriptors || []).map(f => ({
+            _id: f._id,
+            label: f.label,
+            photo: f.photo,
+            created_at: f.created_at
+            // descriptor intentionally omitted to keep payloads small
+        }));
+        res.json({ faces, count: faces.length, limit: STUDENT_FACE_LIMIT });
+    } catch (err) {
+        console.error('Student face list error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
 
+app.post('/apis/students/face', studentAuthWithToken, async (req, res) => {
+    try {
+        const { descriptor, label, photo } = req.body || {};
+        if (!Array.isArray(descriptor) || descriptor.length !== 128) {
+            return res.status(400).json({ message: "A valid 128-float face descriptor is required." });
+        }
+        const student = req.student;
+        if ((student.face_descriptors || []).length >= STUDENT_FACE_LIMIT) {
+            return res.status(400).json({
+                message: `You can enroll at most ${STUDENT_FACE_LIMIT} faces. Remove one before adding another.`
+            });
+        }
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college || 'CCS');
+        const entry = {
+            label: (label && String(label).trim()) || `Face ${(student.face_descriptors || []).length + 1}`,
+            descriptor,
+            photo: photo || null,
+            created_at: new Date()
+        };
+        await StudentModel.updateOne(
+            { student_id: student.student_id },
+            { $push: { face_descriptors: entry } }
+        );
+        const updated = await StudentModel.findOne({ student_id: student.student_id }, { face_descriptors: 1 }).lean();
+        const faces = (updated?.face_descriptors || []).map(f => ({
+            _id: f._id, label: f.label, photo: f.photo, created_at: f.created_at
+        }));
+        res.json({ message: 'Face enrolled', faces, count: faces.length, limit: STUDENT_FACE_LIMIT });
+    } catch (err) {
+        console.error('Student face enroll error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+app.delete('/apis/students/face/:faceId', studentAuthWithToken, async (req, res) => {
+    try {
+        const { faceId } = req.params;
+        const student = req.student;
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college || 'CCS');
+        const result = await StudentModel.updateOne(
+            { student_id: student.student_id },
+            { $pull: { face_descriptors: { _id: new mongoose.Types.ObjectId(faceId) } } }
+        );
+        if (!result.modifiedCount) {
+            return res.status(404).json({ message: 'Face not found' });
+        }
+        const updated = await StudentModel.findOne({ student_id: student.student_id }, { face_descriptors: 1 }).lean();
+        const faces = (updated?.face_descriptors || []).map(f => ({
+            _id: f._id, label: f.label, photo: f.photo, created_at: f.created_at
+        }));
+        res.json({ message: 'Face removed', faces, count: faces.length, limit: STUDENT_FACE_LIMIT });
+    } catch (err) {
+        console.error('Student face delete error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
 
 app.get('/apis/masters', auth, requireMaster, requireSuperAdmin, async (req, res) => {
     try {
@@ -7803,8 +7905,12 @@ app.patch('/apis/attendance/logs/:id', auth, requireCoAdminOrAbove, async (req, 
 // RFID Check-in/Check-out endpoint with 1-minute duplicate prevention
 const DUPLICATE_PREVENTION_MS = 1 * 60 * 1000; // 1 minute in milliseconds
 
-// Session-based RFID Check-in/Check-out endpoint
-app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) => {
+// Session-based attendance check-in/check-out handler.
+// Extracted into a named function so both the RFID endpoint and the new
+// face-recognition endpoint can run the exact same logic after each
+// resolves the scanning student. The face endpoint pre-resolves the
+// descriptor to a student_id and then delegates here.
+const sessionAttendanceCheck = async (req, res) => {
     try {
         const { rfid_code, student_id, identifier_type = 'rfid', source = 'rfid' } = req.body;
 
@@ -8142,6 +8248,67 @@ app.post('/apis/attendance/sessions/:sessionId/check', auth, async (req, res) =>
                 error_type: 'index_conflict'
             });
         }
+        res.status(500).json({ message: err.message });
+    }
+};
+
+app.post('/apis/attendance/sessions/:sessionId/check', auth, sessionAttendanceCheck);
+
+// Face-recognition based attendance check. Admin sends a 128-float descriptor
+// captured by the kiosk camera; we compare against every enrolled student in
+// the active college, pick the closest match below threshold, then delegate
+// to the same handler used by RFID so behaviour stays in lockstep.
+app.post('/apis/attendance/sessions/:sessionId/check-face', auth, async (req, res) => {
+    try {
+        const { descriptor } = req.body || {};
+        if (!Array.isArray(descriptor) || descriptor.length !== 128) {
+            return res.status(400).json({ message: "A 128-float face descriptor is required." });
+        }
+
+        const college = req.college || 'CCS';
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
+        const candidates = await StudentModel.find(
+            { 'face_descriptors.0': { $exists: true } },
+            { student_id: 1, full_name: 1, first_name: 1, middle_name: 1, last_name: 1, suffix: 1, photo: 1, program: 1, year_level: 1, face_descriptors: 1 }
+        ).lean();
+
+        // Stricter threshold than enrollment match (0.42) so we don't false-trigger
+        // a check-in on a similar-looking student. Tune in tandem with the kiosk UI.
+        const MATCH_THRESHOLD = 0.45;
+        let best = { distance: Infinity, student: null };
+        for (const s of candidates) {
+            for (const fd of (s.face_descriptors || [])) {
+                if (!Array.isArray(fd.descriptor) || fd.descriptor.length !== 128) continue;
+                let sumSq = 0;
+                for (let i = 0; i < 128; i++) {
+                    const d = descriptor[i] - fd.descriptor[i];
+                    sumSq += d * d;
+                }
+                const dist = Math.sqrt(sumSq);
+                if (dist < best.distance) {
+                    best = { distance: dist, student: s };
+                }
+            }
+        }
+
+        if (!best.student || best.distance > MATCH_THRESHOLD) {
+            return res.status(404).json({
+                message: "No matching face found. Please try again or use RFID.",
+                no_match: true,
+                best_distance: best.student ? Number(best.distance.toFixed(3)) : null
+            });
+        }
+
+        // Delegate to the unified handler with a synthesised body so all the
+        // duplicate-prevention / session-state logic is identical to RFID.
+        req.body = {
+            student_id: best.student.student_id,
+            identifier_type: 'student_id',
+            source: 'face',
+            face_match_distance: Number(best.distance.toFixed(3))
+        };
+        return sessionAttendanceCheck(req, res);
+    } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });

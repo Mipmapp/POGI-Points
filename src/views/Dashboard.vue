@@ -2078,8 +2078,36 @@
                   </div>
                 </div>
 
+                <!-- Scanner mode tabs: RFID vs Face ID. Lets the kiosk swap modes
+                     without losing the selected event/session above. -->
+                <div class="flex gap-2 p-1 bg-gray-100 rounded-xl w-full sm:w-fit">
+                  <button
+                    @click="scannerMode = 'rfid'"
+                    :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5', scannerMode === 'rfid' ? 'bg-white text-ssaam-dark shadow-sm' : 'text-gray-500 hover:text-gray-700']"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M19 3v4M3 9h18M4 21h16a1 1 0 001-1V9H3v11a1 1 0 001 1z"/></svg>
+                    RFID
+                  </button>
+                  <button
+                    @click="scannerMode = 'face'"
+                    :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5', scannerMode === 'face' ? 'bg-white text-ssaam-dark shadow-sm' : 'text-gray-500 hover:text-gray-700']"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/></svg>
+                    Face ID
+                  </button>
+                </div>
+
+                <!-- Face ID Scanner (admin kiosk) — only when 'face' mode is selected. -->
+                <FaceScannerKiosk
+                  v-if="scannerMode === 'face'"
+                  :session-id="selectedSession?._id"
+                  :session-label="selectedEvent?.title + ' — ' + selectedSession?.label"
+                  :session-meta="formatDisplayTime(selectedSession?.start_time) + ' - ' + formatDisplayTime(selectedSession?.end_time)"
+                  :check-out-mode="!!effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled"
+                />
+
                 <!-- RFID Scanner Card - Redesigned -->
-                <div :class="['rounded-2xl overflow-hidden shadow-lg border', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200']">
+                <div v-if="scannerMode === 'rfid'" :class="['rounded-2xl overflow-hidden shadow-lg border', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200']">
                   <!-- Scanner Header -->
                   <div :class="['px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-700' : isSOM ? 'from-green-600 to-teal-700' : isCNAHS ? 'from-emerald-600 to-green-700' : 'from-ssaam-dark to-ssaam-light']">
                     <div class="flex items-center gap-3">
@@ -3905,9 +3933,72 @@
                 </div>
               </section>
 
+              <!-- Face ID (optional biometric check-in) -->
+              <section>
+                <div class="flex items-center gap-2 mb-4">
+                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Face ID (Optional)</h3>
+                </div>
+                <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div class="flex-1 flex items-start gap-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', studentFaceCount > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/>
+                      </svg>
+                    </div>
+                    <div class="min-w-0">
+                      <h4 class="font-bold text-gray-900 mb-1 flex items-center gap-2 flex-wrap">
+                        Biometric Check-In
+                        <span v-if="studentFaceCount > 0" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{{ studentFaceCount }} enrolled</span>
+                        <span v-else class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">Not set up</span>
+                      </h4>
+                      <p class="text-xs text-gray-500">Enroll your face once and check in to events at the campus kiosk without your RFID card.</p>
+                    </div>
+                  </div>
+                  <button @click="showFaceIDModal = true" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 shadow-lg shadow-orange-200 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-yellow-500 shadow-lg shadow-green-200 hover:from-green-700 hover:to-yellow-600' : isCNAHS ? 'bg-gradient-to-r from-green-700 to-green-600 shadow-lg shadow-green-300 hover:from-green-800 hover:to-green-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light shadow-lg shadow-blue-200 hover:from-ssaam-dark hover:to-ssaam-light', 'px-6 py-2.5 text-white rounded-xl font-bold text-sm hover:scale-105 transition-transform flex items-center justify-center md:justify-start gap-2 whitespace-nowrap']">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    {{ studentFaceCount > 0 ? 'Manage Faces' : 'Set Up Face ID' }}
+                  </button>
+                </div>
+              </section>
+
             </div>
           </div>
         </div>
+
+        <!-- Student Face ID Modal -->
+        <Teleport to="body">
+          <Transition name="fade-modal">
+            <div
+              v-if="showFaceIDModal"
+              class="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6"
+              style="background:rgba(15,23,42,0.55);backdrop-filter:blur(3px)"
+              @click.self="showFaceIDModal = false"
+            >
+              <div class="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+                <div class="px-5 py-4 sm:px-6 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white flex items-center justify-between">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/>
+                    </svg>
+                    <div class="min-w-0">
+                      <p class="text-base font-extrabold truncate">Face ID</p>
+                      <p class="text-xs text-white/80 truncate">Enroll your face for kiosk check-in</p>
+                    </div>
+                  </div>
+                  <button @click="showFaceIDModal = false" class="p-2 rounded-lg bg-white/15 hover:bg-white/25 transition" title="Close">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                </div>
+                <div class="overflow-y-auto p-3 sm:p-5">
+                  <StudentFaceID @updated="(n) => studentFaceCount = n" />
+                </div>
+              </div>
+            </div>
+          </Transition>
+        </Teleport>
 
         <!-- My Contributions Page (Students) -->
         <div v-if="currentPage === 'my-contributions' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-6">
@@ -6424,6 +6515,8 @@ import StudentContributionsView from '../components/StudentContributionsView.vue
 import StudentRaffleResultsView from '../components/StudentRaffleResultsView.vue'
 import AdminContributionPanel from '../components/AdminContributionPanel.vue'
 import FaceRecognitionSettings from '../components/FaceRecognitionSettings.vue'
+import StudentFaceID from '../components/StudentFaceID.vue'
+import FaceScannerKiosk from '../components/FaceScannerKiosk.vue'
 import AdminRaffleTicketPanel from '../components/AdminRaffleTicketPanel.vue'
 import Manage from '../components/Manage.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
@@ -8922,6 +9015,12 @@ watch(duplicateSearchQuery, (newValue) => {
 
 // RFID Fullscreen mode
 const rfidFullscreenMode = ref(false)
+// Biometric scanner toggle for the admin attendance kiosk: 'rfid' (default) or 'face'.
+// Persists between renders so admins can leave Face mode on across navigation.
+const scannerMode = ref('rfid')
+// Modal for the student-facing Face ID enrollment panel.
+const showFaceIDModal = ref(false)
+const studentFaceCount = ref(0)
 const rfidFullscreenInputRef = ref(null)
 const fullscreenLogoRef = ref(null)
 const logoFlipping = ref(false)
