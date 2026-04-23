@@ -185,6 +185,14 @@
               :style="{
                 WebkitMaskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
                 maskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
+                WebkitMaskRepeat: 'no-repeat',
+                maskRepeat: 'no-repeat',
+                WebkitMaskPosition: 'center',
+                maskPosition: 'center',
+                WebkitMaskSize: 'contain',
+                maskSize: 'contain',
+                WebkitMaskMode: 'alpha',
+                maskMode: 'alpha',
               }"
             ></div>
           </div>
@@ -502,6 +510,14 @@
                 :style="{
                   WebkitMaskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
                   maskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
+                  WebkitMaskRepeat: 'no-repeat',
+                  maskRepeat: 'no-repeat',
+                  WebkitMaskPosition: 'center',
+                  maskPosition: 'center',
+                  WebkitMaskSize: 'contain',
+                  maskSize: 'contain',
+                  WebkitMaskMode: 'alpha',
+                  maskMode: 'alpha',
                 }"
               ></div>
             </div>
