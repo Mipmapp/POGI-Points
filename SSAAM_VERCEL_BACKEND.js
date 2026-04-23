@@ -5174,7 +5174,9 @@ app.delete('/apis/masters/face/:faceId', auth, requireMaster, async (req, res) =
 // Students manage their own faces; the cap is small (3) to keep the
 // per-college matching corpus light for the kiosk scanner.
 // ---------------------------------------------------------------------------
-const STUDENT_FACE_LIMIT = 3;
+// Each student may enroll exactly one face profile from the User Dashboard.
+// To re-enroll, the student must delete their existing face first.
+const STUDENT_FACE_LIMIT = 1;
 
 app.get('/apis/students/face', studentAuthWithToken, async (req, res) => {
     try {
