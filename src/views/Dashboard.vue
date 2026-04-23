@@ -469,11 +469,15 @@
     </div>
 
     <!-- ─── Face ID Scanner Fullscreen Overlay ─── -->
-    <!-- Mirrors the RFID fullscreen kiosk visual treatment (deep navy
-         backdrop, close button, masked JRMSU/college logo + SSAAM title)
-         and embeds the existing FaceScannerKiosk so attendance via face
-         recognition gets the same kiosk experience. -->
-    <div v-if="faceFullscreenMode" class="fixed inset-0 z-[70] overflow-y-auto bg-gradient-to-b from-[#080e2e] to-[#0f1f6e]">
+    <!-- Mirrors the RFID fullscreen kiosk: same deep-navy gradient backdrop,
+         particle canvas, two-column layout (left = scanner panel, right =
+         recent logs) collapsing to a single column on mobile. -->
+    <div v-if="faceFullscreenMode" class="fixed inset-0 z-[70] overflow-hidden bg-gradient-to-b from-[#080e2e] to-[#0f1f6e]">
+      <!-- Glowing particle canvas (shared with RFID overlay) -->
+      <!-- Reuses the same `particleCanvas` ref as the RFID overlay; only
+           one overlay is ever mounted at a time, so the ref binds cleanly. -->
+      <canvas ref="particleCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0" style="opacity:0.85"></canvas>
+
       <button
         @click="faceFullscreenMode = false"
         :class="['absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all hover:bg-white/25 hover:scale-110 active:scale-95', isCOE ? 'hover:border-red-300 hover:text-red-200' : isSOM ? 'hover:border-yellow-300 hover:text-yellow-200' : isCNAHS ? 'hover:border-green-300 hover:text-green-200' : 'hover:border-blue-300 hover:text-blue-200']"
@@ -482,51 +486,134 @@
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
       </button>
 
-      <div class="min-h-full flex flex-col items-center px-4 sm:px-8 py-8 lg:py-10 relative z-10">
-        <!-- Header: logo + SSAAM with the same masked sweep treatment -->
-        <div class="flex items-center gap-3 mb-5">
-          <div class="relative w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0 overflow-hidden">
-            <img
-              :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl"
-              :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'"
-              class="w-full h-full object-contain drop-shadow-xl"
+      <div class="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden relative z-10">
+        <!-- ── Left Panel: Face Scanner ── -->
+        <div class="lg:w-[460px] xl:w-1/2 flex-shrink-0 min-h-max lg:h-full flex flex-col items-center justify-center px-5 py-8 lg:py-10 border-b lg:border-b-0 lg:border-r border-white/20">
+          <!-- Logo + SSAAM title -->
+          <div class="flex items-center gap-3 mb-5">
+            <div class="relative w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0 overflow-hidden">
+              <img
+                :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl"
+                :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'"
+                class="w-full h-full object-contain drop-shadow-xl"
+              />
+              <div
+                class="logo-sweep absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/70 to-transparent"
+                :style="{
+                  WebkitMaskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
+                  maskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
+                }"
+              ></div>
+            </div>
+            <h1 class="text-2xl lg:text-4xl font-extrabold italic text-white drop-shadow tracking-wide">SSAAM</h1>
+          </div>
+
+          <!-- Event Info Card -->
+          <div class="w-full max-w-sm bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-4 text-center backdrop-blur-sm shadow-lg">
+            <p class="text-white font-bold text-lg lg:text-xl leading-tight truncate">{{ selectedEvent?.title || 'No Event Selected' }}</p>
+            <p class="text-white/60 text-xs lg:text-sm mt-0.5">{{ formatEventDate(selectedEvent?.date || selectedEvent?.event_date) }}</p>
+            <div v-if="selectedSession" class="mt-2 flex flex-wrap justify-center items-center gap-2">
+              <span :class="['px-3 py-1 rounded-full text-xs font-semibold', isCOE ? 'bg-orange-500/30 text-orange-200' : isSOM ? 'bg-green-500/30 text-green-200' : isCNAHS ? 'bg-green-500/30 text-green-200' : 'bg-blue-500/30 text-blue-200']">
+                {{ selectedSession.label }} Session
+              </span>
+              <span class="text-white/50 text-xs">{{ formatDisplayTime(selectedSession.start_time) }} – {{ formatDisplayTime(selectedSession.end_time) }}</span>
+            </div>
+            <p class="text-white/35 text-xs mt-2 font-mono tracking-widest">{{ fsLiveClock }}</p>
+          </div>
+
+          <!-- Mode badge (Check-In / Check-Out) -->
+          <div class="w-full max-w-sm mb-4">
+            <div :class="['flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl border text-sm font-bold',
+              effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled
+                ? (isCOE ? 'bg-red-500/25 border-red-400/50 text-red-200' : isSOM ? 'bg-yellow-500/25 border-yellow-400/50 text-yellow-200' : isCNAHS ? 'bg-teal-500/25 border-teal-400/50 text-teal-200' : 'bg-orange-500/25 border-orange-400/50 text-orange-200')
+                : 'bg-green-500/25 border-green-400/50 text-green-200']">
+              <div class="w-2 h-2 rounded-full bg-white/80 animate-pulse flex-shrink-0"></div>
+              {{ effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled ? 'Check-Out Mode' : 'Check-In Mode' }}
+            </div>
+          </div>
+
+          <!-- Face Scanner card (dark-glass theme via fullscreen prop) -->
+          <div class="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-5 border border-white/20 shadow-2xl mb-4">
+            <FaceScannerKiosk
+              v-if="selectedSession"
+              :session-id="selectedSession?._id"
+              :session-label="selectedEvent?.title + ' — ' + selectedSession?.label"
+              :session-meta="formatDisplayTime(selectedSession?.start_time) + ' - ' + formatDisplayTime(selectedSession?.end_time)"
+              :check-out-mode="!!effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled"
+              :fullscreen="true"
+              @recognized="onFaceRecognized"
             />
-            <div
-              class="logo-sweep absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/70 to-transparent"
-              :style="{
-                WebkitMaskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
-                maskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
-              }"
-            ></div>
           </div>
-          <h1 class="text-2xl lg:text-4xl font-extrabold italic text-white drop-shadow tracking-wide">SSAAM</h1>
+
+          <!-- Stats row -->
+          <div class="flex gap-3 w-full max-w-sm mb-4">
+            <div class="flex-1 bg-white/10 border border-white/15 rounded-xl p-3 text-center backdrop-blur-sm">
+              <p class="text-white/45 text-xs uppercase tracking-wider mb-1">Recognized</p>
+              <p class="text-2xl font-extrabold text-white">{{ faceRecognizedCount }}</p>
+            </div>
+            <div class="flex-1 bg-white/10 border border-white/15 rounded-xl p-3 text-center backdrop-blur-sm">
+              <p class="text-white/45 text-xs uppercase tracking-wider mb-1">Active Mode</p>
+              <p :class="['text-sm font-extrabold tracking-wider uppercase', effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled ? (isCOE ? 'text-red-300' : isSOM ? 'text-yellow-300' : isCNAHS ? 'text-teal-300' : 'text-orange-300') : 'text-green-300']">
+                {{ effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled ? 'Check-Out' : 'Check-In' }}
+              </p>
+            </div>
+          </div>
+
+          <p class="text-white/30 text-xs">Press ESC or click X to exit</p>
         </div>
 
-        <!-- Event Info Card -->
-        <div class="w-full max-w-md bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-5 text-center backdrop-blur-sm shadow-lg">
-          <p class="text-white font-bold text-lg lg:text-xl leading-tight truncate">{{ selectedEvent?.title || 'No Event Selected' }}</p>
-          <p class="text-white/60 text-xs lg:text-sm mt-0.5">{{ formatEventDate(selectedEvent?.date || selectedEvent?.event_date) }}</p>
-          <div v-if="selectedSession" class="mt-2 flex flex-wrap justify-center items-center gap-2">
-            <span :class="['px-3 py-1 rounded-full text-xs font-semibold', isCOE ? 'bg-orange-500/30 text-orange-200' : isSOM ? 'bg-green-500/30 text-green-200' : isCNAHS ? 'bg-green-500/30 text-green-200' : 'bg-blue-500/30 text-blue-200']">
-              {{ selectedSession.label }} Session
+        <!-- ── Right Panel: Recent Recognitions ── -->
+        <div class="flex-1 min-h-0 flex flex-col p-4 lg:p-6 overflow-hidden">
+          <div class="flex items-center justify-between mb-3">
+            <h2 :class="['text-base lg:text-lg font-bold flex items-center gap-2', isCOE ? 'text-orange-300' : isSOM ? 'text-green-300' : isCNAHS ? 'text-teal-300' : 'text-blue-300']">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+              Recent Recognitions
+            </h2>
+            <span v-if="faceRecentLogs.length > 0" :class="['px-2.5 py-1 rounded-full text-xs font-bold', isCOE ? 'bg-orange-500/30 text-orange-200' : isSOM ? 'bg-green-500/30 text-green-200' : isCNAHS ? 'bg-teal-500/30 text-teal-200' : 'bg-blue-500/30 text-blue-200']">
+              {{ faceRecentLogs.length }}
             </span>
-            <span class="text-white/50 text-xs">{{ formatDisplayTime(selectedSession.start_time) }} – {{ formatDisplayTime(selectedSession.end_time) }}</span>
           </div>
-          <p class="text-white/35 text-xs mt-2 font-mono tracking-widest">{{ fsLiveClock }}</p>
-        </div>
 
-        <!-- Embedded Face Scanner kiosk -->
-        <div class="w-full max-w-5xl">
-          <FaceScannerKiosk
-            v-if="selectedSession"
-            :session-id="selectedSession?._id"
-            :session-label="selectedEvent?.title + ' — ' + selectedSession?.label"
-            :session-meta="formatDisplayTime(selectedSession?.start_time) + ' - ' + formatDisplayTime(selectedSession?.end_time)"
-            :check-out-mode="!!effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled"
-          />
+          <div class="flex-1 overflow-hidden">
+            <div v-if="faceRecentLogs.length === 0" class="flex flex-col items-center justify-center h-full text-white/50">
+              <svg class="w-14 h-14 mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <p class="text-sm font-medium">No face recognitions yet</p>
+              <p class="text-xs mt-1 opacity-60">Look at the camera to begin</p>
+            </div>
+            <div v-else class="space-y-2 overflow-y-auto h-full pr-1 fullscreen-scroll">
+              <div
+                v-for="(r, i) in faceRecentLogs.slice(0, 20)"
+                :key="i"
+                :class="['rounded-xl p-3 border transition-all',
+                  r.success
+                    ? (isCOE ? 'bg-orange-500/10 border-orange-400/25' : isSOM ? 'bg-green-500/10 border-green-400/25' : isCNAHS ? 'bg-teal-500/10 border-teal-400/25' : 'bg-blue-500/10 border-blue-400/25')
+                    : 'bg-red-500/10 border-red-400/25']"
+              >
+                <div class="flex items-center gap-3">
+                  <div class="relative w-9 h-9 rounded-full flex-shrink-0 overflow-hidden">
+                    <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-white text-xs font-bold', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+                      {{ getInitials(r.studentName || '?') }}
+                    </div>
+                    <img v-if="r.studentPhoto" :src="r.studentPhoto" class="absolute inset-0 w-full h-full rounded-full object-cover" @error="$event.target.style.display='none'" />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="font-semibold text-white text-sm truncate">{{ r.studentName || 'Unrecognised' }}</p>
+                    <p class="text-white/50 text-xs truncate">{{ r.studentMeta || (r.success ? 'Face matched' : (r.subtitle || '—')) }}</p>
+                  </div>
+                  <div class="flex-shrink-0 flex flex-col items-end gap-1">
+                    <span :class="['px-2 py-0.5 rounded-full text-xs font-semibold',
+                      r.success
+                        ? (r.action === 'check-out' ? 'bg-orange-500/30 text-orange-200' : 'bg-green-500/30 text-green-200')
+                        : 'bg-red-500/30 text-red-200']">
+                      {{ r.success ? (r.action === 'check-out' ? 'OUT' : 'IN') : 'FAIL' }}
+                    </span>
+                    <span class="text-white/45 text-xs font-mono">{{ r.timeLabel }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-
-        <p class="mt-4 text-white/40 text-xs">Press ESC or click X to exit fullscreen</p>
       </div>
     </div>
 
@@ -9095,6 +9182,28 @@ const rfidFullscreenMode = ref(false)
 // FaceScannerKiosk component inside, so admins get the same kiosk feel
 // when they're using face recognition for attendance).
 const faceFullscreenMode = ref(false)
+// Recent recognitions feed for the face fullscreen right-panel — populated
+// by the FaceScannerKiosk's `recognized` event. We keep it bounded to ~50
+// entries so memory stays predictable across long kiosk sessions.
+const faceRecentLogs = ref([])
+const faceRecognizedCount = ref(0)
+const onFaceRecognized = (payload) => {
+  // FaceScannerKiosk emits its `lastResult` which has shape:
+  //   { success, title, studentName, studentMeta, studentPhoto, subtitle, action }
+  if (!payload) return
+  const ok = !!payload.success
+  faceRecentLogs.value.unshift({
+    success: ok,
+    studentName: payload.studentName || (ok ? 'Recognised' : 'Unrecognised'),
+    studentMeta: payload.studentMeta || '',
+    studentPhoto: payload.studentPhoto || '',
+    action: payload.action || 'check-in',
+    subtitle: payload.subtitle || payload.title || '',
+    timeLabel: new Date().toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true }),
+  })
+  if (faceRecentLogs.value.length > 50) faceRecentLogs.value.length = 50
+  if (ok) faceRecognizedCount.value++
+}
 // Biometric scanner toggle for the admin attendance kiosk: 'rfid' (default) or 'face'.
 // Persists between renders so admins can leave Face mode on across navigation.
 const scannerMode = ref('rfid')
@@ -9318,7 +9427,10 @@ watch(faceFullscreenMode, (newValue) => {
     if (!fsClockInterval.value) {
       fsClockInterval.value = setInterval(updateFsClock, 1000)
     }
+    // Kick off the same drifting-particle backdrop the RFID overlay uses.
+    startParticles()
   } else {
+    stopParticles()
     if (fsClockInterval.value && !rfidFullscreenMode.value) {
       clearInterval(fsClockInterval.value)
       fsClockInterval.value = null

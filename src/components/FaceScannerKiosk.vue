@@ -2,10 +2,14 @@
   <!-- Admin biometric kiosk scanner. Opens camera, runs continuous detection,
        and once a face is held in view consistently for ~1.2s, sends the 128-float
        descriptor to the backend for matching + check-in. Mirrors the visual
-       language of the existing RFID kiosk so admins can swap modes intuitively. -->
-  <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-    <!-- Header strip -->
-    <div class="relative px-5 sm:px-7 py-4 bg-gradient-to-r from-ssaam-dark via-blue-700 to-ssaam-light text-white">
+       language of the existing RFID kiosk so admins can swap modes intuitively.
+       When `fullscreen` prop is true, the component renders in a dark-glass
+       theme that fits inside the deep-navy fullscreen kiosk overlay. -->
+  <div :class="fullscreen
+    ? 'bg-transparent'
+    : 'bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden'">
+    <!-- Header strip — hidden in fullscreen mode (the overlay supplies its own header). -->
+    <div v-if="!fullscreen" class="relative px-5 sm:px-7 py-4 bg-gradient-to-r from-ssaam-dark via-blue-700 to-ssaam-light text-white">
       <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
       <div class="relative flex items-center justify-between gap-3 flex-wrap">
         <div class="flex items-center gap-3 min-w-0">
@@ -30,10 +34,13 @@
     </div>
 
     <!-- Body -->
-    <div class="p-5 sm:p-7 grid grid-cols-1 lg:grid-cols-5 gap-5">
+    <div :class="fullscreen ? 'p-0 space-y-3' : 'p-5 sm:p-7 grid grid-cols-1 lg:grid-cols-5 gap-5'">
       <!-- ─── Camera viewport ─── -->
-      <div class="lg:col-span-3 space-y-3">
-        <div class="relative rounded-2xl overflow-hidden bg-gray-900 aspect-[4/3] border-2 border-ssaam-dark/20 shadow-inner">
+      <div :class="fullscreen ? 'space-y-3' : 'lg:col-span-3 space-y-3'">
+        <div :class="['relative rounded-2xl overflow-hidden aspect-[4/3] shadow-inner',
+          fullscreen
+            ? 'bg-black/50 border-2 border-white/15 backdrop-blur-sm'
+            : 'bg-gray-900 border-2 border-ssaam-dark/20']">
           <video
             ref="videoEl"
             autoplay muted playsinline
@@ -122,7 +129,10 @@
           <button
             v-else
             @click="stopCamera"
-            class="flex-1 min-w-[120px] px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 text-sm font-bold hover:bg-gray-50 active:scale-95 transition flex items-center justify-center gap-2"
+            :class="['flex-1 min-w-[120px] px-4 py-2.5 rounded-xl text-sm font-bold active:scale-95 transition flex items-center justify-center gap-2',
+              fullscreen
+                ? 'bg-white/10 border border-white/25 text-white hover:bg-white/20 backdrop-blur'
+                : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50']"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Pause
@@ -130,17 +140,23 @@
           <button
             v-if="lastResult"
             @click="clearResult"
-            class="flex-1 min-w-[120px] px-4 py-2.5 rounded-xl bg-ssaam-dark/10 text-ssaam-dark text-sm font-bold hover:bg-ssaam-dark/20 active:scale-95 transition flex items-center justify-center gap-2"
+            :class="['flex-1 min-w-[120px] px-4 py-2.5 rounded-xl text-sm font-bold active:scale-95 transition flex items-center justify-center gap-2',
+              fullscreen
+                ? 'bg-white/15 text-white hover:bg-white/25 border border-white/20 backdrop-blur'
+                : 'bg-ssaam-dark/10 text-ssaam-dark hover:bg-ssaam-dark/20']"
           >
             Scan Next
           </button>
         </div>
 
-        <p v-if="loadError" class="text-xs font-medium rounded-xl px-3 py-2 bg-red-50 text-red-700 border border-red-200">{{ loadError }}</p>
+        <p v-if="loadError" :class="['text-xs font-medium rounded-xl px-3 py-2',
+          fullscreen
+            ? 'bg-red-500/15 text-red-200 border border-red-400/40'
+            : 'bg-red-50 text-red-700 border border-red-200']">{{ loadError }}</p>
       </div>
 
-      <!-- ─── Sidebar info ─── -->
-      <div class="lg:col-span-2 space-y-3">
+      <!-- ─── Sidebar info ─── (hidden in fullscreen — overlay supplies its own info) -->
+      <div v-if="!fullscreen" class="lg:col-span-2 space-y-3">
         <div class="rounded-2xl border border-ssaam-dark/15 bg-ssaam-dark/5 p-4">
           <p class="text-[10px] font-bold uppercase tracking-widest text-ssaam-dark mb-1">Active Session</p>
           <p class="text-sm font-extrabold text-gray-900 truncate">{{ sessionLabel || 'No session selected' }}</p>
@@ -203,6 +219,9 @@ export default {
     sessionLabel: { type: String, default: '' },
     sessionMeta: { type: String, default: '' },
     checkOutMode: { type: Boolean, default: false },
+    // When true, the component drops its own card chrome and renders with a
+    // dark-glass theme so it slots cleanly inside the fullscreen overlay.
+    fullscreen: { type: Boolean, default: false },
   },
   emits: ['recognized'],
   data() {
