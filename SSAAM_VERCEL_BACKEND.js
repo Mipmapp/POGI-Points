@@ -849,7 +849,7 @@ app.get('/apis/contributions/transparency', async (req, res) => {
 // Create new payment
 app.post('/apis/payments', auth, async (req, res) => {
     try {
-        const { title, description, type, amount_due, deadline } = req.body;
+        const { title, description, type, amount_due, deadline, target_year_levels, target_programs } = req.body;
 
         if (!title || !title.trim()) {
             return res.status(400).json({ message: 'Payment title is required' });
@@ -870,7 +870,9 @@ app.post('/apis/payments', auth, async (req, res) => {
             type: type || 'fee',
             amount_due: Number(amount_due),
             deadline: deadline || null,
-            created_by: createdBy
+            created_by: createdBy,
+            target_year_levels: Array.isArray(target_year_levels) ? target_year_levels : [],
+            target_programs:    Array.isArray(target_programs)    ? target_programs    : [],
         });
 
         await payment.save();
@@ -883,7 +885,12 @@ app.post('/apis/payments', auth, async (req, res) => {
         setImmediate(async () => {
             try {
                 const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
-                const students = await StudentModel.find({ status: 'approved' }).lean();
+                const studentQuery = { status: 'approved' };
+                if (payment.target_year_levels && payment.target_year_levels.length > 0)
+                    studentQuery.year_level = { $in: payment.target_year_levels };
+                if (payment.target_programs && payment.target_programs.length > 0)
+                    studentQuery.program = { $in: payment.target_programs };
+                const students = await StudentModel.find(studentQuery).lean();
 
                 const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, college);
                 if (students.length === 0) return;
@@ -941,6 +948,34 @@ app.post('/apis/payments', auth, async (req, res) => {
         });
     } catch (err) {
         console.error('Error creating payment:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Edit/update a payment event
+app.patch('/apis/payments/:paymentId', auth, async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        const { title, description, type, amount_due, deadline, status, target_year_levels, target_programs } = req.body;
+
+        const PaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
+        const payment = await PaymentModel.findById(paymentId);
+        if (!payment) return res.status(404).json({ message: 'Payment event not found' });
+
+        if (title      !== undefined) payment.title       = title.trim();
+        if (description !== undefined) payment.description = description.trim();
+        if (type       !== undefined) payment.type        = type;
+        if (amount_due !== undefined) payment.amount_due  = Number(amount_due);
+        if (deadline   !== undefined) payment.deadline    = deadline || null;
+        if (status     !== undefined) payment.status      = status;
+        if (target_year_levels !== undefined) payment.target_year_levels = Array.isArray(target_year_levels) ? target_year_levels : [];
+        if (target_programs    !== undefined) payment.target_programs    = Array.isArray(target_programs)    ? target_programs    : [];
+        payment.updated_at = new Date();
+
+        await payment.save();
+        res.json({ success: true, data: payment, message: 'Payment event updated' });
+    } catch (err) {
+        console.error('Error updating payment:', err);
         res.status(500).json({ message: err.message });
     }
 });
@@ -2656,7 +2691,10 @@ const paymentSchema = new mongoose.Schema({
     },
     created_by: { type: String, required: true }, // Username of admin who created it
     created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now }
+    updated_at: { type: Date, default: Date.now },
+    // Targeting: empty array = applies to ALL; non-empty = only matching students
+    target_year_levels: { type: [String], default: [] },
+    target_programs:    { type: [String], default: [] },
 });
 
 paymentSchema.index({ status: 1, created_at: -1 });

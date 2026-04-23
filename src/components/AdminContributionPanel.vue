@@ -93,14 +93,23 @@
             ]"
             @click="selectEvent(event)"
           >
-            <!-- Delete button -->
-            <button
-              @click.stop="confirmDeleteEvent(event)"
-              class="absolute top-2 right-2 w-5 h-5 rounded-full bg-red-100 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-150 z-10"
-              title="Delete event"
-            >
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+            <!-- Action buttons (edit + delete) -->
+            <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-150 z-10">
+              <button
+                @click.stop="openEditEvent(event)"
+                class="w-5 h-5 rounded-full bg-blue-100 hover:bg-blue-500 text-blue-500 hover:text-white flex items-center justify-center transition-all duration-150"
+                title="Edit event"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15.414 9 16l.586-3z"/></svg>
+              </button>
+              <button
+                @click.stop="confirmDeleteEvent(event)"
+                class="w-5 h-5 rounded-full bg-red-100 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center transition-all duration-150"
+                title="Delete event"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
 
             <div class="flex items-start gap-1 mb-2 pr-4">
               <p :class="['font-bold text-sm leading-tight line-clamp-2 flex-1', activePayment && activePayment._id === event._id ? 'text-purple-800' : 'text-gray-800']">{{ event.title }}</p>
@@ -120,6 +129,86 @@
             <div v-if="event.description" class="mt-1.5 text-[10px] text-gray-500 line-clamp-2 leading-relaxed">{{ event.description }}</div>
             <div v-if="event.deadline" class="mt-1 text-[10px] text-gray-400 font-medium">
               Due: {{ new Date(event.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}
+            </div>
+            <!-- Targeting badges -->
+            <div v-if="(event.target_year_levels && event.target_year_levels.length > 0) || (event.target_programs && event.target_programs.length > 0)" class="mt-1.5 flex flex-wrap gap-1">
+              <span v-for="yl in (event.target_year_levels || [])" :key="'yl-'+yl" class="inline-block px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-teal-100 text-teal-700 leading-none">{{ yl }}</span>
+              <span v-for="prog in (event.target_programs || [])" :key="'prog-'+prog" class="inline-block px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-indigo-100 text-indigo-700 leading-none">{{ prog }}</span>
+            </div>
+            <div v-else class="mt-1 text-[9px] text-gray-400 italic">All students</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Panel -->
+      <div v-if="activePayment && filteredContributions.length > 0" class="px-4 sm:px-6 md:px-8 py-4 border-b border-gray-100">
+        <button @click="showStatsPanel = !showStatsPanel" class="w-full flex items-center gap-2 mb-3 group">
+          <div class="w-1 h-5 rounded-full bg-teal-500"></div>
+          <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Statistics</h3>
+          <div class="ml-2 flex items-center gap-2">
+            <span class="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">
+              {{ statsOverall.paid }}/{{ statsOverall.total }} Paid
+            </span>
+            <span class="inline-flex items-center gap-1 text-xs font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+              {{ statsOverall.unpaid }} Unpaid
+            </span>
+            <span class="inline-flex items-center gap-1 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+              {{ statsOverall.pct }}%
+            </span>
+          </div>
+          <svg :class="['ml-auto w-4 h-4 text-gray-400 transition-transform duration-200', showStatsPanel ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+
+        <div v-if="showStatsPanel" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- By Year Level -->
+          <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-teal-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              By Year Level
+            </p>
+            <div class="space-y-2">
+              <div v-for="row in statsByYearLevel" :key="row.year_level">
+                <div class="flex items-center justify-between text-xs mb-0.5">
+                  <span class="font-semibold text-gray-700">{{ row.year_level }}</span>
+                  <span class="text-gray-500">{{ row.paid }}/{{ row.total }}</span>
+                </div>
+                <div class="h-2 rounded-full bg-gray-200 overflow-hidden">
+                  <div class="h-full rounded-full bg-gradient-to-r from-teal-400 to-teal-600 transition-all duration-500"
+                    :style="{ width: row.total ? (row.paid / row.total * 100) + '%' : '0%' }"></div>
+                </div>
+                <div class="flex gap-2 mt-0.5 text-[10px]">
+                  <span class="text-teal-600 font-semibold">{{ row.paid }} paid</span>
+                  <span class="text-red-500 font-semibold">{{ row.unpaid }} unpaid</span>
+                  <span class="text-gray-400 ml-auto">{{ row.total ? Math.round(row.paid / row.total * 100) : 0 }}%</span>
+                </div>
+              </div>
+              <p v-if="statsByYearLevel.length === 0" class="text-xs text-gray-400 text-center py-2">No data</p>
+            </div>
+          </div>
+
+          <!-- By Program -->
+          <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+            <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+              By Program
+            </p>
+            <div class="space-y-2">
+              <div v-for="row in statsByProgram" :key="row.program">
+                <div class="flex items-center justify-between text-xs mb-0.5">
+                  <span class="font-semibold text-gray-700">{{ row.program }}</span>
+                  <span class="text-gray-500">{{ row.paid }}/{{ row.total }}</span>
+                </div>
+                <div class="h-2 rounded-full bg-gray-200 overflow-hidden">
+                  <div class="h-full rounded-full bg-gradient-to-r from-blue-400 to-blue-600 transition-all duration-500"
+                    :style="{ width: row.total ? (row.paid / row.total * 100) + '%' : '0%' }"></div>
+                </div>
+                <div class="flex gap-2 mt-0.5 text-[10px]">
+                  <span class="text-blue-600 font-semibold">{{ row.paid }} paid</span>
+                  <span class="text-red-500 font-semibold">{{ row.unpaid }} unpaid</span>
+                  <span class="text-gray-400 ml-auto">{{ row.total ? Math.round(row.paid / row.total * 100) : 0 }}%</span>
+                </div>
+              </div>
+              <p v-if="statsByProgram.length === 0" class="text-xs text-gray-400 text-center py-2">No data</p>
             </div>
           </div>
         </div>
@@ -607,10 +696,42 @@
               />
             </div>
 
+            <!-- Target Year Levels -->
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Target Year Levels <span class="text-gray-400 font-normal">(leave unchecked = all)</span></label>
+              <div class="flex flex-wrap gap-2">
+                <label v-for="yl in ['1st Year','2nd Year','3rd Year','4th Year']" :key="yl" class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" :value="yl" v-model="newEventForm.target_year_levels"
+                    class="w-3.5 h-3.5 rounded border-gray-300 text-blue-500 focus:ring-blue-300" />
+                  <span class="text-sm text-gray-700">{{ yl }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Target Programs -->
+            <div v-if="uniquePrograms.length > 0">
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Target Programs <span class="text-gray-400 font-normal">(leave unchecked = all)</span></label>
+              <div class="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-1">
+                <label v-for="prog in uniquePrograms" :key="prog" class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" :value="prog" v-model="newEventForm.target_programs"
+                    class="w-3.5 h-3.5 rounded border-gray-300 text-blue-500 focus:ring-blue-300" />
+                  <span class="text-sm text-gray-700">{{ prog }}</span>
+                </label>
+              </div>
+            </div>
+
             <!-- Info Banner -->
             <div class="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-2xl p-4">
               <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <p class="text-sm text-blue-700">This will create a payment campaign and automatically assign it to <strong>all approved students</strong>. You can then track and mark individual payments.</p>
+              <p class="text-sm text-blue-700">
+                <span v-if="newEventForm.target_year_levels.length === 0 && newEventForm.target_programs.length === 0">
+                  This will assign the event to <strong>all approved students</strong>.
+                </span>
+                <span v-else>
+                  This will assign the event only to approved students matching the selected year levels/programs.
+                </span>
+                You can track and mark payments after creation.
+              </p>
             </div>
 
             <!-- Error message -->
@@ -629,6 +750,125 @@
                 <svg v-if="isCreatingEvent" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 {{ isCreatingEvent ? 'Creating...' : 'Create Event' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Edit Event Modal -->
+    <transition name="fade">
+      <div v-if="showEditEventModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeEditEventModal"></div>
+        <div class="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+          <!-- Modal Header -->
+          <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15.414 9 16l.586-3z"/></svg>
+              </div>
+              <div>
+                <h3 class="text-lg font-extrabold text-white">Edit Contribution Event</h3>
+                <p class="text-white/70 text-sm mt-0.5">Update details for this payment event</p>
+              </div>
+            </div>
+            <button @click="closeEditEventModal" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <div class="p-6 space-y-4 overflow-y-auto">
+            <!-- Event Title -->
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Event Title <span class="text-red-500">*</span></label>
+              <input v-model="editEventForm.title" type="text" placeholder="e.g., CCS General Assembly Fee"
+                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition" />
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Description <span class="text-gray-400 font-normal">(optional)</span></label>
+              <textarea v-model="editEventForm.description" rows="2" placeholder="Brief description..."
+                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition resize-none"></textarea>
+            </div>
+
+            <!-- Amount, Type, Status Row -->
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Amount (₱) <span class="text-red-500">*</span></label>
+                <div class="relative">
+                  <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 font-semibold text-sm">₱</span>
+                  <input v-model.number="editEventForm.amount_due" type="number" min="0" step="0.01" placeholder="0.00"
+                    class="w-full pl-7 pr-2 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Type</label>
+                <select v-model="editEventForm.type" class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition">
+                  <option value="fee">Fee</option>
+                  <option value="membership">Membership</option>
+                  <option value="donation">Donation</option>
+                  <option value="other">Other / Event</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Status</label>
+                <select v-model="editEventForm.status" class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition">
+                  <option value="active">Active</option>
+                  <option value="closed">Closed</option>
+                  <option value="archived">Archived</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Deadline -->
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Deadline <span class="text-gray-400 font-normal">(optional)</span></label>
+              <input v-model="editEventForm.deadline" type="date"
+                class="w-full px-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition" />
+            </div>
+
+            <!-- Target Year Levels -->
+            <div>
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Target Year Levels <span class="text-gray-400 font-normal">(unchecked = all)</span></label>
+              <div class="flex flex-wrap gap-2">
+                <label v-for="yl in ['1st Year','2nd Year','3rd Year','4th Year']" :key="yl" class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" :value="yl" v-model="editEventForm.target_year_levels"
+                    class="w-3.5 h-3.5 rounded border-gray-300 text-blue-500 focus:ring-blue-300" />
+                  <span class="text-sm text-gray-700">{{ yl }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Target Programs -->
+            <div v-if="uniquePrograms.length > 0">
+              <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Target Programs <span class="text-gray-400 font-normal">(unchecked = all)</span></label>
+              <div class="flex flex-wrap gap-2 max-h-24 overflow-y-auto pr-1">
+                <label v-for="prog in uniquePrograms" :key="prog" class="flex items-center gap-1.5 cursor-pointer">
+                  <input type="checkbox" :value="prog" v-model="editEventForm.target_programs"
+                    class="w-3.5 h-3.5 rounded border-gray-300 text-blue-500 focus:ring-blue-300" />
+                  <span class="text-sm text-gray-700">{{ prog }}</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Error message -->
+            <p v-if="editEventError" class="text-sm text-red-600 font-medium">{{ editEventError }}</p>
+
+            <!-- Actions -->
+            <div class="flex gap-3 pt-1">
+              <button @click="closeEditEventModal" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-700 transition">
+                Cancel
+              </button>
+              <button
+                @click="saveEditEvent"
+                :disabled="!editEventForm.title.trim() || !editEventForm.amount_due || isEditingEvent"
+                class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:opacity-90 text-white rounded-xl text-sm font-bold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-md shadow-blue-200"
+              >
+                <svg v-if="isEditingEvent" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                {{ isEditingEvent ? 'Saving...' : 'Save Changes' }}
               </button>
             </div>
           </div>
@@ -774,12 +1014,22 @@ export default {
       showDeleteEventConfirm: false,
       eventToDelete: null,
       isDeletingEvent: false,
+      showEditEventModal: false,
+      isEditingEvent: false,
+      editEventError: '',
+      editEventForm: {
+        _id: '', title: '', description: '', amount_due: '', type: 'fee',
+        deadline: '', status: 'active', target_year_levels: [], target_programs: []
+      },
+      showStatsPanel: false,
       newEventForm: {
         title: '',
         description: '',
         amount_due: '',
         type: 'fee',
-        deadline: ''
+        deadline: '',
+        target_year_levels: [],
+        target_programs: []
       },
       paymentsPage: 1,
       paymentsPerPage: 10,
@@ -884,6 +1134,43 @@ export default {
         if (!pages.includes(total)) pages.push(total);
       }
       return pages;
+    },
+    uniquePrograms() {
+      const progs = new Set(this.contributions.map(c => c.program).filter(Boolean));
+      return Array.from(progs).sort();
+    },
+    statsByYearLevel() {
+      const order = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+      const map = {};
+      for (const c of this.filteredContributions) {
+        const yl = c.year_level || 'Unknown';
+        if (!map[yl]) map[yl] = { year_level: yl, total: 0, paid: 0, unpaid: 0 };
+        map[yl].total++;
+        if (c.payment_status === 'paid') map[yl].paid++;
+        else map[yl].unpaid++;
+      }
+      return Object.values(map).sort((a, b) => {
+        const ai = order.indexOf(a.year_level), bi = order.indexOf(b.year_level);
+        if (ai === -1 && bi === -1) return a.year_level.localeCompare(b.year_level);
+        if (ai === -1) return 1; if (bi === -1) return -1;
+        return ai - bi;
+      });
+    },
+    statsByProgram() {
+      const map = {};
+      for (const c of this.filteredContributions) {
+        const prog = c.program || 'Unknown';
+        if (!map[prog]) map[prog] = { program: prog, total: 0, paid: 0, unpaid: 0 };
+        map[prog].total++;
+        if (c.payment_status === 'paid') map[prog].paid++;
+        else map[prog].unpaid++;
+      }
+      return Object.values(map).sort((a, b) => b.total - a.total);
+    },
+    statsOverall() {
+      const total = this.filteredContributions.length;
+      const paid = this.filteredContributions.filter(c => c.payment_status === 'paid').length;
+      return { total, paid, unpaid: total - paid, pct: total ? Math.round((paid / total) * 100) : 0 };
     },
   },
   watch: {
@@ -1038,7 +1325,66 @@ export default {
     closeCreateEventModal() {
       this.showCreateEventModal = false;
       this.createEventError = '';
-      this.newEventForm = { title: '', description: '', amount_due: '', type: 'fee', deadline: '' };
+      this.newEventForm = { title: '', description: '', amount_due: '', type: 'fee', deadline: '', target_year_levels: [], target_programs: [] };
+    },
+    openEditEvent(event) {
+      this.editEventForm = {
+        _id: event._id,
+        title: event.title || '',
+        description: event.description || '',
+        amount_due: event.amount_due || '',
+        type: event.type || 'fee',
+        deadline: event.deadline ? event.deadline.slice(0, 10) : '',
+        status: event.status || 'active',
+        target_year_levels: Array.isArray(event.target_year_levels) ? [...event.target_year_levels] : [],
+        target_programs: Array.isArray(event.target_programs) ? [...event.target_programs] : [],
+      };
+      this.editEventError = '';
+      this.showEditEventModal = true;
+    },
+    closeEditEventModal() {
+      this.showEditEventModal = false;
+      this.editEventError = '';
+      this.editEventForm = { _id: '', title: '', description: '', amount_due: '', type: 'fee', deadline: '', status: 'active', target_year_levels: [], target_programs: [] };
+    },
+    async saveEditEvent() {
+      this.editEventError = '';
+      if (!this.editEventForm.title.trim()) { this.editEventError = 'Event title is required.'; return; }
+      if (!this.editEventForm.amount_due || Number(this.editEventForm.amount_due) <= 0) { this.editEventError = 'Please enter a valid amount greater than 0.'; return; }
+      this.isEditingEvent = true;
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await fetch(buildAPIUrl(`/apis/payments/${this.editEventForm._id}`), {
+          method: 'PATCH',
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-SSAAM-College': getCollege() },
+          body: JSON.stringify({
+            title: this.editEventForm.title.trim(),
+            description: this.editEventForm.description.trim(),
+            type: this.editEventForm.type,
+            amount_due: Number(this.editEventForm.amount_due),
+            deadline: this.editEventForm.deadline || null,
+            status: this.editEventForm.status,
+            target_year_levels: this.editEventForm.target_year_levels,
+            target_programs: this.editEventForm.target_programs,
+          })
+        });
+        const data = await response.json();
+        if (response.ok) {
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Event "${this.editEventForm.title.trim()}" updated successfully!`, type: 'success' } }));
+          if (this.activePayment && this.activePayment._id === this.editEventForm._id) {
+            this.activePayment = { ...this.activePayment, ...data.data };
+          }
+          this.closeEditEventModal();
+          await this.loadAllPaymentEvents();
+          this.loadAllContributions();
+        } else {
+          this.editEventError = data.message || 'Failed to update event.';
+        }
+      } catch (error) {
+        this.editEventError = 'Network error. Please try again.';
+      } finally {
+        this.isEditingEvent = false;
+      }
     },
     async createContributionEvent() {
       this.createEventError = '';
@@ -1058,7 +1404,9 @@ export default {
           description: this.newEventForm.description.trim(),
           type: this.newEventForm.type,
           amount_due: Number(this.newEventForm.amount_due),
-          deadline: this.newEventForm.deadline || null
+          deadline: this.newEventForm.deadline || null,
+          target_year_levels: this.newEventForm.target_year_levels,
+          target_programs: this.newEventForm.target_programs,
         };
         const response = await fetch(buildAPIUrl('/apis/payments'), {
           method: 'POST',
