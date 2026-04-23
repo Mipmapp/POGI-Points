@@ -1749,7 +1749,7 @@
                 
               <div class="flex gap-2 overflow-x-auto pb-1">
                 <button @click="attendanceTab = 'events'" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'events' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">Events</button>
-                <button @click="switchToScannerTab" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'scanner' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">RFID Scanner</button>
+                <button @click="switchToScannerTab" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'scanner' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">Scanner</button>
               </div>
             </div>
 
