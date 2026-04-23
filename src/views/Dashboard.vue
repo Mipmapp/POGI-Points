@@ -173,19 +173,18 @@
         <div class="flex items-center gap-3 mb-5">
           <div class="relative w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0 overflow-hidden">
             <img
-              :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'"
+              :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl"
               :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'"
               class="w-full h-full object-contain drop-shadow-xl"
             />
             <!-- Sweep is masked to the logo silhouette so the shine only
-                 paints on the logo itself and never bleeds outside. The
-                 mask URL mirrors the active college's logo so the effect
-                 fits CCS / COE / SOM / CNAHS variants automatically. -->
+                 paints on the logo's opaque pixels and never bleeds onto
+                 the transparent area outside it. -->
             <div
-              class="logo-sweep absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/40 to-transparent"
+              class="logo-sweep absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/70 to-transparent"
               :style="{
-                WebkitMaskImage: `url(${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'})`,
-                maskImage: `url(${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'})`,
+                WebkitMaskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
+                maskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
               }"
             ></div>
           </div>
@@ -488,15 +487,15 @@
         <div class="flex items-center gap-3 mb-5">
           <div class="relative w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0 overflow-hidden">
             <img
-              :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'"
+              :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl"
               :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'"
               class="w-full h-full object-contain drop-shadow-xl"
             />
             <div
-              class="logo-sweep absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/40 to-transparent"
+              class="logo-sweep absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/70 to-transparent"
               :style="{
-                WebkitMaskImage: `url(${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'})`,
-                maskImage: `url(${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'})`,
+                WebkitMaskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
+                maskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
               }"
             ></div>
           </div>
@@ -6589,6 +6588,11 @@ import AdminContributionPanel from '../components/AdminContributionPanel.vue'
 import FaceRecognitionSettings from '../components/FaceRecognitionSettings.vue'
 import StudentFaceID from '../components/StudentFaceID.vue'
 import FaceScannerKiosk from '../components/FaceScannerKiosk.vue'
+// Vite-resolved asset URL for the JRMSU logo so we can use it as a CSS
+// mask-image. A bare `/src/assets/...` string in inline `mask-image` is
+// not reliably loaded as a mask — importing it gives us a stable hashed
+// URL that the browser can fetch and use as an alpha mask.
+import jrmsuLogoUrl from '../assets/jrmsu-logo.webp'
 import AdminRaffleTicketPanel from '../components/AdminRaffleTicketPanel.vue'
 import Manage from '../components/Manage.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'

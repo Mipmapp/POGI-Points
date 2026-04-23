@@ -545,6 +545,14 @@ input, textarea, select {
   mask-repeat: no-repeat;
   -webkit-mask-position: center;
   mask-position: center;
+  /* Force alpha-channel masking so transparent pixels around the logo
+     fully hide the gradient (the default `match-source` would use
+     luminance for SVGs and produce a faint rectangle for colored logos). */
+  -webkit-mask-mode: alpha;
+  mask-mode: alpha;
+  /* Blend the bright sweep with the underlying logo image so it actually
+     looks like a shine reflecting off the logo, not a flat white shape. */
+  mix-blend-mode: screen;
 }
 
 .dashboard-container {
