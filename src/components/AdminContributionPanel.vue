@@ -111,11 +111,14 @@
               </button>
             </div>
 
-            <div class="flex items-start gap-1 mb-2 pr-4">
+            <!-- Active checkmark badge — bottom-right, never overlaps hover buttons -->
+            <div v-if="activePayment && activePayment._id === event._id"
+              class="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-purple-500 shadow-md flex items-center justify-center z-10">
+              <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+            </div>
+
+            <div class="flex items-start mb-2 pr-2">
               <p :class="['font-bold text-sm leading-tight line-clamp-2 flex-1', activePayment && activePayment._id === event._id ? 'text-purple-800' : 'text-gray-800']">{{ event.title }}</p>
-              <div v-if="activePayment && activePayment._id === event._id" class="flex-shrink-0 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center mt-0.5">
-                <svg class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              </div>
             </div>
             <div class="flex items-center justify-between gap-1">
               <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold capitalize',
