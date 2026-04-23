@@ -2257,7 +2257,7 @@
                       </div>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                      <button @click="enterFullscreenMode()" :title="scannerMode === 'face' ? 'Open Face Scanner Fullscreen' : 'Open RFID Scanner Fullscreen'" :class="['text-white px-3 sm:px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 bg-gradient-to-r flex-1 sm:flex-none text-sm sm:text-base', primaryButtonGradient, primaryButtonHover]">
+                      <button v-if="scannerMode === 'rfid'" @click="enterFullscreenMode('rfid')" title="Open RFID Scanner Fullscreen" :class="['text-white px-3 sm:px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 bg-gradient-to-r flex-1 sm:flex-none text-sm sm:text-base', primaryButtonGradient, primaryButtonHover]">
                         <svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
                         <span class="hidden sm:inline">Fullscreen</span>
                       </button>
