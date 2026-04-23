@@ -93,8 +93,9 @@
             ]"
             @click="selectEvent(event)"
           >
-            <!-- Action buttons (edit + delete) -->
-            <div class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-150 z-10">
+            <!-- Action buttons (edit + delete) — hidden while this card's edit modal is open -->
+            <div v-show="!(showEditEventModal && editEventForm._id === event._id)"
+              class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-150 z-10">
               <button
                 @click.stop="openEditEvent(event)"
                 class="w-5 h-5 rounded-full bg-blue-100 hover:bg-blue-500 text-blue-500 hover:text-white flex items-center justify-center transition-all duration-150"
