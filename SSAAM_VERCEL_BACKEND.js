@@ -1868,14 +1868,25 @@ app.get('/apis/my-payments', auth, async (req, res) => {
         // Find all payment records for this student (college-aware model)
         const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
         const PaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
         // Try to find by student_id string (common) or by ObjectId string (legacy)
         const possibleStudentIds = [studentId];
         if (req.master && req.master.id) possibleStudentIds.push(String(req.master.id));
 
+        // Load the authenticated student's current year_level/program so we can
+        // defensively filter out campaigns whose targeting no longer matches
+        // (e.g. legacy campaigns assigned before targeting was introduced, or
+        // campaigns later edited to target a different cohort).
+        const studentDoc = await StudentModel.findOne({
+            $or: possibleStudentIds.map(id => ({ student_id: id }))
+        }).select('year_level program').lean();
+        const studentYearLevel = studentDoc?.year_level || null;
+        const studentProgram = studentDoc?.program || null;
+
         const paymentRecord = await PaymentRecordModel.findOne({
             $or: possibleStudentIds.map(id => ({ student_id: id }))
-        }).populate({ path: 'campaigns.payment_id', model: PaymentModel, select: 'title description type amount_due deadline status created_at' });
+        }).populate({ path: 'campaigns.payment_id', model: PaymentModel, select: 'title description type amount_due deadline status created_at target_year_levels target_programs' });
 
         if (!paymentRecord) {
             return res.json({
@@ -1885,16 +1896,33 @@ app.get('/apis/my-payments', auth, async (req, res) => {
         }
 
         // Format the response as a receipt-style list from campaigns array
-        // Filter out invalid payments: null payment_id, amount_due 0, empty title
+        // Filter out invalid payments: null payment_id, amount_due 0, empty title,
+        // and campaigns whose targeting does not match this student's profile.
         const formattedRecords = paymentRecord.campaigns
             .filter(campaign => {
                 const payment = campaign.payment_id;
                 // Only include if payment exists, has amount_due > 0, and has a valid title
-                return payment &&
-                    payment.amount_due > 0 &&
-                    payment.title &&
-                    payment.title.trim() &&
-                    payment.title.toLowerCase() !== 'unknown payment';
+                if (!payment ||
+                    !(payment.amount_due > 0) ||
+                    !payment.title ||
+                    !payment.title.trim() ||
+                    payment.title.toLowerCase() === 'unknown payment') {
+                    return false;
+                }
+
+                // Defensive targeting filter: when a campaign restricts year levels
+                // or programs, exclude it for students who do not match. An empty
+                // / missing targeting array means "all students" and is allowed.
+                const targetYears = Array.isArray(payment.target_year_levels) ? payment.target_year_levels : [];
+                if (targetYears.length > 0 && studentYearLevel && !targetYears.includes(studentYearLevel)) {
+                    return false;
+                }
+                const targetPrograms = Array.isArray(payment.target_programs) ? payment.target_programs : [];
+                if (targetPrograms.length > 0 && studentProgram && !targetPrograms.includes(studentProgram)) {
+                    return false;
+                }
+
+                return true;
             })
             .map(campaign => ({
                 _id: campaign._id,
