@@ -507,8 +507,10 @@
       </button>
 
       <div class="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden relative z-10">
-        <!-- ── Left Panel: Face Scanner ── -->
-        <div class="lg:w-[460px] xl:w-1/2 flex-shrink-0 min-h-max lg:h-full flex flex-col items-center justify-center px-5 py-8 lg:py-10 border-b lg:border-b-0 lg:border-r border-white/20">
+        <!-- ── Left Panel: Face Scanner ──
+             Widened so the live camera tile (aspect 4:3) gets enough room to
+             feel like a real kiosk instead of a thumbnail. -->
+        <div class="lg:w-[620px] xl:w-[720px] flex-shrink-0 min-h-max lg:h-full flex flex-col items-center justify-start lg:justify-center px-5 py-8 lg:py-10 border-b lg:border-b-0 lg:border-r border-white/20">
           <!-- Logo + SSAAM title -->
           <div class="flex items-center gap-3 mb-5">
             <div class="relative w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0 overflow-hidden">
@@ -537,7 +539,7 @@
           </div>
 
           <!-- Event Info Card -->
-          <div class="w-full max-w-sm bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-4 text-center backdrop-blur-sm shadow-lg">
+          <div class="w-full max-w-md bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-4 text-center backdrop-blur-sm shadow-lg">
             <p class="text-white font-bold text-lg lg:text-xl leading-tight truncate">{{ selectedEvent?.title || 'No Event Selected' }}</p>
             <p class="text-white/60 text-xs lg:text-sm mt-0.5">{{ formatEventDate(selectedEvent?.date || selectedEvent?.event_date) }}</p>
             <div v-if="selectedSession" class="mt-2 flex flex-wrap justify-center items-center gap-2">
@@ -550,7 +552,7 @@
           </div>
 
           <!-- Mode badge (Check-In / Check-Out) -->
-          <div class="w-full max-w-sm mb-4">
+          <div class="w-full max-w-md mb-4">
             <div :class="['flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl border text-sm font-bold',
               effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled
                 ? (isCOE ? 'bg-red-500/25 border-red-400/50 text-red-200' : isSOM ? 'bg-yellow-500/25 border-yellow-400/50 text-yellow-200' : isCNAHS ? 'bg-teal-500/25 border-teal-400/50 text-teal-200' : 'bg-orange-500/25 border-orange-400/50 text-orange-200')
@@ -560,23 +562,11 @@
             </div>
           </div>
 
-          <!-- Face Scanner card (dark-glass theme via fullscreen prop) -->
-          <div class="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-5 border border-white/20 shadow-2xl mb-4">
-            <!-- Header label so the user can see at a glance that this is the
-                 Face ID kiosk (vs the visually-similar RFID kiosk overlay). -->
-            <div :class="['flex items-center gap-3 mb-3 pb-3 border-b border-white/10']">
-              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0',
-                isCOE ? 'bg-orange-500/25 text-orange-200 border border-orange-400/40'
-                : isSOM ? 'bg-yellow-500/25 text-yellow-200 border border-yellow-400/40'
-                : isCNAHS ? 'bg-teal-500/25 text-teal-200 border border-teal-400/40'
-                : 'bg-blue-500/25 text-blue-200 border border-blue-400/40']">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/></svg>
-              </div>
-              <div class="min-w-0">
-                <p class="text-white font-bold text-sm leading-tight">Face ID Kiosk</p>
-                <p class="text-white/55 text-xs">Look at the camera to check in</p>
-              </div>
-            </div>
+          <!-- Face Scanner — full width of the left panel so the live camera
+               viewport is the dominant element, just like the RFID input is in
+               the RFID overlay. The kiosk component renders its own dark-glass
+               theme via :fullscreen="true". -->
+          <div class="w-full max-w-xl bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-5 border border-white/20 shadow-2xl mb-4">
             <FaceScannerKiosk
               v-if="selectedSession"
               :session-id="selectedSession?._id"
@@ -590,7 +580,7 @@
           </div>
 
           <!-- Stats row -->
-          <div class="flex gap-3 w-full max-w-sm mb-4">
+          <div class="flex gap-3 w-full max-w-md mb-4">
             <div class="flex-1 bg-white/10 border border-white/15 rounded-xl p-3 text-center backdrop-blur-sm">
               <p class="text-white/45 text-xs uppercase tracking-wider mb-1">Recognized</p>
               <p class="text-2xl font-extrabold text-white">{{ faceRecognizedCount }}</p>
@@ -606,7 +596,7 @@
           <!-- Switch back to RFID Scanner without leaving fullscreen. -->
           <button
             @click="switchKioskMode('rfid')"
-            class="w-full max-w-sm flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] mb-3"
+            class="w-full max-w-md flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] mb-3"
             title="Switch to RFID Scanner"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M19 3v4M3 9h18M4 21h16a1 1 0 001-1V9H3v11a1 1 0 001 1z"/></svg>
