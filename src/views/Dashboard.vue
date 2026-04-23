@@ -171,13 +171,23 @@
 
         <!-- SSAAM Logo + Title -->
         <div class="flex items-center gap-3 mb-5">
-          <div class="relative w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0">
+          <div class="relative w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0 overflow-hidden">
             <img
               :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'"
               :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'"
               class="w-full h-full object-contain drop-shadow-xl"
             />
-            <div class="absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+            <!-- Sweep is masked to the logo silhouette so the shine only
+                 paints on the logo itself and never bleeds outside. The
+                 mask URL mirrors the active college's logo so the effect
+                 fits CCS / COE / SOM / CNAHS variants automatically. -->
+            <div
+              class="logo-sweep absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/40 to-transparent"
+              :style="{
+                WebkitMaskImage: `url(${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'})`,
+                maskImage: `url(${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'})`,
+              }"
+            ></div>
           </div>
           <h1 class="text-2xl lg:text-4xl font-extrabold italic text-white drop-shadow tracking-wide">SSAAM</h1>
         </div>
@@ -456,6 +466,68 @@
             </div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- ─── Face ID Scanner Fullscreen Overlay ─── -->
+    <!-- Mirrors the RFID fullscreen kiosk visual treatment (deep navy
+         backdrop, close button, masked JRMSU/college logo + SSAAM title)
+         and embeds the existing FaceScannerKiosk so attendance via face
+         recognition gets the same kiosk experience. -->
+    <div v-if="faceFullscreenMode" class="fixed inset-0 z-[70] overflow-y-auto bg-gradient-to-b from-[#080e2e] to-[#0f1f6e]">
+      <button
+        @click="faceFullscreenMode = false"
+        :class="['absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all hover:bg-white/25 hover:scale-110 active:scale-95', isCOE ? 'hover:border-red-300 hover:text-red-200' : isSOM ? 'hover:border-yellow-300 hover:text-yellow-200' : isCNAHS ? 'hover:border-green-300 hover:text-green-200' : 'hover:border-blue-300 hover:text-blue-200']"
+        title="Close (ESC)"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
+      </button>
+
+      <div class="min-h-full flex flex-col items-center px-4 sm:px-8 py-8 lg:py-10 relative z-10">
+        <!-- Header: logo + SSAAM with the same masked sweep treatment -->
+        <div class="flex items-center gap-3 mb-5">
+          <div class="relative w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0 overflow-hidden">
+            <img
+              :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'"
+              :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'"
+              class="w-full h-full object-contain drop-shadow-xl"
+            />
+            <div
+              class="logo-sweep absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/40 to-transparent"
+              :style="{
+                WebkitMaskImage: `url(${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'})`,
+                maskImage: `url(${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : '/src/assets/jrmsu-logo.webp'})`,
+              }"
+            ></div>
+          </div>
+          <h1 class="text-2xl lg:text-4xl font-extrabold italic text-white drop-shadow tracking-wide">SSAAM</h1>
+        </div>
+
+        <!-- Event Info Card -->
+        <div class="w-full max-w-md bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-5 text-center backdrop-blur-sm shadow-lg">
+          <p class="text-white font-bold text-lg lg:text-xl leading-tight truncate">{{ selectedEvent?.title || 'No Event Selected' }}</p>
+          <p class="text-white/60 text-xs lg:text-sm mt-0.5">{{ formatEventDate(selectedEvent?.date || selectedEvent?.event_date) }}</p>
+          <div v-if="selectedSession" class="mt-2 flex flex-wrap justify-center items-center gap-2">
+            <span :class="['px-3 py-1 rounded-full text-xs font-semibold', isCOE ? 'bg-orange-500/30 text-orange-200' : isSOM ? 'bg-green-500/30 text-green-200' : isCNAHS ? 'bg-green-500/30 text-green-200' : 'bg-blue-500/30 text-blue-200']">
+              {{ selectedSession.label }} Session
+            </span>
+            <span class="text-white/50 text-xs">{{ formatDisplayTime(selectedSession.start_time) }} – {{ formatDisplayTime(selectedSession.end_time) }}</span>
+          </div>
+          <p class="text-white/35 text-xs mt-2 font-mono tracking-widest">{{ fsLiveClock }}</p>
+        </div>
+
+        <!-- Embedded Face Scanner kiosk -->
+        <div class="w-full max-w-5xl">
+          <FaceScannerKiosk
+            v-if="selectedSession"
+            :session-id="selectedSession?._id"
+            :session-label="selectedEvent?.title + ' — ' + selectedSession?.label"
+            :session-meta="formatDisplayTime(selectedSession?.start_time) + ' - ' + formatDisplayTime(selectedSession?.end_time)"
+            :check-out-mode="!!effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled"
+          />
+        </div>
+
+        <p class="mt-4 text-white/40 text-xs">Press ESC or click X to exit fullscreen</p>
       </div>
     </div>
 
@@ -9015,6 +9087,10 @@ watch(duplicateSearchQuery, (newValue) => {
 
 // RFID Fullscreen mode
 const rfidFullscreenMode = ref(false)
+// Face ID kiosk fullscreen overlay (mirrors the RFID one but renders the
+// FaceScannerKiosk component inside, so admins get the same kiosk feel
+// when they're using face recognition for attendance).
+const faceFullscreenMode = ref(false)
 // Biometric scanner toggle for the admin attendance kiosk: 'rfid' (default) or 'face'.
 // Persists between renders so admins can leave Face mode on across navigation.
 const scannerMode = ref('rfid')
@@ -9225,6 +9301,26 @@ watch(rfidFullscreenMode, (newValue) => {
     if (rfidFocusTimeout.value) {
       clearTimeout(rfidFocusTimeout.value)
       rfidFocusTimeout.value = null
+    }
+  }
+})
+
+// Mirror the RFID watcher for the Face ID kiosk overlay so the live clock
+// runs inside the face fullscreen and the browser exits native fullscreen
+// when the overlay closes.
+watch(faceFullscreenMode, (newValue) => {
+  if (newValue) {
+    updateFsClock()
+    if (!fsClockInterval.value) {
+      fsClockInterval.value = setInterval(updateFsClock, 1000)
+    }
+  } else {
+    if (fsClockInterval.value && !rfidFullscreenMode.value) {
+      clearInterval(fsClockInterval.value)
+      fsClockInterval.value = null
+    }
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {})
     }
   }
 })
@@ -12992,22 +13088,31 @@ const enterFullscreenMode = () => {
     showNotification('Please select a session first', 'error')
     return
   }
-  rfidFullscreenMode.value = true
+  // Route to the right fullscreen overlay based on the active scanner mode
+  // so the Fullscreen button works for both RFID and Face ID kiosks.
+  if (scannerMode.value === 'face') {
+    faceFullscreenMode.value = true
+  } else {
+    rfidFullscreenMode.value = true
+  }
   const el = document.documentElement
   if (el.requestFullscreen) {
     el.requestFullscreen().catch(() => {})
   } else if (el.webkitRequestFullscreen) {
     el.webkitRequestFullscreen()
   }
-  setTimeout(() => {
-    rfidFullscreenInputRef.value?.focus()
-  }, 100)
+  if (scannerMode.value !== 'face') {
+    setTimeout(() => {
+      rfidFullscreenInputRef.value?.focus()
+    }, 100)
+  }
 }
 
 // Handle ESC key for fullscreen mode
 const handleEscKey = (event) => {
-  if (event.key === 'Escape' && rfidFullscreenMode.value) {
-    rfidFullscreenMode.value = false
+  if (event.key === 'Escape') {
+    if (rfidFullscreenMode.value) rfidFullscreenMode.value = false
+    if (faceFullscreenMode.value) faceFullscreenMode.value = false
   }
 }
 
