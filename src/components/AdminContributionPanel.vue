@@ -593,8 +593,9 @@
     </div>
 
     <!-- Delete Event Confirmation Modal -->
+    <Teleport to="body">
     <transition name="fade">
-      <div v-if="showDeleteEventConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div v-if="showDeleteEventConfirm" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="cancelDeleteEvent"></div>
         <div class="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
           <div class="p-6 text-center">
@@ -645,10 +646,12 @@
         </div>
       </div>
     </transition>
+    </Teleport>
 
     <!-- Create Contribution Event Modal -->
+    <Teleport to="body">
     <transition name="fade">
-      <div v-if="showCreateEventModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div v-if="showCreateEventModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeCreateEventModal"></div>
         <div class="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
           <!-- Modal Header -->
@@ -787,10 +790,12 @@
         </div>
       </div>
     </transition>
+    </Teleport>
 
     <!-- Edit Event Modal -->
+    <Teleport to="body">
     <transition name="fade">
-      <div v-if="showEditEventModal" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div v-if="showEditEventModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeEditEventModal"></div>
         <div class="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
           <!-- Modal Header -->
@@ -906,10 +911,12 @@
         </div>
       </div>
     </transition>
+    </Teleport>
 
     <!-- Download Confirmation Modal -->
+    <Teleport to="body">
     <transition name="fade">
-      <div v-if="showDownloadConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div v-if="showDownloadConfirm" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showDownloadConfirm = false"></div>
         <div class="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden">
           <!-- Modal Header -->
@@ -1003,6 +1010,7 @@
         </div>
       </div>
     </transition>
+    </Teleport>
   </div>
 </template>
 
