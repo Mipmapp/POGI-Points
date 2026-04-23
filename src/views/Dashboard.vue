@@ -2293,9 +2293,11 @@
                   </button>
                 </div>
 
-                <!-- Face ID Scanner (admin kiosk) — only when 'face' mode is selected. -->
+                <!-- Face ID Scanner (admin kiosk) — only when 'face' mode is selected.
+                     Also hide while the Face fullscreen overlay is open so the
+                     two kiosks don't fight over the single webcam stream. -->
                 <FaceScannerKiosk
-                  v-if="scannerMode === 'face'"
+                  v-if="scannerMode === 'face' && !faceFullscreenMode"
                   :session-id="selectedSession?._id"
                   :session-label="selectedEvent?.title + ' — ' + selectedSession?.label"
                   :session-meta="formatDisplayTime(selectedSession?.start_time) + ' - ' + formatDisplayTime(selectedSession?.end_time)"
@@ -13246,12 +13248,11 @@ const enterFullscreenMode = (mode) => {
   // When no mode is passed, fall back to the currently active scannerMode so
   // existing call sites keep their previous behaviour.
   const targetMode = mode || scannerMode.value
-  // Sync the tab state so the in-page scanner card matches the overlay the
-  // admin just opened (e.g. clicking "Face Scanner Fullscreen" while on the
-  // RFID tab should also flip the tab to Face ID).
-  if (targetMode === 'face' || targetMode === 'rfid') {
-    scannerMode.value = targetMode
-  }
+  // NOTE: Do NOT sync `scannerMode` here. If the in-page tab is on "Face ID"
+  // while the user opens the Face Fullscreen, mounting two FaceScannerKiosk
+  // instances would race for the single webcam stream and the overlay's
+  // camera would fail silently. The inline kiosk is hidden in the template
+  // while the matching overlay is open (see `v-if` on the in-page kiosks).
   if (targetMode === 'face') {
     faceFullscreenMode.value = true
   } else {
