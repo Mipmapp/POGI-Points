@@ -2240,10 +2240,16 @@
                         <span class="text-xs text-gray-500 truncate">{{ formatDisplayTime(selectedSession.start_time) }} - {{ formatDisplayTime(selectedSession.end_time) }}</span>
                       </div>
                     </div>
-                    <div class="flex items-center gap-2 w-full sm:w-auto">
-                      <button @click="enterFullscreenMode" :class="['text-white px-3 sm:px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 bg-gradient-to-r flex-1 sm:flex-none text-sm sm:text-base', primaryButtonGradient, primaryButtonHover]">
-                        <svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-                        <span class="hidden sm:inline">Fullscreen</span>
+                    <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                      <button @click="enterFullscreenMode('rfid')" :title="'Open RFID Scanner Fullscreen'" :class="['text-white px-3 sm:px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 bg-gradient-to-r flex-1 sm:flex-none text-sm sm:text-base', primaryButtonGradient, primaryButtonHover]">
+                        <svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M19 3v4M3 9h18M4 21h16a1 1 0 001-1V9H3v11a1 1 0 001 1z"/></svg>
+                        <span class="hidden sm:inline">RFID Fullscreen</span>
+                        <span class="sm:hidden">RFID</span>
+                      </button>
+                      <button @click="enterFullscreenMode('face')" :title="'Open Face Scanner Fullscreen'" :class="['text-white px-3 sm:px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 bg-gradient-to-r flex-1 sm:flex-none text-sm sm:text-base', primaryButtonGradient, primaryButtonHover]">
+                        <svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/></svg>
+                        <span class="hidden sm:inline">Face Fullscreen</span>
+                        <span class="sm:hidden">Face</span>
                       </button>
                       <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" :class="['p-2 rounded-lg transition', isCOE ? 'text-orange-600 hover:text-orange-800 hover:bg-orange-100' : isSOM ? 'text-green-600 hover:text-green-800 hover:bg-green-50' : isCNAHS ? 'text-green-600 hover:text-green-800 hover:bg-green-50' : 'text-blue-600 hover:text-blue-800 hover:bg-blue-100']">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -13215,14 +13221,22 @@ const onEventSelectForScanner = () => {
   }
 }
 
-const enterFullscreenMode = () => {
+const enterFullscreenMode = (mode) => {
   if (!selectedSession.value) {
     showNotification('Please select a session first', 'error')
     return
   }
-  // Route to the right fullscreen overlay based on the active scanner mode
-  // so the Fullscreen button works for both RFID and Face ID kiosks.
-  if (scannerMode.value === 'face') {
+  // Allow callers to explicitly pick which kiosk overlay opens (RFID vs Face ID).
+  // When no mode is passed, fall back to the currently active scannerMode so
+  // existing call sites keep their previous behaviour.
+  const targetMode = mode || scannerMode.value
+  // Sync the tab state so the in-page scanner card matches the overlay the
+  // admin just opened (e.g. clicking "Face Scanner Fullscreen" while on the
+  // RFID tab should also flip the tab to Face ID).
+  if (targetMode === 'face' || targetMode === 'rfid') {
+    scannerMode.value = targetMode
+  }
+  if (targetMode === 'face') {
     faceFullscreenMode.value = true
   } else {
     rfidFullscreenMode.value = true
@@ -13233,7 +13247,7 @@ const enterFullscreenMode = () => {
   } else if (el.webkitRequestFullscreen) {
     el.webkitRequestFullscreen()
   }
-  if (scannerMode.value !== 'face') {
+  if (targetMode !== 'face') {
     setTimeout(() => {
       rfidFullscreenInputRef.value?.focus()
     }, 100)
