@@ -304,9 +304,21 @@
           </div>
         </div>
 
+        <!-- Switch to Face Recognition mode (closes the RFID overlay and opens
+             the Face Fullscreen). Mirrors the in-page RFID/Face tab toggle so
+             admins can flip kiosks without leaving fullscreen. -->
+        <button
+          @click="switchKioskMode('face')"
+          :class="['w-full max-w-sm flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] mb-3']"
+          title="Switch to Face Recognition"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/></svg>
+          Switch to Face Recognition
+        </button>
+
         <p class="text-white/30 text-xs">Press ESC or click X to exit</p>
       </div>
-      
+
       <!-- Right Panel - Results + Recent Logs -->
       <div class="flex-1 min-h-0 flex flex-col p-4 lg:p-6 overflow-hidden">
         <!-- Success Card -->
@@ -590,6 +602,16 @@
               </p>
             </div>
           </div>
+
+          <!-- Switch back to RFID Scanner without leaving fullscreen. -->
+          <button
+            @click="switchKioskMode('rfid')"
+            class="w-full max-w-sm flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] mb-3"
+            title="Switch to RFID Scanner"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M19 3v4M3 9h18M4 21h16a1 1 0 001-1V9H3v11a1 1 0 001 1z"/></svg>
+            Switch to RFID Scanner
+          </button>
 
           <p class="text-white/30 text-xs">Press ESC or click X to exit</p>
         </div>
@@ -13270,6 +13292,28 @@ const handleEscKey = (event) => {
   if (event.key === 'Escape') {
     if (rfidFullscreenMode.value) rfidFullscreenMode.value = false
     if (faceFullscreenMode.value) faceFullscreenMode.value = false
+  }
+}
+
+// Switch between RFID and Face Recognition kiosks while staying in fullscreen.
+// Closes the currently-open overlay first so the camera/input from the previous
+// kiosk is released cleanly, then opens the requested overlay on the next tick.
+const switchKioskMode = (target) => {
+  if (target === 'face') {
+    rfidFullscreenMode.value = false
+    scannerMode.value = 'face'
+    nextTick(() => {
+      faceFullscreenMode.value = true
+    })
+  } else {
+    faceFullscreenMode.value = false
+    scannerMode.value = 'rfid'
+    nextTick(() => {
+      rfidFullscreenMode.value = true
+      setTimeout(() => {
+        rfidFullscreenInputRef.value?.focus()
+      }, 100)
+    })
   }
 }
 
