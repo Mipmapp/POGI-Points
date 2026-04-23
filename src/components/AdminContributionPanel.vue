@@ -591,23 +591,50 @@
     <!-- Delete Event Confirmation Modal -->
     <transition name="fade">
       <div v-if="showDeleteEventConfirm" class="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showDeleteEventConfirm = false"></div>
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="cancelDeleteEvent"></div>
         <div class="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
           <div class="p-6 text-center">
-            <div class="w-14 h-14 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-              <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            <!-- Icon with countdown ring -->
+            <div class="relative w-16 h-16 mx-auto mb-4">
+              <svg class="absolute inset-0 w-16 h-16 -rotate-90" viewBox="0 0 56 56">
+                <circle cx="28" cy="28" r="24" fill="none" stroke="#fee2e2" stroke-width="4"/>
+                <circle cx="28" cy="28" r="24" fill="none" stroke="#ef4444" stroke-width="4"
+                  stroke-dasharray="150.8"
+                  :stroke-dashoffset="deleteConfirmCooldown > 0 ? (150.8 * deleteConfirmCooldown / 5) : 0"
+                  class="transition-all duration-1000 ease-linear"
+                />
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <svg v-if="deleteConfirmCooldown === 0" class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                <span v-else class="text-xl font-extrabold text-red-600">{{ deleteConfirmCooldown }}</span>
+              </div>
             </div>
+
             <h3 class="text-lg font-extrabold text-gray-900 mb-1">Delete Event?</h3>
-            <p class="text-sm text-gray-500 mb-1">You are about to delete:</p>
+            <p class="text-sm text-gray-500 mb-1">You are about to permanently delete:</p>
             <p class="text-sm font-bold text-gray-800 mb-1">{{ eventToDelete?.title }}</p>
-            <p class="text-xs text-red-500 font-medium mb-5">This will also remove all payment records linked to this event. This cannot be undone.</p>
+            <p class="text-xs text-red-500 font-medium mb-2">This will also remove all payment records linked to this event. This cannot be undone.</p>
+            <p v-if="deleteConfirmCooldown > 0" class="text-xs text-gray-400 mb-4 font-medium">Please wait {{ deleteConfirmCooldown }}s before confirming...</p>
+            <p v-else class="text-xs text-orange-600 font-semibold mb-4">You may now confirm the deletion.</p>
+
             <div class="flex gap-3">
-              <button @click="showDeleteEventConfirm = false" :disabled="isDeletingEvent" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-700 transition">
+              <button @click="cancelDeleteEvent" :disabled="isDeletingEvent" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-700 transition">
                 Cancel
               </button>
-              <button @click="deleteEvent" :disabled="isDeletingEvent" class="flex-1 px-4 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl text-sm font-bold transition flex items-center justify-center gap-2 disabled:opacity-60">
+              <button
+                @click="deleteEvent"
+                :disabled="isDeletingEvent || deleteConfirmCooldown > 0"
+                :class="[
+                  'flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2',
+                  deleteConfirmCooldown > 0
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700 text-white disabled:opacity-60'
+                ]"
+              >
                 <svg v-if="isDeletingEvent" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                {{ isDeletingEvent ? 'Deleting...' : 'Delete Event' }}
+                <span v-if="isDeletingEvent">Deleting...</span>
+                <span v-else-if="deleteConfirmCooldown > 0">Wait ({{ deleteConfirmCooldown }}s)</span>
+                <span v-else>Delete Event</span>
               </button>
             </div>
           </div>
@@ -1014,6 +1041,8 @@ export default {
       showDeleteEventConfirm: false,
       eventToDelete: null,
       isDeletingEvent: false,
+      deleteConfirmCooldown: 0,
+      _deleteConfirmTimer: null,
       showEditEventModal: false,
       isEditingEvent: false,
       editEventError: '',
@@ -1228,6 +1257,20 @@ export default {
     confirmDeleteEvent(event) {
       this.eventToDelete = event;
       this.showDeleteEventConfirm = true;
+      this.deleteConfirmCooldown = 5;
+      clearInterval(this._deleteConfirmTimer);
+      this._deleteConfirmTimer = setInterval(() => {
+        if (this.deleteConfirmCooldown > 0) {
+          this.deleteConfirmCooldown--;
+        } else {
+          clearInterval(this._deleteConfirmTimer);
+        }
+      }, 1000);
+    },
+    cancelDeleteEvent() {
+      this.showDeleteEventConfirm = false;
+      this.deleteConfirmCooldown = 0;
+      clearInterval(this._deleteConfirmTimer);
     },
     async deleteEvent() {
       if (!this.eventToDelete) return;
@@ -1247,6 +1290,8 @@ export default {
           }
           this.showDeleteEventConfirm = false;
           this.eventToDelete = null;
+          this.deleteConfirmCooldown = 0;
+          clearInterval(this._deleteConfirmTimer);
           await this.loadAllPaymentEvents();
           this.loadAllContributions();
         } else {
