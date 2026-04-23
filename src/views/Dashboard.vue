@@ -534,6 +534,21 @@
 
           <!-- Face Scanner card (dark-glass theme via fullscreen prop) -->
           <div class="w-full max-w-sm bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-5 border border-white/20 shadow-2xl mb-4">
+            <!-- Header label so the user can see at a glance that this is the
+                 Face ID kiosk (vs the visually-similar RFID kiosk overlay). -->
+            <div :class="['flex items-center gap-3 mb-3 pb-3 border-b border-white/10']">
+              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0',
+                isCOE ? 'bg-orange-500/25 text-orange-200 border border-orange-400/40'
+                : isSOM ? 'bg-yellow-500/25 text-yellow-200 border border-yellow-400/40'
+                : isCNAHS ? 'bg-teal-500/25 text-teal-200 border border-teal-400/40'
+                : 'bg-blue-500/25 text-blue-200 border border-blue-400/40']">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/></svg>
+              </div>
+              <div class="min-w-0">
+                <p class="text-white font-bold text-sm leading-tight">Face ID Kiosk</p>
+                <p class="text-white/55 text-xs">Look at the camera to check in</p>
+              </div>
+            </div>
             <FaceScannerKiosk
               v-if="selectedSession"
               :session-id="selectedSession?._id"
@@ -541,6 +556,7 @@
               :session-meta="formatDisplayTime(selectedSession?.start_time) + ' - ' + formatDisplayTime(selectedSession?.end_time)"
               :check-out-mode="!!effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled"
               :fullscreen="true"
+              :auto-start="true"
               @recognized="onFaceRecognized"
             />
           </div>

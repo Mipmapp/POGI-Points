@@ -222,6 +222,11 @@ export default {
     // When true, the component drops its own card chrome and renders with a
     // dark-glass theme so it slots cleanly inside the fullscreen overlay.
     fullscreen: { type: Boolean, default: false },
+    // When true, the camera + detection loop auto-starts on mount. Used in
+    // the fullscreen kiosk so the user doesn't need to click "Start Scanner"
+    // before anything happens — the live camera feed is the strongest visual
+    // signal that this is the Face ID kiosk and not the RFID one.
+    autoStart: { type: Boolean, default: false },
   },
   emits: ['recognized'],
   data() {
@@ -250,6 +255,19 @@ export default {
   },
   watch: {
     sessionId() { this.clearResult(); },
+  },
+  async mounted() {
+    // When dropped into the fullscreen kiosk, start the camera automatically
+    // so the operator sees a live face feed immediately — no extra click
+    // needed and no risk of the dark viewport being mistaken for an empty
+    // RFID-fullscreen panel.
+    if (this.autoStart) {
+      try {
+        await this.startCamera();
+      } catch (e) {
+        // startCamera surfaces its own errors via loadError; nothing to do here.
+      }
+    }
   },
   beforeUnmount() {
     this.stopCamera();
