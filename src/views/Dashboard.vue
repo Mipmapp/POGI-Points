@@ -510,10 +510,10 @@
         <!-- ── Left Panel: Face Scanner ──
              Widened so the live camera tile (aspect 4:3) gets enough room to
              feel like a real kiosk instead of a thumbnail. -->
-        <div class="lg:w-[620px] xl:w-[720px] flex-shrink-0 min-h-max lg:h-full flex flex-col items-center justify-start lg:justify-center px-5 py-8 lg:py-10 border-b lg:border-b-0 lg:border-r border-white/20">
+        <div class="lg:w-[640px] xl:w-[760px] flex-shrink-0 min-h-max lg:h-full flex flex-col items-center justify-start lg:justify-center px-5 py-5 lg:py-6 border-b lg:border-b-0 lg:border-r border-white/20">
           <!-- Logo + SSAAM title -->
-          <div class="flex items-center gap-3 mb-5">
-            <div class="relative w-10 h-10 lg:w-14 lg:h-14 flex-shrink-0 overflow-hidden">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="relative w-9 h-9 lg:w-12 lg:h-12 flex-shrink-0 overflow-hidden">
               <img
                 :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl"
                 :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'"
@@ -535,30 +535,25 @@
                 }"
               ></div>
             </div>
-            <h1 class="text-2xl lg:text-4xl font-extrabold italic text-white drop-shadow tracking-wide">SSAAM</h1>
+            <h1 class="text-xl lg:text-3xl font-extrabold italic text-white drop-shadow tracking-wide">SSAAM</h1>
           </div>
 
-          <!-- Event Info Card -->
-          <div class="w-full max-w-md bg-white/10 border border-white/20 rounded-2xl px-5 py-4 mb-4 text-center backdrop-blur-sm shadow-lg">
-            <p class="text-white font-bold text-lg lg:text-xl leading-tight truncate">{{ selectedEvent?.title || 'No Event Selected' }}</p>
-            <p class="text-white/60 text-xs lg:text-sm mt-0.5">{{ formatEventDate(selectedEvent?.date || selectedEvent?.event_date) }}</p>
-            <div v-if="selectedSession" class="mt-2 flex flex-wrap justify-center items-center gap-2">
-              <span :class="['px-3 py-1 rounded-full text-xs font-semibold', isCOE ? 'bg-orange-500/30 text-orange-200' : isSOM ? 'bg-green-500/30 text-green-200' : isCNAHS ? 'bg-green-500/30 text-green-200' : 'bg-blue-500/30 text-blue-200']">
-                {{ selectedSession.label }} Session
+          <!-- Compact Event + Mode strip — keeps the camera the dominant element. -->
+          <div class="w-full max-w-2xl bg-white/10 border border-white/20 rounded-2xl px-4 py-3 mb-3 text-center backdrop-blur-sm shadow-lg">
+            <p class="text-white font-bold text-base lg:text-lg leading-tight truncate">{{ selectedEvent?.title || 'No Event Selected' }}</p>
+            <div v-if="selectedSession" class="mt-1 flex flex-wrap justify-center items-center gap-2">
+              <span :class="['px-2.5 py-0.5 rounded-full text-[11px] font-semibold', isCOE ? 'bg-orange-500/30 text-orange-200' : isSOM ? 'bg-green-500/30 text-green-200' : isCNAHS ? 'bg-green-500/30 text-green-200' : 'bg-blue-500/30 text-blue-200']">
+                {{ selectedSession.label }}
               </span>
-              <span class="text-white/50 text-xs">{{ formatDisplayTime(selectedSession.start_time) }} – {{ formatDisplayTime(selectedSession.end_time) }}</span>
-            </div>
-            <p class="text-white/35 text-xs mt-2 font-mono tracking-widest">{{ fsLiveClock }}</p>
-          </div>
-
-          <!-- Mode badge (Check-In / Check-Out) -->
-          <div class="w-full max-w-md mb-4">
-            <div :class="['flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl border text-sm font-bold',
-              effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled
-                ? (isCOE ? 'bg-red-500/25 border-red-400/50 text-red-200' : isSOM ? 'bg-yellow-500/25 border-yellow-400/50 text-yellow-200' : isCNAHS ? 'bg-teal-500/25 border-teal-400/50 text-teal-200' : 'bg-orange-500/25 border-orange-400/50 text-orange-200')
-                : 'bg-green-500/25 border-green-400/50 text-green-200']">
-              <div class="w-2 h-2 rounded-full bg-white/80 animate-pulse flex-shrink-0"></div>
-              {{ effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled ? 'Check-Out Mode' : 'Check-In Mode' }}
+              <span class="text-white/55 text-[11px]">{{ formatDisplayTime(selectedSession.start_time) }} – {{ formatDisplayTime(selectedSession.end_time) }}</span>
+              <span class="text-white/35 text-[11px] font-mono tracking-widest">{{ fsLiveClock }}</span>
+              <span :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider',
+                effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled
+                  ? (isCOE ? 'bg-red-500/25 border-red-400/50 text-red-200' : isSOM ? 'bg-yellow-500/25 border-yellow-400/50 text-yellow-200' : isCNAHS ? 'bg-teal-500/25 border-teal-400/50 text-teal-200' : 'bg-orange-500/25 border-orange-400/50 text-orange-200')
+                  : 'bg-green-500/25 border-green-400/50 text-green-200']">
+                <span class="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse"></span>
+                {{ effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled ? 'Check-Out' : 'Check-In' }}
+              </span>
             </div>
           </div>
 
@@ -566,7 +561,7 @@
                viewport is the dominant element, just like the RFID input is in
                the RFID overlay. The kiosk component renders its own dark-glass
                theme via :fullscreen="true". -->
-          <div class="w-full max-w-xl bg-white/10 backdrop-blur-lg rounded-2xl p-4 sm:p-5 border border-white/20 shadow-2xl mb-4">
+          <div class="w-full max-w-2xl bg-white/5 backdrop-blur-lg rounded-2xl p-2 sm:p-3 border border-white/15 shadow-2xl mb-3">
             <FaceScannerKiosk
               v-if="selectedSession"
               :session-id="selectedSession?._id"
@@ -579,31 +574,24 @@
             />
           </div>
 
-          <!-- Stats row -->
-          <div class="flex gap-3 w-full max-w-md mb-4">
-            <div class="flex-1 bg-white/10 border border-white/15 rounded-xl p-3 text-center backdrop-blur-sm">
-              <p class="text-white/45 text-xs uppercase tracking-wider mb-1">Recognized</p>
-              <p class="text-2xl font-extrabold text-white">{{ faceRecognizedCount }}</p>
+          <!-- Stats + Switch row — combined into one compact bar so the camera
+               keeps the vertical real estate. -->
+          <div class="w-full max-w-2xl flex gap-2 mb-2">
+            <div class="flex-1 bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-center backdrop-blur-sm">
+              <p class="text-white/45 text-[10px] uppercase tracking-wider">Recognized</p>
+              <p class="text-lg font-extrabold text-white leading-tight">{{ faceRecognizedCount }}</p>
             </div>
-            <div class="flex-1 bg-white/10 border border-white/15 rounded-xl p-3 text-center backdrop-blur-sm">
-              <p class="text-white/45 text-xs uppercase tracking-wider mb-1">Active Mode</p>
-              <p :class="['text-sm font-extrabold tracking-wider uppercase', effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled ? (isCOE ? 'text-red-300' : isSOM ? 'text-yellow-300' : isCNAHS ? 'text-teal-300' : 'text-orange-300') : 'text-green-300']">
-                {{ effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled ? 'Check-Out' : 'Check-In' }}
-              </p>
-            </div>
+            <button
+              @click="switchKioskMode('rfid')"
+              class="flex-[2] flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
+              title="Switch to RFID Scanner"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M19 3v4M3 9h18M4 21h16a1 1 0 001-1V9H3v11a1 1 0 001 1z"/></svg>
+              Switch to RFID
+            </button>
           </div>
 
-          <!-- Switch back to RFID Scanner without leaving fullscreen. -->
-          <button
-            @click="switchKioskMode('rfid')"
-            class="w-full max-w-md flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] mb-3"
-            title="Switch to RFID Scanner"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M19 3v4M3 9h18M4 21h16a1 1 0 001-1V9H3v11a1 1 0 001 1z"/></svg>
-            Switch to RFID Scanner
-          </button>
-
-          <p class="text-white/30 text-xs">Press ESC or click X to exit</p>
+          <p class="text-white/30 text-[11px]">Press ESC or click X to exit</p>
         </div>
 
         <!-- ── Right Panel: Recent Recognitions ── -->
@@ -9447,14 +9435,19 @@ watch(rfidFullscreenMode, (newValue) => {
     }, 100)
   } else {
     stopLogoFlipAnimation()
-    stopParticles()
-    if (fsClockInterval.value) {
-      clearInterval(fsClockInterval.value)
-      fsClockInterval.value = null
-    }
-    // Exit browser fullscreen when overlay closes
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {})
+    // Only stop visual extras / exit browser fullscreen when no kiosk
+    // overlay is taking over. During a switch (RFID -> Face) the face
+    // overlay is already opening, so we keep the particles, clock and
+    // native fullscreen alive instead of tearing them down and re-creating.
+    if (!faceFullscreenMode.value) {
+      stopParticles()
+      if (fsClockInterval.value) {
+        clearInterval(fsClockInterval.value)
+        fsClockInterval.value = null
+      }
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {})
+      }
     }
     // Clear pending focus timeout when exiting fullscreen
     if (rfidFocusTimeout.value) {
@@ -9476,13 +9469,17 @@ watch(faceFullscreenMode, (newValue) => {
     // Kick off the same drifting-particle backdrop the RFID overlay uses.
     startParticles()
   } else {
-    stopParticles()
-    if (fsClockInterval.value && !rfidFullscreenMode.value) {
-      clearInterval(fsClockInterval.value)
-      fsClockInterval.value = null
-    }
-    if (document.fullscreenElement) {
-      document.exitFullscreen().catch(() => {})
+    // Same guard as the RFID watcher: keep visual extras and native
+    // fullscreen alive if the user is mid-switch back to RFID.
+    if (!rfidFullscreenMode.value) {
+      stopParticles()
+      if (fsClockInterval.value) {
+        clearInterval(fsClockInterval.value)
+        fsClockInterval.value = null
+      }
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {})
+      }
     }
   }
 })
