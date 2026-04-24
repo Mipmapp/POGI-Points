@@ -13290,20 +13290,16 @@ const handleEscKey = (event) => {
 // kiosk is released cleanly, then opens the requested overlay on the next tick.
 const switchKioskMode = (target) => {
   if (target === 'face') {
-    rfidFullscreenMode.value = false
     scannerMode.value = 'face'
-    nextTick(() => {
-      faceFullscreenMode.value = true
-    })
+    faceFullscreenMode.value = true
+    rfidFullscreenMode.value = false
   } else {
-    faceFullscreenMode.value = false
     scannerMode.value = 'rfid'
-    nextTick(() => {
-      rfidFullscreenMode.value = true
-      setTimeout(() => {
-        rfidFullscreenInputRef.value?.focus()
-      }, 100)
-    })
+    rfidFullscreenMode.value = true
+    faceFullscreenMode.value = false
+    setTimeout(() => {
+      rfidFullscreenInputRef.value?.focus()
+    }, 100)
   }
 }
 
