@@ -9439,7 +9439,7 @@ watch(rfidFullscreenMode, (newValue) => {
     // overlay is taking over. During a switch (RFID -> Face) the face
     // overlay is already opening, so we keep the particles, clock and
     // native fullscreen alive instead of tearing them down and re-creating.
-    if (!faceFullscreenMode.value) {
+    if (!faceFullscreenMode.value && !isSwitchingKiosk.value) {
       stopParticles()
       if (fsClockInterval.value) {
         clearInterval(fsClockInterval.value)
@@ -9471,7 +9471,7 @@ watch(faceFullscreenMode, (newValue) => {
   } else {
     // Same guard as the RFID watcher: keep visual extras and native
     // fullscreen alive if the user is mid-switch back to RFID.
-    if (!rfidFullscreenMode.value) {
+    if (!rfidFullscreenMode.value && !isSwitchingKiosk.value) {
       stopParticles()
       if (fsClockInterval.value) {
         clearInterval(fsClockInterval.value)
@@ -13283,9 +13283,19 @@ const handleEscKey = (event) => {
 }
 
 // Switch between RFID and Face Recognition kiosks while staying in fullscreen.
-// Closes the currently-open overlay first so the camera/input from the previous
-// kiosk is released cleanly, then opens the requested overlay on the next tick.
+// We use an explicit `isSwitchingKiosk` flag so the watchers on both
+// fullscreen booleans know NOT to call `document.exitFullscreen()` when one
+// of them flips false during the swap. We also re-request native fullscreen
+// inside the same click handler — the browser permits this because the click
+// itself is a user gesture, so it acts as a safety net if anything else
+// dropped fullscreen mid-swap.
+const isSwitchingKiosk = ref(false)
 const switchKioskMode = (target) => {
+  isSwitchingKiosk.value = true
+
+  // Flip the new overlay ON first, then the old one OFF, in the same sync
+  // tick. With `v-if` this means the new overlay's DOM is created in the
+  // same render flush that removes the old one, so there's no blank frame.
   if (target === 'face') {
     scannerMode.value = 'face'
     faceFullscreenMode.value = true
@@ -13298,6 +13308,22 @@ const switchKioskMode = (target) => {
       rfidFullscreenInputRef.value?.focus()
     }, 100)
   }
+
+  // Safety net: if for any reason the browser is no longer in native
+  // fullscreen (e.g. the previous overlay's teardown raced), re-request it
+  // here. requestFullscreen() is allowed because we're still inside the
+  // click event's user-gesture window.
+  if (!document.fullscreenElement) {
+    const el = document.documentElement
+    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen
+    if (req) {
+      try { req.call(el)?.catch?.(() => {}) } catch (_) {}
+    }
+  }
+
+  // Release the switching flag after the watcher microtask + a small buffer
+  // so any late-firing fullscreenchange events don't accidentally close us.
+  setTimeout(() => { isSwitchingKiosk.value = false }, 250)
 }
 
 const handleLogout = () => {
