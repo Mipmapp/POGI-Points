@@ -304,6 +304,17 @@
           </div>
         </div>
 
+        <!-- Switch to Face Recognition (replaces this kiosk's contents with the
+             Face Fullscreen overlay; native browser fullscreen is preserved). -->
+        <button
+          @click="switchKioskMode('face')"
+          class="w-full max-w-sm flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] mb-3"
+          title="Switch to Face Recognition"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/></svg>
+          Switch to Face Recognition
+        </button>
+
         <p class="text-white/30 text-xs">Press ESC or click X to exit</p>
       </div>
 
@@ -562,12 +573,21 @@
             />
           </div>
 
-          <!-- Recognized counter -->
-          <div class="w-full max-w-2xl mb-2">
-            <div class="bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-center backdrop-blur-sm">
+          <!-- Stats + Switch back to RFID — combined into one compact bar so
+               the camera keeps the vertical real estate. -->
+          <div class="w-full max-w-2xl flex gap-2 mb-2">
+            <div class="flex-1 bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-center backdrop-blur-sm">
               <p class="text-white/45 text-[10px] uppercase tracking-wider">Recognized</p>
               <p class="text-lg font-extrabold text-white leading-tight">{{ faceRecognizedCount }}</p>
             </div>
+            <button
+              @click="switchKioskMode('rfid')"
+              class="flex-[2] flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
+              title="Switch to RFID Scanner"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M19 3v4M3 9h18M4 21h16a1 1 0 001-1V9H3v11a1 1 0 001 1z"/></svg>
+              Switch to RFID
+            </button>
           </div>
 
           <p class="text-white/30 text-[11px]">Press ESC or click X to exit</p>
