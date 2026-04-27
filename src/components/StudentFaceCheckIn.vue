@@ -56,10 +56,6 @@
               <div v-if="cameraReady && currentChallenge === 'turn_right'" class="absolute inset-0 flex items-center justify-end pointer-events-none">
                 <div class="text-white/80 text-7xl font-bold animate-pulse pr-4">→</div>
               </div>
-              <div v-if="cameraReady && currentChallenge === 'blink'" class="absolute top-3 inset-x-0 flex justify-center pointer-events-none">
-                <div class="fci-blink-pill">Blink twice</div>
-              </div>
-
               <!-- Face oval -->
               <div v-if="cameraReady" class="absolute inset-0 pointer-events-none">
                 <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
@@ -150,10 +146,6 @@ const currentChallengeIndex = ref(0)
 const currentChallenge = computed(() => challenges.value[currentChallengeIndex.value])
 
 // Per-challenge transient state
-// Blink uses an adaptive baseline: we record the recent open-eye EAR and
-// detect a blink as a relative drop, which is much more robust than a fixed
-// threshold across users (glasses, eye shape, lighting all change baseline EAR).
-const blinkState = ref({ wasOpen: true, blinkCount: 0, baseline: 0, baselineSamples: [] })
 const turnState = ref({ neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0 })
 
 // Capture / sampling
@@ -167,7 +159,6 @@ const stageStyle = computed(() => {
   if (successMessage.value) return { bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-800', icon: '✓' }
   if (errorMessage.value || failed.value) return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', icon: '!' }
   if (submitting.value) return { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', icon: '↻' }
-  if (currentChallenge.value === 'blink') return { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-800', icon: '👁' }
   if (currentChallenge.value === 'turn_left' || currentChallenge.value === 'turn_right') return { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-800', icon: '↔' }
   if (cameraReady.value) return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', icon: '•' }
   return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', icon: '•' }
@@ -176,7 +167,6 @@ const stageMessage = computed(() => {
   if (successMessage.value) return successMessage.value
   if (submitting.value) return 'Verifying with the server…'
   if (failed.value && !errorMessage.value) return 'Liveness check failed.'
-  if (currentChallenge.value === 'blink') return 'Blink twice'
   if (currentChallenge.value === 'turn_left') return 'Turn your head LEFT'
   if (currentChallenge.value === 'turn_right') return 'Turn your head RIGHT'
   if (cameraReady.value && !challenges.value.length) return 'Preparing your check-in…'
@@ -184,14 +174,13 @@ const stageMessage = computed(() => {
   return 'Setting up camera'
 })
 const stageHint = computed(() => {
-  if (currentChallenge.value === 'blink') return 'Look at the camera and close your eyes briefly, twice.'
   if (currentChallenge.value === 'turn_left') return 'Slowly turn your face to your left, then back.'
   if (currentChallenge.value === 'turn_right') return 'Slowly turn your face to your right, then back.'
   return ''
 })
 
 function challengeLabel(c) {
-  return c === 'blink' ? 'Blink' : c === 'turn_left' ? 'Look Left' : c === 'turn_right' ? 'Look Right' : c
+  return c === 'turn_left' ? 'Look Left' : c === 'turn_right' ? 'Look Right' : c
 }
 
 // ---- Lifecycle
@@ -217,7 +206,6 @@ function resetState() {
   challenges.value = []
   completed.value = []
   currentChallengeIndex.value = 0
-  blinkState.value = { wasOpen: true, blinkCount: 0, baseline: 0, baselineSamples: [] }
   turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0 }
   samplesCount.value = 0
   captured.value = []
@@ -293,15 +281,6 @@ async function requestChallenge() {
 }
 
 // ---- Liveness math
-// Eye Aspect Ratio: tiny landmark model gives 68 points; eye landmarks 36-41 (right) and 42-47 (left).
-function eyeAspectRatio(pts) {
-  // pts: array of 6 {x,y}
-  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
-  const v = (dist(pts[1], pts[5]) + dist(pts[2], pts[4])) / 2
-  const h = dist(pts[0], pts[3])
-  return h === 0 ? 0 : v / h
-}
-
 // Robust yaw estimate using jaw landmarks. With the 68-point model the jaw
 // runs from point 0 (the jaw tip on the camera's LEFT) to point 16 (camera's
 // RIGHT), and the nose tip is point 30. When the head is straight, the nose
@@ -330,42 +309,6 @@ function yawRatio(landmarks /* , box (unused) */) {
   return Math.max(-1, Math.min(1, (dR - dL) / total))
 }
 
-// Adaptive blink detection.
-// Strategy:
-//   1. Maintain a rolling baseline of the user's open-eye EAR (median of last
-//      ~24 frames where EAR is in a "looks open" range).
-//   2. A blink starts when current EAR drops to <= 75% of baseline.
-//   3. A blink completes when EAR returns above 90% of baseline.
-// This works for users with naturally narrow eyes, glasses, low light, etc.,
-// where a fixed 0.20 threshold often never triggered.
-function processBlinkFrame(ear) {
-  const s = blinkState.value
-  // Build / update baseline only while eyes look open. We seed loosely on the
-  // first few frames so detection can begin quickly.
-  const seedingPhase = s.baselineSamples.length < 6
-  const looksOpen = seedingPhase ? ear > 0.10 : ear > s.baseline * 0.85
-  if (looksOpen) {
-    s.baselineSamples.push(ear)
-    if (s.baselineSamples.length > 24) s.baselineSamples.shift()
-    // Use a high percentile (sorted ~75%) so a brief partial-close doesn't
-    // pull the baseline down and break detection.
-    const sorted = [...s.baselineSamples].sort((a, b) => a - b)
-    s.baseline = sorted[Math.floor(sorted.length * 0.75)] || ear
-  }
-  if (s.baseline < 0.12) return false // not enough data yet
-
-  const closeT = s.baseline * 0.75
-  const openT  = s.baseline * 0.90
-
-  if (s.wasOpen && ear < closeT) {
-    s.wasOpen = false
-  } else if (!s.wasOpen && ear > openT) {
-    s.wasOpen = true
-    s.blinkCount++
-  }
-  return s.blinkCount >= 2
-}
-
 // Detect a head turn. We accept a turn in EITHER direction once it is clearly
 // off-center, because the on-screen video is mirrored and users frequently
 // turn the "wrong" way relative to the arrow cue. The visual arrow still
@@ -390,7 +333,6 @@ function advanceChallenge() {
   completed.value.push(challenges.value[currentChallengeIndex.value])
   currentChallengeIndex.value++
   // Reset per-challenge state so the next step is clean
-  blinkState.value = { wasOpen: true, blinkCount: 0, baseline: 0, baselineSamples: [] }
   turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0 }
 }
 
@@ -420,24 +362,15 @@ async function runDetectionLoop() {
 
       // Process the active challenge
       const ch = currentChallenge.value
-      if (ch) {
-        const lm = det.landmarks
-        const rightEye = lm.positions.slice(36, 42)
-        const leftEye = lm.positions.slice(42, 48)
-        const ear = (eyeAspectRatio(rightEye) + eyeAspectRatio(leftEye)) / 2
-        const yaw = yawRatio(lm)
+      if (ch === 'turn_left' || ch === 'turn_right') {
+        const yaw = yawRatio(det.landmarks)
+        if (processTurnFrame(yaw)) advanceChallenge()
+      }
 
-        if (ch === 'blink') {
-          if (processBlinkFrame(ear)) advanceChallenge()
-        } else if (ch === 'turn_left' || ch === 'turn_right') {
-          if (processTurnFrame(yaw)) advanceChallenge()
-        }
-
-        // All challenges done → submit
-        if (currentChallengeIndex.value >= challenges.value.length && !submitting.value && captured.value.length >= 8) {
-          await submit()
-          return
-        }
+      // All challenges done → submit
+      if (currentChallengeIndex.value >= challenges.value.length && !submitting.value && captured.value.length >= 8) {
+        await submit()
+        return
       }
     }
   } catch (err) {
@@ -612,18 +545,6 @@ onBeforeUnmount(() => stopCamera())
   animation: fci-spin 0.8s linear infinite;
 }
 @keyframes fci-spin { to { transform: rotate(360deg); } }
-
-/* ── Blink pill ───────────────────────────────────────────── */
-.fci-blink-pill {
-  background: rgba(0,0,0,0.6);
-  backdrop-filter: blur(4px);
-  color: white;
-  font-size: 0.75rem;
-  font-weight: 600;
-  padding: 6px 16px;
-  border-radius: 9999px;
-  border: 1px solid rgba(255,255,255,0.18);
-}
 
 /* ── Challenge chips ──────────────────────────────────────── */
 .fci-chip {

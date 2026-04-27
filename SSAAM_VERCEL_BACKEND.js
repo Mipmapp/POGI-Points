@@ -5399,13 +5399,13 @@ setInterval(() => {
     }
 }, 60 * 1000).unref?.();
 
-const FACE_CHALLENGE_POOL = ['blink', 'turn_left', 'turn_right'];
+const FACE_CHALLENGE_POOL = ['turn_left', 'turn_right'];
 function _pickFaceChallenges() {
-    // Always blink (cheapest liveness) + one random head-turn. Two challenges
-    // is the sweet spot: enough friction to defeat photos, fast enough to
-    // not annoy students.
-    const turn = Math.random() < 0.5 ? 'turn_left' : 'turn_right';
-    return ['blink', turn];
+    // Two head-turn challenges in a random order. Blink was removed because
+    // EAR-based blink detection in the browser was unreliable for many users
+    // (glasses, narrow eyes, low light). Two opposite turns still defeat a
+    // single still photo and are quick for the student.
+    return Math.random() < 0.5 ? ['turn_left', 'turn_right'] : ['turn_right', 'turn_left'];
 }
 
 function _signFaceChallengeToken({ student_id, session_id, college, challenges }) {
