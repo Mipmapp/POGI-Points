@@ -465,7 +465,7 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
-import { encodeTimestamp } from '../utils/ssaamCrypto.js'
+import { encodeTimestamp, syncServerTime, updateServerOffsetFromHeaders } from '../utils/ssaamCrypto.js'
 import API_getBaseURL, { buildAPIUrl } from '../config/api.js'
 import departments from '../config/departments.js'
 
@@ -582,23 +582,40 @@ const closeForgotPasswordModal = () => {
   resetSuccess.value = false
 }
 
-const requestResetCode = async () => {
-  resetLoading.value = true
-  resetMessage.value = ''
-  try {
+// Helper: send a timestamp-protected POST. If it 401s with a timestamp error,
+// re-sync our clock against the server's Date header and retry once.
+const postWithTimestamp = async (url, payload) => {
+  const send = () => {
     const token = encodeTimestamp()
-    const response = await fetch(buildAPIUrl(`/apis/password-reset/request`), {
+    return fetch(url, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer SSAAMStudents',
         'X-SSAAM-TS': token
       },
-      body: JSON.stringify({ 
-        student_id: resetStudentId.value.trim(),
-        email: resetEmail.value.trim(),
-        _ssaam_access_token: token
-      })
+      body: JSON.stringify({ ...payload, _ssaam_access_token: token })
+    })
+  }
+  let response = await send()
+  // Always learn the server's clock from this response.
+  updateServerOffsetFromHeaders(response)
+  if (response.status === 401) {
+    // Could be clock skew that wasn't corrected before the first call.
+    // Now that offset is updated, retry once.
+    response = await send()
+    updateServerOffsetFromHeaders(response)
+  }
+  return response
+}
+
+const requestResetCode = async () => {
+  resetLoading.value = true
+  resetMessage.value = ''
+  try {
+    const response = await postWithTimestamp(buildAPIUrl(`/apis/password-reset/request`), {
+      student_id: resetStudentId.value.trim(),
+      email: resetEmail.value.trim()
     })
     const data = await response.json()
     if (response.ok) {
@@ -621,19 +638,9 @@ const verifyResetCode = async () => {
   resetLoading.value = true
   resetMessage.value = ''
   try {
-    const token = encodeTimestamp()
-    const response = await fetch(buildAPIUrl(`/apis/password-reset/verify`), {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer SSAAMStudents',
-        'X-SSAAM-TS': token
-      },
-      body: JSON.stringify({ 
-        student_id: resetStudentId.value.trim(), 
-        code: resetCode.value.trim(),
-        _ssaam_access_token: token
-      })
+    const response = await postWithTimestamp(buildAPIUrl(`/apis/password-reset/verify`), {
+      student_id: resetStudentId.value.trim(),
+      code: resetCode.value.trim()
     })
     const data = await response.json()
     if (response.ok) {
@@ -662,20 +669,10 @@ const completePasswordReset = async () => {
   resetLoading.value = true
   resetMessage.value = ''
   try {
-    const token = encodeTimestamp()
-    const response = await fetch(buildAPIUrl(`/apis/password-reset/complete`), {
-      method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer SSAAMStudents',
-        'X-SSAAM-TS': token
-      },
-      body: JSON.stringify({ 
-        student_id: resetStudentId.value.trim(), 
-        reset_token: resetToken.value,
-        new_password: newPassword.value,
-        _ssaam_access_token: token
-      })
+    const response = await postWithTimestamp(buildAPIUrl(`/apis/password-reset/complete`), {
+      student_id: resetStudentId.value.trim(),
+      reset_token: resetToken.value,
+      new_password: newPassword.value
     })
     const data = await response.json()
     if (response.ok) {
@@ -730,6 +727,10 @@ const developers = [
 ]
 
 onMounted(async () => {
+  // Sync our clock against the server early so timestamp-protected endpoints
+  // (login, password reset) don't 401 due to user PC clock skew. Fire-and-forget.
+  syncServerTime(buildAPIUrl(''))
+
   const currentUser = localStorage.getItem('currentUser')
   if (currentUser) {
     const user = JSON.parse(currentUser)
