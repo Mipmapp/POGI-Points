@@ -15,6 +15,48 @@
         </div>
       </div>
 
+      <!-- Face ID Status Card -->
+      <div :class="['rounded-xl shadow-md p-4 md:p-5 backdrop-blur-sm border-2', isCOE ? 'bg-white bg-opacity-95 border-orange-200' : isSOM ? 'bg-white bg-opacity-95 border-green-200' : isCNAHS ? 'bg-white bg-opacity-95 border-emerald-200' : 'bg-white bg-opacity-95 border-purple-200']">
+        <div class="flex flex-col md:flex-row items-start md:items-center gap-4">
+          <!-- Avatar / icon -->
+          <div :class="['w-14 h-14 rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden border-2', isCOE ? 'border-orange-300' : isSOM ? 'border-green-300' : isCNAHS ? 'border-emerald-300' : 'border-purple-300', faceLoading ? 'bg-gray-100' : (faceEnrolled ? 'bg-emerald-50' : (isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-emerald-50' : 'bg-purple-50'))]">
+            <img v-if="faceEnrolled && faceData?.faces?.[0]?.photo" :src="faceData.faces[0].photo" class="w-full h-full object-cover" />
+            <svg v-else class="w-7 h-7" :class="faceEnrolled ? 'text-emerald-600' : (isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-purple-500')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="M19.5 12c0-4.142-3.358-7.5-7.5-7.5S4.5 7.858 4.5 12 7.858 19.5 12 19.5c1.043 0 2.036-.213 2.939-.6M19.5 12h-2M12 19.5v-2" />
+            </svg>
+          </div>
+          <!-- Status text -->
+          <div class="flex-1 min-w-0">
+            <h3 class="text-base md:text-lg font-bold text-gray-900">Face ID</h3>
+            <p v-if="faceLoading" class="text-sm text-gray-500">Loading…</p>
+            <template v-else-if="faceEnrolled">
+              <p class="text-sm text-emerald-700 font-semibold">✓ Enrolled and ready for check-in</p>
+              <p class="text-xs text-gray-500 mt-0.5">
+                Last updated {{ formatFaceDate(faceData.face_updated_at) }}.
+                <span v-if="faceData.in_cooldown">You can change it again on {{ formatFaceDate(faceData.next_update_allowed_at) }}.</span>
+                <span v-else>You can update it now.</span>
+              </p>
+            </template>
+            <template v-else>
+              <p :class="['text-sm font-semibold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-purple-700']">Not set up yet</p>
+              <p class="text-xs text-gray-500 mt-0.5">Enroll your face once to enable self check-in on attendance events.</p>
+            </template>
+          </div>
+          <!-- Action -->
+          <div class="flex-shrink-0">
+            <button
+              @click="openFaceEnroll"
+              :disabled="faceLoading || (faceEnrolled && faceData.in_cooldown)"
+              :class="['px-4 py-2 rounded-lg font-semibold text-white text-sm transition-all', (faceEnrolled && faceData.in_cooldown) ? 'bg-gray-300 cursor-not-allowed' : (isCOE ? 'bg-orange-600 hover:bg-orange-700' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-purple-600 hover:bg-purple-700')]"
+              :title="faceEnrolled && faceData.in_cooldown ? `Locked until ${formatFaceDate(faceData.next_update_allowed_at)}` : ''"
+            >
+              {{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Search & Info Bar Mobile Responsive -->
       <div :class="['rounded-xl shadow-md p-4 md:p-6 backdrop-blur-sm transition-all duration-200', isCOE ? 'bg-white bg-opacity-95 border-2 border-orange-200 hover:shadow-lg hover:border-orange-300' : isSOM ? 'bg-white bg-opacity-95 border-2 border-green-200 hover:shadow-lg hover:border-green-300' : isCNAHS ? 'bg-white bg-opacity-95 border-2 border-emerald-200 hover:shadow-lg hover:border-emerald-300' : 'bg-white bg-opacity-95 border-2 border-purple-200 hover:shadow-lg hover:border-purple-300']">
         <div class="flex flex-col gap-4">
@@ -162,6 +204,20 @@
         </div>
       </div>
     </div>
+
+    <!-- Face ID enrollment modal -->
+    <StudentFaceEnroll
+      :open="showFaceEnroll"
+      :has-existing-face="faceEnrolled"
+      :cooldown-active="!!(faceData && faceData.in_cooldown)"
+      :next-update-allowed-at="faceData ? faceData.next_update_allowed_at : null"
+      :cooldown-days="(faceData && faceData.cooldown_days) || 7"
+      :is-c-o-e="isCOE"
+      :is-s-o-m="isSOM"
+      :is-c-n-a-h-s="isCNAHS"
+      @close="showFaceEnroll = false"
+      @enrolled="onFaceEnrolled"
+    />
   </div>
 </template>
 
@@ -169,9 +225,12 @@
 import { buildAPIUrl } from '../config/api.js'
 import departments from '../config/departments.js'
 import { checkDepartment } from '../config/themes.js'
+import { encodeTimestamp } from '../utils/ssaamCrypto.js'
+import StudentFaceEnroll from '../components/StudentFaceEnroll.vue'
 
 export default {
   name: 'Attendance',
+  components: { StudentFaceEnroll },
   data() {
     return {
       isLoading: false,
@@ -179,7 +238,11 @@ export default {
       allUsers: [],
       searchQuery: '',
       currentPage: 1,
-      itemsPerPage: 5
+      itemsPerPage: 5,
+      // Face ID self-service state
+      faceLoading: true,
+      faceData: null,
+      showFaceEnroll: false
     };
   },
   computed: {
@@ -191,6 +254,9 @@ export default {
     },
     isCNAHS() {
       return checkDepartment('CNAHS', departments)
+    },
+    faceEnrolled() {
+      return !!(this.faceData && this.faceData.count && this.faceData.count > 0);
     },
     // Filter events by search query and sort by date (newest first)
     searchedEvents() {
@@ -223,8 +289,38 @@ export default {
   mounted() {
     this.loadEvents();
     this.loadAllUsers();
+    this.loadFaceStatus();
   },
   methods: {
+    async loadFaceStatus() {
+      this.faceLoading = true;
+      try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('studentToken');
+        const res = await fetch(buildAPIUrl('/apis/students/face'), {
+          headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
+        });
+        if (res.ok) {
+          this.faceData = await res.json();
+        }
+      } catch (err) {
+        console.error('Failed to load face status:', err);
+      } finally {
+        this.faceLoading = false;
+      }
+    },
+    openFaceEnroll() {
+      if (this.faceEnrolled && this.faceData?.in_cooldown) return;
+      this.showFaceEnroll = true;
+    },
+    onFaceEnrolled(data) {
+      this.faceData = data;
+      this.showFaceEnroll = false;
+    },
+    formatFaceDate(d) {
+      if (!d) return '';
+      try { return new Date(d).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }); }
+      catch { return String(d); }
+    },
     async loadEvents() {
       this.isLoading = true;
       try {

@@ -18,14 +18,37 @@
       <div v-if="sessions.length === 0" class="bg-white p-6 rounded shadow text-center">No sessions found for this event</div>
 
       <div class="grid gap-4">
-        <div v-for="s in sessions" :key="s._id" class="bg-white rounded shadow p-4 flex items-start justify-between">
-          <div>
-            <h3 class="font-semibold">{{ s.label }}</h3>
-            <p class="text-sm text-gray-500">{{ formatTime(s.start_time) }} — {{ formatTime(s.end_time) }}</p>
+        <div v-for="s in sessions" :key="s._id" class="bg-white rounded shadow p-4">
+          <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <h3 class="font-semibold">{{ s.label }}</h3>
+                <span v-if="isSessionActive(s)" class="text-xs font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">● Active</span>
+                <span v-else class="text-xs font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-600">{{ s.status || 'Inactive' }}</span>
+              </div>
+              <p class="text-sm text-gray-500">{{ formatTime(s.start_time) }} — {{ formatTime(s.end_time) }}</p>
+            </div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <button @click="showAbsent(s)" class="px-3 py-1.5 rounded text-sm" :class="isCOE ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white'">Show Absent</button>
+              <button @click="exportAbsentCSV(s)" class="px-3 py-1.5 rounded border text-sm" :class="isCOE ? 'border-orange-300 text-orange-700' : isSOM ? 'border-green-300 text-green-700' : 'border-purple-300 text-purple-700'">Export Absent</button>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button @click="showAbsent(s)" class="px-3 py-1.5 rounded" :class="isCOE ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white'">Show Absent</button>
-            <button @click="exportAbsentCSV(s)" class="px-3 py-1.5 rounded border" :class="isCOE ? 'border-orange-300 text-orange-700' : isSOM ? 'border-green-300 text-green-700' : 'border-purple-300 text-purple-700'">Export Absent</button>
+
+          <!-- Face ID self check-in row -->
+          <div v-if="isSessionActive(s)" class="mt-3 pt-3 border-t border-gray-100 flex items-center justify-between gap-3">
+            <div class="text-xs text-gray-600">
+              <span v-if="!faceLoaded">Loading Face ID…</span>
+              <span v-else-if="!faceEnrolled">Set up your Face ID on the Attendance page first to check in here.</span>
+              <span v-else>You can check in to this session with your Face ID.</span>
+            </div>
+            <button
+              @click="openFaceCheckIn(s)"
+              :disabled="!faceEnrolled"
+              :title="!faceEnrolled ? 'Set up your Face ID first' : ''"
+              :class="['px-3 py-1.5 rounded text-sm font-semibold text-white whitespace-nowrap', !faceEnrolled ? 'bg-gray-300 cursor-not-allowed' : (isCOE ? 'bg-orange-600 hover:bg-orange-700' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-purple-600 hover:bg-purple-700')]"
+            >
+              Check in with Face ID
+            </button>
           </div>
         </div>
       </div>
@@ -51,6 +74,18 @@
         </div>
       </div>
     </div>
+
+    <!-- Face ID check-in modal -->
+    <StudentFaceCheckIn
+      :open="showFaceCheckIn"
+      :event="event"
+      :session="activeFaceSession || {}"
+      :is-c-o-e="isCOE"
+      :is-s-o-m="isSOM"
+      :is-c-n-a-h-s="isCNAHS"
+      @close="closeFaceCheckIn"
+      @success="onFaceCheckInSuccess"
+    />
   </div>
 </template>
 
@@ -58,16 +93,24 @@
 import departments from '../config/departments'
 import * as XLSX from 'xlsx'
 import { buildAPIUrl } from '../config/api.js'
+import { encodeTimestamp } from '../utils/ssaamCrypto.js'
+import StudentFaceCheckIn from '../components/StudentFaceCheckIn.vue'
 
 export default {
   name: 'EventDetails',
+  components: { StudentFaceCheckIn },
   props: ['id'],
   data() {
     return {
       event: {},
       sessions: [],
       loading: true,
-      absentList: []
+      absentList: [],
+      // Face ID self check-in state
+      faceLoaded: false,
+      faceEnrolled: false,
+      showFaceCheckIn: false,
+      activeFaceSession: null
     }
   },
   computed: {
@@ -96,13 +139,65 @@ export default {
         }
       } catch (e) {}
       return false
+    },
+    isCNAHS() {
+      try {
+        const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
+        const user = userJson ? JSON.parse(userJson) : {}
+        const userProgram = user.program
+        if (userProgram) {
+          for (const dept of departments) {
+            if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'CNAHS'
+          }
+        }
+      } catch (e) {}
+      return false
     }
   },
   mounted() {
     this.loadEvent()
     this.loadSessions()
+    this.loadFaceStatus()
   },
   methods: {
+    isSessionActive(s) {
+      // The backend marks the session 'active' when it's open for check-ins.
+      // We use that flag as the source of truth so the UI matches what the
+      // attendance handler will actually accept.
+      return s && (s.status === 'active' || s.is_active === true)
+    },
+    async loadFaceStatus() {
+      try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('studentToken')
+        const res = await fetch(buildAPIUrl('/apis/students/face'), {
+          headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
+        })
+        if (res.ok) {
+          const data = await res.json()
+          this.faceEnrolled = !!(data && data.count > 0)
+        }
+      } catch (err) {
+        console.error('Failed to load face status:', err)
+      } finally {
+        this.faceLoaded = true
+      }
+    },
+    openFaceCheckIn(session) {
+      if (!this.faceEnrolled) return
+      this.activeFaceSession = session
+      this.showFaceCheckIn = true
+    },
+    closeFaceCheckIn() {
+      this.showFaceCheckIn = false
+      this.activeFaceSession = null
+    },
+    onFaceCheckInSuccess() {
+      // Refresh the absent list if it was showing for this session, so the
+      // student sees themselves drop off it.
+      if (this.activeFaceSession) {
+        this.showAbsent(this.activeFaceSession)
+      }
+    },
     initials(stu) {
       const name = stu.full_name || (stu.student && stu.student.full_name) || (stu.first_name && stu.last_name && `${stu.first_name[0]}${stu.last_name[0]}`) || ''
       return name.split(' ').map(s=>s[0]).join('').slice(0,2).toUpperCase()

@@ -2306,7 +2306,10 @@ const studentSchema = new mongoose.Schema({
             created_at: { type: Date, default: Date.now }
         }],
         default: []
-    }
+    },
+    // Tracks the last time the student enrolled or replaced their face.
+    // Used by the weekly cooldown enforcement on `POST /apis/students/face`.
+    face_updated_at: { type: Date, default: null }
 });
 
 // Pre-save middleware to auto-generate full_name from parts
@@ -5194,12 +5197,36 @@ app.delete('/apis/masters/face/:faceId', auth, requireMaster, async (req, res) =
 
 // ---------------------------------------------------------------------------
 // Student Face ID endpoints (self-service biometric enrollment).
-// Students manage their own faces; the cap is small (3) to keep the
-// per-college matching corpus light for the kiosk scanner.
+// Each student keeps exactly one face profile. To prevent abuse we:
+//   1. Enforce a 7-day cooldown between updates.
+//   2. Reject any new descriptor that's "too similar" to another student's
+//      enrolled face in the same college (so you can't impersonate a
+//      classmate by enrolling a photo of them).
 // ---------------------------------------------------------------------------
-// Each student may enroll exactly one face profile from the User Dashboard.
-// To re-enroll, the student must delete their existing face first.
 const STUDENT_FACE_LIMIT = 1;
+const STUDENT_FACE_COOLDOWN_DAYS = 7;
+// 0.45 is a good "definitely the same person" boundary in face-api.js. We use
+// it for both check-in matching and uniqueness rejection so the rules are
+// symmetric: if your face would match someone else at check-in, you can't
+// enroll it.
+const STUDENT_FACE_UNIQUENESS_THRESHOLD = 0.45;
+
+// Squared euclidean distance — same shape as the kiosk uses, kept inline so
+// we don't hit a function-call cost in the per-student loop.
+function _euclid128(a, b) {
+    let sum = 0;
+    for (let i = 0; i < 128; i++) {
+        const d = a[i] - b[i];
+        sum += d * d;
+    }
+    return Math.sqrt(sum);
+}
+
+function _faceCooldownInfo(faceUpdatedAt) {
+    if (!faceUpdatedAt) return { in_cooldown: false, next_update_allowed_at: null };
+    const next = new Date(new Date(faceUpdatedAt).getTime() + STUDENT_FACE_COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
+    return { in_cooldown: next.getTime() > Date.now(), next_update_allowed_at: next };
+}
 
 app.get('/apis/students/face', studentAuthWithToken, async (req, res) => {
     try {
@@ -5211,7 +5238,16 @@ app.get('/apis/students/face', studentAuthWithToken, async (req, res) => {
             created_at: f.created_at
             // descriptor intentionally omitted to keep payloads small
         }));
-        res.json({ faces, count: faces.length, limit: STUDENT_FACE_LIMIT });
+        const cd = _faceCooldownInfo(student.face_updated_at);
+        res.json({
+            faces,
+            count: faces.length,
+            limit: STUDENT_FACE_LIMIT,
+            face_updated_at: student.face_updated_at || null,
+            cooldown_days: STUDENT_FACE_COOLDOWN_DAYS,
+            in_cooldown: cd.in_cooldown,
+            next_update_allowed_at: cd.next_update_allowed_at
+        });
     } catch (err) {
         console.error('Student face list error:', err);
         res.status(500).json({ message: err.message });
@@ -5221,31 +5257,85 @@ app.get('/apis/students/face', studentAuthWithToken, async (req, res) => {
 app.post('/apis/students/face', studentAuthWithToken, async (req, res) => {
     try {
         const { descriptor, label, photo } = req.body || {};
-        if (!Array.isArray(descriptor) || descriptor.length !== 128) {
+        if (!Array.isArray(descriptor) || descriptor.length !== 128 || !descriptor.every(n => Number.isFinite(n))) {
             return res.status(400).json({ message: "A valid 128-float face descriptor is required." });
         }
         const student = req.student;
-        if ((student.face_descriptors || []).length >= STUDENT_FACE_LIMIT) {
-            return res.status(400).json({
-                message: `You can enroll at most ${STUDENT_FACE_LIMIT} faces. Remove one before adding another.`
+        const isReplacement = (student.face_descriptors || []).length > 0;
+
+        // 1. Weekly cooldown: only kicks in for replacements (first enrollment is free).
+        if (isReplacement) {
+            const cd = _faceCooldownInfo(student.face_updated_at);
+            if (cd.in_cooldown) {
+                return res.status(429).json({
+                    message: `You can only update your Face ID once every ${STUDENT_FACE_COOLDOWN_DAYS} days. Try again on ${cd.next_update_allowed_at.toLocaleDateString()}.`,
+                    code: 'FACE_COOLDOWN',
+                    next_update_allowed_at: cd.next_update_allowed_at,
+                    cooldown_days: STUDENT_FACE_COOLDOWN_DAYS
+                });
+            }
+        }
+
+        // 2. Uniqueness across the same college's other students. We pull only
+        // the descriptor field to keep the payload small.
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college || 'CCS');
+        const others = await StudentModel.find(
+            {
+                student_id: { $ne: student.student_id },
+                'face_descriptors.0': { $exists: true }
+            },
+            { student_id: 1, face_descriptors: 1 }
+        ).lean();
+        let nearest = { distance: Infinity, student_id: null };
+        for (const o of others) {
+            for (const fd of (o.face_descriptors || [])) {
+                if (!Array.isArray(fd.descriptor) || fd.descriptor.length !== 128) continue;
+                const dist = _euclid128(descriptor, fd.descriptor);
+                if (dist < nearest.distance) nearest = { distance: dist, student_id: o.student_id };
+            }
+        }
+        if (nearest.distance < STUDENT_FACE_UNIQUENESS_THRESHOLD) {
+            console.log(`[FaceEnroll] Rejected uniqueness for ${student.student_id}: nearest=${nearest.student_id} dist=${nearest.distance.toFixed(3)}`);
+            return res.status(409).json({
+                message: "This face appears too similar to another student's registered face. If this is your own face and you believe this is wrong, please contact your admin.",
+                code: 'FACE_NOT_UNIQUE',
+                nearest_distance: Number(nearest.distance.toFixed(3)),
+                threshold: STUDENT_FACE_UNIQUENESS_THRESHOLD
             });
         }
-        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college || 'CCS');
+
         const entry = {
-            label: (label && String(label).trim()) || `Face ${(student.face_descriptors || []).length + 1}`,
+            label: (label && String(label).trim()) || 'My Face',
             descriptor,
             photo: photo || null,
             created_at: new Date()
         };
+        // Replace-or-insert: clear the existing array first, then push the new entry.
+        // Done in a single update for atomicity.
         await StudentModel.updateOne(
             { student_id: student.student_id },
-            { $push: { face_descriptors: entry } }
+            {
+                $set: {
+                    face_descriptors: [entry],
+                    face_updated_at: new Date()
+                }
+            }
         );
-        const updated = await StudentModel.findOne({ student_id: student.student_id }, { face_descriptors: 1 }).lean();
+        const updated = await StudentModel.findOne({ student_id: student.student_id }, { face_descriptors: 1, face_updated_at: 1 }).lean();
         const faces = (updated?.face_descriptors || []).map(f => ({
             _id: f._id, label: f.label, photo: f.photo, created_at: f.created_at
         }));
-        res.json({ message: 'Face enrolled', faces, count: faces.length, limit: STUDENT_FACE_LIMIT });
+        const cd = _faceCooldownInfo(updated?.face_updated_at);
+        res.json({
+            message: isReplacement ? 'Face ID updated' : 'Face ID enrolled',
+            faces,
+            count: faces.length,
+            limit: STUDENT_FACE_LIMIT,
+            face_updated_at: updated?.face_updated_at || null,
+            cooldown_days: STUDENT_FACE_COOLDOWN_DAYS,
+            in_cooldown: cd.in_cooldown,
+            next_update_allowed_at: cd.next_update_allowed_at
+        });
     } catch (err) {
         console.error('Student face enroll error:', err);
         res.status(500).json({ message: err.message });
@@ -5264,13 +5354,197 @@ app.delete('/apis/students/face/:faceId', studentAuthWithToken, async (req, res)
         if (!result.modifiedCount) {
             return res.status(404).json({ message: 'Face not found' });
         }
-        const updated = await StudentModel.findOne({ student_id: student.student_id }, { face_descriptors: 1 }).lean();
+        const updated = await StudentModel.findOne({ student_id: student.student_id }, { face_descriptors: 1, face_updated_at: 1 }).lean();
         const faces = (updated?.face_descriptors || []).map(f => ({
             _id: f._id, label: f.label, photo: f.photo, created_at: f.created_at
         }));
-        res.json({ message: 'Face removed', faces, count: faces.length, limit: STUDENT_FACE_LIMIT });
+        const cd = _faceCooldownInfo(updated?.face_updated_at);
+        res.json({
+            message: 'Face removed',
+            faces, count: faces.length, limit: STUDENT_FACE_LIMIT,
+            face_updated_at: updated?.face_updated_at || null,
+            cooldown_days: STUDENT_FACE_COOLDOWN_DAYS,
+            in_cooldown: cd.in_cooldown,
+            next_update_allowed_at: cd.next_update_allowed_at
+        });
     } catch (err) {
         console.error('Student face delete error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// ---------------------------------------------------------------------------
+// Student-scoped face check-in (with liveness challenge token).
+// Flow:
+//   1. Client calls POST /apis/attendance/sessions/:id/face-challenge to
+//      receive a short-lived signed token + a list of liveness challenges
+//      (e.g. ['blink', 'turn_left']).
+//   2. Client guides the user through the challenges locally using
+//      face-api.js landmarks, capturing samples the whole time.
+//   3. Client calls POST /apis/attendance/sessions/:id/check-face-student
+//      with the token + the freshly computed descriptor. Server verifies
+//      the token (signature, expiry, single-use, bound to this student +
+//      session), confirms the descriptor matches THIS student's enrolled
+//      face, then delegates to the unified attendance handler.
+// ---------------------------------------------------------------------------
+const FACE_CHALLENGE_TOKEN_TTL_SECONDS = 90;
+const FACE_CHALLENGE_TOKEN_PURPOSE = 'face_attendance_challenge_v1';
+// In-memory single-use registry. Keys are JWT `jti` strings, values are the
+// epoch ms when the entry can be evicted (slightly after token expiry).
+const _usedFaceChallengeTokens = new Map();
+setInterval(() => {
+    const now = Date.now();
+    for (const [jti, expiresAt] of _usedFaceChallengeTokens.entries()) {
+        if (expiresAt < now) _usedFaceChallengeTokens.delete(jti);
+    }
+}, 60 * 1000).unref?.();
+
+const FACE_CHALLENGE_POOL = ['blink', 'turn_left', 'turn_right'];
+function _pickFaceChallenges() {
+    // Always blink (cheapest liveness) + one random head-turn. Two challenges
+    // is the sweet spot: enough friction to defeat photos, fast enough to
+    // not annoy students.
+    const turn = Math.random() < 0.5 ? 'turn_left' : 'turn_right';
+    return ['blink', turn];
+}
+
+function _signFaceChallengeToken({ student_id, session_id, college, challenges }) {
+    const jti = `fct_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}`;
+    const token = jwt.sign(
+        {
+            purpose: FACE_CHALLENGE_TOKEN_PURPOSE,
+            student_id,
+            session_id,
+            college,
+            challenges,
+            jti
+        },
+        SSAAM_API_KEY,
+        { expiresIn: FACE_CHALLENGE_TOKEN_TTL_SECONDS }
+    );
+    return { token, jti, expires_at: new Date(Date.now() + FACE_CHALLENGE_TOKEN_TTL_SECONDS * 1000) };
+}
+
+function _verifyFaceChallengeToken(token, { expected_student_id, expected_session_id }) {
+    let decoded;
+    try {
+        decoded = jwt.verify(token, SSAAM_API_KEY);
+    } catch (_) {
+        return { ok: false, reason: 'invalid_or_expired' };
+    }
+    if (decoded.purpose !== FACE_CHALLENGE_TOKEN_PURPOSE) return { ok: false, reason: 'wrong_purpose' };
+    if (decoded.student_id !== expected_student_id) return { ok: false, reason: 'student_mismatch' };
+    if (decoded.session_id !== expected_session_id) return { ok: false, reason: 'session_mismatch' };
+    if (!decoded.jti || _usedFaceChallengeTokens.has(decoded.jti)) return { ok: false, reason: 'already_used' };
+    return { ok: true, decoded };
+}
+
+app.post('/apis/attendance/sessions/:sessionId/face-challenge', studentAuthWithToken, async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const student = req.student;
+        if (!(student.face_descriptors || []).length) {
+            return res.status(412).json({
+                message: 'You have not registered a Face ID yet. Please set up your Face ID first.',
+                code: 'FACE_NOT_ENROLLED'
+            });
+        }
+        // Confirm session exists (and is reachable by this college's models).
+        const SessionModel = getCollegeModel(AttendanceSession, CCS_AttendanceSession, COE_AttendanceSession, req.college || 'CCS');
+        const session = await SessionModel.findById(sessionId).lean();
+        if (!session) {
+            return res.status(404).json({ message: 'Session not found' });
+        }
+        const challenges = _pickFaceChallenges();
+        const { token, expires_at } = _signFaceChallengeToken({
+            student_id: student.student_id,
+            session_id: sessionId,
+            college: req.college || 'CCS',
+            challenges
+        });
+        res.json({ challenge_token: token, challenges, expires_at, ttl_seconds: FACE_CHALLENGE_TOKEN_TTL_SECONDS });
+    } catch (err) {
+        console.error('face-challenge error:', err);
+        res.status(500).json({ message: err.message });
+    }
+});
+
+app.post('/apis/attendance/sessions/:sessionId/check-face-student', studentAuthWithToken, async (req, res) => {
+    try {
+        const { sessionId } = req.params;
+        const student = req.student;
+        const {
+            challenge_token,
+            descriptor,
+            completed_challenges,
+            samples_count,
+            latitude, longitude, accuracy
+        } = req.body || {};
+
+        if (!challenge_token) {
+            return res.status(400).json({ message: 'Missing liveness challenge token.', code: 'NO_CHALLENGE_TOKEN' });
+        }
+        if (!Array.isArray(descriptor) || descriptor.length !== 128) {
+            return res.status(400).json({ message: 'A valid 128-float face descriptor is required.' });
+        }
+        if (!Array.isArray(completed_challenges) || !completed_challenges.length) {
+            return res.status(400).json({ message: 'Liveness challenges were not completed.', code: 'CHALLENGES_INCOMPLETE' });
+        }
+        if (!Number.isFinite(samples_count) || samples_count < 25) {
+            // Anti-static-image floor: a full liveness flow easily produces 30-60+
+            // valid frames in a couple of seconds. Anything well below that is
+            // suspicious.
+            return res.status(400).json({ message: 'Not enough live frames detected. Please try again with the camera held steady.', code: 'INSUFFICIENT_LIVENESS_SAMPLES' });
+        }
+
+        const v = _verifyFaceChallengeToken(challenge_token, {
+            expected_student_id: student.student_id,
+            expected_session_id: sessionId
+        });
+        if (!v.ok) {
+            return res.status(401).json({ message: 'Liveness challenge expired or invalid. Please try again.', code: 'BAD_CHALLENGE_TOKEN', reason: v.reason });
+        }
+        const issued = v.decoded.challenges || [];
+        // The set of completed challenges must cover every issued challenge —
+        // we don't care about extra entries the client may report, only that
+        // each required one is present.
+        const missing = issued.filter(c => !completed_challenges.includes(c));
+        if (missing.length) {
+            return res.status(400).json({ message: `Required liveness step(s) not completed: ${missing.join(', ')}.`, code: 'CHALLENGES_MISSING', missing });
+        }
+        // Mark token used. Eviction time mirrors the JWT expiry plus a small
+        // grace window so a successful retry doesn't leak the slot.
+        _usedFaceChallengeTokens.set(v.decoded.jti, Date.now() + (FACE_CHALLENGE_TOKEN_TTL_SECONDS + 30) * 1000);
+
+        // Verify descriptor matches THIS student's enrolled face. We're the
+        // only flow that needs to match; we already know the identity from
+        // the JWT, so this is purely a "are you really you?" check.
+        const enrolled = (student.face_descriptors || [])[0];
+        if (!enrolled || !Array.isArray(enrolled.descriptor)) {
+            return res.status(412).json({ message: 'Your Face ID is no longer enrolled. Please set it up again.', code: 'FACE_NOT_ENROLLED' });
+        }
+        const dist = _euclid128(descriptor, enrolled.descriptor);
+        if (dist > STUDENT_FACE_UNIQUENESS_THRESHOLD) {
+            console.log(`[FaceCheckIn] Reject student=${student.student_id} dist=${dist.toFixed(3)}`);
+            return res.status(401).json({
+                message: "We couldn't confirm it's you. Please face the camera in good light and try again.",
+                code: 'FACE_MISMATCH',
+                distance: Number(dist.toFixed(3))
+            });
+        }
+
+        // Synthesise the body so the unified handler runs the exact same
+        // event-status, geofence, and duplicate-prevention checks as RFID.
+        req.body = {
+            student_id: student.student_id,
+            identifier_type: 'student_id',
+            source: 'face',
+            face_match_distance: Number(dist.toFixed(3)),
+            latitude, longitude, accuracy
+        };
+        return sessionAttendanceCheck(req, res);
+    } catch (err) {
+        console.error('check-face-student error:', err);
         res.status(500).json({ message: err.message });
     }
 });
