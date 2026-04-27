@@ -221,24 +221,23 @@
       <!-- Search & Filters -->
       <div class="px-4 sm:px-6 md:px-8 py-5 space-y-4">
         <!-- Search Row -->
-        <div class="flex gap-2">
+        <form @submit.prevent="searchStudent" class="flex gap-2">
           <div class="flex-1 relative">
             <input
               v-model="searchQuery"
               type="text"
               placeholder="Search by Name, Student ID, or RFID..."
-              @keydown.enter="searchStudent"
               class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition"
             />
             <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
           </div>
           <button
-            @click="searchStudent"
+            type="submit"
             class="px-5 py-2.5 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-md shadow-blue-200 whitespace-nowrap"
           >
             Search
           </button>
-        </div>
+        </form>
 
         <!-- Filter Row -->
         <div :class="['grid gap-3 grid-cols-1 sm:grid-cols-2', isMaster ? 'md:grid-cols-4' : 'md:grid-cols-3']">
@@ -379,6 +378,13 @@
         </button>
       </div>
     </div>
+
+    <!-- Loyverse POS Panel (visible only when a student is selected) -->
+    <LoyversePOSPanel
+      v-if="selectedStudent"
+      :student="selectedStudent"
+      :suggested-amount="targetPayment"
+    />
 
     <!-- Contributions List -->
     <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
@@ -1060,9 +1066,11 @@
 <script>
 import * as XLSX from 'xlsx'
 import { buildAPIUrl, getCollege } from '../config/api.js'
+import LoyversePOSPanel from './LoyversePOSPanel.vue'
 
 export default {
   name: 'AdminContributionPanel',
+  components: { LoyversePOSPanel },
   data() {
     return {
       // Reactive map of cache keys -> true when an avatar image fails to load,
