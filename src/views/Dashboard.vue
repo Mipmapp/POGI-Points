@@ -177,23 +177,15 @@
               :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'"
               class="w-full h-full object-contain drop-shadow-xl"
             />
-            <!-- Sweep is masked to the logo silhouette so the shine only
-                 paints on the logo's opaque pixels and never bleeds onto
-                 the transparent area outside it. -->
+            <!-- Sweep is clipped to a circle that matches the round JRMSU /
+                 COE / SOM seal so the shine only paints inside the logo and
+                 never bleeds onto the dark area around it. (The previous
+                 SVG mask-image approach was unreliable across browsers
+                 because the colored SVG paths produced a fully opaque
+                 alpha channel across the whole bounding box.) -->
             <div
               class="logo-sweep absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/70 to-transparent"
-              :style="{
-                WebkitMaskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
-                maskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
-                WebkitMaskRepeat: 'no-repeat',
-                maskRepeat: 'no-repeat',
-                WebkitMaskPosition: 'center',
-                maskPosition: 'center',
-                WebkitMaskSize: 'contain',
-                maskSize: 'contain',
-                WebkitMaskMode: 'alpha',
-                maskMode: 'alpha',
-              }"
+              style="clip-path: circle(50% at 50% 50%); -webkit-clip-path: circle(50% at 50% 50%);"
             ></div>
           </div>
           <h1 class="text-2xl lg:text-4xl font-extrabold italic text-white drop-shadow tracking-wide">SSAAM</h1>

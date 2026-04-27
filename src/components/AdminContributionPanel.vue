@@ -429,8 +429,10 @@
       :active-payment="activePayment"
     />
 
-    <!-- Contributions List -->
-    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+    <!-- Contributions List — hidden while a student is selected so the
+         admin can focus on the payment card + POS panel without the table
+         distracting underneath. -->
+    <div v-if="!selectedStudent" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
       <div class="px-5 sm:px-6 md:px-8 py-4 border-b border-gray-100 flex items-center gap-2">
         <div class="w-1 h-5 rounded-full bg-blue-600"></div>
         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Payment Records</h3>
