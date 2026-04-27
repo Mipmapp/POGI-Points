@@ -87,7 +87,7 @@
           </div>
 
           <!-- Challenge chips -->
-          <div v-if="challenges.length" class="mx-6 mb-4 flex items-center gap-2 flex-wrap">
+          <div v-if="challenges.length" class="mx-6 mb-4 flex items-center justify-center gap-2 flex-wrap">
             <div v-for="(c, idx) in challenges" :key="c"
               :class="['fci-chip', completed.includes(c) ? 'fci-chip-done' : idx === currentChallengeIndex ? 'fci-chip-active' : 'fci-chip-idle']">
               <span v-if="completed.includes(c)">✓</span>

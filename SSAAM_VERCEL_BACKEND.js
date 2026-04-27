@@ -5388,7 +5388,7 @@ app.delete('/apis/students/face/:faceId', studentAuthWithToken, async (req, res)
 //      session), confirms the descriptor matches THIS student's enrolled
 //      face, then delegates to the unified attendance handler.
 // ---------------------------------------------------------------------------
-const FACE_CHALLENGE_TOKEN_TTL_SECONDS = 90;
+const FACE_CHALLENGE_TOKEN_TTL_SECONDS = 180;
 const FACE_CHALLENGE_TOKEN_PURPOSE = 'face_attendance_challenge_v1';
 // In-memory single-use registry. Keys are JWT `jti` strings, values are the
 // epoch ms when the entry can be evicted (slightly after token expiry).
