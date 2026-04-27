@@ -195,7 +195,7 @@ function challengeLabel(c) {
 watch(() => props.open, async (val) => {
   if (val) await start()
   else stopCamera()
-})
+}, { immediate: true })
 
 async function start() {
   resetState()
