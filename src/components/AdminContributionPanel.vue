@@ -131,6 +131,10 @@
               <span :class="['font-extrabold text-sm', activePayment && activePayment._id === event._id ? 'text-purple-700' : 'text-blue-700']">₱{{ Number(event.amount_due || 0).toFixed(2) }}</span>
             </div>
             <div v-if="event.description" class="mt-1.5 text-[10px] text-gray-500 line-clamp-2 leading-relaxed">{{ event.description }}</div>
+            <div class="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold leading-none" :title="'Total collected (after discounts) for this event'">
+              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
+              ₱{{ Number(collectedByEvent[event._id] || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }} collected
+            </div>
             <div v-if="event.deadline" class="mt-1 text-[10px] text-gray-400 font-medium">
               Due: {{ new Date(event.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}
             </div>
@@ -158,6 +162,10 @@
             </span>
             <span class="inline-flex items-center gap-1 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
               {{ statsOverall.pct }}%
+            </span>
+            <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full" :title="`Total collected (after discounts) — Expected ₱${statsOverall.expected.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              ₱{{ statsOverall.totalCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }} collected
             </span>
           </div>
           <svg :class="['ml-auto w-4 h-4 text-gray-400 transition-transform duration-200', showStatsPanel ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
@@ -1324,7 +1332,32 @@ export default {
     statsOverall() {
       const total = this.filteredContributions.length;
       const paid = this.filteredContributions.filter(c => c.payment_status === 'paid').length;
-      return { total, paid, unpaid: total - paid, pct: total ? Math.round((paid / total) * 100) : 0 };
+      const totalCollected = this.filteredContributions
+        .filter(c => c.payment_status === 'paid')
+        .reduce((sum, c) => sum + Number(c.amount_paid || c.original_amount || 0), 0);
+      const expected = this.filteredContributions
+        .reduce((sum, c) => sum + Number(c.original_amount || (this.activePayment && this.activePayment.amount_due) || 0), 0);
+      return {
+        total,
+        paid,
+        unpaid: total - paid,
+        pct: total ? Math.round((paid / total) * 100) : 0,
+        totalCollected,
+        expected,
+      };
+    },
+    collectedByEvent() {
+      const map = {};
+      for (const ev of (this.paymentEvents || [])) {
+        let total = 0;
+        for (const r of (ev.payment_records || [])) {
+          if (r.payment_status === 'paid' || r.is_paid) {
+            total += Number(r.amount_paid || ev.amount_due || 0);
+          }
+        }
+        map[ev._id] = total;
+      }
+      return map;
     },
   },
   watch: {
