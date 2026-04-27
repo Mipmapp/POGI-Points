@@ -210,34 +210,75 @@
           <p class="text-white/35 text-xs mt-2 font-mono tracking-widest">{{ fsLiveClock }}</p>
         </div>
 
-        <!-- Interactive Mode Toggle -->
+        <!-- Active Mode Display (read-only in fullscreen kiosk).
+             Mode is controlled from the regular Admin panel; in fullscreen
+             we show it as a clear, non-interactive banner so a kiosk
+             attendant can never accidentally toggle it mid-event. Three
+             possible states: Check-In Only, Check-In, Check-Out. -->
         <div class="w-full max-w-sm mb-4">
-          <!-- Check-In Only Badge -->
-          <div v-if="selectedSession && selectedSession.check_in_only" class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-2xl bg-blue-500/25 border border-blue-400/50 text-blue-200 text-sm font-bold">
-            <div class="w-2 h-2 rounded-full bg-blue-300 animate-pulse flex-shrink-0"></div>
-            Check-In Only Session
+          <!-- 1. Check-In Only Session -->
+          <div
+            v-if="selectedSession && selectedSession.check_in_only"
+            class="flex items-center gap-3 py-3 px-4 rounded-2xl bg-gradient-to-r from-blue-500/25 via-blue-500/20 to-indigo-500/25 border-2 border-blue-400/50 shadow-lg shadow-blue-500/20 cursor-default select-none"
+          >
+            <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-blue-500/40 border border-blue-300/50">
+              <svg class="w-5 h-5 text-blue-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-blue-200/70 text-[10px] uppercase tracking-widest font-semibold leading-none">Active Mode</p>
+              <p class="text-blue-50 text-base font-extrabold leading-tight mt-1">Check-In Only</p>
+            </div>
+            <div class="w-2.5 h-2.5 rounded-full bg-blue-300 animate-pulse flex-shrink-0 shadow-[0_0_8px_rgba(147,197,253,0.8)]"></div>
           </div>
-          <div v-else class="flex gap-1 p-1 bg-black/20 rounded-2xl border border-white/15">
-            <button 
-              @click="setRfidOperation('in')"
-              :class="['flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-bold transition-all duration-200 select-none',
-                rfidOperationType === 'in'
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-500/40 scale-[1.02]'
-                  : 'text-white/50 hover:text-white/80 hover:bg-white/5 active:scale-95']"
-            >
-              <div :class="['w-2 h-2 rounded-full flex-shrink-0 transition-all', rfidOperationType === 'in' ? 'bg-white animate-pulse' : 'bg-white/30']"></div>
-              Check-In
-            </button>
-            <button 
-              @click="setRfidOperation('out')"
-              :class="['flex-1 flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-sm font-bold transition-all duration-200 select-none',
-                rfidOperationType === 'out'
-                  ? (isCOE ? 'bg-red-500' : isSOM ? 'bg-yellow-500' : isCNAHS ? 'bg-teal-500' : 'bg-orange-500') + ' text-white shadow-lg scale-[1.02]'
-                  : 'text-white/50 hover:text-white/80 hover:bg-white/5 active:scale-95']"
-            >
-              <div :class="['w-2 h-2 rounded-full flex-shrink-0 transition-all', rfidOperationType === 'out' ? 'bg-white animate-pulse' : 'bg-white/30']"></div>
-              Check-Out
-            </button>
+
+          <!-- 2. Check-In Mode -->
+          <div
+            v-else-if="rfidOperationType === 'in'"
+            class="flex items-center gap-3 py-3 px-4 rounded-2xl bg-gradient-to-r from-green-500/25 via-emerald-500/20 to-green-500/25 border-2 border-green-400/55 shadow-lg shadow-green-500/20 cursor-default select-none"
+          >
+            <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl bg-green-500/40 border border-green-300/50">
+              <svg class="w-5 h-5 text-green-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M11 16l-4-4m0 0l4-4m-4 4h14M3 12a9 9 0 1118 0 9 9 0 01-18 0z" transform="rotate(180 12 12)" />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-green-200/70 text-[10px] uppercase tracking-widest font-semibold leading-none">Active Mode</p>
+              <p class="text-green-50 text-base font-extrabold leading-tight mt-1">Check-In</p>
+            </div>
+            <div class="w-2.5 h-2.5 rounded-full bg-green-300 animate-pulse flex-shrink-0 shadow-[0_0_8px_rgba(134,239,172,0.8)]"></div>
+          </div>
+
+          <!-- 3. Check-Out Mode (themed per college) -->
+          <div
+            v-else
+            :class="['flex items-center gap-3 py-3 px-4 rounded-2xl border-2 shadow-lg cursor-default select-none bg-gradient-to-r',
+              isCOE ? 'from-red-500/25 via-rose-500/20 to-red-500/25 border-red-400/55 shadow-red-500/20'
+              : isSOM ? 'from-yellow-500/25 via-amber-500/20 to-yellow-500/25 border-yellow-400/55 shadow-yellow-500/20'
+              : isCNAHS ? 'from-teal-500/25 via-cyan-500/20 to-teal-500/25 border-teal-400/55 shadow-teal-500/20'
+              : 'from-orange-500/25 via-amber-500/20 to-orange-500/25 border-orange-400/55 shadow-orange-500/20']"
+          >
+            <div :class="['w-10 h-10 flex-shrink-0 flex items-center justify-center rounded-xl border',
+              isCOE ? 'bg-red-500/40 border-red-300/50'
+              : isSOM ? 'bg-yellow-500/40 border-yellow-300/50'
+              : isCNAHS ? 'bg-teal-500/40 border-teal-300/50'
+              : 'bg-orange-500/40 border-orange-300/50']">
+              <svg :class="['w-5 h-5', isCOE ? 'text-red-50' : isSOM ? 'text-yellow-50' : isCNAHS ? 'text-teal-50' : 'text-orange-50']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M11 16l-4-4m0 0l4-4m-4 4h14M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
+              </svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p :class="['text-[10px] uppercase tracking-widest font-semibold leading-none',
+                isCOE ? 'text-red-200/70' : isSOM ? 'text-yellow-200/70' : isCNAHS ? 'text-teal-200/70' : 'text-orange-200/70']">Active Mode</p>
+              <p :class="['text-base font-extrabold leading-tight mt-1',
+                isCOE ? 'text-red-50' : isSOM ? 'text-yellow-50' : isCNAHS ? 'text-teal-50' : 'text-orange-50']">Check-Out</p>
+            </div>
+            <div :class="['w-2.5 h-2.5 rounded-full animate-pulse flex-shrink-0',
+              isCOE ? 'bg-red-300 shadow-[0_0_8px_rgba(252,165,165,0.8)]'
+              : isSOM ? 'bg-yellow-300 shadow-[0_0_8px_rgba(253,224,71,0.8)]'
+              : isCNAHS ? 'bg-teal-300 shadow-[0_0_8px_rgba(94,234,212,0.8)]'
+              : 'bg-orange-300 shadow-[0_0_8px_rgba(253,186,116,0.8)]']"></div>
           </div>
         </div>
 
@@ -288,17 +329,19 @@
           </div>
         </div>
 
-        <!-- Stats Row -->
-        <div class="flex gap-3 w-full max-w-sm mb-4">
-          <div class="flex-1 bg-white/10 border border-white/15 rounded-xl p-3 text-center backdrop-blur-sm">
-            <p class="text-white/45 text-xs uppercase tracking-wider mb-1">Total Scanned</p>
-            <p class="text-2xl font-extrabold text-white">{{ sortedAttendanceLogs.length }}</p>
-          </div>
-          <div class="flex-1 bg-white/10 border border-white/15 rounded-xl p-3 text-center backdrop-blur-sm">
-            <p class="text-white/45 text-xs uppercase tracking-wider mb-1">Active Mode</p>
-            <p :class="['text-sm font-extrabold tracking-wider uppercase', (selectedSession && selectedSession.check_in_only) ? 'text-blue-300' : rfidOperationType === 'in' ? 'text-green-300' : isCOE ? 'text-red-300' : isSOM ? 'text-yellow-300' : 'text-orange-300']">
-              {{ (selectedSession && selectedSession.check_in_only) ? 'Check-In Only' : rfidOperationType === 'in' ? 'Check-In' : 'Check-Out' }}
-            </p>
+        <!-- Stats Row — Active Mode moved up into the dedicated banner,
+             so this row now focuses on the live scan count alone. -->
+        <div class="w-full max-w-sm mb-4">
+          <div class="bg-white/10 border border-white/15 rounded-xl px-4 py-3 text-center backdrop-blur-sm flex items-center justify-center gap-4">
+            <div class="w-10 h-10 flex-shrink-0 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center">
+              <svg class="w-5 h-5 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+              </svg>
+            </div>
+            <div class="text-left">
+              <p class="text-white/50 text-[10px] uppercase tracking-widest font-semibold leading-none">Total Scanned</p>
+              <p class="text-2xl font-extrabold text-white leading-tight mt-1">{{ sortedAttendanceLogs.length }}</p>
+            </div>
           </div>
         </div>
 
