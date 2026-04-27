@@ -7435,7 +7435,7 @@ app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res
             end_time: end_time || null,
             status: eventStatus,
             created_by: req.master.id,
-            created_by_name: req.master.username,
+            created_by_name: req.master.username || req.master.full_name || req.master.email || 'Admin',
             activated_at: eventStatus === 'active' ? new Date() : null,
             is_custom: is_custom || false,
             assigned_users: assigned_users && Array.isArray(assigned_users) ? assigned_users : [],
@@ -7580,7 +7580,9 @@ app.post('/apis/attendance/events/custom/create', auth, requireCoAdminOrAbove, a
             assigned_users: assigned_users.map(u => u._id || u.id),
             status: 'active',
             created_by: req.master ? req.master.id : req.student._id,
-            created_by_name: req.master ? req.master.username : req.student.full_name,
+            created_by_name: req.master
+                ? (req.master.username || req.master.full_name || req.master.email || 'Admin')
+                : (req.student.full_name || req.student.student_id || 'Student'),
             activated_at: new Date()
         });
 
