@@ -75,13 +75,13 @@ publicDir = "dist"
 VITE_SSAAM_STUDENTS_API_KEY = "SSAAMStudents"
 VITE_SSAAM_API_KEY = "SSAAMRegJRMSU"
 NODE_ENV = "development"
-
-[userenv.development]
-VITE_API_URL = ""
 SSAAM_API_KEY = "SSAAMRegJRMSU"
 SSAAM_CRYPTO_KEY = "SSAAM2025CCS"
 ADMIN_VERIFICATION_SECRET = "SSAAMAdminVerify"
 MONGODB_URL = "mongodb+srv://SSAAM:ssaam.admin.jrmsu@cluster0.bnwy9iy.mongodb.net/dbconnect?retryWrites=true&w=majority"
+
+[userenv.development]
+VITE_API_URL = ""
 
 [userenv.production]
 VITE_API_URL = "https://ssaam-api.vercel.app"
