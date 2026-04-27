@@ -233,11 +233,53 @@
           </div>
           <button
             type="submit"
-            class="px-5 py-2.5 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-md shadow-blue-200 whitespace-nowrap"
+            :disabled="isSearchingStudent"
+            class="px-5 py-2.5 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-md shadow-blue-200 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            Search
+            {{ isSearchingStudent ? 'Searching...' : 'Search' }}
           </button>
         </form>
+
+        <!-- Multi-result search dropdown: shows up to 10 close matches.
+             User clicks a row to set selectedStudent before recording payment. -->
+        <div v-if="hasSearched && searchResults.length > 0" class="bg-white border-2 border-blue-200 rounded-2xl shadow-lg overflow-hidden">
+          <div class="px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 flex items-center justify-between">
+            <p class="text-xs font-bold text-blue-700 uppercase tracking-wider">{{ searchResults.length }} {{ searchResults.length === 1 ? 'match' : 'matches' }} — click to select</p>
+            <button @click="clearSearchResults" class="p-1 text-gray-400 hover:text-gray-700 hover:bg-white rounded-lg transition" title="Clear results">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <ul class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
+            <li
+              v-for="s in searchResults"
+              :key="s._id || s.student_id"
+              @click="selectStudentFromSearch(s)"
+              class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-blue-50 active:bg-blue-100 transition"
+            >
+              <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden">
+                <img
+                  v-if="s.photo && !photoFailed['res-' + (s._id || s.student_id)]"
+                  :src="s.photo"
+                  :alt="s.full_name"
+                  class="w-full h-full object-cover"
+                  @error="markPhotoFailed('res-' + (s._id || s.student_id))"
+                  referrerpolicy="no-referrer"
+                />
+                <span v-else>{{ (s.full_name || s.first_name || '?').charAt(0).toUpperCase() }}</span>
+              </div>
+              <div class="min-w-0 flex-1">
+                <p class="font-bold text-gray-900 text-sm truncate">{{ s.full_name || ((s.first_name || '') + ' ' + (s.last_name || '')).trim() }}</p>
+                <p class="text-xs text-gray-500 truncate">{{ s.student_id }} · {{ s.program || '—' }} · {{ s.year_level || '—' }}<span v-if="s.college"> · {{ s.college }}</span></p>
+              </div>
+              <span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-lg text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Select</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Empty-search state -->
+        <div v-else-if="hasSearched && !isSearchingStudent && searchResults.length === 0" class="px-4 py-3 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl text-center">
+          <p class="text-xs text-gray-500 font-semibold">No students found matching "{{ searchQuery }}"</p>
+        </div>
 
         <!-- Filter Row -->
         <div :class="['grid gap-3 grid-cols-1 sm:grid-cols-2', isMaster ? 'md:grid-cols-4' : 'md:grid-cols-3']">
@@ -1080,6 +1122,10 @@ export default {
       searchQuery: '',
       contributions: [],
       selectedStudent: null,
+      // Multi-result student search: list of close matches the user can click.
+      searchResults: [],
+      isSearchingStudent: false,
+      hasSearched: false,
       activePayment: null,
       campaignFee: 0,
       discountType: 'amount',
@@ -1423,26 +1469,51 @@ export default {
       ];
     },
     async searchStudent() {
-      if (!this.searchQuery.trim()) return;
+      const q = (this.searchQuery || '').trim();
+      if (!q) {
+        this.searchResults = [];
+        this.hasSearched = false;
+        return;
+      }
+      this.isSearchingStudent = true;
+      this.hasSearched = true;
       try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(buildAPIUrl('/apis/students/search'), {
+        const response = await fetch(buildAPIUrl('/apis/students/search-multi'), {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ search_query: this.searchQuery })
+          headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-SSAAM-College': getCollege() },
+          body: JSON.stringify({ search_query: q })
         });
         if (response.ok) {
           const data = await response.json();
-          this.selectedStudent = data.student;
-          this.discountValue = 0;
+          const list = Array.isArray(data.students) ? data.students : [];
+          this.searchResults = list;
+          if (list.length === 0) {
+            window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'No matching students found', type: 'warning' } }));
+          }
         } else {
-          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Student not found', type: 'warning' } }));
-          this.selectedStudent = null;
+          this.searchResults = [];
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Student search failed', type: 'warning' } }));
         }
       } catch (error) {
         console.error('Error searching student:', error);
+        this.searchResults = [];
         window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Error searching student', type: 'error' } }));
+      } finally {
+        this.isSearchingStudent = false;
       }
+    },
+    selectStudentFromSearch(student) {
+      // Click handler on a search result row — promotes a candidate into the
+      // active selection used by the payment card and POS panel.
+      this.selectedStudent = student;
+      this.discountValue = 0;
+      this.searchResults = [];
+      this.hasSearched = false;
+    },
+    clearSearchResults() {
+      this.searchResults = [];
+      this.hasSearched = false;
     },
     closeCreateEventModal() {
       this.showCreateEventModal = false;

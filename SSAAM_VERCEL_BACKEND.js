@@ -1304,6 +1304,11 @@ app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
             paymentRecord.campaigns.push(campaignData);
         }
 
+        // Drop any pre-existing orphan campaigns that have a missing/null
+        // payment_id — those would otherwise fail required-field validation
+        // (e.g. "campaigns.N.payment_id is required") and block this save.
+        paymentRecord.campaigns = paymentRecord.campaigns.filter(c => c && c.payment_id);
+
         // Update summary fields
         paymentRecord.total_campaigns = paymentRecord.campaigns.length;
         paymentRecord.campaigns_paid = paymentRecord.campaigns.filter(c => c.payment_status === 'paid').length;
@@ -1380,6 +1385,11 @@ app.put('/apis/payments/:paymentId/mark-unpaid', auth, async (req, res) => {
             paid_by_treasurer: null,
             updated_at: new Date()
         };
+
+        // Drop any pre-existing orphan campaigns that have a missing/null
+        // payment_id — those would otherwise fail required-field validation
+        // (e.g. "campaigns.N.payment_id is required") and block this save.
+        paymentRecord.campaigns = paymentRecord.campaigns.filter(c => c && c.payment_id);
 
         // Update summary fields
         paymentRecord.total_campaigns = paymentRecord.campaigns.length;
