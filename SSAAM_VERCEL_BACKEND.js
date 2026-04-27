@@ -6930,11 +6930,26 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
 
 // ==================== ATTENDANCE API ENDPOINTS ====================
 
+// Compute the start/end of "today" anchored to Asia/Manila (UTC+8, no DST).
+// Events are created by admins in Philippine local time, but the server may
+// run in UTC. Using server-local midnight caused events scheduled for "today
+// in Manila" to stay in draft until UTC caught up. Anchoring to Manila keeps
+// activation aligned with the school's calendar day.
+function getManilaTodayBounds(daysOffset = 0) {
+    const PH_OFFSET_MS = 8 * 60 * 60 * 1000;
+    const nowPh = new Date(Date.now() + PH_OFFSET_MS);
+    const y = nowPh.getUTCFullYear();
+    const m = nowPh.getUTCMonth();
+    const d = nowPh.getUTCDate() + daysOffset;
+    const todayStart = new Date(Date.UTC(y, m, d, 0, 0, 0, 0) - PH_OFFSET_MS);
+    const todayEnd = new Date(Date.UTC(y, m, d, 23, 59, 59, 999) - PH_OFFSET_MS);
+    return { todayStart, todayEnd };
+}
+
 async function autoUpdateEventStatuses() {
     try {
         const now = new Date();
-        const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-        const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        const { todayStart, todayEnd } = getManilaTodayBounds();
 
         // Update events for both CCS and COE colleges
         const colleges = ['CCS', 'COE'];
@@ -7036,11 +7051,9 @@ async function autoUpdateEventStatuses() {
 setInterval(autoUpdateEventStatuses, 15 * 60 * 1000);
 
 function getEventAutoStatus(eventDate) {
-    const now = new Date();
-
-    // Get today's date in local timezone (midnight to end of day)
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0, 0);
-    const todayEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    // Anchor "today" to Asia/Manila so events scheduled for today PH time
+    // are classified as active even when the server clock is in UTC.
+    const { todayStart, todayEnd } = getManilaTodayBounds();
 
     // Convert eventDate to Date object if it's a string
     const eventDay = new Date(eventDate);

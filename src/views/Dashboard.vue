@@ -2296,6 +2296,26 @@
               <p>No attendance events or records yet.</p>
             </div>
             <div v-else class="space-y-6">
+              <!-- Check In/Out Available banner -->
+              <div v-if="activeNonEndedEvents.length > 0" :class="['relative overflow-hidden rounded-2xl border shadow-sm bg-gradient-to-r', isCOE ? 'from-orange-50 via-white to-orange-50 border-orange-200' : isSOM ? 'from-green-50 via-white to-green-50 border-green-200' : isCNAHS ? 'from-green-50 via-white to-green-50 border-green-200' : 'from-blue-50 via-white to-blue-50 border-blue-200']">
+                <div :class="['absolute left-0 top-0 bottom-0 w-1', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : isCNAHS ? 'bg-green-500' : 'bg-blue-500']"></div>
+                <div class="px-4 py-3 flex items-start gap-3">
+                  <div class="relative flex-shrink-0 mt-0.5">
+                    <span class="absolute inline-flex h-3 w-3 rounded-full bg-green-400 opacity-75 animate-ping"></span>
+                    <span class="relative inline-flex h-3 w-3 rounded-full bg-green-500"></span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p :class="['text-sm font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
+                      Check In/Out Available
+                    </p>
+                    <p class="text-xs text-gray-600 mt-0.5 leading-relaxed">
+                      <span class="font-semibold text-gray-800">{{ activeNonEndedEvents.length === 1 ? activeNonEndedEvents[0].title : `${activeNonEndedEvents.length} events` }}</span>
+                      {{ activeNonEndedEvents.length === 1 ? 'is' : 'are' }} active right now. Visit the admin to check in or out.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               <!-- Active Events Section - Social Media Style -->
               <div v-if="activeNonEndedEvents.length > 0">
                 <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2 text-sm">
@@ -10469,6 +10489,24 @@ const activeNonEndedEvents = computed(() => {
     return event.status === 'active' && timeRemaining !== 'Ended'
   })
 })
+
+// Track which active events the student has already been notified about so a
+// single event becoming active fires the toast once, not on every refresh.
+const notifiedActiveEventIds = ref(new Set())
+
+// Watch for new active events appearing — surface a toast so students notice
+// the moment they're allowed to check in/out (admin handles the actual scan).
+watch(activeNonEndedEvents, (newEvents, oldEvents) => {
+  if (currentUser.value.role === 'admin' || currentUser.value.isMaster) return
+  const oldIds = new Set((oldEvents || []).map(e => e._id || e.event_id))
+  for (const event of newEvents) {
+    const id = event._id || event.event_id
+    if (!id) continue
+    if (oldIds.has(id) || notifiedActiveEventIds.value.has(id)) continue
+    notifiedActiveEventIds.value.add(id)
+    showNotification(`Check In/Out Available — ${event.title} is now active`, 'success')
+  }
+}, { deep: true })
 
 // Computed property for upcoming events (draft status)
 const upcomingEvents = computed(() => {
