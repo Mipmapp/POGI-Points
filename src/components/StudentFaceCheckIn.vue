@@ -150,8 +150,11 @@ const currentChallengeIndex = ref(0)
 const currentChallenge = computed(() => challenges.value[currentChallengeIndex.value])
 
 // Per-challenge transient state
-const blinkState = ref({ wasOpen: true, blinkCount: 0 })
-const turnState = ref({ neutralFrames: 0, deepTurnFrames: 0 })
+// Blink uses an adaptive baseline: we record the recent open-eye EAR and
+// detect a blink as a relative drop, which is much more robust than a fixed
+// threshold across users (glasses, eye shape, lighting all change baseline EAR).
+const blinkState = ref({ wasOpen: true, blinkCount: 0, baseline: 0, baselineSamples: [] })
+const turnState = ref({ neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0 })
 
 // Capture / sampling
 const samplesCount = ref(0)
@@ -214,8 +217,8 @@ function resetState() {
   challenges.value = []
   completed.value = []
   currentChallengeIndex.value = 0
-  blinkState.value = { wasOpen: true, blinkCount: 0 }
-  turnState.value = { neutralFrames: 0, deepTurnFrames: 0 }
+  blinkState.value = { wasOpen: true, blinkCount: 0, baseline: 0, baselineSamples: [] }
+  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0 }
   samplesCount.value = 0
   captured.value = []
   lastSampleAt = 0
@@ -299,46 +302,87 @@ function eyeAspectRatio(pts) {
   return h === 0 ? 0 : v / h
 }
 
-// Yaw estimate: compare nose tip (landmark 30) horizontal position to face box midpoint.
-// Returns -1 (full left) … 0 (center) … +1 (full right) in screen coordinates.
-// Note: video is mirrored via CSS transform but landmark coords are in unmirrored video space,
-// so a 'turn_left' from the user's POV reads as nose moving toward the LEFT side of the
-// unmirrored frame, which is positive X relative to face center on most cameras after mirror.
-// We treat both directions symmetrically by checking absolute offset and the requested side.
-function yawRatio(landmarks, box) {
-  const noseTip = landmarks.positions[30]
-  const faceCenterX = box.x + box.width / 2
-  const offset = (noseTip.x - faceCenterX) / (box.width / 2)
-  return Math.max(-1.5, Math.min(1.5, offset))
+// Robust yaw estimate using jaw landmarks. With the 68-point model the jaw
+// runs from point 0 (the jaw tip on the camera's LEFT) to point 16 (camera's
+// RIGHT), and the nose tip is point 30. When the head is straight, the nose
+// sits roughly halfway between the two jaw tips. As the user rotates, the
+// nose moves much closer to whichever jaw side is rotating away from the
+// camera. Comparing those two distances is far more stable than comparing the
+// nose X to the face bounding-box center, which jitters frame to frame.
+//
+// Returned value is in roughly [-1, +1]:
+//   negative → nose is closer to the LEFT side of the unmirrored frame
+//              (the user has turned their head to THEIR right)
+//   positive → nose is closer to the RIGHT side of the unmirrored frame
+//              (the user has turned their head to THEIR left)
+function yawRatio(landmarks /* , box (unused) */) {
+  const pts = landmarks.positions
+  const nose = pts[30]
+  const jawL = pts[0]   // camera's left jaw tip
+  const jawR = pts[16]  // camera's right jaw tip
+  const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
+  const dL = dist(nose, jawL)
+  const dR = dist(nose, jawR)
+  const total = dL + dR
+  if (total === 0) return 0
+  // (dR - dL)/(dR + dL): 0 when centered, +1 when nose is on the right edge,
+  // -1 when on the left edge.
+  return Math.max(-1, Math.min(1, (dR - dL) / total))
 }
 
-// Detect a blink: EAR drops below low threshold then recovers above high threshold.
+// Adaptive blink detection.
+// Strategy:
+//   1. Maintain a rolling baseline of the user's open-eye EAR (median of last
+//      ~24 frames where EAR is in a "looks open" range).
+//   2. A blink starts when current EAR drops to <= 75% of baseline.
+//   3. A blink completes when EAR returns above 90% of baseline.
+// This works for users with naturally narrow eyes, glasses, low light, etc.,
+// where a fixed 0.20 threshold often never triggered.
 function processBlinkFrame(ear) {
-  const LOW = 0.20, HIGH = 0.27
   const s = blinkState.value
-  if (s.wasOpen && ear < LOW) {
+  // Build / update baseline only while eyes look open. We seed loosely on the
+  // first few frames so detection can begin quickly.
+  const seedingPhase = s.baselineSamples.length < 6
+  const looksOpen = seedingPhase ? ear > 0.10 : ear > s.baseline * 0.85
+  if (looksOpen) {
+    s.baselineSamples.push(ear)
+    if (s.baselineSamples.length > 24) s.baselineSamples.shift()
+    // Use a high percentile (sorted ~75%) so a brief partial-close doesn't
+    // pull the baseline down and break detection.
+    const sorted = [...s.baselineSamples].sort((a, b) => a - b)
+    s.baseline = sorted[Math.floor(sorted.length * 0.75)] || ear
+  }
+  if (s.baseline < 0.12) return false // not enough data yet
+
+  const closeT = s.baseline * 0.75
+  const openT  = s.baseline * 0.90
+
+  if (s.wasOpen && ear < closeT) {
     s.wasOpen = false
-  } else if (!s.wasOpen && ear > HIGH) {
+  } else if (!s.wasOpen && ear > openT) {
     s.wasOpen = true
     s.blinkCount++
   }
   return s.blinkCount >= 2
 }
 
-// Detect a head turn: must reach a deep turn in the requested direction
-// (>= 0.45 absolute yaw on the right side) AND return to near-neutral.
-// Because the video is mirrored on screen, the user's "left" is the
-// negative-X direction of the unmirrored frame (yaw < -0.35), and their
-// "right" is the positive-X direction (yaw > +0.35).
-function processTurnFrame(yaw, direction) {
+// Detect a head turn. We accept a turn in EITHER direction once it is clearly
+// off-center, because the on-screen video is mirrored and users frequently
+// turn the "wrong" way relative to the arrow cue. The visual arrow still
+// nudges them, but liveness only needs to confirm a real, intentional turn
+// followed by a return to neutral — not the exact direction.
+function processTurnFrame(yaw /* , direction (intentionally ignored) */) {
   const s = turnState.value
-  const wantPositive = direction === 'turn_right' // user's right == positive yaw in unmirrored frame
-  const deep = wantPositive ? yaw > 0.35 : yaw < -0.35
-  const neutral = Math.abs(yaw) < 0.15
-  if (deep) s.deepTurnFrames++
-  if (neutral) s.neutralFrames++
-  // Need a sustained deep turn (~3 frames ≈ 360ms) AND a return to neutral (~2 frames).
-  return s.deepTurnFrames >= 3 && s.neutralFrames >= 2
+  const absYaw = Math.abs(yaw)
+  const DEEP = 0.18    // jaw-based yaw of ~0.18 already corresponds to a clear head turn
+  const NEUTRAL = 0.08
+  if (absYaw > s.peakYaw) s.peakYaw = absYaw
+  if (absYaw > DEEP) s.deepTurnFrames++
+  // Only count "neutral" frames after we have already seen a deep turn,
+  // otherwise the very first frames (head already centered) would trivially
+  // satisfy the neutral requirement.
+  if (s.deepTurnFrames >= 2 && absYaw < NEUTRAL) s.neutralFrames++
+  return s.deepTurnFrames >= 2 && s.neutralFrames >= 1
 }
 
 function advanceChallenge() {
@@ -346,8 +390,8 @@ function advanceChallenge() {
   completed.value.push(challenges.value[currentChallengeIndex.value])
   currentChallengeIndex.value++
   // Reset per-challenge state so the next step is clean
-  blinkState.value = { wasOpen: true, blinkCount: 0 }
-  turnState.value = { neutralFrames: 0, deepTurnFrames: 0 }
+  blinkState.value = { wasOpen: true, blinkCount: 0, baseline: 0, baselineSamples: [] }
+  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0 }
 }
 
 async function runDetectionLoop() {
@@ -381,12 +425,12 @@ async function runDetectionLoop() {
         const rightEye = lm.positions.slice(36, 42)
         const leftEye = lm.positions.slice(42, 48)
         const ear = (eyeAspectRatio(rightEye) + eyeAspectRatio(leftEye)) / 2
-        const yaw = yawRatio(lm, det.detection.box)
+        const yaw = yawRatio(lm)
 
         if (ch === 'blink') {
           if (processBlinkFrame(ear)) advanceChallenge()
         } else if (ch === 'turn_left' || ch === 'turn_right') {
-          if (processTurnFrame(yaw, ch)) advanceChallenge()
+          if (processTurnFrame(yaw)) advanceChallenge()
         }
 
         // All challenges done → submit
@@ -626,14 +670,19 @@ onBeforeUnmount(() => stopCamera())
 .fci-btn-retry:active { transform: translateY(0); }
 
 /* ── Overlay transition ───────────────────────────────────── */
-.fci-overlay-enter-active,
-.fci-overlay-leave-active { transition: opacity 0.25s ease; }
+/* Enter: quick fade-in. Leave: slightly longer fade + a soft blur fade so the
+   backdrop visibly recedes when the modal is dismissed. */
+.fci-overlay-enter-active { transition: opacity 0.22s ease-out, backdrop-filter 0.22s ease-out, -webkit-backdrop-filter 0.22s ease-out; }
+.fci-overlay-leave-active { transition: opacity 0.32s ease-in,  backdrop-filter 0.32s ease-in,  -webkit-backdrop-filter 0.32s ease-in; }
 .fci-overlay-enter-from,
-.fci-overlay-leave-to   { opacity: 0; }
+.fci-overlay-leave-to     { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
 
 /* ── Panel transition ─────────────────────────────────────── */
-.fci-panel-enter-active { transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
-.fci-panel-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+/* Enter: spring up and scale in.
+   Leave: softly drop and shrink with a gentle ease-in so the user clearly
+   sees the modal animating away rather than vanishing. */
+.fci-panel-enter-active { transition: opacity 0.30s ease-out, transform 0.38s cubic-bezier(0.34, 1.4, 0.64, 1); }
+.fci-panel-leave-active { transition: opacity 0.28s ease-in,  transform 0.32s cubic-bezier(0.55, 0, 0.7, 0.2); }
 .fci-panel-enter-from   { opacity: 0; transform: scale(0.88) translateY(24px); }
-.fci-panel-leave-to     { opacity: 0; transform: scale(0.94) translateY(12px); }
+.fci-panel-leave-to     { opacity: 0; transform: scale(0.92) translateY(20px); }
 </style>

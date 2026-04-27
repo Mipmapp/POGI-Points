@@ -6685,7 +6685,6 @@
 
   <!-- Face ID self-service check-in modal (student dashboard active events) -->
   <StudentFaceCheckIn
-    v-if="dashFaceCheckInOpen"
     :open="dashFaceCheckInOpen"
     :event="dashFaceCheckInEvent"
     :session="dashFaceCheckInSession"
