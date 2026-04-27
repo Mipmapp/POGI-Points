@@ -2302,6 +2302,12 @@
                   <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                   Active Events
                 </h3>
+                <!-- Inline notification for face check-in result -->
+                <div v-if="dashFaceCheckInNotif.show" :class="['flex items-center gap-2 px-4 py-3 rounded-xl mb-3 text-sm font-medium', dashFaceCheckInNotif.type === 'success' ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700']">
+                  <svg v-if="dashFaceCheckInNotif.type === 'success'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                  <svg v-else class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                  {{ dashFaceCheckInNotif.message }}
+                </div>
                 <div class="space-y-4">
                   <div v-for="event in activeNonEndedEvents" :key="event._id || event.event_id" :class="['rounded-2xl shadow-sm border overflow-hidden bg-gradient-to-br', isCOE ? 'from-white to-orange-50 border-orange-100' : isSOM ? 'from-white to-green-50 border-green-100' : 'from-white to-blue-50 border-blue-100']">
                     <!-- Header with status badges - Clickable to expand -->
@@ -2348,14 +2354,23 @@
                         No sessions available for this event.
                       </div>
                       <div v-else class="space-y-2">
-                        <div v-for="session in expandedEventSessions[event._id || event.event_id]" :key="session._id" @click="selectSession(session, event, $event)" :class="['flex items-center justify-between bg-white rounded-lg px-3 py-2 border cursor-pointer hover:shadow', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-blue-200']"]>
-                          <div class="flex items-center gap-3">
-                            <span class="font-medium text-gray-800">{{ session.label }}</span>
-                            <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
+                        <div v-for="session in expandedEventSessions[event._id || event.event_id]" :key="session._id" :class="['flex items-center justify-between bg-white rounded-lg px-3 py-2 border', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-blue-200']">
+                          <div class="flex items-center gap-3 min-w-0">
+                            <span class="font-medium text-gray-800 truncate">{{ session.label }}</span>
+                            <span class="text-xs text-gray-500 whitespace-nowrap">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
                           </div>
-                          <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', getSessionDisplayStatus(session, event) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, event) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
-                            {{ getSessionDisplayStatus(session, event) === 'active' ? 'Active' : getSessionDisplayStatus(session, event) === 'draft' ? 'Upcoming' : 'Closed' }}
-                          </span>
+                          <div class="flex items-center gap-2 flex-shrink-0">
+                            <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', getSessionDisplayStatus(session, event) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, event) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
+                              {{ getSessionDisplayStatus(session, event) === 'active' ? 'Active' : getSessionDisplayStatus(session, event) === 'draft' ? 'Upcoming' : 'Closed' }}
+                            </span>
+                            <button
+                              v-if="getSessionDisplayStatus(session, event) === 'active' && getSessionCheckAction(session, event)"
+                              @click.stop="openDashFaceCheckIn(session, event)"
+                              :class="['px-3 py-1 rounded-lg text-xs font-semibold transition', getSessionCheckAction(session, event) === 'Check In' ? (isCOE ? 'bg-orange-600 hover:bg-orange-700 text-white' : isSOM ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white') : 'bg-gray-600 hover:bg-gray-700 text-white']"
+                            >
+                              {{ getSessionCheckAction(session, event) }}
+                            </button>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -6663,6 +6678,19 @@
     @close="showFaceEnroll = false"
     @enrolled="onFaceEnrolled"
   />
+
+  <!-- Face ID self-service check-in modal (student dashboard active events) -->
+  <StudentFaceCheckIn
+    v-if="dashFaceCheckInOpen"
+    :open="dashFaceCheckInOpen"
+    :event="dashFaceCheckInEvent"
+    :session="dashFaceCheckInSession"
+    :is-c-o-e="isCOE"
+    :is-s-o-m="isSOM"
+    :is-c-n-a-h-s="isCNAHS"
+    @close="dashFaceCheckInOpen = false"
+    @success="onDashFaceCheckInSuccess"
+  />
 </template>
 
 <script setup>
@@ -6689,6 +6717,7 @@ import FaceRecognitionSettings from '../components/FaceRecognitionSettings.vue'
 import Manage from '../components/Manage.vue'
 import GeofenceMap from '../components/GeofenceMap.vue'
 import StudentFaceEnroll from '../components/StudentFaceEnroll.vue'
+import StudentFaceCheckIn from '../components/StudentFaceCheckIn.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl, getCollege } from '../config/api.js'
 import { handleTokenError, setTokenExpiredCallback } from '../utils/tokenHandler.js'
@@ -8221,6 +8250,87 @@ const faceLoading = ref(false)
 const faceData = ref(null)
 const showFaceEnroll = ref(false)
 const faceEnrolled = computed(() => !!(faceData.value && faceData.value.count && faceData.value.count > 0))
+
+const dashFaceCheckInOpen = ref(false)
+const dashFaceCheckInEvent = ref(null)
+const dashFaceCheckInSession = ref(null)
+const dashFaceCheckInNotif = ref({ show: false, type: 'success', message: '' })
+
+const getSessionCheckAction = (session, event) => {
+  const eventId = event._id || event.event_id
+  const record = myAttendanceRecords.value.find(r => r.event_id === eventId)
+  const sessionLog = record && (record.sessions || []).find(s => s.session_id === session._id || s.session?._id === session._id)
+  const att = sessionLog?.attendance || {}
+  if (att.check_in_at && att.check_out_at) return null
+  if (att.check_in_at) return 'Check Out'
+  return 'Check In'
+}
+
+const openDashFaceCheckIn = async (session, event) => {
+  dashFaceCheckInNotif.value = { show: false, type: 'success', message: '' }
+  const eventCopy = { ...event }
+  if (event.geofence_enabled) {
+    if (!('geolocation' in navigator)) {
+      dashFaceCheckInNotif.value = { show: true, type: 'error', message: 'Your device does not support GPS, which is required for this event.' }
+      return
+    }
+    try {
+      const pos = await new Promise((resolve, reject) =>
+        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 12000, maximumAge: 5000 })
+      )
+      eventCopy._pendingLat = pos.coords.latitude
+      eventCopy._pendingLng = pos.coords.longitude
+      eventCopy._pendingAccuracy = pos.coords.accuracy
+    } catch (gErr) {
+      dashFaceCheckInNotif.value = {
+        show: true, type: 'error',
+        message: gErr && gErr.code === 1
+          ? 'Location permission denied. Please allow location to check in for this event.'
+          : 'Could not get your location. Make sure GPS is on and try again.'
+      }
+      return
+    }
+  }
+  dashFaceCheckInEvent.value = eventCopy
+  dashFaceCheckInSession.value = session
+  dashFaceCheckInOpen.value = true
+}
+
+const onDashFaceCheckInSuccess = async (data) => {
+  dashFaceCheckInOpen.value = false
+  const action = data.action === 'check_in' ? 'Check in' : data.action === 'check_out' ? 'Check out' : 'Attendance'
+  dashFaceCheckInNotif.value = { show: true, type: 'success', message: `${action} recorded successfully!` }
+  setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 4000)
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('studentToken')
+    const res = await fetch(buildAPIUrl('/apis/attendance/my-records'), {
+      headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
+    })
+    if (res.ok) {
+      const result = await res.json()
+      const records = result.data || result || []
+      myAttendanceRecords.value = records.map((r, idx) => {
+        const eventId = r.event?._id || r.event_id || `record-${idx}`
+        return {
+          ...r,
+          _id: eventId,
+          event_id: eventId,
+          event_title: r.event?.title,
+          sessions: (r.sessions || []).map((s, sIdx) => ({
+            ...s,
+            session: s.session || {},
+            session_id: s.session?._id || `session-${sIdx}`,
+            attendance: s.attendance || { check_in_at: null, check_out_at: null, status: 'absent' }
+          })),
+          overall_status: r.overall_status || 'absent',
+          check_in_at: r.attendance?.check_in_at,
+          check_out_at: r.attendance?.check_out_at,
+          status: r.attendance?.status || r.overall_status || 'absent'
+        }
+      })
+    }
+  } catch (_) {}
+}
 const loadFaceStatus = async () => {
   if (!currentUser.value || currentUser.value.role === 'admin' || currentUser.value.isMaster) return
   faceLoading.value = true
