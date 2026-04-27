@@ -64,6 +64,16 @@
                     stroke-width="0.6" stroke-dasharray="2 1.5" />
                 </svg>
               </div>
+
+              <!-- Live yaw debug indicator (only visible during challenges) -->
+              <div v-if="cameraReady && phase === 'challenging' && currentChallenge"
+                class="absolute bottom-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm pointer-events-none">
+                <div class="flex items-center gap-2 text-[10px] font-mono text-white/90">
+                  <span :class="liveYaw < -0.05 ? 'text-emerald-300 font-bold' : 'opacity-50'">◀ L</span>
+                  <span class="tabular-nums w-12 text-center">{{ liveYaw.toFixed(2) }}</span>
+                  <span :class="liveYaw > 0.05 ? 'text-emerald-300 font-bold' : 'opacity-50'">R ▶</span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -241,6 +251,7 @@ function resetState() {
   completed.value = []
   currentChallengeIndex.value = 0
   turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0 }
+  liveYaw.value = 0
   samplesCount.value = 0
   captured.value = []
   lastSampleAt = 0
@@ -345,19 +356,20 @@ function yawRatio(landmarks /* , box (unused) */) {
 
 // Detect a head turn in the requested direction.
 //
-// With the jaw-based yawRatio:
-//   user turns to THEIR right → nose moves toward jawL (image's left side),
-//                                so dL shrinks and (dR - dL)/total → POSITIVE
-//   user turns to THEIR left  → nose moves toward jawR (image's right side),
-//                                so dR shrinks and (dR - dL)/total → NEGATIVE
+// In practice the sign of yawRatio depends on whether the underlying video
+// stream is pre-mirrored by the OS/driver (some webcams do this for the user
+// camera, some don't). Empirical user testing on this app shows that:
+//   user turns to THEIR LEFT  → yaw POSITIVE (mirror-flipped frame)
+//   user turns to THEIR RIGHT → yaw NEGATIVE
+// so we map turn_left → wantPositive.
 //
-// Because the video preview is mirrored on screen (transform: scaleX(-1)),
-// "the user's right" is also "the right side of the screen as the user sees
-// it", so the on-screen arrow ↔ direction matches the user's body direction
-// without any extra confusion.
+// We also expose the raw yaw value via `liveYaw` so the on-screen indicator
+// shows which way the math currently thinks the head is turning — useful for
+// diagnosing camera-mirror surprises in the field.
+const liveYaw = ref(0)
 function processTurnFrame(yaw, direction) {
   const s = turnState.value
-  const wantPositive = direction === 'turn_right' // user's right == positive yaw (jaw math)
+  const wantPositive = direction === 'turn_left'
   const DEEP = 0.18
   const NEUTRAL = 0.08
   const deep = wantPositive ? yaw > DEEP : yaw < -DEEP
@@ -424,6 +436,7 @@ async function runDetectionLoop() {
         const ch = currentChallenge.value
         if (ch === 'turn_left' || ch === 'turn_right') {
           const yaw = yawRatio(det.landmarks)
+          liveYaw.value = yaw
           if (processTurnFrame(yaw, ch)) advanceChallenge()
         }
 
