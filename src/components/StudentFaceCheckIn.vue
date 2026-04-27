@@ -174,7 +174,7 @@ const currentChallengeIndex = ref(0)
 const currentChallenge = computed(() => challenges.value[currentChallengeIndex.value])
 
 // Per-challenge transient state
-const turnState = ref({ neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0 })
+const turnState = ref({ neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0 })
 
 // Capture / sampling
 const samplesCount = ref(0)
@@ -376,20 +376,26 @@ function processTurnFrame(yaw, direction) {
   const s = turnState.value
   const wantPositive = direction === 'turn_left'
   const DEEP = 0.18
-  const STRONG = 0.5    // strong, unambiguous turn → auto-pass without return-to-center
+  const STRONG = 0.5    // once yaw reaches ±0.5, hold for 1.5s to auto-pass
+  const HOLD_MS = 1500
   const NEUTRAL = 0.08
   const deep = wantPositive ? yaw > DEEP : yaw < -DEEP
-  const strong = wantPositive ? yaw > STRONG : yaw < -STRONG
+  const strong = wantPositive ? yaw >= STRONG : yaw <= -STRONG
   if (Math.abs(yaw) > s.peakYaw) s.peakYaw = Math.abs(yaw)
   if (deep) s.deepTurnFrames++
 
-  // A clear, strong turn in the requested direction (|yaw| ≥ 0.5) is enough on
-  // its own — no need to wait for the user to return to neutral. This makes
-  // the flow snappy when the user commits firmly.
-  if (strong && s.deepTurnFrames >= 2) return true
+  // Hold-at-threshold: once the user reaches ±0.5, freeze the requirement
+  // there. They just need to keep their head at (or past) that angle for
+  // 1.5 seconds total and the challenge passes — no further turning needed.
+  const now = Date.now()
+  if (strong) {
+    if (!s.strongStartTime) s.strongStartTime = now
+    if (now - s.strongStartTime >= HOLD_MS) return true
+  } else {
+    s.strongStartTime = 0
+  }
 
-  // Otherwise fall back to the slower "deep turn, then return to centered"
-  // pattern, which catches gentler turns reliably.
+  // Fallback for gentler turns: "deep turn, then return to centered".
   if (s.deepTurnFrames >= 2 && Math.abs(yaw) < NEUTRAL) s.neutralFrames++
   return s.deepTurnFrames >= 2 && s.neutralFrames >= 1
 }
@@ -399,7 +405,7 @@ function advanceChallenge() {
   completed.value.push(challenges.value[currentChallengeIndex.value])
   currentChallengeIndex.value++
   // Reset per-challenge state so the next step is clean
-  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0 }
+  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0 }
 }
 
 async function runDetectionLoop() {

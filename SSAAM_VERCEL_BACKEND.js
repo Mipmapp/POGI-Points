@@ -2578,7 +2578,8 @@ const attendanceEventSchema = new mongoose.Schema({
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now },
     activated_at: { type: Date, default: null },
-    closed_at: { type: Date, default: null }
+    closed_at: { type: Date, default: null },
+    rfidScanner: { type: mongoose.Schema.Types.Mixed, default: { checkInEnabled: true, checkOutEnabled: false } }
 });
 
 attendanceEventSchema.index({ status: 1, event_date: -1 });
@@ -7452,6 +7453,7 @@ app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res
             activated_at: eventStatus === 'active' ? new Date() : null,
             is_custom: is_custom || false,
             assigned_users: assigned_users && Array.isArray(assigned_users) ? assigned_users : [],
+            rfidScanner: { checkInEnabled: true, checkOutEnabled: false },
             ...sanitisedGeofence
         });
 
@@ -7467,7 +7469,7 @@ app.put('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (req, 
     try {
         const {
             title, description, location, event_date, year_level, status,
-            start_time, end_time, is_custom, assigned_users,
+            start_time, end_time, is_custom, assigned_users, rfidScanner,
             geofence_enabled, geofence_lat, geofence_lng, geofence_radius_meters
         } = req.body;
 
@@ -7491,6 +7493,10 @@ app.put('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (req, 
             console.log(`[Event Update] Before save - assigned_users:`, event.assigned_users);
             event.assigned_users = assigned_users || [];
             console.log(`[Event Update] After assignment - assigned_users:`, event.assigned_users);
+        }
+        if (rfidScanner !== undefined && typeof rfidScanner === 'object' && rfidScanner !== null) {
+            event.rfidScanner = Object.assign({}, event.rfidScanner || {}, rfidScanner);
+            event.markModified('rfidScanner');
         }
 
         // Geofence: only touch fields the client actually sent so partial PUTs

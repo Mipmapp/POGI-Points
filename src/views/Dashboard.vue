@@ -12784,8 +12784,8 @@ const saveEventRfidSettings = async (eventId, rfidSettings) => {
   rfidScannerSaving.value = true
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch(buildAPIUrl(`/apis/events/${eventId}`), {
-      method: 'PATCH',
+    const response = await fetch(buildAPIUrl(`/apis/attendance/events/${eventId}`), {
+      method: 'PUT',
       headers: getFetchHeaders({
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${token}`,
@@ -12902,8 +12902,6 @@ const toggleCheckIn = async () => {
     lastAutoSwitchedFromCheckIn.value = true
     setTimeout(() => { lastAutoSwitchedFromCheckIn.value = false }, 5000)
   }
-
-  startToggleCooldown(3)
 }
 
 const toggleCheckOut = async () => {
@@ -12926,7 +12924,6 @@ const toggleCheckOut = async () => {
   }
 
   if (updated.checkOutEnabled) setRfidOperation('out')
-  startToggleCooldown(3)
 }
 
 const setCheckInTimer = async () => {
