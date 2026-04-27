@@ -106,42 +106,121 @@
     </div>
   </transition>
 
-  <!-- Step 3 of 3: Face ID verification (only shown when admin has enrolled faces) -->
+  <!-- Step 3 of 3: Face ID verification (always shown after 2nd verification passes) -->
   <transition name="fade">
-    <div v-if="showFaceModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[130]" @click.self="cancelFaceVerification">
+    <div v-if="showFaceModal" class="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-[130] p-4" @click.self="cancelFaceVerification">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-7 max-w-sm w-[calc(100%-2rem)] text-center">
-          <div class="w-20 h-20 mx-auto mb-3 bg-blue-100 rounded-full flex items-center justify-center">
-            <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
-            </svg>
-          </div>
-          <h3 class="text-2xl font-bold mb-1 text-blue-900">3rd Verification</h3>
-          <p class="text-gray-600 mb-4 text-sm">Face ID — look at the camera to finish signing in.</p>
+        <div class="relative bg-gradient-to-br from-slate-900 via-gray-900 to-slate-950 rounded-3xl shadow-[0_0_60px_rgba(59,130,246,0.35)] p-6 max-w-md w-full overflow-hidden border border-blue-500/20">
+          <!-- Ambient glows -->
+          <div class="absolute -top-24 -left-24 w-48 h-48 bg-blue-500/20 rounded-full blur-3xl pointer-events-none"></div>
+          <div class="absolute -bottom-24 -right-24 w-48 h-48 bg-cyan-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
-          <div v-if="faceError" class="mb-3 p-3 bg-red-100 border border-red-200 rounded-lg text-red-700 text-sm font-medium animate-shake">
-            {{ faceError }}
-          </div>
-
-          <div class="relative mx-auto mb-4 rounded-2xl overflow-hidden bg-gray-900" style="width:100%; max-width:300px; aspect-ratio:4/3;">
-            <video ref="faceVideoEl" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover transform -scale-x-100"></video>
-            <div v-if="!faceCameraOn" class="absolute inset-0 flex items-center justify-center text-white/70 text-xs">
-              {{ faceLoadingModels ? 'Loading face models...' : 'Starting camera...' }}
+          <div class="relative">
+            <!-- Step indicator -->
+            <div class="flex items-center justify-center gap-1.5 mb-3">
+              <span class="w-6 h-1 rounded-full bg-cyan-400/80"></span>
+              <span class="w-6 h-1 rounded-full bg-cyan-400/80"></span>
+              <span class="w-6 h-1 rounded-full bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]"></span>
             </div>
-            <div v-if="faceCameraOn && faceMatching" class="absolute inset-x-0 top-0 h-0.5 bg-blue-300 shadow-[0_0_18px_4px_rgba(96,165,250,.7)] animate-[scan_1.6s_linear_infinite]"></div>
-            <div v-if="faceCameraOn" class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
-              {{ faceStatusText }}
-            </div>
-          </div>
 
-          <div class="flex gap-3">
-            <button @click="cancelFaceVerification" class="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition">
-              Cancel
-            </button>
-            <button @click="manualRetryFace" :disabled="!faceCameraOn || faceMatching" class="flex-1 px-6 py-2 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-lg font-medium transition disabled:opacity-60">
-              {{ faceMatching ? 'Scanning...' : 'Retry' }}
-            </button>
+            <!-- Icon with pulse halo -->
+            <div class="flex items-center justify-center mb-3">
+              <div class="relative">
+                <div class="absolute inset-0 bg-blue-500 rounded-full blur-xl opacity-60 animate-pulse"></div>
+                <div class="relative w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-400 rounded-full flex items-center justify-center shadow-lg">
+                  <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <h3 class="text-xl font-bold text-white text-center mb-1 tracking-tight">3rd Verification</h3>
+            <p class="text-blue-200/70 text-xs text-center mb-4">Face ID — center your face inside the frame</p>
+
+            <!-- Error -->
+            <div v-if="faceError" class="mb-3 px-3 py-2 bg-red-900/40 border border-red-500/40 rounded-xl text-red-300 text-xs text-center animate-shake">
+              {{ faceError }}
+            </div>
+
+            <!-- No-faces info -->
+            <div v-if="noFacesEnrolled" class="mb-3 px-3 py-2 bg-amber-900/30 border border-amber-500/30 rounded-xl text-amber-200 text-xs text-center">
+              No face enrolled for this account yet. You can continue now and enroll one later from Settings.
+            </div>
+
+            <!-- Camera frame -->
+            <div class="relative mx-auto rounded-2xl overflow-hidden bg-black shadow-inner ring-1 ring-blue-500/20" style="aspect-ratio: 1/1; max-width: 320px;">
+              <video ref="faceVideoEl" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover transform -scale-x-100"></video>
+
+              <!-- Loading state -->
+              <div v-if="!faceCameraOn && !noFacesEnrolled" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/95 text-blue-200">
+                <div class="w-10 h-10 border-2 border-blue-400/30 border-t-blue-400 rounded-full animate-spin mb-3"></div>
+                <p class="text-xs font-medium">{{ faceLoadingModels ? 'Loading face models…' : 'Starting camera…' }}</p>
+              </div>
+
+              <!-- Camera unavailable / no-faces placeholder -->
+              <div v-if="noFacesEnrolled" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-900/90 text-blue-200">
+                <svg class="w-14 h-14 text-blue-400/60 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
+                </svg>
+                <p class="text-xs text-blue-200/80">Face scan unavailable</p>
+              </div>
+
+              <!-- Detection frame overlay -->
+              <div v-if="faceCameraOn" class="absolute inset-0 pointer-events-none">
+                <!-- Center detection area with corner brackets -->
+                <div class="absolute inset-x-10 inset-y-8 face-frame">
+                  <span class="corner corner-tl"></span>
+                  <span class="corner corner-tr"></span>
+                  <span class="corner corner-bl"></span>
+                  <span class="corner corner-br"></span>
+
+                  <!-- Outer pulsing glow -->
+                  <div class="absolute inset-0 rounded-[28%] border border-cyan-400/30 animate-pulse-ring"></div>
+
+                  <!-- Scan line (only while matching) -->
+                  <div v-if="faceMatching" class="scan-line"></div>
+
+                  <!-- Success burst -->
+                  <transition name="burst">
+                    <div v-if="faceVerified" class="absolute inset-0 flex items-center justify-center">
+                      <div class="absolute inset-0 rounded-[28%] border-4 border-emerald-400 shadow-[0_0_30px_rgba(52,211,153,0.8)]"></div>
+                      <div class="relative w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(52,211,153,0.9)]">
+                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </transition>
+                </div>
+
+                <!-- Status pill -->
+                <div :class="['absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-semibold backdrop-blur-md flex items-center gap-1.5 border', faceStatusPillClass]">
+                  <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
+                  {{ faceStatusText }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Match progress dots -->
+            <div v-if="faceCameraOn && !noFacesEnrolled" class="flex items-center justify-center gap-2 mt-4">
+              <span v-for="n in 3" :key="n" :class="['h-2 rounded-full transition-all duration-300', faceMatchStreakDisplay >= n ? 'w-6 bg-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.8)]' : 'w-2 bg-blue-500/30']"></span>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex gap-3 mt-5">
+              <button @click="cancelFaceVerification" class="flex-1 px-4 py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 text-blue-100 rounded-xl text-sm font-medium transition">
+                Cancel
+              </button>
+              <button v-if="noFacesEnrolled" @click="completeLoginFromFace" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl text-sm font-semibold transition hover:shadow-[0_0_20px_rgba(59,130,246,0.6)] hover:scale-[1.02] active:scale-95">
+                Continue
+              </button>
+              <button v-else @click="manualRetryFace" :disabled="!faceCameraOn || faceMatching || faceVerified" class="flex-1 px-4 py-2.5 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-xl text-sm font-semibold transition hover:shadow-[0_0_20px_rgba(59,130,246,0.6)] hover:scale-[1.02] active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                {{ faceVerified ? 'Verified' : faceMatching ? 'Scanning…' : 'Retry' }}
+              </button>
+            </div>
           </div>
         </div>
       </transition>
@@ -1018,44 +1097,77 @@ const verifyAdminCode = () => {
 };
 
 // ---------- Step 3 of 3: Face ID ----------
-// Only shown when this admin already enrolled at least one face. Otherwise
-// we silently skip to completeLogin so existing admins are never locked out.
+// Always shown after the 2nd verification passes. If no faces are enrolled
+// (or the enrollment lookup fails), the modal still opens with a "Continue"
+// button so admins are never silently logged in past the 3rd step.
 const showFaceModal = ref(false)
 const faceLoadingModels = ref(false)
 const faceCameraOn = ref(false)
 const faceMatching = ref(false)
+const faceVerified = ref(false)
+const noFacesEnrolled = ref(false)
 const faceError = ref('')
 const faceStatusText = ref('')
+const faceStatusVariant = ref('idle') // idle | scanning | match | nomatch | nodetect | success | error
+const faceMatchStreakDisplay = ref(0)
 const faceVideoEl = ref(null)
 let faceStream = null
 let faceLoopHandle = null
 let faceEnrolled = []          // [{_id, label, descriptor[]}]
 let faceMatchStreak = 0
+let faceMatchStreakTarget = 3
+
+const faceStatusPillClass = computed(() => {
+  switch (faceStatusVariant.value) {
+    case 'success': return 'bg-emerald-500/20 border-emerald-400/50 text-emerald-200';
+    case 'match':   return 'bg-cyan-500/20 border-cyan-400/50 text-cyan-100';
+    case 'nomatch': return 'bg-amber-500/20 border-amber-400/50 text-amber-100';
+    case 'nodetect':return 'bg-slate-700/60 border-slate-500/40 text-slate-200';
+    case 'error':   return 'bg-red-500/20 border-red-400/50 text-red-200';
+    case 'scanning':return 'bg-blue-500/20 border-blue-400/50 text-blue-100';
+    default:        return 'bg-blue-500/20 border-blue-400/50 text-blue-100';
+  }
+})
+
+function setFaceStatus(text, variant = 'scanning') {
+  faceStatusText.value = text;
+  faceStatusVariant.value = variant;
+}
 
 async function proceedToFaceVerification() {
-  if (!pendingUser || !pendingUser.token) { completeLogin(); return; }
+  // Always reveal the 3rd verification modal, even when something fails below.
+  faceError.value = '';
+  faceVerified.value = false;
+  noFacesEnrolled.value = false;
+  faceMatchStreakDisplay.value = 0;
+  setFaceStatus('Initializing…', 'scanning');
+  showFaceModal.value = true;
+
+  if (!pendingUser || !pendingUser.token) {
+    noFacesEnrolled.value = true;
+    return;
+  }
+
   try {
     const res = await fetch(buildAPIUrl('/apis/masters/face'), {
       headers: { 'Authorization': `Bearer ${pendingUser.token}` },
     });
-    if (!res.ok) { completeLogin(); return; }
+    if (!res.ok) { noFacesEnrolled.value = true; return; }
     const data = await res.json();
     faceEnrolled = (data.faces || []).filter(f => Array.isArray(f.descriptor) && f.descriptor.length === 128);
-    if (faceEnrolled.length === 0) { completeLogin(); return; }
-    showFaceModal.value = true;
-    faceError.value = '';
-    faceStatusText.value = 'Position your face';
+    if (faceEnrolled.length === 0) { noFacesEnrolled.value = true; return; }
+    setFaceStatus('Position your face', 'scanning');
     await startFaceCamera();
   } catch (e) {
-    // If the lookup fails for any reason, do not block the admin from logging in.
-    completeLogin();
+    noFacesEnrolled.value = true;
   }
 }
 
 async function startFaceCamera() {
   try {
     faceLoadingModels.value = true;
-    const { ensureModelsLoaded } = await import('../utils/faceapi.js');
+    const { ensureModelsLoaded, FACE_MATCH_STREAK } = await import('../utils/faceapi.js');
+    if (typeof FACE_MATCH_STREAK === 'number' && FACE_MATCH_STREAK > 0) faceMatchStreakTarget = FACE_MATCH_STREAK;
     await ensureModelsLoaded();
     faceLoadingModels.value = false;
 
@@ -1068,19 +1180,21 @@ async function startFaceCamera() {
     await video.play();
     faceCameraOn.value = true;
     faceMatchStreak = 0;
+    faceMatchStreakDisplay.value = 0;
     runFaceLoop();
   } catch (e) {
     faceLoadingModels.value = false;
     faceError.value = 'Could not access camera. ' + (e.message || '');
+    setFaceStatus('Camera unavailable', 'error');
   }
 }
 
 async function runFaceLoop() {
   if (!faceCameraOn.value || faceMatching.value) return;
   faceMatching.value = true;
-  faceStatusText.value = 'Scanning...';
+  setFaceStatus('Scanning…', 'scanning');
   try {
-    const { detectDescriptor, descriptorDistance, FACE_MATCH_THRESHOLD, FACE_MATCH_STREAK } = await import('../utils/faceapi.js');
+    const { detectDescriptor, descriptorDistance, FACE_MATCH_THRESHOLD } = await import('../utils/faceapi.js');
     const tick = async () => {
       if (!faceCameraOn.value || !showFaceModal.value) return;
       const live = await detectDescriptor(faceVideoEl.value);
@@ -1092,31 +1206,44 @@ async function runFaceLoop() {
         }
         if (best < FACE_MATCH_THRESHOLD) {
           faceMatchStreak += 1;
-          faceStatusText.value = `Match ${faceMatchStreak}/${FACE_MATCH_STREAK}`;
-          if (faceMatchStreak >= FACE_MATCH_STREAK) {
+          faceMatchStreakDisplay.value = Math.min(faceMatchStreak, faceMatchStreakTarget);
+          setFaceStatus(`Matching ${faceMatchStreak}/${faceMatchStreakTarget}`, 'match');
+          if (faceMatchStreak >= faceMatchStreakTarget) {
             await onFaceMatched();
             return;
           }
         } else {
           faceMatchStreak = 0;
-          faceStatusText.value = 'No match — keep looking at the camera';
+          faceMatchStreakDisplay.value = 0;
+          setFaceStatus('Hold steady — keep looking at the camera', 'nomatch');
         }
       } else {
         faceMatchStreak = 0;
-        faceStatusText.value = 'No face detected';
+        faceMatchStreakDisplay.value = 0;
+        setFaceStatus('No face detected', 'nodetect');
       }
       faceLoopHandle = setTimeout(tick, 350);
     };
     await tick();
   } catch (e) {
     faceError.value = 'Face scan failed: ' + (e.message || '');
+    setFaceStatus('Scan error', 'error');
   } finally {
     faceMatching.value = false;
   }
 }
 
 async function onFaceMatched() {
-  faceStatusText.value = 'Verified ✓';
+  faceVerified.value = true;
+  setFaceStatus('Verified ✓', 'success');
+  // Brief pause so the success burst is visible before navigating away.
+  await new Promise(r => setTimeout(r, 700));
+  stopFaceCamera();
+  showFaceModal.value = false;
+  completeLogin();
+}
+
+function completeLoginFromFace() {
   stopFaceCamera();
   showFaceModal.value = false;
   completeLogin();
@@ -1140,8 +1267,10 @@ function cancelFaceVerification() {
 }
 
 function manualRetryFace() {
+  if (faceVerified.value) return;
   if (!faceCameraOn.value) { startFaceCamera(); return; }
   faceMatchStreak = 0;
+  faceMatchStreakDisplay.value = 0;
   faceError.value = '';
   runFaceLoop();
 }
@@ -1214,6 +1343,75 @@ function manualRetryFace() {
   0%   { transform: translateY(0); }
   50%  { transform: translateY(280px); }
   100% { transform: translateY(0); }
+}
+
+/* ---------- Face ID scanner ---------- */
+.face-frame {
+  position: absolute;
+}
+.corner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 3px solid #22d3ee;
+  box-shadow: 0 0 14px rgba(34, 211, 238, 0.7);
+  pointer-events: none;
+}
+.corner-tl {
+  top: -3px; left: -3px;
+  border-right: none; border-bottom: none;
+  border-top-left-radius: 14px;
+}
+.corner-tr {
+  top: -3px; right: -3px;
+  border-left: none; border-bottom: none;
+  border-top-right-radius: 14px;
+}
+.corner-bl {
+  bottom: -3px; left: -3px;
+  border-right: none; border-top: none;
+  border-bottom-left-radius: 14px;
+}
+.corner-br {
+  bottom: -3px; right: -3px;
+  border-left: none; border-top: none;
+  border-bottom-right-radius: 14px;
+}
+.scan-line {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent 0%, rgba(34,211,238,0.9) 50%, transparent 100%);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.95), 0 0 36px rgba(34, 211, 238, 0.5);
+  border-radius: 2px;
+  animation: face-scan 2.2s ease-in-out infinite;
+  top: 8%;
+}
+@keyframes face-scan {
+  0%   { top: 8%;  opacity: 0.7; }
+  50%  { top: 92%; opacity: 1; }
+  100% { top: 8%;  opacity: 0.7; }
+}
+.animate-pulse-ring {
+  animation: pulse-ring 2.4s ease-out infinite;
+}
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.45); }
+  70%  { box-shadow: 0 0 0 14px rgba(34, 211, 238, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
+}
+
+.burst-enter-active {
+  animation: burst-in 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.burst-leave-active {
+  animation: burst-in 0.3s reverse;
+}
+@keyframes burst-in {
+  0%   { transform: scale(0.4); opacity: 0; }
+  60%  { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(1);    opacity: 1; }
 }
 
 @keyframes bounce-in {
