@@ -49,6 +49,9 @@ The application is a Vue 3 SPA utilizing the Composition API and Vite 5. Styling
 - **Statistics Nav:** For admin and super admin users, the first sidebar item is labeled "Statistics" (not "Dashboard") and shows the student registration statistics table.
 - **Manage Filters Cleaned:** Removed Medpub and Treasurer role filter buttons from Manage → Users tab.
 - **Logout Animation Fixed:** Logout animation background uses solid college-themed gradients (no broken image references).
+- **Create Event Sessions Inline:** The Create Event modal includes a Sessions section so admins can stage one or more sessions (Add/Edit/Delete) before submitting. After the parent event is created, staged sessions are batch-POSTed to `/apis/attendance/events/:eventId/sessions`. The Edit Event modal only auto-opens after creation when no sessions were staged.
+- **Mark Paid as Unpaid:** The Admin Contribution panel can now reverse a payment. The selected-student card shows "Already Paid" with a Mark as Unpaid button when the active campaign is paid; the records table replaces the static "✓ Paid" cell with a Mark Unpaid action. Both call `PUT /apis/payments/:paymentId/mark-unpaid`.
+- **Scanner Fullscreen UX:** The "Open Fullscreen" button in the Scanner tab is no longer gated by `scannerMode === 'rfid'` — it opens the fullscreen overlay matching the active mode (RFID or Face ID), and users can still hot-swap modes inside via the existing in-overlay switch buttons. Watchers on `rfidFullscreenMode` / `faceFullscreenMode` continue to call `document.exitFullscreen()` when the overlay closes (guarded by `isSwitchingKiosk` so the swap doesn't drop native fullscreen).
 
 **System Design Choices:**
 - **Efficient Pagination:** Frontend displays current page only, with all search and filtering server-side. Statistics fetched separately for complete data.

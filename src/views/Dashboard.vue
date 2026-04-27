@@ -2256,7 +2256,10 @@
                       </div>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                      <button v-if="scannerMode === 'rfid'" @click="enterFullscreenMode('rfid')" title="Open RFID Scanner Fullscreen" :class="['text-white px-3 sm:px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 bg-gradient-to-r flex-1 sm:flex-none text-sm sm:text-base', primaryButtonGradient, primaryButtonHover]">
+                      <!-- Open Fullscreen for whichever scanner mode is currently active.
+                           Inside the overlay, users can swap between RFID and Face via
+                           switchKioskMode() while keeping the native fullscreen alive. -->
+                      <button @click="enterFullscreenMode(scannerMode)" :title="scannerMode === 'face' ? 'Open Face ID Scanner Fullscreen' : 'Open RFID Scanner Fullscreen'" :class="['text-white px-3 sm:px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 bg-gradient-to-r flex-1 sm:flex-none text-sm sm:text-base', primaryButtonGradient, primaryButtonHover]">
                         <svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
                         <span class="hidden sm:inline">Fullscreen</span>
                       </button>
@@ -5472,9 +5475,53 @@
               <strong>{{ newEvent.assigned_users.length }}</strong> student(s) will be able to see this event
             </div>
           </div>
+
+          <!-- Sessions Management Section (Create) -->
+          <div class="border-t pt-4 mt-4">
+            <div class="flex items-center justify-between mb-3">
+              <div>
+                <label class="block text-sm font-medium text-gray-700">Sessions</label>
+                <p class="text-xs text-gray-500 mt-0.5">Add sessions now so students can check in/out as soon as the event is created.</p>
+              </div>
+              <button @click="openAddSessionForNewEvent" type="button" :class="['text-xs px-3 py-1 rounded-lg transition flex items-center gap-1 font-medium flex-shrink-0', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200']">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Add Session
+              </button>
+            </div>
+            <div v-if="newEventSessions.length === 0" class="text-center py-4 bg-gray-50 rounded-lg">
+              <p class="text-sm text-gray-500">No sessions added yet. You can also add them later from the event's Edit menu.</p>
+            </div>
+            <div v-else class="space-y-2">
+              <div v-for="(session, idx) in newEventSessions" :key="'new-session-' + idx" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <span class="font-medium text-gray-800">{{ session.label }}</span>
+                    <span v-if="session.check_in_only" class="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">Check-In Only</span>
+                  </div>
+                  <p class="text-xs text-gray-500">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
+                  <span class="text-xs text-orange-600">Late after {{ session.late_timer_minutes || 60 }} mins</span>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button @click="openEditSessionForNewEvent(idx)" type="button" :class="['p-1', isCOE ? 'text-orange-600 hover:text-orange-800' : isSOM ? 'text-green-600 hover:text-green-800' : 'text-blue-600 hover:text-blue-800']">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                  </button>
+                  <button @click="deleteSessionForNewEvent(idx)" type="button" class="text-red-500 hover:text-red-700 p-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="flex gap-3 mt-6">
-            <button @click="showCreateEventModal = false; eventUserFilters = { name: '', program: '', yearLevel: '' }" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-            <button @click="createAttendanceEvent" :disabled="!newEvent.title || !newEvent.date" :class="['flex-1 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light']">Create Event</button>
+            <button @click="closeCreateEventModal" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
+            <button @click="createAttendanceEvent" :disabled="!newEvent.title || !newEvent.date || creatingEventInProgress" :class="['flex-1 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light']">
+              <svg v-if="creatingEventInProgress" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>{{ creatingEventInProgress ? 'Creating...' : 'Create Event' }}</span>
+            </button>
           </div>
         </div>
       </div>
@@ -5731,11 +5778,11 @@
   </transition>
   <!-- Modal Pop -->
   <transition name="fade-scale">
-    <div v-if="showSessionModal" class="fixed inset-0 flex items-center justify-center z-[80]" @click.self="showSessionModal = false">
+    <div v-if="showSessionModal" class="fixed inset-0 flex items-center justify-center z-[80]" @click.self="closeSessionModal">
       <div class="bg-white rounded-2xl shadow-2xl p-6 max-w-md w-full mx-4">
       <div class="flex justify-between items-center mb-4">
-        <h3 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : 'text-blue-900']">{{ editingSession ? 'Edit Session' : 'Add Session' }}</h3>
-        <button @click="showSessionModal = false" :class="['text-2xl transition', isCOE ? 'text-orange-500 hover:text-orange-700' : 'text-gray-500 hover:text-gray-700']">&times;</button>
+        <h3 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : 'text-blue-900']">{{ (editingSession || editingNewEventSessionIdx !== null) ? 'Edit Session' : 'Add Session' }}</h3>
+        <button @click="closeSessionModal" :class="['text-2xl transition', isCOE ? 'text-orange-500 hover:text-orange-700' : 'text-gray-500 hover:text-gray-700']">&times;</button>
       </div>
       <div class="space-y-4">
         <div>
@@ -5788,13 +5835,13 @@
           <p class="text-sm text-red-700">{{ sessionTimeError }}</p>
         </div>
         <div class="flex gap-3 mt-6">
-          <button @click="showSessionModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition" :disabled="savingSession">Cancel</button>
+          <button @click="closeSessionModal" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition" :disabled="savingSession">Cancel</button>
           <button @click="saveSession" :disabled="!newSession.label || !newSession.start_time || !newSession.end_time || savingSession || !!sessionTimeError" :class="['flex-1 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
             <svg v-if="savingSession" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
             </svg>
-            <span>{{ savingSession ? 'Saving...' : (editingSession ? 'Update' : 'Add') + ' Session' }}</span>
+            <span>{{ savingSession ? 'Saving...' : ((editingSession || editingNewEventSessionIdx !== null) ? 'Update' : 'Add') + ' Session' }}</span>
           </button>
         </div>
       </div>
@@ -9820,10 +9867,14 @@ const sessionLabels = ['Whole Day', 'Morning', 'Afternoon', 'Noon', 'Night', 'Da
 
 const sessionTimeError = computed(() => {
   if (!newSession.value.start_time || !newSession.value.end_time) return ''
-  if (!selectedEvent.value) return ''
-  
-  const eventStart = selectedEvent.value.start_time || selectedEvent.value.startTime || '07:00'
-  const eventEnd = selectedEvent.value.end_time || selectedEvent.value.endTime || '17:00'
+  // When validating sessions inside the Create Event modal, selectedEvent
+  // doesn't exist yet — fall back to the times entered on the new event form.
+  const sourceEvent = selectedEvent.value
+    || (isCreatingEventSessionContext.value ? newEvent.value : null)
+  if (!sourceEvent) return ''
+
+  const eventStart = sourceEvent.start_time || sourceEvent.startTime || '07:00'
+  const eventEnd = sourceEvent.end_time || sourceEvent.endTime || '17:00'
   const sessionStart = newSession.value.start_time
   const sessionEnd = newSession.value.end_time
   
@@ -14145,6 +14196,8 @@ const refreshMyRecords = async () => {
 }
 
 const createAttendanceEvent = async () => {
+  if (creatingEventInProgress.value) return
+  creatingEventInProgress.value = true
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
     const eventPayload = {
@@ -14171,24 +14224,55 @@ const createAttendanceEvent = async () => {
     
     if (response.ok) {
       const result = await response.json()
-      showNotification('Event created successfully. Now add sessions to enable check-in.', 'success')
-      showCreateEventModal.value = false
-      
-      // Store the event times before resetting
+
+      // Snapshot data we need before we reset the form below.
       const createdEventStartTime = newEvent.value.start_time || '07:00'
       const createdEventEndTime = newEvent.value.end_time || '17:00'
       const createdEventDate = newEvent.value.date
-      
-      // Reset the form
+      const stagedSessions = newEventSessions.value.slice()
+      const newEventId = result.event?._id
+
+      // POST staged sessions in sequence so we can report a single summary.
+      let createdCount = 0
+      let failedCount = 0
+      if (newEventId && stagedSessions.length > 0) {
+        for (const session of stagedSessions) {
+          try {
+            const sessionResp = await fetch(buildAPIUrl(`/apis/attendance/events/${newEventId}/sessions`), {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() },
+              body: JSON.stringify(session)
+            })
+            if (sessionResp.ok) createdCount++
+            else failedCount++
+          } catch (_) {
+            failedCount++
+          }
+        }
+      }
+
+      if (stagedSessions.length === 0) {
+        showNotification('Event created successfully. Now add sessions to enable check-in.', 'success')
+      } else if (failedCount === 0) {
+        showNotification(`Event created with ${createdCount} session${createdCount === 1 ? '' : 's'}.`, 'success')
+      } else {
+        showNotification(`Event created. ${createdCount} session(s) added, ${failedCount} failed.`, 'error')
+      }
+
+      // Reset the form & close the create modal.
       newEvent.value = { title: '', description: '', location: '', date: '', year_level: '', start_time: '07:00', end_time: '17:00', assigned_users: [], is_custom: false }
+      newEventSessions.value = []
       eventUserSearch.value = ''
       eventUserFilters.value = { name: '', program: '', yearLevel: '' }
-      
-      // Fetch updated data and then open the edit modal for the newly created event
+      showCreateEventModal.value = false
+
+      // Refresh the events list.
       await fetchAttendanceData()
-      
-      // Find the newly created event and open edit modal to add sessions
-      if (result.event) {
+
+      // Only open the edit modal automatically if the user didn't add any
+      // sessions in the create flow. Otherwise just stay on the events list —
+      // their setup is already complete.
+      if (result.event && stagedSessions.length === 0) {
         selectedEvent.value = {
           ...result.event,
           date: createdEventDate,
@@ -14212,6 +14296,8 @@ const createAttendanceEvent = async () => {
   } catch (error) {
     console.error('Error creating event:', error)
     showNotification('Error creating event', 'error')
+  } finally {
+    creatingEventInProgress.value = false
   }
 }
 
@@ -14500,14 +14586,62 @@ const openAddSessionModal = () => {
   }, 600)
   
   editingSession.value = null
+  editingNewEventSessionIdx.value = null
+  isCreatingEventSessionContext.value = false
   newSession.value = { label: 'Morning', start_time: '', end_time: '', status: 'active', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60, check_in_only: false }
   showSessionModal.value = true
 }
 
 const openEditSessionModal = (session) => {
   editingSession.value = session
+  editingNewEventSessionIdx.value = null
+  isCreatingEventSessionContext.value = false
   newSession.value = { ...session }
   showSessionModal.value = true
+}
+
+// Sessions staged in the Create Event modal — these have not been persisted to
+// the backend yet. We POST them in a batch right after the parent event is
+// created (see createAttendanceEvent).
+const newEventSessions = ref([])
+const editingNewEventSessionIdx = ref(null)
+const isCreatingEventSessionContext = ref(false)
+const creatingEventInProgress = ref(false)
+
+const openAddSessionForNewEvent = () => {
+  editingSession.value = null
+  editingNewEventSessionIdx.value = null
+  isCreatingEventSessionContext.value = true
+  newSession.value = { label: 'Morning', start_time: '', end_time: '', status: 'active', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60, check_in_only: false }
+  showSessionModal.value = true
+}
+
+const openEditSessionForNewEvent = (idx) => {
+  editingSession.value = null
+  editingNewEventSessionIdx.value = idx
+  isCreatingEventSessionContext.value = true
+  newSession.value = { ...newEventSessions.value[idx] }
+  showSessionModal.value = true
+}
+
+const deleteSessionForNewEvent = (idx) => {
+  newEventSessions.value.splice(idx, 1)
+}
+
+// Single close handler for the session modal so context flags from the
+// "stage for new event" path don't leak into the next time the modal opens.
+const closeSessionModal = () => {
+  showSessionModal.value = false
+  isCreatingEventSessionContext.value = false
+  editingNewEventSessionIdx.value = null
+}
+
+const closeCreateEventModal = () => {
+  showCreateEventModal.value = false
+  eventUserFilters.value = { name: '', program: '', yearLevel: '' }
+  newEventSessions.value = []
+  isCreatingEventSessionContext.value = false
+  editingNewEventSessionIdx.value = null
 }
 
 const saveSession = async () => {
@@ -14515,6 +14649,25 @@ const saveSession = async () => {
     showNotification(sessionTimeError.value, 'error')
     return
   }
+
+  // Stage-only path: when adding/editing a session inside the Create Event
+  // modal, the parent event doesn't exist yet. We just push the session into
+  // the local newEventSessions array; createAttendanceEvent will POST them
+  // after the event itself is created.
+  if (isCreatingEventSessionContext.value) {
+    if (editingNewEventSessionIdx.value !== null) {
+      newEventSessions.value[editingNewEventSessionIdx.value] = { ...newSession.value }
+      showNotification('Session updated', 'success')
+    } else {
+      newEventSessions.value.push({ ...newSession.value })
+      showNotification('Session added', 'success')
+    }
+    showSessionModal.value = false
+    isCreatingEventSessionContext.value = false
+    editingNewEventSessionIdx.value = null
+    return
+  }
+
   savingSession.value = true
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {

@@ -344,8 +344,31 @@
           </div>
         </div>
 
+        <!-- Already Paid State (Mark as Unpaid) -->
+        <div v-if="selectedStudentAlreadyPaid" class="space-y-3">
+          <div class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-2xl">
+            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-bold text-green-800">Already Paid</p>
+              <p class="text-xs text-green-600 truncate">This student has already paid for the active campaign.</p>
+            </div>
+          </div>
+          <button
+            @click="markAsUnpaid()"
+            :disabled="isProcessingPaymentGlobal"
+            class="w-full py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl font-bold text-sm transition-all hover:from-red-600 hover:to-red-700 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-red-200 active:scale-[0.99]"
+          >
+            <svg v-if="isProcessingPaymentGlobal" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            {{ isProcessingPaymentGlobal ? 'Processing...' : 'Mark as Unpaid' }}
+          </button>
+        </div>
+
         <!-- Record Payment Button -->
         <button
+          v-else
           @click="markAsPayment()"
           :disabled="!selectedStudent || isProcessingPaymentGlobal"
           class="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-2xl font-bold text-sm transition-all hover:from-green-700 hover:to-green-800 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-green-200 active:scale-[0.99]"
@@ -465,14 +488,24 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
             Discount applied: –₱{{ c.discount_value.toFixed(2) }}
           </div>
-          <div v-if="c.payment_status !== 'paid'" class="flex gap-2">
+          <div class="flex gap-2">
             <button
+              v-if="c.payment_status !== 'paid'"
               @click="markAsPayment(c)"
               :disabled="processingPaymentId === (c._id || c.student_id)"
               class="flex-1 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl text-xs font-bold transition hover:from-green-600 hover:to-green-700 disabled:opacity-60 flex items-center justify-center gap-1.5"
             >
               <svg v-if="processingPaymentId === (c._id || c.student_id)" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ processingPaymentId === (c._id || c.student_id) ? 'Processing...' : 'Mark as Paid' }}
+            </button>
+            <button
+              v-else
+              @click="markAsUnpaid(c)"
+              :disabled="processingPaymentId === (c._id || c.student_id)"
+              class="flex-1 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl text-xs font-bold transition hover:from-red-600 hover:to-red-700 disabled:opacity-60 flex items-center justify-center gap-1.5"
+            >
+              <svg v-if="processingPaymentId === (c._id || c.student_id)" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+              {{ processingPaymentId === (c._id || c.student_id) ? 'Processing...' : 'Mark as Unpaid' }}
             </button>
             <button @click="applyDiscount(c)" class="px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition hover:bg-blue-100">
               Discount
@@ -541,7 +574,17 @@
                     <svg v-if="processingPaymentId === (c._id || c.student_id)" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                     <span>{{ processingPaymentId === (c._id || c.student_id) ? '...' : 'Mark Paid' }}</span>
                   </button>
-                  <span v-else class="text-green-600 text-xs font-bold">✓ Paid</span>
+                  <button
+                    v-else
+                    @click="markAsUnpaid(c)"
+                    :disabled="processingPaymentId === (c._id || c.student_id)"
+                    class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-bold transition disabled:opacity-60 flex items-center gap-1"
+                    title="Reverse this payment"
+                  >
+                    <svg v-if="processingPaymentId === (c._id || c.student_id)" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                    <span>{{ processingPaymentId === (c._id || c.student_id) ? '...' : 'Mark Unpaid' }}</span>
+                  </button>
                   <button @click="applyDiscount(c)" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold transition">
                     Discount
                   </button>
@@ -1094,6 +1137,19 @@ export default {
     targetPayment() {
       return Math.max(0, this.campaignFee - this.calculatedDiscount);
     },
+    // The contribution row that matches the currently-selected student for the
+    // active campaign. Used to detect whether they've already paid so the
+    // selected-student card can show "Already Paid" + "Mark as Unpaid"
+    // instead of "Record Payment".
+    selectedStudentContribution() {
+      if (!this.selectedStudent) return null;
+      const sid = this.selectedStudent.student_id;
+      return this.contributions.find(c => (c.student_id_number || c.student_id) === sid) || null;
+    },
+    selectedStudentAlreadyPaid() {
+      const c = this.selectedStudentContribution;
+      return !!(c && c.payment_status === 'paid');
+    },
     filteredContributions() {
       const fs = (this.filterStatus || '').toString().toLowerCase();
       const fy = this.filterYearLevel;
@@ -1542,6 +1598,57 @@ export default {
       } catch (error) {
         console.error('Error recording payment:', error);
         window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Error recording payment', type: 'error' } }));
+      } finally {
+        if (isRow) { this.processingPaymentId = null; }
+        else { this.isProcessingPaymentGlobal = false; }
+      }
+    },
+    async markAsUnpaid(contribution) {
+      // Either a row from the table or — when no row is passed — the currently
+      // selected student. Mirrors markAsPayment's signature.
+      if (!this.selectedStudent && !contribution) return;
+
+      if (!this.activePayment?._id) {
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'No active payment event found.', type: 'warning' } }));
+        return;
+      }
+
+      const isRow = !!contribution;
+      const processingId = isRow ? (contribution._id || contribution.student_id_number) : 'global';
+      try {
+        if (isRow) { this.processingPaymentId = processingId; }
+        else { this.isProcessingPaymentGlobal = true; }
+
+        const token = localStorage.getItem('authToken');
+        const studentIdInput = isRow
+          ? (contribution.student_id_number || contribution.student_id)
+          : this.selectedStudent.student_id;
+        const paymentId = this.activePayment._id;
+
+        const response = await fetch(buildAPIUrl(`/apis/payments/${paymentId}/mark-unpaid`), {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'X-SSAAM-College': getCollege()
+          },
+          body: JSON.stringify({ student_id_input: studentIdInput })
+        });
+
+        const data = await response.json();
+        if (response.ok) {
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Marked as unpaid', type: 'success' } }));
+          if (!isRow) {
+            this.selectedStudent = null;
+            this.discountValue = 0;
+          }
+          this.loadAllContributions();
+        } else {
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: data.message || 'Error marking as unpaid', type: 'error' } }));
+        }
+      } catch (error) {
+        console.error('Error marking as unpaid:', error);
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Error marking as unpaid', type: 'error' } }));
       } finally {
         if (isRow) { this.processingPaymentId = null; }
         else { this.isProcessingPaymentGlobal = false; }
