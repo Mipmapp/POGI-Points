@@ -2647,7 +2647,7 @@ const attendanceLogSchema = new mongoose.Schema({
     // Optional reference to who excused (Student or Master)
     excused_by_id: { type: mongoose.Schema.Types.ObjectId, default: null },
     excused_by_model: { type: String, enum: ['Student', 'Master', null], default: null },
-    source: { type: String, enum: ['rfid', 'manual'], default: 'rfid' },
+    source: { type: String, enum: ['rfid', 'manual', 'face'], default: 'rfid' },
     input_method: { type: String, enum: ['rfid', 'manual_student_id'], default: 'rfid' },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }

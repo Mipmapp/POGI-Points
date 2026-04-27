@@ -49,17 +49,21 @@
                 <span class="text-sm text-blue-200/70 font-medium">{{ camStatus }}</span>
               </div>
 
-              <!-- Head turn cue, centered -->
-              <div v-if="cameraReady && (currentChallenge === 'turn_left' || currentChallenge === 'turn_right')"
+              <!-- Head turn / center cue, centered -->
+              <div v-if="cameraReady && (currentChallenge === 'turn_left' || currentChallenge === 'turn_right' || currentChallenge === 'look_center')"
                 class="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div class="px-5 py-3 rounded-2xl bg-black/55 backdrop-blur-md flex items-center gap-3 animate-pulse">
                   <span class="text-white text-4xl font-bold leading-none">
-                    {{ currentChallenge === 'turn_left' ? '←' : '→' }}
+                    {{ currentChallenge === 'turn_left' ? '←' : currentChallenge === 'turn_right' ? '→' : '◎' }}
                   </span>
                   <span class="text-white text-xl font-bold tracking-wide">
-                    {{ currentChallenge === 'turn_left' ? 'TURN LEFT' : 'TURN RIGHT' }}
+                    {{ currentChallenge === 'turn_left' ? 'TURN LEFT' : currentChallenge === 'turn_right' ? 'TURN RIGHT' : 'LOOK CENTER' }}
                   </span>
                 </div>
+              </div>
+              <!-- Rotating scanner ring (only while finding the face) -->
+              <div v-if="cameraReady && phase === 'finding'" class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="fci-scan-ring"></div>
               </div>
               <!-- Face oval -->
               <div v-if="cameraReady" class="absolute inset-0 pointer-events-none">
@@ -174,7 +178,7 @@ const currentChallengeIndex = ref(0)
 const currentChallenge = computed(() => challenges.value[currentChallengeIndex.value])
 
 // Per-challenge transient state
-const turnState = ref({ neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0 })
+const turnState = ref({ neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0, centerStartTime: 0 })
 
 // Capture / sampling
 const samplesCount = ref(0)
@@ -188,6 +192,7 @@ const stageStyle = computed(() => {
   if (errorMessage.value || failed.value) return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', icon: '!' }
   if (submitting.value) return { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', icon: '↻' }
   if (currentChallenge.value === 'turn_left' || currentChallenge.value === 'turn_right') return { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-800', icon: '↔' }
+  if (currentChallenge.value === 'look_center') return { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', icon: '◎' }
   if (cameraReady.value) return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', icon: '•' }
   return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', icon: '•' }
 })
@@ -204,6 +209,7 @@ const stageMessage = computed(() => {
   }
   if (currentChallenge.value === 'turn_left') return 'Turn your head LEFT'
   if (currentChallenge.value === 'turn_right') return 'Turn your head RIGHT'
+  if (currentChallenge.value === 'look_center') return 'Look straight at the camera'
   if (cameraReady.value && !challenges.value.length) return 'Preparing your check-in…'
   if (cameraReady.value && challenges.value.length && currentChallengeIndex.value >= challenges.value.length) {
     return 'Almost done — collecting frames…'
@@ -217,13 +223,17 @@ const stageHint = computed(() => {
       ? 'Locking on your face…'
       : 'Make sure your face is well-lit and centered.'
   }
-  if (currentChallenge.value === 'turn_left') return 'Slowly turn your face to your left, then back to center.'
-  if (currentChallenge.value === 'turn_right') return 'Slowly turn your face to your right, then back to center.'
+  if (currentChallenge.value === 'turn_left') return 'Slowly turn your face to your left.'
+  if (currentChallenge.value === 'turn_right') return 'Slowly turn your face to your right.'
+  if (currentChallenge.value === 'look_center') return 'Hold your face straight ahead for a moment.'
   return ''
 })
 
 function challengeLabel(c) {
-  return c === 'turn_left' ? 'Look Left' : c === 'turn_right' ? 'Look Right' : c
+  if (c === 'turn_left') return 'Look Left'
+  if (c === 'turn_right') return 'Look Right'
+  if (c === 'look_center') return 'Look Center'
+  return c
 }
 
 // ---- Lifecycle
@@ -255,7 +265,7 @@ function resetState() {
   challenges.value = []
   completed.value = []
   currentChallengeIndex.value = 0
-  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0 }
+  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0, centerStartTime: 0 }
   liveYaw.value = 0
   samplesCount.value = 0
   captured.value = []
@@ -323,7 +333,17 @@ async function requestChallenge() {
       return
     }
     challengeToken.value = data.challenge_token
-    challenges.value = data.challenges || []
+    // Weave a "look_center" step between each pair of turn challenges so the
+    // user explicitly returns to neutral between left and right (or right and
+    // left). This step is client-only — the backend doesn't validate it, so
+    // we strip it from the payload before submitting.
+    const issued = data.challenges || []
+    const woven = []
+    for (let i = 0; i < issued.length; i++) {
+      woven.push(issued[i])
+      if (i < issued.length - 1) woven.push('look_center')
+    }
+    challenges.value = woven
   } catch (err) {
     errorMessage.value = 'Network error while starting liveness check.'
     failed.value = true
@@ -400,12 +420,28 @@ function processTurnFrame(yaw, direction) {
   return s.deepTurnFrames >= 2 && s.neutralFrames >= 1
 }
 
+// Center hold: confirm the user is looking straight ahead by holding |yaw|
+// below the neutral threshold for ~1 second.
+function processCenterFrame(yaw) {
+  const s = turnState.value
+  const NEUTRAL = 0.1
+  const HOLD_MS = 1000
+  const now = Date.now()
+  if (Math.abs(yaw) < NEUTRAL) {
+    if (!s.centerStartTime) s.centerStartTime = now
+    if (now - s.centerStartTime >= HOLD_MS) return true
+  } else {
+    s.centerStartTime = 0
+  }
+  return false
+}
+
 function advanceChallenge() {
   if (currentChallengeIndex.value >= challenges.value.length) return
   completed.value.push(challenges.value[currentChallengeIndex.value])
   currentChallengeIndex.value++
   // Reset per-challenge state so the next step is clean
-  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0 }
+  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0, centerStartTime: 0 }
 }
 
 async function runDetectionLoop() {
@@ -457,6 +493,10 @@ async function runDetectionLoop() {
           const yaw = yawRatio(det.landmarks)
           liveYaw.value = yaw
           if (processTurnFrame(yaw, ch)) advanceChallenge()
+        } else if (ch === 'look_center') {
+          const yaw = yawRatio(det.landmarks)
+          liveYaw.value = yaw
+          if (processCenterFrame(yaw)) advanceChallenge()
         }
 
         // All challenges done → submit. The backend rejects requests with
@@ -508,7 +548,7 @@ async function submit() {
   const requestBody = {
     challenge_token: challengeToken.value,
     descriptor: avg,
-    completed_challenges: completed.value,
+    completed_challenges: completed.value.filter(c => c !== 'look_center'),
     samples_count: samplesCount.value
   }
   if (props.event?.geofence_enabled) {
@@ -654,6 +694,48 @@ onBeforeUnmount(() => stopCamera())
   animation: fci-spin 0.8s linear infinite;
 }
 @keyframes fci-spin { to { transform: rotate(360deg); } }
+
+/* ── Rotating scanner ring (shown while finding the face) ── */
+.fci-scan-ring {
+  width: 62%;
+  aspect-ratio: 1 / 1;
+  max-width: 260px;
+  border-radius: 50%;
+  position: relative;
+  background:
+    conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      rgba(96, 165, 250, 0.0) 40deg,
+      rgba(96, 165, 250, 0.55) 90deg,
+      rgba(167, 139, 250, 0.85) 130deg,
+      rgba(96, 165, 250, 0.55) 170deg,
+      rgba(96, 165, 250, 0.0) 220deg,
+      transparent 360deg
+    );
+  -webkit-mask: radial-gradient(circle, transparent 56%, #000 58%, #000 64%, transparent 66%);
+          mask: radial-gradient(circle, transparent 56%, #000 58%, #000 64%, transparent 66%);
+  animation: fci-scan-rotate 2.4s linear infinite;
+  filter: drop-shadow(0 0 8px rgba(99, 146, 255, 0.45));
+}
+.fci-scan-ring::before,
+.fci-scan-ring::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 50%;
+  border: 1px dashed rgba(99, 146, 255, 0.18);
+}
+.fci-scan-ring::after {
+  inset: -10px;
+  border-color: rgba(99, 146, 255, 0.10);
+  animation: fci-scan-pulse 2.4s ease-in-out infinite;
+}
+@keyframes fci-scan-rotate { to { transform: rotate(360deg); } }
+@keyframes fci-scan-pulse {
+  0%, 100% { transform: scale(1);   opacity: 0.6; }
+  50%      { transform: scale(1.06); opacity: 0.2; }
+}
 
 /* ── Challenge chips ──────────────────────────────────────── */
 .fci-chip {
