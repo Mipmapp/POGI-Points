@@ -14,10 +14,10 @@ dotenv.config();
 const ALLOWED_ORIGINS = [
     'https://ssaam.vercel.app',
     'https://ssaam-api.vercel.app',
-    'http://:5000',
-    'http://:3000',
-    'http://127.0.0.1:5000',
-    'http://127.0.0.1:3000',
+    // 'http://:5000',
+    // 'http://:3000',
+    // 'http://127.0.0.1:5000',
+    // 'http://127.0.0.1:3000',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -7756,7 +7756,8 @@ app.post('/apis/attendance/events/:eventId/sessions', auth, requireCoAdminOrAbov
             start_time,
             end_time,
             late_timer_minutes: late_timer_minutes || 0,
-            status: status || (event.status === 'active' ? 'active' : 'draft')
+            status: status || (event.status === 'active' ? 'active' : 'draft'),
+            rfidScanner: { checkInEnabled: true, checkOutEnabled: false }
         });
 
         const saved = await session.save();

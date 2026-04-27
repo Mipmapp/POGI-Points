@@ -60,7 +60,9 @@ The application is a Vue 3 SPA utilizing the Composition API and Vite 5. Styling
 - **Multi-College Architecture:** Single MongoDB database with prefixed collections per college (ccs_, coe_, som_, cnahs_). College is identified via `X-SSAAM-College` header or JWT payload.
 - **Image Management:** Integration with ImgBB for image uploads, with client-side compression.
 - **GPS Geofencing for Attendance:** Admin-configurable per-event geofence with Leaflet+OpenStreetMap map component.
-- **Self-Service Face ID for Students:** Browser-based face enrollment and check-in using @vladmandic/face-api (CDN models).
+- **Self-Service Face ID for Students:** Browser-based face enrollment and check-in using @vladmandic/face-api (CDN models). Students check in directly from User > Attendance page — active events show Check In / Check Out buttons per session. Geolocation is pre-checked before opening Face ID modal if the event has a geofence. Pre-fetched coords are passed to StudentFaceCheckIn to avoid double location prompt.
+- **Session Check-In/Out Mode:** New sessions always default to `rfidScanner: { checkInEnabled: true, checkOutEnabled: false }` — check-in mode only. Admin enables check-out mode manually via session settings.
+- **Attendance Notifications:** Only Check In / Check Out success notifications shown. The "Check In/Out Available" banner and toast have been removed from Dashboard.vue student attendance section.
 - **Password Reset:** Three-step email-based password reset with rate limiting and server-time clock sync.
 
 **System Design Choices:**

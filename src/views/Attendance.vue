@@ -57,6 +57,90 @@
         </div>
       </div>
 
+      <!-- Active Events Self-Service Check-In Section -->
+      <div v-if="activeEvents.length > 0" class="space-y-3">
+        <h3 :class="['text-sm font-bold flex items-center gap-2', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-purple-800']">
+          <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse inline-block"></span>
+          Active Events — Check In / Check Out
+        </h3>
+
+        <!-- Inline notification -->
+        <transition name="fade">
+          <div v-if="checkInNotification.message" :class="['rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2', checkInNotification.type === 'success' ? 'bg-emerald-50 border border-emerald-300 text-emerald-800' : 'bg-red-50 border border-red-300 text-red-800']">
+            <span>{{ checkInNotification.type === 'success' ? '✓' : '✗' }}</span>
+            {{ checkInNotification.message }}
+          </div>
+        </transition>
+
+        <div v-for="event in activeEvents" :key="event._id" :class="['rounded-xl border-2 bg-white overflow-hidden shadow-sm', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-emerald-200' : 'border-purple-200']">
+          <!-- Event header -->
+          <div :class="['px-4 py-3 border-b flex items-center justify-between gap-3', isCOE ? 'border-orange-100 bg-orange-50' : isSOM ? 'border-green-100 bg-green-50' : isCNAHS ? 'border-emerald-100 bg-emerald-50' : 'border-purple-100 bg-purple-50']">
+            <div class="flex-1 min-w-0">
+              <h4 class="font-bold text-gray-900 truncate">{{ event.title }}</h4>
+              <p class="text-xs text-gray-500 mt-0.5">{{ formatEventDate(event.event_date) }}</p>
+            </div>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <span v-if="event.geofence_enabled" class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">📍 Location Required</span>
+              <span class="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-semibold">● Active</span>
+            </div>
+          </div>
+
+          <!-- Sessions -->
+          <div class="divide-y divide-gray-100">
+            <div v-if="activeEventsLoading" class="px-4 py-3 text-sm text-gray-500 flex items-center gap-2">
+              <div class="w-4 h-4 rounded-full border-2 border-gray-300 border-t-transparent animate-spin"></div>
+              Loading sessions…
+            </div>
+            <template v-else>
+              <div v-if="!getActiveEventSessions(event._id).length" class="px-4 py-3 text-sm text-gray-500">
+                No active sessions right now.
+              </div>
+              <div
+                v-for="session in getActiveEventSessions(event._id)"
+                :key="session._id"
+                class="px-4 py-3 flex items-center justify-between gap-3"
+              >
+                <div class="flex-1 min-w-0">
+                  <span class="font-semibold text-gray-800 text-sm">{{ session.label }}</span>
+                  <span class="text-xs text-gray-500 ml-2">{{ session.start_time }} – {{ session.end_time }}</span>
+                  <div class="mt-0.5">
+                    <span v-if="getSessionLogStatus(event._id, session._id) === 'complete'" class="text-xs text-emerald-600 font-semibold">✓ Attendance Complete</span>
+                    <span v-else-if="getSessionLogStatus(event._id, session._id) === 'checked_in'" :class="['text-xs font-semibold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']">Checked In — pending check-out</span>
+                    <span v-else class="text-xs text-gray-500">Not yet checked in</span>
+                  </div>
+                </div>
+                <div class="flex-shrink-0">
+                  <!-- Complete -->
+                  <span v-if="getSessionLogStatus(event._id, session._id) === 'complete'" class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg font-semibold">Done</span>
+                  <!-- Check Out -->
+                  <button
+                    v-else-if="getSessionLogStatus(event._id, session._id) === 'checked_in'"
+                    @click="handleCheckInButton(event, session)"
+                    :disabled="!faceEnrolled || geoLoading"
+                    :class="['px-3 py-1.5 rounded-lg text-sm font-semibold text-white transition-all flex items-center gap-1.5', !faceEnrolled ? 'bg-gray-300 cursor-not-allowed' : (isCOE ? 'bg-orange-600 hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-95' : 'bg-purple-600 hover:bg-purple-700 active:scale-95')]"
+                    :title="!faceEnrolled ? 'Set up your Face ID first' : ''"
+                  >
+                    <svg v-if="geoLoading && pendingSession?._id === session._id" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    Check Out
+                  </button>
+                  <!-- Check In -->
+                  <button
+                    v-else
+                    @click="handleCheckInButton(event, session)"
+                    :disabled="!faceEnrolled || geoLoading"
+                    :class="['px-3 py-1.5 rounded-lg text-sm font-semibold text-white transition-all flex items-center gap-1.5', !faceEnrolled ? 'bg-gray-300 cursor-not-allowed' : (isCOE ? 'bg-orange-600 hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-95' : 'bg-purple-600 hover:bg-purple-700 active:scale-95')]"
+                    :title="!faceEnrolled ? 'Set up your Face ID first' : ''"
+                  >
+                    <svg v-if="geoLoading && pendingSession?._id === session._id" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    Check In
+                  </button>
+                </div>
+              </div>
+            </template>
+          </div>
+        </div>
+      </div>
+
       <!-- Search & Info Bar Mobile Responsive -->
       <div :class="['rounded-xl shadow-md p-4 md:p-6 backdrop-blur-sm transition-all duration-200', isCOE ? 'bg-white bg-opacity-95 border-2 border-orange-200 hover:shadow-lg hover:border-orange-300' : isSOM ? 'bg-white bg-opacity-95 border-2 border-green-200 hover:shadow-lg hover:border-green-300' : isCNAHS ? 'bg-white bg-opacity-95 border-2 border-emerald-200 hover:shadow-lg hover:border-emerald-300' : 'bg-white bg-opacity-95 border-2 border-purple-200 hover:shadow-lg hover:border-purple-300']">
         <div class="flex flex-col gap-4">
@@ -135,48 +219,49 @@
         <div 
           v-for="event in paginatedEvents" 
           :key="event._id"
-<div :class="['bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 border-l-4 overflow-hidden', event.is_custom ? (isCOE ? 'border-l-orange-600' : isSOM ? 'border-l-green-600' : isCNAHS ? 'border-l-emerald-600' : 'border-l-purple-600') : isCOE ? 'border-l-orange-400' : isSOM ? 'border-l-green-400' : isCNAHS ? 'border-l-emerald-400' : 'border-l-purple-400']">
         >
-          <!-- Event Header -->
-          <div :class="['p-5 border-b', isCOE ? 'border-orange-100' : 'border-purple-100']">
-            <div class="flex justify-between items-start gap-3 mb-3">
-              <div class="flex-1">
-                <h3 class="text-lg font-bold text-gray-900 line-clamp-2">{{ event.title }}</h3>
-                <p :class="['text-sm mt-1', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-purple-600']">{{ formatEventDate(event.event_date) }}</p>
+          <div :class="['bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-200 border-l-4 overflow-hidden', event.is_custom ? (isCOE ? 'border-l-orange-600' : isSOM ? 'border-l-green-600' : isCNAHS ? 'border-l-emerald-600' : 'border-l-purple-600') : isCOE ? 'border-l-orange-400' : isSOM ? 'border-l-green-400' : isCNAHS ? 'border-l-emerald-400' : 'border-l-purple-400']">
+            <!-- Event Header -->
+            <div :class="['p-5 border-b', isCOE ? 'border-orange-100' : 'border-purple-100']">
+              <div class="flex justify-between items-start gap-3 mb-3">
+                <div class="flex-1">
+                  <h3 class="text-lg font-bold text-gray-900 line-clamp-2">{{ event.title }}</h3>
+                  <p :class="['text-sm mt-1', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-purple-600']">{{ formatEventDate(event.event_date) }}</p>
+                </div>
+                <span :class="['px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap', event.is_custom ? (isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800') : (isCOE ? 'bg-orange-50 text-orange-700 border border-orange-200' : 'bg-purple-50 text-purple-700 border border-purple-200')]">
+                  {{ event.is_custom ? '✓ Custom' : 'Regular' }}
+                </span>
               </div>
-              <span :class="['px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap', event.is_custom ? (isCOE ? 'bg-orange-100 text-orange-800' : 'bg-purple-100 text-purple-800') : (isCOE ? 'bg-orange-50 text-orange-700 border border-orange-200' : 'bg-purple-50 text-purple-700 border border-purple-200')]">
-                {{ event.is_custom ? '✓ Custom' : 'Regular' }}
-              </span>
+              <p v-if="event.description" class="text-sm text-gray-600 line-clamp-2">{{ event.description }}</p>
             </div>
-            <p v-if="event.description" class="text-sm text-gray-600 line-clamp-2">{{ event.description }}</p>
-          </div>
 
-          <!-- Event Stats -->
-          <div :class="['p-5 space-y-3', isCOE ? 'bg-orange-50' : 'bg-purple-50']">
-            <div class="flex items-center justify-between">
-              <span :class="['text-sm font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">Total Attendees:</span>
-              <span class="font-bold text-gray-900 text-lg">{{ event.total_attendees || 0 }}</span>
-            </div>
-            <div class="flex gap-4 pt-2 border-t" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
-              <div class="flex-1">
-                <p class="text-xs text-green-600 font-semibold mb-1">Present</p>
-                <p class="font-bold text-green-700 text-lg">{{ event.present_count || 0 }}</p>
+            <!-- Event Stats -->
+            <div :class="['p-5 space-y-3', isCOE ? 'bg-orange-50' : 'bg-purple-50']">
+              <div class="flex items-center justify-between">
+                <span :class="['text-sm font-medium', isCOE ? 'text-orange-700' : 'text-purple-700']">Total Attendees:</span>
+                <span class="font-bold text-gray-900 text-lg">{{ event.total_attendees || 0 }}</span>
               </div>
-              <div class="flex-1">
-                <p class="text-xs text-red-600 font-semibold mb-1">Absent</p>
-                <p class="font-bold text-red-700 text-lg">{{ event.absent_count || 0 }}</p>
+              <div class="flex gap-4 pt-2 border-t" :class="isCOE ? 'border-orange-200' : 'border-purple-200'">
+                <div class="flex-1">
+                  <p class="text-xs text-green-600 font-semibold mb-1">Present</p>
+                  <p class="font-bold text-green-700 text-lg">{{ event.present_count || 0 }}</p>
+                </div>
+                <div class="flex-1">
+                  <p class="text-xs text-red-600 font-semibold mb-1">Absent</p>
+                  <p class="font-bold text-red-700 text-lg">{{ event.absent_count || 0 }}</p>
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Action Buttons -->
-          <div class="p-5 pt-4">
-            <button 
-              @click="viewEventDetails(event)"
-              :class="['w-full px-4 py-2.5 rounded-lg font-medium transition-all duration-200 text-white text-sm', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 active:scale-95' : 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 active:scale-95']"
-            >
-              View Details
-            </button>
+            <!-- Action Buttons -->
+            <div class="p-5 pt-4">
+              <button 
+                @click="viewEventDetails(event)"
+                :class="['w-full px-4 py-2.5 rounded-lg font-medium transition-all duration-200 text-white text-sm', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 active:scale-95' : 'bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 active:scale-95']"
+              >
+                View Details
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -218,6 +303,18 @@
       @close="showFaceEnroll = false"
       @enrolled="onFaceEnrolled"
     />
+
+    <!-- Face ID check-in modal -->
+    <StudentFaceCheckIn
+      :open="showFaceCheckIn"
+      :event="activeFaceEvent || {}"
+      :session="activeFaceSession || {}"
+      :is-c-o-e="isCOE"
+      :is-s-o-m="isSOM"
+      :is-c-n-a-h-s="isCNAHS"
+      @close="showFaceCheckIn = false; activeFaceSession = null; activeFaceEvent = null"
+      @success="onFaceCheckInSuccess"
+    />
   </div>
 </template>
 
@@ -227,10 +324,11 @@ import departments from '../config/departments.js'
 import { checkDepartment } from '../config/themes.js'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import StudentFaceEnroll from '../components/StudentFaceEnroll.vue'
+import StudentFaceCheckIn from '../components/StudentFaceCheckIn.vue'
 
 export default {
   name: 'Attendance',
-  components: { StudentFaceEnroll },
+  components: { StudentFaceEnroll, StudentFaceCheckIn },
   data() {
     return {
       isLoading: false,
@@ -242,7 +340,23 @@ export default {
       // Face ID self-service state
       faceLoading: true,
       faceData: null,
-      showFaceEnroll: false
+      showFaceEnroll: false,
+      // Active events self-service check-in
+      activeEvents: [],
+      activeEventsLoading: false,
+      // sessionId -> { checkedIn: bool, checkedOut: bool }
+      mySessionStatus: {},
+      // eventId -> [session, ...]  only active sessions
+      eventActiveSessions: {},
+      // Face check-in modal
+      showFaceCheckIn: false,
+      activeFaceSession: null,
+      activeFaceEvent: null,
+      pendingSession: null,
+      geoLoading: false,
+      // Inline notification
+      checkInNotification: { message: '', type: 'success' },
+      checkInNotifTimer: null,
     };
   },
   computed: {
@@ -258,7 +372,6 @@ export default {
     faceEnrolled() {
       return !!(this.faceData && this.faceData.count && this.faceData.count > 0);
     },
-    // Filter events by search query and sort by date (newest first)
     searchedEvents() {
       let filtered = this.events;
       if (this.searchQuery.trim()) {
@@ -266,22 +379,18 @@ export default {
           event.title.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
       }
-      // Sort by date - newest first
       return filtered.sort((a, b) => new Date(b.event_date) - new Date(a.event_date));
     },
-    // Get paginated events
     paginatedEvents() {
       const start = (this.currentPage - 1) * this.itemsPerPage;
       const end = start + this.itemsPerPage;
       return this.searchedEvents.slice(start, end);
     },
-    // Total pages
     totalPages() {
       return Math.ceil(this.searchedEvents.length / this.itemsPerPage) || 1;
     }
   },
   watch: {
-    // Reset to page 1 when search changes
     searchQuery() {
       this.currentPage = 1;
     }
@@ -290,6 +399,7 @@ export default {
     this.loadEvents();
     this.loadAllUsers();
     this.loadFaceStatus();
+    this.loadActiveEventsForStudent();
   },
   methods: {
     async loadFaceStatus() {
@@ -321,6 +431,139 @@ export default {
       try { return new Date(d).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }); }
       catch { return String(d); }
     },
+
+    // ---- Active events self-service ----
+    async loadActiveEventsForStudent() {
+      this.activeEventsLoading = true;
+      try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('studentToken');
+        if (!token) return;
+
+        const [eventsRes, recordsRes] = await Promise.all([
+          fetch(buildAPIUrl('/apis/attendance/events/active'), {
+            headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
+          }),
+          fetch(buildAPIUrl('/apis/attendance/my-records'), {
+            headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
+          })
+        ]);
+
+        if (!eventsRes.ok) return;
+
+        const eventsData = await eventsRes.json();
+        this.activeEvents = eventsData.data || [];
+
+        if (recordsRes.ok) {
+          const recordsData = await recordsRes.json();
+          const records = recordsData.data || [];
+
+          const sessionStatus = {};
+          const eventSessions = {};
+
+          for (const record of records) {
+            const eventId = record.event?._id || record.event_id;
+            if (!eventId) continue;
+
+            const sessions = record.sessions || [];
+            const activeSess = sessions
+              .filter(s => s.session && (s.session.status === 'active'))
+              .map(s => s.session);
+
+            if (activeSess.length > 0) {
+              eventSessions[eventId] = activeSess;
+            }
+
+            for (const s of sessions) {
+              if (!s.session?._id) continue;
+              const sid = s.session._id.toString();
+              const att = s.attendance || {};
+              sessionStatus[sid] = {
+                checkedIn: !!att.check_in_at,
+                checkedOut: !!att.check_out_at
+              };
+            }
+          }
+
+          this.mySessionStatus = sessionStatus;
+          this.eventActiveSessions = eventSessions;
+        }
+      } catch (err) {
+        console.error('Failed to load active events:', err);
+      } finally {
+        this.activeEventsLoading = false;
+      }
+    },
+
+    getActiveEventSessions(eventId) {
+      return this.eventActiveSessions[eventId] || [];
+    },
+
+    getSessionLogStatus(eventId, sessionId) {
+      const sid = sessionId?.toString();
+      const status = this.mySessionStatus[sid];
+      if (!status) return 'none';
+      if (status.checkedIn && status.checkedOut) return 'complete';
+      if (status.checkedIn) return 'checked_in';
+      return 'none';
+    },
+
+    async handleCheckInButton(event, session) {
+      if (!this.faceEnrolled) return;
+      this.pendingSession = session;
+
+      // If event has geofence, get location first
+      if (event.geofence_enabled) {
+        this.geoLoading = true;
+        try {
+          const position = await new Promise((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject, {
+              enableHighAccuracy: true,
+              timeout: 10000,
+              maximumAge: 0
+            });
+          });
+          // Store coords in session so the face check-in component can use them
+          this.activeFaceEvent = {
+            ...event,
+            _pendingLat: position.coords.latitude,
+            _pendingLng: position.coords.longitude,
+            _pendingAccuracy: position.coords.accuracy
+          };
+        } catch (err) {
+          this.geoLoading = false;
+          this.pendingSession = null;
+          this.showCheckInNotification('Location access denied. Enable GPS to check in at this event.', 'error');
+          return;
+        } finally {
+          this.geoLoading = false;
+        }
+      } else {
+        this.activeFaceEvent = event;
+      }
+
+      this.activeFaceSession = session;
+      this.showFaceCheckIn = true;
+      this.pendingSession = null;
+    },
+
+    onFaceCheckInSuccess(data) {
+      const action = data?.action || '';
+      const isCheckOut = action === 'check_out' || (typeof data === 'string' && data.toLowerCase().includes('out'));
+      const msg = isCheckOut ? 'Check Out recorded successfully!' : 'Check In recorded successfully!';
+      this.showCheckInNotification(msg, 'success');
+      // Refresh active events data
+      this.loadActiveEventsForStudent();
+    },
+
+    showCheckInNotification(message, type = 'success') {
+      if (this.checkInNotifTimer) clearTimeout(this.checkInNotifTimer);
+      this.checkInNotification = { message, type };
+      this.checkInNotifTimer = setTimeout(() => {
+        this.checkInNotification = { message: '', type: 'success' };
+      }, 5000);
+    },
+
+    // ---- Events list ----
     async loadEvents() {
       this.isLoading = true;
       try {
@@ -389,15 +632,10 @@ export default {
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* Smooth line clamping for text truncation */
 .line-clamp-2 {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -405,7 +643,6 @@ export default {
   overflow: hidden;
 }
 
-/* Smooth transitions for interactive elements */
 button {
   transition: all 0.2s ease-in-out;
 }
@@ -418,7 +655,6 @@ input::placeholder {
   color: rgba(107, 114, 128, 0.6);
 }
 
-/* Smooth gradient backgrounds */
 .bg-gradient-to-r {
   background-image: linear-gradient(to right, var(--tw-gradient-stops));
 }
@@ -427,7 +663,13 @@ input::placeholder {
   background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
 }
 
-/* Responsive adjustments */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+
 @media (max-width: 640px) {
   :deep(.max-h-72) {
     max-height: 250px;

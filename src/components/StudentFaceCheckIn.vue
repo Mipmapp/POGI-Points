@@ -411,26 +411,33 @@ async function submit() {
     samples_count: samplesCount.value
   }
   if (props.event?.geofence_enabled) {
-    if (!('geolocation' in navigator)) {
-      submitting.value = false
-      errorMessage.value = 'This event needs your location, but your device does not support GPS.'
-      failed.value = true
-      return
-    }
-    try {
-      const pos = await new Promise((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 12000, maximumAge: 5000 })
-      })
-      requestBody.latitude = pos.coords.latitude
-      requestBody.longitude = pos.coords.longitude
-      requestBody.accuracy = pos.coords.accuracy
-    } catch (gErr) {
-      submitting.value = false
-      errorMessage.value = gErr && gErr.code === 1
-        ? 'Location permission denied. Please allow location to check in for this event.'
-        : 'Could not get your location. Make sure GPS is on and try again.'
-      failed.value = true
-      return
+    // Use pre-fetched coords if available (set by parent before opening modal)
+    if (props.event._pendingLat != null && props.event._pendingLng != null) {
+      requestBody.latitude = props.event._pendingLat
+      requestBody.longitude = props.event._pendingLng
+      requestBody.accuracy = props.event._pendingAccuracy || 0
+    } else {
+      if (!('geolocation' in navigator)) {
+        submitting.value = false
+        errorMessage.value = 'This event needs your location, but your device does not support GPS.'
+        failed.value = true
+        return
+      }
+      try {
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 12000, maximumAge: 5000 })
+        })
+        requestBody.latitude = pos.coords.latitude
+        requestBody.longitude = pos.coords.longitude
+        requestBody.accuracy = pos.coords.accuracy
+      } catch (gErr) {
+        submitting.value = false
+        errorMessage.value = gErr && gErr.code === 1
+          ? 'Location permission denied. Please allow location to check in for this event.'
+          : 'Could not get your location. Make sure GPS is on and try again.'
+        failed.value = true
+        return
+      }
     }
   }
 
