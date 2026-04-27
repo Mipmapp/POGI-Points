@@ -27,37 +27,33 @@ args = "Backend Server"
 name = "Start application"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
 
-[workflows.workflow.metadata]
-outputType = "webview"
-
 [[workflows.workflow]]
 name = "Backend Server"
 author = "agent"
 
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "PORT=3001 node server.js"
-waitForPort = 3001
-
 [workflows.workflow.metadata]
 outputType = "console"
 
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "node server.js"
+waitForPort = 3001
+
 [[ports]]
 localPort = 3001
-externalPort = 3002
+externalPort = 3001
 
 [[ports]]
 localPort = 5000
 externalPort = 80
-
-[[ports]]
-localPort = 5001
-externalPort = 3003
 
 [[ports]]
 localPort = 5002
@@ -79,6 +75,7 @@ SSAAM_API_KEY = "SSAAMRegJRMSU"
 SSAAM_CRYPTO_KEY = "SSAAM2025CCS"
 ADMIN_VERIFICATION_SECRET = "SSAAMAdminVerify"
 MONGODB_URL = "mongodb+srv://SSAAM:ssaam.admin.jrmsu@cluster0.bnwy9iy.mongodb.net/dbconnect?retryWrites=true&w=majority"
+PORT = "3001"
 
 [userenv.development]
 VITE_API_URL = ""
