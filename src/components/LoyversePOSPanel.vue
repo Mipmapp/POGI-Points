@@ -10,10 +10,6 @@
         <p class="text-[11px] sm:text-xs text-white/80 truncate">{{ student ? `Sale for ${customerName}` : 'No student selected' }}</p>
       </div>
       <div class="hidden sm:flex items-center gap-2 text-[11px]">
-        <span :class="['px-2 py-1 rounded-full font-bold flex items-center gap-1', usbConnected ? 'bg-white text-[#00a884]' : 'bg-white/15 text-white/80']">
-          <span :class="['w-1.5 h-1.5 rounded-full', usbConnected ? 'bg-[#00a884]' : 'bg-white/60']"></span>
-          USB
-        </span>
         <span :class="['px-2 py-1 rounded-full font-bold flex items-center gap-1', btConnected ? 'bg-white text-[#00a884]' : 'bg-white/15 text-white/80']">
           <span :class="['w-1.5 h-1.5 rounded-full', btConnected ? 'bg-[#00a884]' : 'bg-white/60']"></span>
           BT
@@ -27,17 +23,12 @@
 
     <!-- Connection bar -->
     <div class="px-4 sm:px-6 py-3 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-2">
-      <button @click="connectUSB" :disabled="connectingUSB"
-        :class="['flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border', usbConnected ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-white text-gray-700 border-gray-200 hover:border-[#00a884] hover:text-[#00a884]']">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-        {{ usbConnected ? 'USB Connected' : (connectingUSB ? 'Connecting...' : 'Connect USB Printer') }}
-      </button>
       <button @click="connectBT" :disabled="connectingBT"
         :class="['flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border', btConnected ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-white text-gray-700 border-gray-200 hover:border-blue-500 hover:text-blue-600']">
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l5-7-5-7v14zM7 19l5-7-5-7"/></svg>
-        {{ btConnected ? 'BT Connected' : (connectingBT ? 'Connecting...' : 'Connect Bluetooth') }}
+        {{ btConnected ? 'BT Connected' : (connectingBT ? 'Connecting...' : 'Connect Bluetooth Printer') }}
       </button>
-      <button v-if="usbConnected || btConnected" @click="disconnectAll" class="px-3 py-2 rounded-xl text-xs font-bold border border-gray-200 text-gray-500 hover:bg-gray-100 transition">
+      <button v-if="btConnected" @click="disconnectAll" class="px-3 py-2 rounded-xl text-xs font-bold border border-gray-200 text-gray-500 hover:bg-gray-100 transition">
         Disconnect
       </button>
       <span v-if="printerStatus" class="ml-auto text-[11px] font-semibold text-gray-500 self-center px-2">{{ printerStatus }}</span>
@@ -94,7 +85,7 @@
           </div>
 
           <div class="flex gap-2 pt-1">
-            <button @click="printReceipt" :disabled="!hasSale || (!usbConnected && !btConnected) || isPrinting"
+            <button @click="printReceipt" :disabled="!hasSale || !btConnected || isPrinting"
               class="flex-1 py-2.5 bg-gradient-to-r from-[#36b37e] to-[#00a884] text-white rounded-xl font-bold text-sm transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shadow-md shadow-emerald-200">
               <svg v-if="isPrinting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
@@ -213,11 +204,6 @@ const DEFAULT_SETTINGS = {
   employeeName: '',
 };
 
-// Common ESC/POS thermal printer USB vendor IDs (Epson, Star, Citizen, Bixolon, etc.)
-const PRINTER_VENDORS = [
-  0x04b8, 0x0519, 0x0fe6, 0x1504, 0x1659, 0x0dd4, 0x1a86, 0x067b, 0x154f, 0x0416, 0x0483, 0x28e9
-];
-
 // Known BLE thermal printer services (POS58, MTP, GOOJPRT, ZJ, Xprinter, etc.)
 const BT_SERVICES = [
   '000018f0-0000-1000-8000-00805f9b34fb',
@@ -248,11 +234,7 @@ export default {
       logoFailed: false,
       showSettings: false,
       copies: 1,
-      // Printer state
-      usbDevice: null,
-      usbEndpoint: null,
-      usbConnected: false,
-      connectingUSB: false,
+      // Printer state (Bluetooth only)
       btDevice: null,
       btCharacteristic: null,
       btConnected: false,
@@ -521,84 +503,6 @@ export default {
       return out;
     },
 
-    // ---------- USB printer ----------
-    async pickUSBDevice() {
-      const filters = [
-        { classCode: 0x07 },
-        ...PRINTER_VENDORS.map(v => ({ vendorId: v })),
-      ];
-      try {
-        return await navigator.usb.requestDevice({ filters });
-      } catch (e) {
-        if (e && e.name === 'NotFoundError') {
-          return await navigator.usb.requestDevice({ filters: [{}] });
-        }
-        throw e;
-      }
-    },
-    async connectUSB() {
-      if (!navigator.usb) {
-        this.notify('WebUSB is not supported in this browser', 'error');
-        this.printerStatus = 'WebUSB unavailable — try Chrome/Edge';
-        return;
-      }
-      this.connectingUSB = true;
-      this.printerStatus = 'Requesting USB device...';
-      try {
-        const device = await this.pickUSBDevice();
-        this.printerStatus = `Opening ${device.productName || device.manufacturerName || 'printer'}...`;
-        await device.open();
-        try { await device.reset(); } catch (_) {}
-        if (device.configuration === null) {
-          try { await device.selectConfiguration(1); } catch (_) {}
-        }
-        let claimedIface = null;
-        let endpointNumber = null;
-        const interfaces = (device.configuration && device.configuration.interfaces) || [];
-        for (const iface of interfaces) {
-          for (const alt of iface.alternates) {
-            const out = alt.endpoints.find(e => e.direction === 'out' && e.type === 'bulk');
-            if (!out) continue;
-            try {
-              await device.claimInterface(iface.interfaceNumber);
-              if (alt.alternateSetting !== 0) {
-                try { await device.selectAlternateInterface(iface.interfaceNumber, alt.alternateSetting); } catch (_) {}
-              }
-              claimedIface = iface.interfaceNumber;
-              endpointNumber = out.endpointNumber;
-              break;
-            } catch (e) {
-              this.printerStatus = 'OS driver is holding the printer';
-            }
-          }
-          if (claimedIface !== null) break;
-        }
-        if (claimedIface === null) {
-          throw new Error('Could not claim a printable USB interface (the OS print driver may already own it — unplug then replug, or remove the printer from the system print queue, then try again)');
-        }
-        this.usbDevice = device;
-        this.usbEndpoint = endpointNumber;
-        this.usbConnected = true;
-        this.printerStatus = `USB ready: ${device.productName || device.manufacturerName || 'Printer'}`;
-        this.notify('USB printer connected', 'success');
-      } catch (e) {
-        console.error('USB connect error:', e);
-        const msg = (e && e.message) ? e.message : String(e);
-        if (e && e.name === 'NotFoundError') {
-          this.printerStatus = 'No USB printer selected';
-          this.notify('No USB printer selected', 'warning');
-        } else if (e && e.name === 'SecurityError') {
-          this.printerStatus = 'Blocked by browser permissions — open the app in a normal tab';
-          this.notify('USB blocked. Open the app outside the preview iframe in Chrome.', 'error');
-        } else {
-          this.printerStatus = 'USB failed: ' + msg.slice(0, 80);
-          this.notify('USB connect failed: ' + msg, 'error');
-        }
-      } finally {
-        this.connectingUSB = false;
-      }
-    },
-
     // ---------- Bluetooth printer ----------
     async pickBTDevice() {
       try {
@@ -676,14 +580,10 @@ export default {
     },
     async disconnectAll(silent = false) {
       try {
-        if (this.usbDevice) { try { await this.usbDevice.close(); } catch {} }
         if (this.btDevice && this.btDevice.gatt && this.btDevice.gatt.connected) {
           try { this.btDevice.gatt.disconnect(); } catch {}
         }
       } finally {
-        this.usbDevice = null;
-        this.usbEndpoint = null;
-        this.usbConnected = false;
         this.btDevice = null;
         this.btCharacteristic = null;
         this.btConnected = false;
@@ -700,20 +600,17 @@ export default {
         const data = await this.buildEscPos();
         for (let copy = 1; copy <= n; copy++) {
           this.printerStatus = n > 1 ? `Printing ${copy} of ${n}...` : 'Printing...';
-          if (this.usbConnected && this.usbDevice && this.usbEndpoint != null) {
-            await this.usbDevice.transferOut(this.usbEndpoint, data);
-          } else if (this.btConnected && this.btCharacteristic) {
-            const chunkSize = 180;
-            for (let i = 0; i < data.length; i += chunkSize) {
-              const slice = data.slice(i, i + chunkSize);
-              if (this.btCharacteristic.writeValueWithoutResponse) {
-                await this.btCharacteristic.writeValueWithoutResponse(slice);
-              } else {
-                await this.btCharacteristic.writeValue(slice);
-              }
+          if (!this.btConnected || !this.btCharacteristic) {
+            throw new Error('No Bluetooth printer connected');
+          }
+          const chunkSize = 180;
+          for (let i = 0; i < data.length; i += chunkSize) {
+            const slice = data.slice(i, i + chunkSize);
+            if (this.btCharacteristic.writeValueWithoutResponse) {
+              await this.btCharacteristic.writeValueWithoutResponse(slice);
+            } else {
+              await this.btCharacteristic.writeValue(slice);
             }
-          } else {
-            throw new Error('No printer connected');
           }
           // Small breathing room between copies so the printer buffer drains.
           if (copy < n) await new Promise(r => setTimeout(r, 350));
