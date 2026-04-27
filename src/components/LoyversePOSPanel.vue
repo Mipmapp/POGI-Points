@@ -417,10 +417,14 @@ export default {
 
       // Left align
       parts.push(new Uint8Array([0x1b, 0x61, 0x00]));
-      parts.push(enc.encode('Employee: ' + (this.employeeName || 'Owner') + '\n'));
+      // Word-wrap long values so we never split a word in the middle
+      // (e.g. "MAGLINTE" must not become "MAG" + "LINTE").
+      this.wrapText('Employee: ' + (this.employeeName || 'Owner'), W)
+        .forEach(line => parts.push(enc.encode(line + '\n')));
       parts.push(enc.encode('POS: ' + this.posName + '\n'));
       parts.push(enc.encode('\n'));
-      parts.push(enc.encode('Customer: ' + (this.customerName || '—') + '\n'));
+      this.wrapText('Customer: ' + (this.customerName || '—'), W)
+        .forEach(line => parts.push(enc.encode(line + '\n')));
       parts.push(enc.encode('\n'));
       parts.push(enc.encode(this.dashed(W) + '\n'));
 
@@ -430,7 +434,8 @@ export default {
       const priceText = 'P' + this.amount.toFixed(2);
       const itemUpper = this.itemName;
       parts.push(new Uint8Array([0x1b, 0x45, 0x01]));
-      parts.push(enc.encode(this.row(itemUpper.slice(0, W - priceText.length - 1), priceText, W) + '\n'));
+      this.itemRow(itemUpper, priceText, W)
+        .forEach(line => parts.push(enc.encode(line + '\n')));
       parts.push(new Uint8Array([0x1b, 0x45, 0x00]));
       parts.push(enc.encode(`1 x ${priceText}\n`));
       parts.push(enc.encode('\n'));
@@ -486,6 +491,34 @@ export default {
       }
       if (cur) lines.push(cur);
       return lines.length ? lines : [''];
+    },
+    // Wrap an item title with a right-aligned price on the first line.
+    // First line  : as much of the (word-wrapped) title as fits, then PRICE.
+    // Other lines : the rest of the title, full width, words kept whole.
+    // Guarantees that no word is split mid-character.
+    itemRow(name, price, w = 32) {
+      const firstMaxName = Math.max(1, w - price.length - 1);
+      const words = String(name || '').split(/\s+/).filter(Boolean);
+      const lines = [];
+      let cur = '';
+      for (const word of words) {
+        const max = lines.length === 0 ? firstMaxName : w;
+        if (!cur.length) {
+          // Push the word onto the current line; if it overflows on its own,
+          // bump to the next line (the next-line cap is the wider w).
+          if (word.length <= max) { cur = word; }
+          else { lines.push(''); cur = word; }
+          continue;
+        }
+        if (cur.length + 1 + word.length <= max) { cur += ' ' + word; }
+        else { lines.push(cur); cur = word; }
+      }
+      if (cur) lines.push(cur);
+      // Compose first line with right-aligned price; rest are plain.
+      const out = [];
+      out.push(this.row(lines[0] || '', price, w));
+      for (let i = 1; i < lines.length; i++) out.push(lines[i]);
+      return out;
     },
 
     // ---------- USB printer ----------
