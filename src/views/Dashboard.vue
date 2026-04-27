@@ -177,16 +177,22 @@
               :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'"
               class="w-full h-full object-contain drop-shadow-xl"
             />
-            <!-- Sweep is clipped to a circle that matches the round JRMSU /
-                 COE / SOM seal so the shine only paints inside the logo and
-                 never bleeds onto the dark area around it. (The previous
-                 SVG mask-image approach was unreliable across browsers
-                 because the colored SVG paths produced a fully opaque
-                 alpha channel across the whole bounding box.) -->
-            <div
-              class="logo-sweep absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/70 to-transparent"
-              style="clip-path: circle(50% at 50% 50%); -webkit-clip-path: circle(50% at 50% 50%);"
-            ></div>
+            <!-- Shine layer:
+                 We render a SECOND copy of the exact same logo image, but
+                 turn every visible pixel pure white via `filter: brightness(0) invert(1)`.
+                 Because this is a real <img>, the transparent pixels around
+                 the logo stay transparent — there is literally nothing to
+                 paint outside the silhouette, so the shine cannot bleed.
+                 A horizontal linear-gradient mask sweeps a narrow bright
+                 band across the white silhouette to create the shimmer.
+                 `mix-blend-mode: plus-lighter` makes the bright band ADD
+                 light to the underlying logo instead of replacing it. -->
+            <img
+              :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl"
+              alt=""
+              aria-hidden="true"
+              class="logo-shine absolute inset-0 w-full h-full object-contain pointer-events-none"
+            />
           </div>
           <h1 class="text-2xl lg:text-4xl font-extrabold italic text-white drop-shadow tracking-wide">SSAAM</h1>
         </div>
@@ -17394,6 +17400,53 @@ onUnmounted(() => {
   }
   100% {
     left: 100%;
+  }
+}
+
+/* Shine layer over the JRMSU / COE / SOM logo.
+   The image is filtered to a pure white silhouette, then a moving
+   linear-gradient mask sweeps a narrow bright band across it.
+   `mix-blend-mode: plus-lighter` makes the band ADD light onto the
+   logo underneath instead of replacing it, and because this is a real
+   <img>, transparent pixels around the logo stay transparent so the
+   shine cannot bleed outside the silhouette. */
+.logo-shine {
+  filter: brightness(0) invert(1);
+  mix-blend-mode: plus-lighter;
+  -webkit-mask-image: linear-gradient(
+    100deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(255, 255, 255, 0.85) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    100deg,
+    transparent 0%,
+    transparent 35%,
+    rgba(255, 255, 255, 0.85) 50%,
+    transparent 65%,
+    transparent 100%
+  );
+  -webkit-mask-size: 250% 100%;
+  mask-size: 250% 100%;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: 150% 0;
+  mask-position: 150% 0;
+  animation: logo-shine-sweep 3s ease-in-out infinite;
+}
+
+@keyframes logo-shine-sweep {
+  0% {
+    -webkit-mask-position: 150% 0;
+    mask-position: 150% 0;
+  }
+  60%,
+  100% {
+    -webkit-mask-position: -50% 0;
+    mask-position: -50% 0;
   }
 }
 
