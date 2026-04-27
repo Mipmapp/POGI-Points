@@ -1,93 +1,103 @@
 <template>
-  <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3" @click.self="closeIfIdle">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[94vh] overflow-y-auto">
-      <!-- Header -->
-      <div :class="['px-5 py-4 flex items-center justify-between border-b', accentBorder]">
-        <div>
-          <h3 :class="['text-lg font-bold', accentText]">Face ID Check-In</h3>
-          <p class="text-xs text-gray-500 mt-0.5 line-clamp-1">{{ session?.label || 'Session' }} • {{ event?.title || 'Event' }}</p>
-        </div>
-        <button @click="closeIfIdle" :disabled="submitting" class="text-gray-400 hover:text-gray-700 disabled:opacity-40 text-2xl leading-none">&times;</button>
-      </div>
+  <Transition name="fci-overlay">
+    <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center p-4 fci-backdrop" @click.self="closeIfIdle">
+      <Transition name="fci-panel" appear>
+        <div v-if="open" class="fci-panel relative w-full max-w-md overflow-hidden">
 
-      <div class="p-5 space-y-4">
-        <!-- Stage banner -->
-        <div :class="['text-sm rounded-xl p-3 border-2 flex items-start gap-2', stageStyle.bg, stageStyle.border, stageStyle.text]">
-          <span class="text-xl leading-none">{{ stageStyle.icon }}</span>
-          <div class="flex-1 min-w-0">
-            <p class="font-semibold">{{ stageMessage }}</p>
-            <p v-if="stageHint" class="text-xs opacity-80 mt-0.5">{{ stageHint }}</p>
-          </div>
-        </div>
+          <!-- Top glow bar -->
+          <div class="absolute top-0 left-0 right-0 h-px fci-glow-bar"></div>
 
-        <!-- Camera -->
-        <div class="relative bg-black rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center">
-          <video ref="videoEl" autoplay muted playsinline :class="['w-full h-full object-cover', cameraReady ? 'opacity-100' : 'opacity-0', 'transition-opacity']" style="transform: scaleX(-1);" />
-          <div v-if="!cameraReady" class="absolute inset-0 flex flex-col items-center justify-center text-white text-sm">
-            <svg class="animate-spin w-8 h-8 mb-2" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-            </svg>
-            <span>{{ camStatus }}</span>
+          <!-- Header -->
+          <div class="px-6 pt-6 pb-4 flex items-start justify-between">
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center gap-3 mb-1">
+                <div class="fci-icon-wrap flex-shrink-0">
+                  <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                </div>
+                <h3 class="text-lg font-bold text-white tracking-tight">Face ID Check-In</h3>
+              </div>
+              <p class="text-xs text-blue-200/60 ml-11 truncate">{{ session?.label || 'Session' }} &middot; {{ event?.title || 'Event' }}</p>
+            </div>
+            <button @click="closeIfIdle" :disabled="submitting" class="fci-close-btn flex-shrink-0 ml-3">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+              </svg>
+            </button>
           </div>
 
-          <!-- Liveness arrow overlay (left/right turn cue) -->
-          <div v-if="cameraReady && currentChallenge === 'turn_left'" class="absolute inset-0 flex items-center justify-start pointer-events-none">
-            <div class="text-white/80 text-7xl font-bold animate-pulse pl-3">←</div>
-          </div>
-          <div v-if="cameraReady && currentChallenge === 'turn_right'" class="absolute inset-0 flex items-center justify-end pointer-events-none">
-            <div class="text-white/80 text-7xl font-bold animate-pulse pr-3">→</div>
-          </div>
-          <div v-if="cameraReady && currentChallenge === 'blink'" class="absolute top-2 left-2 right-2 text-center pointer-events-none">
-            <div class="inline-block bg-black/60 text-white text-xs font-medium px-3 py-1 rounded-full">Blink twice</div>
+          <!-- Stage banner -->
+          <div class="mx-6 mb-4 rounded-2xl px-4 py-3 flex items-start gap-3 fci-stage-banner" :class="stageBannerClass">
+            <span class="text-xl leading-none mt-0.5 flex-shrink-0">{{ stageStyle.icon }}</span>
+            <div class="min-w-0">
+              <p class="text-sm font-semibold leading-snug">{{ stageMessage }}</p>
+              <p v-if="stageHint" class="text-xs opacity-70 mt-0.5 leading-snug">{{ stageHint }}</p>
+            </div>
           </div>
 
-          <!-- Face oval -->
-          <div v-if="cameraReady" class="absolute inset-0 pointer-events-none">
-            <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
-              <ellipse cx="50" cy="48" rx="22" ry="30" fill="none"
-                :stroke="faceLocked ? '#22c55e' : (faceDetected ? '#fbbf24' : '#ffffff80')"
-                stroke-width="0.6" stroke-dasharray="2 1.5" />
-            </svg>
+          <!-- Camera area -->
+          <div class="mx-6 mb-4">
+            <div class="relative rounded-2xl overflow-hidden bg-black aspect-[4/3] fci-camera-frame">
+              <video ref="videoEl" autoplay muted playsinline
+                :class="['w-full h-full object-cover transition-opacity duration-500', cameraReady ? 'opacity-100' : 'opacity-0']"
+                style="transform: scaleX(-1);" />
+
+              <!-- Loading state -->
+              <div v-if="!cameraReady" class="absolute inset-0 flex flex-col items-center justify-center">
+                <div class="fci-spinner mb-3"></div>
+                <span class="text-sm text-blue-200/70 font-medium">{{ camStatus }}</span>
+              </div>
+
+              <!-- Head turn cues -->
+              <div v-if="cameraReady && currentChallenge === 'turn_left'" class="absolute inset-0 flex items-center justify-start pointer-events-none">
+                <div class="text-white/80 text-7xl font-bold animate-pulse pl-4">←</div>
+              </div>
+              <div v-if="cameraReady && currentChallenge === 'turn_right'" class="absolute inset-0 flex items-center justify-end pointer-events-none">
+                <div class="text-white/80 text-7xl font-bold animate-pulse pr-4">→</div>
+              </div>
+              <div v-if="cameraReady && currentChallenge === 'blink'" class="absolute top-3 inset-x-0 flex justify-center pointer-events-none">
+                <div class="fci-blink-pill">Blink twice</div>
+              </div>
+
+              <!-- Face oval -->
+              <div v-if="cameraReady" class="absolute inset-0 pointer-events-none">
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
+                  <ellipse cx="50" cy="48" rx="22" ry="30" fill="none"
+                    :stroke="faceLocked ? '#4ade80' : (faceDetected ? '#fbbf24' : 'rgba(255,255,255,0.25)')"
+                    stroke-width="0.6" stroke-dasharray="2 1.5" />
+                </svg>
+              </div>
+            </div>
           </div>
-        </div>
 
-        <!-- Challenge progress chips -->
-        <div v-if="challenges.length" class="flex items-center gap-2 flex-wrap">
-          <div v-for="(c, idx) in challenges" :key="c"
-            :class="['px-3 py-1.5 rounded-full text-xs font-semibold border-2 flex items-center gap-1.5',
-              completed.includes(c) ? 'bg-emerald-50 border-emerald-300 text-emerald-800' :
-              idx === currentChallengeIndex ? (accentBg + ' text-white border-transparent') :
-              'bg-gray-50 border-gray-200 text-gray-500']">
-            <span v-if="completed.includes(c)">✓</span>
-            <span v-else-if="idx === currentChallengeIndex" class="animate-pulse">●</span>
-            <span v-else>○</span>
-            {{ challengeLabel(c) }}
+          <!-- Challenge chips -->
+          <div v-if="challenges.length" class="mx-6 mb-4 flex items-center gap-2 flex-wrap">
+            <div v-for="(c, idx) in challenges" :key="c"
+              :class="['fci-chip', completed.includes(c) ? 'fci-chip-done' : idx === currentChallengeIndex ? 'fci-chip-active' : 'fci-chip-idle']">
+              <span v-if="completed.includes(c)">✓</span>
+              <span v-else-if="idx === currentChallengeIndex" class="animate-pulse">●</span>
+              <span v-else>○</span>
+              {{ challengeLabel(c) }}
+            </div>
           </div>
-        </div>
 
-        <!-- Error -->
-        <div v-if="errorMessage" class="text-sm bg-red-50 border-2 border-red-200 text-red-800 rounded-xl p-3">
-          {{ errorMessage }}
-        </div>
+          <!-- Actions -->
+          <div class="px-6 pb-6 flex gap-3">
+            <button @click="closeIfIdle" :disabled="submitting" class="fci-btn-cancel flex-1">
+              {{ successMessage ? 'Close' : 'Cancel' }}
+            </button>
+            <button v-if="failed && !successMessage" @click="restart" class="fci-btn-retry flex-1">
+              Try Again
+            </button>
+          </div>
 
-        <!-- Result -->
-        <div v-if="successMessage" class="text-sm bg-emerald-50 border-2 border-emerald-300 text-emerald-800 rounded-xl p-3 text-center font-semibold">
-          ✓ {{ successMessage }}
+          <!-- Bottom glow bar -->
+          <div class="absolute bottom-0 left-0 right-0 h-px fci-glow-bar-bottom"></div>
         </div>
-
-        <!-- Actions -->
-        <div class="flex gap-3 pt-1">
-          <button @click="closeIfIdle" :disabled="submitting" class="flex-1 py-2.5 rounded-xl bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 disabled:opacity-50">
-            {{ successMessage ? 'Close' : 'Cancel' }}
-          </button>
-          <button v-if="failed && !successMessage" @click="restart" class="flex-1 py-2.5 rounded-xl bg-amber-500 text-white font-semibold hover:bg-amber-600">
-            Try Again
-          </button>
-        </div>
-      </div>
+      </Transition>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -106,10 +116,18 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'success'])
 
-// ---- Theme
+// ---- Theme (kept for backwards compat)
 const accentText = computed(() => props.isCOE ? 'text-orange-900' : props.isSOM ? 'text-green-900' : props.isCNAHS ? 'text-emerald-900' : 'text-purple-900')
 const accentBg = computed(() => props.isCOE ? 'bg-orange-600' : props.isSOM ? 'bg-green-600' : props.isCNAHS ? 'bg-emerald-600' : 'bg-purple-600')
 const accentBorder = computed(() => props.isCOE ? 'border-orange-100' : props.isSOM ? 'border-green-100' : props.isCNAHS ? 'border-emerald-100' : 'border-purple-100')
+
+const stageBannerClass = computed(() => {
+  if (successMessage.value) return 'fci-stage-success'
+  if (errorMessage.value || failed.value) return 'fci-stage-error'
+  if (submitting.value) return 'fci-stage-info'
+  if (currentChallenge.value) return 'fci-stage-challenge'
+  return 'fci-stage-default'
+})
 
 // ---- Camera + state
 const videoEl = ref(null)
@@ -478,3 +496,144 @@ function closeIfIdle() {
 
 onBeforeUnmount(() => stopCamera())
 </script>
+
+<style scoped>
+/* ── Backdrop ─────────────────────────────────────────────── */
+.fci-backdrop {
+  background: rgba(8, 14, 46, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* ── Panel ────────────────────────────────────────────────── */
+.fci-panel {
+  background: linear-gradient(150deg, #0d1a5e 0%, #080e2e 60%, #060b22 100%);
+  border: 1px solid rgba(99, 146, 255, 0.18);
+  border-radius: 28px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04) inset;
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+/* ── Glow bars ────────────────────────────────────────────── */
+.fci-glow-bar {
+  background: linear-gradient(90deg, transparent, rgba(99,146,255,0.6), transparent);
+}
+.fci-glow-bar-bottom {
+  background: linear-gradient(90deg, transparent, rgba(99,146,255,0.2), transparent);
+}
+
+/* ── Icon wrap ────────────────────────────────────────────── */
+.fci-icon-wrap {
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  background: rgba(99, 146, 255, 0.18);
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid rgba(99, 146, 255, 0.25);
+}
+
+/* ── Close button ─────────────────────────────────────────── */
+.fci-close-btn {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.05);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.fci-close-btn:hover { color: white; background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
+.fci-close-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* ── Stage banner ─────────────────────────────────────────── */
+.fci-stage-banner { transition: background 0.4s, border-color 0.4s; }
+.fci-stage-default  { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+.fci-stage-info     { background: rgba(59,130,246,0.15);  border: 1px solid rgba(96,165,250,0.35); color: #93c5fd; }
+.fci-stage-challenge{ background: rgba(139,92,246,0.15);  border: 1px solid rgba(167,139,250,0.35); color: #c4b5fd; }
+.fci-stage-success  { background: rgba(34,197,94,0.15);   border: 1px solid rgba(74,222,128,0.35); color: #86efac; }
+.fci-stage-error    { background: rgba(239,68,68,0.15);   border: 1px solid rgba(248,113,113,0.35); color: #fca5a5; }
+
+/* ── Camera frame ─────────────────────────────────────────── */
+.fci-camera-frame {
+  box-shadow: 0 0 0 1px rgba(99,146,255,0.2), 0 8px 32px rgba(0,0,0,0.5);
+}
+
+/* ── Spinner ──────────────────────────────────────────────── */
+.fci-spinner {
+  width: 44px; height: 44px;
+  border-radius: 50%;
+  border: 3px solid rgba(96,165,250,0.2);
+  border-top-color: #60a5fa;
+  animation: fci-spin 0.8s linear infinite;
+}
+@keyframes fci-spin { to { transform: rotate(360deg); } }
+
+/* ── Blink pill ───────────────────────────────────────────── */
+.fci-blink-pill {
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(4px);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+/* ── Challenge chips ──────────────────────────────────────── */
+.fci-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  border: 1px solid;
+  transition: all 0.3s;
+}
+.fci-chip-idle   { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.35); }
+.fci-chip-active { background: rgba(99,146,255,0.22); border-color: rgba(99,146,255,0.5); color: #a5b4fc; }
+.fci-chip-done   { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.4); color: #86efac; }
+
+/* ── Action buttons ───────────────────────────────────────── */
+.fci-btn-cancel {
+  padding: 12px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.75);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.fci-btn-cancel:hover { background: rgba(255,255,255,0.12); color: white; }
+.fci-btn-cancel:disabled { opacity: 0.35; cursor: not-allowed; }
+
+.fci-btn-retry {
+  padding: 12px;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: none;
+  color: white;
+  transition: all 0.2s;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(245,158,11,0.3);
+}
+.fci-btn-retry:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(245,158,11,0.4); }
+.fci-btn-retry:active { transform: translateY(0); }
+
+/* ── Overlay transition ───────────────────────────────────── */
+.fci-overlay-enter-active,
+.fci-overlay-leave-active { transition: opacity 0.25s ease; }
+.fci-overlay-enter-from,
+.fci-overlay-leave-to   { opacity: 0; }
+
+/* ── Panel transition ─────────────────────────────────────── */
+.fci-panel-enter-active { transition: opacity 0.3s ease, transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
+.fci-panel-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.fci-panel-enter-from   { opacity: 0; transform: scale(0.88) translateY(24px); }
+.fci-panel-leave-to     { opacity: 0; transform: scale(0.94) translateY(12px); }
+</style>

@@ -2366,9 +2366,13 @@
                             <button
                               v-if="getSessionDisplayStatus(session, event) === 'active' && getSessionCheckAction(session, event)"
                               @click.stop="openDashFaceCheckIn(session, event)"
-                              :class="['px-3 py-1 rounded-lg text-xs font-semibold transition', getSessionCheckAction(session, event) === 'Check In' ? (isCOE ? 'bg-orange-600 hover:bg-orange-700 text-white' : isSOM ? 'bg-green-600 hover:bg-green-700 text-white' : 'bg-blue-600 hover:bg-blue-700 text-white') : 'bg-gray-600 hover:bg-gray-700 text-white']"
+                              :class="['ssaam-checkin-btn px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 active:scale-95 shadow-md', getSessionCheckAction(session, event) === 'Check In' ? (isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-orange-500/30' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-green-500/30' : 'bg-gradient-to-r from-[#1e3bdb] to-[#4f62ff] hover:from-[#1730c0] hover:to-[#3d52e8] shadow-blue-600/30') : 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 shadow-gray-500/30', 'text-white']"
                             >
-                              {{ getSessionCheckAction(session, event) }}
+                              <span class="flex items-center gap-1.5">
+                                <svg v-if="getSessionCheckAction(session, event) === 'Check In'" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg>
+                                {{ getSessionCheckAction(session, event) }}
+                              </span>
                             </button>
                           </div>
                         </div>
