@@ -304,17 +304,6 @@
           </div>
         </div>
 
-        <!-- Switch to Face Recognition (replaces this kiosk's contents with the
-             Face Fullscreen overlay; native browser fullscreen is preserved). -->
-        <button
-          @click="switchKioskMode('face')"
-          class="w-full max-w-sm flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98] mb-3"
-          title="Switch to Face Recognition"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/></svg>
-          Switch to Face Recognition
-        </button>
-
         <p class="text-white/30 text-xs">Press ESC or click X to exit</p>
       </div>
 
@@ -487,166 +476,6 @@
       </div>
     </div>
 
-    <!-- ─── Face ID Scanner Fullscreen Overlay ─── -->
-    <!-- Mirrors the RFID fullscreen kiosk: same deep-navy gradient backdrop,
-         particle canvas, two-column layout (left = scanner panel, right =
-         recent logs) collapsing to a single column on mobile. -->
-    <div v-if="faceFullscreenMode" class="fixed inset-0 z-[70] overflow-hidden bg-gradient-to-b from-[#080e2e] to-[#0f1f6e]">
-      <!-- Glowing particle canvas (shared with RFID overlay) -->
-      <!-- Reuses the same `particleCanvas` ref as the RFID overlay; only
-           one overlay is ever mounted at a time, so the ref binds cleanly. -->
-      <canvas ref="particleCanvas" class="absolute inset-0 w-full h-full pointer-events-none z-0" style="opacity:0.85"></canvas>
-
-      <button
-        @click="faceFullscreenMode = false"
-        :class="['absolute top-5 right-5 z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white transition-all hover:bg-white/25 hover:scale-110 active:scale-95', isCOE ? 'hover:border-red-300 hover:text-red-200' : isSOM ? 'hover:border-yellow-300 hover:text-yellow-200' : isCNAHS ? 'hover:border-green-300 hover:text-green-200' : 'hover:border-blue-300 hover:text-blue-200']"
-        title="Close (ESC)"
-      >
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-      </button>
-
-      <div class="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden relative z-10">
-        <!-- ── Left Panel: Face Scanner ──
-             Widened so the live camera tile (aspect 4:3) gets enough room to
-             feel like a real kiosk instead of a thumbnail. -->
-        <div class="lg:w-[640px] xl:w-[760px] flex-shrink-0 min-h-max lg:h-full flex flex-col items-center justify-start lg:justify-center px-5 py-5 lg:py-6 border-b lg:border-b-0 lg:border-r border-white/20">
-          <!-- Logo + SSAAM title -->
-          <div class="flex items-center gap-3 mb-3">
-            <div class="relative w-9 h-9 lg:w-12 lg:h-12 flex-shrink-0 overflow-hidden">
-              <img
-                :src="isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl"
-                :alt="isCOE ? 'COE Logo' : isSOM ? 'SOM Logo' : 'JRMSU Logo'"
-                class="w-full h-full object-contain drop-shadow-xl"
-              />
-              <div
-                class="logo-sweep absolute inset-0 -translate-x-full animate-sweep pointer-events-none bg-gradient-to-r from-transparent via-white/70 to-transparent"
-                :style="{
-                  WebkitMaskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
-                  maskImage: `url('${isCOE ? '/icons/coe.svg' : isSOM ? '/icons/som.svg' : jrmsuLogoUrl}')`,
-                  WebkitMaskRepeat: 'no-repeat',
-                  maskRepeat: 'no-repeat',
-                  WebkitMaskPosition: 'center',
-                  maskPosition: 'center',
-                  WebkitMaskSize: 'contain',
-                  maskSize: 'contain',
-                  WebkitMaskMode: 'alpha',
-                  maskMode: 'alpha',
-                }"
-              ></div>
-            </div>
-            <h1 class="text-xl lg:text-3xl font-extrabold italic text-white drop-shadow tracking-wide">SSAAM</h1>
-          </div>
-
-          <!-- Compact Event + Mode strip — keeps the camera the dominant element. -->
-          <div class="w-full max-w-2xl bg-white/10 border border-white/20 rounded-2xl px-4 py-3 mb-3 text-center backdrop-blur-sm shadow-lg">
-            <p class="text-white font-bold text-base lg:text-lg leading-tight truncate">{{ selectedEvent?.title || 'No Event Selected' }}</p>
-            <div v-if="selectedSession" class="mt-1 flex flex-wrap justify-center items-center gap-2">
-              <span :class="['px-2.5 py-0.5 rounded-full text-[11px] font-semibold', isCOE ? 'bg-orange-500/30 text-orange-200' : isSOM ? 'bg-green-500/30 text-green-200' : isCNAHS ? 'bg-green-500/30 text-green-200' : 'bg-blue-500/30 text-blue-200']">
-                {{ selectedSession.label }}
-              </span>
-              <span class="text-white/55 text-[11px]">{{ formatDisplayTime(selectedSession.start_time) }} – {{ formatDisplayTime(selectedSession.end_time) }}</span>
-              <span class="text-white/35 text-[11px] font-mono tracking-widest">{{ fsLiveClock }}</span>
-              <span :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-bold uppercase tracking-wider',
-                effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled
-                  ? (isCOE ? 'bg-red-500/25 border-red-400/50 text-red-200' : isSOM ? 'bg-yellow-500/25 border-yellow-400/50 text-yellow-200' : isCNAHS ? 'bg-teal-500/25 border-teal-400/50 text-teal-200' : 'bg-orange-500/25 border-orange-400/50 text-orange-200')
-                  : 'bg-green-500/25 border-green-400/50 text-green-200']">
-                <span class="w-1.5 h-1.5 rounded-full bg-white/80 animate-pulse"></span>
-                {{ effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled ? 'Check-Out' : 'Check-In' }}
-              </span>
-            </div>
-          </div>
-
-          <!-- Face Scanner — full width of the left panel so the live camera
-               viewport is the dominant element, just like the RFID input is in
-               the RFID overlay. The kiosk component renders its own dark-glass
-               theme via :fullscreen="true". -->
-          <div class="w-full max-w-2xl bg-white/5 backdrop-blur-lg rounded-2xl p-2 sm:p-3 border border-white/15 shadow-2xl mb-3">
-            <FaceScannerKiosk
-              v-if="selectedSession"
-              :session-id="selectedSession?._id"
-              :session-label="selectedEvent?.title + ' — ' + selectedSession?.label"
-              :session-meta="formatDisplayTime(selectedSession?.start_time) + ' - ' + formatDisplayTime(selectedSession?.end_time)"
-              :check-out-mode="!!effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled"
-              :fullscreen="true"
-              :auto-start="true"
-              @recognized="onFaceRecognized"
-            />
-          </div>
-
-          <!-- Stats + Switch back to RFID — combined into one compact bar so
-               the camera keeps the vertical real estate. -->
-          <div class="w-full max-w-2xl flex gap-2 mb-2">
-            <div class="flex-1 bg-white/10 border border-white/15 rounded-xl px-3 py-2 text-center backdrop-blur-sm">
-              <p class="text-white/45 text-[10px] uppercase tracking-wider">Recognized</p>
-              <p class="text-lg font-extrabold text-white leading-tight">{{ faceRecognizedCount }}</p>
-            </div>
-            <button
-              @click="switchKioskMode('rfid')"
-              class="flex-[2] flex items-center justify-center gap-2 py-2 px-3 rounded-xl border border-white/20 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-sm font-semibold transition-all hover:scale-[1.02] active:scale-[0.98]"
-              title="Switch to RFID Scanner"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M19 3v4M3 9h18M4 21h16a1 1 0 001-1V9H3v11a1 1 0 001 1z"/></svg>
-              Switch to RFID
-            </button>
-          </div>
-
-          <p class="text-white/30 text-[11px]">Press ESC or click X to exit</p>
-        </div>
-
-        <!-- ── Right Panel: Recent Recognitions ── -->
-        <div class="flex-1 min-h-0 flex flex-col p-4 lg:p-6 overflow-hidden">
-          <div class="flex items-center justify-between mb-3">
-            <h2 :class="['text-base lg:text-lg font-bold flex items-center gap-2', isCOE ? 'text-orange-300' : isSOM ? 'text-green-300' : isCNAHS ? 'text-teal-300' : 'text-blue-300']">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-              Recent Recognitions
-            </h2>
-            <span v-if="faceRecentLogs.length > 0" :class="['px-2.5 py-1 rounded-full text-xs font-bold', isCOE ? 'bg-orange-500/30 text-orange-200' : isSOM ? 'bg-green-500/30 text-green-200' : isCNAHS ? 'bg-teal-500/30 text-teal-200' : 'bg-blue-500/30 text-blue-200']">
-              {{ faceRecentLogs.length }}
-            </span>
-          </div>
-
-          <div class="flex-1 overflow-hidden">
-            <div v-if="faceRecentLogs.length === 0" class="flex flex-col items-center justify-center h-full text-white/50">
-              <svg class="w-14 h-14 mb-3 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <p class="text-sm font-medium">No face recognitions yet</p>
-              <p class="text-xs mt-1 opacity-60">Look at the camera to begin</p>
-            </div>
-            <div v-else class="space-y-2 overflow-y-auto h-full pr-1 fullscreen-scroll">
-              <div
-                v-for="(r, i) in faceRecentLogs.slice(0, 20)"
-                :key="i"
-                :class="['rounded-xl p-3 border transition-all',
-                  r.success
-                    ? (isCOE ? 'bg-orange-500/10 border-orange-400/25' : isSOM ? 'bg-green-500/10 border-green-400/25' : isCNAHS ? 'bg-teal-500/10 border-teal-400/25' : 'bg-blue-500/10 border-blue-400/25')
-                    : 'bg-red-500/10 border-red-400/25']"
-              >
-                <div class="flex items-center gap-3">
-                  <div class="relative w-9 h-9 rounded-full flex-shrink-0 overflow-hidden">
-                    <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-white text-xs font-bold', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-                      {{ getInitials(r.studentName || '?') }}
-                    </div>
-                    <img v-if="r.studentPhoto" :src="r.studentPhoto" class="absolute inset-0 w-full h-full rounded-full object-cover" @error="$event.target.style.display='none'" />
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-white text-sm truncate">{{ r.studentName || 'Unrecognised' }}</p>
-                    <p class="text-white/50 text-xs truncate">{{ r.studentMeta || (r.success ? 'Face matched' : (r.subtitle || '—')) }}</p>
-                  </div>
-                  <div class="flex-shrink-0 flex flex-col items-end gap-1">
-                    <span :class="['px-2 py-0.5 rounded-full text-xs font-semibold',
-                      r.success
-                        ? (r.action === 'check-out' ? 'bg-orange-500/30 text-orange-200' : 'bg-green-500/30 text-green-200')
-                        : 'bg-red-500/30 text-red-200']">
-                      {{ r.success ? (r.action === 'check-out' ? 'OUT' : 'IN') : 'FAIL' }}
-                    </span>
-                    <span class="text-white/45 text-xs font-mono">{{ r.timeLabel }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
 
     <!-- RFID Loading Effect (Fullscreen with Flipping Logo) -->
     <RFIDLoadingEffect :visible="rfidFullscreenMode && rfidProcessing" :is-coe="isCOE" />
@@ -1112,14 +941,6 @@
           </div>
 
           <div v-else class="space-y-8">
-            <!-- Facial Recognition — Super Admin only. Co-admins/treasurers
-                 never reach this page (sidebar hides Settings for them) and
-                 the backend also gates with requireSuperAdmin. -->
-            <FaceRecognitionSettings
-              v-if="currentUser && currentUser.isMaster"
-              :theme="isCOE ? 'orange' : isSOM ? 'green' : isCNAHS ? 'green' : 'blue'"
-            />
-
             <!-- User Registration Toggle -->
             <div class="border border-gray-200 rounded-xl p-6">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
@@ -2256,10 +2077,8 @@
                       </div>
                     </div>
                     <div class="flex items-center gap-2 w-full sm:w-auto">
-                      <!-- Open Fullscreen for whichever scanner mode is currently active.
-                           Inside the overlay, users can swap between RFID and Face via
-                           switchKioskMode() while keeping the native fullscreen alive. -->
-                      <button @click="enterFullscreenMode(scannerMode)" :title="scannerMode === 'face' ? 'Open Face ID Scanner Fullscreen' : 'Open RFID Scanner Fullscreen'" :class="['text-white px-3 sm:px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 bg-gradient-to-r flex-1 sm:flex-none text-sm sm:text-base', primaryButtonGradient, primaryButtonHover]">
+                      <!-- Open the RFID scanner kiosk in fullscreen. -->
+                      <button @click="enterFullscreenMode()" title="Open RFID Scanner Fullscreen" :class="['text-white px-3 sm:px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 bg-gradient-to-r flex-1 sm:flex-none text-sm sm:text-base', primaryButtonGradient, primaryButtonHover]">
                         <svg class="w-4 sm:w-5 h-4 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
                         <span class="hidden sm:inline">Fullscreen</span>
                       </button>
@@ -2270,38 +2089,8 @@
                   </div>
                 </div>
 
-                <!-- Scanner mode tabs: RFID vs Face ID. Lets the kiosk swap modes
-                     without losing the selected event/session above. -->
-                <div class="flex gap-2 p-1 bg-gray-100 rounded-xl w-full sm:w-fit">
-                  <button
-                    @click="scannerMode = 'rfid'"
-                    :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5', scannerMode === 'rfid' ? 'bg-white text-ssaam-dark shadow-sm' : 'text-gray-500 hover:text-gray-700']"
-                  >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M19 3v4M3 9h18M4 21h16a1 1 0 001-1V9H3v11a1 1 0 001 1z"/></svg>
-                    RFID
-                  </button>
-                  <button
-                    @click="scannerMode = 'face'"
-                    :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5', scannerMode === 'face' ? 'bg-white text-ssaam-dark shadow-sm' : 'text-gray-500 hover:text-gray-700']"
-                  >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/></svg>
-                    Face ID
-                  </button>
-                </div>
-
-                <!-- Face ID Scanner (admin kiosk) — only when 'face' mode is selected.
-                     Also hide while the Face fullscreen overlay is open so the
-                     two kiosks don't fight over the single webcam stream. -->
-                <FaceScannerKiosk
-                  v-if="scannerMode === 'face' && !faceFullscreenMode"
-                  :session-id="selectedSession?._id"
-                  :session-label="selectedEvent?.title + ' — ' + selectedSession?.label"
-                  :session-meta="formatDisplayTime(selectedSession?.start_time) + ' - ' + formatDisplayTime(selectedSession?.end_time)"
-                  :check-out-mode="!!effectiveRfid.checkOutEnabled && !effectiveRfid.checkInEnabled"
-                />
-
                 <!-- RFID Scanner Card - Redesigned -->
-                <div v-if="scannerMode === 'rfid'" :class="['rounded-2xl overflow-hidden shadow-lg border', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200']">
+                <div :class="['rounded-2xl overflow-hidden shadow-lg border', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200']">
                   <!-- Scanner Header -->
                   <div :class="['px-4 py-3 sm:px-6 sm:py-4 flex items-center justify-between bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-700' : isSOM ? 'from-green-600 to-teal-700' : isCNAHS ? 'from-emerald-600 to-green-700' : 'from-ssaam-dark to-ssaam-light']">
                     <div class="flex items-center gap-3">
@@ -4127,72 +3916,9 @@
                 </div>
               </section>
 
-              <!-- Face ID (optional biometric check-in) -->
-              <section>
-                <div class="flex items-center gap-2 mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
-                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Face ID (Optional)</h3>
-                </div>
-                <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div class="flex-1 flex items-start gap-3">
-                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', studentFaceCount > 0 ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-200 text-gray-500']">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/>
-                      </svg>
-                    </div>
-                    <div class="min-w-0">
-                      <h4 class="font-bold text-gray-900 mb-1 flex items-center gap-2 flex-wrap">
-                        Biometric Check-In
-                        <span v-if="studentFaceCount > 0" class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">{{ studentFaceCount }} enrolled</span>
-                        <span v-else class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-600">Not set up</span>
-                      </h4>
-                      <p class="text-xs text-gray-500">Enroll your face once and check in to events at the campus kiosk without your RFID card.</p>
-                    </div>
-                  </div>
-                  <button @click="showFaceIDModal = true" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 shadow-lg shadow-orange-200 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-yellow-500 shadow-lg shadow-green-200 hover:from-green-700 hover:to-yellow-600' : isCNAHS ? 'bg-gradient-to-r from-green-700 to-green-600 shadow-lg shadow-green-300 hover:from-green-800 hover:to-green-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light shadow-lg shadow-blue-200 hover:from-ssaam-dark hover:to-ssaam-light', 'px-6 py-2.5 text-white rounded-xl font-bold text-sm hover:scale-105 transition-transform flex items-center justify-center md:justify-start gap-2 whitespace-nowrap']">
-                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    {{ studentFaceCount > 0 ? 'Manage Faces' : 'Set Up Face ID' }}
-                  </button>
-                </div>
-              </section>
-
             </div>
           </div>
         </div>
-
-        <!-- Student Face ID Modal -->
-        <Teleport to="body">
-          <Transition name="fade-modal">
-            <div
-              v-if="showFaceIDModal"
-              class="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-6"
-              style="background:rgba(15,23,42,0.55);backdrop-filter:blur(3px)"
-              @click.self="showFaceIDModal = false"
-            >
-              <div class="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
-                <div class="px-5 py-4 sm:px-6 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white flex items-center justify-between">
-                  <div class="flex items-center gap-3 min-w-0">
-                    <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0"/>
-                    </svg>
-                    <div class="min-w-0">
-                      <p class="text-base font-extrabold truncate">Face ID</p>
-                      <p class="text-xs text-white/80 truncate">Enroll your face for kiosk check-in</p>
-                    </div>
-                  </div>
-                  <button @click="showFaceIDModal = false" class="p-2 rounded-lg bg-white/15 hover:bg-white/25 transition" title="Close">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-                  </button>
-                </div>
-                <div class="overflow-y-auto p-3 sm:p-5">
-                  <StudentFaceID @updated="(n) => studentFaceCount = n" />
-                </div>
-              </div>
-            </div>
-          </Transition>
-        </Teleport>
 
         <!-- My Contributions Page (Students) -->
         <div v-if="currentPage === 'my-contributions' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-6">
@@ -6752,9 +6478,6 @@ import ContributionsModal from '../components/ContributionsModal.vue'
 import StudentContributionsView from '../components/StudentContributionsView.vue'
 import StudentRaffleResultsView from '../components/StudentRaffleResultsView.vue'
 import AdminContributionPanel from '../components/AdminContributionPanel.vue'
-import FaceRecognitionSettings from '../components/FaceRecognitionSettings.vue'
-import StudentFaceID from '../components/StudentFaceID.vue'
-import FaceScannerKiosk from '../components/FaceScannerKiosk.vue'
 // Vite-resolved asset URL for the JRMSU logo so we can use it as a CSS
 // mask-image. A bare `/src/assets/...` string in inline `mask-image` is
 // not reliably loaded as a mask — importing it gives us a stable hashed
@@ -9258,38 +8981,6 @@ watch(duplicateSearchQuery, (newValue) => {
 
 // RFID Fullscreen mode
 const rfidFullscreenMode = ref(false)
-// Face ID kiosk fullscreen overlay (mirrors the RFID one but renders the
-// FaceScannerKiosk component inside, so admins get the same kiosk feel
-// when they're using face recognition for attendance).
-const faceFullscreenMode = ref(false)
-// Recent recognitions feed for the face fullscreen right-panel — populated
-// by the FaceScannerKiosk's `recognized` event. We keep it bounded to ~50
-// entries so memory stays predictable across long kiosk sessions.
-const faceRecentLogs = ref([])
-const faceRecognizedCount = ref(0)
-const onFaceRecognized = (payload) => {
-  // FaceScannerKiosk emits its `lastResult` which has shape:
-  //   { success, title, studentName, studentMeta, studentPhoto, subtitle, action }
-  if (!payload) return
-  const ok = !!payload.success
-  faceRecentLogs.value.unshift({
-    success: ok,
-    studentName: payload.studentName || (ok ? 'Recognised' : 'Unrecognised'),
-    studentMeta: payload.studentMeta || '',
-    studentPhoto: payload.studentPhoto || '',
-    action: payload.action || 'check-in',
-    subtitle: payload.subtitle || payload.title || '',
-    timeLabel: new Date().toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true }),
-  })
-  if (faceRecentLogs.value.length > 50) faceRecentLogs.value.length = 50
-  if (ok) faceRecognizedCount.value++
-}
-// Biometric scanner toggle for the admin attendance kiosk: 'rfid' (default) or 'face'.
-// Persists between renders so admins can leave Face mode on across navigation.
-const scannerMode = ref('rfid')
-// Modal for the student-facing Face ID enrollment panel.
-const showFaceIDModal = ref(false)
-const studentFaceCount = ref(0)
 const rfidFullscreenInputRef = ref(null)
 const fullscreenLogoRef = ref(null)
 const logoFlipping = ref(false)
@@ -9481,51 +9172,18 @@ watch(rfidFullscreenMode, (newValue) => {
     }, 100)
   } else {
     stopLogoFlipAnimation()
-    // Only stop visual extras / exit browser fullscreen when no kiosk
-    // overlay is taking over. During a switch (RFID -> Face) the face
-    // overlay is already opening, so we keep the particles, clock and
-    // native fullscreen alive instead of tearing them down and re-creating.
-    if (!faceFullscreenMode.value && !isSwitchingKiosk.value) {
-      stopParticles()
-      if (fsClockInterval.value) {
-        clearInterval(fsClockInterval.value)
-        fsClockInterval.value = null
-      }
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {})
-      }
+    stopParticles()
+    if (fsClockInterval.value) {
+      clearInterval(fsClockInterval.value)
+      fsClockInterval.value = null
+    }
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {})
     }
     // Clear pending focus timeout when exiting fullscreen
     if (rfidFocusTimeout.value) {
       clearTimeout(rfidFocusTimeout.value)
       rfidFocusTimeout.value = null
-    }
-  }
-})
-
-// Mirror the RFID watcher for the Face ID kiosk overlay so the live clock
-// runs inside the face fullscreen and the browser exits native fullscreen
-// when the overlay closes.
-watch(faceFullscreenMode, (newValue) => {
-  if (newValue) {
-    updateFsClock()
-    if (!fsClockInterval.value) {
-      fsClockInterval.value = setInterval(updateFsClock, 1000)
-    }
-    // Kick off the same drifting-particle backdrop the RFID overlay uses.
-    startParticles()
-  } else {
-    // Same guard as the RFID watcher: keep visual extras and native
-    // fullscreen alive if the user is mid-switch back to RFID.
-    if (!rfidFullscreenMode.value && !isSwitchingKiosk.value) {
-      stopParticles()
-      if (fsClockInterval.value) {
-        clearInterval(fsClockInterval.value)
-        fsClockInterval.value = null
-      }
-      if (document.fullscreenElement) {
-        document.exitFullscreen().catch(() => {})
-      }
     }
   }
 })
@@ -13292,88 +12950,28 @@ const onEventSelectForScanner = () => {
   }
 }
 
-const enterFullscreenMode = (mode) => {
+const enterFullscreenMode = () => {
   if (!selectedSession.value) {
     showNotification('Please select a session first', 'error')
     return
   }
-  // Allow callers to explicitly pick which kiosk overlay opens (RFID vs Face ID).
-  // When no mode is passed, fall back to the currently active scannerMode so
-  // existing call sites keep their previous behaviour.
-  const targetMode = mode || scannerMode.value
-  // NOTE: Do NOT sync `scannerMode` here. If the in-page tab is on "Face ID"
-  // while the user opens the Face Fullscreen, mounting two FaceScannerKiosk
-  // instances would race for the single webcam stream and the overlay's
-  // camera would fail silently. The inline kiosk is hidden in the template
-  // while the matching overlay is open (see `v-if` on the in-page kiosks).
-  if (targetMode === 'face') {
-    faceFullscreenMode.value = true
-  } else {
-    rfidFullscreenMode.value = true
-  }
+  rfidFullscreenMode.value = true
   const el = document.documentElement
   if (el.requestFullscreen) {
     el.requestFullscreen().catch(() => {})
   } else if (el.webkitRequestFullscreen) {
     el.webkitRequestFullscreen()
   }
-  if (targetMode !== 'face') {
-    setTimeout(() => {
-      rfidFullscreenInputRef.value?.focus()
-    }, 100)
-  }
+  setTimeout(() => {
+    rfidFullscreenInputRef.value?.focus()
+  }, 100)
 }
 
 // Handle ESC key for fullscreen mode
 const handleEscKey = (event) => {
   if (event.key === 'Escape') {
     if (rfidFullscreenMode.value) rfidFullscreenMode.value = false
-    if (faceFullscreenMode.value) faceFullscreenMode.value = false
   }
-}
-
-// Switch between RFID and Face Recognition kiosks while staying in fullscreen.
-// We use an explicit `isSwitchingKiosk` flag so the watchers on both
-// fullscreen booleans know NOT to call `document.exitFullscreen()` when one
-// of them flips false during the swap. We also re-request native fullscreen
-// inside the same click handler — the browser permits this because the click
-// itself is a user gesture, so it acts as a safety net if anything else
-// dropped fullscreen mid-swap.
-const isSwitchingKiosk = ref(false)
-const switchKioskMode = (target) => {
-  isSwitchingKiosk.value = true
-
-  // Flip the new overlay ON first, then the old one OFF, in the same sync
-  // tick. With `v-if` this means the new overlay's DOM is created in the
-  // same render flush that removes the old one, so there's no blank frame.
-  if (target === 'face') {
-    scannerMode.value = 'face'
-    faceFullscreenMode.value = true
-    rfidFullscreenMode.value = false
-  } else {
-    scannerMode.value = 'rfid'
-    rfidFullscreenMode.value = true
-    faceFullscreenMode.value = false
-    setTimeout(() => {
-      rfidFullscreenInputRef.value?.focus()
-    }, 100)
-  }
-
-  // Safety net: if for any reason the browser is no longer in native
-  // fullscreen (e.g. the previous overlay's teardown raced), re-request it
-  // here. requestFullscreen() is allowed because we're still inside the
-  // click event's user-gesture window.
-  if (!document.fullscreenElement) {
-    const el = document.documentElement
-    const req = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen
-    if (req) {
-      try { req.call(el)?.catch?.(() => {}) } catch (_) {}
-    }
-  }
-
-  // Release the switching flag after the watcher microtask + a small buffer
-  // so any late-firing fullscreenchange events don't accidentally close us.
-  setTimeout(() => { isSwitchingKiosk.value = false }, 250)
 }
 
 const handleLogout = () => {

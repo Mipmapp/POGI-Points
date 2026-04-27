@@ -692,6 +692,33 @@ When running on Replit, the frontend is served on port `5000` via the `Start app
 
 ## 14. Changelog
 
+### Session — April 27, 2026
+
+#### Frontend Feature Additions
+
+| Area | Change |
+|---|---|
+| Create Event — Sessions Inline | The Create Event modal now includes a "Sessions" section so admins can stage one or more sessions (Add / Edit / Delete) before submitting the event. After the parent event is created, all staged sessions are batch-posted to `POST /apis/attendance/events/:eventId/sessions`. The Edit Event modal only auto-opens after creation when no sessions were staged. |
+| Admin Contribution — Mark Paid as Unpaid | The Admin Contribution panel can now reverse a payment. The selected-student card shows "Already Paid" with a Mark as Unpaid button when the active campaign is paid; the records table also exposes a Mark Unpaid action in place of the static "✓ Paid" cell. Both call `PUT /apis/payments/:paymentId/mark-unpaid`. |
+| Scanner Fullscreen — Always Available | The "Open Fullscreen" button in the Scanner tab is no longer gated behind a specific scanner mode. It opens the RFID kiosk overlay directly. The watcher on `rfidFullscreenMode` calls `document.exitFullscreen()` when the overlay closes. |
+
+#### Face Recognition / Face ID — Removed
+
+All Face ID / face recognition functionality was removed end-to-end on the client. The backend Face ID endpoints (`/apis/students/face`, `/apis/masters/face`, `/apis/attendance/sessions/:id/check-face`) in `SSAAM_VERCEL_BACKEND.js` were left untouched; nothing on the client now calls them.
+
+| Area | Change |
+|---|---|
+| Components Deleted | `src/components/FaceRecognitionSettings.vue`, `src/components/FaceScannerKiosk.vue`, `src/components/StudentFaceID.vue`. |
+| Dependencies | Removed `face-api.js` from `package.json`. |
+| `Login.vue` — Template | Removed the entire Face ID modal (the Step 3 of 3 biometric verification overlay). |
+| `Login.vue` — Script | Removed all face state, helpers, and constants (`showFaceModal`, `faceStep`, `faceStatusText`, `faceMatchLabel`, `faceConfidence`, `faceSavedFaces`, `faceStream`, `faceDetectLoopId`, `faceApiInst`, `faceModelsReady`, `faceLoadError`, `faceapiLoginPromise`, `FACE_THRESHOLD`, `FACE_MATCH_STREAK_NEEDED`, `faceMatchStreak`, `FACE_MODEL_URL`, `loadFaceApiLogin`, `startFaceVerification`, `euclideanFace`, `stopFaceCamera`, `runFaceLoginLoop`, `cancelFaceVerification`). Added a small `completeLogin()` that persists the pending user and triggers navigation. `verifyAdminCode()` now calls `completeLogin()` instead of `startFaceVerification()`. |
+| `Login.vue` — CSS | Removed the `.face-mirror` rule, the `.ssaam-face-scanline` rule, and the `@keyframes face-scan` animation. |
+| `Dashboard.vue` — Template | Removed the "Switch to Face Recognition" button inside the RFID fullscreen overlay; the entire Face ID Scanner Fullscreen Overlay (right-panel feed, particle canvas reuse, etc.); the RFID-vs-Face scanner mode tabs; the inline `<FaceScannerKiosk>` mount; the `v-if="scannerMode === 'rfid'"` gate on the RFID Scanner Card; the student-facing Face ID profile section; and the Student Face ID modal. |
+| `Dashboard.vue` — Script | Removed three imports (`FaceRecognitionSettings`, `StudentFaceID`, `FaceScannerKiosk`); removed face state (`faceFullscreenMode`, `faceRecentLogs`, `faceRecognizedCount`, `onFaceRecognized`, `scannerMode`, `showFaceIDModal`, `studentFaceCount`); removed the `faceFullscreenMode` watcher; simplified `enterFullscreenMode` to take no arguments and always open RFID; removed the `switchKioskMode` function and `isSwitchingKiosk` ref; removed the face branch from `handleEscKey`; removed face-related guards from the `rfidFullscreenMode` watcher. |
+| `replit.md` | Removed the Face ID feature description and rewrote the Scanner Fullscreen UX entry to reflect the RFID-only behaviour. Added a "Face Recognition Removed" note for traceability. |
+
+**Preserved on purpose:** `facebook` URLs in developer-team arrays (Login.vue, Register.vue, Dashboard.vue, AnnouncementPopup.vue), the `backface-hidden` CSS in `RFIDLoadingEffect.vue`, and the social-pattern regex (`fb|facebook|...`) — these are unrelated to face recognition.
+
 ### Session — April 13, 2026
 
 #### Dashboard.vue

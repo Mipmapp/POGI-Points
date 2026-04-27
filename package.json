@@ -15,7 +15,6 @@
     "cropperjs": "^2.1.1",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "face-api.js": "^0.22.2",
     "fast-average-color": "^9.5.2",
     "html2pdf.js": "^0.14.0",
     "jsonwebtoken": "^9.0.3",
