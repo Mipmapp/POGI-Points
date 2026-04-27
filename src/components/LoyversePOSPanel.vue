@@ -274,6 +274,7 @@ export default {
   props: {
     student: { type: Object, default: null },
     suggestedAmount: { type: Number, default: 0 },
+    activePayment: { type: Object, default: null },
   },
   data() {
     return {
@@ -282,6 +283,7 @@ export default {
       catalogCategory: '',
       cart: [],
       discount: 0,
+      autoLoadedKey: '',
       form: { id: null, name: '', price: 0, category: '', emoji: '', color: '#36b37e' },
       showItemEditor: false,
       previewReceipt: false,
@@ -355,9 +357,15 @@ export default {
   },
   mounted() {
     this.loadItems();
+    this.syncActivePayment();
   },
   beforeUnmount() {
     this.disconnectAll(true);
+  },
+  watch: {
+    student() { this.syncActivePayment(); },
+    activePayment: { handler() { this.syncActivePayment(); }, deep: true },
+    suggestedAmount() { this.syncActivePayment(); },
   },
   methods: {
     initials(name) {
@@ -426,6 +434,31 @@ export default {
     clearCart() {
       this.cart = [];
       this.discount = 0;
+      this.autoLoadedKey = '';
+    },
+
+    // Build a synthetic line item from the active payment campaign and put it
+    // in the cart so admins can just hit Print without composing items manually.
+    syncActivePayment() {
+      if (!this.student || !this.activePayment) return;
+      const amount = Number(this.suggestedAmount || this.activePayment.amount_due || 0);
+      if (!(amount > 0)) return;
+      const key = `${this.student.student_id || this.student._id || ''}|${this.activePayment._id || this.activePayment.title || ''}|${amount}`;
+      if (this.autoLoadedKey === key) return; // already synced for this combo
+
+      // Replace any prior auto line, but keep manually-added items intact.
+      const manual = this.cart.filter(l => !l._auto);
+      const line = {
+        _auto: true,
+        id: 'auto-' + (this.activePayment._id || 'fee'),
+        name: this.activePayment.title || 'Contribution Fee',
+        price: amount,
+        qty: 1,
+        emoji: '🧾',
+        color: '#36b37e',
+      };
+      this.cart = [line, ...manual];
+      this.autoLoadedKey = key;
     },
 
     // ---------- USB printer ----------

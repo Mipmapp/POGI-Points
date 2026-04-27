@@ -384,6 +384,7 @@
       v-if="selectedStudent"
       :student="selectedStudent"
       :suggested-amount="targetPayment"
+      :active-payment="activePayment"
     />
 
     <!-- Contributions List -->
