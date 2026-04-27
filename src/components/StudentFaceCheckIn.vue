@@ -178,7 +178,11 @@ const currentChallengeIndex = ref(0)
 const currentChallenge = computed(() => challenges.value[currentChallengeIndex.value])
 
 // Per-challenge transient state
-const turnState = ref({ neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0, centerStartTime: 0 })
+const turnState = ref({ neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0, strongSign: 0, centerStartTime: 0 })
+// Sign (+1 / -1) of the first turn the user actually performed. The second
+// turn challenge must be in the OPPOSITE sign, so we still get true alternation
+// regardless of which physical direction the camera reports as positive.
+const firstTurnSign = ref(0)
 
 // Capture / sampling
 const samplesCount = ref(0)
@@ -265,7 +269,8 @@ function resetState() {
   challenges.value = []
   completed.value = []
   currentChallengeIndex.value = 0
-  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0, centerStartTime: 0 }
+  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0, strongSign: 0, centerStartTime: 0 }
+  firstTurnSign.value = 0
   liveYaw.value = 0
   samplesCount.value = 0
   captured.value = []
@@ -392,24 +397,40 @@ function yawRatio(landmarks /* , box (unused) */) {
 // shows which way the math currently thinks the head is turning — useful for
 // diagnosing camera-mirror surprises in the field.
 const liveYaw = ref(0)
-function processTurnFrame(yaw, direction) {
+// Direction-agnostic head-turn detection. The sign of yawRatio depends on
+// whether the camera/driver pre-mirrors the stream, which varies per device,
+// so trying to map turn_left/turn_right to a fixed sign is unreliable. Instead
+// we accept a strong turn in EITHER direction; the alternation requirement
+// (second turn must be opposite the first) preserves the liveness guarantee.
+function processTurnFrame(yaw /* , direction */) {
   const s = turnState.value
-  const wantPositive = direction === 'turn_left'
   const DEEP = 0.18
-  const STRONG = 0.5    // once yaw reaches ±0.5, hold for 1.5s to auto-pass
+  const STRONG = 0.5    // once |yaw| reaches 0.5, hold for 1.5s to auto-pass
   const HOLD_MS = 1500
   const NEUTRAL = 0.08
-  const deep = wantPositive ? yaw > DEEP : yaw < -DEEP
-  const strong = wantPositive ? yaw >= STRONG : yaw <= -STRONG
-  if (Math.abs(yaw) > s.peakYaw) s.peakYaw = Math.abs(yaw)
-  if (deep) s.deepTurnFrames++
+  const sign = yaw >= 0 ? 1 : -1
+  const requiredSign = firstTurnSign.value === 0 ? 0 : -firstTurnSign.value
+  // If a first turn already happened, this turn must be in the opposite
+  // direction. We still let the user wiggle either way before they commit —
+  // we only count time when they're holding past the threshold on the
+  // required side.
+  const sideOk = requiredSign === 0 ? true : sign === requiredSign
+  const strong = Math.abs(yaw) >= STRONG && sideOk
+  const deep   = Math.abs(yaw) >= DEEP   && sideOk
 
-  // Hold-at-threshold: once the user reaches ±0.5, freeze the requirement
-  // there. They just need to keep their head at (or past) that angle for
-  // 1.5 seconds total and the challenge passes — no further turning needed.
+  if (Math.abs(yaw) > s.peakYaw) s.peakYaw = Math.abs(yaw)
+  if (deep) {
+    s.deepTurnFrames++
+    if (!s.strongSign) s.strongSign = sign
+  }
+
+  // Hold-at-threshold: once the user reaches ±0.5 on the allowed side,
+  // freeze the requirement there. They just need to keep their head at (or
+  // past) that angle for 1.5s total and the challenge passes.
   const now = Date.now()
   if (strong) {
     if (!s.strongStartTime) s.strongStartTime = now
+    if (!s.strongSign) s.strongSign = sign
     if (now - s.strongStartTime >= HOLD_MS) return true
   } else {
     s.strongStartTime = 0
@@ -438,10 +459,16 @@ function processCenterFrame(yaw) {
 
 function advanceChallenge() {
   if (currentChallengeIndex.value >= challenges.value.length) return
-  completed.value.push(challenges.value[currentChallengeIndex.value])
+  const finished = challenges.value[currentChallengeIndex.value]
+  // If the user just completed a turn challenge, remember which physical
+  // side they actually turned to so the next turn is forced to be opposite.
+  if ((finished === 'turn_left' || finished === 'turn_right') && !firstTurnSign.value) {
+    firstTurnSign.value = turnState.value.strongSign || (turnState.value.peakYaw >= 0 ? 1 : -1)
+  }
+  completed.value.push(finished)
   currentChallengeIndex.value++
   // Reset per-challenge state so the next step is clean
-  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0, centerStartTime: 0 }
+  turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0, strongSign: 0, centerStartTime: 0 }
 }
 
 async function runDetectionLoop() {
