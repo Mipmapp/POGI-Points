@@ -77,12 +77,28 @@
             <p class="text-[11px] text-gray-500 mt-0.5">POS: {{ posName }}</p>
           </div>
 
+          <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4">
+            <p class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Copies to Print</p>
+            <div class="flex items-center gap-2">
+              <button type="button" @click="copies = Math.max(1, copies - 1)"
+                class="w-9 h-9 rounded-xl border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold text-lg flex items-center justify-center">−</button>
+              <input
+                type="number" min="1" max="10"
+                v-model.number="copies"
+                @blur="copies = Math.min(10, Math.max(1, Number(copies) || 1))"
+                class="flex-1 text-center px-3 py-2 border-2 border-gray-200 rounded-xl text-sm font-bold focus:ring-2 focus:ring-emerald-200 focus:border-emerald-400 outline-none" />
+              <button type="button" @click="copies = Math.min(10, copies + 1)"
+                class="w-9 h-9 rounded-xl border border-gray-200 hover:bg-gray-100 text-gray-700 font-bold text-lg flex items-center justify-center">+</button>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-1">Maximum 10 copies per print run.</p>
+          </div>
+
           <div class="flex gap-2 pt-1">
             <button @click="printReceipt" :disabled="!hasSale || (!usbConnected && !btConnected) || isPrinting"
               class="flex-1 py-2.5 bg-gradient-to-r from-[#36b37e] to-[#00a884] text-white rounded-xl font-bold text-sm transition hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shadow-md shadow-emerald-200">
               <svg v-if="isPrinting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-              {{ isPrinting ? 'Printing...' : 'Print Receipt' }}
+              {{ isPrinting ? 'Printing...' : (copies > 1 ? `Print ${copies} Receipts` : 'Print Receipt') }}
             </button>
           </div>
         </div>
@@ -90,7 +106,7 @@
         <!-- Receipt preview (right) -->
         <div>
           <p class="text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-2">Receipt Preview</p>
-          <div class="bg-white border border-gray-200 rounded-2xl shadow-inner mx-auto overflow-hidden" style="max-width: 280px;">
+          <div class="bg-white border border-gray-200 rounded-2xl shadow-inner mx-auto overflow-hidden" style="max-width: 240px;">
             <div class="receipt-paper px-5 py-5 text-[11px] text-black leading-snug font-mono">
               <div class="flex justify-center mb-3">
                 <img :src="logoUrl" alt="Logo" class="w-20 h-auto" @error="logoFailed = true" />
@@ -231,6 +247,7 @@ export default {
       logoUrl: CCS_LOGO_URL,
       logoFailed: false,
       showSettings: false,
+      copies: 1,
       // Printer state
       usbDevice: null,
       usbEndpoint: null,
@@ -323,7 +340,9 @@ export default {
     async loadLogoBitmap() {
       // Render the CCS logo into a monochrome ESC/POS raster (GS v 0).
       if (this.logoFailed) return null;
-      const targetWidth = 192; // multiple of 8, fits 58mm (384 dot) nicely centered
+      // 57mm rolls have ~48mm printable area = ~384 dots @ 203 DPI.
+      // Use 160 dots so the logo sits comfortably with margin on both sides.
+      const targetWidth = 160; // multiple of 8
       try {
         const img = await new Promise((resolve, reject) => {
           const i = new Image();
@@ -405,10 +424,11 @@ export default {
       parts.push(enc.encode('\n'));
       parts.push(enc.encode(this.dashed(W) + '\n'));
 
-      // Item line
-      const priceText = '₱' + this.amount.toFixed(2);
+      // Item line — use plain "P" instead of the unicode peso sign because
+      // most ESC/POS thermal printers default to code page 437/PC850 which do
+      // NOT contain U+20B1 (₱). The on-screen preview keeps the real ₱ glyph.
+      const priceText = 'P' + this.amount.toFixed(2);
       const itemUpper = this.itemName;
-      // Two-line: ITEM NAME .... ₱xxx
       parts.push(new Uint8Array([0x1b, 0x45, 0x01]));
       parts.push(enc.encode(this.row(itemUpper.slice(0, W - priceText.length - 1), priceText, W) + '\n'));
       parts.push(new Uint8Array([0x1b, 0x45, 0x00]));
@@ -416,20 +436,24 @@ export default {
       parts.push(enc.encode('\n'));
       parts.push(enc.encode(this.dashed(W) + '\n'));
 
-      // Total / Cash
+      // Total — bold AND double-height so it stands out the most
+      parts.push(new Uint8Array([0x1b, 0x45, 0x01])); // bold ON
       parts.push(new Uint8Array([0x1b, 0x21, 0x10])); // double height
       parts.push(enc.encode(this.row('Total', priceText, W) + '\n'));
-      parts.push(new Uint8Array([0x1b, 0x21, 0x00]));
+      parts.push(new Uint8Array([0x1b, 0x21, 0x00])); // size reset
+      parts.push(new Uint8Array([0x1b, 0x45, 0x00])); // bold OFF
+
+      // Cash
       parts.push(enc.encode(this.row('Cash', priceText, W) + '\n'));
       parts.push(enc.encode('\n'));
 
-      // Footer
+      // Footer (centered, with proper word-wrapping so we don't split words)
       parts.push(new Uint8Array([0x1b, 0x61, 0x01]));
       parts.push(new Uint8Array([0x1b, 0x45, 0x01]));
       parts.push(enc.encode('THANK YOU FOR YOUR PURCHASE!\n'));
       parts.push(new Uint8Array([0x1b, 0x45, 0x00]));
-      parts.push(enc.encode('*Please retain this receipt as proof\n'));
-      parts.push(enc.encode('of purchase and to claim your item*\n'));
+      this.wrapText('*Please retain this receipt as proof of purchase and to claim your item*', W)
+        .forEach(line => parts.push(enc.encode(line + '\n')));
       parts.push(enc.encode('\n\n\n'));
 
       // Cut
@@ -636,28 +660,34 @@ export default {
 
     async printReceipt() {
       if (!this.hasSale) return;
+      const n = Math.min(10, Math.max(1, Number(this.copies) || 1));
+      this.copies = n;
       this.isPrinting = true;
-      this.printerStatus = 'Printing...';
       try {
         const data = await this.buildEscPos();
-        if (this.usbConnected && this.usbDevice && this.usbEndpoint != null) {
-          await this.usbDevice.transferOut(this.usbEndpoint, data);
-        } else if (this.btConnected && this.btCharacteristic) {
-          const chunkSize = 180;
-          for (let i = 0; i < data.length; i += chunkSize) {
-            const slice = data.slice(i, i + chunkSize);
-            if (this.btCharacteristic.writeValueWithoutResponse) {
-              await this.btCharacteristic.writeValueWithoutResponse(slice);
-            } else {
-              await this.btCharacteristic.writeValue(slice);
+        for (let copy = 1; copy <= n; copy++) {
+          this.printerStatus = n > 1 ? `Printing ${copy} of ${n}...` : 'Printing...';
+          if (this.usbConnected && this.usbDevice && this.usbEndpoint != null) {
+            await this.usbDevice.transferOut(this.usbEndpoint, data);
+          } else if (this.btConnected && this.btCharacteristic) {
+            const chunkSize = 180;
+            for (let i = 0; i < data.length; i += chunkSize) {
+              const slice = data.slice(i, i + chunkSize);
+              if (this.btCharacteristic.writeValueWithoutResponse) {
+                await this.btCharacteristic.writeValueWithoutResponse(slice);
+              } else {
+                await this.btCharacteristic.writeValue(slice);
+              }
             }
+          } else {
+            throw new Error('No printer connected');
           }
-        } else {
-          throw new Error('No printer connected');
+          // Small breathing room between copies so the printer buffer drains.
+          if (copy < n) await new Promise(r => setTimeout(r, 350));
         }
-        this.printerStatus = 'Printed ✓';
-        this.notify('Receipt sent to printer', 'success');
-        this.$emit('printed', { item: this.itemName, amount: this.amount, customer: this.customerName });
+        this.printerStatus = n > 1 ? `Printed ${n} copies ✓` : 'Printed ✓';
+        this.notify(n > 1 ? `${n} receipts sent to printer` : 'Receipt sent to printer', 'success');
+        this.$emit('printed', { item: this.itemName, amount: this.amount, customer: this.customerName, copies: n });
       } catch (e) {
         console.error(e);
         this.printerStatus = 'Print failed';
