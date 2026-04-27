@@ -179,13 +179,20 @@ const stageStyle = computed(() => {
 const stageMessage = computed(() => {
   if (successMessage.value) return successMessage.value
   if (submitting.value) return 'Verifying with the server…'
-  if (failed.value && !errorMessage.value) return 'Liveness check failed.'
+  // Always surface the real error message before falling through to neutral
+  // "all steps complete" copy — otherwise a silent server reject looks like
+  // success on screen.
+  if (errorMessage.value) return errorMessage.value
+  if (failed.value) return 'Liveness check failed.'
   if (phase.value === 'finding') {
     return faceDetected.value ? 'Hold still…' : 'Position your face in the circle'
   }
   if (currentChallenge.value === 'turn_left') return 'Turn your head LEFT'
   if (currentChallenge.value === 'turn_right') return 'Turn your head RIGHT'
   if (cameraReady.value && !challenges.value.length) return 'Preparing your check-in…'
+  if (cameraReady.value && challenges.value.length && currentChallengeIndex.value >= challenges.value.length) {
+    return 'Almost done — collecting frames…'
+  }
   if (cameraReady.value) return 'All steps complete'
   return 'Setting up camera'
 })
@@ -420,8 +427,17 @@ async function runDetectionLoop() {
           if (processTurnFrame(yaw, ch)) advanceChallenge()
         }
 
-        // All challenges done → submit
-        if (currentChallengeIndex.value >= challenges.value.length && !submitting.value && captured.value.length >= 8) {
+        // All challenges done → submit. The backend rejects requests with
+        // fewer than ~25 sample frames as anti-spoof, so wait until we've
+        // accumulated enough before posting. The loop will keep ticking and
+        // adding samples until the gate clears, usually within ~1s extra.
+        const REQUIRED_SAMPLES = 28 // small buffer over the backend's 25 minimum
+        if (
+          currentChallengeIndex.value >= challenges.value.length
+          && !submitting.value
+          && captured.value.length >= 10
+          && samplesCount.value >= REQUIRED_SAMPLES
+        ) {
           phase.value = 'submitting'
           await submit()
           return
@@ -512,14 +528,17 @@ async function submit() {
       stopCamera()
       emit('success', data)
     } else {
-      errorMessage.value = data.message || 'Check-in failed. Please try again.'
+      console.warn('[FaceCheckIn] server rejected check-in', { status: res.status, data, samples: samplesCount.value, captured: captured.value.length })
+      errorMessage.value = data.message || `Check-in failed (${res.status}). Please try again.`
       failed.value = true
     }
   } catch (err) {
+    console.warn('[FaceCheckIn] network/submit error', err)
     errorMessage.value = 'Network error. Please check your connection and try again.'
     failed.value = true
   } finally {
     submitting.value = false
+    phase.value = 'done'
   }
 }
 
