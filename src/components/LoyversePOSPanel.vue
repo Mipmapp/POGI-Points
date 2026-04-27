@@ -259,9 +259,15 @@ const PRINTER_VENDORS = [
   0x04b8, 0x0519, 0x0fe6, 0x1504, 0x1659, 0x0dd4, 0x1a86, 0x067b, 0x154f, 0x0416, 0x0483, 0x28e9
 ];
 
-// BLE thermal printer service & characteristic (very common for cheap 58mm/80mm BT printers)
-const BT_SERVICE = '000018f0-0000-1000-8000-00805f9b34fb';
-const BT_CHARACTERISTIC = '00002af1-0000-1000-8000-00805f9b34fb';
+// Known BLE thermal printer services (POS58, MTP, GOOJPRT, ZJ, Xprinter, etc.)
+const BT_SERVICES = [
+  '000018f0-0000-1000-8000-00805f9b34fb', // generic SPP-over-BLE used by many 58mm/80mm printers
+  '0000ff00-0000-1000-8000-00805f9b34fb', // POS58 / Goojprt variants
+  '0000fff0-0000-1000-8000-00805f9b34fb', // some Xprinter / ZJ models
+  '0000ffe0-0000-1000-8000-00805f9b34fb', // HM-10 style modules
+  '49535343-fe7d-4ae5-8fa9-9fafd205e455', // ISSC / Microchip transparent UART
+  '0000ffb0-0000-1000-8000-00805f9b34fb',
+];
 
 export default {
   name: 'LoyversePOSPanel',
@@ -468,6 +474,52 @@ export default {
     },
 
     // ---------- Bluetooth printer ----------
+    async pickBTDevice() {
+      // First try filtering by known printer services so the chooser is short.
+      try {
+        return await navigator.bluetooth.requestDevice({
+          filters: BT_SERVICES.map(s => ({ services: [s] })),
+          optionalServices: BT_SERVICES,
+        });
+      } catch (e) {
+        // If user cancelled the chooser, propagate. Otherwise retry with "any device".
+        if (e && e.name === 'NotFoundError') {
+          // The chooser appeared but user picked nothing OR no device matched.
+          // Fall through to a wide-open chooser so they can pick the paired POS58
+          // even if it does not advertise a known service.
+          return await navigator.bluetooth.requestDevice({
+            acceptAllDevices: true,
+            optionalServices: BT_SERVICES,
+          });
+        }
+        throw e;
+      }
+    },
+
+    async findWritableCharacteristic(server) {
+      // Try the known services first (fast path).
+      for (const uuid of BT_SERVICES) {
+        try {
+          const svc = await server.getPrimaryService(uuid);
+          const chars = await svc.getCharacteristics();
+          const writable = chars.find(c => c.properties.write || c.properties.writeWithoutResponse);
+          if (writable) return writable;
+        } catch (_) { /* service not present, keep trying */ }
+      }
+      // Fallback: enumerate every primary service and find any writable characteristic.
+      try {
+        const services = await server.getPrimaryServices();
+        for (const svc of services) {
+          try {
+            const chars = await svc.getCharacteristics();
+            const writable = chars.find(c => c.properties.write || c.properties.writeWithoutResponse);
+            if (writable) return writable;
+          } catch (_) { /* skip */ }
+        }
+      } catch (_) { /* ignore */ }
+      return null;
+    },
+
     async connectBT() {
       if (!navigator.bluetooth) {
         this.notify('Web Bluetooth is not supported in this browser', 'error');
@@ -476,13 +528,14 @@ export default {
       this.connectingBT = true;
       this.printerStatus = 'Requesting Bluetooth device...';
       try {
-        const device = await navigator.bluetooth.requestDevice({
-          filters: [{ services: [BT_SERVICE] }],
-          optionalServices: [BT_SERVICE],
-        });
+        const device = await this.pickBTDevice();
+        this.printerStatus = `Pairing with ${device.name || 'printer'}...`;
         const server = await device.gatt.connect();
-        const service = await server.getPrimaryService(BT_SERVICE);
-        const characteristic = await service.getCharacteristic(BT_CHARACTERISTIC);
+        this.printerStatus = 'Discovering printer service...';
+        const characteristic = await this.findWritableCharacteristic(server);
+        if (!characteristic) {
+          throw new Error('No writable characteristic found on this device');
+        }
         this.btDevice = device;
         this.btCharacteristic = characteristic;
         this.btConnected = true;
@@ -494,9 +547,14 @@ export default {
         });
         this.notify('Bluetooth printer connected', 'success');
       } catch (e) {
-        console.error(e);
-        this.printerStatus = 'BT connection cancelled or failed';
-        this.notify('Could not connect Bluetooth printer', 'error');
+        console.error('BT connect error:', e);
+        const msg = (e && e.message) ? e.message : String(e);
+        this.printerStatus = 'BT failed: ' + msg.slice(0, 60);
+        if (e && e.name === 'NotFoundError') {
+          this.notify('No printer selected', 'warning');
+        } else {
+          this.notify('Bluetooth connection failed: ' + msg, 'error');
+        }
       } finally {
         this.connectingBT = false;
       }
