@@ -214,6 +214,72 @@ const BT_SERVICES = [
   '0000ffb0-0000-1000-8000-00805f9b34fb',
 ];
 
+// Module-level singleton for the Bluetooth printer connection. The actual
+// `BluetoothDevice` and characteristic live OUTSIDE the component instance so
+// the connection survives navigation / re-mounts of the POS panel. The set of
+// component instances currently mounted is tracked so we can broadcast state
+// changes (connect / disconnect / reconnect) to all of them.
+const btState = {
+  device: null,
+  characteristic: null,
+  connected: false,
+  reconnecting: false,
+  listenerBound: false,
+  listeners: new Set(),
+  notify(status) {
+    for (const cb of this.listeners) {
+      try { cb(status); } catch (_) {}
+    }
+  },
+};
+
+async function findWritableCharacteristicOnServer(server) {
+  for (const uuid of BT_SERVICES) {
+    try {
+      const svc = await server.getPrimaryService(uuid);
+      const chars = await svc.getCharacteristics();
+      const writable = chars.find(c => c.properties.write || c.properties.writeWithoutResponse);
+      if (writable) return writable;
+    } catch (_) {}
+  }
+  try {
+    const services = await server.getPrimaryServices();
+    for (const svc of services) {
+      try {
+        const chars = await svc.getCharacteristics();
+        const writable = chars.find(c => c.properties.write || c.properties.writeWithoutResponse);
+        if (writable) return writable;
+      } catch (_) {}
+    }
+  } catch (_) {}
+  return null;
+}
+
+async function tryReconnectBT() {
+  if (!btState.device || btState.reconnecting) return;
+  btState.reconnecting = true;
+  // Try a few times with backoff; bail if the device is no longer available.
+  const delays = [800, 1500, 3000, 6000, 10000];
+  for (let i = 0; i < delays.length; i++) {
+    if (!btState.device) break;
+    try {
+      btState.notify(`Reconnecting printer (attempt ${i + 1})...`);
+      const server = await btState.device.gatt.connect();
+      const characteristic = await findWritableCharacteristicOnServer(server);
+      if (characteristic) {
+        btState.characteristic = characteristic;
+        btState.connected = true;
+        btState.reconnecting = false;
+        btState.notify(`BT ready: ${btState.device.name || 'Printer'}`);
+        return;
+      }
+    } catch (_) {}
+    await new Promise(r => setTimeout(r, delays[i]));
+  }
+  btState.reconnecting = false;
+  btState.notify('Bluetooth disconnected');
+}
+
 export default {
   name: 'LoyversePOSPanel',
   props: {
@@ -234,16 +300,19 @@ export default {
       logoFailed: false,
       showSettings: false,
       copies: 1,
-      // Printer state (Bluetooth only)
-      btDevice: null,
-      btCharacteristic: null,
+      // Printer state (Bluetooth only) — these mirror the module-level
+      // singleton (btState) so the template stays reactive while the actual
+      // BluetoothDevice survives across mounts.
       btConnected: false,
       connectingBT: false,
       isPrinting: false,
       printerStatus: '',
+      _btUnsubscribe: null,
     };
   },
   computed: {
+    btDevice() { return btState.device; },
+    btCharacteristic() { return btState.characteristic; },
     customerName() {
       if (!this.student) return '';
       const n = this.student.full_name || `${this.student.first_name || ''} ${this.student.middle_name || ''} ${this.student.last_name || ''} ${this.student.suffix || ''}`;
@@ -263,9 +332,29 @@ export default {
   mounted() {
     this.loadSettings();
     this.autoFillEmployee();
+    // Hydrate from the singleton so a re-mounted panel reflects an existing
+    // connection instead of looking like nothing is paired.
+    this.btConnected = btState.connected;
+    if (btState.connected) {
+      this.printerStatus = `BT ready: ${btState.device?.name || 'Printer'}`;
+    }
+    // Subscribe to global BT state changes (connect / disconnect / reconnect).
+    const onBtChange = (status) => {
+      this.btConnected = btState.connected;
+      if (typeof status === 'string') this.printerStatus = status;
+    };
+    btState.listeners.add(onBtChange);
+    this._btUnsubscribe = () => btState.listeners.delete(onBtChange);
   },
   beforeUnmount() {
-    this.disconnectAll(true);
+    // IMPORTANT: do NOT disconnect Bluetooth here. The whole point of the
+    // singleton is to keep the printer paired even if this panel unmounts
+    // (e.g. user navigates between admin tabs). The user can disconnect
+    // explicitly via the "Disconnect" button.
+    if (typeof this._btUnsubscribe === 'function') {
+      this._btUnsubscribe();
+      this._btUnsubscribe = null;
+    }
   },
   watch: {
     student() { this.autoFillEmployee(); },
@@ -548,28 +637,38 @@ export default {
         return;
       }
       this.connectingBT = true;
-      this.printerStatus = 'Requesting Bluetooth device...';
+      btState.notify('Requesting Bluetooth device...');
       try {
         const device = await this.pickBTDevice();
-        this.printerStatus = `Pairing with ${device.name || 'printer'}...`;
+        btState.notify(`Pairing with ${device.name || 'printer'}...`);
         const server = await device.gatt.connect();
-        this.printerStatus = 'Discovering printer service...';
+        btState.notify('Discovering printer service...');
         const characteristic = await this.findWritableCharacteristic(server);
         if (!characteristic) throw new Error('No writable characteristic found on this device');
-        this.btDevice = device;
-        this.btCharacteristic = characteristic;
-        this.btConnected = true;
-        this.printerStatus = `BT ready: ${device.name || 'Printer'}`;
-        device.addEventListener('gattserverdisconnected', () => {
-          this.btConnected = false;
-          this.btCharacteristic = null;
-          this.printerStatus = 'Bluetooth disconnected';
-        });
+
+        // Persist into the singleton so the link survives panel re-mounts.
+        btState.device = device;
+        btState.characteristic = characteristic;
+        btState.connected = true;
+        btState.notify(`BT ready: ${device.name || 'Printer'}`);
+
+        // Bind the disconnect handler ONCE per device so we don't double-fire.
+        if (!btState.listenerBound) {
+          device.addEventListener('gattserverdisconnected', () => {
+            btState.connected = false;
+            btState.characteristic = null;
+            btState.notify('Bluetooth disconnected — reconnecting...');
+            // Auto-reconnect: the device reference is still in scope, so we can
+            // re-establish GATT without prompting the user.
+            tryReconnectBT();
+          });
+          btState.listenerBound = true;
+        }
         this.notify('Bluetooth printer connected', 'success');
       } catch (e) {
         console.error('BT connect error:', e);
         const msg = (e && e.message) ? e.message : String(e);
-        this.printerStatus = 'BT failed: ' + msg.slice(0, 60);
+        btState.notify('BT failed: ' + msg.slice(0, 60));
         if (e && e.name === 'NotFoundError') {
           this.notify('No printer selected', 'warning');
         } else {
@@ -581,14 +680,15 @@ export default {
     },
     async disconnectAll(silent = false) {
       try {
-        if (this.btDevice && this.btDevice.gatt && this.btDevice.gatt.connected) {
-          try { this.btDevice.gatt.disconnect(); } catch {}
+        if (btState.device && btState.device.gatt && btState.device.gatt.connected) {
+          try { btState.device.gatt.disconnect(); } catch {}
         }
       } finally {
-        this.btDevice = null;
-        this.btCharacteristic = null;
-        this.btConnected = false;
-        this.printerStatus = silent ? '' : 'Disconnected';
+        btState.device = null;
+        btState.characteristic = null;
+        btState.connected = false;
+        btState.listenerBound = false;
+        btState.notify(silent ? '' : 'Disconnected');
       }
     },
 

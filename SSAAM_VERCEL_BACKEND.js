@@ -1348,7 +1348,11 @@ app.put('/apis/payments/:paymentId/mark-unpaid', auth, async (req, res) => {
             return res.status(404).json({ message: 'Student not found' });
         }
 
-        const paymentRecord = await PaymentRecord.findOne({ student_id: student.student_id });
+        // Use the college-specific PaymentRecord collection (same as mark-paid).
+        // Without this, students in CCS/COE/SOM/CNAHS collections were missed
+        // and the endpoint returned "Campaign not found for this student".
+        const CollegePaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
+        const paymentRecord = await CollegePaymentRecordModel.findOne({ student_id: student.student_id });
 
         if (!paymentRecord) {
             return res.status(404).json({ message: 'Payment record not found' });
@@ -1359,8 +1363,10 @@ app.put('/apis/payments/:paymentId/mark-unpaid', auth, async (req, res) => {
         paymentRecord.year_level = student.year_level || paymentRecord.year_level || '';
         paymentRecord.student_name = student.full_name || `${student.first_name} ${student.last_name}`;
 
-        // Find and update campaign
-        const campaignIndex = paymentRecord.campaigns.findIndex(c => c.payment_id.toString() === paymentId);
+        // Find and update campaign (defensive `?.toString()` in case payment_id is null)
+        const campaignIndex = paymentRecord.campaigns.findIndex(
+            c => c && c.payment_id && c.payment_id.toString() === String(paymentId)
+        );
 
         if (campaignIndex < 0) {
             return res.status(404).json({ message: 'Campaign not found for this student' });

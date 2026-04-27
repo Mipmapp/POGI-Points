@@ -1599,8 +1599,12 @@ export default {
         if (response.ok) {
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Payment recorded successfully', type: 'success' } }));
           this.discountValue = 0;
-          this.selectedStudent = null;
-          this.loadAllContributions();
+          // Preserve scroll position so the page doesn't jump while the list refreshes.
+          const _scrollY = (typeof window !== 'undefined') ? window.scrollY : 0;
+          await this.loadAllContributions();
+          if (typeof window !== 'undefined') {
+            this.$nextTick(() => window.scrollTo({ top: _scrollY, left: 0, behavior: 'instant' in window ? 'instant' : 'auto' }));
+          }
         } else {
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: data.message || 'Error recording payment', type: 'error' } }));
         }
@@ -1648,10 +1652,14 @@ export default {
         if (response.ok) {
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Marked as unpaid', type: 'success' } }));
           if (!isRow) {
-            this.selectedStudent = null;
             this.discountValue = 0;
           }
-          this.loadAllContributions();
+          // Preserve scroll position so the page doesn't jump while the list refreshes.
+          const _scrollY = (typeof window !== 'undefined') ? window.scrollY : 0;
+          await this.loadAllContributions();
+          if (typeof window !== 'undefined') {
+            this.$nextTick(() => window.scrollTo({ top: _scrollY, left: 0, behavior: 'instant' in window ? 'instant' : 'auto' }));
+          }
         } else {
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: data.message || 'Error marking as unpaid', type: 'error' } }));
         }
