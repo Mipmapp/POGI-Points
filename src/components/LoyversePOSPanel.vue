@@ -429,45 +429,86 @@ export default {
     },
 
     // ---------- USB printer ----------
+    async pickUSBDevice() {
+      // Build a wide filter list:
+      //  • USB Printer device class (0x07) — matches virtually every receipt printer
+      //  • Plus a long list of known thermal-printer vendor IDs as a safety net
+      const filters = [
+        { classCode: 0x07 },
+        ...PRINTER_VENDORS.map(v => ({ vendorId: v })),
+      ];
+      try {
+        return await navigator.usb.requestDevice({ filters });
+      } catch (e) {
+        // If chooser was empty (no matching device) try once more accepting anything.
+        if (e && e.name === 'NotFoundError') {
+          return await navigator.usb.requestDevice({ filters: [{}] });
+        }
+        throw e;
+      }
+    },
+
     async connectUSB() {
       if (!navigator.usb) {
         this.notify('WebUSB is not supported in this browser', 'error');
+        this.printerStatus = 'WebUSB unavailable — try Chrome/Edge';
         return;
       }
       this.connectingUSB = true;
       this.printerStatus = 'Requesting USB device...';
       try {
-        const filters = PRINTER_VENDORS.map(v => ({ vendorId: v }));
-        const device = await navigator.usb.requestDevice({ filters });
+        const device = await this.pickUSBDevice();
+        this.printerStatus = `Opening ${device.productName || device.manufacturerName || 'printer'}...`;
         await device.open();
-        if (device.configuration === null) await device.selectConfiguration(1);
-        // Find a bulk OUT endpoint on any interface
-        let claimed = null;
+        // Some printers need a reset to release any stuck OS driver hold.
+        try { await device.reset(); } catch (_) { /* not fatal */ }
+        if (device.configuration === null) {
+          try { await device.selectConfiguration(1); } catch (_) { /* try next anyway */ }
+        }
+        // Hunt for any bulk OUT endpoint we can claim.
+        let claimedIface = null;
         let endpointNumber = null;
-        for (const iface of device.configuration.interfaces) {
+        const interfaces = (device.configuration && device.configuration.interfaces) || [];
+        for (const iface of interfaces) {
           for (const alt of iface.alternates) {
             const out = alt.endpoints.find(e => e.direction === 'out' && e.type === 'bulk');
-            if (out) {
-              try {
-                await device.claimInterface(iface.interfaceNumber);
-                claimed = iface.interfaceNumber;
-                endpointNumber = out.endpointNumber;
-                break;
-              } catch (e) { /* try next */ }
+            if (!out) continue;
+            try {
+              await device.claimInterface(iface.interfaceNumber);
+              if (alt.alternateSetting !== 0) {
+                try { await device.selectAlternateInterface(iface.interfaceNumber, alt.alternateSetting); } catch (_) {}
+              }
+              claimedIface = iface.interfaceNumber;
+              endpointNumber = out.endpointNumber;
+              break;
+            } catch (e) {
+              // Likely "Unable to claim interface" — OS driver owns it.
+              this.printerStatus = 'OS driver is holding the printer';
             }
           }
-          if (claimed !== null) break;
+          if (claimedIface !== null) break;
         }
-        if (claimed === null) throw new Error('No printable USB endpoint');
+        if (claimedIface === null) {
+          throw new Error('Could not claim a printable USB interface (the OS print driver may already own it — unplug then replug, or remove the printer from the system print queue, then try again)');
+        }
         this.usbDevice = device;
         this.usbEndpoint = endpointNumber;
         this.usbConnected = true;
         this.printerStatus = `USB ready: ${device.productName || device.manufacturerName || 'Printer'}`;
         this.notify('USB printer connected', 'success');
       } catch (e) {
-        console.error(e);
-        this.printerStatus = 'USB connection cancelled or failed';
-        this.notify('Could not connect USB printer', 'error');
+        console.error('USB connect error:', e);
+        const msg = (e && e.message) ? e.message : String(e);
+        if (e && e.name === 'NotFoundError') {
+          this.printerStatus = 'No USB printer selected';
+          this.notify('No USB printer selected', 'warning');
+        } else if (e && e.name === 'SecurityError') {
+          this.printerStatus = 'Blocked by browser permissions — open the app in a normal tab';
+          this.notify('USB blocked. Open the app outside the preview iframe in Chrome.', 'error');
+        } else {
+          this.printerStatus = 'USB failed: ' + msg.slice(0, 80);
+          this.notify('USB connect failed: ' + msg, 'error');
+        }
       } finally {
         this.connectingUSB = false;
       }
