@@ -106,6 +106,48 @@
     </div>
   </transition>
 
+  <!-- Step 3 of 3: Face ID verification (only shown when admin has enrolled faces) -->
+  <transition name="fade">
+    <div v-if="showFaceModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-[130]" @click.self="cancelFaceVerification">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-7 max-w-sm w-[calc(100%-2rem)] text-center">
+          <div class="w-20 h-20 mx-auto mb-3 bg-blue-100 rounded-full flex items-center justify-center">
+            <svg class="w-12 h-12 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
+            </svg>
+          </div>
+          <h3 class="text-2xl font-bold mb-1 text-blue-900">3rd Verification</h3>
+          <p class="text-gray-600 mb-4 text-sm">Face ID — look at the camera to finish signing in.</p>
+
+          <div v-if="faceError" class="mb-3 p-3 bg-red-100 border border-red-200 rounded-lg text-red-700 text-sm font-medium animate-shake">
+            {{ faceError }}
+          </div>
+
+          <div class="relative mx-auto mb-4 rounded-2xl overflow-hidden bg-gray-900" style="width:100%; max-width:300px; aspect-ratio:4/3;">
+            <video ref="faceVideoEl" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover transform -scale-x-100"></video>
+            <div v-if="!faceCameraOn" class="absolute inset-0 flex items-center justify-center text-white/70 text-xs">
+              {{ faceLoadingModels ? 'Loading face models...' : 'Starting camera...' }}
+            </div>
+            <div v-if="faceCameraOn && faceMatching" class="absolute inset-x-0 top-0 h-0.5 bg-blue-300 shadow-[0_0_18px_4px_rgba(96,165,250,.7)] animate-[scan_1.6s_linear_infinite]"></div>
+            <div v-if="faceCameraOn" class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">
+              {{ faceStatusText }}
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button @click="cancelFaceVerification" class="flex-1 px-6 py-2 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 transition">
+              Cancel
+            </button>
+            <button @click="manualRetryFace" :disabled="!faceCameraOn || faceMatching" class="flex-1 px-6 py-2 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-lg font-medium transition disabled:opacity-60">
+              {{ faceMatching ? 'Scanning...' : 'Retry' }}
+            </button>
+          </div>
+        </div>
+      </transition>
+    </div>
+  </transition>
+
   <transition name="fade">
     <div v-if="showErrorNotification" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <transition name="modal-bounce" appear>
@@ -963,8 +1005,8 @@ const verifyAdminCode = () => {
     showVerificationModal.value = false;
     verificationError.value = false;
     verificationErrorMessage.value = '';
-    // Verification passed — complete the login.
-    completeLogin();
+    // Verification passed — try Step 3 (Face ID) before completing the login.
+    proceedToFaceVerification();
   } else {
     verificationErrorMessage.value = "Invalid verification code. Please try again.";
     verificationError.value = true;
@@ -973,6 +1015,135 @@ const verifyAdminCode = () => {
     if (verificationInputs.value[0]) verificationInputs.value[0].focus();
   }
 };
+
+// ---------- Step 3 of 3: Face ID ----------
+// Only shown when this admin already enrolled at least one face. Otherwise
+// we silently skip to completeLogin so existing admins are never locked out.
+const showFaceModal = ref(false)
+const faceLoadingModels = ref(false)
+const faceCameraOn = ref(false)
+const faceMatching = ref(false)
+const faceError = ref('')
+const faceStatusText = ref('')
+const faceVideoEl = ref(null)
+let faceStream = null
+let faceLoopHandle = null
+let faceEnrolled = []          // [{_id, label, descriptor[]}]
+let faceMatchStreak = 0
+
+async function proceedToFaceVerification() {
+  if (!pendingUser || !pendingUser.token) { completeLogin(); return; }
+  try {
+    const res = await fetch(buildAPIUrl('/apis/masters/face'), {
+      headers: { 'Authorization': `Bearer ${pendingUser.token}` },
+    });
+    if (!res.ok) { completeLogin(); return; }
+    const data = await res.json();
+    faceEnrolled = (data.faces || []).filter(f => Array.isArray(f.descriptor) && f.descriptor.length === 128);
+    if (faceEnrolled.length === 0) { completeLogin(); return; }
+    showFaceModal.value = true;
+    faceError.value = '';
+    faceStatusText.value = 'Position your face';
+    await startFaceCamera();
+  } catch (e) {
+    // If the lookup fails for any reason, do not block the admin from logging in.
+    completeLogin();
+  }
+}
+
+async function startFaceCamera() {
+  try {
+    faceLoadingModels.value = true;
+    const { ensureModelsLoaded } = await import('../utils/faceapi.js');
+    await ensureModelsLoaded();
+    faceLoadingModels.value = false;
+
+    faceStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
+    await new Promise(r => setTimeout(r, 30));
+    const video = faceVideoEl.value;
+    if (!video) return;
+    video.srcObject = faceStream;
+    await new Promise(resolve => { video.onloadedmetadata = () => resolve(); });
+    await video.play();
+    faceCameraOn.value = true;
+    faceMatchStreak = 0;
+    runFaceLoop();
+  } catch (e) {
+    faceLoadingModels.value = false;
+    faceError.value = 'Could not access camera. ' + (e.message || '');
+  }
+}
+
+async function runFaceLoop() {
+  if (!faceCameraOn.value || faceMatching.value) return;
+  faceMatching.value = true;
+  faceStatusText.value = 'Scanning...';
+  try {
+    const { detectDescriptor, descriptorDistance, FACE_MATCH_THRESHOLD, FACE_MATCH_STREAK } = await import('../utils/faceapi.js');
+    const tick = async () => {
+      if (!faceCameraOn.value || !showFaceModal.value) return;
+      const live = await detectDescriptor(faceVideoEl.value);
+      if (live) {
+        let best = Infinity;
+        for (const f of faceEnrolled) {
+          const d = descriptorDistance(live, f.descriptor);
+          if (d < best) best = d;
+        }
+        if (best < FACE_MATCH_THRESHOLD) {
+          faceMatchStreak += 1;
+          faceStatusText.value = `Match ${faceMatchStreak}/${FACE_MATCH_STREAK}`;
+          if (faceMatchStreak >= FACE_MATCH_STREAK) {
+            await onFaceMatched();
+            return;
+          }
+        } else {
+          faceMatchStreak = 0;
+          faceStatusText.value = 'No match — keep looking at the camera';
+        }
+      } else {
+        faceMatchStreak = 0;
+        faceStatusText.value = 'No face detected';
+      }
+      faceLoopHandle = setTimeout(tick, 350);
+    };
+    await tick();
+  } catch (e) {
+    faceError.value = 'Face scan failed: ' + (e.message || '');
+  } finally {
+    faceMatching.value = false;
+  }
+}
+
+async function onFaceMatched() {
+  faceStatusText.value = 'Verified ✓';
+  stopFaceCamera();
+  showFaceModal.value = false;
+  completeLogin();
+}
+
+function stopFaceCamera() {
+  try { if (faceLoopHandle) clearTimeout(faceLoopHandle); } catch {}
+  faceLoopHandle = null;
+  try { if (faceStream) faceStream.getTracks().forEach(t => t.stop()); } catch {}
+  faceStream = null;
+  faceCameraOn.value = false;
+  if (faceVideoEl.value) faceVideoEl.value.srcObject = null;
+}
+
+function cancelFaceVerification() {
+  stopFaceCamera();
+  showFaceModal.value = false;
+  isLoading.value = false;
+  isNavigationPending.value = false;
+  pendingUser = null;
+}
+
+function manualRetryFace() {
+  if (!faceCameraOn.value) { startFaceCamera(); return; }
+  faceMatchStreak = 0;
+  faceError.value = '';
+  runFaceLoop();
+}
 </script>
 
 <style scoped>
@@ -1038,6 +1209,12 @@ const verifyAdminCode = () => {
 .modal-bounce-leave-active {
   animation: bounce-in 0.3s reverse;
 }
+@keyframes scan {
+  0%   { transform: translateY(0); }
+  50%  { transform: translateY(280px); }
+  100% { transform: translateY(0); }
+}
+
 @keyframes bounce-in {
   0% { transform: scale(0.7); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }

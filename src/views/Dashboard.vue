@@ -1264,6 +1264,9 @@
               </div>
             </div>
 
+            <!-- Face ID 3rd Verification Enrollment -->
+            <FaceRecognitionSettings />
+
             <!-- Save Button -->
             <div class="flex justify-end pt-4">
               <button 
@@ -6484,6 +6487,7 @@ import AdminContributionPanel from '../components/AdminContributionPanel.vue'
 // URL that the browser can fetch and use as an alpha mask.
 import jrmsuLogoUrl from '../assets/jrmsu-logo.webp'
 import AdminRaffleTicketPanel from '../components/AdminRaffleTicketPanel.vue'
+import FaceRecognitionSettings from '../components/FaceRecognitionSettings.vue'
 import Manage from '../components/Manage.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl, getCollege } from '../config/api.js'
