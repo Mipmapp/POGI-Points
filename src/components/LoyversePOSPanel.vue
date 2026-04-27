@@ -387,7 +387,8 @@ export default {
       parts.push(new Uint8Array([0x1b, 0x45, 0x01]));
       parts.push(enc.encode(this.businessHeader + '\n'));
       parts.push(new Uint8Array([0x1b, 0x45, 0x00]));
-      parts.push(enc.encode(this.businessAddress + '\n'));
+      this.wrapText(this.businessAddress, W)
+      .forEach(line => parts.push(enc.encode(line + '\n')));
       parts.push(enc.encode('\n'));
 
       parts.push(new Uint8Array([0x1b, 0x45, 0x01]));
