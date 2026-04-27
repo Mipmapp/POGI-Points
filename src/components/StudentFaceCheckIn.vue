@@ -49,12 +49,17 @@
                 <span class="text-sm text-blue-200/70 font-medium">{{ camStatus }}</span>
               </div>
 
-              <!-- Head turn cues -->
-              <div v-if="cameraReady && currentChallenge === 'turn_left'" class="absolute inset-0 flex items-center justify-start pointer-events-none">
-                <div class="text-white/80 text-7xl font-bold animate-pulse pl-4">←</div>
-              </div>
-              <div v-if="cameraReady && currentChallenge === 'turn_right'" class="absolute inset-0 flex items-center justify-end pointer-events-none">
-                <div class="text-white/80 text-7xl font-bold animate-pulse pr-4">→</div>
+              <!-- Head turn cue, centered -->
+              <div v-if="cameraReady && (currentChallenge === 'turn_left' || currentChallenge === 'turn_right')"
+                class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div class="px-5 py-3 rounded-2xl bg-black/55 backdrop-blur-md flex items-center gap-3 animate-pulse">
+                  <span class="text-white text-4xl font-bold leading-none">
+                    {{ currentChallenge === 'turn_left' ? '←' : '→' }}
+                  </span>
+                  <span class="text-white text-xl font-bold tracking-wide">
+                    {{ currentChallenge === 'turn_left' ? 'TURN LEFT' : 'TURN RIGHT' }}
+                  </span>
+                </div>
               </div>
               <!-- Face oval -->
               <div v-if="cameraReady" class="absolute inset-0 pointer-events-none">
@@ -371,12 +376,20 @@ function processTurnFrame(yaw, direction) {
   const s = turnState.value
   const wantPositive = direction === 'turn_left'
   const DEEP = 0.18
+  const STRONG = 0.5    // strong, unambiguous turn → auto-pass without return-to-center
   const NEUTRAL = 0.08
   const deep = wantPositive ? yaw > DEEP : yaw < -DEEP
+  const strong = wantPositive ? yaw > STRONG : yaw < -STRONG
   if (Math.abs(yaw) > s.peakYaw) s.peakYaw = Math.abs(yaw)
   if (deep) s.deepTurnFrames++
-  // Only start counting "neutral" frames after we've seen the requested deep
-  // turn, otherwise the user's initial centered frames would trivially count.
+
+  // A clear, strong turn in the requested direction (|yaw| ≥ 0.5) is enough on
+  // its own — no need to wait for the user to return to neutral. This makes
+  // the flow snappy when the user commits firmly.
+  if (strong && s.deepTurnFrames >= 2) return true
+
+  // Otherwise fall back to the slower "deep turn, then return to centered"
+  // pattern, which catches gentler turns reliably.
   if (s.deepTurnFrames >= 2 && Math.abs(yaw) < NEUTRAL) s.neutralFrames++
   return s.deepTurnFrames >= 2 && s.neutralFrames >= 1
 }
