@@ -2563,6 +2563,13 @@ const attendanceEventSchema = new mongoose.Schema({
     },
     is_custom: { type: Boolean, default: false }, // Whether this is a custom event for specific users
     assigned_users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Student' }], // Specific users for custom events
+    // Geofence: when enabled, the device performing the check-in must
+    // physically sit within `geofence_radius_meters` of (lat, lng).
+    // Defaults match the venue-scale tolerance the team agreed on (~80m).
+    geofence_enabled: { type: Boolean, default: false },
+    geofence_lat: { type: Number, default: null },
+    geofence_lng: { type: Number, default: null },
+    geofence_radius_meters: { type: Number, default: 80, min: 10, max: 5000 },
     created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'Master', required: true },
     created_by_name: { type: String, required: true },
     created_at: { type: Date, default: Date.now },
@@ -6774,6 +6781,49 @@ function getEventAutoStatus(eventDate) {
     }
 }
 
+// ==================== GEOFENCE HELPERS ====================
+// Used by event create/update endpoints and the unified attendance check
+// handler. Centralised so behaviour stays consistent if we ever change the
+// rules (e.g. tighten the radius bounds or add altitude later).
+
+// Haversine distance between two lat/lng pairs, in metres.
+function haversineMeters(lat1, lng1, lat2, lng2) {
+    const R = 6371000; // Earth radius in metres
+    const toRad = (deg) => (deg * Math.PI) / 180;
+    const dLat = toRad(lat2 - lat1);
+    const dLng = toRad(lng2 - lng1);
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+              Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.asin(Math.min(1, Math.sqrt(a)));
+}
+
+// Coerces incoming geofence input into safe, schema-compatible values.
+// If `enabled` is true but coordinates are missing/invalid, we force enabled
+// back to false so the database never holds a half-configured fence.
+function sanitiseGeofencePayload({ geofence_enabled, geofence_lat, geofence_lng, geofence_radius_meters }) {
+    const lat = (geofence_lat === null || geofence_lat === undefined || geofence_lat === '')
+        ? null : Number(geofence_lat);
+    const lng = (geofence_lng === null || geofence_lng === undefined || geofence_lng === '')
+        ? null : Number(geofence_lng);
+    let radius = (geofence_radius_meters === null || geofence_radius_meters === undefined || geofence_radius_meters === '')
+        ? 80 : Number(geofence_radius_meters);
+
+    const validLat = Number.isFinite(lat) && lat >= -90 && lat <= 90;
+    const validLng = Number.isFinite(lng) && lng >= -180 && lng <= 180;
+    if (!Number.isFinite(radius) || radius < 10) radius = 80;
+    if (radius > 5000) radius = 5000;
+
+    const enabled = !!geofence_enabled && validLat && validLng;
+
+    return {
+        geofence_enabled: enabled,
+        geofence_lat: validLat ? lat : null,
+        geofence_lng: validLng ? lng : null,
+        geofence_radius_meters: radius
+    };
+}
+
 // Get all attendance events (admin only) - returns ALL events regardless of is_custom
 app.get('/apis/attendance/events', auth, async (req, res) => {
     try {
@@ -7077,7 +7127,11 @@ app.get('/apis/attendance/events/:id', auth, async (req, res) => {
 // Create attendance event (admin only)
 app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
-        const { title, description, location, event_date, year_level, status, start_time, end_time, is_custom, assigned_users } = req.body;
+        const {
+            title, description, location, event_date, year_level, status,
+            start_time, end_time, is_custom, assigned_users,
+            geofence_enabled, geofence_lat, geofence_lng, geofence_radius_meters
+        } = req.body;
 
         if (!title || !event_date) {
             return res.status(400).json({ message: "Title and event date are required" });
@@ -7090,6 +7144,12 @@ app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res
         }
 
         const EventModel = getCollegeModel(AttendanceEvent, CCS_AttendanceEvent, COE_AttendanceEvent, req.college);
+
+        // Sanitise geofence values up front so we don't persist a partial /
+        // contradictory state (e.g. enabled=true but missing coordinates).
+        const sanitisedGeofence = sanitiseGeofencePayload({
+            geofence_enabled, geofence_lat, geofence_lng, geofence_radius_meters
+        });
 
         const event = new EventModel({
             title,
@@ -7104,7 +7164,8 @@ app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res
             created_by_name: req.master.username,
             activated_at: eventStatus === 'active' ? new Date() : null,
             is_custom: is_custom || false,
-            assigned_users: assigned_users && Array.isArray(assigned_users) ? assigned_users : []
+            assigned_users: assigned_users && Array.isArray(assigned_users) ? assigned_users : [],
+            ...sanitisedGeofence
         });
 
         const saved = await event.save();
@@ -7117,7 +7178,11 @@ app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res
 // Update attendance event (admin only)
 app.put('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
-        const { title, description, location, event_date, year_level, status, start_time, end_time, is_custom, assigned_users } = req.body;
+        const {
+            title, description, location, event_date, year_level, status,
+            start_time, end_time, is_custom, assigned_users,
+            geofence_enabled, geofence_lat, geofence_lng, geofence_radius_meters
+        } = req.body;
 
         console.log(`[Event Update] ID: ${req.params.id}, assigned_users received:`, assigned_users);
 
@@ -7139,6 +7204,22 @@ app.put('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (req, 
             console.log(`[Event Update] Before save - assigned_users:`, event.assigned_users);
             event.assigned_users = assigned_users || [];
             console.log(`[Event Update] After assignment - assigned_users:`, event.assigned_users);
+        }
+
+        // Geofence: only touch fields the client actually sent so partial PUTs
+        // (e.g. just toggling) keep coordinates intact.
+        if (geofence_enabled !== undefined || geofence_lat !== undefined ||
+            geofence_lng !== undefined || geofence_radius_meters !== undefined) {
+            const merged = sanitiseGeofencePayload({
+                geofence_enabled: geofence_enabled !== undefined ? geofence_enabled : event.geofence_enabled,
+                geofence_lat: geofence_lat !== undefined ? geofence_lat : event.geofence_lat,
+                geofence_lng: geofence_lng !== undefined ? geofence_lng : event.geofence_lng,
+                geofence_radius_meters: geofence_radius_meters !== undefined ? geofence_radius_meters : event.geofence_radius_meters
+            });
+            event.geofence_enabled = merged.geofence_enabled;
+            event.geofence_lat = merged.geofence_lat;
+            event.geofence_lng = merged.geofence_lng;
+            event.geofence_radius_meters = merged.geofence_radius_meters;
         }
 
         if (status && status !== event.status) {
@@ -7930,7 +8011,7 @@ const DUPLICATE_PREVENTION_MS = 1 * 60 * 1000; // 1 minute in milliseconds
 // descriptor to a student_id and then delegates here.
 const sessionAttendanceCheck = async (req, res) => {
     try {
-        const { rfid_code, student_id, identifier_type = 'rfid', source = 'rfid' } = req.body;
+        const { rfid_code, student_id, identifier_type = 'rfid', source = 'rfid', latitude, longitude, accuracy } = req.body;
 
         const identifier = rfid_code || student_id;
         const isManualStudentId = identifier_type === 'student_id' || (!rfid_code && student_id);
@@ -7995,6 +8076,43 @@ const sessionAttendanceCheck = async (req, res) => {
         if (event.status !== 'active' && event.status !== 'upcoming' && event.status !== 'draft') {
             console.log(`[Attendance] Blocked scan for event ${event._id}: status is ${event.status}`);
             return res.status(400).json({ message: `Event is ${event.status || 'not active'}` });
+        }
+
+        // === GEOFENCE ENFORCEMENT ===
+        // If the admin enabled a geofence on this event, the device performing
+        // the check-in must be within radius. We allow GPS accuracy (capped) to
+        // be added to the radius so a slightly noisy fix doesn't unfairly block
+        // someone standing at the venue. Applies to RFID, manual, and face flows
+        // because all three funnel through this handler.
+        if (event.geofence_enabled && Number.isFinite(event.geofence_lat) && Number.isFinite(event.geofence_lng)) {
+            const lat = Number(latitude);
+            const lng = Number(longitude);
+            if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+                return res.status(403).json({
+                    message: "Location is required for this event. Please enable GPS / location services and try again.",
+                    geofence_required: true,
+                    code: 'GEOFENCE_LOCATION_REQUIRED'
+                });
+            }
+
+            const distance = haversineMeters(event.geofence_lat, event.geofence_lng, lat, lng);
+            const accuracyMeters = Number(accuracy);
+            // Cap the GPS-accuracy slack at 50m so a wildly inaccurate fix
+            // (common indoors) can't be used to silently bypass the fence.
+            const allowedSlack = Number.isFinite(accuracyMeters) ? Math.min(Math.max(accuracyMeters, 0), 50) : 0;
+            const effectiveRadius = (event.geofence_radius_meters || 80) + allowedSlack;
+
+            console.log(`[Geofence] event=${event._id} dist=${distance.toFixed(1)}m radius=${event.geofence_radius_meters}m slack=${allowedSlack.toFixed(1)}m effective=${effectiveRadius.toFixed(1)}m`);
+
+            if (distance > effectiveRadius) {
+                return res.status(403).json({
+                    message: `You are ~${Math.round(distance)}m from the event location, but must be within ${event.geofence_radius_meters}m to check in.`,
+                    geofence_blocked: true,
+                    code: 'GEOFENCE_OUT_OF_RANGE',
+                    distance_meters: Math.round(distance),
+                    allowed_radius_meters: event.geofence_radius_meters
+                });
+            }
         }
 
         // Helper function to calculate if session is currently active based on time
@@ -8319,11 +8437,17 @@ app.post('/apis/attendance/sessions/:sessionId/check-face', auth, async (req, re
 
         // Delegate to the unified handler with a synthesised body so all the
         // duplicate-prevention / session-state logic is identical to RFID.
+        // Preserve any GPS fields from the original request so geofence
+        // enforcement still applies to face check-ins.
+        const { latitude, longitude, accuracy } = req.body || {};
         req.body = {
             student_id: best.student.student_id,
             identifier_type: 'student_id',
             source: 'face',
-            face_match_distance: Number(best.distance.toFixed(3))
+            face_match_distance: Number(best.distance.toFixed(3)),
+            latitude,
+            longitude,
+            accuracy
         };
         return sessionAttendanceCheck(req, res);
     } catch (err) {

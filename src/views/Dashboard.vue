@@ -5246,6 +5246,26 @@
             </div>
           </div>
 
+          <!-- Location Geofence (Create) -->
+          <div class="border-t pt-4 mt-4">
+            <div class="mb-3">
+              <label class="block text-sm font-medium text-gray-700">Location restriction (GPS geofence)</label>
+              <p class="text-xs text-gray-500 mt-0.5">Optional. Limits check-ins to devices physically near the event venue.</p>
+            </div>
+            <GeofenceMap
+              :enabled="newEvent.geofence_enabled"
+              :latitude="newEvent.geofence_lat"
+              :longitude="newEvent.geofence_lng"
+              :radius="newEvent.geofence_radius_meters"
+              :isCOE="isCOE"
+              :isSOM="isSOM"
+              @update:enabled="newEvent.geofence_enabled = $event"
+              @update:latitude="newEvent.geofence_lat = $event"
+              @update:longitude="newEvent.geofence_lng = $event"
+              @update:radius="newEvent.geofence_radius_meters = $event"
+            />
+          </div>
+
           <!-- Sessions Management Section (Create) -->
           <div class="border-t pt-4 mt-4">
             <div class="flex items-center justify-between mb-3">
@@ -5492,6 +5512,26 @@
             </div>
           </div>
           
+          <!-- Location Geofence (Edit) -->
+          <div class="border-t pt-4 mt-4">
+            <div class="mb-3">
+              <label class="block text-sm font-medium text-gray-700">Location restriction (GPS geofence)</label>
+              <p class="text-xs text-gray-500 mt-0.5">Optional. Limits check-ins to devices physically near the event venue.</p>
+            </div>
+            <GeofenceMap
+              :enabled="!!selectedEvent.geofence_enabled"
+              :latitude="Number.isFinite(selectedEvent.geofence_lat) ? selectedEvent.geofence_lat : null"
+              :longitude="Number.isFinite(selectedEvent.geofence_lng) ? selectedEvent.geofence_lng : null"
+              :radius="selectedEvent.geofence_radius_meters || 80"
+              :isCOE="isCOE"
+              :isSOM="isSOM"
+              @update:enabled="selectedEvent.geofence_enabled = $event"
+              @update:latitude="selectedEvent.geofence_lat = $event"
+              @update:longitude="selectedEvent.geofence_lng = $event"
+              @update:radius="selectedEvent.geofence_radius_meters = $event"
+            />
+          </div>
+
           <!-- Sessions Management Section -->
           <div class="border-t pt-4 mt-4">
             <div class="flex items-center justify-between mb-3">
@@ -6530,6 +6570,7 @@ import jrmsuLogoUrl from '../assets/jrmsu-logo.webp'
 import AdminRaffleTicketPanel from '../components/AdminRaffleTicketPanel.vue'
 import FaceRecognitionSettings from '../components/FaceRecognitionSettings.vue'
 import Manage from '../components/Manage.vue'
+import GeofenceMap from '../components/GeofenceMap.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl, getCollege } from '../config/api.js'
 import { handleTokenError, setTokenExpiredCallback } from '../utils/tokenHandler.js'
@@ -9955,7 +9996,13 @@ const newEvent = ref({
   start_time: '07:00',
   end_time: '17:00',
   assigned_users: [],
-  is_custom: false
+  is_custom: false,
+  // GPS geofence: when enabled, only devices within `geofence_radius_meters`
+  // of (geofence_lat, geofence_lng) can record attendance for this event.
+  geofence_enabled: false,
+  geofence_lat: null,
+  geofence_lng: null,
+  geofence_radius_meters: 80
 })
 const eventUserFilters = ref({
   name: '',
@@ -13853,7 +13900,12 @@ const createAttendanceEvent = async () => {
       end_time: newEvent.value.end_time || '17:00',
       is_custom: newEvent.value.is_custom || false,
       // Extract IDs from assigned_users (can be objects or IDs)
-      assigned_users: (newEvent.value.assigned_users || []).map(u => typeof u === 'string' ? u : u._id || u.id)
+      assigned_users: (newEvent.value.assigned_users || []).map(u => typeof u === 'string' ? u : u._id || u.id),
+      // GPS geofence settings
+      geofence_enabled: !!newEvent.value.geofence_enabled,
+      geofence_lat: newEvent.value.geofence_lat,
+      geofence_lng: newEvent.value.geofence_lng,
+      geofence_radius_meters: newEvent.value.geofence_radius_meters || 80
     }
     const response = await fetch(buildAPIUrl('/apis/attendance/events'), {
       method: 'POST',
@@ -13903,7 +13955,7 @@ const createAttendanceEvent = async () => {
       }
 
       // Reset the form & close the create modal.
-      newEvent.value = { title: '', description: '', location: '', date: '', year_level: '', start_time: '07:00', end_time: '17:00', assigned_users: [], is_custom: false }
+      newEvent.value = { title: '', description: '', location: '', date: '', year_level: '', start_time: '07:00', end_time: '17:00', assigned_users: [], is_custom: false, geofence_enabled: false, geofence_lat: null, geofence_lng: null, geofence_radius_meters: 80 }
       newEventSessions.value = []
       eventUserSearch.value = ''
       eventUserFilters.value = { name: '', program: '', yearLevel: '' }
@@ -13959,7 +14011,12 @@ const updateAttendanceEvent = async () => {
       end_time: selectedEvent.value.end_time || selectedEvent.value.endTime || '17:00',
       is_custom: selectedEvent.value.is_custom || false,
       // Extract IDs from assigned_users (can be objects or IDs)
-      assigned_users: (selectedEvent.value.assigned_users || []).map(u => typeof u === 'string' ? u : u._id || u.id)
+      assigned_users: (selectedEvent.value.assigned_users || []).map(u => typeof u === 'string' ? u : u._id || u.id),
+      // GPS geofence settings — sent as a partial update; backend merges with existing values.
+      geofence_enabled: !!selectedEvent.value.geofence_enabled,
+      geofence_lat: (selectedEvent.value.geofence_lat === '' || selectedEvent.value.geofence_lat === undefined) ? null : selectedEvent.value.geofence_lat,
+      geofence_lng: (selectedEvent.value.geofence_lng === '' || selectedEvent.value.geofence_lng === undefined) ? null : selectedEvent.value.geofence_lng,
+      geofence_radius_meters: selectedEvent.value.geofence_radius_meters || 80
     }
     
     console.log('[Frontend Update] Sending event payload:', {
@@ -15272,7 +15329,38 @@ const processRfidScan = async (inputCode) => {
       operation_type: rfidOperationType.value,
       force_mode: true
     }
-    
+
+    // === GEOFENCE: capture device GPS before sending the check ===
+    // Only collect location when the admin actually configured a geofence on
+    // this event — we don't want to surprise users with a location prompt
+    // otherwise. The backend re-validates either way.
+    if (selectedEvent.value?.geofence_enabled) {
+      if (!('geolocation' in navigator)) {
+        rfidProcessing.value = false
+        showNotification('This event requires GPS, but your device does not support location services.', 'error')
+        return
+      }
+      try {
+        const pos = await new Promise((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 12000,
+            maximumAge: 5000
+          })
+        })
+        requestBody.latitude = pos.coords.latitude
+        requestBody.longitude = pos.coords.longitude
+        requestBody.accuracy = pos.coords.accuracy
+      } catch (geoErr) {
+        rfidProcessing.value = false
+        const reason = geoErr && geoErr.code === 1
+          ? 'Location permission was denied. Please allow location access to check in for this event.'
+          : 'Could not get your current location. Please ensure GPS is on and try again.'
+        showNotification(reason, 'error')
+        return
+      }
+    }
+
     const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${selectedSession.value._id}/check`), {
       method: 'POST',
       headers: {
