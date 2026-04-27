@@ -3943,6 +3943,97 @@
                 </div>
               </section>
 
+              <!-- Face ID Section -->
+              <section>
+                <div class="flex items-center gap-2 mb-4">
+                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Face ID</h3>
+                </div>
+                <div :class="['relative overflow-hidden rounded-2xl p-6 border-2 transition-all', faceEnrolled ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200' : (isCOE ? 'bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200' : isSOM ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200' : isCNAHS ? 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200' : 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200')]">
+                  <!-- decorative blur orbs -->
+                  <div :class="['absolute -top-12 -right-12 w-44 h-44 rounded-full blur-3xl opacity-40', faceEnrolled ? 'bg-emerald-300' : (isCOE ? 'bg-orange-300' : isSOM ? 'bg-green-300' : isCNAHS ? 'bg-emerald-300' : 'bg-blue-300')]"></div>
+                  <div :class="['absolute -bottom-12 -left-12 w-44 h-44 rounded-full blur-3xl opacity-30', faceEnrolled ? 'bg-teal-300' : (isCOE ? 'bg-amber-300' : isSOM ? 'bg-emerald-300' : isCNAHS ? 'bg-green-300' : 'bg-indigo-300')]"></div>
+
+                  <div class="relative z-10 flex flex-col md:flex-row md:items-center gap-5">
+                    <!-- Avatar / status circle -->
+                    <div class="flex-shrink-0">
+                      <div :class="['w-24 h-24 rounded-3xl overflow-hidden flex items-center justify-center shadow-lg ring-4 ring-white', faceEnrolled ? 'bg-emerald-100' : (isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-emerald-100' : 'bg-blue-100')]">
+                        <img v-if="faceEnrolled && faceData?.faces?.[0]?.photo" :src="faceData.faces[0].photo" class="w-full h-full object-cover" alt="Face ID preview" />
+                        <svg v-else class="w-12 h-12" :class="faceEnrolled ? 'text-emerald-600' : (isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-blue-500')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0M4 7v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7a3 3 0 00-3 3z" />
+                        </svg>
+                      </div>
+                    </div>
+
+                    <!-- Status text -->
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center gap-2 flex-wrap mb-1">
+                        <h4 class="text-lg font-bold text-gray-900">Face Recognition</h4>
+                        <span v-if="faceLoading" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-200 text-gray-700">Loading…</span>
+                        <span v-else-if="faceEnrolled" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                          Enrolled
+                        </span>
+                        <span v-else :class="['px-2.5 py-0.5 rounded-full text-[10px] font-bold border', isCOE ? 'bg-orange-100 text-orange-700 border-orange-200' : isSOM ? 'bg-green-100 text-green-700 border-green-200' : isCNAHS ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-blue-100 text-blue-700 border-blue-200']">Not set up</span>
+                      </div>
+                      <p v-if="faceLoading" class="text-sm text-gray-500">Checking your Face ID status…</p>
+                      <template v-else-if="faceEnrolled">
+                        <p class="text-sm text-gray-700 font-medium">Use your face to mark your own attendance during events.</p>
+                        <p class="text-xs text-gray-500 mt-1">
+                          Last updated <span class="font-semibold">{{ formatFaceDate(faceData.face_updated_at) }}</span>.
+                          <template v-if="faceData.in_cooldown">
+                            You can change it again on <span class="font-semibold">{{ formatFaceDate(faceData.next_update_allowed_at) }}</span>.
+                          </template>
+                          <template v-else>You can update it any time.</template>
+                        </p>
+                      </template>
+                      <template v-else>
+                        <p class="text-sm text-gray-700 font-medium">Enroll your face once to enable self check-in on attendance events.</p>
+                        <p class="text-xs text-gray-500 mt-1">It only takes a few seconds — your phone or laptop camera is all you need.</p>
+                      </template>
+                    </div>
+
+                    <!-- Action button -->
+                    <div class="flex-shrink-0 w-full md:w-auto">
+                      <button
+                        @click="openFaceEnroll"
+                        :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
+                        :class="['w-full md:w-auto px-5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all', (faceEnrolled && faceData?.in_cooldown) ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : faceEnrolled ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-200 hover:scale-105' : (isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white shadow-lg shadow-orange-200 hover:scale-105' : isSOM ? 'bg-gradient-to-r from-green-600 to-yellow-500 text-white shadow-lg shadow-green-200 hover:scale-105' : isCNAHS ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg shadow-emerald-200 hover:scale-105' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow-lg shadow-blue-200 hover:scale-105')]"
+                        :title="faceEnrolled && faceData?.in_cooldown ? `Locked until ${formatFaceDate(faceData.next_update_allowed_at)}` : ''"
+                      >
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        {{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- tip strip -->
+                  <div class="relative z-10 mt-5 pt-4 border-t border-white/60 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-gray-600">
+                    <div class="flex items-start gap-2">
+                      <span :class="['mt-0.5 w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100 text-orange-600' : isSOM ? 'bg-green-100 text-green-600' : isCNAHS ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600']">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                      </span>
+                      <span>Works on phone &amp; laptop cameras</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <span :class="['mt-0.5 w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100 text-orange-600' : isSOM ? 'bg-green-100 text-green-600' : isCNAHS ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600']">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                      </span>
+                      <span>Only your face — must be unique</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                      <span :class="['mt-0.5 w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100 text-orange-600' : isSOM ? 'bg-green-100 text-green-600' : isCNAHS ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600']">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                      </span>
+                      <span>Updatable every {{ (faceData && faceData.cooldown_days) || 7 }} days</span>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               <section>
                 <div class="flex items-center gap-2 mb-4">
                   <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
@@ -6546,6 +6637,20 @@
       </div>
     </div>
   </transition>
+
+  <!-- Face ID enrollment modal (student dashboard) -->
+  <StudentFaceEnroll
+    :open="showFaceEnroll"
+    :has-existing-face="faceEnrolled"
+    :cooldown-active="!!(faceData && faceData.in_cooldown)"
+    :next-update-allowed-at="faceData ? faceData.next_update_allowed_at : null"
+    :cooldown-days="(faceData && faceData.cooldown_days) || 7"
+    :is-c-o-e="isCOE"
+    :is-s-o-m="isSOM"
+    :is-c-n-a-h-s="isCNAHS"
+    @close="showFaceEnroll = false"
+    @enrolled="onFaceEnrolled"
+  />
 </template>
 
 <script setup>
@@ -6571,6 +6676,7 @@ import AdminRaffleTicketPanel from '../components/AdminRaffleTicketPanel.vue'
 import FaceRecognitionSettings from '../components/FaceRecognitionSettings.vue'
 import Manage from '../components/Manage.vue'
 import GeofenceMap from '../components/GeofenceMap.vue'
+import StudentFaceEnroll from '../components/StudentFaceEnroll.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl, getCollege } from '../config/api.js'
 import { handleTokenError, setTokenExpiredCallback } from '../utils/tokenHandler.js'
@@ -8097,6 +8203,40 @@ let cooldownTimer = null
 const profileImageFailed = ref(false)
 const sidebarImageFailed = ref(false)
 const profileImageRetries = ref(0)
+
+// Face ID self-service state (student dashboard)
+const faceLoading = ref(false)
+const faceData = ref(null)
+const showFaceEnroll = ref(false)
+const faceEnrolled = computed(() => !!(faceData.value && faceData.value.count && faceData.value.count > 0))
+const loadFaceStatus = async () => {
+  if (!currentUser.value || currentUser.value.role === 'admin' || currentUser.value.isMaster) return
+  faceLoading.value = true
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('studentToken')
+    const res = await fetch(buildAPIUrl('/apis/students/face'), {
+      headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
+    })
+    if (res.ok) faceData.value = await res.json()
+  } catch (err) {
+    console.error('Failed to load face status:', err)
+  } finally {
+    faceLoading.value = false
+  }
+}
+const openFaceEnroll = () => {
+  if (faceEnrolled.value && faceData.value?.in_cooldown) return
+  showFaceEnroll.value = true
+}
+const onFaceEnrolled = (data) => {
+  faceData.value = data
+  showFaceEnroll.value = false
+}
+const formatFaceDate = (d) => {
+  if (!d) return ''
+  try { return new Date(d).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) }
+  catch { return String(d) }
+}
 const profileGradient = ref('')
 
 const onProfileImageLoad = (event) => {
@@ -11114,6 +11254,8 @@ onMounted(async () => {
   // Fetch student's payment records if not admin
   if (!user.isMaster && user.role !== 'admin') {
     await fetchMyPayments()
+    // Load Face ID enrollment status (students only)
+    loadFaceStatus()
   }
   
   // Listen for user deletions from Manage component
