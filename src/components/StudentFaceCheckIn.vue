@@ -138,6 +138,19 @@ const successMessage = ref('')
 const submitting = ref(false)
 const failed = ref(false)
 
+// ---- Phases
+//   'finding'    → camera is on, we're searching for a stable face
+//   'challenging'→ face is locked, walk the user through the head-turn challenges
+//   'submitting' → all challenges passed, posting to backend
+//   'done'       → success or failure (final)
+const phase = ref('finding')
+// Number of consecutive frames in which we've seen a clear face. Once this
+// passes the lock threshold we transition from 'finding' → 'challenging' and
+// fetch the challenge list. This avoids asking the user to "turn left" before
+// they've even framed themselves in the camera.
+const faceLockedFrames = ref(0)
+const FACE_LOCK_FRAMES = 8 // ~0.8s at 100ms loop
+
 // ---- Challenge state
 const challengeToken = ref('')
 const challenges = ref([])
@@ -167,6 +180,9 @@ const stageMessage = computed(() => {
   if (successMessage.value) return successMessage.value
   if (submitting.value) return 'Verifying with the server…'
   if (failed.value && !errorMessage.value) return 'Liveness check failed.'
+  if (phase.value === 'finding') {
+    return faceDetected.value ? 'Hold still…' : 'Position your face in the circle'
+  }
   if (currentChallenge.value === 'turn_left') return 'Turn your head LEFT'
   if (currentChallenge.value === 'turn_right') return 'Turn your head RIGHT'
   if (cameraReady.value && !challenges.value.length) return 'Preparing your check-in…'
@@ -174,8 +190,13 @@ const stageMessage = computed(() => {
   return 'Setting up camera'
 })
 const stageHint = computed(() => {
-  if (currentChallenge.value === 'turn_left') return 'Slowly turn your face to your left, then back.'
-  if (currentChallenge.value === 'turn_right') return 'Slowly turn your face to your right, then back.'
+  if (phase.value === 'finding') {
+    return faceDetected.value
+      ? 'Locking on your face…'
+      : 'Make sure your face is well-lit and centered.'
+  }
+  if (currentChallenge.value === 'turn_left') return 'Slowly turn your face to your left, then back to center.'
+  if (currentChallenge.value === 'turn_right') return 'Slowly turn your face to your right, then back to center.'
   return ''
 })
 
@@ -193,8 +214,10 @@ async function start() {
   resetState()
   await openCamera()
   if (!cameraReady.value) return
-  await requestChallenge()
-  if (challenges.value.length) runDetectionLoop()
+  // Don't request challenges yet — wait until the detection loop confirms a
+  // stable face. The loop itself drives the 'finding' → 'challenging'
+  // transition and triggers requestChallenge() at the right moment.
+  runDetectionLoop()
 }
 
 function resetState() {
@@ -202,6 +225,10 @@ function resetState() {
   successMessage.value = ''
   failed.value = false
   submitting.value = false
+  phase.value = 'finding'
+  faceLockedFrames.value = 0
+  faceDetected.value = false
+  faceLocked.value = false
   challengeToken.value = ''
   challenges.value = []
   completed.value = []
@@ -309,22 +336,29 @@ function yawRatio(landmarks /* , box (unused) */) {
   return Math.max(-1, Math.min(1, (dR - dL) / total))
 }
 
-// Detect a head turn. We accept a turn in EITHER direction once it is clearly
-// off-center, because the on-screen video is mirrored and users frequently
-// turn the "wrong" way relative to the arrow cue. The visual arrow still
-// nudges them, but liveness only needs to confirm a real, intentional turn
-// followed by a return to neutral — not the exact direction.
-function processTurnFrame(yaw /* , direction (intentionally ignored) */) {
+// Detect a head turn in the requested direction.
+//
+// With the jaw-based yawRatio:
+//   user turns to THEIR right → nose moves toward jawL (image's left side),
+//                                so dL shrinks and (dR - dL)/total → POSITIVE
+//   user turns to THEIR left  → nose moves toward jawR (image's right side),
+//                                so dR shrinks and (dR - dL)/total → NEGATIVE
+//
+// Because the video preview is mirrored on screen (transform: scaleX(-1)),
+// "the user's right" is also "the right side of the screen as the user sees
+// it", so the on-screen arrow ↔ direction matches the user's body direction
+// without any extra confusion.
+function processTurnFrame(yaw, direction) {
   const s = turnState.value
-  const absYaw = Math.abs(yaw)
-  const DEEP = 0.18    // jaw-based yaw of ~0.18 already corresponds to a clear head turn
+  const wantPositive = direction === 'turn_right' // user's right == positive yaw (jaw math)
+  const DEEP = 0.18
   const NEUTRAL = 0.08
-  if (absYaw > s.peakYaw) s.peakYaw = absYaw
-  if (absYaw > DEEP) s.deepTurnFrames++
-  // Only count "neutral" frames after we have already seen a deep turn,
-  // otherwise the very first frames (head already centered) would trivially
-  // satisfy the neutral requirement.
-  if (s.deepTurnFrames >= 2 && absYaw < NEUTRAL) s.neutralFrames++
+  const deep = wantPositive ? yaw > DEEP : yaw < -DEEP
+  if (Math.abs(yaw) > s.peakYaw) s.peakYaw = Math.abs(yaw)
+  if (deep) s.deepTurnFrames++
+  // Only start counting "neutral" frames after we've seen the requested deep
+  // turn, otherwise the user's initial centered frames would trivially count.
+  if (s.deepTurnFrames >= 2 && Math.abs(yaw) < NEUTRAL) s.neutralFrames++
   return s.deepTurnFrames >= 2 && s.neutralFrames >= 1
 }
 
@@ -360,18 +394,42 @@ async function runDetectionLoop() {
         }
       }
 
-      // Process the active challenge
-      const ch = currentChallenge.value
-      if (ch === 'turn_left' || ch === 'turn_right') {
-        const yaw = yawRatio(det.landmarks)
-        if (processTurnFrame(yaw)) advanceChallenge()
+      // ---- Phase: finding face ----
+      // Wait until we've seen the face for several consecutive frames (≈0.8s)
+      // before asking for any head turn. This gives the user time to position
+      // themselves and prevents the very first "turn" instruction from
+      // appearing while they're still framing their face.
+      if (phase.value === 'finding') {
+        faceLockedFrames.value++
+        if (faceLockedFrames.value >= FACE_LOCK_FRAMES && !challengeToken.value) {
+          phase.value = 'challenging'
+          await requestChallenge()
+          if (failed.value || !challenges.value.length) {
+            // requestChallenge already set the error state; just stop here.
+            return
+          }
+        }
       }
 
-      // All challenges done → submit
-      if (currentChallengeIndex.value >= challenges.value.length && !submitting.value && captured.value.length >= 8) {
-        await submit()
-        return
+      // ---- Phase: challenging ----
+      // Process the currently active head-turn challenge.
+      if (phase.value === 'challenging') {
+        const ch = currentChallenge.value
+        if (ch === 'turn_left' || ch === 'turn_right') {
+          const yaw = yawRatio(det.landmarks)
+          if (processTurnFrame(yaw, ch)) advanceChallenge()
+        }
+
+        // All challenges done → submit
+        if (currentChallengeIndex.value >= challenges.value.length && !submitting.value && captured.value.length >= 8) {
+          phase.value = 'submitting'
+          await submit()
+          return
+        }
       }
+    } else {
+      // Face lost mid-finding — start the lock timer over.
+      if (phase.value === 'finding') faceLockedFrames.value = 0
     }
   } catch (err) {
     console.warn('[FaceCheckIn] detect error', err)
