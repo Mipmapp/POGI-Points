@@ -3943,90 +3943,102 @@
                 </div>
               </section>
 
-              <!-- Face ID Section -->
+              <!-- Face ID Section (sidebar-styled: deep navy + glass) -->
               <section>
                 <div class="flex items-center gap-2 mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
+                  <div :class="[faceAccentBar, 'w-1 h-6 rounded-full']"></div>
                   <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Face ID</h3>
                 </div>
-                <div :class="['relative overflow-hidden rounded-2xl p-6 border-2 transition-all', faceEnrolled ? 'bg-gradient-to-br from-emerald-50 to-teal-50 border-emerald-200' : (isCOE ? 'bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200' : isSOM ? 'bg-gradient-to-br from-green-50 to-emerald-50 border-green-200' : isCNAHS ? 'bg-gradient-to-br from-emerald-50 to-green-50 border-emerald-200' : 'bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200')]">
-                  <!-- decorative blur orbs -->
-                  <div :class="['absolute -top-12 -right-12 w-44 h-44 rounded-full blur-3xl opacity-40', faceEnrolled ? 'bg-emerald-300' : (isCOE ? 'bg-orange-300' : isSOM ? 'bg-green-300' : isCNAHS ? 'bg-emerald-300' : 'bg-blue-300')]"></div>
-                  <div :class="['absolute -bottom-12 -left-12 w-44 h-44 rounded-full blur-3xl opacity-30', faceEnrolled ? 'bg-teal-300' : (isCOE ? 'bg-amber-300' : isSOM ? 'bg-emerald-300' : isCNAHS ? 'bg-green-300' : 'bg-indigo-300')]"></div>
+                <div class="face-id-card relative overflow-hidden rounded-2xl p-6 border border-white/10 shadow-2xl bg-gradient-to-b from-[#080e2e] to-[#0f1f6e] text-white">
+                  <!-- Soft animated orbs (sidebar vibe) -->
+                  <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-30 animate-pulse-slow" :class="faceOrbA"></div>
+                  <div class="absolute -bottom-20 -left-20 w-60 h-60 rounded-full blur-3xl opacity-20 animate-pulse-slower" :class="faceOrbB"></div>
+                  <!-- subtle grid sheen -->
+                  <div class="absolute inset-0 opacity-[0.07] pointer-events-none" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 22px 22px;"></div>
 
                   <div class="relative z-10 flex flex-col md:flex-row md:items-center gap-5">
                     <!-- Avatar / status circle -->
                     <div class="flex-shrink-0">
-                      <div :class="['w-24 h-24 rounded-3xl overflow-hidden flex items-center justify-center shadow-lg ring-4 ring-white', faceEnrolled ? 'bg-emerald-100' : (isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-emerald-100' : 'bg-blue-100')]">
-                        <img v-if="faceEnrolled && faceData?.faces?.[0]?.photo" :src="faceData.faces[0].photo" class="w-full h-full object-cover" alt="Face ID preview" />
-                        <svg v-else class="w-12 h-12" :class="faceEnrolled ? 'text-emerald-600' : (isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-blue-500')" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0M4 7v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7a3 3 0 00-3 3z" />
-                        </svg>
+                      <div class="relative">
+                        <!-- pulsing ring when not enrolled -->
+                        <span v-if="!faceLoading && !faceEnrolled" class="absolute inset-0 rounded-3xl animate-ping-slow opacity-40" :class="faceAccentRing"></span>
+                        <div :class="['relative w-24 h-24 rounded-3xl overflow-hidden flex items-center justify-center shadow-xl ring-2 ring-white/20 backdrop-blur-sm', faceEnrolled ? 'bg-emerald-500/20' : 'bg-white/10']">
+                          <img v-if="faceEnrolled && faceData?.faces?.[0]?.photo" :src="faceData.faces[0].photo" class="w-full h-full object-cover" alt="Face ID preview" />
+                          <svg v-else class="w-12 h-12 text-white/85" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0M4 7v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7a3 3 0 00-3 3z" />
+                          </svg>
+                        </div>
+                        <!-- enrolled checkmark badge -->
+                        <span v-if="faceEnrolled" class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-400 ring-4 ring-[#0a1340] flex items-center justify-center shadow-lg">
+                          <svg class="w-4 h-4 text-[#0a1340]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                        </span>
                       </div>
                     </div>
 
                     <!-- Status text -->
                     <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2 flex-wrap mb-1">
-                        <h4 class="text-lg font-bold text-gray-900">Face Recognition</h4>
-                        <span v-if="faceLoading" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-200 text-gray-700">Loading…</span>
-                        <span v-else-if="faceEnrolled" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                      <div class="flex items-center gap-2 flex-wrap mb-1.5">
+                        <h4 class="text-lg font-bold text-white">Face Recognition</h4>
+                        <span v-if="faceLoading" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-white/80 border border-white/15">Loading…</span>
+                        <span v-else-if="faceEnrolled" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-400/20 text-emerald-200 border border-emerald-300/40">
                           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                           Enrolled
                         </span>
-                        <span v-else :class="['px-2.5 py-0.5 rounded-full text-[10px] font-bold border', isCOE ? 'bg-orange-100 text-orange-700 border-orange-200' : isSOM ? 'bg-green-100 text-green-700 border-green-200' : isCNAHS ? 'bg-emerald-100 text-emerald-700 border-emerald-200' : 'bg-blue-100 text-blue-700 border-blue-200']">Not set up</span>
+                        <span v-else class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-white border border-white/20">Not set up</span>
                       </div>
-                      <p v-if="faceLoading" class="text-sm text-gray-500">Checking your Face ID status…</p>
+                      <p v-if="faceLoading" class="text-sm text-white/70">Checking your Face ID status…</p>
                       <template v-else-if="faceEnrolled">
-                        <p class="text-sm text-gray-700 font-medium">Use your face to mark your own attendance during events.</p>
-                        <p class="text-xs text-gray-500 mt-1">
-                          Last updated <span class="font-semibold">{{ formatFaceDate(faceData.face_updated_at) }}</span>.
+                        <p class="text-sm text-white/90 font-medium">Use your face to mark your own attendance during events.</p>
+                        <p class="text-xs text-white/60 mt-1">
+                          Last updated <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.face_updated_at) }}</span>.
                           <template v-if="faceData.in_cooldown">
-                            You can change it again on <span class="font-semibold">{{ formatFaceDate(faceData.next_update_allowed_at) }}</span>.
+                            You can change it again on <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.next_update_allowed_at) }}</span>.
                           </template>
                           <template v-else>You can update it any time.</template>
                         </p>
                       </template>
                       <template v-else>
-                        <p class="text-sm text-gray-700 font-medium">Enroll your face once to enable self check-in on attendance events.</p>
-                        <p class="text-xs text-gray-500 mt-1">It only takes a few seconds — your phone or laptop camera is all you need.</p>
+                        <p class="text-sm text-white/90 font-medium">Enroll your face once to enable self check-in on attendance events.</p>
+                        <p class="text-xs text-white/60 mt-1">It only takes a few seconds — your phone or laptop camera is all you need.</p>
                       </template>
                     </div>
 
-                    <!-- Action button -->
+                    <!-- Action button (sidebar-style glass) -->
                     <div class="flex-shrink-0 w-full md:w-auto">
                       <button
                         @click="openFaceEnroll"
                         :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
-                        :class="['w-full md:w-auto px-5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all', (faceEnrolled && faceData?.in_cooldown) ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : faceEnrolled ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-200 hover:scale-105' : (isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 text-white shadow-lg shadow-orange-200 hover:scale-105' : isSOM ? 'bg-gradient-to-r from-green-600 to-yellow-500 text-white shadow-lg shadow-green-200 hover:scale-105' : isCNAHS ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg shadow-emerald-200 hover:scale-105' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow-lg shadow-blue-200 hover:scale-105')]"
+                        :class="['face-cta group relative w-full md:w-auto px-5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 overflow-hidden transition-all duration-300 ease-out border', (faceEnrolled && faceData?.in_cooldown) ? 'bg-white/5 text-white/40 border-white/10 cursor-not-allowed' : 'text-white border-white/25 bg-white/10 hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-black/20 hover:shadow-xl']"
                         :title="faceEnrolled && faceData?.in_cooldown ? `Locked until ${formatFaceDate(faceData.next_update_allowed_at)}` : ''"
                       >
-                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <!-- shine sweep -->
+                        <span v-if="!(faceEnrolled && faceData?.in_cooldown)" class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></span>
+                        <svg class="relative w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
-                        {{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}
+                        <span class="relative">{{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}</span>
                       </button>
                     </div>
                   </div>
 
-                  <!-- tip strip -->
-                  <div class="relative z-10 mt-5 pt-4 border-t border-white/60 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-gray-600">
-                    <div class="flex items-start gap-2">
-                      <span :class="['mt-0.5 w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100 text-orange-600' : isSOM ? 'bg-green-100 text-green-600' : isCNAHS ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600']">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  <!-- tip strip (sidebar-style glass items) -->
+                  <div class="relative z-10 mt-5 pt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-white/80">
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
+                      <span class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
+                        <svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                       </span>
-                      <span>Works on phone &amp; laptop cameras</span>
+                      <span>Works on phone &amp; laptop</span>
                     </div>
-                    <div class="flex items-start gap-2">
-                      <span :class="['mt-0.5 w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100 text-orange-600' : isSOM ? 'bg-green-100 text-green-600' : isCNAHS ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600']">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
+                      <span class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
+                        <svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                       </span>
                       <span>Only your face — must be unique</span>
                     </div>
-                    <div class="flex items-start gap-2">
-                      <span :class="['mt-0.5 w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100 text-orange-600' : isSOM ? 'bg-green-100 text-green-600' : isCNAHS ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600']">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
+                      <span class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
+                        <svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                       </span>
                       <span>Updatable every {{ (faceData && faceData.cooldown_days) || 7 }} days</span>
                     </div>
@@ -8237,6 +8249,39 @@ const formatFaceDate = (d) => {
   try { return new Date(d).toLocaleDateString('en-PH', { year: 'numeric', month: 'short', day: 'numeric' }) }
   catch { return String(d) }
 }
+
+// Sidebar-style accents for the Face ID card (matches the deep-navy sidebar look,
+// but tints the section/border accent with the active college color).
+const faceAccentBar = computed(() => {
+  if (isCOE.value) return 'bg-orange-400'
+  if (isSOM.value) return 'bg-green-400'
+  if (isCNAHS.value) return 'bg-emerald-400'
+  return 'bg-blue-400'
+})
+const faceAccentRing = computed(() => {
+  if (isCOE.value) return 'bg-orange-400/40'
+  if (isSOM.value) return 'bg-green-400/40'
+  if (isCNAHS.value) return 'bg-emerald-400/40'
+  return 'bg-blue-400/40'
+})
+const faceAccentBorderL = computed(() => {
+  if (isCOE.value) return 'border-l-orange-300/70'
+  if (isSOM.value) return 'border-l-green-300/70'
+  if (isCNAHS.value) return 'border-l-emerald-300/70'
+  return 'border-l-blue-300/70'
+})
+const faceOrbA = computed(() => {
+  if (isCOE.value) return 'bg-orange-500'
+  if (isSOM.value) return 'bg-green-500'
+  if (isCNAHS.value) return 'bg-emerald-500'
+  return 'bg-blue-500'
+})
+const faceOrbB = computed(() => {
+  if (isCOE.value) return 'bg-amber-500'
+  if (isSOM.value) return 'bg-yellow-500'
+  if (isCNAHS.value) return 'bg-green-500'
+  return 'bg-indigo-500'
+})
 const profileGradient = ref('')
 
 const onProfileImageLoad = (event) => {
@@ -17636,6 +17681,28 @@ onUnmounted(() => {
 
 .animate-pulse-slow {
   animation: pulse-slow 8s ease-in-out infinite;
+}
+
+.animate-pulse-slower {
+  animation: pulse-slow 14s ease-in-out infinite;
+}
+
+@keyframes ping-slow {
+  0% { transform: scale(1); opacity: 0.6; }
+  80%, 100% { transform: scale(1.35); opacity: 0; }
+}
+
+.animate-ping-slow {
+  animation: ping-slow 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Face ID card subtle hover lift */
+.face-id-card {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
+}
+.face-id-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 25px 50px -12px rgba(8, 14, 46, 0.55);
 }
 
 .animate-gradient-slow {
