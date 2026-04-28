@@ -4616,6 +4616,208 @@
           </div>
         </div>
 
+        <!-- ============================================================ -->
+        <!-- Terms and Conditions (visible on Dashboard for all roles)    -->
+        <!-- Tailored to SSAAM (Student School Activities Attendance      -->
+        <!-- Monitoring) — RFID, Face ID, geofence, contributions,        -->
+        <!-- raffle tickets, and multi-college isolation across JRMSU.    -->
+        <!-- ============================================================ -->
+        <div v-if="currentPage === 'dashboard'" class="mt-6">
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <!-- Header strip -->
+            <div :class="['relative h-24 overflow-hidden',
+              isCOE ? 'bg-gradient-to-br from-orange-700 via-orange-600 to-amber-500'
+              : isSOM ? 'bg-gradient-to-br from-green-700 via-green-600 to-emerald-500'
+              : isCNAHS ? 'bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-500'
+              : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <div class="absolute inset-0 flex items-center justify-between px-6 md:px-8">
+                <div class="flex items-center gap-3">
+                  <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center border border-white/20">
+                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  </div>
+                  <div>
+                    <h2 class="text-xl md:text-2xl font-extrabold text-white tracking-tight">Terms &amp; Conditions</h2>
+                    <p class="text-white/80 text-xs sm:text-sm">SSAAM — Student School Activities Attendance Monitoring · JRMSU</p>
+                  </div>
+                </div>
+                <button
+                  @click="termsExpanded = !termsExpanded"
+                  class="hidden sm:inline-flex px-4 py-2 rounded-xl text-white text-xs font-bold bg-white/20 hover:bg-white/30 border border-white/20 transition items-center gap-2"
+                >
+                  <svg :class="['w-4 h-4 transition-transform', termsExpanded ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  {{ termsExpanded ? 'Collapse' : 'Expand' }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Content -->
+            <div class="p-5 md:p-8">
+              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                By using SSAAM, you agree to the following terms which govern attendance recording, financial contributions, and your personal data within the JRMSU SSAAM system. Please read them carefully — continued use of the system constitutes acceptance.
+              </p>
+
+              <div :class="['grid gap-4', termsExpanded ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2']">
+                <!-- Card 1: Attendance & RFID/Face ID -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </div>
+                    <h3 class="font-extrabold text-gray-900">1. Attendance Recording</h3>
+                  </div>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Attendance is recorded through your registered <strong>RFID card</strong>, <strong>Face ID</strong>, or admin manual check-in for officially scheduled events.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Attempting to scan on behalf of another student (proxy attendance) is strictly prohibited and may result in disciplinary action.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>If <strong>GPS geofence</strong> is enabled for an event, you must be physically inside the allowed radius for your check-in to be accepted.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Where Face ID is disabled by the admin, please use the RFID scanner or request manual check-in.</span></li>
+                  </ul>
+                </div>
+
+                <!-- Card 2: Account & Roles -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg>
+                    </div>
+                    <h3 class="font-extrabold text-gray-900">2. Account &amp; Roles</h3>
+                  </div>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Your account is bound to one of the JRMSU colleges (<strong>CCS, COE, SOM, CNAHS</strong>) and you may only access data within your college unless granted broader authority.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, <strong>Admin</strong>, and <strong>Super Admin (Master)</strong>. Each role has clearly scoped permissions enforced by both the app and the server.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You are responsible for safeguarding your password. Sharing credentials or RFID cards is prohibited.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins are required to change their default passwords on first login and may be prompted to do so periodically.</span></li>
+                  </ul>
+                </div>
+
+                <!-- Card 3: Contributions & Raffle -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <h3 class="font-extrabold text-gray-900">3. Contributions &amp; Raffle Tickets</h3>
+                  </div>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Contribution amounts, discounts, and payment statuses are managed by your college's Admin and Treasurer.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Payments are recorded in-system and the <strong>Paid Date</strong> is preserved for transparency. Reversals (Mark Unpaid) are logged.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Raffle tickets are issued strictly through admin-approved processes; tampering with ticket records is prohibited.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Disputes regarding amounts must be raised with your college Admin in writing.</span></li>
+                  </ul>
+                </div>
+
+                <!-- Card 4: Privacy & Data -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <h3 class="font-extrabold text-gray-900">4. Privacy &amp; Data</h3>
+                  </div>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>SSAAM stores your name, student ID, program, year level, RFID tag, profile photo, and (if enrolled) face encoding strictly for academic and event-attendance purposes.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Sensitive fields are encrypted at rest, and student data is isolated per college so one college cannot view another's records.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>GPS coordinates captured at check-in are used only to validate the geofence; they are not used for tracking outside event windows.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You may request review or correction of your records by contacting your college Admin.</span></li>
+                  </ul>
+                </div>
+
+                <!-- Expanded section: cards 5 & 6 -->
+                <template v-if="termsExpanded">
+                  <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                    isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                    : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                    : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                    <div class="flex items-center gap-3 mb-3">
+                      <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                        isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                        : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                        : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                      </div>
+                      <h3 class="font-extrabold text-gray-900">5. Acceptable Use</h3>
+                    </div>
+                    <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You agree not to attempt to bypass authentication, role checks, college isolation, or any of the system's safeguards.</span></li>
+                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Automated scraping, scripted abuse, or any activity that disrupts the platform or other users is forbidden.</span></li>
+                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins must use Admin/Co-Admin tools only for legitimate institutional purposes; misuse may lead to revocation of access.</span></li>
+                    </ul>
+                  </div>
+
+                  <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                    isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                    : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                    : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                    <div class="flex items-center gap-3 mb-3">
+                      <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                        isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                        : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                        : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                      </div>
+                      <h3 class="font-extrabold text-gray-900">6. Liability &amp; Updates</h3>
+                    </div>
+                    <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>While we strive for accuracy, SSAAM is provided as-is. JRMSU and the SSAAM team are not liable for missed events caused by personal device issues, network outages, or expired RFID cards.</span></li>
+                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Features, policies, and these terms may be updated from time to time. Notable changes will be announced in-app.</span></li>
+                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Continued use of SSAAM after updates indicates your acceptance of the revised terms.</span></li>
+                    </ul>
+                  </div>
+                </template>
+              </div>
+
+              <!-- Mobile expand button -->
+              <div class="mt-5 flex justify-center sm:hidden">
+                <button
+                  @click="termsExpanded = !termsExpanded"
+                  :class="['inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border-2 transition',
+                    isCOE ? 'text-orange-700 border-orange-200 hover:bg-orange-50'
+                    : isSOM ? 'text-green-700 border-green-200 hover:bg-green-50'
+                    : 'text-blue-700 border-blue-200 hover:bg-blue-50']"
+                >
+                  <svg :class="['w-4 h-4 transition-transform', termsExpanded ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  {{ termsExpanded ? 'Show less' : 'Show more' }}
+                </button>
+              </div>
+
+              <!-- Footer -->
+              <div class="mt-6 pt-5 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-gray-500">
+                <p>
+                  Last updated: <span class="font-semibold text-gray-700">{{ new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' }) }}</span>
+                </p>
+                <p class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                  By continuing to use SSAAM, you acknowledge and agree to these terms.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -8303,6 +8505,7 @@ const showSessionExpiredModal = ref(false)
 const showMobileMenu = ref(false)
 const showContactModal = ref(false)
 const helpTab = ref('about')
+const termsExpanded = ref(false)
 const currentPage = ref('dashboard')
 const applicationLoading = ref(false)
 const applicationDashboardTab = ref('available')
@@ -11419,7 +11622,7 @@ const editImageFileInput = ref(null)
 const notificationImageBase64 = ref(null)
 
 const developers = [
-    { name: 'Jullan Maglinte', initials: 'JM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
+    { name: 'Jullan Maglinte', initials: 'JM', role: 'Lead Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
     { name: 'Keith Laranjo', initials: 'KL', role: 'Backend Dev', year_level: '2nd year', program: 'CS', facebook: 'https://facebook.com/kei.takun.5070', image: '/team/keith.jpg' },
     { name: 'Kenzen Miñao', initials: 'KM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
     { name: 'Christoph Bagabuyo', initials: 'CB', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/christoph.bagabuyo', image: '/team/christoph.jpg' },
