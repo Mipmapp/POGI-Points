@@ -6732,6 +6732,22 @@
     @success="onDashFaceCheckInSuccess"
   />
 
+  <!-- Location Gate — runs BEFORE the Face ID modal for any geofenced event,
+       so the student sees a live radar of their position vs. the allowed
+       range and can't even start the face scan if they're outside. On pass,
+       it forwards the captured GPS fix into the Face ID modal as
+       `_pendingLat/Lng/Accuracy` so the scanner doesn't have to ask for
+       location a second time. -->
+  <LocationGate
+    :open="locationGateOpen"
+    :event="locationGateEvent || {}"
+    :is-c-o-e="isCOE"
+    :is-s-o-m="isSOM"
+    :is-c-n-a-h-s="isCNAHS"
+    @pass="onLocationGatePass"
+    @close="onLocationGateClose"
+  />
+
   <!-- Session picker shown when an event has 2+ active sessions to scan -->
   <Transition name="ssaam-picker">
     <div
@@ -6801,6 +6817,7 @@ import Manage from '../components/Manage.vue'
 import GeofenceMap from '../components/GeofenceMap.vue'
 import StudentFaceEnroll from '../components/StudentFaceEnroll.vue'
 import StudentFaceCheckIn from '../components/StudentFaceCheckIn.vue'
+import LocationGate from '../components/LocationGate.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl, getCollege } from '../config/api.js'
 import { handleTokenError, setTokenExpiredCallback } from '../utils/tokenHandler.js'
@@ -8339,6 +8356,15 @@ const dashFaceCheckInEvent = ref(null)
 const dashFaceCheckInSession = ref(null)
 const dashFaceCheckInNotif = ref({ show: false, type: 'success', message: '' })
 
+// Location Gate — appears BEFORE the Face ID modal whenever the event has
+// `geofence_enabled`. It shows a live radar with the user's distance from
+// the event center, blocks check-in when the user is outside the allowed
+// radius, and (on pass) hands the captured GPS coords to the face scanner
+// so the scanner doesn't need to re-request them.
+const locationGateOpen = ref(false)
+const locationGateEvent = ref(null)
+const locationGateSession = ref(null)
+
 const getSessionCheckAction = (session, event) => {
   const eventId = event._id || event.event_id
   const record = myAttendanceRecords.value.find(r => r.event_id === eventId)
@@ -8529,32 +8555,55 @@ const handleSessionButtonClick = (session, event) => {
 
 const openDashFaceCheckIn = async (session, event) => {
   dashFaceCheckInNotif.value = { show: false, type: 'success', message: '' }
+  // Geofenced events go through the Location Gate first — it shows the user
+  // a live radar, blocks if they're outside the allowed radius, and (on
+  // pass) calls back into _openFaceScannerWithCoords with the GPS fix.
+  // Non-geofenced events skip straight to the face scanner.
+  if (event.geofence_enabled
+      && Number.isFinite(Number(event.geofence_lat))
+      && Number.isFinite(Number(event.geofence_lng))) {
+    locationGateEvent.value = event
+    locationGateSession.value = session
+    locationGateOpen.value = true
+    return
+  }
+  _openFaceScannerWithCoords(session, event, null)
+}
+
+// Internal: opens the Face ID scanner with optional pre-fetched GPS coords.
+// Called either directly (no geofence) or from the Location Gate's @pass
+// handler (geofence verified).
+const _openFaceScannerWithCoords = (session, event, coords) => {
   const eventCopy = { ...event }
-  if (event.geofence_enabled) {
-    if (!('geolocation' in navigator)) {
-      dashFaceCheckInNotif.value = { show: true, type: 'error', message: 'Your device does not support GPS, which is required for this event.' }
-      return
-    }
-    try {
-      const pos = await new Promise((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 12000, maximumAge: 5000 })
-      )
-      eventCopy._pendingLat = pos.coords.latitude
-      eventCopy._pendingLng = pos.coords.longitude
-      eventCopy._pendingAccuracy = pos.coords.accuracy
-    } catch (gErr) {
-      dashFaceCheckInNotif.value = {
-        show: true, type: 'error',
-        message: gErr && gErr.code === 1
-          ? 'Location permission denied. Please allow location to check in for this event.'
-          : 'Could not get your location. Make sure GPS is on and try again.'
-      }
-      return
-    }
+  if (coords && coords.lat != null && coords.lng != null) {
+    eventCopy._pendingLat = coords.lat
+    eventCopy._pendingLng = coords.lng
+    eventCopy._pendingAccuracy = coords.accuracy
   }
   dashFaceCheckInEvent.value = eventCopy
   dashFaceCheckInSession.value = session
   dashFaceCheckInOpen.value = true
+}
+
+// Location Gate → Face ID handoff. Closes the gate, then opens the scanner
+// with the verified coords on the next tick so the panel-leave animation
+// doesn't visibly overlap the panel-enter animation.
+const onLocationGatePass = (coords) => {
+  const session = locationGateSession.value
+  const event = locationGateEvent.value
+  locationGateOpen.value = false
+  if (!session || !event) return
+  setTimeout(() => {
+    _openFaceScannerWithCoords(session, event, coords)
+    locationGateEvent.value = null
+    locationGateSession.value = null
+  }, 180)
+}
+
+const onLocationGateClose = () => {
+  locationGateOpen.value = false
+  locationGateEvent.value = null
+  locationGateSession.value = null
 }
 
 const onDashFaceCheckInSuccess = async (data) => {
