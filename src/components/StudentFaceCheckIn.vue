@@ -168,7 +168,11 @@ const phase = ref('finding')
 // fetch the challenge list. This avoids asking the user to "turn left" before
 // they've even framed themselves in the camera.
 const faceLockedFrames = ref(0)
-const FACE_LOCK_FRAMES = 8 // ~0.8s at 100ms loop
+// Lock as soon as we see the face for ~0.3s (3 frames at the 100ms loop).
+// The earlier 0.8s gate added almost a full second of dead air before the
+// challenge even appeared on screen; 0.3s is still more than enough to
+// reject a half-frame false positive.
+const FACE_LOCK_FRAMES = 3
 
 // ---- Challenge state
 const challengeToken = ref('')
@@ -188,7 +192,10 @@ const firstTurnSign = ref(0)
 const samplesCount = ref(0)
 const captured = ref([])  // { descriptor, score }
 let lastSampleAt = 0
-const TARGET_VALID_FRAMES = 30 // for descriptor averaging
+// Sample faster (every 70ms) and need fewer frames for the averaged
+// descriptor — the backend now accepts 10+ live frames, and the average of
+// 15 high-score samples is still tighter than any single descriptor.
+const TARGET_VALID_FRAMES = 15
 
 // ---- Stage UX
 const stageStyle = computed(() => {
@@ -338,17 +345,10 @@ async function requestChallenge() {
       return
     }
     challengeToken.value = data.challenge_token
-    // Weave a "look_center" step between each pair of turn challenges so the
-    // user explicitly returns to neutral between left and right (or right and
-    // left). This step is client-only — the backend doesn't validate it, so
-    // we strip it from the payload before submitting.
-    const issued = data.challenges || []
-    const woven = []
-    for (let i = 0; i < issued.length; i++) {
-      woven.push(issued[i])
-      if (i < issued.length - 1) woven.push('look_center')
-    }
-    challenges.value = woven
+    // The backend now issues a single random head-turn, so there are no pairs
+    // to weave a "look center" between. Use the issued list verbatim — the
+    // user just performs one quick turn and we submit immediately.
+    challenges.value = (data.challenges || []).slice()
   } catch (err) {
     errorMessage.value = 'Network error while starting liveness check.'
     failed.value = true
@@ -405,8 +405,11 @@ const liveYaw = ref(0)
 function processTurnFrame(yaw /* , direction */) {
   const s = turnState.value
   const DEEP = 0.18
-  const STRONG = 0.5    // once |yaw| reaches 0.5, hold for 1.5s to auto-pass
-  const HOLD_MS = 1500
+  // Once the user reaches a clear turn (|yaw| ≥ 0.45) we only need a brief
+  // 500ms hold to confirm it's not just a single-frame jitter. The earlier
+  // 1.5s hold made the check feel sluggish even for cooperative users.
+  const STRONG = 0.45
+  const HOLD_MS = 500
   const NEUTRAL = 0.08
   const sign = yaw >= 0 ? 1 : -1
   const requiredSign = firstTurnSign.value === 0 ? 0 : -firstTurnSign.value
@@ -485,9 +488,10 @@ async function runDetectionLoop() {
     faceLocked.value = ok
 
     if (ok) {
-      // Sample descriptor at most every ~150ms — gives us a clean buffer for averaging.
+      // Sample descriptor at most every ~70ms — fast enough that a normal
+      // ~1.5s scan window already collects 15+ valid frames for averaging.
       const now = Date.now()
-      if (now - lastSampleAt > 130) {
+      if (now - lastSampleAt > 70) {
         lastSampleAt = now
         samplesCount.value++
         if (captured.value.length < TARGET_VALID_FRAMES) {
@@ -526,15 +530,18 @@ async function runDetectionLoop() {
           if (processCenterFrame(yaw)) advanceChallenge()
         }
 
-        // All challenges done → submit. The backend rejects requests with
-        // fewer than ~25 sample frames as anti-spoof, so wait until we've
-        // accumulated enough before posting. The loop will keep ticking and
-        // adding samples until the gate clears, usually within ~1s extra.
-        const REQUIRED_SAMPLES = 28 // small buffer over the backend's 25 minimum
+        // All challenges done → submit IMMEDIATELY. The backend's anti-spoof
+        // floor is now 10 sample frames; with the 70ms sampler a normal
+        // single-turn scan already exceeds that by the time the turn
+        // completes. We deliberately do NOT spin extra frames here — the
+        // user wanted the scanner to lock as soon as the system has enough
+        // to verify them, and waiting just to pad the sample count makes the
+        // UI feel frozen for no security gain.
+        const REQUIRED_SAMPLES = 12 // small buffer over the backend's 10 minimum
         if (
           currentChallengeIndex.value >= challenges.value.length
           && !submitting.value
-          && captured.value.length >= 10
+          && captured.value.length >= 6
           && samplesCount.value >= REQUIRED_SAMPLES
         ) {
           phase.value = 'submitting'

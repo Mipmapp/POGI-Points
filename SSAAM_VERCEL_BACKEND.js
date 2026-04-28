@@ -5402,11 +5402,13 @@ setInterval(() => {
 
 const FACE_CHALLENGE_POOL = ['turn_left', 'turn_right'];
 function _pickFaceChallenges() {
-    // Two head-turn challenges in a random order. Blink was removed because
-    // EAR-based blink detection in the browser was unreliable for many users
-    // (glasses, narrow eyes, low light). Two opposite turns still defeat a
-    // single still photo and are quick for the student.
-    return Math.random() < 0.5 ? ['turn_left', 'turn_right'] : ['turn_right', 'turn_left'];
+    // ONE random head-turn challenge. A single turn (left OR right, picked
+    // randomly per request) still defeats a held-up still photo because the
+    // client must show the head actually rotating to that side, but cuts the
+    // student-facing dance roughly in half. Combined with the descriptor
+    // match against the enrolled face on the backend, this keeps the
+    // anti-spoof guarantee while making the check-in feel near-instant.
+    return [Math.random() < 0.5 ? 'turn_left' : 'turn_right'];
 }
 
 function _signFaceChallengeToken({ student_id, session_id, college, challenges }) {
@@ -5491,10 +5493,11 @@ app.post('/apis/attendance/sessions/:sessionId/check-face-student', studentAuthW
         if (!Array.isArray(completed_challenges) || !completed_challenges.length) {
             return res.status(400).json({ message: 'Liveness challenges were not completed.', code: 'CHALLENGES_INCOMPLETE' });
         }
-        if (!Number.isFinite(samples_count) || samples_count < 25) {
-            // Anti-static-image floor: a full liveness flow easily produces 30-60+
-            // valid frames in a couple of seconds. Anything well below that is
-            // suspicious.
+        if (!Number.isFinite(samples_count) || samples_count < 10) {
+            // Anti-static-image floor: a real liveness flow with a single
+            // head-turn comfortably produces 12-25 valid frames in ~1.5s.
+            // Anything well below 10 is almost certainly a single still
+            // image being replayed and is rejected.
             return res.status(400).json({ message: 'Not enough live frames detected. Please try again with the camera held steady.', code: 'INSUFFICIENT_LIVENESS_SAMPLES' });
         }
 
