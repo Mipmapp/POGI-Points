@@ -2399,13 +2399,16 @@
                             </span>
                             <button
                               v-if="getSessionDisplayStatus(session, event) === 'active' && getSessionCheckAction(session, event)"
-                              @click.stop="openDashFaceCheckIn(session, event)"
-                              :class="['ssaam-checkin-btn px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 active:scale-95 shadow-md', getSessionCheckAction(session, event) === 'Check In' ? (isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-orange-500/30' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-green-500/30' : 'bg-gradient-to-r from-[#1e3bdb] to-[#4f62ff] hover:from-[#1730c0] hover:to-[#3d52e8] shadow-blue-600/30') : 'bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 shadow-gray-500/30', 'text-white']"
+                              @click.stop="handleSessionButtonClick(session, event)"
+                              :title="getSessionLockReason(session, event) || ''"
+                              :class="['ssaam-checkin-btn px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 active:scale-95 shadow-md text-white', getSessionLockReason(session, event) ? 'bg-gradient-to-r from-amber-500 to-orange-600 ring-2 ring-amber-300/60 cursor-not-allowed' : (getSessionCheckAction(session, event) === 'Check In' ? (isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-orange-500/30' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-green-500/30' : 'bg-gradient-to-r from-[#1e3bdb] to-[#4f62ff] hover:from-[#1730c0] hover:to-[#3d52e8] shadow-blue-600/30') : 'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-emerald-500/30')]"
                             >
                               <span class="flex items-center gap-1.5">
-                                <svg v-if="getSessionCheckAction(session, event) === 'Check In'" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                <!-- Locked icon overrides the action icon when scanner is closed -->
+                                <svg v-if="getSessionLockReason(session, event)" class="w-3 h-3 ssaam-scanner-lock-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                                <svg v-else-if="getSessionCheckAction(session, event) === 'Check In'" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                                 <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7"/></svg>
-                                {{ getSessionCheckAction(session, event) }}
+                                {{ getSessionLockReason(session, event) ? 'Locked' : getSessionCheckAction(session, event) }}
                               </span>
                             </button>
                           </div>
@@ -8499,6 +8502,29 @@ const pickEventScannerSession = async (item) => {
 }
 const closeEventSessionPicker = () => {
   eventSessionPickerOpen.value = false
+}
+
+// Per-session lock reason (used by the inline session button inside the
+// expanded panel). Returns a notification string when the action is Check In
+// but check-in is closed, or Check Out but check-out isn't open yet.
+const getSessionLockReason = (session, event) => {
+  const action = getSessionCheckAction(session, event)
+  if (action === 'Check In' && !isSessionCheckInAvailable(session, event)) {
+    return 'Check-in is not currently open for this session.'
+  }
+  if (action === 'Check Out' && !isSessionCheckOutAvailable(session, event)) {
+    return "You're checked in. Please wait for check-out to be opened."
+  }
+  return null
+}
+const handleSessionButtonClick = (session, event) => {
+  const reason = getSessionLockReason(session, event)
+  if (reason) {
+    dashFaceCheckInNotif.value = { show: true, type: 'error', message: reason }
+    setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 4500)
+    return
+  }
+  openDashFaceCheckIn(session, event)
 }
 
 const openDashFaceCheckIn = async (session, event) => {
