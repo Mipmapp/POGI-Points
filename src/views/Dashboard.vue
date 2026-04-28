@@ -8383,17 +8383,6 @@ const ensureEventSessions = async (eventId) => {
   return expandedEventSessions.value[eventId] || []
 }
 
-// Eagerly preload sessions for all currently active events so the scanner
-// button can show its real state (ready / locked / done) on first render
-// instead of "loading".
-watch(() => activeNonEndedEvents.value, (events) => {
-  if (!events) return
-  for (const e of events) {
-    const id = e._id || e.event_id
-    if (id && !expandedEventSessions.value[id]) ensureEventSessions(id)
-  }
-}, { immediate: true })
-
 // Compute the current state of the per-event scanner button.
 //   loading    → sessions for this event are still being fetched
 //   no_active  → no session is open right now
@@ -10825,6 +10814,18 @@ const activeNonEndedEvents = computed(() => {
     return event.status === 'active' && timeRemaining !== 'Ended'
   })
 })
+
+// Eagerly preload sessions for all currently active events so the per-event
+// Face ID scanner button shows its real state (ready / locked / done) on first
+// render instead of "loading". Declared after activeNonEndedEvents so the
+// computed reference is initialized when the watcher first runs.
+watch(activeNonEndedEvents, (events) => {
+  if (!events || !events.length) return
+  for (const e of events) {
+    const id = e._id || e.event_id
+    if (id && !expandedEventSessions.value[id]) ensureEventSessions(id)
+  }
+}, { immediate: true })
 
 // Track which active events the student has already been notified about so a
 // single event becoming active fires the toast once, not on every refresh.
