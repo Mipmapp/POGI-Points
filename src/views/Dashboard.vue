@@ -2310,21 +2310,55 @@
                 </div>
                 <div class="space-y-4">
                   <div v-for="event in activeNonEndedEvents" :key="event._id || event.event_id" :class="['rounded-2xl shadow-sm border overflow-hidden bg-gradient-to-br', isCOE ? 'from-white to-orange-50 border-orange-100' : isSOM ? 'from-white to-green-50 border-green-100' : 'from-white to-blue-50 border-blue-100']">
-                    <!-- Header with status badges - Clickable to expand -->
-                    <div class="px-4 pt-4 pb-2 cursor-pointer" @click="toggleEventExpansion(event._id || event.event_id)">
-                      <div class="flex flex-wrap items-center gap-2 mb-3">
-                        <svg :class="['w-4 h-4 transition-transform', isCOE ? 'text-orange-600' : 'text-blue-600', expandedEvents[event._id || event.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                        <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getOverallStatusClass(getSmartRecordStatus((myAttendanceRecords.value && myAttendanceRecords.value.find(r => r.event_id === (event._id || event.event_id))) || { event_id: event._id || event.event_id, event, overall_status: 'ongoing' }))]">
-                          {{ getOverallStatusLabel(getSmartRecordStatus((myAttendanceRecords.value && myAttendanceRecords.value.find(r => r.event_id === (event._id || event.event_id))) || { event_id: event._id || event.event_id, event, overall_status: 'ongoing' })) }}
-                        </span>
-                        <span v-if="event.status === 'active' && getEventTimeRemaining(event._id || event.event_id)" :class="['px-3 py-1 rounded-full text-xs font-semibold', getEventTimeRemaining(event._id || event.event_id) === 'Ended' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700']">
-                          {{ getEventTimeRemaining(event._id || event.event_id) }}
-                        </span>
+                    <!-- Header row: clickable text on the left, scanner button on the right -->
+                    <div class="px-4 pt-4 pb-2 flex items-stretch gap-3">
+                      <div class="flex-1 min-w-0 cursor-pointer" @click="toggleEventExpansion(event._id || event.event_id)">
+                        <div class="flex flex-wrap items-center gap-2 mb-3">
+                          <svg :class="['w-4 h-4 transition-transform', isCOE ? 'text-orange-600' : 'text-blue-600', expandedEvents[event._id || event.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                          <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getOverallStatusClass(getSmartRecordStatus((myAttendanceRecords.value && myAttendanceRecords.value.find(r => r.event_id === (event._id || event.event_id))) || { event_id: event._id || event.event_id, event, overall_status: 'ongoing' }))]">
+                            {{ getOverallStatusLabel(getSmartRecordStatus((myAttendanceRecords.value && myAttendanceRecords.value.find(r => r.event_id === (event._id || event.event_id))) || { event_id: event._id || event.event_id, event, overall_status: 'ongoing' })) }}
+                          </span>
+                          <span v-if="event.status === 'active' && getEventTimeRemaining(event._id || event.event_id)" :class="['px-3 py-1 rounded-full text-xs font-semibold', getEventTimeRemaining(event._id || event.event_id) === 'Ended' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700']">
+                            {{ getEventTimeRemaining(event._id || event.event_id) }}
+                          </span>
+                        </div>
+                        <!-- Event Title -->
+                        <h3 class="font-bold text-base md:text-lg text-blue-900 leading-tight mb-2">{{ event.title }}</h3>
+                        <!-- Description -->
+                        <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3">{{ event.description }}</p>
                       </div>
-                      <!-- Event Title -->
-                      <h3 class="font-bold text-base md:text-lg text-blue-900 leading-tight mb-2">{{ event.title }}</h3>
-                      <!-- Description -->
-                      <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3">{{ event.description }}</p>
+
+                      <!-- Face ID Scanner button (always visible on the right) -->
+                      <div class="flex-shrink-0 self-start">
+                        <button
+                          @click.stop="openEventScanner(event)"
+                          :disabled="getEventScannerInfo(event).state === 'loading' || getEventScannerInfo(event).state === 'done' || dashFaceCheckInLoading"
+                          :class="['ssaam-event-scanner-btn group relative flex flex-col items-center justify-center rounded-2xl text-white font-bold tracking-wide overflow-hidden transition-all duration-300', getEventScannerBtnSize, getEventScannerBtnClass(event)]"
+                          :title="getEventScannerTooltip(event)"
+                        >
+                          <!-- Pulsing scan ring (only when ready) -->
+                          <span v-if="getEventScannerInfo(event).state === 'ready'" class="absolute inset-0 rounded-2xl pointer-events-none">
+                            <span class="absolute inset-0 rounded-2xl ssaam-scanner-pulse"></span>
+                            <span class="absolute inset-0 rounded-2xl ssaam-scanner-sweep"></span>
+                          </span>
+                          <!-- Icon -->
+                          <span class="relative z-10 flex items-center justify-center">
+                            <!-- Loading spinner -->
+                            <svg v-if="getEventScannerInfo(event).state === 'loading'" class="w-6 h-6 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                            <!-- Lock icon -->
+                            <svg v-else-if="getEventScannerInfo(event).state === 'locked'" class="w-6 h-6 ssaam-scanner-lock-shake" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                            <!-- Done check -->
+                            <svg v-else-if="getEventScannerInfo(event).state === 'done'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                            <!-- No active -->
+                            <svg v-else-if="getEventScannerInfo(event).state === 'no_active'" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            <!-- Ready: face scan icon -->
+                            <svg v-else class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2M9 10h.01M15 10h.01M9 16c.85.63 1.885 1 3 1s2.15-.37 3-1"/></svg>
+                          </span>
+                          <span class="relative z-10 mt-1 text-[10px] sm:text-xs leading-none">
+                            {{ getEventScannerLabel(event) }}
+                          </span>
+                        </button>
+                      </div>
                     </div>
                     <!-- Event Details Footer -->
                     <div :class="['bg-white bg-opacity-60 px-4 py-3 border-t', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : 'border-blue-100']">
@@ -6694,6 +6728,49 @@
     @close="dashFaceCheckInOpen = false"
     @success="onDashFaceCheckInSuccess"
   />
+
+  <!-- Session picker shown when an event has 2+ active sessions to scan -->
+  <Transition name="ssaam-picker">
+    <div
+      v-if="eventSessionPickerOpen"
+      class="fixed inset-0 z-[9998] flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-3"
+      @click.self="closeEventSessionPicker"
+    >
+      <div class="ssaam-picker-card w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div :class="['px-5 pt-5 pb-4 text-white', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600' : isCNAHS ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-gradient-to-r from-[#1e3bdb] to-[#4f62ff]']">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Choose a session</p>
+              <h3 class="text-lg font-bold leading-snug truncate">{{ eventSessionPickerEvent?.title }}</h3>
+            </div>
+            <button @click="closeEventSessionPicker" class="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-colors" aria-label="Close">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="p-4 space-y-2 max-h-[60vh] overflow-y-auto">
+          <button
+            v-for="(item, idx) in eventSessionPickerActions"
+            :key="(item.session._id || item.session.session_id || '') + ':' + item.action"
+            @click="pickEventScannerSession(item)"
+            :class="['w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ssaam-picker-item', item.action === 'Check Out' ? 'bg-emerald-50 border-emerald-200 hover:border-emerald-400' : 'bg-blue-50 border-blue-200 hover:border-blue-400']"
+            :style="{ animationDelay: (idx * 60) + 'ms' }"
+          >
+            <span :class="['w-11 h-11 rounded-xl flex items-center justify-center text-white flex-shrink-0', item.action === 'Check Out' ? 'bg-gradient-to-br from-emerald-500 to-green-600' : 'bg-gradient-to-br from-[#1e3bdb] to-[#4f62ff]']">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2M9 10h.01M15 10h.01M9 16c.85.63 1.885 1 3 1s2.15-.37 3-1"/></svg>
+            </span>
+            <span class="flex-1 min-w-0 text-left">
+              <span class="block text-sm font-bold text-gray-900 truncate">{{ item.session.label || 'Session' }}</span>
+              <span class="block text-xs text-gray-600">{{ item.session.start_time }} – {{ item.session.end_time }}</span>
+            </span>
+            <span :class="['px-3 py-1 rounded-full text-xs font-bold', item.action === 'Check Out' ? 'bg-emerald-600 text-white' : 'bg-[#1e3bdb] text-white']">
+              {{ item.action }}
+            </span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -8267,6 +8344,172 @@ const getSessionCheckAction = (session, event) => {
   if (att.check_in_at && att.check_out_at) return null
   if (att.check_in_at) return 'Check Out'
   return 'Check In'
+}
+
+// ── Per-event Face ID scanner button ────────────────────────────────────────
+// Reads cascading rfidScanner toggles (session → event → defaults) so we can
+// tell the user when check-in/check-out is currently open.
+const isSessionCheckInAvailable = (session, event) => {
+  const s = session?.rfidScanner
+  if (s && typeof s.checkInEnabled === 'boolean') return s.checkInEnabled
+  const e = event?.rfidScanner
+  if (e && typeof e.checkInEnabled === 'boolean') return e.checkInEnabled
+  return true
+}
+const isSessionCheckOutAvailable = (session, event) => {
+  const s = session?.rfidScanner
+  if (s && typeof s.checkOutEnabled === 'boolean') return s.checkOutEnabled
+  const e = event?.rfidScanner
+  if (e && typeof e.checkOutEnabled === 'boolean') return e.checkOutEnabled
+  return false
+}
+
+// Lazy-load sessions for an event when the scanner button needs them. Returns
+// the cached array (possibly empty if loading or fetch failed).
+const ensureEventSessions = async (eventId) => {
+  if (expandedEventSessions.value[eventId]) return expandedEventSessions.value[eventId]
+  const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken') || localStorage.getItem('studentToken')
+  try {
+    const response = await fetch(buildAPIUrl(`/apis/attendance/events/${eventId}/sessions`), {
+      headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }
+    })
+    if (response.ok) {
+      const result = await response.json()
+      expandedEventSessions.value[eventId] = result.data || result.sessions || []
+    }
+  } catch (e) {
+    console.error('[EventScanner] Failed to load sessions for', eventId, e)
+  }
+  return expandedEventSessions.value[eventId] || []
+}
+
+// Eagerly preload sessions for all currently active events so the scanner
+// button can show its real state (ready / locked / done) on first render
+// instead of "loading".
+watch(() => activeNonEndedEvents.value, (events) => {
+  if (!events) return
+  for (const e of events) {
+    const id = e._id || e.event_id
+    if (id && !expandedEventSessions.value[id]) ensureEventSessions(id)
+  }
+}, { immediate: true })
+
+// Compute the current state of the per-event scanner button.
+//   loading    → sessions for this event are still being fetched
+//   no_active  → no session is open right now
+//   done       → all active sessions are complete (check-in + check-out done)
+//   locked     → user is checked in but check-out isn't open yet
+//   ready      → at least one actionable session (Check In or Check Out)
+const getEventScannerInfo = (event) => {
+  const eventId = event._id || event.event_id
+  const sessions = expandedEventSessions.value[eventId]
+  if (!sessions) return { state: 'loading', actionable: [], waiting: [] }
+  const active = sessions.filter(s => getSessionDisplayStatus(s, event) === 'active')
+  if (!active.length) return { state: 'no_active', actionable: [], waiting: [] }
+  const actionable = []
+  const waiting = []
+  let anyOpen = false
+  for (const s of active) {
+    const a = getSessionCheckAction(s, event)
+    if (a == null) continue
+    anyOpen = true
+    if (a === 'Check In') {
+      if (isSessionCheckInAvailable(s, event)) actionable.push({ session: s, action: 'Check In' })
+      else waiting.push({ session: s, action: 'Check In', reason: 'Check-in is not currently open for this session.' })
+    } else if (a === 'Check Out') {
+      if (isSessionCheckOutAvailable(s, event)) actionable.push({ session: s, action: 'Check Out' })
+      else waiting.push({ session: s, action: 'Check Out', reason: "You're checked in. Please wait for check-out to be opened." })
+    }
+  }
+  if (!anyOpen) return { state: 'done', actionable: [], waiting: [] }
+  if (actionable.length === 0) return { state: 'locked', actionable: [], waiting }
+  return { state: 'ready', actionable, waiting }
+}
+
+const getEventScannerBtnSize = 'w-20 h-20 sm:w-24 sm:h-24 text-xs'
+const getEventScannerBtnClass = (event) => {
+  const info = getEventScannerInfo(event)
+  if (info.state === 'loading') return 'bg-gradient-to-br from-gray-300 to-gray-400 cursor-wait'
+  if (info.state === 'no_active') return 'bg-gradient-to-br from-gray-400 to-gray-500 opacity-80'
+  if (info.state === 'done') return 'bg-gradient-to-br from-emerald-500 to-emerald-600 cursor-default opacity-90'
+  if (info.state === 'locked') return 'bg-gradient-to-br from-amber-500 to-orange-600 ring-2 ring-amber-300/60 hover:from-amber-600 hover:to-orange-700'
+  // ready — any check-out actionable styles green, otherwise blue/college accent
+  const hasCheckOut = info.actionable.some(a => a.action === 'Check Out')
+  if (hasCheckOut) return 'bg-gradient-to-br from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-lg shadow-emerald-500/30'
+  if (isCOE.value) return 'bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30'
+  if (isSOM.value) return 'bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/30'
+  if (isCNAHS.value) return 'bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/30'
+  return 'bg-gradient-to-br from-[#1e3bdb] to-[#4f62ff] hover:from-[#1730c0] hover:to-[#3d52e8] shadow-lg shadow-blue-600/30'
+}
+const getEventScannerLabel = (event) => {
+  const info = getEventScannerInfo(event)
+  if (info.state === 'loading') return 'Loading'
+  if (info.state === 'no_active') return 'Closed'
+  if (info.state === 'done') return 'Done'
+  if (info.state === 'locked') return 'Locked'
+  const hasCheckOut = info.actionable.some(a => a.action === 'Check Out')
+  if (hasCheckOut && info.actionable.every(a => a.action === 'Check Out')) return 'Check Out'
+  return 'Scan'
+}
+const getEventScannerTooltip = (event) => {
+  const info = getEventScannerInfo(event)
+  if (info.state === 'loading') return 'Loading sessions…'
+  if (info.state === 'no_active') return 'No active session right now.'
+  if (info.state === 'done') return 'You have completed attendance for this event.'
+  if (info.state === 'locked') return info.waiting[0]?.reason || 'Waiting for check-out to be opened.'
+  if (info.actionable.length === 1) return `${info.actionable[0].action} for ${info.actionable[0].session.label}`
+  return 'Choose a session to scan'
+}
+
+// Session picker (shown only when 2+ actionable sessions exist).
+const eventSessionPickerOpen = ref(false)
+const eventSessionPickerEvent = ref(null)
+const eventSessionPickerActions = ref([])
+const dashFaceCheckInLoading = ref(false)
+
+const openEventScanner = async (event) => {
+  if (dashFaceCheckInLoading.value) return
+  dashFaceCheckInLoading.value = true
+  try {
+    const eventId = event._id || event.event_id
+    await ensureEventSessions(eventId)
+    const info = getEventScannerInfo(event)
+    if (info.state === 'no_active') {
+      dashFaceCheckInNotif.value = { show: true, type: 'error', message: 'There is no active session for this event right now.' }
+      setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 4000)
+      return
+    }
+    if (info.state === 'done') {
+      dashFaceCheckInNotif.value = { show: true, type: 'success', message: "You've already completed attendance for this event." }
+      setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 4000)
+      return
+    }
+    if (info.state === 'locked') {
+      const reason = info.waiting[0]?.reason || "You're checked in. Please wait for check-out to be opened."
+      dashFaceCheckInNotif.value = { show: true, type: 'error', message: reason }
+      setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 4500)
+      return
+    }
+    // state === 'ready'
+    if (info.actionable.length === 1) {
+      await openDashFaceCheckIn(info.actionable[0].session, event)
+    } else {
+      eventSessionPickerEvent.value = event
+      eventSessionPickerActions.value = info.actionable
+      eventSessionPickerOpen.value = true
+    }
+  } finally {
+    dashFaceCheckInLoading.value = false
+  }
+}
+
+const pickEventScannerSession = async (item) => {
+  const event = eventSessionPickerEvent.value
+  eventSessionPickerOpen.value = false
+  if (event) await openDashFaceCheckIn(item.session, event)
+}
+const closeEventSessionPicker = () => {
+  eventSessionPickerOpen.value = false
 }
 
 const openDashFaceCheckIn = async (session, event) => {
@@ -17702,6 +17945,77 @@ onUnmounted(() => {
 }
 .notification-pop-leave-active {
   animation: notification-pop-leave 0.3s ease-out;
+}
+
+/* ── Per-event Face ID scanner button ─────────────────────────────────── */
+.ssaam-event-scanner-btn {
+  -webkit-tap-highlight-color: transparent;
+}
+.ssaam-event-scanner-btn:not(:disabled):hover {
+  transform: translateY(-2px) scale(1.03);
+}
+.ssaam-event-scanner-btn:not(:disabled):active {
+  transform: scale(0.95);
+}
+.ssaam-event-scanner-btn:disabled {
+  cursor: not-allowed;
+}
+.ssaam-scanner-pulse {
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.55);
+  animation: ssaam-scanner-pulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes ssaam-scanner-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255,255,255,0.55), inset 0 0 0 0 rgba(255,255,255,0.0); }
+  70% { box-shadow: 0 0 0 14px rgba(255,255,255,0.0), inset 0 0 0 2px rgba(255,255,255,0.18); }
+  100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.0), inset 0 0 0 0 rgba(255,255,255,0.0); }
+}
+.ssaam-scanner-sweep {
+  background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.35) 50%, transparent 65%);
+  background-size: 220% 100%;
+  animation: ssaam-scanner-sweep 2.4s linear infinite;
+  mix-blend-mode: overlay;
+}
+@keyframes ssaam-scanner-sweep {
+  0% { background-position: 200% 0; }
+  100% { background-position: -100% 0; }
+}
+.ssaam-scanner-lock-shake {
+  animation: ssaam-scanner-lock-shake 2.6s ease-in-out infinite;
+  transform-origin: center;
+}
+@keyframes ssaam-scanner-lock-shake {
+  0%, 78%, 100% { transform: rotate(0deg); }
+  82% { transform: rotate(-8deg); }
+  86% { transform: rotate(8deg); }
+  90% { transform: rotate(-5deg); }
+  94% { transform: rotate(5deg); }
+}
+
+/* Session picker modal */
+.ssaam-picker-enter-active,
+.ssaam-picker-leave-active {
+  transition: opacity 0.22s ease;
+}
+.ssaam-picker-enter-active .ssaam-picker-card,
+.ssaam-picker-leave-active .ssaam-picker-card {
+  transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s ease;
+}
+.ssaam-picker-enter-from,
+.ssaam-picker-leave-to {
+  opacity: 0;
+}
+.ssaam-picker-enter-from .ssaam-picker-card,
+.ssaam-picker-leave-to .ssaam-picker-card {
+  transform: translateY(40px) scale(0.96);
+  opacity: 0;
+}
+.ssaam-picker-item {
+  opacity: 0;
+  animation: ssaam-picker-item-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+@keyframes ssaam-picker-item-in {
+  0% { opacity: 0; transform: translateX(-12px); }
+  100% { opacity: 1; transform: translateX(0); }
 }
 
 @keyframes notification-pop {
