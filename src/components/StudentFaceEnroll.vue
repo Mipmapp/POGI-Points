@@ -102,6 +102,34 @@
                 <Transition name="face-flash">
                   <div v-if="captureFlash" class="absolute inset-0 bg-white pointer-events-none"></div>
                 </Transition>
+
+                <!-- Confirm dialog overlay -->
+                <Transition name="face-confirm">
+                  <div v-if="showConfirmDialog" class="absolute inset-0 bg-[#040820]/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4 p-5">
+                    <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-emerald-400/60 shadow-2xl shadow-emerald-500/30 flex-shrink-0">
+                      <img v-if="confirmedPhoto" :src="confirmedPhoto" class="w-full h-full object-cover" alt="Captured face" />
+                      <div v-else class="w-full h-full bg-white/10 flex items-center justify-center">
+                        <svg class="w-10 h-10 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                      </div>
+                    </div>
+                    <div class="text-center">
+                      <p class="text-white font-bold text-base">Does this look like you?</p>
+                      <p class="text-white/60 text-xs mt-1">Confirm to save this as your Face ID</p>
+                    </div>
+                    <div class="flex gap-3 w-full max-w-xs">
+                      <button @click="retakeCapture" :disabled="submitting"
+                        class="flex-1 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-semibold text-sm hover:bg-white/20 disabled:opacity-40 transition-all active:scale-95">
+                        Retake
+                      </button>
+                      <button @click="confirmEnrollment" :disabled="submitting"
+                        :class="['flex-1 py-2.5 rounded-xl font-semibold text-sm border border-emerald-400/40 text-white bg-emerald-500/30 hover:bg-emerald-500/50 disabled:opacity-40 transition-all active:scale-95 flex items-center justify-center gap-2', props.isCOE ? 'bg-orange-500/30 border-orange-400/40 hover:bg-orange-500/50' : props.isSOM ? 'bg-green-500/30 border-green-400/40 hover:bg-green-500/50' : '']">
+                        <svg v-if="submitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        {{ submitting ? 'Saving…' : 'Confirm' }}
+                      </button>
+                    </div>
+                  </div>
+                </Transition>
               </div>
 
               <!-- Tips (sidebar-style glass items) -->
@@ -128,15 +156,29 @@
               </Transition>
 
               <!-- Actions -->
-              <div class="flex gap-3 pt-1">
-                <button @click="closeIfIdle" :disabled="capturing"
+              <div v-if="!showConfirmDialog" class="flex gap-3 pt-1">
+                <button @click="closeIfIdle" :disabled="capturing || submitting"
                   class="flex-1 py-2.5 rounded-xl bg-white/10 border border-white/15 text-white font-semibold hover:bg-white/15 hover:border-white/25 disabled:opacity-40 transition-all">
                   Cancel
                 </button>
-                <button v-if="!cooldownActive" @click="startCapture" :disabled="!cameraReady || capturing"
+                <button v-if="!cooldownActive" @click="startCapture" :disabled="!cameraReady || capturing || autoCountdown > 0"
                   class="face-cta-btn group relative flex-1 py-2.5 rounded-xl font-semibold text-white border border-white/25 bg-white/15 hover:bg-white/25 hover:border-white/40 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-black/20">
                   <span v-if="!capturing && !disableCta" class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></span>
-                  <span class="relative">{{ capturing ? `Capturing… ${capturedSamples}/${TARGET_SAMPLES}` : (hasExistingFace ? 'Update Face ID' : 'Capture & Save') }}</span>
+                  <span class="relative">
+                    {{ capturing ? `Capturing… ${capturedSamples}/${TARGET_SAMPLES}` : autoCountdown > 0 ? `Starting in ${autoCountdown}…` : (hasExistingFace ? 'Update Face ID' : 'Capture & Save') }}
+                  </span>
+                </button>
+              </div>
+              <div v-else class="flex gap-3 pt-1">
+                <button @click="retakeCapture" :disabled="submitting"
+                  class="flex-1 py-2.5 rounded-xl bg-white/10 border border-white/15 text-white font-semibold hover:bg-white/15 hover:border-white/25 disabled:opacity-40 transition-all">
+                  Retake
+                </button>
+                <button @click="confirmEnrollment" :disabled="submitting"
+                  class="face-cta-btn group relative flex-1 py-2.5 rounded-xl font-semibold text-white border border-emerald-400/40 bg-emerald-500/25 hover:bg-emerald-500/40 disabled:opacity-40 overflow-hidden transition-all active:scale-95 shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                  <svg v-if="submitting" class="w-4 h-4 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  <svg v-else class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  <span class="relative">{{ submitting ? 'Saving…' : 'Confirm Face ID' }}</span>
                 </button>
               </div>
             </div>
@@ -184,13 +226,30 @@ const errorMessage = ref('')
 const collectedDescriptors = ref([])  // { descriptor, score }
 const captureFlash = ref(false)
 
+// Auto-capture countdown
+let autoStartHandle = null
+const autoCountdown = ref(0)  // counts down 3→0 before auto-capturing
+const AUTO_START_DELAY_MS = 1800
+
+// Confirm stage after samples collected
+const showConfirmDialog = ref(false)
+const confirmedDescriptor = ref(null)
+const confirmedPhoto = ref(null)
+const submitting = ref(false)
+
 const TARGET_SAMPLES = 30
 const progressPct = computed(() => Math.min(100, (capturedSamples.value / TARGET_SAMPLES) * 100))
 const disableCta = computed(() => !cameraReady.value || capturing.value)
 
 const stageStyle = computed(() => {
+  if (showConfirmDialog.value) return {
+    bg: 'bg-violet-400/15', border: 'border-violet-300/40', text: 'text-violet-100', dot: 'bg-violet-300 animate-pulse'
+  }
   if (capturing.value) return {
     bg: 'bg-emerald-400/15', border: 'border-emerald-300/40', text: 'text-emerald-100', dot: 'bg-emerald-300 animate-pulse'
+  }
+  if (autoCountdown.value > 0) return {
+    bg: 'bg-amber-400/15', border: 'border-amber-300/40', text: 'text-amber-100', dot: 'bg-amber-300 animate-ping'
   }
   if (faceDetected.value) return {
     bg: 'bg-blue-400/15', border: 'border-blue-300/40', text: 'text-blue-100', dot: 'bg-blue-300 animate-pulse'
@@ -198,13 +257,17 @@ const stageStyle = computed(() => {
   return { bg: 'bg-white/10', border: 'border-white/15', text: 'text-white/85', dot: 'bg-white/60' }
 })
 const stageMessage = computed(() => {
+  if (showConfirmDialog.value) return 'Capture complete — confirm your Face ID'
   if (capturing.value) return 'Hold still — capturing your face'
-  if (faceDetected.value) return 'Face detected — tap Capture when ready'
+  if (autoCountdown.value > 0) return `Auto-capturing in ${autoCountdown.value}…`
+  if (faceDetected.value) return 'Face detected — auto-capturing soon'
   if (cameraReady.value) return 'Position your face inside the oval'
   return 'Setting up your camera'
 })
 const stageHint = computed(() => {
+  if (showConfirmDialog.value) return 'Review the preview below — confirm to save or retake to try again.'
   if (capturing.value) return `Sampling ${TARGET_SAMPLES} frames to build a strong template`
+  if (autoCountdown.value > 0) return 'Stay still — capture will begin automatically'
   return ''
 })
 
@@ -224,8 +287,14 @@ async function openCamera() {
   cameraReady.value = false
   faceDetected.value = false
   faceLocked.value = false
+  capturing.value = false
   capturedSamples.value = 0
   collectedDescriptors.value = []
+  showConfirmDialog.value = false
+  confirmedDescriptor.value = null
+  confirmedPhoto.value = null
+  autoCountdown.value = 0
+  if (autoStartHandle) { clearTimeout(autoStartHandle); autoStartHandle = null }
 
   try {
     camStatus.value = 'Loading face models…'
@@ -262,6 +331,11 @@ function stopCamera() {
     clearTimeout(detectionLoopHandle)
     detectionLoopHandle = null
   }
+  if (autoStartHandle) {
+    clearTimeout(autoStartHandle)
+    autoStartHandle = null
+  }
+  autoCountdown.value = 0
   if (mediaStream) {
     mediaStream.getTracks().forEach(t => t.stop())
     mediaStream = null
@@ -270,7 +344,7 @@ function stopCamera() {
 }
 
 async function runDetectionLoop() {
-  if (!cameraReady.value || !videoEl.value) return
+  if (!cameraReady.value || !videoEl.value || showConfirmDialog.value) return
   try {
     const fa = await getFaceApi()
     const det = await fa
@@ -289,7 +363,6 @@ async function runDetectionLoop() {
           snapshot: capturedSamples.value === 0 ? snapshotFace(det.detection.box) : null
         })
         capturedSamples.value++
-        // brief flash on first sample for feedback
         if (capturedSamples.value === 1) {
           captureFlash.value = true
           setTimeout(() => { captureFlash.value = false }, 180)
@@ -298,14 +371,38 @@ async function runDetectionLoop() {
           await finishCapture()
           return
         }
+      } else if (!capturing.value && !autoStartHandle && !props.cooldownActive) {
+        // Auto-start countdown when face is stable
+        let count = 3
+        autoCountdown.value = count
+        const tick = () => {
+          count--
+          autoCountdown.value = count
+          if (count <= 0) {
+            autoStartHandle = null
+            autoCountdown.value = 0
+            if (faceDetected.value && !capturing.value && !showConfirmDialog.value) {
+              startCapture()
+            }
+          } else {
+            autoStartHandle = setTimeout(tick, 600)
+          }
+        }
+        autoStartHandle = setTimeout(tick, 600)
       }
     } else {
       faceLocked.value = false
+      // Cancel auto-start if face lost
+      if (autoStartHandle) {
+        clearTimeout(autoStartHandle)
+        autoStartHandle = null
+        autoCountdown.value = 0
+      }
     }
   } catch (err) {
     console.warn('[FaceEnroll] detect error', err)
   }
-  if (cameraReady.value) {
+  if (cameraReady.value && !showConfirmDialog.value) {
     detectionLoopHandle = setTimeout(runDetectionLoop, 120)
   }
 }
@@ -353,11 +450,31 @@ async function finishCapture() {
 
   const photo = collectedDescriptors.value.find(s => s.snapshot)?.snapshot || null
 
-  await submitEnrollment(avg, photo)
+  confirmedDescriptor.value = avg
+  confirmedPhoto.value = photo
+  showConfirmDialog.value = true
+}
+
+async function confirmEnrollment() {
+  if (!confirmedDescriptor.value) return
+  await submitEnrollment(confirmedDescriptor.value, confirmedPhoto.value)
+}
+
+function retakeCapture() {
+  showConfirmDialog.value = false
+  confirmedDescriptor.value = null
+  confirmedPhoto.value = null
+  capturedSamples.value = 0
+  collectedDescriptors.value = []
+  errorMessage.value = ''
+  autoCountdown.value = 0
+  if (autoStartHandle) { clearTimeout(autoStartHandle); autoStartHandle = null }
+  if (cameraReady.value) runDetectionLoop()
 }
 
 async function submitEnrollment(descriptor, photo) {
   errorMessage.value = ''
+  submitting.value = true
   const token = localStorage.getItem('authToken') || localStorage.getItem('studentToken')
   try {
     const res = await fetch(buildAPIUrl('/apis/students/face'), {
@@ -376,16 +493,21 @@ async function submitEnrollment(descriptor, photo) {
       emit('close')
     } else {
       errorMessage.value = data.message || 'Enrollment failed. Please try again.'
+      showConfirmDialog.value = false
     }
   } catch (err) {
     console.error('[FaceEnroll] submit error', err)
     errorMessage.value = 'Network error. Please check your connection and try again.'
+    showConfirmDialog.value = false
+  } finally {
+    submitting.value = false
   }
 }
 
 function closeIfIdle() {
-  if (capturing.value) return
+  if (capturing.value || submitting.value) return
   stopCamera()
+  showConfirmDialog.value = false
   emit('close')
 }
 
@@ -436,6 +558,10 @@ onBeforeUnmount(() => stopCamera())
 .face-flash-leave-active { transition: opacity 0.18s ease; }
 .face-flash-enter-from,
 .face-flash-leave-to { opacity: 0; }
+.face-confirm-enter-active { transition: opacity 0.25s ease, transform 0.25s ease; }
+.face-confirm-leave-active { transition: opacity 0.2s ease, transform 0.2s ease; }
+.face-confirm-enter-from { opacity: 0; transform: scale(0.96); }
+.face-confirm-leave-to { opacity: 0; transform: scale(0.96); }
 
 /* Floating orbs */
 @keyframes face-orb-drift-a {

@@ -1030,7 +1030,7 @@ export default {
     primaryTextHover() { return 'hover:text-blue-800' },
     primaryDarkText() { return 'text-blue-900' },
     isMaster() { return this.currentUser?.isMaster === true },
-    isCoAdmin() { return this.currentUser?.isMaster === true && this.currentUser?.role === 'co-admin' },
+    isCoAdmin() { return this.currentUser?.role === 'co-admin' },
     isTreasurer() { return this.currentUser?.isMaster === true && this.currentUser?.role === 'treasurer' },
     // End theme helpers
 
@@ -1225,13 +1225,12 @@ export default {
           return
         }
 
-        // Super admin fetches ALL colleges at once; co-admin fetches own college only
+        // Super admin fetches ALL colleges at once; co-admin/regular fetches own college only
         const isMaster = this.currentUser?.isMaster === true
-        const isCoAdmin = this.currentUser?.role === 'co-admin'
         const college = this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
 
         let url, headers
-        if (isMaster && !isCoAdmin) {
+        if (isMaster && !this.isCoAdmin) {
           url = buildAPIUrl('/apis/students/all-colleges')
           headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-SSAAM-College': 'CCS' }
         } else {
