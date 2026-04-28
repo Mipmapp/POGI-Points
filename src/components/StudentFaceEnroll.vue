@@ -31,8 +31,63 @@
               </button>
             </div>
 
+            <!-- Terms & Conditions gate (must be accepted before camera starts) -->
+            <div v-if="!tncAgreed" class="p-5 overflow-y-auto face-modal-scroll">
+              <div class="rounded-2xl border border-white/15 bg-white/5 backdrop-blur-sm p-4">
+                <div class="flex items-center gap-2 mb-2">
+                  <svg class="w-5 h-5 text-emerald-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  <h4 class="text-base font-bold text-white">Face ID — Terms & Privacy</h4>
+                </div>
+                <p class="text-xs text-white/70 mb-3">Please read and agree before we set up your Face ID.</p>
+
+                <div ref="tncScrollEl" @scroll="onTncScroll" class="text-xs text-white/85 space-y-2 leading-relaxed max-h-56 overflow-y-auto pr-2 face-modal-scroll rounded-lg bg-black/15 border border-white/10 p-3">
+                  <p class="font-semibold text-white">1. What we collect</p>
+                  <p>SSAAM extracts a mathematical face template (a numeric descriptor) from samples taken by your camera. We also store one preview photo so you can recognise yourself in the system.</p>
+
+                  <p class="font-semibold text-white pt-1">2. How we use it</p>
+                  <p>Your face template is used <strong>only</strong> to verify your identity when you mark your own attendance. It is never shared with other students, never sold, and never used for advertising or surveillance outside of attendance.</p>
+
+                  <p class="font-semibold text-white pt-1">3. Your responsibility</p>
+                  <p>You must enrol your <strong>own face</strong>. Enrolling someone else's face, or letting another person use your Face ID to mark attendance, is treated as proxy attendance and may lead to disciplinary action under JRMSU rules.</p>
+
+                  <p class="font-semibold text-white pt-1">4. Updating &amp; removing</p>
+                  <p>You can update your Face ID once every {{ cooldownDays }} days from this same screen. To remove your Face ID entirely, contact your college admin.</p>
+
+                  <p class="font-semibold text-white pt-1">5. Camera &amp; on-device processing</p>
+                  <p>The camera turns on only after you tap <em>Agree &amp; Continue</em>. Face detection runs in your browser; only the final descriptor and preview photo are sent to the SSAAM server when you confirm.</p>
+
+                  <p class="text-white/60 italic pt-1">Scroll to the bottom to enable the agreement checkbox.</p>
+                </div>
+
+                <label :class="['mt-4 flex items-start gap-3 p-3 rounded-xl border transition-all select-none', tncReadToBottom ? 'border-emerald-300/40 bg-emerald-400/10 cursor-pointer hover:bg-emerald-400/15' : 'border-white/10 bg-white/5 opacity-60 cursor-not-allowed']">
+                  <input type="checkbox" v-model="tncCheckbox" :disabled="!tncReadToBottom"
+                    class="mt-0.5 w-4 h-4 rounded accent-emerald-400 cursor-pointer disabled:cursor-not-allowed flex-shrink-0" />
+                  <span class="text-xs text-white/90 leading-relaxed">
+                    I have read and agree to the SSAAM Face ID terms above. The face I am about to enrol is <strong>my own</strong>.
+                  </span>
+                </label>
+
+                <div class="flex gap-3 mt-4">
+                  <button @click="emit('close')" type="button"
+                    class="flex-1 py-2.5 rounded-xl bg-white/10 border border-white/15 text-white font-semibold hover:bg-white/15 hover:border-white/25 transition-all">
+                    Cancel
+                  </button>
+                  <button @click="agreeAndContinue" type="button" :disabled="!tncCheckbox"
+                    :class="['face-cta-btn group relative flex-1 py-2.5 rounded-xl font-semibold text-white border overflow-hidden transition-all active:scale-95 shadow-lg', tncCheckbox ? 'border-emerald-400/50 bg-emerald-500/30 hover:bg-emerald-500/45 shadow-emerald-500/20 hover:-translate-y-0.5' : 'border-white/15 bg-white/10 opacity-50 cursor-not-allowed']">
+                    <span v-if="tncCheckbox" class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none"></span>
+                    <span class="relative flex items-center justify-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                      Agree & Continue
+                    </span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- Scroll body -->
-            <div class="p-5 space-y-4 overflow-y-auto face-modal-scroll">
+            <div v-else class="p-5 space-y-4 overflow-y-auto face-modal-scroll">
               <!-- Cooldown banner -->
               <div v-if="cooldownActive"
                 class="text-sm rounded-xl p-3 border border-amber-300/40 bg-amber-400/15 text-amber-100">
@@ -212,6 +267,30 @@ const orbAColor = computed(() => props.isCOE ? 'bg-orange-500' : props.isSOM ? '
 const orbBColor = computed(() => props.isCOE ? 'bg-amber-500' : props.isSOM ? 'bg-yellow-500' : props.isCNAHS ? 'bg-green-500' : 'bg-indigo-500')
 const accentBorderL = computed(() => props.isCOE ? 'border-l-orange-300/70' : props.isSOM ? 'border-l-green-300/70' : props.isCNAHS ? 'border-l-emerald-300/70' : 'border-l-blue-300/70')
 
+// Terms & Conditions gate (must be agreed before camera starts)
+const TNC_STORAGE_KEY = 'ssaam_face_tnc_agreed_v1'
+const tncAgreed = ref(typeof localStorage !== 'undefined' && localStorage.getItem(TNC_STORAGE_KEY) === '1')
+const tncCheckbox = ref(false)
+const tncReadToBottom = ref(false)
+const tncScrollEl = ref(null)
+
+function onTncScroll(e) {
+  const el = e && e.target
+  if (!el) return
+  // Mark as fully read when user scrolls within 12px of the bottom
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 12) {
+    tncReadToBottom.value = true
+  }
+}
+
+async function agreeAndContinue() {
+  if (!tncCheckbox.value) return
+  try { localStorage.setItem(TNC_STORAGE_KEY, '1') } catch {}
+  tncAgreed.value = true
+  // Now that the user has agreed, open the camera if the modal is still open
+  if (props.open) await openCamera()
+}
+
 // Camera + capture state
 const videoEl = ref(null)
 let mediaStream = null
@@ -278,8 +357,17 @@ function formatDate(d) {
 }
 
 watch(() => props.open, async (val) => {
-  if (val) await openCamera()
-  else stopCamera()
+  if (val) {
+    // Reset checkbox each time the modal opens so users explicitly re-confirm
+    tncCheckbox.value = false
+    tncReadToBottom.value = false
+    if (tncAgreed.value) {
+      await openCamera()
+    }
+    // If not yet agreed, the T&C gate is shown and the camera waits for agreeAndContinue()
+  } else {
+    stopCamera()
+  }
 })
 
 async function openCamera() {

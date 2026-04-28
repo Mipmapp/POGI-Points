@@ -957,7 +957,7 @@
 
       <Transition name="section-fade" mode="out-in">
       <div :key="currentPage" class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'raffle-tickets' ? 'Raffle Ticket' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'my-raffle' ? 'My Raffle Results' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'dashboard' && (isAdminLike) ? 'Statistics' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'raffle-tickets' ? 'Raffle Ticket' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'my-raffle' ? 'My Raffle Results' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'dashboard' && (isAdminLike) && inRoleView ? 'Statistics' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-4 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
@@ -1799,7 +1799,7 @@
                   </div>
                 </div>
                 <div class="flex gap-2 flex-wrap sm:flex-nowrap">
-                  <button @click="refreshAttendanceSection" :disabled="attendanceLoading" :class="['flex-1 sm:flex-none px-3 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm', attendanceLoading ? 'opacity-50 cursor-not-allowed' : isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200']" title="Refresh">
+                  <button @click="refreshAttendanceSection" :disabled="attendanceLoading" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm disabled:opacity-70 text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Refresh">
                     <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
                     <span>Refresh</span>
                   </button>
@@ -4640,14 +4640,14 @@
               @click="showTermsModal = true"
               :aria-expanded="showTermsModal"
               :class="['relative w-full h-24 overflow-hidden text-left group transition-all duration-300 cursor-pointer',
-                isCOE ? 'bg-gradient-to-br from-orange-700 via-orange-600 to-amber-500 hover:from-orange-600 hover:via-orange-500'
-                : isSOM ? 'bg-gradient-to-br from-green-700 via-green-600 to-emerald-500 hover:from-green-600 hover:via-green-500'
-                : isCNAHS ? 'bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-500 hover:from-emerald-600 hover:via-emerald-500'
-                : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light hover:via-blue-600']"
+                isCOE ? 'bg-gradient-to-br from-orange-700 via-orange-600 to-amber-500'
+                : isSOM ? 'bg-gradient-to-br from-green-700 via-green-600 to-emerald-500'
+                : isCNAHS ? 'bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-500'
+                : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']"
             >
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-              <!-- Subtle shimmer on hover -->
-              <div class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+              <!-- Soft light sweep on hover (no brightening, just a gentle pass) -->
+              <div class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1400ms] ease-out bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none"></div>
 
               <div class="absolute inset-0 flex items-center justify-between px-6 md:px-8">
                 <div class="flex items-center gap-3 min-w-0">
@@ -13607,8 +13607,10 @@ const toggleCheckOut = async () => {
 
   const current = effectiveRfid.value || {}
   const newValue = !current.checkOutEnabled
+
   const updated = Object.assign({}, current, { checkOutEnabled: newValue })
-  if (newValue) updated.checkInEnabled = false
+  // Mirror toggleCheckIn: enabling check-out forces check-in OFF; disabling check-out re-enables check-in
+  updated.checkInEnabled = newValue ? false : true
 
   // Only persist to session or event, never global
   if (selectedSession.value) {
@@ -13618,6 +13620,7 @@ const toggleCheckOut = async () => {
   }
 
   if (updated.checkOutEnabled) setRfidOperation('out')
+  else setRfidOperation('in')
 }
 
 const setCheckInTimer = async () => {
