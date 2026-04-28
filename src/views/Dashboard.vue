@@ -14977,8 +14977,12 @@ const createAttendanceEvent = async () => {
       eventUserFilters.value = { name: '', program: '', yearLevel: '' }
       showCreateEventModal.value = false
 
-      // Refresh the events list.
-      await fetchAttendanceData()
+      // Refresh the events list — use refreshAttendanceSection so the
+      // cached flag is cleared first; fetchAttendanceData alone short-
+      // circuits when the section is already cached, which is why the
+      // newly-created event would otherwise not appear until the user
+      // clicked the Refresh button manually.
+      await refreshAttendanceSection()
 
       // Only open the edit modal automatically if the user didn't add any
       // sessions in the create flow. Otherwise just stay on the events list —
@@ -15063,7 +15067,9 @@ const updateAttendanceEvent = async () => {
       })
       showNotification('Event updated successfully', 'success')
       showEditEventModal.value = false
-      await fetchAttendanceData()
+      // Clear the section cache before refetching so the edited values
+      // (title, sessions, RFID flags, etc.) replace the stale cached copy.
+      await refreshAttendanceSection()
     } else {
       if (response.status === 403) {
         const errorData = await response.json()
@@ -15139,7 +15145,7 @@ const confirmDuplicateEvent = async () => {
       const result = await response.json()
       showNotification(`Event duplicated successfully as "${duplicatedEvent.title}"`, 'success')
       // Refresh events then open edit modal for the duplicated event so admin can set the date/sessions
-      await fetchAttendanceData()
+      await refreshAttendanceSection()
       if (result.event) {
         selectedEvent.value = {
           ...result.event,
@@ -15196,7 +15202,10 @@ const deleteAttendanceEvent = async (eventId) => {
     
     if (response.ok) {
       showNotification('Event deleted successfully', 'success')
-      await fetchAttendanceData()
+      // Clear the cache so the deleted event is removed from the list right
+      // away — fetchAttendanceData on its own would short-circuit on the
+      // cached flag and leave the stale row visible until manual refresh.
+      await refreshAttendanceSection()
     } else {
       if (response.status === 403) {
         const errorData = await response.json()

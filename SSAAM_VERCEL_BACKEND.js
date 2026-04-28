@@ -7785,6 +7785,16 @@ app.post('/apis/attendance/events/:eventId/sessions', auth, requireCoAdminOrAbov
 
 // Get all sessions for an event (admin with JWT)
 app.get('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
+    // Make sure the cascade that activates draft sessions when their parent
+    // event becomes active has run before we hand the list back. Without this
+    // the admin (and the student-facing Face ID UI) can see an "active"
+    // event whose sessions still report status='draft', which makes the
+    // self-service check-in button stay locked.
+    try {
+        if (typeof autoUpdateEventStatuses === 'function') {
+            await autoUpdateEventStatuses();
+        }
+    } catch (_) {}
     try {
         const SessionModel = getCollegeModel(AttendanceSession, CCS_AttendanceSession, COE_AttendanceSession, req.college);
         const sessions = await SessionModel.find({ event_id: req.params.eventId })
@@ -7824,7 +7834,15 @@ app.put('/apis/attendance/sessions/:id', auth, requireCoAdminOrAbove, async (req
         if (check_in_locked !== undefined) session.check_in_locked = check_in_locked;
         if (check_out_locked !== undefined) session.check_out_locked = check_out_locked;
         if (late_timer_minutes !== undefined) session.late_timer_minutes = late_timer_minutes;
-        if (rfidScanner !== undefined) session.rfidScanner = rfidScanner;
+        // rfidScanner is a Mongoose Mixed type, so we must merge (not replace)
+        // and explicitly call markModified — otherwise Mongoose silently drops
+        // the change on save, which makes the admin's check-in/check-out
+        // toggle appear to revert. The client only sends the fields it wants
+        // to change (e.g. just { checkInEnabled, checkOutEnabled }).
+        if (rfidScanner !== undefined && typeof rfidScanner === 'object' && rfidScanner !== null) {
+            session.rfidScanner = Object.assign({}, session.rfidScanner || {}, rfidScanner);
+            session.markModified('rfidScanner');
+        }
 
         session.updated_at = new Date();
         const updated = await session.save();
@@ -8768,6 +8786,17 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
         if (!student) {
             return res.status(404).json({ message: "Student not found" });
         }
+
+        // Run the auto-cascade so any session whose parent event has just
+        // become active is reported as 'active' here too. The student-facing
+        // Attendance page only treats sessions with status='active' as
+        // available for self check-in, so without this the Face ID button
+        // would stay locked even after the admin activates the event.
+        try {
+            if (typeof autoUpdateEventStatuses === 'function') {
+                await autoUpdateEventStatuses();
+            }
+        } catch (_) {}
 
         // Fetch all events - students can view all regular events, but only assigned custom events
         // Regular events: visible to all students
