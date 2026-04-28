@@ -4633,44 +4633,22 @@
         <!-- raffle tickets, and multi-college isolation across JRMSU.    -->
         <!-- ============================================================ -->
         <div v-if="currentPage === 'dashboard'" class="mt-6">
-          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <!-- Clickable header strip (entire row is the toggle) -->
+          <!-- Small inline footer-style line (replaces the old gradient banner card). -->
+          <p class="text-center text-xs sm:text-sm text-gray-500 px-2">
+            By using SSAAM you agree to our
             <button
               type="button"
               @click="showTermsModal = true"
-              :aria-expanded="showTermsModal"
-              :class="['relative w-full h-24 overflow-hidden text-left group transition-all duration-300 cursor-pointer',
-                isCOE ? 'bg-gradient-to-br from-orange-700 via-orange-600 to-amber-500'
-                : isSOM ? 'bg-gradient-to-br from-green-700 via-green-600 to-emerald-500'
-                : isCNAHS ? 'bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-500'
-                : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']"
-            >
-              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-              <!-- Soft light sweep on hover (no brightening, just a gentle pass) -->
-              <div class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-[1400ms] ease-out bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none"></div>
+              :class="['font-semibold underline underline-offset-2 hover:no-underline transition-colors',
+                isCOE ? 'text-orange-700 hover:text-orange-900'
+                : isSOM ? 'text-green-700 hover:text-green-900'
+                : isCNAHS ? 'text-emerald-700 hover:text-emerald-900'
+                : 'text-blue-700 hover:text-blue-900']"
+            >Terms &amp; Conditions</button>.
+          </p>
 
-              <div class="absolute inset-0 flex items-center justify-between px-6 md:px-8">
-                <div class="flex items-center gap-3 min-w-0">
-                  <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center border border-white/20 transition-transform duration-300 group-hover:scale-110">
-                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                  </div>
-                  <div class="min-w-0">
-                    <h2 class="text-xl md:text-2xl font-extrabold text-white tracking-tight truncate">Terms &amp; Conditions</h2>
-                    <p class="text-white/80 text-xs sm:text-sm truncate">
-                      <span class="hidden sm:inline">SSAAM — Student School Activities Attendance Monitoring · JRMSU · </span>
-                      <span class="font-semibold underline decoration-white/40 underline-offset-2">Click to read</span>
-                    </p>
-                  </div>
-                </div>
-                <div class="flex-shrink-0 inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-white text-xs font-bold bg-white/20 group-hover:bg-white/30 border border-white/20 transition">
-                  <span class="hidden sm:inline">Read</span>
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                </div>
-              </div>
-            </button>
-
-            <!-- Terms content is shown in a modal (showTermsModal) -->
-            <div v-if="false">
+          <!-- Legacy inline content (kept hidden — terms now live in the modal only). -->
+          <div v-if="false">
               <div>
                 <div>
               <p class="text-sm text-gray-600 mb-6 leading-relaxed">
@@ -4822,7 +4800,6 @@
                 </div>
               </div>
             </div>
-          </div>
         </div>
 
       </div>
