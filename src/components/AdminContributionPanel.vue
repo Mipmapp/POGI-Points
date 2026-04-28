@@ -547,6 +547,11 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
             Discount applied: –₱{{ c.discount_value.toFixed(2) }}
           </div>
+          <div v-if="c.payment_status === 'paid' && c.paid_at" class="flex items-center gap-1.5 text-xs text-green-700 mb-3">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span class="font-medium">Paid:</span>
+            <span>{{ new Date(c.paid_at).toLocaleString() }}</span>
+          </div>
           <div class="flex gap-2">
             <button
               v-if="c.payment_status !== 'paid'"
@@ -587,12 +592,13 @@
               <th class="px-4 py-3 text-right text-xs font-bold text-white uppercase tracking-wider">Discount</th>
               <th class="px-4 py-3 text-right text-xs font-bold text-white uppercase tracking-wider">Target</th>
               <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Status</th>
+              <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Paid Date</th>
               <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-if="filteredContributions.length === 0">
-              <td :colspan="isMaster ? 10 : 9" class="px-4 py-12 text-center text-gray-400 text-sm">
+              <td :colspan="isMaster ? 11 : 10" class="px-4 py-12 text-center text-gray-400 text-sm">
                 No records match the current filters.
               </td>
             </tr>
@@ -621,6 +627,13 @@
                 <span :class="['inline-flex px-2.5 py-1 rounded-full text-xs font-bold', c.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600']">
                   {{ c.payment_status === 'paid' ? 'PAID' : 'UNPAID' }}
                 </span>
+              </td>
+              <td class="px-4 py-3 text-center text-xs text-gray-600 whitespace-nowrap">
+                <span v-if="c.payment_status === 'paid' && c.paid_at" :title="new Date(c.paid_at).toLocaleString()">
+                  {{ new Date(c.paid_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) }}
+                  <span class="block text-[10px] text-gray-400">{{ new Date(c.paid_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) }}</span>
+                </span>
+                <span v-else class="text-gray-300">—</span>
               </td>
               <td class="px-4 py-3 text-center">
                 <div class="flex items-center justify-center gap-1.5">

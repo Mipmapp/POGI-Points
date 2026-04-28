@@ -5691,6 +5691,18 @@
             />
           </div>
 
+          <!-- Face ID Recognition Toggle (Edit) -->
+          <div :class="['flex items-center gap-3 border-2 rounded-xl p-4 mt-4 transition cursor-pointer', isCOE ? 'bg-orange-50 border-orange-200 hover:bg-orange-100' : isSOM ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-blue-50 border-blue-200 hover:bg-blue-100']" @click="selectedEvent.face_id_enabled = selectedEvent.face_id_enabled === false ? true : false">
+            <input type="checkbox" :checked="selectedEvent.face_id_enabled !== false" @change="selectedEvent.face_id_enabled = $event.target.checked" id="faceIdToggleEdit" :class="['w-5 h-5 rounded cursor-pointer', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" />
+            <label for="faceIdToggleEdit" class="flex-1 cursor-pointer">
+              <p :class="['font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2M9 10h.01M15 10h.01M9 16c.85.63 1.885 1 3 1s2.15-.37 3-1"/></svg>
+                Allow Face ID Recognition
+              </p>
+              <p :class="['text-xs mt-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">When disabled, students cannot use the Face ID scanner for this event and will be notified.</p>
+            </label>
+          </div>
+
           <!-- Sessions Management Section -->
           <div class="border-t pt-4 mt-4">
             <div class="flex items-center justify-between mb-3">
@@ -6532,7 +6544,7 @@
         <!-- Tab Content -->
         <div v-if="helpTab === 'about'" class="space-y-3">
           <div class="bg-green-50 rounded-2xl p-4">
-            <h4 class="font-bold text-base mb-2 text-blue-900">SSAAM - Student School Activity Attendance Management</h4>
+            <h4 class="font-bold text-base mb-2 text-blue-900">SSAAM - Student School Activities Attendance Monitoring</h4>
             <p class="text-gray-700 text-sm leading-relaxed">
               SSAAM is a comprehensive attendance management system designed for educational institutions. It provides real-time RFID scanning, automated attendance tracking, and detailed reporting capabilities.
             </p>
@@ -6556,7 +6568,7 @@
             <div class="space-y-3">
               <div class="border-l-4 border-blue-300 pl-4">
                 <h5 class="font-semibold text-gray-900 mb-1">What is SSAAM?</h5>
-                <p class="text-gray-700 text-sm">SSAAM (Student School Activity Attendance Management) is a system designed to track attendance for school activities and events using RFID technology and manual entry options.</p>
+                <p class="text-gray-700 text-sm">SSAAM (Student School Activities Attendance Monitoring) is a system designed to track attendance for school activities and events using RFID technology and manual entry options.</p>
               </div>
               <div class="border-l-4 border-blue-300 pl-4">
                 <h5 class="font-semibold text-gray-900 mb-1">How do I check my attendance records?</h5>
@@ -8446,6 +8458,10 @@ const getEventScannerInfo = (event) => {
 
 const getEventScannerBtnSize = 'w-20 h-20 sm:w-24 sm:h-24 text-xs'
 const getEventScannerBtnClass = (event) => {
+  // Face ID disabled by admin: render the button in a muted, "off" state.
+  if (event && event.face_id_enabled === false) {
+    return 'bg-gradient-to-br from-gray-400 to-gray-500 opacity-70 cursor-not-allowed'
+  }
   const info = getEventScannerInfo(event)
   if (info.state === 'loading') return 'bg-gradient-to-br from-gray-300 to-gray-400 cursor-wait'
   if (info.state === 'no_active') return 'bg-gradient-to-br from-gray-400 to-gray-500 opacity-80'
@@ -8460,6 +8476,7 @@ const getEventScannerBtnClass = (event) => {
   return 'bg-gradient-to-br from-[#1e3bdb] to-[#4f62ff] hover:from-[#1730c0] hover:to-[#3d52e8] shadow-lg shadow-blue-600/30'
 }
 const getEventScannerLabel = (event) => {
+  if (event && event.face_id_enabled === false) return 'Face ID Off'
   const info = getEventScannerInfo(event)
   if (info.state === 'loading') return 'Loading'
   if (info.state === 'no_active') return 'Closed'
@@ -8470,6 +8487,7 @@ const getEventScannerLabel = (event) => {
   return 'Scan'
 }
 const getEventScannerTooltip = (event) => {
+  if (event && event.face_id_enabled === false) return 'Face ID Recognition is disabled for this event by the admin.'
   const info = getEventScannerInfo(event)
   if (info.state === 'loading') return 'Loading sessions…'
   if (info.state === 'no_active') return 'No active session right now.'
@@ -8487,6 +8505,17 @@ const dashFaceCheckInLoading = ref(false)
 
 const openEventScanner = async (event) => {
   if (dashFaceCheckInLoading.value) return
+  // Admins can disable Face ID Recognition for an event entirely; surface that to
+  // the student instead of opening the camera so they know to use RFID/manual check-in.
+  if (event && event.face_id_enabled === false) {
+    dashFaceCheckInNotif.value = {
+      show: true,
+      type: 'error',
+      message: 'Face ID Recognition has been disabled for this event by the admin. Please use the RFID scanner or contact your administrator for manual check-in.'
+    }
+    setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 6000)
+    return
+  }
   dashFaceCheckInLoading.value = true
   try {
     const eventId = event._id || event.event_id
@@ -10607,7 +10636,10 @@ const newEvent = ref({
   geofence_enabled: false,
   geofence_lat: null,
   geofence_lng: null,
-  geofence_radius_meters: 80
+  geofence_radius_meters: 80,
+  // Face ID Recognition: when disabled, students cannot use the Face ID scanner
+  // to check in/out for this event.
+  face_id_enabled: true
 })
 const eventUserFilters = ref({
   name: '',
@@ -13791,7 +13823,9 @@ const handleRfidUnreadableChange = () => {
 }
 
 const editUser = (user) => {
-  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') {
+  // Co-admins are explicitly permitted to edit users (mirrors backend
+  // requireCoAdminOrAbove on PUT /apis/students/:student_id).
+  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin' && currentUser.value.role !== 'co-admin') {
     showNotification('Only administrators can edit users', 'error')
     return
   }
@@ -14036,7 +14070,9 @@ const handleStudentPhotoUpload = async (event) => {
 const saveUserImpl = async () => {
   if (!editingUser.value) return
   
-  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') {
+  // Co-admins are explicitly permitted to edit users (matches backend
+  // requireCoAdminOrAbove on PUT /apis/students/:student_id).
+  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin' && currentUser.value.role !== 'co-admin') {
     showNotification('Only administrators can edit users', 'error')
     closeEditModal()
     return
@@ -14173,7 +14209,8 @@ const saveUserImpl = async () => {
 const duplicateUserImpl = async () => {
   if (!editingUser.value) return
 
-  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') {
+  // Co-admins are explicitly permitted to duplicate users.
+  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin' && currentUser.value.role !== 'co-admin') {
     showNotification('Only administrators can duplicate users', 'error')
     closeEditModal()
     return
@@ -14246,8 +14283,8 @@ const deleteUser = (studentId) => {
 }
 
 const confirmDeleteImpl = async () => {
-  // Check if user is admin
-  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') {
+  // Check if user is admin (co-admins are also permitted).
+  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin' && currentUser.value.role !== 'co-admin') {
     showNotification('Only administrators can delete users', 'error')
     showDeleteConfirm.value = false
     userToDelete.value = null
@@ -14543,7 +14580,9 @@ const createAttendanceEvent = async () => {
       geofence_enabled: !!newEvent.value.geofence_enabled,
       geofence_lat: newEvent.value.geofence_lat,
       geofence_lng: newEvent.value.geofence_lng,
-      geofence_radius_meters: newEvent.value.geofence_radius_meters || 80
+      geofence_radius_meters: newEvent.value.geofence_radius_meters || 80,
+      // Face ID Recognition toggle
+      face_id_enabled: newEvent.value.face_id_enabled !== false
     }
     const response = await fetch(buildAPIUrl('/apis/attendance/events'), {
       method: 'POST',
@@ -14593,7 +14632,7 @@ const createAttendanceEvent = async () => {
       }
 
       // Reset the form & close the create modal.
-      newEvent.value = { title: '', description: '', location: '', date: '', year_level: '', start_time: '07:00', end_time: '17:00', assigned_users: [], is_custom: false, geofence_enabled: false, geofence_lat: null, geofence_lng: null, geofence_radius_meters: 80 }
+      newEvent.value = { title: '', description: '', location: '', date: '', year_level: '', start_time: '07:00', end_time: '17:00', assigned_users: [], is_custom: false, geofence_enabled: false, geofence_lat: null, geofence_lng: null, geofence_radius_meters: 80, face_id_enabled: true }
       newEventSessions.value = []
       eventUserSearch.value = ''
       eventUserFilters.value = { name: '', program: '', yearLevel: '' }
@@ -14654,7 +14693,9 @@ const updateAttendanceEvent = async () => {
       geofence_enabled: !!selectedEvent.value.geofence_enabled,
       geofence_lat: (selectedEvent.value.geofence_lat === '' || selectedEvent.value.geofence_lat === undefined) ? null : selectedEvent.value.geofence_lat,
       geofence_lng: (selectedEvent.value.geofence_lng === '' || selectedEvent.value.geofence_lng === undefined) ? null : selectedEvent.value.geofence_lng,
-      geofence_radius_meters: selectedEvent.value.geofence_radius_meters || 80
+      geofence_radius_meters: selectedEvent.value.geofence_radius_meters || 80,
+      // Face ID Recognition toggle
+      face_id_enabled: selectedEvent.value.face_id_enabled !== false
     }
     
     console.log('[Frontend Update] Sending event payload:', {

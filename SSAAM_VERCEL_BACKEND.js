@@ -2573,6 +2573,9 @@ const attendanceEventSchema = new mongoose.Schema({
     geofence_lat: { type: Number, default: null },
     geofence_lng: { type: Number, default: null },
     geofence_radius_meters: { type: Number, default: 80, min: 10, max: 5000 },
+    // Face ID Recognition: when disabled, students cannot use the Face ID scanner
+    // for this event (they must use RFID or admin manual check-in instead).
+    face_id_enabled: { type: Boolean, default: true },
     created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'Master', required: true },
     created_by_name: { type: String, required: true },
     created_at: { type: Date, default: Date.now },
@@ -7421,7 +7424,8 @@ app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res
         const {
             title, description, location, event_date, year_level, status,
             start_time, end_time, is_custom, assigned_users,
-            geofence_enabled, geofence_lat, geofence_lng, geofence_radius_meters
+            geofence_enabled, geofence_lat, geofence_lng, geofence_radius_meters,
+            face_id_enabled
         } = req.body;
 
         if (!title || !event_date) {
@@ -7457,6 +7461,7 @@ app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res
             is_custom: is_custom || false,
             assigned_users: assigned_users && Array.isArray(assigned_users) ? assigned_users : [],
             rfidScanner: { checkInEnabled: true, checkOutEnabled: false },
+            face_id_enabled: face_id_enabled === undefined ? true : !!face_id_enabled,
             ...sanitisedGeofence
         });
 
@@ -7473,7 +7478,8 @@ app.put('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (req, 
         const {
             title, description, location, event_date, year_level, status,
             start_time, end_time, is_custom, assigned_users, rfidScanner,
-            geofence_enabled, geofence_lat, geofence_lng, geofence_radius_meters
+            geofence_enabled, geofence_lat, geofence_lng, geofence_radius_meters,
+            face_id_enabled
         } = req.body;
 
         console.log(`[Event Update] ID: ${req.params.id}, assigned_users received:`, assigned_users);
@@ -7492,6 +7498,7 @@ app.put('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (req, 
         if (start_time !== undefined) event.start_time = start_time;
         if (end_time !== undefined) event.end_time = end_time;
         if (is_custom !== undefined) event.is_custom = is_custom;
+        if (face_id_enabled !== undefined) event.face_id_enabled = !!face_id_enabled;
         if (assigned_users !== undefined) {
             console.log(`[Event Update] Before save - assigned_users:`, event.assigned_users);
             event.assigned_users = assigned_users || [];
