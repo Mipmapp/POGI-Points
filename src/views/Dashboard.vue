@@ -10845,9 +10845,22 @@ const activeNonEndedEvents = computed(() => {
 // Face ID scanner button shows its real state (ready / locked / done) on first
 // render instead of "loading". Declared after activeNonEndedEvents so the
 // computed reference is initialized when the watcher first runs.
-watch(activeNonEndedEvents, (events) => {
-  if (!events || !events.length) return
-  for (const e of events) {
+//
+// IMPORTANT: watch the *set of event IDs* (a stable string key) rather than
+// the computed array itself. activeNonEndedEvents returns a new array every
+// time eventTimeRemaining ticks (every second), which would otherwise cause
+// this watcher to fire ~once per second and flood the backend with redundant
+// /sessions GETs. Keying on sorted IDs makes the watcher react only when an
+// event truly enters/leaves the active list.
+const activeEventIdsKey = computed(() =>
+  activeNonEndedEvents.value
+    .map(e => e._id || e.event_id)
+    .filter(Boolean)
+    .sort()
+    .join(',')
+)
+watch(activeEventIdsKey, () => {
+  for (const e of activeNonEndedEvents.value) {
     const id = e._id || e.event_id
     if (id && !expandedEventSessions.value[id]) ensureEventSessions(id)
   }
@@ -13049,8 +13062,11 @@ const saveRfidScannerSettings = async () => {
 }
 
 // Save event-level RFID scanner settings
+// Allowed roles match the backend's `requireCoAdminOrAbove` guard:
+// master, admin, and co-admin can all toggle per-event scanner mode.
 const saveEventRfidSettings = async (eventId, rfidSettings) => {
-  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') return
+  const role = currentUser.value?.role
+  if (!currentUser.value?.isMaster && role !== 'admin' && role !== 'co-admin') return
   rfidScannerSaving.value = true
   try {
     const token = localStorage.getItem('authToken')
@@ -13086,8 +13102,10 @@ const saveEventRfidSettings = async (eventId, rfidSettings) => {
 }
 
 // Save session-level RFID scanner settings
+// Allowed roles match the backend's `requireCoAdminOrAbove` guard.
 const saveSessionRfidSettings = async (sessionId, rfidSettings) => {
-  if (!currentUser.value.isMaster && currentUser.value.role !== 'admin') return
+  const role = currentUser.value?.role
+  if (!currentUser.value?.isMaster && role !== 'admin' && role !== 'co-admin') return
   rfidScannerSaving.value = true
   try {
     const token = localStorage.getItem('authToken')
