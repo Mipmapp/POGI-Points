@@ -14356,12 +14356,23 @@ const handleStudentPhotoUpload = async (event) => {
             })
           });
           if (updateResponse.ok) {
-            currentUser.value.image = photoUrl;
-            currentUser.value.photo = photoUrl;
+            // Cache-bust so the <img> reloads immediately even if the URL is the same shape
+            const bust = `${photoUrl.includes('?') ? '&' : '?'}v=${Date.now()}`
+            const displayUrl = photoUrl + bust
+            currentUser.value.image = displayUrl;
+            currentUser.value.photo = displayUrl;
             const updatedUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-            updatedUser.image = photoUrl;
-            updatedUser.photo = photoUrl;
+            updatedUser.image = displayUrl;
+            updatedUser.photo = displayUrl;
             localStorage.setItem('currentUser', JSON.stringify(updatedUser));
+            // Invalidate the persistent photo cache for this student so the new photo is picked up everywhere
+            try {
+              if (studentId) localStorage.removeItem(`photo_${studentId}`);
+              // Also drop in-memory cache entries for this student
+              if (studentPhotoCache && studentPhotoCache.value && studentId) {
+                delete studentPhotoCache.value[studentId];
+              }
+            } catch (_) {}
             profileImageFailed.value = false;
             uploadSuccess = true;
             showNotification('Photo updated successfully!', 'success');

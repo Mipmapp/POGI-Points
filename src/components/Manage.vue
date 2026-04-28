@@ -67,133 +67,96 @@
             />
           </div>
           
-          <!-- Filter by Role -->
-          <div class="space-y-3 animate-fade-in">
-            <p class="text-xs font-bold text-gray-600 uppercase tracking-wider">Role</p>
-            <div class="flex gap-2 flex-wrap">
-              <button
-                @click="userRoleFilter = null"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === null ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                All Roles
-              </button>
-              <button
-                @click="userRoleFilter = 'student'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userRoleFilter === 'student' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                Students
-              </button>
+          <!-- Filters: compact dropdown row -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 animate-fade-in">
+            <!-- Role -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">Role</label>
+              <div class="relative">
+                <select
+                  :value="userRoleFilter ?? ''"
+                  @change="(e) => { userRoleFilter = e.target.value || null; currentPage = 1 }"
+                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-800 font-medium shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                >
+                  <option value="">All Roles</option>
+                  <option value="student">Students</option>
+                </select>
+                <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
             </div>
-          </div>
 
-          <!-- Filter by Year Level -->
-          <div class="space-y-3 animate-fade-in-delay-1">
-            <p class="text-xs font-bold text-gray-600 uppercase tracking-wider">Year Level</p>
-            <div class="flex gap-2 flex-wrap">
-              <button
-                @click="userYearFilter = null"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === null ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                All Years
-              </button>
-              <button
-                @click="userYearFilter = '1st year'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '1st year' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                1st Year
-              </button>
-              <button
-                @click="userYearFilter = '2nd year'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '2nd year' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                2nd Year
-              </button>
-              <button
-                @click="userYearFilter = '3rd year'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '3rd year' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                3rd Year
-              </button>
-              <button
-                @click="userYearFilter = '4th year'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userYearFilter === '4th year' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                4th Year
-              </button>
+            <!-- Year Level -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">Year Level</label>
+              <div class="relative">
+                <select
+                  :value="userYearFilter ?? ''"
+                  @change="(e) => { userYearFilter = e.target.value || null; currentPage = 1 }"
+                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-800 font-medium shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                >
+                  <option value="">All Years</option>
+                  <option value="1st year">1st Year</option>
+                  <option value="2nd year">2nd Year</option>
+                  <option value="3rd year">3rd Year</option>
+                  <option value="4th year">4th Year</option>
+                </select>
+                <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
             </div>
-          </div>
 
-          <!-- Filter by Program -->
-          <div class="space-y-3 animate-fade-in-delay-2">
-            <p class="text-xs font-bold text-gray-600 uppercase tracking-wider">Program</p>
-            <div class="flex gap-2 flex-wrap">
-              <button
-                @click="userProgramFilter = null"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === null ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                All Programs
-              </button>
-              <button
-                @click="userProgramFilter = 'BSCS'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSCS' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                BSCS
-              </button>
-              <button
-                @click="userProgramFilter = 'BSIT'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSIT' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                BSIT
-              </button>
-              <button
-                @click="userProgramFilter = 'BSIS'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userProgramFilter === 'BSIS' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-lg', isCOE ? 'shadow-orange-200' : isSOM ? 'shadow-green-200' : isCNAHS ? 'shadow-green-200' : 'shadow-blue-200'] : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']"
-              >
-                BSIS
-              </button>
+            <!-- Program -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">Program</label>
+              <div class="relative">
+                <select
+                  :value="userProgramFilter ?? ''"
+                  @change="(e) => { userProgramFilter = e.target.value || null; currentPage = 1 }"
+                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-800 font-medium shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                >
+                  <option value="">All Programs</option>
+                  <option value="BSCS">BSCS</option>
+                  <option value="BSIT">BSIT</option>
+                  <option value="BSIS">BSIS</option>
+                </select>
+                <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
             </div>
-          </div>
 
-          <!-- Filter by College (super admin only) -->
-          <div v-if="isMaster && !isCoAdmin && !isTreasurer" class="space-y-3 animate-fade-in-delay-2">
-            <p class="text-xs font-bold text-gray-600 uppercase tracking-wider">College</p>
-            <div class="flex gap-2 flex-wrap">
-              <button @click="userCollegeFilter = null; currentPage = 1" :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userCollegeFilter === null ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-gray-300 hover:shadow-md']">All Colleges</button>
-              <button @click="userCollegeFilter = 'CCS'; currentPage = 1" :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userCollegeFilter === 'CCS' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow-lg shadow-blue-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:shadow-md']">CCS</button>
-              <button @click="userCollegeFilter = 'COE'; currentPage = 1" :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userCollegeFilter === 'COE' ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-orange-300 hover:shadow-md']">COE</button>
-              <button @click="userCollegeFilter = 'SOM'; currentPage = 1" :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userCollegeFilter === 'SOM' ? 'bg-green-500 text-white shadow-lg shadow-green-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-green-300 hover:shadow-md']">SOM</button>
-              <button @click="userCollegeFilter = 'CNAHS'; currentPage = 1" :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userCollegeFilter === 'CNAHS' ? 'bg-teal-500 text-white shadow-lg shadow-teal-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-teal-300 hover:shadow-md']">CNAHS</button>
+            <!-- College (super admin only) -->
+            <div v-if="isMaster && !isCoAdmin && !isTreasurer" class="space-y-1.5">
+              <label class="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">College</label>
+              <div class="relative">
+                <select
+                  :value="userCollegeFilter ?? ''"
+                  @change="(e) => { userCollegeFilter = e.target.value || null; currentPage = 1 }"
+                  class="w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-800 font-medium shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                >
+                  <option value="">All Colleges</option>
+                  <option value="CCS">CCS</option>
+                  <option value="COE">COE</option>
+                  <option value="SOM">SOM</option>
+                  <option value="CNAHS">CNAHS</option>
+                </select>
+                <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
             </div>
-          </div>
 
-          <!-- Filter by Verification Status -->
-          <div class="space-y-3 animate-fade-in-delay-3">
-            <p class="text-xs font-bold text-gray-600 uppercase tracking-wider">Verification Status</p>
-            <div class="flex gap-2 flex-wrap">
-              <button
-                @click="userStatusFilter = null"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userStatusFilter === null ? 'bg-green-600 text-white shadow-lg shadow-green-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-green-300 hover:shadow-md']"
-              >
-                All Statuses
-              </button>
-              <button
-                @click="userStatusFilter = 'verified'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userStatusFilter === 'verified' ? 'bg-green-600 text-white shadow-lg shadow-green-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-green-300 hover:shadow-md']"
-              >
-                ✓ Verified
-              </button>
-              <button
-                @click="userStatusFilter = 'unverified'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userStatusFilter === 'unverified' ? 'bg-yellow-600 text-white shadow-lg shadow-yellow-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-yellow-300 hover:shadow-md']"
-              >
-                ✗ Unverified
-              </button>
-              <button
-                @click="userStatusFilter = 'unreadable'"
-                :class="['px-4 py-2.5 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 active:scale-95', userStatusFilter === 'unreadable' ? 'bg-red-600 text-white shadow-lg shadow-red-200' : 'bg-white border border-gray-200 text-gray-700 hover:border-red-300 hover:shadow-md']"
-              >
-                ⚠ Unreadable
-              </button>
+            <!-- Verification Status -->
+            <div class="space-y-1.5">
+              <label class="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">Verification Status</label>
+              <div class="relative">
+                <select
+                  :value="userStatusFilter ?? ''"
+                  @change="(e) => { userStatusFilter = e.target.value || null; currentPage = 1 }"
+                  class="w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-800 font-medium shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                >
+                  <option value="">All Statuses</option>
+                  <option value="verified">✓ Verified</option>
+                  <option value="unverified">✗ Unverified</option>
+                  <option value="unreadable">⚠ Unreadable</option>
+                </select>
+                <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
             </div>
           </div>
         </div>
