@@ -4624,40 +4624,50 @@
         <!-- ============================================================ -->
         <div v-if="currentPage === 'dashboard'" class="mt-6">
           <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <!-- Header strip -->
-            <div :class="['relative h-24 overflow-hidden',
-              isCOE ? 'bg-gradient-to-br from-orange-700 via-orange-600 to-amber-500'
-              : isSOM ? 'bg-gradient-to-br from-green-700 via-green-600 to-emerald-500'
-              : isCNAHS ? 'bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-500'
-              : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+            <!-- Clickable header strip (entire row is the toggle) -->
+            <button
+              type="button"
+              @click="termsExpanded = !termsExpanded"
+              :aria-expanded="termsExpanded"
+              :class="['relative w-full h-24 overflow-hidden text-left group transition-all duration-300 cursor-pointer',
+                isCOE ? 'bg-gradient-to-br from-orange-700 via-orange-600 to-amber-500 hover:from-orange-600 hover:via-orange-500'
+                : isSOM ? 'bg-gradient-to-br from-green-700 via-green-600 to-emerald-500 hover:from-green-600 hover:via-green-500'
+                : isCNAHS ? 'bg-gradient-to-br from-emerald-700 via-emerald-600 to-teal-500 hover:from-emerald-600 hover:via-emerald-500'
+                : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light hover:via-blue-600']"
+            >
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <!-- Subtle shimmer on hover -->
+              <div class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/10 to-transparent"></div>
+
               <div class="absolute inset-0 flex items-center justify-between px-6 md:px-8">
-                <div class="flex items-center gap-3">
-                  <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center border border-white/20">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="flex-shrink-0 w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center border border-white/20 transition-transform duration-300 group-hover:scale-110">
                     <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                   </div>
-                  <div>
-                    <h2 class="text-xl md:text-2xl font-extrabold text-white tracking-tight">Terms &amp; Conditions</h2>
-                    <p class="text-white/80 text-xs sm:text-sm">SSAAM — Student School Activities Attendance Monitoring · JRMSU</p>
+                  <div class="min-w-0">
+                    <h2 class="text-xl md:text-2xl font-extrabold text-white tracking-tight truncate">Terms &amp; Conditions</h2>
+                    <p class="text-white/80 text-xs sm:text-sm truncate">
+                      <span class="hidden sm:inline">SSAAM — Student School Activities Attendance Monitoring · JRMSU · </span>
+                      <span class="font-semibold underline decoration-white/40 underline-offset-2">{{ termsExpanded ? 'Click to hide' : 'Click to read' }}</span>
+                    </p>
                   </div>
                 </div>
-                <button
-                  @click="termsExpanded = !termsExpanded"
-                  class="hidden sm:inline-flex px-4 py-2 rounded-xl text-white text-xs font-bold bg-white/20 hover:bg-white/30 border border-white/20 transition items-center gap-2"
-                >
-                  <svg :class="['w-4 h-4 transition-transform', termsExpanded ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                  {{ termsExpanded ? 'Collapse' : 'Expand' }}
-                </button>
+                <div class="flex-shrink-0 inline-flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl text-white text-xs font-bold bg-white/20 group-hover:bg-white/30 border border-white/20 transition">
+                  <span class="hidden sm:inline">{{ termsExpanded ? 'Hide' : 'Show' }}</span>
+                  <svg :class="['w-4 h-4 transition-transform duration-300', termsExpanded ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
               </div>
-            </div>
+            </button>
 
-            <!-- Content -->
-            <div class="p-5 md:p-8">
+            <!-- Animated collapsible content using grid-rows trick (smooth auto-height) -->
+            <div :class="['grid transition-all duration-500 ease-out', termsExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0']">
+              <div class="overflow-hidden">
+                <div :class="['p-5 md:p-8 transition-transform duration-500 ease-out', termsExpanded ? 'translate-y-0' : '-translate-y-4']">
               <p class="text-sm text-gray-600 mb-6 leading-relaxed">
                 By using SSAAM, you agree to the following terms which govern attendance recording, financial contributions, and your personal data within the JRMSU SSAAM system. Please read them carefully — continued use of the system constitutes acceptance.
               </p>
 
-              <div :class="['grid gap-4', termsExpanded ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1 md:grid-cols-2']">
+              <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
                 <!-- Card 1: Attendance & RFID/Face ID -->
                 <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
                   isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
@@ -4746,62 +4756,47 @@
                   </ul>
                 </div>
 
-                <!-- Expanded section: cards 5 & 6 -->
-                <template v-if="termsExpanded">
-                  <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
-                    isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
-                    : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
-                    : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
-                    <div class="flex items-center gap-3 mb-3">
-                      <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
-                        isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
-                        : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
-                        : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                      </div>
-                      <h3 class="font-extrabold text-gray-900">5. Acceptable Use</h3>
+                <!-- Card 5: Acceptable Use -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     </div>
-                    <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
-                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You agree not to attempt to bypass authentication, role checks, college isolation, or any of the system's safeguards.</span></li>
-                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Automated scraping, scripted abuse, or any activity that disrupts the platform or other users is forbidden.</span></li>
-                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins must use Admin/Co-Admin tools only for legitimate institutional purposes; misuse may lead to revocation of access.</span></li>
-                    </ul>
+                    <h3 class="font-extrabold text-gray-900">5. Acceptable Use</h3>
                   </div>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You agree not to attempt to bypass authentication, role checks, college isolation, or any of the system's safeguards.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Automated scraping, scripted abuse, or any activity that disrupts the platform or other users is forbidden.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins must use Admin/Co-Admin tools only for legitimate institutional purposes; misuse may lead to revocation of access.</span></li>
+                  </ul>
+                </div>
 
-                  <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
-                    isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
-                    : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
-                    : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
-                    <div class="flex items-center gap-3 mb-3">
-                      <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
-                        isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
-                        : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
-                        : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
-                      </div>
-                      <h3 class="font-extrabold text-gray-900">6. Liability &amp; Updates</h3>
+                <!-- Card 6: Liability & Updates -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
                     </div>
-                    <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
-                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>While we strive for accuracy, SSAAM is provided as-is. JRMSU and the SSAAM team are not liable for missed events caused by personal device issues, network outages, or expired RFID cards.</span></li>
-                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Features, policies, and these terms may be updated from time to time. Notable changes will be announced in-app.</span></li>
-                      <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Continued use of SSAAM after updates indicates your acceptance of the revised terms.</span></li>
-                    </ul>
+                    <h3 class="font-extrabold text-gray-900">6. Liability &amp; Updates</h3>
                   </div>
-                </template>
-              </div>
-
-              <!-- Mobile expand button -->
-              <div class="mt-5 flex justify-center sm:hidden">
-                <button
-                  @click="termsExpanded = !termsExpanded"
-                  :class="['inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold border-2 transition',
-                    isCOE ? 'text-orange-700 border-orange-200 hover:bg-orange-50'
-                    : isSOM ? 'text-green-700 border-green-200 hover:bg-green-50'
-                    : 'text-blue-700 border-blue-200 hover:bg-blue-50']"
-                >
-                  <svg :class="['w-4 h-4 transition-transform', termsExpanded ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                  {{ termsExpanded ? 'Show less' : 'Show more' }}
-                </button>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>While we strive for accuracy, SSAAM is provided as-is. JRMSU and the SSAAM team are not liable for missed events caused by personal device issues, network outages, or expired RFID cards.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Features, policies, and these terms may be updated from time to time. Notable changes will be announced in-app.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Continued use of SSAAM after updates indicates your acceptance of the revised terms.</span></li>
+                  </ul>
+                </div>
               </div>
 
               <!-- Footer -->
@@ -4813,6 +4808,8 @@
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
                   By continuing to use SSAAM, you acknowledge and agree to these terms.
                 </p>
+              </div>
+                </div>
               </div>
             </div>
           </div>
