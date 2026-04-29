@@ -7,8 +7,10 @@
           <!-- Top glow bar -->
           <div class="absolute top-0 left-0 right-0 h-px lg-glow-bar"></div>
 
-          <!-- Header -->
-          <div class="px-6 pt-6 pb-4 flex items-start justify-between">
+          <!-- Header — tightened vertical padding so the whole modal fits
+               in 92vh without needing an inner scrollbar even on short
+               phone viewports. -->
+          <div class="px-5 pt-4 pb-2 flex items-start justify-between">
             <div class="flex-1 min-w-0">
               <div class="flex items-center gap-3 mb-1">
                 <div class="lg-icon-wrap flex-shrink-0" :class="iconWrapClass">
@@ -29,7 +31,7 @@
           </div>
 
           <!-- Stage banner -->
-          <div class="mx-6 mb-4 rounded-2xl px-4 py-3 flex items-start gap-3 lg-stage-banner" :class="stageBannerClass">
+          <div class="mx-5 mb-3 rounded-2xl px-3.5 py-2.5 flex items-start gap-3 lg-stage-banner" :class="stageBannerClass">
             <span class="text-xl leading-none mt-0.5 flex-shrink-0">{{ stageIcon }}</span>
             <div class="min-w-0">
               <p class="text-sm font-semibold leading-snug">{{ stageMessage }}</p>
@@ -37,9 +39,11 @@
             </div>
           </div>
 
-          <!-- Radar visual -->
-          <div class="mx-6 mb-4">
-            <div class="relative rounded-2xl overflow-hidden lg-radar-frame aspect-square">
+          <!-- Radar visual — capped at ~38vh so it shrinks on short
+               viewports (landscape phones, small laptops). The aspect
+               stays square but the whole square scales down to fit. -->
+          <div class="mx-5 mb-3 flex justify-center">
+            <div class="relative rounded-2xl overflow-hidden lg-radar-frame aspect-square w-full max-w-[38vh]">
               <!-- Background grid -->
               <div class="absolute inset-0 lg-radar-grid"></div>
 
@@ -97,7 +101,7 @@
           </div>
 
           <!-- Distance & accuracy stats -->
-          <div class="mx-6 mb-4 grid grid-cols-3 gap-2">
+          <div class="mx-5 mb-3 grid grid-cols-3 gap-2">
             <div class="lg-stat-card">
               <p class="lg-stat-label">Distance</p>
               <p class="lg-stat-value tabular-nums">
@@ -119,15 +123,15 @@
           </div>
 
           <!-- Auto-advance progress (when inside) -->
-          <div v-if="autoAdvancing" class="mx-6 mb-4">
+          <div v-if="autoAdvancing" class="mx-5 mb-3">
             <div class="lg-advance-bar">
               <div class="lg-advance-bar-fill"></div>
             </div>
-            <p class="text-xs text-emerald-200/70 mt-1.5 text-center">Opening Face ID scanner…</p>
+            <p class="text-xs text-emerald-200/70 mt-1.5 text-center">{{ advanceCaption }}</p>
           </div>
 
           <!-- Actions -->
-          <div class="px-6 pb-6 flex gap-3">
+          <div class="px-5 pb-5 flex gap-3">
             <button @click="closeIfIdle" :disabled="autoAdvancing" class="lg-btn-cancel flex-1">
               Cancel
             </button>
@@ -154,7 +158,12 @@ const props = defineProps({
   // Theme flags so the Re-check button can match the user's college accent.
   isCOE: { type: Boolean, default: false },
   isSOM: { type: Boolean, default: false },
-  isCNAHS: { type: Boolean, default: false }
+  isCNAHS: { type: Boolean, default: false },
+  // Caption shown under the auto-advance progress bar after a successful
+  // detection. Defaults to the Face-ID scanner copy because that's the
+  // original use case; admin scanner re-uses this component with a
+  // different caption (e.g. "Unlocking RFID scanner…").
+  advanceCaption: { type: String, default: 'Opening Face ID scanner…' }
 })
 const emit = defineEmits(['close', 'pass'])
 

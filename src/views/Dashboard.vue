@@ -2152,6 +2152,64 @@
                   </div>
                 </div>
 
+                <!-- ============================================================
+                     Geofence pre-verification banner.
+                     Shown only when the active event has a geofence. The admin
+                     must complete the Location Gate once before the RFID input
+                     becomes usable. After that, the gate's cached coords are
+                     re-used for every scan (no per-scan GPS prompt).
+                     ============================================================ -->
+                <div v-if="scannerNeedsLocation" class="rounded-2xl overflow-hidden border-2 shadow-sm"
+                     :class="scannerLocationVerified ? 'border-emerald-200' : 'border-amber-300'">
+                  <!-- NOT verified — prominent CTA -->
+                  <div v-if="!scannerLocationVerified"
+                       class="bg-gradient-to-r from-amber-50 to-orange-50 px-4 py-3 sm:px-5 sm:py-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                    <div class="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                      <div class="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                      </div>
+                      <div class="min-w-0">
+                        <p class="text-sm font-semibold text-amber-900 leading-tight">Verify your location to start scanning</p>
+                        <p class="text-xs text-amber-700/80 mt-0.5 leading-snug">This event is geofenced — we check once, then every RFID scan uses that fix automatically.</p>
+                      </div>
+                    </div>
+                    <button @click="openScannerLocationGate"
+                            :class="['px-4 py-2.5 rounded-xl text-white font-semibold text-sm shadow-md flex items-center justify-center gap-2 bg-gradient-to-r flex-shrink-0', primaryButtonGradient, primaryButtonHover]">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                      <span>Verify Location</span>
+                    </button>
+                  </div>
+                  <!-- Verified — green status with re-verify link -->
+                  <div v-else
+                       class="bg-gradient-to-r from-emerald-50 to-green-50 px-4 py-3 sm:px-5 sm:py-3 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                    <div class="flex items-center gap-3 flex-1 min-w-0">
+                      <div class="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      </div>
+                      <div class="min-w-0">
+                        <p class="text-sm font-semibold text-emerald-900 leading-tight">Location verified — scanner unlocked</p>
+                        <p class="text-xs text-emerald-700/80 mt-0.5 leading-snug">
+                          Cached fix
+                          <span v-if="scannerLocationVerified.accuracy != null">(±{{ Math.round(scannerLocationVerified.accuracy) }}m)</span>
+                          will be re-used for every scan in this session.
+                        </p>
+                      </div>
+                    </div>
+                    <button @click="reverifyScannerLocation"
+                            class="text-xs font-semibold text-emerald-700 hover:text-emerald-900 underline underline-offset-2 self-start sm:self-auto flex-shrink-0">
+                      Re-verify
+                    </button>
+                  </div>
+                </div>
+
                 <!-- RFID Scanner Card - Redesigned -->
                 <div :class="['rounded-2xl overflow-hidden shadow-lg border', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200']">
                   <!-- Scanner Header -->
@@ -2194,7 +2252,7 @@
                           @input="onRfidInput"
                           @keydown="handleRfidKeydown"
                           type="text"
-                          :placeholder="scannerGeoBlocked ? 'Outside geofence — move within range to scan' : 'Scan RFID card or type Student ID...'"
+                          :placeholder="scannerGeoBlocked ? 'Verify your location first to enable scanning' : 'Scan RFID card or type Student ID...'"
                           :class="['w-full pl-10 pr-4 py-3 text-sm sm:text-base border-2 rounded-xl focus:ring-2 outline-none transition-all', scannerGeoBlocked ? 'border-amber-300 bg-amber-50 placeholder-amber-700 focus:border-amber-500 focus:ring-amber-100' : isCOE ? 'border-orange-200 focus:border-orange-500 focus:ring-orange-100' : isSOM ? 'border-green-200 focus:border-green-500 focus:ring-green-100' : isCNAHS ? 'border-green-200 focus:border-green-500 focus:ring-green-100' : 'border-blue-200 focus:border-blue-500 focus:ring-blue-100']"
                           :disabled="rfidProcessing || scannerGeoBlocked"
                         />
@@ -2212,7 +2270,7 @@
                     </div>
                     <p v-if="scannerGeoBlocked" class="text-xs text-amber-700 font-semibold mt-2 text-center flex items-center justify-center gap-1.5">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-                      You're {{ scannerDistanceMeters != null ? Math.round(scannerDistanceMeters) + 'm' : '—' }} from the venue. Move inside the highlighted zone to enable the scanner.
+                      Tap “Verify Location” above to unlock the scanner for this geofenced event.
                     </p>
                     <p v-else class="text-xs text-gray-400 mt-2 text-center">Press Enter to submit automatically after scanning</p>
                   </div>
@@ -2220,8 +2278,13 @@
 
                 <!-- Live geofence preview — only when the event requires GPS.
                      Rendered in compact mode so the map stays a small status
-                     panel instead of dominating the scanner view. -->
-                <div v-if="selectedEvent && selectedEvent.geofence_enabled" class="mt-4">
+                     panel instead of dominating the scanner view.
+                     `relative z-0 isolate` creates a new stacking context so
+                     Leaflet's internal high-z overlays (z-[400]/z-[500]) can't
+                     bleed in front of the fullscreen kiosk modal (z-[70]).
+                     Also hidden entirely while the kiosk is on screen. -->
+                <div v-if="selectedEvent && selectedEvent.geofence_enabled && !rfidFullscreenMode"
+                     class="mt-4 relative z-0 isolate">
                   <GeofenceMap
                     readonly
                     compact
@@ -7058,6 +7121,22 @@
     @close="onLocationGateClose"
   />
 
+  <!-- Admin scanner Location Gate. Same component, but it caches the
+       captured fix into `scannerLocationVerified` so every subsequent
+       RFID scan re-uses the coords without re-prompting GPS. The
+       caption swap makes it clear this gate unlocks the scanner card,
+       not the Face ID modal. -->
+  <LocationGate
+    :open="scannerLocationGateOpen"
+    :event="selectedEvent || {}"
+    :is-c-o-e="isCOE"
+    :is-s-o-m="isSOM"
+    :is-c-n-a-h-s="isCNAHS"
+    advance-caption="Unlocking RFID scanner…"
+    @pass="onScannerLocationPass"
+    @close="onScannerLocationClose"
+  />
+
   <!-- Terms & Conditions Modal -->
   <Transition name="fade">
     <div v-if="showTermsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[80] p-4" @click.self="showTermsModal = false">
@@ -11217,11 +11296,30 @@ const rfidInput = ref('')
 // waiting for GPS); `true` / `false` = inside / outside.
 const scannerInsideZone = ref(null)
 const scannerDistanceMeters = ref(null)
+
+// ---- Scanner location pre-verification ----
+// Behaviour switch: instead of asking the browser for GPS on every single
+// RFID scan (which is what the previous flow did and what the user found
+// annoying), the admin now runs the Location Gate exactly once per event.
+// The captured coords are cached here and re-attached to every subsequent
+// /attendance/check request until either:
+//   - the admin selects a different event (watcher below clears it),
+//   - or the admin presses "Re-verify" to refresh the fix.
+//
+//  scannerLocationVerified shape: { lat, lng, accuracy, verifiedAt } | null
+const scannerLocationVerified = ref(null)
+const scannerLocationGateOpen = ref(false)
+const scannerNeedsLocation = computed(() => {
+  const e = selectedEvent.value
+  if (!e || !e.geofence_enabled) return false
+  return Number.isFinite(Number(e.geofence_lat)) && Number.isFinite(Number(e.geofence_lng))
+})
+
 const scannerGeoBlocked = computed(() => {
-  if (!selectedEvent.value || !selectedEvent.value.geofence_enabled) return false
-  // While we're still waiting for the first GPS fix don't block the admin —
-  // only block when we've confirmed they're outside the fence.
-  return scannerInsideZone.value === false
+  // Non-geofenced events never block. Geofenced events block until the
+  // admin completes the Location Gate at least once.
+  if (!scannerNeedsLocation.value) return false
+  return !scannerLocationVerified.value
 })
 const rfidInputRef = ref(null)
 const announcementTextareaRef = ref(null)
@@ -14163,13 +14261,62 @@ const performDeleteDuplicateStudent = async (studentId, studentName) => {
 const onEventSelectForScanner = () => {
   if (selectedEvent.value) {
     selectedSession.value = null
+    // Switching events invalidates any prior location verification —
+    // a new event likely has a different geofence center.
+    scannerLocationVerified.value = null
+    scannerLocationGateOpen.value = false
     fetchEventSessions(selectedEvent.value._id)
   }
+}
+
+// Clear the cached scanner-location fix whenever the active event changes
+// from underneath us (e.g. the admin closes the scanner card via the X
+// button which sets selectedEvent = null).
+watch(selectedEvent, (newEv, oldEv) => {
+  const newId = newEv?._id || null
+  const oldId = oldEv?._id || null
+  if (newId !== oldId) {
+    scannerLocationVerified.value = null
+    scannerLocationGateOpen.value = false
+  }
+})
+
+// Scanner-side Location Gate handlers — these are the admin counterparts
+// to onLocationGatePass / onLocationGateClose used by the student face
+// flow. The pass handler caches the fix; the close handler just hides
+// the gate without changing the cached fix.
+const openScannerLocationGate = () => {
+  if (!scannerNeedsLocation.value) return
+  scannerLocationGateOpen.value = true
+}
+const onScannerLocationPass = (coords) => {
+  scannerLocationGateOpen.value = false
+  scannerLocationVerified.value = {
+    lat: coords?.lat ?? null,
+    lng: coords?.lng ?? null,
+    accuracy: coords?.accuracy ?? null,
+    verifiedAt: Date.now()
+  }
+}
+const onScannerLocationClose = () => {
+  scannerLocationGateOpen.value = false
+}
+const reverifyScannerLocation = () => {
+  scannerLocationVerified.value = null
+  scannerLocationGateOpen.value = true
 }
 
 const enterFullscreenMode = () => {
   if (!selectedSession.value) {
     showNotification('Please select a session first', 'error')
+    return
+  }
+  // For geofenced events, require a one-time location verification before
+  // dropping into the kiosk. Otherwise the admin would land in fullscreen
+  // with the input locked out and no obvious way to recover.
+  if (scannerNeedsLocation.value && !scannerLocationVerified.value) {
+    scannerLocationGateOpen.value = true
+    showNotification('Verify your location first to unlock the scanner.', 'info')
     return
   }
   rfidFullscreenMode.value = true
@@ -16535,35 +16682,24 @@ const processRfidScan = async (inputCode) => {
       force_mode: true
     }
 
-    // === GEOFENCE: capture device GPS before sending the check ===
-    // Only collect location when the admin actually configured a geofence on
-    // this event — we don't want to surprise users with a location prompt
-    // otherwise. The backend re-validates either way.
+    // === GEOFENCE: re-use the location captured during the one-time
+    //              "Verify location" gate the admin completed when they
+    //              opened the scanner. We deliberately DO NOT call
+    //              getCurrentPosition here per-scan anymore — that was
+    //              causing a GPS prompt / spinner on every single card
+    //              tap. The backend still re-validates the coords.
     if (selectedEvent.value?.geofence_enabled) {
-      if (!('geolocation' in navigator)) {
+      const verified = scannerLocationVerified.value
+      if (!verified || !Number.isFinite(verified.lat) || !Number.isFinite(verified.lng)) {
         rfidProcessing.value = false
-        showNotification('This event requires GPS, but your device does not support location services.', 'error')
+        showNotification('Verify your location first to start scanning for this event.', 'error')
+        // Re-open the gate so the admin can recover without hunting for the button.
+        scannerLocationGateOpen.value = true
         return
       }
-      try {
-        const pos = await new Promise((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: true,
-            timeout: 12000,
-            maximumAge: 5000
-          })
-        })
-        requestBody.latitude = pos.coords.latitude
-        requestBody.longitude = pos.coords.longitude
-        requestBody.accuracy = pos.coords.accuracy
-      } catch (geoErr) {
-        rfidProcessing.value = false
-        const reason = geoErr && geoErr.code === 1
-          ? 'Location permission was denied. Please allow location access to check in for this event.'
-          : 'Could not get your current location. Please ensure GPS is on and try again.'
-        showNotification(reason, 'error')
-        return
-      }
+      requestBody.latitude = verified.lat
+      requestBody.longitude = verified.lng
+      requestBody.accuracy = verified.accuracy
     }
 
     const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${selectedSession.value._id}/check`), {
