@@ -1972,11 +1972,11 @@
               </transition-group>
 
               <!-- Bottom Pagination -->
-              <div v-if="attendanceTotalPages > 1" class="flex items-center justify-between pt-6 mt-6 border-t" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200'">
-                <div :class="['text-sm font-medium', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">
+              <div v-if="attendanceTotalPages > 1" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-6 mt-6 border-t" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200'">
+                <div :class="['text-sm font-medium text-center sm:text-left', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">
                   Page {{ attendanceCurrentPage }} of {{ attendanceTotalPages }}
                 </div>
-                <div class="flex gap-2">
+                <div class="flex gap-2 justify-center">
                   <button
                     @click="prevAttendancePage"
                     :disabled="attendanceCurrentPage === 1"
