@@ -235,7 +235,7 @@
                   class="face-cta-btn group relative flex-1 py-2.5 rounded-xl font-semibold text-white border border-emerald-400/40 bg-emerald-500/25 hover:bg-emerald-500/40 disabled:opacity-40 overflow-hidden transition-all active:scale-95 shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
                   <svg v-if="submitting" class="w-4 h-4 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
                   <svg v-else class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                  <span class="relative">{{ submitting ? 'Saving…' : 'Confirm Face ID' }}</span>
+                  <span class="relative">{{ submitting ? 'Saving…' : 'Confirm' }}</span>
                 </button>
               </div>
               </div>
