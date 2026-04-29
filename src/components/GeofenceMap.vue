@@ -110,27 +110,34 @@
               </button>
             </div>
 
-            <!-- Top-right: Live tracking pill -->
-            <div v-if="!mapLoading && !mapError && liveTracking" class="absolute top-4 right-4 z-[400] bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-emerald-200 px-3 py-1.5 flex items-center gap-2 text-xs font-bold text-emerald-800">
-              <span class="relative flex h-2.5 w-2.5">
+            <!-- Right side, just under the zoom buttons: Live tracking pill -->
+            <div v-if="!mapLoading && !mapError && liveTracking" class="absolute top-[5.75rem] right-3 z-[400] bg-white/95 backdrop-blur-md rounded-full shadow-xl border border-emerald-200 px-2.5 py-1 flex items-center gap-1.5 text-[10px] sm:text-xs font-bold text-emerald-800">
+              <span class="relative flex h-2 w-2 sm:h-2.5 sm:w-2.5">
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 sm:h-2.5 sm:w-2.5 bg-emerald-500"></span>
               </span>
               LIVE · ±{{ Math.round(myAccuracy || 0) }}m
             </div>
 
-            <!-- Bottom: Premium distance bar -->
-            <div v-if="!mapLoading && !mapError && hasMyLocation && hasCoords" class="absolute bottom-4 left-4 right-4 z-[400] bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-white/60 px-4 py-2.5 flex items-center justify-between gap-2 text-xs">
+            <!-- Bottom: Premium distance bar (stacks vertically on very small
+                 screens so neither the label nor the badge gets truncated). -->
+            <div v-if="!mapLoading && !mapError && hasMyLocation && hasCoords" class="absolute bottom-3 left-3 right-3 z-[400] bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-white/60 px-3 sm:px-4 py-2 sm:py-2.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-1.5 sm:gap-2 text-[11px] sm:text-xs">
               <div class="flex items-center gap-2 min-w-0">
-                <div :class="['flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center', distanceFromPin <= radius ? 'bg-emerald-100' : 'bg-amber-100']">
-                  <svg :class="['w-4 h-4', distanceFromPin <= radius ? 'text-emerald-600' : 'text-amber-600']" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg>
+                <div :class="['flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center', distanceFromPin <= radius ? 'bg-emerald-100' : 'bg-amber-100']">
+                  <svg :class="['w-3.5 h-3.5 sm:w-4 sm:h-4', distanceFromPin <= radius ? 'text-emerald-600' : 'text-amber-600']" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg>
                 </div>
                 <span class="font-bold text-gray-800 truncate">You're <span :class="distanceFromPin <= radius ? 'text-emerald-600' : 'text-amber-600'">{{ formatDistance(distanceFromPin) }}</span> from the pin</span>
               </div>
-              <span :class="['px-2.5 py-1 rounded-full font-extrabold flex-shrink-0 text-[10px] tracking-wide', distanceFromPin <= radius ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700']">
+              <span :class="['px-2.5 py-1 rounded-full font-extrabold self-start sm:self-auto flex-shrink-0 text-[10px] tracking-wide', distanceFromPin <= radius ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700']">
                 {{ distanceFromPin <= radius ? 'INSIDE ZONE' : 'OUTSIDE ZONE' }}
               </span>
             </div>
+          </div>
+
+          <!-- Tiny attribution footer (replaces the in-map "Leaflet | © OSM"
+               watermark with something subtler that still credits OSM/Esri). -->
+          <div v-if="!mapError" class="px-3 py-1 bg-white/60 backdrop-blur-sm text-[9px] sm:text-[10px] text-gray-500 text-right select-none">
+            Map data © {{ tileMode === 'satellite' ? 'Esri' : 'OpenStreetMap' }} contributors
           </div>
         </div>
 
@@ -450,21 +457,27 @@ function loadLeaflet() {
 }
 
 // ---------- Custom themed marker icon (HTML/CSS based, no external assets) ----------
+// We use a centered "bullseye" design — a round dot that sits exactly on the
+// lat/lng — so the marker visually lines up with the geofence circle's center
+// (which is also at that lat/lng). The previous teardrop shape anchored on
+// its tip looked off-center even though it was geometrically correct.
 function buildPinIcon() {
   if (!leaflet) return null
   const accentHex = props.isCOE ? '#ea580c' : props.isSOM ? '#16a34a' : '#2563eb'
+  const accentSoft = props.isCOE ? 'rgba(234,88,12,.35)' : props.isSOM ? 'rgba(22,163,74,.35)' : 'rgba(37,99,235,.35)'
   const html = `
-    <div style="position:relative;width:36px;height:46px;transform:translate(-50%,-100%);">
-      <div style="position:absolute;left:50%;top:0;transform:translateX(-50%);width:36px;height:36px;border-radius:50% 50% 50% 0;background:${accentHex};box-shadow:0 4px 10px rgba(0,0,0,.35);transform:translateX(-50%) rotate(-45deg);border:3px solid white;"></div>
-      <div style="position:absolute;left:50%;top:8px;transform:translateX(-50%);width:14px;height:14px;border-radius:50%;background:white;"></div>
+    <div style="position:relative;width:30px;height:30px;">
+      <div style="position:absolute;inset:-10px;border-radius:50%;background:${accentSoft};animation:gfm-pin-pulse 2.2s ease-in-out infinite;"></div>
+      <div style="position:absolute;inset:0;border-radius:50%;background:${accentHex};border:4px solid #fff;box-shadow:0 6px 14px rgba(0,0,0,.35),0 0 0 1px rgba(0,0,0,.08);"></div>
+      <div style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:8px;height:8px;border-radius:50%;background:#fff;"></div>
     </div>
   `
   return leaflet.divIcon({
     html,
     className: '',
-    iconSize: [36, 46],
-    iconAnchor: [18, 46],
-    popupAnchor: [0, -46]
+    iconSize: [30, 30],
+    iconAnchor: [15, 15],
+    popupAnchor: [0, -15]
   })
 }
 
@@ -501,11 +514,21 @@ async function ensureMap() {
     map = leaflet.map(mapEl.value, {
       center: [startLat, startLng],
       zoom: startZoom,
-      zoomControl: true,
-      attributionControl: true
+      // We render our own custom-positioned zoom control on the right so it
+      // never overlaps the Street/Satellite switcher in the top-left corner.
+      zoomControl: false,
+      // The "Leaflet" watermark is hidden per design — we still credit the
+      // tile providers via a tiny in-app footer below the map (see template).
+      attributionControl: false
     })
 
-    // Build both tile layers but only add the active one
+    // Custom positioned zoom control: top-right keeps it well clear of the
+    // segmented Street/Satellite pill (top-left) and the bottom distance bar.
+    leaflet.control.zoom({ position: 'topright', zoomInTitle: 'Zoom in', zoomOutTitle: 'Zoom out' }).addTo(map)
+
+    // Build both tile layers but only add the active one. Attribution strings
+    // are kept on the layers so any future re-enablement of attributionControl
+    // continues to credit OSM/Esri correctly.
     streetLayer = leaflet.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenStreetMap'
@@ -927,13 +950,16 @@ onBeforeUnmount(() => {
   color: #1e3bdb !important;
 }
 
-/* ============ Cleaner attribution badge ============ */
+/* ============ Hide any stray Leaflet attribution badge ============ */
+/* Belt-and-suspenders: even though we pass attributionControl:false, keep
+   the rule so any future re-enable doesn't bring the watermark back. */
 :deep(.leaflet-control-attribution) {
-  background: rgba(255, 255, 255, 0.9) !important;
-  backdrop-filter: blur(6px);
-  font-size: 10px !important;
-  padding: 2px 8px !important;
-  border-radius: 8px 0 0 0 !important;
+  display: none !important;
+}
+
+/* ============ Lift our zoom buttons above other floating UI ============ */
+:deep(.leaflet-top.leaflet-right) {
+  z-index: 410;
 }
 </style>
 
@@ -943,5 +969,12 @@ onBeforeUnmount(() => {
     transform: scale(2);
     opacity: 0;
   }
+}
+
+/* Soft pulsing halo behind the centered pin marker so it's easy to spot
+   without making the pin itself look lopsided against its geofence circle. */
+@keyframes gfm-pin-pulse {
+  0%, 100% { transform: scale(1);   opacity: 0.55; }
+  50%      { transform: scale(1.4); opacity: 0.0;  }
 }
 </style>

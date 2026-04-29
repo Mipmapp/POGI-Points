@@ -291,6 +291,88 @@
           <p class="text-xs text-gray-500 font-semibold">No students found matching "{{ searchQuery }}"</p>
         </div>
 
+        <!-- ============ Date Filter (Paid On) ============ -->
+        <div class="rounded-2xl border-2 border-blue-100 bg-gradient-to-br from-blue-50/60 via-indigo-50/40 to-white p-3 sm:p-4 shadow-sm">
+          <div class="flex items-center justify-between gap-2 mb-2.5">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="flex-shrink-0 w-7 h-7 rounded-xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center shadow-sm">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              </div>
+              <div class="min-w-0">
+                <p class="text-xs font-bold uppercase tracking-wider text-blue-700 leading-tight">Paid On</p>
+                <p class="text-[10px] text-gray-500 leading-tight truncate">Show payments collected on a specific day</p>
+              </div>
+            </div>
+            <button
+              v-if="filterPaidDate"
+              @click="clearDateFilter"
+              class="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-white hover:bg-blue-100 border border-blue-200 rounded-lg transition flex-shrink-0"
+              title="Clear date filter"
+            >
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+              Clear
+            </button>
+          </div>
+
+          <!-- Quick day chips + custom date input -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              @click="setDatePreset('yesterday')"
+              :class="['px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all duration-150 active:scale-95',
+                filterPaidDatePreset === 'yesterday'
+                  ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white border-transparent shadow-md shadow-blue-200'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-700']"
+            >Yesterday</button>
+            <button
+              type="button"
+              @click="setDatePreset('today')"
+              :class="['px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all duration-150 active:scale-95 inline-flex items-center gap-1.5',
+                filterPaidDatePreset === 'today'
+                  ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white border-transparent shadow-md shadow-blue-200'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-700']"
+            >
+              <span :class="['w-1.5 h-1.5 rounded-full', filterPaidDatePreset === 'today' ? 'bg-white' : 'bg-emerald-500 animate-pulse']"></span>
+              Today
+            </button>
+            <button
+              type="button"
+              @click="setDatePreset('tomorrow')"
+              :class="['px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all duration-150 active:scale-95',
+                filterPaidDatePreset === 'tomorrow'
+                  ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white border-transparent shadow-md shadow-blue-200'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-700']"
+            >Tomorrow</button>
+
+            <!-- Tiny separator dot for visual rhythm -->
+            <span class="hidden sm:inline-block w-1 h-1 rounded-full bg-gray-300 mx-0.5"></span>
+
+            <!-- Custom date input — sits flush with the chips so admins can
+                 jump to any historical day without leaving the filter row. -->
+            <div class="relative flex-1 min-w-[10rem]">
+              <input
+                type="date"
+                v-model="filterPaidDate"
+                class="w-full pl-9 pr-3 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-xs sm:text-sm bg-white text-gray-700 font-semibold transition"
+              />
+              <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+          </div>
+
+          <!-- Live summary: tells the admin exactly what's being shown right
+               now, including the count, so the impact of the filter is obvious. -->
+          <transition name="fade">
+            <div v-if="filterPaidDate" class="mt-3 flex items-start gap-2 px-3 py-2 rounded-xl bg-white border border-blue-200">
+              <svg class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <p class="text-xs text-gray-700 leading-snug">
+                Showing <span class="font-extrabold text-blue-700">{{ filteredContributions.filter(c => c.payment_status === 'paid').length }}</span>
+                payment<span v-if="filteredContributions.filter(c => c.payment_status === 'paid').length !== 1">s</span> collected on
+                <span class="font-bold text-gray-900">{{ formatFilterDate(filterPaidDate) }}</span>.
+              </p>
+            </div>
+          </transition>
+        </div>
+
         <!-- Filter Row -->
         <div :class="['grid gap-3 grid-cols-1 sm:grid-cols-2', isMaster ? 'md:grid-cols-4' : 'md:grid-cols-3']">
           <div>
@@ -1163,6 +1245,12 @@ export default {
       filterProgram: '',
       filterStatus: '',
       filterCollege: '',
+      // Date filter: when set, only payments whose `paid_at` falls on the
+      // selected calendar day (in the admin's local timezone) are shown.
+      // 'today' / 'yesterday' / 'tomorrow' are convenience presets that map
+      // to a concrete YYYY-MM-DD string in setDatePreset().
+      filterPaidDate: '',
+      filterPaidDatePreset: '',
       isLoading: false,
       isDownloading: false,
       showDownloadConfirm: false,
@@ -1241,6 +1329,10 @@ export default {
 
       const fc = (this.filterCollege || '').toUpperCase();
       const q = (this.searchQuery || '').toString().trim().toLowerCase();
+      // Local YYYY-MM-DD string the admin picked (e.g. "2026-04-29"). When
+      // empty, the date filter is inactive and every record is allowed
+      // through this gate.
+      const fdate = (this.filterPaidDate || '').toString();
 
       // Audience scope from the active payment event. When the event is
       // restricted (e.g. "4th Year BSCS only"), exclude any contribution
@@ -1288,7 +1380,29 @@ export default {
           matchesQuery = hay.includes(q);
         }
 
-        return matchesLevel && matchesProgram && matchesStatus && matchesCollege && matchesQuery;
+        // Date filter: only paid records whose `paid_at` falls on the chosen
+        // local calendar day pass. Unpaid records (no paid_at) are excluded
+        // when a date filter is active — that's the point of the filter:
+        // "show me who paid on this day".
+        let matchesDate = true;
+        if (fdate) {
+          if (!c.paid_at) {
+            matchesDate = false;
+          } else {
+            const d = new Date(c.paid_at);
+            if (isNaN(d.getTime())) {
+              matchesDate = false;
+            } else {
+              const y = d.getFullYear();
+              const m = String(d.getMonth() + 1).padStart(2, '0');
+              const day = String(d.getDate()).padStart(2, '0');
+              const localDate = `${y}-${m}-${day}`;
+              matchesDate = localDate === fdate;
+            }
+          }
+        }
+
+        return matchesLevel && matchesProgram && matchesStatus && matchesCollege && matchesQuery && matchesDate;
       });
 
       return filtered.sort((a, b) => {
@@ -1400,6 +1514,13 @@ export default {
     filterProgram() { this.loadAllContributions(); },
     filterYearLevel() { this.loadAllContributions(); },
     filterCollege() { this.loadAllContributions(); },
+    filterPaidDate(val) {
+      // Keep preset chips in sync: if the picked date matches one of our
+      // presets (today/yesterday/tomorrow), keep that chip highlighted;
+      // otherwise drop the highlight so it's clear the admin chose a custom day.
+      const presetVal = this._presetDateString(this.filterPaidDatePreset);
+      if (val !== presetVal) this.filterPaidDatePreset = '';
+    },
     searchQuery(val) {
       const v = (val || '').toString().trim();
       if (/^[A-Za-z0-9]{8,}$/.test(v) && !v.includes('-')) {
@@ -1559,6 +1680,18 @@ export default {
           this.searchResults = list;
           if (list.length === 0) {
             window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'No matching students found', type: 'warning' } }));
+          } else if (list.length === 1) {
+            // Exactly one hit — skip the "click to select" step and promote
+            // the only candidate straight into the active selection. This
+            // makes the common case (RFID scan / unique student ID) a
+            // single-action flow.
+            this.selectStudentFromSearch(list[0]);
+            window.dispatchEvent(new CustomEvent('app-notification', {
+              detail: {
+                message: `Selected ${list[0].full_name || ((list[0].first_name || '') + ' ' + (list[0].last_name || '')).trim() || list[0].student_id}`,
+                type: 'success'
+              }
+            }));
           }
         } else {
           this.searchResults = [];
@@ -1583,6 +1716,42 @@ export default {
     clearSearchResults() {
       this.searchResults = [];
       this.hasSearched = false;
+    },
+    // ── Date filter helpers ────────────────────────────────────────────
+    // Internal: turn a preset key ('today' | 'yesterday' | 'tomorrow') into
+    // the corresponding YYYY-MM-DD string in the admin's local timezone.
+    _presetDateString(key) {
+      if (!key) return '';
+      const d = new Date();
+      if (key === 'yesterday') d.setDate(d.getDate() - 1);
+      else if (key === 'tomorrow') d.setDate(d.getDate() + 1);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    },
+    setDatePreset(key) {
+      // Toggle off if the same chip is tapped again — gives the admin a
+      // one-tap way to clear the active preset without hunting for the X.
+      if (this.filterPaidDatePreset === key) {
+        this.filterPaidDatePreset = '';
+        this.filterPaidDate = '';
+        return;
+      }
+      this.filterPaidDatePreset = key;
+      this.filterPaidDate = this._presetDateString(key);
+    },
+    clearDateFilter() {
+      this.filterPaidDate = '';
+      this.filterPaidDatePreset = '';
+    },
+    // Pretty label for the active date filter, used in the summary chip.
+    formatFilterDate(dateStr) {
+      if (!dateStr) return '';
+      const [y, m, d] = dateStr.split('-').map(Number);
+      if (!y || !m || !d) return dateStr;
+      const dt = new Date(y, m - 1, d);
+      return dt.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
     },
     closeCreateEventModal() {
       this.showCreateEventModal = false;
