@@ -2218,10 +2218,13 @@
                   </div>
                 </div>
 
-                <!-- Live geofence preview — only when the event requires GPS -->
+                <!-- Live geofence preview — only when the event requires GPS.
+                     Rendered in compact mode so the map stays a small status
+                     panel instead of dominating the scanner view. -->
                 <div v-if="selectedEvent && selectedEvent.geofence_enabled" class="mt-4">
                   <GeofenceMap
                     readonly
+                    compact
                     :enabled="true"
                     :latitude="Number(selectedEvent.geofence_lat)"
                     :longitude="Number(selectedEvent.geofence_lng)"
@@ -3455,6 +3458,19 @@
             </div>
 
             <div class="p-4 md:p-6 space-y-4">
+              <!-- Quick description: tells the student what these maps are for
+                   so they understand the location pin isn't generic — it's the
+                   exact area where face-scan attendance is allowed. -->
+              <div :class="['flex items-start gap-3 px-4 py-3 rounded-2xl border', isCOE ? 'bg-orange-50 border-orange-200 text-orange-900' : isSOM ? 'bg-green-50 border-green-200 text-green-900' : isCNAHS ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-blue-50 border-blue-200 text-blue-900']">
+                <div :class="['flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center', isCOE ? 'bg-orange-100 text-orange-600' : isSOM ? 'bg-green-100 text-green-600' : isCNAHS ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600']">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div class="flex-1 text-xs sm:text-sm leading-relaxed">
+                  <p class="font-bold mb-0.5">What these locations show</p>
+                  <p class="opacity-90">Each map below pins the exact area where you're eligible to record attendance for the event using a face scan. As long as your live location stays inside the highlighted circle, you can mark your own attendance — step outside it and the face scanner is disabled.</p>
+                </div>
+              </div>
+
               <div v-if="attendanceLoading" class="flex items-center justify-center py-12">
                 <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

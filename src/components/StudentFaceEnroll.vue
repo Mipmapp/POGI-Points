@@ -4,7 +4,7 @@
     <div v-if="open" class="face-modal-root fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#040820]/70 backdrop-blur-md" @click.self="closeIfIdle">
       <!-- Modal pop -->
       <Transition name="face-modal" appear>
-        <div v-if="open" class="face-modal-shell relative w-full max-w-lg max-h-[92vh] overflow-hidden rounded-3xl shadow-2xl border border-white/10 bg-gradient-to-b from-[#080e2e] to-[#0f1f6e] text-white">
+        <div v-if="open" :class="['face-modal-shell relative w-full max-h-[92vh] overflow-hidden rounded-3xl shadow-2xl border border-white/10 bg-gradient-to-b from-[#080e2e] to-[#0f1f6e] text-white', tncAgreed ? 'max-w-lg md:max-w-4xl lg:max-w-5xl' : 'max-w-lg']">
           <!-- Decorative orbs (sidebar vibe) -->
           <div class="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl opacity-30 face-modal-orb-a" :class="orbAColor"></div>
           <div class="absolute -bottom-24 -left-24 w-72 h-72 rounded-full blur-3xl opacity-20 face-modal-orb-b" :class="orbBColor"></div>
@@ -87,29 +87,23 @@
             </div>
 
             <!-- Body (no scroll — content is sized to fit; only the T&C section
-                 above uses an internal scroll for the legal text). -->
-            <div v-else class="p-5 space-y-4 face-modal-body">
-              <!-- Cooldown banner -->
+                 above uses an internal scroll for the legal text).
+                 On md+ screens we expand into a landscape two-column layout:
+                 the camera lives on the left and the stage banner / tips /
+                 actions stack on the right so the modal isn't a tall square. -->
+            <div v-else class="p-5 face-modal-body md:grid md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] md:gap-5 md:items-stretch space-y-4 md:space-y-0">
+              <!-- Cooldown banner (spans both columns on desktop) -->
               <div v-if="cooldownActive"
-                class="text-sm rounded-xl p-3 border border-amber-300/40 bg-amber-400/15 text-amber-100">
+                class="md:col-span-2 text-sm rounded-xl p-3 border border-amber-300/40 bg-amber-400/15 text-amber-100">
                 <p class="font-semibold mb-0.5">Face ID is locked until {{ formatDate(nextUpdateAllowedAt) }}</p>
                 <p class="text-xs opacity-90">You can only change your Face ID once every {{ cooldownDays }} days. This protects your account from being changed without your knowledge.</p>
               </div>
 
-              <!-- Stage banner (glass) -->
-              <Transition name="face-stage" mode="out-in">
-                <div v-if="!cooldownActive" :key="stageMessage"
-                  :class="['text-sm rounded-xl p-3 border backdrop-blur-sm', stageStyle.bg, stageStyle.border, stageStyle.text]">
-                  <p class="font-semibold mb-0.5 flex items-center gap-2">
-                    <span class="inline-block w-2 h-2 rounded-full" :class="stageStyle.dot"></span>
-                    {{ stageMessage }}
-                  </p>
-                  <p v-if="stageHint" class="text-xs opacity-80 mt-0.5">{{ stageHint }}</p>
-                </div>
-              </Transition>
-
+              <!-- LEFT column on desktop: just the camera. On mobile this is
+                   simply the first item in the column flow. -->
+              <div class="md:flex md:flex-col md:min-h-0">
               <!-- Camera -->
-              <div class="relative bg-black rounded-2xl overflow-hidden aspect-[4/3] flex items-center justify-center ring-1 ring-white/10 shadow-inner">
+              <div class="relative bg-black rounded-2xl overflow-hidden aspect-[4/3] md:aspect-auto md:flex-1 md:min-h-[22rem] flex items-center justify-center ring-1 ring-white/10 shadow-inner">
                 <video ref="videoEl" autoplay muted playsinline
                   :class="['w-full h-full object-cover transition-opacity duration-500', cameraReady ? 'opacity-100' : 'opacity-0']"
                   style="transform: scaleX(-1);" />
@@ -159,10 +153,13 @@
                   <div v-if="captureFlash" class="absolute inset-0 bg-white pointer-events-none"></div>
                 </Transition>
 
-                <!-- Confirm dialog overlay -->
+                <!-- Confirmed-photo preview overlay (review-only — the actual
+                     Retake / Confirm controls live in the action row below so
+                     they aren't duplicated). Lets the user see the captured
+                     shot inside the camera frame while they decide. -->
                 <Transition name="face-confirm">
                   <div v-if="showConfirmDialog" class="absolute inset-0 bg-[#040820]/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4 p-5">
-                    <div class="w-28 h-28 rounded-full overflow-hidden border-4 border-emerald-400/60 shadow-2xl shadow-emerald-500/30 flex-shrink-0">
+                    <div class="w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-emerald-400/60 shadow-2xl shadow-emerald-500/30 flex-shrink-0">
                       <img v-if="confirmedPhoto" :src="confirmedPhoto" class="w-full h-full object-cover" alt="Captured face" />
                       <div v-else class="w-full h-full bg-white/10 flex items-center justify-center">
                         <svg class="w-10 h-10 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
@@ -170,23 +167,27 @@
                     </div>
                     <div class="text-center">
                       <p class="text-white font-bold text-base">Does this look like you?</p>
-                      <p class="text-white/60 text-xs mt-1">Confirm to save this as your Face ID</p>
-                    </div>
-                    <div class="flex gap-3 w-full max-w-xs">
-                      <button @click="retakeCapture" :disabled="submitting"
-                        class="flex-1 py-2.5 rounded-xl bg-white/10 border border-white/20 text-white font-semibold text-sm hover:bg-white/20 disabled:opacity-40 transition-all active:scale-95">
-                        Retake
-                      </button>
-                      <button @click="confirmEnrollment" :disabled="submitting"
-                        :class="['flex-1 py-2.5 rounded-xl font-semibold text-sm border border-emerald-400/40 text-white bg-emerald-500/30 hover:bg-emerald-500/50 disabled:opacity-40 transition-all active:scale-95 flex items-center justify-center gap-2', props.isCOE ? 'bg-orange-500/30 border-orange-400/40 hover:bg-orange-500/50' : props.isSOM ? 'bg-green-500/30 border-green-400/40 hover:bg-green-500/50' : '']">
-                        <svg v-if="submitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                        {{ submitting ? 'Saving…' : 'Confirm' }}
-                      </button>
+                      <p class="text-white/60 text-xs mt-1">Use the buttons below to confirm or retake.</p>
                     </div>
                   </div>
                 </Transition>
               </div>
+              </div>
+
+              <!-- RIGHT column on desktop: stage banner, tips, error, actions.
+                   On mobile this just continues the column stack. -->
+              <div class="space-y-4 md:flex md:flex-col md:min-h-0">
+              <!-- Stage banner (glass) -->
+              <Transition name="face-stage" mode="out-in">
+                <div v-if="!cooldownActive" :key="stageMessage"
+                  :class="['text-sm rounded-xl p-3 border backdrop-blur-sm', stageStyle.bg, stageStyle.border, stageStyle.text]">
+                  <p class="font-semibold mb-0.5 flex items-center gap-2">
+                    <span class="inline-block w-2 h-2 rounded-full" :class="stageStyle.dot"></span>
+                    {{ stageMessage }}
+                  </p>
+                  <p v-if="stageHint" class="text-xs opacity-80 mt-0.5">{{ stageHint }}</p>
+                </div>
+              </Transition>
 
               <!-- Tips carousel — one tip at a time, auto-cycles every 4s.
                    Compact: keeps the modal short enough to fit without scroll
@@ -217,14 +218,15 @@
 
               <!-- Actions — auto-capture only. Cancel is the lone manual
                    action; the camera handles capture once the face is steady
-                   inside the oval. -->
-              <div v-if="!showConfirmDialog" class="flex gap-3 pt-1">
+                   inside the oval. md:mt-auto pins the buttons to the bottom
+                   of the right column on desktop so the layout feels balanced. -->
+              <div v-if="!showConfirmDialog" class="flex gap-3 pt-1 md:mt-auto">
                 <button @click="closeIfIdle" :disabled="capturing || submitting"
                   class="flex-1 py-2.5 rounded-xl bg-white/10 border border-white/15 text-white font-semibold hover:bg-white/15 hover:border-white/25 disabled:opacity-40 transition-all">
                   Cancel
                 </button>
               </div>
-              <div v-else class="flex gap-3 pt-1">
+              <div v-else class="flex gap-3 pt-1 md:mt-auto">
                 <button @click="retakeCapture" :disabled="submitting"
                   class="flex-1 py-2.5 rounded-xl bg-white/10 border border-white/15 text-white font-semibold hover:bg-white/15 hover:border-white/25 disabled:opacity-40 transition-all">
                   Retake
@@ -235,6 +237,7 @@
                   <svg v-else class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                   <span class="relative">{{ submitting ? 'Saving…' : 'Confirm Face ID' }}</span>
                 </button>
+              </div>
               </div>
             </div>
           </div>

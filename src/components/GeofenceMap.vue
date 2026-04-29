@@ -60,7 +60,7 @@
           isCOE ? 'gfm-frame-coe' : isSOM ? 'gfm-frame-som' : 'gfm-frame-blue']">
           <!-- Inner frame -->
           <div class="relative rounded-3xl overflow-hidden bg-white m-[3px]">
-            <div ref="mapEl" class="w-full h-64 sm:h-80 lg:h-[22rem] bg-gray-100"></div>
+            <div ref="mapEl" :class="['w-full bg-gray-100', compact ? 'h-44 sm:h-52 lg:h-56' : 'h-64 sm:h-80 lg:h-[22rem]']"></div>
 
             <!-- Loading overlay -->
             <div v-if="mapLoading" class="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm pointer-events-none z-[500]">
@@ -357,7 +357,11 @@ const props = defineProps({
   //   - live tracking auto-starts so the user sees their position vs. the fence
   //   - the parent receives `update:insideZone` + `update:distanceMeters`
   //     and can gate UI (e.g. disable the RFID scanner) accordingly.
-  readonly: { type: Boolean, default: false }
+  readonly: { type: Boolean, default: false },
+  // Compact mode: shrinks the map frame so it sits as a small reference
+  // panel rather than a near-fullscreen viewer (used inside the RFID
+  // scanner area where the scanner itself should remain the focus).
+  compact: { type: Boolean, default: false }
 })
 
 const emit = defineEmits([

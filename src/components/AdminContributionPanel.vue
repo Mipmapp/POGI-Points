@@ -299,19 +299,42 @@
                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
               </div>
               <div class="min-w-0">
-                <p class="text-xs font-bold uppercase tracking-wider text-blue-700 leading-tight">Paid On</p>
-                <p class="text-[10px] text-gray-500 leading-tight truncate">Show payments collected on a specific day</p>
+                <p class="text-xs font-bold uppercase tracking-wider text-blue-700 leading-tight flex items-center gap-1.5">
+                  Paid On
+                  <!-- Quick "just refreshed" pulse — flashes for ~1.2s after
+                       any refresh (manual or auto-after-payment) so the admin
+                       sees that the panel reloaded with fresh data. -->
+                  <span v-if="isRefreshingPaidOn" class="inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 animate-ping"></span>
+                </p>
+                <p class="text-[10px] text-gray-500 leading-tight truncate">
+                  Show payments collected on a specific day<span v-if="paidOnLastRefreshed"> · Updated {{ formatRefreshedTime(paidOnLastRefreshed) }}</span>
+                </p>
               </div>
             </div>
-            <button
-              v-if="filterPaidDate"
-              @click="clearDateFilter"
-              class="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-white hover:bg-blue-100 border border-blue-200 rounded-lg transition flex-shrink-0"
-              title="Clear date filter"
-            >
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-              Clear
-            </button>
+            <div class="flex items-center gap-1.5 flex-shrink-0">
+              <!-- Manual refresh: re-pulls the contribution list so the
+                   "Paid On" totals reflect the latest payments without a
+                   full page reload. Disabled while a refresh is in flight
+                   to avoid hammering the API. -->
+              <button
+                @click="refreshPaidOn"
+                :disabled="isRefreshingPaidOn || isLoading"
+                class="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-white hover:bg-blue-100 border border-blue-200 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Refresh paid-on data"
+              >
+                <svg :class="['w-3 h-3 transition-transform', isRefreshingPaidOn ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Refresh
+              </button>
+              <button
+                v-if="filterPaidDate"
+                @click="clearDateFilter"
+                class="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-blue-700 bg-white hover:bg-blue-100 border border-blue-200 rounded-lg transition"
+                title="Clear date filter"
+              >
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                Clear
+              </button>
+            </div>
           </div>
 
           <!-- Quick day chips + custom date input -->
@@ -1362,6 +1385,13 @@ export default {
       },
       paymentsPage: 1,
       paymentsPerPage: 10,
+      // Manual / auto refresh state for the "Paid On" panel. We pulse the
+      // little dot next to "Paid On" each time the data is refreshed (either
+      // by the admin clicking the refresh button or automatically right
+      // after a payment is recorded) so the change is visible.
+      isRefreshingPaidOn: false,
+      paidOnLastRefreshed: null,
+      _paidOnRefreshFlashTimer: null,
     };
   },
   computed: {
@@ -1772,6 +1802,36 @@ export default {
         this.isDeletingEvent = false;
       }
     },
+    // Triggers a refresh of the contributions list and pulses the small
+    // indicator next to "Paid On" so the admin can tell the panel really
+    // re-fetched. Used both by the manual Refresh button and by the
+    // post-payment auto-refresh hook below.
+    async refreshPaidOn() {
+      if (this.isRefreshingPaidOn) return;
+      this.isRefreshingPaidOn = true;
+      try {
+        await this.loadAllContributions();
+        this.paidOnLastRefreshed = Date.now();
+      } finally {
+        // Keep the pulse visible briefly so it's actually noticeable even on
+        // very fast networks where the request returns in <100ms.
+        if (this._paidOnRefreshFlashTimer) clearTimeout(this._paidOnRefreshFlashTimer);
+        this._paidOnRefreshFlashTimer = setTimeout(() => {
+          this.isRefreshingPaidOn = false;
+        }, 1200);
+      }
+    },
+    formatRefreshedTime(ts) {
+      if (!ts) return '';
+      const diff = Math.max(0, Date.now() - ts);
+      if (diff < 5000) return 'just now';
+      if (diff < 60000) return `${Math.floor(diff / 1000)}s ago`;
+      try {
+        return new Date(ts).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit', hour12: true });
+      } catch {
+        return '';
+      }
+    },
     async loadAllContributions() {
       this.isLoading = true;
       // Clear stale rows + any open search dropdown so the loading skeleton
@@ -2107,7 +2167,10 @@ export default {
           this.discountValue = 0;
           // Preserve scroll position so the page doesn't jump while the list refreshes.
           const _scrollY = (typeof window !== 'undefined') ? window.scrollY : 0;
-          await this.loadAllContributions();
+          // Use the Paid-On refresh wrapper so the indicator pulses + the
+          // "updated …" timestamp ticks forward right after the payment is
+          // recorded — this is the auto-refresh-after-payment behaviour.
+          await this.refreshPaidOn();
           if (typeof window !== 'undefined') {
             this.$nextTick(() => window.scrollTo({ top: _scrollY, left: 0, behavior: 'instant' in window ? 'instant' : 'auto' }));
           }
@@ -2162,7 +2225,9 @@ export default {
           }
           // Preserve scroll position so the page doesn't jump while the list refreshes.
           const _scrollY = (typeof window !== 'undefined') ? window.scrollY : 0;
-          await this.loadAllContributions();
+          // Same auto-refresh pulse used by record-payment so the Paid-On
+          // panel stays in sync after any payment status change.
+          await this.refreshPaidOn();
           if (typeof window !== 'undefined') {
             this.$nextTick(() => window.scrollTo({ top: _scrollY, left: 0, behavior: 'instant' in window ? 'instant' : 'auto' }));
           }
