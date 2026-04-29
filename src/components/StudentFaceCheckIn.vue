@@ -36,6 +36,17 @@
             </div>
           </div>
 
+          <!-- Progress bar -->
+          <div v-if="!successMessage && !failed" class="mx-6 mb-4">
+            <div class="fci-progress-track">
+              <div class="fci-progress-fill" :style="{ width: progressPct + '%' }"></div>
+            </div>
+            <div class="flex items-center justify-between mt-1.5 text-[10px] font-medium tracking-wide uppercase text-blue-200/60">
+              <span>{{ phase === 'finding' ? 'Locking' : phase === 'challenging' ? 'Verifying' : phase === 'submitting' ? 'Submitting' : 'Ready' }}</span>
+              <span class="tabular-nums">{{ Math.round(progressPct) }}%</span>
+            </div>
+          </div>
+
           <!-- Camera area -->
           <div class="mx-6 mb-4">
             <div class="relative rounded-2xl overflow-hidden bg-black aspect-[4/3] fci-camera-frame">
@@ -156,6 +167,16 @@ const errorMessage = ref('')
 const successMessage = ref('')
 const submitting = ref(false)
 const failed = ref(false)
+// Width of the detected face box as a fraction of the camera viewport
+// (0..1). We use this to coach the user closer to the camera if they're too
+// far — small boxes give us less reliable landmarks AND a less reliable
+// descriptor for matching.
+const boxRatio = ref(0)
+// Tightened from a tiny crop to roughly "face fills 1/4 of the frame width".
+// This is still comfortable arm's-length for a phone selfie, but rejects
+// the common case where the user is sitting back from a laptop.
+const MIN_BOX_RATIO = 0.22
+const tooFar = computed(() => faceDetected.value && boxRatio.value > 0 && boxRatio.value < MIN_BOX_RATIO)
 
 // ---- Phases
 //   'finding'    → camera is on, we're searching for a stable face
@@ -216,7 +237,9 @@ const stageMessage = computed(() => {
   if (errorMessage.value) return errorMessage.value
   if (failed.value) return 'Liveness check failed.'
   if (phase.value === 'finding') {
-    return faceDetected.value ? 'Hold still…' : 'Position your face in the circle'
+    if (!faceDetected.value) return 'Position your face in the circle'
+    if (tooFar.value) return 'Move closer to the camera'
+    return 'Hold still…'
   }
   if (currentChallenge.value === 'turn_left') return 'Turn your head LEFT'
   if (currentChallenge.value === 'turn_right') return 'Turn your head RIGHT'
@@ -230,14 +253,38 @@ const stageMessage = computed(() => {
 })
 const stageHint = computed(() => {
   if (phase.value === 'finding') {
-    return faceDetected.value
-      ? 'Locking on your face…'
-      : 'Make sure your face is well-lit and centered.'
+    if (!faceDetected.value) return 'Make sure your face is well-lit and centered.'
+    if (tooFar.value) return 'Your face looks small — bring the camera closer to your face.'
+    return 'Locking on your face…'
   }
   if (currentChallenge.value === 'turn_left') return 'Slowly turn your face to your left.'
   if (currentChallenge.value === 'turn_right') return 'Slowly turn your face to your right.'
   if (currentChallenge.value === 'look_center') return 'Hold your face straight ahead for a moment.'
   return ''
+})
+
+// Overall progress (0..100) the user sees in the progress bar. We weight it
+// across the three phases so the bar moves predictably:
+//   finding (face lock)        →  0% → 25%
+//   challenging (per-challenge)→ 25% → 80%
+//   sample collection          → 80% → 95%
+//   submitting                 → 95% → 100%
+const progressPct = computed(() => {
+  if (successMessage.value) return 100
+  if (submitting.value) return 95
+  if (phase.value === 'finding') {
+    if (!faceDetected.value) return 5
+    if (tooFar.value) return 10
+    const lockPct = Math.min(faceLockedFrames.value / FACE_LOCK_FRAMES, 1)
+    return 10 + lockPct * 15  // 10% → 25%
+  }
+  if (phase.value === 'challenging') {
+    const total = challenges.value.length || 1
+    const challengePct = Math.min(currentChallengeIndex.value / total, 1)
+    const samplePct = Math.min(samplesCount.value / 12, 1)
+    return 25 + challengePct * 55 + samplePct * 15  // 25% → 95%
+  }
+  return 0
 })
 
 function challengeLabel(c) {
@@ -272,6 +319,7 @@ function resetState() {
   faceLockedFrames.value = 0
   faceDetected.value = false
   faceLocked.value = false
+  boxRatio.value = 0
   challengeToken.value = ''
   challenges.value = []
   completed.value = []
@@ -486,6 +534,18 @@ async function runDetectionLoop() {
     const ok = !!det && det.detection && det.detection.score > 0.6
     faceDetected.value = ok
     faceLocked.value = ok
+    if (ok) {
+      // Track how big the face is in the frame so we can coach the user to
+      // move closer if they're too far away. face-api gives the box in the
+      // raw video coords, so divide by the source video width — NOT the CSS
+      // size of the <video> element (which is mirrored / object-cover'd).
+      const vw = videoEl.value && (videoEl.value.videoWidth || videoEl.value.clientWidth)
+      if (vw && det.detection.box && det.detection.box.width) {
+        boxRatio.value = det.detection.box.width / vw
+      }
+    } else {
+      boxRatio.value = 0
+    }
 
     if (ok) {
       // Sample descriptor at most every ~70ms — fast enough that a normal
@@ -505,13 +565,20 @@ async function runDetectionLoop() {
       // themselves and prevents the very first "turn" instruction from
       // appearing while they're still framing their face.
       if (phase.value === 'finding') {
-        faceLockedFrames.value++
-        if (faceLockedFrames.value >= FACE_LOCK_FRAMES && !challengeToken.value) {
-          phase.value = 'challenging'
-          await requestChallenge()
-          if (failed.value || !challenges.value.length) {
-            // requestChallenge already set the error state; just stop here.
-            return
+        // Don't progress the lock countdown while the user is too far away.
+        // We still want them to see the "move closer" coaching, but holding
+        // a tiny face for a second shouldn't unlock the challenge gate.
+        if (tooFar.value) {
+          faceLockedFrames.value = 0
+        } else {
+          faceLockedFrames.value++
+          if (faceLockedFrames.value >= FACE_LOCK_FRAMES && !challengeToken.value) {
+            phase.value = 'challenging'
+            await requestChallenge()
+            if (failed.value || !challenges.value.length) {
+              // requestChallenge already set the error state; just stop here.
+              return
+            }
           }
         }
       }
@@ -831,4 +898,24 @@ onBeforeUnmount(() => stopCamera())
 .fci-panel-leave-active { transition: opacity 0.28s ease-in,  transform 0.32s cubic-bezier(0.55, 0, 0.7, 0.2); }
 .fci-panel-enter-from   { opacity: 0; transform: scale(0.88) translateY(24px); }
 .fci-panel-leave-to     { opacity: 0; transform: scale(0.92) translateY(20px); }
+
+/* Progress bar — sits between the stage banner and the camera feed.
+   The fill animates smoothly so the user sees real-time movement as the
+   detection loop ratchets it up. */
+.fci-progress-track {
+  position: relative;
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+.fci-progress-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #60a5fa 0%, #818cf8 50%, #a78bfa 100%);
+  box-shadow: 0 0 14px rgba(129, 140, 248, 0.55);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
 </style>

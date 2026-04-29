@@ -765,6 +765,11 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
           <span>My Raffle</span>
         </button>
+        <!-- Location: live geofence preview for any active event the student can attend -->
+        <button v-if="!isAdminLike || inUserView" @click="currentPage = 'location'; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'location' ? sidebarItemActive : sidebarItemHover]">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <span>Location</span>
+        </button>
 
         <div class="mt-3 border-t border-white/10 pt-3">
           <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
@@ -896,6 +901,10 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
             <span>My Raffle</span>
           </button>
+          <button v-if="!isAdminLike || inUserView" @click="currentPage = 'location'; showMobileMenu = false; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'location' ? sidebarItemActive : sidebarItemHover]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            <span>Location</span>
+          </button>
 
           <button 
             @click="refreshCurrentUser(); showMobileMenu = false"
@@ -957,7 +966,7 @@
 
       <Transition name="section-fade" mode="out-in">
       <div :key="currentPage" class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'raffle-tickets' ? 'Raffle Ticket' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'my-raffle' ? 'My Raffle Results' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'dashboard' && (isAdminLike) && inRoleView ? 'Statistics' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'raffle-tickets' ? 'Raffle Ticket' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'my-raffle' ? 'My Raffle Results' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'location' ? 'Location' : currentPage === 'dashboard' && (isAdminLike) && inRoleView ? 'Statistics' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-4 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
@@ -2185,15 +2194,15 @@
                           @input="onRfidInput"
                           @keydown="handleRfidKeydown"
                           type="text"
-                          placeholder="Scan RFID card or type Student ID..."
-                          :class="['w-full pl-10 pr-4 py-3 text-sm sm:text-base border-2 rounded-xl focus:ring-2 outline-none transition-all', isCOE ? 'border-orange-200 focus:border-orange-500 focus:ring-orange-100' : isSOM ? 'border-green-200 focus:border-green-500 focus:ring-green-100' : isCNAHS ? 'border-green-200 focus:border-green-500 focus:ring-green-100' : 'border-blue-200 focus:border-blue-500 focus:ring-blue-100']"
-                          :disabled="rfidProcessing"
+                          :placeholder="scannerGeoBlocked ? 'Outside geofence — move within range to scan' : 'Scan RFID card or type Student ID...'"
+                          :class="['w-full pl-10 pr-4 py-3 text-sm sm:text-base border-2 rounded-xl focus:ring-2 outline-none transition-all', scannerGeoBlocked ? 'border-amber-300 bg-amber-50 placeholder-amber-700 focus:border-amber-500 focus:ring-amber-100' : isCOE ? 'border-orange-200 focus:border-orange-500 focus:ring-orange-100' : isSOM ? 'border-green-200 focus:border-green-500 focus:ring-green-100' : isCNAHS ? 'border-green-200 focus:border-green-500 focus:ring-green-100' : 'border-blue-200 focus:border-blue-500 focus:ring-blue-100']"
+                          :disabled="rfidProcessing || scannerGeoBlocked"
                         />
                         <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                       </div>
                       <button 
                         @click="manualRfidSubmit"
-                        :disabled="rfidProcessing || !rfidInput.trim()"
+                        :disabled="rfidProcessing || !rfidInput.trim() || scannerGeoBlocked"
                         :class="['flex items-center justify-center gap-2 px-5 py-3 text-white rounded-xl font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r active:scale-95 hover:scale-[1.02] shadow-md', primaryButtonGradient, primaryButtonHover]"
                       >
                         <svg v-if="rfidProcessing" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
@@ -2201,8 +2210,27 @@
                         <span>{{ rfidProcessing ? 'Processing...' : 'Submit' }}</span>
                       </button>
                     </div>
-                    <p class="text-xs text-gray-400 mt-2 text-center">Press Enter to submit automatically after scanning</p>
+                    <p v-if="scannerGeoBlocked" class="text-xs text-amber-700 font-semibold mt-2 text-center flex items-center justify-center gap-1.5">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                      You're {{ scannerDistanceMeters != null ? Math.round(scannerDistanceMeters) + 'm' : '—' }} from the venue. Move inside the highlighted zone to enable the scanner.
+                    </p>
+                    <p v-else class="text-xs text-gray-400 mt-2 text-center">Press Enter to submit automatically after scanning</p>
                   </div>
+                </div>
+
+                <!-- Live geofence preview — only when the event requires GPS -->
+                <div v-if="selectedEvent && selectedEvent.geofence_enabled" class="mt-4">
+                  <GeofenceMap
+                    readonly
+                    :enabled="true"
+                    :latitude="Number(selectedEvent.geofence_lat)"
+                    :longitude="Number(selectedEvent.geofence_lng)"
+                    :radius="Number(selectedEvent.geofence_radius_meters) || 80"
+                    :isCOE="isCOE"
+                    :isSOM="isSOM"
+                    @update:insideZone="scannerInsideZone = $event"
+                    @update:distanceMeters="scannerDistanceMeters = $event"
+                  />
                 </div>
 
                 <!-- Recent Logs -->
@@ -3409,6 +3437,67 @@
           </div>
         </div>
 
+        <!-- Student Location Section — mirrors the admin Scanner geofence preview -->
+        <div v-if="currentPage === 'location' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-6">
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <div class="light-sweep"></div>
+              <div class="absolute inset-0 flex items-center px-6 md:px-8 gap-4">
+                <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/20">
+                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <div class="min-w-0">
+                  <h2 class="text-white text-lg md:text-xl font-bold leading-tight">My Location</h2>
+                  <p class="text-white/80 text-xs md:text-sm">See where you are relative to today's check-in zones.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 md:p-6 space-y-4">
+              <div v-if="attendanceLoading" class="flex items-center justify-center py-12">
+                <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+              </div>
+              <div v-else-if="locationEvents.length === 0" class="text-center py-12 text-gray-500">
+                <svg class="w-14 h-14 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <p class="text-sm">No active events with a check-in zone right now.</p>
+                <p class="text-xs mt-1 text-gray-400">When an admin sets a geofence on an event, you'll see a live map here.</p>
+              </div>
+              <div v-else class="space-y-5">
+                <div
+                  v-for="(event, idx) in locationEvents"
+                  :key="event._id || event.event_id"
+                  class="ssaam-row-anim rounded-2xl border border-gray-100 bg-gradient-to-br from-white to-gray-50 p-4 shadow-sm"
+                  :style="{ animationDelay: (idx * 60) + 'ms' }"
+                >
+                  <div class="flex items-start justify-between gap-3 mb-3">
+                    <div class="min-w-0">
+                      <h3 class="font-bold text-base text-gray-900 leading-tight">{{ event.title }}</h3>
+                      <p v-if="event.location" class="text-xs text-gray-500 mt-0.5 truncate">{{ event.location }}</p>
+                    </div>
+                    <span class="flex-shrink-0 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-green-100 text-green-700">
+                      <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                      Active
+                    </span>
+                  </div>
+                  <GeofenceMap
+                    readonly
+                    :enabled="true"
+                    :latitude="Number(event.geofence_lat)"
+                    :longitude="Number(event.geofence_lng)"
+                    :radius="Number(event.geofence_radius_meters) || 80"
+                    :isCOE="isCOE"
+                    :isSOM="isSOM"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Student Request Section -->
         <div v-if="currentPage === 'request' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-6">
           <!-- Header Banner -->
@@ -4100,7 +4189,7 @@
                       <span class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
                         <svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                       </span>
-                      <span>Only your face — must be unique</span>
+                      <span>Your face is unique - it only works on yours</span>
                     </div>
                     <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
                       <span class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
@@ -4352,6 +4441,7 @@
             </div>
           </div>
           
+          <transition name="ssaam-rfid-list">
           <div v-if="showRfidList" :class="['mt-6 bg-white rounded-lg p-4 border', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200']">
             <div class="flex items-center justify-between mb-4">
               <h4 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
@@ -4407,7 +4497,9 @@
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                  <tr v-for="user in rfidListDisplayUsers" :key="user.student_id" class="hover:bg-gray-50">
+                  <tr v-for="(user, idx) in rfidListDisplayUsers" :key="user.student_id"
+                    class="hover:bg-gray-50 ssaam-row-anim"
+                    :style="{ animationDelay: Math.min(idx * 30, 600) + 'ms' }">
                     <td class="px-3 py-2 text-gray-700">{{ user.student_id }}</td>
                     <td class="px-3 py-2 text-gray-700">{{ user.full_name || `${user.first_name} ${user.last_name}` }}</td>
                     <td class="px-3 py-2 text-gray-700">{{ user.program }}</td>
@@ -4433,6 +4525,7 @@
               </div>
             </div>
           </div>
+          </transition>
 
           <!-- Quick Actions: Create Event -->
           <div class="mt-6 px-4 pb-4 md:px-8 md:pb-8">
@@ -11101,6 +11194,19 @@ const enrichAssignedUsersWithNames = (assignedUsersArray) => {
   })
 }
 const rfidInput = ref('')
+// ---- Scanner geofence gate ----
+// When the active event has `geofence_enabled` we render a small read-only
+// map under the scanner card and gate the RFID input/submit on whether the
+// admin's live position falls inside the geofence. `null` = unknown (still
+// waiting for GPS); `true` / `false` = inside / outside.
+const scannerInsideZone = ref(null)
+const scannerDistanceMeters = ref(null)
+const scannerGeoBlocked = computed(() => {
+  if (!selectedEvent.value || !selectedEvent.value.geofence_enabled) return false
+  // While we're still waiting for the first GPS fix don't block the admin —
+  // only block when we've confirmed they're outside the fence.
+  return scannerInsideZone.value === false
+})
 const rfidInputRef = ref(null)
 const announcementTextareaRef = ref(null)
 const socialNameInputRef = ref(null)
@@ -11212,6 +11318,16 @@ const activeNonEndedEvents = computed(() => {
     // Filter out events that have ended and only show active events
     return event.status === 'active' && timeRemaining !== 'Ended'
   })
+})
+
+// Subset of active events that have a configured geofence — these are the
+// only events the student-side "Location" page can render a live map for.
+const locationEvents = computed(() => {
+  return activeNonEndedEvents.value.filter(ev =>
+    ev.geofence_enabled
+    && Number.isFinite(Number(ev.geofence_lat))
+    && Number.isFinite(Number(ev.geofence_lng))
+  )
 })
 
 // Eagerly preload sessions for all currently active events so the per-event
@@ -11777,6 +11893,20 @@ const roleViewMode = ref('role')
 const inRoleView = computed(() => !canSwitchView.value || roleViewMode.value === 'role')
 const inUserView = computed(() => canSwitchView.value && roleViewMode.value === 'user')
 watch(canSwitchView, (v) => { if (!v) roleViewMode.value = 'role' })
+
+// Auto-load Statistics whenever the admin returns to the dashboard view
+// (sidebar click, mobile menu, programmatic navigation). On first F5 the
+// onMounted hook already calls fetchStats(); this watcher keeps the figures
+// fresh without requiring a manual "Refresh" tap.
+watch(currentPage, (page, prev) => {
+  if (page !== 'dashboard' || page === prev) return
+  if (!currentUser.value) return
+  if (currentUser.value.role !== 'admin' && !currentUser.value.isMaster) return
+  fetchStats().catch(err => console.error('Auto-fetchStats on dashboard nav failed:', err))
+  if (currentUser.value.isMaster) {
+    fetchAllCollegesStats().catch(err => console.error('Auto-fetchAllCollegesStats failed:', err))
+  }
+})
 
 // Persist active page across browser refreshes
 watch(currentPage, (newPage) => {

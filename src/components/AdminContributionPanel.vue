@@ -171,6 +171,7 @@
           <svg :class="['ml-auto w-4 h-4 text-gray-400 transition-transform duration-200', showStatsPanel ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
 
+        <transition name="ssaam-stats">
         <div v-if="showStatsPanel" class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <!-- By Year Level -->
           <div class="bg-gray-50 border border-gray-200 rounded-2xl p-4">
@@ -224,6 +225,7 @@
             </div>
           </div>
         </div>
+        </transition>
       </div>
 
       <!-- Search & Filters -->
@@ -510,7 +512,9 @@
 
       <!-- Mobile Card View -->
       <div v-else class="block md:hidden divide-y divide-gray-100">
-        <div v-for="c in paginatedContributions" :key="c._id" class="p-4 hover:bg-gray-50 transition">
+        <div v-for="(c, idx) in paginatedContributions" :key="c._id"
+          class="p-4 hover:bg-gray-50 transition ssaam-row-anim"
+          :style="{ animationDelay: Math.min(idx * 35, 700) + 'ms' }">
           <div class="flex items-start justify-between gap-3 mb-3">
             <div class="flex items-center gap-3 min-w-0 flex-1">
               <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white text-sm font-bold flex-shrink-0 overflow-hidden">
@@ -602,7 +606,9 @@
                 No records match the current filters.
               </td>
             </tr>
-            <tr v-for="c in paginatedContributions" :key="c._id" class="hover:bg-blue-50/40 transition-colors">
+            <tr v-for="(c, idx) in paginatedContributions" :key="c._id"
+              class="hover:bg-blue-50/40 transition-colors ssaam-row-anim"
+              :style="{ animationDelay: Math.min(idx * 35, 700) + 'ms' }">
               <td class="px-4 py-3 text-sm font-semibold text-gray-700">{{ c.student_id }}</td>
               <td class="px-4 py-3 text-sm text-gray-900 font-medium">
                 <div class="flex items-center gap-2.5">
@@ -1236,7 +1242,22 @@ export default {
       const fc = (this.filterCollege || '').toUpperCase();
       const q = (this.searchQuery || '').toString().trim().toLowerCase();
 
+      // Audience scope from the active payment event. When the event is
+      // restricted (e.g. "4th Year BSCS only"), exclude any contribution
+      // record whose student doesn't match — this keeps the table AND the
+      // statistics counts in sync with the campaign's intended audience.
+      const audienceLevels = (this.activePayment && Array.isArray(this.activePayment.target_year_levels))
+        ? this.activePayment.target_year_levels.filter(Boolean)
+        : [];
+      const audiencePrograms = (this.activePayment && Array.isArray(this.activePayment.target_programs))
+        ? this.activePayment.target_programs.filter(Boolean)
+        : [];
+
       const filtered = this.contributions.filter(c => {
+        // Audience gate (applied first so stats never count out-of-scope students)
+        if (audienceLevels.length > 0 && !audienceLevels.includes(c.year_level)) return false;
+        if (audiencePrograms.length > 0 && !audiencePrograms.includes(c.program)) return false;
+
         const cStatus = (c.payment_status || '').toString().toLowerCase();
         const matchesLevel = !fy || c.year_level === fy;
         const matchesProgram = !fp || (c.program || '').toString() === fp;

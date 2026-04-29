@@ -64,14 +64,6 @@
           Active Events — Check In / Check Out
         </h3>
 
-        <!-- Inline notification -->
-        <transition name="fade">
-          <div v-if="checkInNotification.message" :class="['rounded-xl px-4 py-3 text-sm font-semibold flex items-center gap-2', checkInNotification.type === 'success' ? 'bg-emerald-50 border border-emerald-300 text-emerald-800' : 'bg-red-50 border border-red-300 text-red-800']">
-            <span>{{ checkInNotification.type === 'success' ? '✓' : '✗' }}</span>
-            {{ checkInNotification.message }}
-          </div>
-        </transition>
-
         <div v-for="event in activeEvents" :key="event._id" :class="['rounded-xl border-2 bg-white overflow-hidden shadow-sm', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-emerald-200' : 'border-purple-200']">
           <!-- Event header -->
           <div :class="['px-4 py-3 border-b flex items-center justify-between gap-3', isCOE ? 'border-orange-100 bg-orange-50' : isSOM ? 'border-green-100 bg-green-50' : isCNAHS ? 'border-emerald-100 bg-emerald-50' : 'border-purple-100 bg-purple-50']">
@@ -289,6 +281,25 @@
         </div>
       </div>
     </div>
+
+    <!-- Top-center check-in / check-out toast.
+         Renders outside the scroll flow so it always slides down from the top
+         of the viewport regardless of where the user is on the page. -->
+    <teleport to="body">
+      <transition name="ssaam-toast">
+        <div
+          v-if="checkInNotification.message"
+          class="ssaam-toast-wrap"
+          role="status"
+          aria-live="polite"
+        >
+          <div :class="['ssaam-toast-card', checkInNotification.type === 'success' ? 'ssaam-toast-success' : 'ssaam-toast-error']">
+            <span class="ssaam-toast-icon">{{ checkInNotification.type === 'success' ? '✓' : '✗' }}</span>
+            <span class="ssaam-toast-text">{{ checkInNotification.message }}</span>
+          </div>
+        </div>
+      </transition>
+    </teleport>
 
     <!-- Face ID enrollment modal -->
     <StudentFaceEnroll

@@ -2,6 +2,7 @@
   <div class="space-y-4">
     <!-- ============ Premium Enable Toggle ============ -->
     <div
+      v-if="!readonly"
       :class="['gfm-card relative overflow-hidden rounded-2xl border-2 transition-all duration-300 cursor-pointer',
         enabled
           ? (isCOE ? 'border-orange-300 shadow-lg shadow-orange-100' : isSOM ? 'border-green-300 shadow-lg shadow-green-100' : 'border-blue-300 shadow-lg shadow-blue-100')
@@ -51,9 +52,9 @@
       </div>
     </div>
 
-    <!-- ============ Editor (only when enabled) ============ -->
+    <!-- ============ Editor (only when enabled OR in readonly preview mode) ============ -->
     <transition name="gfm-fade">
-      <div v-if="enabled" class="space-y-4">
+      <div v-if="enabled || readonly" class="space-y-4">
         <!-- ============ Map Frame with Premium Border ============ -->
         <div :class="['relative rounded-3xl overflow-hidden shadow-xl ring-1 ring-black/5',
           isCOE ? 'gfm-frame-coe' : isSOM ? 'gfm-frame-som' : 'gfm-frame-blue']">
@@ -134,7 +135,7 @@
         </div>
 
         <!-- ============ Quick Action Toolbar ============ -->
-        <div :class="['rounded-2xl p-3 border-2 shadow-sm',
+        <div v-if="!readonly" :class="['rounded-2xl p-3 border-2 shadow-sm',
           isCOE ? 'bg-gradient-to-br from-orange-50/60 to-white border-orange-100' : isSOM ? 'bg-gradient-to-br from-green-50/60 to-white border-green-100' : 'bg-gradient-to-br from-blue-50/60 to-white border-blue-100']">
           <div class="flex items-center gap-2 mb-2">
             <svg :class="['w-4 h-4', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
@@ -219,7 +220,7 @@
         </div>
 
         <!-- ============ Manual Coordinate Inputs ============ -->
-        <div :class="['rounded-2xl border-2 p-4',
+        <div v-if="!readonly" :class="['rounded-2xl border-2 p-4',
           isCOE ? 'border-orange-100 bg-white' : isSOM ? 'border-green-100 bg-white' : 'border-blue-100 bg-white']">
           <div class="flex items-center gap-2 mb-3">
             <svg :class="['w-4 h-4', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
@@ -273,7 +274,7 @@
         </div>
 
         <!-- ============ Status Cards ============ -->
-        <div v-if="!hasCoords" class="flex items-start gap-3 px-4 py-3 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50 text-amber-900 border-2 border-amber-200 shadow-sm">
+        <div v-if="!hasCoords && !readonly" class="flex items-start gap-3 px-4 py-3 rounded-2xl bg-gradient-to-br from-amber-50 to-yellow-50 text-amber-900 border-2 border-amber-200 shadow-sm">
           <div class="flex-shrink-0 w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center">
             <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
           </div>
@@ -339,14 +340,23 @@ const props = defineProps({
   radius: { type: Number, default: 80 },
   // Theme flags so the component matches the calling page's college accent.
   isCOE: { type: Boolean, default: false },
-  isSOM: { type: Boolean, default: false }
+  isSOM: { type: Boolean, default: false },
+  // When true, the component renders as a compact "live status" panel:
+  //   - the toggle / quick-actions / manual-coords editors are hidden
+  //   - the pin is non-draggable and the map is not click-to-place
+  //   - live tracking auto-starts so the user sees their position vs. the fence
+  //   - the parent receives `update:insideZone` + `update:distanceMeters`
+  //     and can gate UI (e.g. disable the RFID scanner) accordingly.
+  readonly: { type: Boolean, default: false }
 })
 
 const emit = defineEmits([
   'update:enabled',
   'update:latitude',
   'update:longitude',
-  'update:radius'
+  'update:radius',
+  'update:insideZone',
+  'update:distanceMeters'
 ])
 
 const mapEl = ref(null)
@@ -506,9 +516,11 @@ async function ensureMap() {
     })
     streetLayer.addTo(map)
 
-    map.on('click', (e) => {
-      setPin(e.latlng.lat, e.latlng.lng, { recenter: false })
-    })
+    if (!props.readonly) {
+      map.on('click', (e) => {
+        setPin(e.latlng.lat, e.latlng.lng, { recenter: false })
+      })
+    }
 
     if (hasCoords.value) {
       drawMarker(props.latitude, props.longitude)
@@ -543,11 +555,14 @@ function drawMarker(lat, lng) {
   if (!leaflet || !map) return
   if (!marker) {
     const icon = buildPinIcon()
-    marker = leaflet.marker([lat, lng], { draggable: true, icon: icon || undefined }).addTo(map)
-    marker.on('dragend', () => {
-      const ll = marker.getLatLng()
-      setPin(ll.lat, ll.lng, { recenter: false, fromMarker: true })
-    })
+    const draggable = !props.readonly
+    marker = leaflet.marker([lat, lng], { draggable, icon: icon || undefined, interactive: draggable }).addTo(map)
+    if (draggable) {
+      marker.on('dragend', () => {
+        const ll = marker.getLatLng()
+        setPin(ll.lat, ll.lng, { recenter: false, fromMarker: true })
+      })
+    }
   } else {
     suppressMoveEvent = true
     marker.setLatLng([lat, lng])
@@ -822,8 +837,24 @@ watch(() => props.radius, (r) => {
   if (circle) circle.setRadius(Number(r) || 80)
 })
 
+// In readonly mode the parent wants to know how far the user is from the
+// venue and whether they're inside the geofence so it can gate UI (e.g.
+// disable the RFID scanner). Emit those whenever the calculation changes.
+watch(distanceFromPin, (d) => {
+  if (!props.readonly) return
+  emit('update:distanceMeters', Number.isFinite(d) ? d : null)
+  if (Number.isFinite(d)) {
+    emit('update:insideZone', d <= (props.radius || 80))
+  } else {
+    emit('update:insideZone', null)
+  }
+}, { immediate: true })
+
 onMounted(() => {
-  if (props.enabled) ensureMap()
+  if (props.enabled || props.readonly) ensureMap()
+  // Auto-start live tracking in readonly mode so the admin instantly sees
+  // where they are relative to the venue without having to tap a button.
+  if (props.readonly) startLiveTracking()
 })
 
 onBeforeUnmount(() => {

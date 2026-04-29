@@ -212,7 +212,9 @@
 
         <!-- Users List -->
         <div v-if="filteredUsers.length > 0" class="space-y-3">
-          <div v-for="user in paginatedUsers" :key="user._id || user.id || user.student_id" :class="['bg-white rounded-xl border transition-all duration-300 overflow-hidden', isCOE ? 'hover:border-orange-300 hover:shadow-lg' : isSOM ? 'hover:border-green-300 hover:shadow-lg' : isCNAHS ? 'hover:border-green-300 hover:shadow-lg' : 'hover:border-blue-300 hover:shadow-lg']">
+          <div v-for="(user, idx) in paginatedUsers" :key="user._id || user.id || user.student_id"
+            :class="['bg-white rounded-xl border transition-all duration-300 overflow-hidden ssaam-row-anim', isCOE ? 'hover:border-orange-300 hover:shadow-lg' : isSOM ? 'hover:border-green-300 hover:shadow-lg' : isCNAHS ? 'hover:border-green-300 hover:shadow-lg' : 'hover:border-blue-300 hover:shadow-lg']"
+            :style="{ animationDelay: Math.min(idx * 30, 600) + 'ms' }">
             <!-- Card Header with Profile -->
             <div class="p-4 md:p-5 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-transparent">
               <div class="flex items-start justify-between gap-3">
