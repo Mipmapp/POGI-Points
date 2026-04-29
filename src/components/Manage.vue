@@ -164,51 +164,77 @@
         </div>
 
         <!-- Top Pagination Controls -->
-        <div v-if="filteredUsers.length > 0" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mt-4 pt-4 border-t border-gray-200">
-          <div class="text-sm text-gray-600 text-center sm:text-left">
-            Showing {{ (currentPage - 1) * usersPerPage + 1 }} to {{ Math.min(currentPage * usersPerPage, filteredUsers.length) }} of {{ filteredUsers.length }} users
-          </div>
-          <div class="flex items-center justify-center gap-2 flex-wrap">
-            <button
-              @click="currentPage = Math.max(1, currentPage - 1)"
-              :disabled="currentPage === 1"
-              class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-sm"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-              </svg>
-              Prev
-            </button>
-            
-            <div class="flex gap-1 items-center overflow-x-auto max-w-[200px] sm:max-w-none">
+        <div v-if="filteredUsers.length > 0" class="mt-4 pt-4 border-t border-gray-200">
+          <!-- Mobile: compact prev/page/next row -->
+          <div class="flex items-center justify-between gap-2 sm:hidden">
+            <span class="text-xs text-gray-500">{{ filteredUsers.length }} users</span>
+            <div class="flex items-center gap-2">
               <button
-                v-for="page in paginationRange"
-                :key="page"
-                @click="page !== '...' && (currentPage = page)"
-                :disabled="page === '...'"
-                :class="[
-                  'w-9 h-9 flex-shrink-0 rounded-lg font-medium transition-all duration-200 text-sm',
-                  page === '...'
-                    ? 'cursor-default text-gray-400'
-                    : currentPage === page
-                    ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white']
-                    : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
-                ]"
+                @click="currentPage = Math.max(1, currentPage - 1)"
+                :disabled="currentPage === 1"
+                class="w-9 h-9 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
               >
-                {{ page }}
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+              </button>
+              <span class="text-sm text-gray-600 whitespace-nowrap">{{ currentPage }} / {{ totalPages }}</span>
+              <button
+                @click="currentPage = Math.min(totalPages, currentPage + 1)"
+                :disabled="currentPage === totalPages"
+                class="w-9 h-9 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
               </button>
             </div>
-            
-            <button
-              @click="currentPage = Math.min(totalPages, currentPage + 1)"
-              :disabled="currentPage === totalPages"
-              class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-sm"
-            >
-              Next
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-              </svg>
-            </button>
+          </div>
+          <!-- Desktop: full pagination -->
+          <div class="hidden sm:flex sm:items-center sm:justify-between gap-2">
+            <div class="text-sm text-gray-600">
+              Showing {{ (currentPage - 1) * usersPerPage + 1 }} to {{ Math.min(currentPage * usersPerPage, filteredUsers.length) }} of {{ filteredUsers.length }} users
+            </div>
+            <div class="flex items-center gap-2">
+              <button
+                @click="currentPage = Math.max(1, currentPage - 1)"
+                :disabled="currentPage === 1"
+                class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-sm"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                </svg>
+                Previous
+              </button>
+              <div class="flex gap-1 items-center">
+                <button
+                  v-for="page in paginationRange"
+                  :key="page"
+                  @click="page !== '...' && (currentPage = page)"
+                  :disabled="page === '...'"
+                  :class="[
+                    'w-10 h-10 rounded-lg font-medium transition-all duration-200',
+                    page === '...'
+                      ? 'cursor-default text-gray-400'
+                      : currentPage === page
+                      ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white']
+                      : 'border border-gray-300 text-gray-700 hover:bg-gray-50'
+                  ]"
+                >
+                  {{ page }}
+                </button>
+              </div>
+              <button
+                @click="currentPage = Math.min(totalPages, currentPage + 1)"
+                :disabled="currentPage === totalPages"
+                class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 text-sm"
+              >
+                Next
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
