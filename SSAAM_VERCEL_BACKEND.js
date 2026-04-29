@@ -8820,9 +8820,32 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
         console.log(`[My Records] Query found ${events.length} total events - regular: ${events.filter(e => !e.is_custom).length}, custom: ${events.filter(e => e.is_custom).length}`);
         console.log(`[My Records] Sample events:`, events.slice(0, 3).map(e => ({ title: e.title, is_custom: e.is_custom, assigned: e.assigned_users.some(u => u.toString() === student._id.toString()) })));
 
+        // Treat the student's account creation moment as the cutoff. Any event
+        // whose date is strictly before the student registered cannot belong to
+        // their attendance history — they literally couldn't have shown up. We
+        // compare on calendar date (PH) rather than full timestamps so an event
+        // happening *on* the same day the student registered is still kept.
+        const toDateOnly = (d) => {
+            if (!d) return null;
+            const dt = new Date(d);
+            if (isNaN(dt.getTime())) return null;
+            // Convert to PH (UTC+8) for the date-only comparison so a late-night
+            // sign-up doesn't accidentally bury same-day events.
+            const ph = new Date(dt.getTime() + 8 * 60 * 60 * 1000);
+            return `${ph.getUTCFullYear()}-${String(ph.getUTCMonth() + 1).padStart(2, '0')}-${String(ph.getUTCDate()).padStart(2, '0')}`;
+        };
+        const studentRegisteredOn = toDateOnly(student.created_date);
+
         const records = await Promise.all(events.map(async (event) => {
-            // Note: Previously filtered out events where student was registered after activation.
-            // Removed this restriction to allow students to see all events they attended.
+            // Skip events that happened before the student registered. They
+            // shouldn't appear in the student's history as "Absent" — the
+            // student wasn't a member of the system yet.
+            if (studentRegisteredOn) {
+                const eventOn = toDateOnly(event.event_date);
+                if (eventOn && eventOn < studentRegisteredOn) {
+                    return null;
+                }
+            }
 
             // Get all sessions for this event
             const sessions = await SessionModel.find({ event_id: event._id })

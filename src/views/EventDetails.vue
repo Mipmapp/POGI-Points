@@ -251,11 +251,36 @@ export default {
 
         const attendedIds = new Set(logs.map(l => (l.student_id_number || l.student?.student_id || l.student_id)))
 
-        const absent = allStudents.filter(s => !attendedIds.has(s.student_id)).map(s => ({ ...s }))
+        // Compute the event's calendar date once. Students who registered AFTER
+        // this day couldn't have attended, so they shouldn't be marked absent.
+        // Day-only comparison so a same-day registration still counts.
+        const eventDateRaw = this.event?.event_date || this.event?.date
+        const eventDayKey = this.toDayKey(eventDateRaw)
+
+        const absent = allStudents
+          .filter(s => !attendedIds.has(s.student_id))
+          .filter(s => {
+            if (!eventDayKey) return true
+            const regKey = this.toDayKey(s.created_date || s.createdAt)
+            // Keep students with no registration date (legacy rows) and those
+            // who registered on or before the event day.
+            return !regKey || regKey <= eventDayKey
+          })
+          .map(s => ({ ...s }))
         this.absentList = absent
       } catch (err) {
         console.error('Error computing absent list', err)
       }
+    },
+    // Day-only key in PH time so we can compare event date vs registration date
+    // without timezone surprises (a 11pm registration shouldn't push the day
+    // forward).
+    toDayKey(d) {
+      if (!d) return null
+      const dt = new Date(d)
+      if (isNaN(dt.getTime())) return null
+      const ph = new Date(dt.getTime() + 8 * 60 * 60 * 1000)
+      return `${ph.getUTCFullYear()}-${String(ph.getUTCMonth() + 1).padStart(2, '0')}-${String(ph.getUTCDate()).padStart(2, '0')}`
     },
     exportAbsentCSV(session) {
       if (!this.absentList || this.absentList.length === 0) return
