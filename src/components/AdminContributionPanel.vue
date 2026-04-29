@@ -713,8 +713,8 @@
               <svg v-if="processingPaymentId === (c._id || c.student_id)" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ processingPaymentId === (c._id || c.student_id) ? 'Processing...' : 'Mark as Unpaid' }}
             </button>
-            <button @click="applyDiscount(c)" class="px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition hover:bg-blue-100">
-              Discount
+            <button @click="applyDiscount(c)" class="px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition hover:bg-blue-100 inline-flex items-center justify-center" title="Apply discount">
+              <img src="/discount.svg" alt="Discount" class="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -817,8 +817,8 @@
                     <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                     <span>{{ processingPaymentId === (c._id || c.student_id) ? '...' : 'Unpaid' }}</span>
                   </button>
-                  <button @click="applyDiscount(c)" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md text-[11px] font-bold transition whitespace-nowrap" title="Apply / change discount">
-                    Disc
+                  <button @click="applyDiscount(c)" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md text-[11px] font-bold transition whitespace-nowrap inline-flex items-center justify-center" title="Apply / change discount">
+                    <img src="/discount.svg" alt="Discount" class="w-3.5 h-3.5" />
                   </button>
                 </div>
               </td>
@@ -1774,6 +1774,12 @@ export default {
     },
     async loadAllContributions() {
       this.isLoading = true;
+      // Clear stale rows + any open search dropdown so the loading skeleton
+      // is the only thing on screen — prevents the previous page's data
+      // from "flashing" while the new fetch is in flight.
+      this.contributions = [];
+      this.searchResults = [];
+      this.hasSearched = false;
       try {
         const token = localStorage.getItem('authToken');
         const params = new URLSearchParams();
@@ -2008,8 +2014,20 @@ export default {
         if (response.ok) {
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Contribution event "${payload.title}" created successfully!`, type: 'success' } }));
           this.closeCreateEventModal();
-          this.activePayment = null;
+          // Don't null activePayment here — that wipes the daily totals chip
+          // strip until loadAllPaymentEvents() repopulates. Keep the current
+          // selection; loadAllPaymentEvents will sync server-fresh data
+          // (including any newly created event) into the dropdown.
           await this.loadAllPaymentEvents();
+          // If a brand-new event was returned, switch to it so the admin can
+          // immediately start collecting against the campaign they just made.
+          if (data && data.data && data.data._id) {
+            const fresh = (this.paymentEvents || []).find(p => p._id === data.data._id);
+            if (fresh) {
+              this.activePayment = fresh;
+              this.campaignFee = fresh.amount_due;
+            }
+          }
           this.loadAllContributions();
         } else {
           this.createEventError = data.message || 'Failed to create event. Please try again.';
@@ -2022,7 +2040,30 @@ export default {
       }
     },
     applyDiscount(contribution) {
-      console.log('Applying discount to:', contribution._id);
+      // Promote the row's student into the active selection so the existing
+      // Discount editor in the payment card opens for them. Pre-fills any
+      // discount they already have so the admin can adjust instead of
+      // starting from zero.
+      if (!contribution) return;
+      this.selectedStudent = {
+        _id: contribution._id,
+        student_id: contribution.student_id_number || contribution.student_id,
+        full_name: contribution.student_name,
+        first_name: contribution.first_name,
+        last_name: contribution.last_name,
+        program: contribution.program,
+        year_level: contribution.year_level,
+        college: contribution.college,
+        photo: contribution.photo
+      };
+      const existing = Number(contribution.discount_value || 0);
+      this.discountValue = existing > 0 ? existing : 0;
+      this.discountType = 'amount';
+      this.$nextTick(() => {
+        if (typeof window !== 'undefined') {
+          window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+        }
+      });
     },
     async markAsPayment(contribution) {
       if (!this.selectedStudent && !contribution) return;

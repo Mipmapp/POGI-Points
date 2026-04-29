@@ -84,8 +84,10 @@
               </div>
             </div>
 
-            <!-- Top-left: Modern segmented tile switcher -->
-            <div v-if="!mapLoading && !mapError" class="absolute top-4 left-4 z-[400] bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-white/60 p-1 flex text-xs font-bold">
+            <!-- Top-left: Modern segmented tile switcher (admin/editor only —
+                 students see street-only on their attendance map for a
+                 simpler, single-purpose UI). -->
+            <div v-if="!mapLoading && !mapError && !readonly" class="absolute top-4 left-4 z-[400] bg-white/95 backdrop-blur-md rounded-2xl shadow-xl border border-white/60 p-1 flex text-xs font-bold">
               <button
                 type="button"
                 @click="setTileLayer('street')"
@@ -126,7 +128,8 @@
                 <div :class="['flex-shrink-0 w-6 h-6 sm:w-7 sm:h-7 rounded-lg flex items-center justify-center', distanceFromPin <= radius ? 'bg-emerald-100' : 'bg-amber-100']">
                   <svg :class="['w-3.5 h-3.5 sm:w-4 sm:h-4', distanceFromPin <= radius ? 'text-emerald-600' : 'text-amber-600']" fill="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="6"/></svg>
                 </div>
-                <span class="font-bold text-gray-800 truncate">You're <span :class="distanceFromPin <= radius ? 'text-emerald-600' : 'text-amber-600'">{{ formatDistance(distanceFromPin) }}</span> from the pin</span>
+                <span v-if="readonly" class="font-bold text-gray-800 truncate">You're <span :class="distanceFromPin <= radius ? 'text-emerald-600' : 'text-amber-600'">{{ formatDistance(distanceFromPin) }}</span> from the area where attendance is eligible</span>
+                <span v-else class="font-bold text-gray-800 truncate">You're <span :class="distanceFromPin <= radius ? 'text-emerald-600' : 'text-amber-600'">{{ formatDistance(distanceFromPin) }}</span> from the pin</span>
               </div>
               <span :class="['px-2.5 py-1 rounded-full font-extrabold self-start sm:self-auto flex-shrink-0 text-[10px] tracking-wide', distanceFromPin <= radius ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700']">
                 {{ distanceFromPin <= radius ? 'INSIDE ZONE' : 'OUTSIDE ZONE' }}
@@ -317,7 +320,7 @@
               </p>
             </div>
             <span v-if="hasCoords" :class="['px-3 py-1 rounded-full font-extrabold text-xs', distanceFromPin <= radius ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700']">
-              {{ formatDistance(distanceFromPin) }} from pin
+              {{ formatDistance(distanceFromPin) }} {{ readonly ? 'from eligible area' : 'from pin' }}
             </span>
           </div>
         </div>

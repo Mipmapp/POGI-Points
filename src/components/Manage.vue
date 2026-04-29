@@ -80,6 +80,8 @@
                 >
                   <option value="">All Roles</option>
                   <option value="student">Students</option>
+                  <option value="treasurer">Treasurers</option>
+                  <option value="co-admin">Co-Admins</option>
                 </select>
                 <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
               </div>

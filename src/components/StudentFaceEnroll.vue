@@ -86,8 +86,9 @@
               </div>
             </div>
 
-            <!-- Scroll body -->
-            <div v-else class="p-5 space-y-4 overflow-y-auto face-modal-scroll">
+            <!-- Body (no scroll — content is sized to fit; only the T&C section
+                 above uses an internal scroll for the legal text). -->
+            <div v-else class="p-5 space-y-4 face-modal-body">
               <!-- Cooldown banner -->
               <div v-if="cooldownActive"
                 class="text-sm rounded-xl p-3 border border-amber-300/40 bg-amber-400/15 text-amber-100">
@@ -187,21 +188,25 @@
                 </Transition>
               </div>
 
-              <!-- Tips (sidebar-style glass items) -->
-              <ul class="text-xs text-white/75 space-y-1.5">
-                <li class="flex items-start gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="accentBorderL">
-                  <svg class="w-3.5 h-3.5 mt-0.5 text-emerald-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                  <span>Hold your phone or laptop at eye level in good light.</span>
-                </li>
-                <li class="flex items-start gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="accentBorderL">
-                  <svg class="w-3.5 h-3.5 mt-0.5 text-emerald-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                  <span>Look straight at the camera, no sunglasses or mask.</span>
-                </li>
-                <li class="flex items-start gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="accentBorderL">
-                  <svg class="w-3.5 h-3.5 mt-0.5 text-emerald-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                  <span>Only your own face — your registration must be unique among students.</span>
-                </li>
-              </ul>
+              <!-- Tips carousel — one tip at a time, auto-cycles every 4s.
+                   Compact: keeps the modal short enough to fit without scroll
+                   on most phones. Tap the dots to jump between tips. -->
+              <div class="relative px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4 min-h-[3.25rem]" :class="accentBorderL">
+                <Transition name="face-tip" mode="out-in">
+                  <div :key="activeTipIndex" class="flex items-start gap-2 text-xs text-white/85">
+                    <svg class="w-3.5 h-3.5 mt-0.5 text-emerald-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                    <span>{{ tips[activeTipIndex] }}</span>
+                  </div>
+                </Transition>
+                <div class="flex justify-center gap-1.5 mt-2">
+                  <button
+                    v-for="(_, i) in tips" :key="i"
+                    type="button"
+                    @click="activeTipIndex = i"
+                    :class="['h-1.5 rounded-full transition-all', i === activeTipIndex ? 'w-5 bg-white/80' : 'w-1.5 bg-white/30 hover:bg-white/50']"
+                    :aria-label="`Tip ${i + 1}`" />
+                </div>
+              </div>
 
               <!-- Error -->
               <Transition name="face-stage">
@@ -210,18 +215,13 @@
                 </div>
               </Transition>
 
-              <!-- Actions -->
+              <!-- Actions — auto-capture only. Cancel is the lone manual
+                   action; the camera handles capture once the face is steady
+                   inside the oval. -->
               <div v-if="!showConfirmDialog" class="flex gap-3 pt-1">
                 <button @click="closeIfIdle" :disabled="capturing || submitting"
                   class="flex-1 py-2.5 rounded-xl bg-white/10 border border-white/15 text-white font-semibold hover:bg-white/15 hover:border-white/25 disabled:opacity-40 transition-all">
                   Cancel
-                </button>
-                <button v-if="!cooldownActive" @click="startCapture" :disabled="!cameraReady || capturing || autoCountdown > 0"
-                  class="face-cta-btn group relative flex-1 py-2.5 rounded-xl font-semibold text-white border border-white/25 bg-white/15 hover:bg-white/25 hover:border-white/40 disabled:opacity-40 disabled:cursor-not-allowed overflow-hidden transition-all hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-black/20">
-                  <span v-if="!capturing && !disableCta" class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></span>
-                  <span class="relative">
-                    {{ capturing ? `Capturing… ${capturedSamples}/${TARGET_SAMPLES}` : autoCountdown > 0 ? `Starting in ${autoCountdown}…` : (hasExistingFace ? 'Update Face ID' : 'Capture & Save') }}
-                  </span>
                 </button>
               </div>
               <div v-else class="flex gap-3 pt-1">
@@ -305,10 +305,37 @@ const errorMessage = ref('')
 const collectedDescriptors = ref([])  // { descriptor, score }
 const captureFlash = ref(false)
 
-// Auto-capture countdown
+// Auto-capture countdown — short, 2-second steady countdown so the user
+// barely has time to drift before sampling begins.
 let autoStartHandle = null
-const autoCountdown = ref(0)  // counts down 3→0 before auto-capturing
-const AUTO_START_DELAY_MS = 1800
+const autoCountdown = ref(0)  // counts down 2→0 before auto-capturing
+const AUTO_COUNTDOWN_START = 2     // seconds of steady detection required
+const AUTO_COUNTDOWN_INTERVAL = 1000  // ms between ticks (1 per second)
+
+// Face placement feedback — true when a face is detected but it's too far
+// from the camera (small bounding box). Used to nudge "Get closer".
+const faceTooFar = ref(false)
+// True when face is detected but its center sits clearly outside the oval
+// region (~22% × 30% radius around 50/48). Nudges the user to recenter.
+const faceOffCenter = ref(false)
+
+// Tips carousel — short, scannable, one at a time.
+const tips = [
+  'Hold your phone or laptop at eye level in good light.',
+  'Look straight at the camera, no sunglasses or mask.',
+  'Only your own face — your registration must be unique among students.'
+]
+const activeTipIndex = ref(0)
+let tipsCycleHandle = null
+function startTipsCycle() {
+  stopTipsCycle()
+  tipsCycleHandle = setInterval(() => {
+    activeTipIndex.value = (activeTipIndex.value + 1) % tips.length
+  }, 4000)
+}
+function stopTipsCycle() {
+  if (tipsCycleHandle) { clearInterval(tipsCycleHandle); tipsCycleHandle = null }
+}
 
 // Confirm stage after samples collected
 const showConfirmDialog = ref(false)
@@ -318,7 +345,6 @@ const submitting = ref(false)
 
 const TARGET_SAMPLES = 30
 const progressPct = computed(() => Math.min(100, (capturedSamples.value / TARGET_SAMPLES) * 100))
-const disableCta = computed(() => !cameraReady.value || capturing.value)
 
 const stageStyle = computed(() => {
   if (showConfirmDialog.value) return {
@@ -339,6 +365,8 @@ const stageMessage = computed(() => {
   if (showConfirmDialog.value) return 'Capture complete — confirm your Face ID'
   if (capturing.value) return 'Hold still — capturing your face'
   if (autoCountdown.value > 0) return `Auto-capturing in ${autoCountdown.value}…`
+  if (faceTooFar.value) return 'Get closer to the camera'
+  if (faceOffCenter.value) return 'Center your face inside the oval'
   if (faceDetected.value) return 'Face detected — auto-capturing soon'
   if (cameraReady.value) return 'Position your face inside the oval'
   return 'Setting up your camera'
@@ -347,6 +375,8 @@ const stageHint = computed(() => {
   if (showConfirmDialog.value) return 'Review the preview below — confirm to save or retake to try again.'
   if (capturing.value) return `Sampling ${TARGET_SAMPLES} frames to build a strong template`
   if (autoCountdown.value > 0) return 'Stay still — capture will begin automatically'
+  if (faceTooFar.value) return 'Move your phone or laptop a little closer so your face fills the oval.'
+  if (faceOffCenter.value) return 'Slide your face so it sits right inside the oval guide.'
   return ''
 })
 
@@ -361,11 +391,14 @@ watch(() => props.open, async (val) => {
     // Reset checkbox each time the modal opens so users explicitly re-confirm
     tncCheckbox.value = false
     tncReadToBottom.value = false
+    activeTipIndex.value = 0
+    startTipsCycle()
     if (tncAgreed.value) {
       await openCamera()
     }
     // If not yet agreed, the T&C gate is shown and the camera waits for agreeAndContinue()
   } else {
+    stopTipsCycle()
     stopCamera()
   }
 })
@@ -440,9 +473,40 @@ async function runDetectionLoop() {
       .withFaceLandmarks(true)
       .withFaceDescriptor()
 
-    const ok = !!det && det.detection && det.detection.score > 0.6
-    faceDetected.value = ok
-    if (ok) {
+    const hasFace = !!det && det.detection && det.detection.score > 0.6
+    let wellPlaced = false
+    let tooFar = false
+    let offCenter = false
+
+    if (hasFace) {
+      // Compare the detection box against the camera frame to decide whether
+      // the user is far enough / centered enough for a clean capture. The
+      // oval guide spans roughly 44% × 60% of the frame (rx=22, ry=30 in a
+      // 100×100 viewBox centered at 50,48), so we mirror those bounds here.
+      const v = videoEl.value
+      const vw = v.videoWidth || 1
+      const vh = v.videoHeight || 1
+      const box = det.detection.box
+      const faceFracW = box.width / vw
+      const cx = (box.x + box.width / 2) / vw
+      const cy = (box.y + box.height / 2) / vh
+      // Mirror the video horizontally (the preview uses scaleX(-1)) so the
+      // off-center check matches what the user actually sees.
+      const cxMirrored = 1 - cx
+
+      // "Too far" when the face takes up less than ~22% of the frame width.
+      tooFar = faceFracW < 0.22
+      // "Off center" when the face center sits well outside the oval region.
+      offCenter = Math.abs(cxMirrored - 0.5) > 0.18 || Math.abs(cy - 0.48) > 0.22
+
+      wellPlaced = !tooFar && !offCenter
+    }
+
+    faceDetected.value = hasFace
+    faceTooFar.value = hasFace && tooFar
+    faceOffCenter.value = hasFace && !tooFar && offCenter
+
+    if (hasFace && wellPlaced) {
       faceLocked.value = true
       if (capturing.value && det.descriptor && capturedSamples.value < TARGET_SAMPLES) {
         collectedDescriptors.value.push({
@@ -460,8 +524,9 @@ async function runDetectionLoop() {
           return
         }
       } else if (!capturing.value && !autoStartHandle && !props.cooldownActive) {
-        // Auto-start countdown when face is stable
-        let count = 3
+        // Auto-start a 2-second steady countdown once the face is well placed.
+        // One tick per second so the on-screen number visibly counts down.
+        let count = AUTO_COUNTDOWN_START
         autoCountdown.value = count
         const tick = () => {
           count--
@@ -469,18 +534,18 @@ async function runDetectionLoop() {
           if (count <= 0) {
             autoStartHandle = null
             autoCountdown.value = 0
-            if (faceDetected.value && !capturing.value && !showConfirmDialog.value) {
+            if (faceDetected.value && !faceTooFar.value && !faceOffCenter.value && !capturing.value && !showConfirmDialog.value) {
               startCapture()
             }
           } else {
-            autoStartHandle = setTimeout(tick, 600)
+            autoStartHandle = setTimeout(tick, AUTO_COUNTDOWN_INTERVAL)
           }
         }
-        autoStartHandle = setTimeout(tick, 600)
+        autoStartHandle = setTimeout(tick, AUTO_COUNTDOWN_INTERVAL)
       }
     } else {
       faceLocked.value = false
-      // Cancel auto-start if face lost
+      // Cancel auto-start if face lost OR placement broke (too far / off center)
       if (autoStartHandle) {
         clearTimeout(autoStartHandle)
         autoStartHandle = null
@@ -599,7 +664,7 @@ function closeIfIdle() {
   emit('close')
 }
 
-onBeforeUnmount(() => stopCamera())
+onBeforeUnmount(() => { stopTipsCycle(); stopCamera() })
 </script>
 
 <style scoped>
@@ -673,16 +738,34 @@ onBeforeUnmount(() => stopCamera())
   animation: face-ping-once-slow 1.6s cubic-bezier(0, 0, 0.2, 1) infinite;
 }
 
-/* Custom scrollbar inside modal */
+/* Custom scrollbar — only used inside the T&C section now. Tints match the
+   deep-navy modal so the scrollbar reads as part of the chrome rather than
+   an out-of-place blue browser default. Cross-browser via Firefox's
+   scrollbar-* properties. */
+.face-modal-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+}
 .face-modal-scroll::-webkit-scrollbar { width: 6px; }
 .face-modal-scroll::-webkit-scrollbar-track { background: transparent; }
 .face-modal-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.22);
   border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 .face-modal-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.36);
 }
+
+/* Body container: no scrollbar. Content is sized with the carousel + compact
+   tips so it always fits inside the modal on phone + desktop. */
+.face-modal-body { overflow: hidden; }
+
+/* Tip carousel cross-fade */
+.face-tip-enter-active,
+.face-tip-leave-active { transition: opacity 0.3s ease, transform 0.3s ease; }
+.face-tip-enter-from { opacity: 0; transform: translateY(4px); }
+.face-tip-leave-to { opacity: 0; transform: translateY(-4px); }
 
 /* Button micro-interaction */
 .face-cta-btn:active {
