@@ -2282,8 +2282,10 @@
                      `relative z-0 isolate` creates a new stacking context so
                      Leaflet's internal high-z overlays (z-[400]/z-[500]) can't
                      bleed in front of the fullscreen kiosk modal (z-[70]).
-                     Also hidden entirely while the kiosk is on screen. -->
-                <div v-if="selectedEvent && selectedEvent.geofence_enabled && !rfidFullscreenMode"
+                     Also hidden entirely while the kiosk OR the Location
+                     Gate modal is on screen — the gate has its own radar
+                     visual, so two map panels at once is just noisy. -->
+                <div v-if="selectedEvent && selectedEvent.geofence_enabled && !rfidFullscreenMode && !scannerLocationGateOpen"
                      class="mt-4 relative z-0 isolate">
                   <GeofenceMap
                     readonly

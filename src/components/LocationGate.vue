@@ -1,6 +1,9 @@
 <template>
   <Transition name="lg-overlay">
-    <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center p-4 lg-backdrop" @click.self="closeIfIdle">
+    <!-- z-[800] sits above Leaflet's internal stacking (which goes up to
+         ~z-700 for tooltips/popups). Without this the GeofenceMap on the
+         Admin > Attendance > Scanner view bleeds in front of the modal. -->
+    <div v-if="open" class="fixed inset-0 z-[800] flex items-center justify-center p-4 lg-backdrop" @click.self="closeIfIdle">
       <Transition name="lg-panel" appear>
         <div v-if="open" class="lg-panel relative w-full max-w-md overflow-hidden">
 
