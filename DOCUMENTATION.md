@@ -62,6 +62,7 @@ SSAAM allows students to register and manage their profiles, attend school event
 | html2pdf.js | ^0.14.0 | PDF generation for receipts |
 | xlsx | ^0.18.5 | Excel report export |
 | cropperjs | ^2.1.0 | In-browser image cropping for profile photos |
+| @vladmandic/face-api | latest | Browser face detection + 128-float descriptor matching for the admin Face ID 3rd-step login |
 
 ### Backend
 | Technology | Version | Purpose |
@@ -89,12 +90,14 @@ ssaam/
 │   ├── assets/
 │   │   └── styles.css             # Global Tailwind CSS imports
 │   ├── components/
-│   │   ├── AdminContributionPanel.vue   # Admin contribution management UI
+│   │   ├── AdminContributionPanel.vue   # Admin contribution management UI (hosts LoyversePOSPanel)
 │   │   ├── AnnouncementPopup.vue        # Notification/announcement modal
 │   │   ├── ContributionReceipt.vue      # PDF-ready receipt component
 │   │   ├── ContributionsModal.vue       # Contribution list modal
+│   │   ├── FaceRecognitionSettings.vue  # Admin Face ID enrollment panel (Settings page)
 │   │   ├── GlobalLoadingEffect.vue      # App-wide loading spinner
 │   │   ├── LoadingScreen.vue            # Full-screen loading screen
+│   │   ├── LoyversePOSPanel.vue         # Auto-receipt POS panel + ESC/POS Bluetooth printer
 │   │   ├── Manage.vue                   # Admin management panel (students, events)
 │   │   ├── ProgrammerLoadingEffect.vue  # Coding-themed animated loader
 │   │   ├── RFIDLoadingEffect.vue        # RFID scan animation loader
@@ -106,6 +109,7 @@ ssaam/
 │   ├── router/
 │   │   └── index.js               # Vue Router configuration
 │   ├── utils/
+│   │   ├── faceapi.js             # Lazy CDN loader + matcher for @vladmandic/face-api
 │   │   └── tokenHandler.js        # JWT token refresh and 401 auto-logout
 │   ├── views/
 │   │   ├── Login.vue              # Landing page + login + college selector
@@ -742,3 +746,46 @@ All Face ID / face recognition functionality was removed end-to-end on the clien
 |---|---|
 | `/apis/co-admin/assign` | New POST endpoint. Accepts `student_id` and `college`. Looks up user by `username === student_id`, validates they are not already an admin/co-admin, and promotes them to `co-admin` for the given college. |
 | `/apis/stats` | Stats endpoint now counts programs dynamically from actual student records instead of hardcoded BSCS/BSIS/BSIT lists. |
+
+---
+
+### Session — April 29, 2026
+
+#### Face Recognition / Face ID — Reinstated (Phase 1)
+
+The April 27 removal was reversed. Face ID is back as the third-step admin login check and as a Settings-page enrollment panel for admins. The backend Face ID endpoints (`/apis/masters/face`, `/apis/students/face`, `/apis/attendance/sessions/:id/check-face`) — which were left intact during the removal — are now used again from the client.
+
+| Area | Change |
+|---|---|
+| Dependency | Installed `@vladmandic/face-api` (browser fork of `face-api.js` with current TF.js bindings). Models are loaded from a public CDN at runtime (no models shipped in the repo). |
+| New File | `src/utils/faceapi.js` — single shared lazy loader + matcher. Loads `tinyFaceDetector`, `faceLandmark68Net`, and `faceRecognitionNet` once on first use. Exposes `loadFaceApi()`, `detectDescriptor(videoOrCanvas)`, and `euclidean(a, b)`. Uses a `0.55` distance threshold and a `3-frame match streak` to avoid false positives. |
+| New File | `src/components/FaceRecognitionSettings.vue` — admin-only enrollment panel mounted in the Dashboard Settings page (above the existing Save button). Shows enrolled count (max 10), live camera feed, capture-and-save flow, list of enrolled descriptors with delete, and a relabel action. Persists 128-float descriptors via `POST /apis/masters/face` (and `DELETE /apis/masters/face/:id`). |
+| `Login.vue` — Template | Restored the Step 3 of 3 modal (camera card + status row + cancel button). It only opens after the existing MM/DD/YY admin verification step succeeds. |
+| `Login.vue` — Script | Added back `startFaceVerification()`, the `runFaceLoginLoop()` interval (~250 ms cadence), `cancelFaceVerification()`, and `stopFaceCamera()`. `verifyAdminCode()` now branches: if the admin has at least one enrolled face descriptor (fetched via `GET /apis/masters/face`), open the modal; otherwise call the existing `completeLogin()` directly so admins without enrolment never get locked out. |
+| `Login.vue` — CSS | Added back `.face-mirror`, `.ssaam-face-scanline`, and the `@keyframes face-scan` rule for the camera overlay. |
+| `Dashboard.vue` | Re-imported `FaceRecognitionSettings` and mounted it inside the Settings page card (above the Save button). All other previously removed face surfaces (RFID/Face mode tabs, kiosk overlay, student-facing Face ID) are still removed — only the admin enrollment panel is restored in this phase. |
+
+**Phase 2 (not yet done, parked for follow-up):** restore `FaceScannerKiosk.vue` (admin attendance kiosk camera) and `StudentFaceID.vue` (student self-enrollment). The endpoints already exist on the backend.
+
+#### Loyverse POS Receipt Panel — Rewritten
+
+The contribution POS panel (`src/components/LoyversePOSPanel.vue`) was redesigned end-to-end. The catalog/cart/items grid was removed; the panel now composes a single auto-receipt from the selected student + active payment campaign and prints it to a thermal Bluetooth printer.
+
+| Area | Change |
+|---|---|
+| Catalog / Cart Removed | Deleted the items grid, the categories filter, the cart sidebar, the per-line qty/discount controls, the item editor modal, and the discount field. The panel no longer holds product state. |
+| Auto Line Item | The single receipt line is built from `props.activePayment` — `name = activePayment.title` (uppercased), `price = props.suggestedAmount \|\| activePayment.amount_due`, `qty = 1`. Updates reactively when the parent swaps the active payment. |
+| Customer | Pulled from `props.student` — `full_name` if present, otherwise `first_name + middle_name + last_name + suffix` collapsed to a single uppercased line. |
+| Cashier (Employee) | Auto-filled from `localStorage.currentUser` on mount and whenever the prop `student` changes (only when blank, so user overrides are preserved). Uses `full_name` / `fullName` / first+middle+last+suffix / `username` in that priority order. |
+| Editable Header Settings | Green "Header" button in the panel toolbar opens a Teleport modal with editable inputs for `businessHeader`, `businessAddress`, `businessName`, `businessPhone`, `posName`, `employeeName`, plus a "Reset to Default" action. Persisted to `localStorage` under `ssaam_pos_receipt_v2`. |
+| Receipt Preview | Right-hand on-screen receipt preview matches the printed layout: CCS shield logo (`/assets/ccs_logo.png`) → ACADEMIC → address → org name → `Phone No:` → `Employee:` / `POS:` / `Customer:` → dashed separator → ITEM/price → `1 x P…` → dashed separator → `Total` (extrabold) / `Cash` → `THANK YOU FOR YOUR PURCHASE!` → italic retention note. Preview width capped at 240 px to feel like a 57 mm strip. |
+| Logo on Print | New `loadLogoBitmap()` helper renders the CCS shield to a monochrome ESC/POS raster. 160 dots wide (multiple of 8, comfortable margin in the ~384-dot printable area of a 57 mm roll). MSB-first packing, threshold 128, transparent pixels treated as white. Sent ahead of the text via the `GS v 0` raster command. |
+| ESC/POS Build | `buildEscPos()` produces the full byte stream: init → centered logo → bold ACADEMIC → address → bold org name (word-wrapped) → phone → left-align body → Employee/POS/Customer (word-wrapped) → dashed → item line (right-aligned price, word-wrapped if title is long) → `1 x` quantity → dashed → bold + double-height `Total` → normal `Cash` → centered bold thank-you → wrapped retention note → paper cut (`GS V 0`). |
+| Peso Sign Fix | Most ESC/POS thermals default to code page 437/PC850 which lacks U+20B1 (₱) — the printer was rendering a checker-block. Print bytes now use a plain `P` prefix (`P410.00`). The on-screen preview keeps the real ₱ glyph since browsers handle Unicode fine. |
+| Bold Total | The `Total` row prints with bold ON (`ESC E 1`) plus double-height (`ESC ! 0x10`), then both modes are reset before the `Cash` row. The amount inherits the bold/size while it's active. |
+| Word Wrap (No Letters Stranded) | New `wrapText(text, w)` helper word-wraps any line at a 32-char boundary without splitting words. Applied to Employee, Customer, the org-name header, and the footer note. New `itemRow(name, price, w)` keeps the price right-aligned on the first line and flows the rest of a long item title onto whole-word continuation lines. Result: `JULLAN CARL JAMORA MAGLINTE` now prints as `Customer: JULLAN CARL JAMORA` / `MAGLINTE` instead of `…MAG` / `LINTE`. |
+| Copies to Print | New "Copies to Print" card with `−`/number-input/`+` controls. Hard-clamped between 1 and 10 (typing 99 snaps back to 10 on blur). Print button label updates to "Print N Receipts"; status line shows "Printing 2 of 3...". A 350 ms pause is inserted between copies so the printer's buffer drains. |
+| 57 × 30 mm Roll Fit | Logo width capped at 160 dots; text body fixed at 32 chars (Font A standard for 57/58 mm); footer note wrapped via `wrapText`; on-screen preview narrowed to 240 px. |
+| USB Printer — Removed | Stripped the `Connect USB Printer` button, the USB status pill, the `PRINTER_VENDORS` constant, the `pickUSBDevice` / `connectUSB` methods, the USB branch in `disconnectAll`, the USB branch in `printReceipt`, and the `usbDevice` / `usbEndpoint` / `usbConnected` / `connectingUSB` state fields. The panel is Bluetooth-only now. |
+| Bluetooth Printer | Unchanged otherwise. Uses Web Bluetooth with a known-services filter list (POS58, GOOJPRT, ZJ, Xprinter, MTP, etc.) and an `acceptAllDevices` fallback when the chooser comes up empty. Writes are chunked at 180 bytes, preferring `writeValueWithoutResponse`. Auto-handles `gattserverdisconnected`. |
+| Emit | Still emits `printed` on success, now with `{ item, amount, customer, copies }`. |
