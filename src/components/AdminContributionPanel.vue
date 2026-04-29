@@ -474,7 +474,7 @@
     </div>
 
     <!-- Selected Student Payment Card -->
-    <div v-if="selectedStudent" data-payment-card class="bg-white rounded-3xl shadow-xl border border-blue-200 overflow-hidden">
+    <div v-if="selectedStudent" class="bg-white rounded-3xl shadow-xl border border-blue-200 overflow-hidden">
       <div class="px-5 sm:px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white font-bold text-lg flex-shrink-0 overflow-hidden">
@@ -508,7 +508,7 @@
               <button @click="discountType = 'percentage'" :class="['flex-1 py-1.5 rounded-lg text-xs font-bold transition', discountType === 'percentage' ? 'bg-ssaam-dark text-white shadow' : 'text-gray-600 hover:text-gray-800']">% Percent</button>
             </div>
             <div class="flex gap-2">
-              <input v-model.number="discountValue" data-discount-input type="number" :placeholder="discountType === 'amount' ? '0.00' : '0'" class="flex-1 px-3 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-white transition" />
+              <input v-model.number="discountValue" type="number" :placeholder="discountType === 'amount' ? '0.00' : '0'" class="flex-1 px-3 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-white transition" />
               <span class="px-3 py-2 bg-blue-100 text-blue-700 rounded-xl font-bold text-sm">{{ discountType === 'amount' ? '₱' : '%' }}</span>
             </div>
           </div>
@@ -713,8 +713,8 @@
               <svg v-if="processingPaymentId === (c._id || c.student_id)" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
               {{ processingPaymentId === (c._id || c.student_id) ? 'Processing...' : 'Mark as Unpaid' }}
             </button>
-            <button @click="applyDiscount(c)" class="px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition hover:bg-blue-100 inline-flex items-center justify-center" title="Apply discount" aria-label="Apply discount">
-              <span class="ssaam-icon-discount" aria-hidden="true"></span>
+            <button @click="applyDiscount(c)" class="px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition hover:bg-blue-100">
+              Discount
             </button>
           </div>
         </div>
@@ -735,11 +735,8 @@
              - Paid Date:   ≥ lg
              - Actions:     always
            Discount column also auto-hides if no row in this page has one.
-           v-if guard: stay hidden while loading and when there are no
-           filtered rows — otherwise the previous search's data would
-           keep showing under the loading skeleton.
       -->
-      <div v-if="!isLoading && filteredContributions.length > 0" class="hidden md:block overflow-x-auto">
+      <div class="hidden md:block overflow-x-auto">
         <table class="w-full">
           <thead>
             <tr class="bg-gradient-to-r from-ssaam-dark to-ssaam-light">
@@ -820,8 +817,8 @@
                     <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
                     <span>{{ processingPaymentId === (c._id || c.student_id) ? '...' : 'Unpaid' }}</span>
                   </button>
-                  <button @click="applyDiscount(c)" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md text-[11px] font-bold transition whitespace-nowrap inline-flex items-center justify-center" title="Apply / change discount" aria-label="Apply discount">
-                    <span class="ssaam-icon-discount" aria-hidden="true"></span>
+                  <button @click="applyDiscount(c)" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md text-[11px] font-bold transition whitespace-nowrap" title="Apply / change discount">
+                    Disc
                   </button>
                 </div>
               </td>
@@ -2025,55 +2022,7 @@ export default {
       }
     },
     applyDiscount(contribution) {
-      // Promote this row's student into the active payment form so the admin
-      // can pick a discount type/value and then click "Record Payment". The
-      // form already has the discount controls — we just funnel the row
-      // into it instead of asking the admin to re-search the same student.
-      if (!contribution) return;
-
-      // Map the contribution row → the shape selectedStudent expects. The
-      // payment card UI reads .full_name / .student_id / .program /
-      // .year_level / .photo, and the mark-paid call reads
-      // .student_id_number || .student_id, so we cover both.
-      this.selectedStudent = {
-        _id: contribution.student_doc_id || contribution._id,
-        student_id: contribution.student_id_number || contribution.student_id,
-        student_id_number: contribution.student_id_number || contribution.student_id,
-        full_name: contribution.student_name || '',
-        first_name: contribution.first_name || (contribution.student_name || '').split(' ')[0] || '',
-        last_name: contribution.last_name || (contribution.student_name || '').split(' ').slice(1).join(' ') || '',
-        program: contribution.program || '',
-        year_level: contribution.year_level || '',
-        college: contribution.college || '',
-        photo: contribution.photo || ''
-      };
-
-      // Pre-fill the discount with whatever this row already has so the
-      // admin can adjust it (₱ amount, since that's what we store).
-      this.discountType = 'amount';
-      this.discountValue = Number(contribution.discount_value || 0);
-
-      // Clear search panel so it doesn't compete for visual attention.
-      this.searchResults = [];
-      this.hasSearched = false;
-      this.searchQuery = '';
-
-      // Scroll the payment card into view + briefly flash the discount
-      // input so the admin's eye lands in the right place.
-      this.$nextTick(() => {
-        const root = this.$el;
-        if (!root) return;
-        const card = root.querySelector('[data-payment-card]');
-        if (card && typeof card.scrollIntoView === 'function') {
-          card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-        const input = root.querySelector('[data-discount-input]');
-        if (input) {
-          setTimeout(() => {
-            try { input.focus(); input.select?.(); } catch (_) {}
-          }, 350);
-        }
-      });
+      console.log('Applying discount to:', contribution._id);
     },
     async markAsPayment(contribution) {
       if (!this.selectedStudent && !contribution) return;
@@ -2265,18 +2214,4 @@ export default {
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-/* Discount tag icon — uses the black SVG from /public/discount.svg as a
-   CSS mask so we can recolor it via background-color. Keeps the asset
-   reusable without inlining the path data. Sized to match the surrounding
-   button font (~text-xs) so it sits where the "Discount" word used to.
-   Color is the same blue-700 the action buttons already use. */
-.ssaam-icon-discount {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  background-color: #1d4ed8; /* tailwind blue-700, matches button text */
-  -webkit-mask: url('/discount.svg') center / contain no-repeat;
-          mask: url('/discount.svg') center / contain no-repeat;
-}
 </style>
