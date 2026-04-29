@@ -327,7 +327,7 @@
         <p class="text-sm">Student School Activities Attendance Monitoring</p>
       </div>
       <div class="absolute bottom-4 left-4 right-4 text-center text-xs text-white opacity-75">
-        Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+        Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
       </div>
     </div>
 
@@ -442,7 +442,7 @@
         </div>
 
         <div class="mt-4 text-center text-xs text-gray-400">
-          Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+          Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
         </div>
       </div>
     </div>

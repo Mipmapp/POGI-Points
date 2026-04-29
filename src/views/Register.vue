@@ -133,7 +133,7 @@
       </div>
 
       <div class="absolute bottom-4 left-4 right-4 text-center text-xs text-white opacity-75">
-        Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+        Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
       </div>
     </div>
     <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50">
@@ -765,7 +765,7 @@
         </div>
 
         <div class="mt-2 text-center text-xs text-gray-400">
-          Copyright © 2025 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+          Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
         </div>
       </div>
     </div>
