@@ -61,7 +61,7 @@
       <div v-if="activeEvents.length > 0" class="space-y-3">
         <h3 :class="['text-sm font-bold flex items-center gap-2', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-purple-800']">
           <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse inline-block"></span>
-          Active Events — Check In / Check Out
+          Active Events
         </h3>
 
         <div v-for="event in activeEvents" :key="event._id" :class="['rounded-xl border-2 bg-white overflow-hidden shadow-sm', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-emerald-200' : 'border-purple-200']">
@@ -93,20 +93,33 @@
                 class="px-4 py-3 flex items-center justify-between gap-3"
               >
                 <div class="flex-1 min-w-0">
-                  <span class="font-semibold text-gray-800 text-sm">{{ session.label }}</span>
-                  <span class="text-xs text-gray-500 ml-2">{{ session.start_time }} – {{ session.end_time }}</span>
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="font-semibold text-gray-800 text-sm">{{ session.label }}</span>
+                    <span v-if="session.check_in_only" class="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-medium">Check-In Only</span>
+                  </div>
+                  <span class="text-xs text-gray-500">{{ session.start_time }} – {{ session.end_time }}</span>
                   <div class="mt-0.5">
-                    <span v-if="getSessionLogStatus(event._id, session._id) === 'complete'" class="text-xs text-emerald-600 font-semibold">✓ Attendance Complete</span>
-                    <span v-else-if="getSessionLogStatus(event._id, session._id) === 'checked_in'" :class="['text-xs font-semibold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']">Checked In — pending check-out</span>
+                    <!-- complete: both checked in & out, or check_in_only with checkin -->
+                    <span
+                      v-if="getSessionLogStatus(event._id, session._id) === 'complete' || (session.check_in_only && getSessionLogStatus(event._id, session._id) === 'checked_in')"
+                      class="text-xs text-emerald-600 font-semibold"
+                    >✓ Attendance Complete</span>
+                    <span
+                      v-else-if="getSessionLogStatus(event._id, session._id) === 'checked_in'"
+                      :class="['text-xs font-semibold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-purple-600']"
+                    >Checked In — pending check-out</span>
                     <span v-else class="text-xs text-gray-500">Not yet checked in</span>
                   </div>
                 </div>
                 <div class="flex-shrink-0">
-                  <!-- Complete -->
-                  <span v-if="getSessionLogStatus(event._id, session._id) === 'complete'" class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg font-semibold">Done</span>
-                  <!-- Check Out -->
+                  <!-- Done: complete or check_in_only with checkin -->
+                  <span
+                    v-if="getSessionLogStatus(event._id, session._id) === 'complete' || (session.check_in_only && getSessionLogStatus(event._id, session._id) === 'checked_in')"
+                    class="text-xs bg-emerald-100 text-emerald-700 px-3 py-1.5 rounded-lg font-semibold"
+                  >Done</span>
+                  <!-- Check Out (only for non-check_in_only sessions) -->
                   <button
-                    v-else-if="getSessionLogStatus(event._id, session._id) === 'checked_in'"
+                    v-else-if="getSessionLogStatus(event._id, session._id) === 'checked_in' && !session.check_in_only"
                     @click="handleCheckInButton(event, session)"
                     :disabled="!faceEnrolled || geoLoading"
                     :class="['px-3 py-1.5 rounded-lg text-sm font-semibold text-white transition-all flex items-center gap-1.5', !faceEnrolled ? 'bg-gray-300 cursor-not-allowed' : (isCOE ? 'bg-orange-600 hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-95' : 'bg-purple-600 hover:bg-purple-700 active:scale-95')]"
@@ -117,7 +130,7 @@
                   </button>
                   <!-- Check In -->
                   <button
-                    v-else
+                    v-else-if="getSessionLogStatus(event._id, session._id) === 'none'"
                     @click="handleCheckInButton(event, session)"
                     :disabled="!faceEnrolled || geoLoading"
                     :class="['px-3 py-1.5 rounded-lg text-sm font-semibold text-white transition-all flex items-center gap-1.5', !faceEnrolled ? 'bg-gray-300 cursor-not-allowed' : (isCOE ? 'bg-orange-600 hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 hover:bg-emerald-700 active:scale-95' : 'bg-purple-600 hover:bg-purple-700 active:scale-95')]"

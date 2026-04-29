@@ -592,8 +592,12 @@
 
   <!-- Logout Animation -->
   <transition name="fade">
-    <div v-if="showLogoutAnimation" :class="logoutBgClass" :style="logoutBgStyle">
-      <div class="text-center text-white flex flex-col items-center gap-4">
+    <div v-if="showLogoutAnimation" :class="logoutBgClass" :style="logoutBgStyle" class="relative overflow-hidden">
+      <!-- Particle background -->
+      <div class="absolute inset-0 pointer-events-none">
+        <span v-for="p in logoutParticles" :key="p.id" class="absolute rounded-full logout-particle" :style="p.style"></span>
+      </div>
+      <div class="text-center text-white flex flex-col items-center gap-4 relative z-10">
         <div class="flex items-center gap-4">
           <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-20 h-20 object-contain drop-shadow-2xl flex-shrink-0" />
           <div class="leading-tight text-left">
@@ -942,7 +946,7 @@
     </transition>
 
     <!-- Main Content Area -->
-    <div class="flex-1 bg-slate-50 overflow-auto order-2 md:order-2">
+    <div class="flex-1 bg-slate-50 overflow-y-auto overflow-x-hidden order-2 md:order-2">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
@@ -2329,12 +2333,12 @@
                           {{ getAttendanceLogStatusLabel(log) }}
                         </span>
                       </div>
-                      <div class="grid grid-cols-2 gap-2 text-xs text-gray-600 bg-gray-50 rounded p-2">
+                      <div :class="['gap-2 text-xs text-gray-600 bg-gray-50 rounded p-2', selectedSession?.check_in_only ? 'grid grid-cols-1' : 'grid grid-cols-2']">
                         <div>
                           <span class="text-gray-500 font-medium block">In:</span>
                           <span class="font-semibold">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-' }}</span>
                         </div>
-                        <div>
+                        <div v-if="!selectedSession?.check_in_only">
                           <span class="text-gray-500 font-medium block">Out:</span>
                           <span class="font-semibold">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '-' }}</span>
                         </div>
@@ -2349,7 +2353,7 @@
                           <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Student</th>
                           <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Program</th>
                           <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Check-in</th>
-                          <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Check-out</th>
+                          <th v-if="!selectedSession?.check_in_only" :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Check-out</th>
                           <th :class="['px-3 py-2 text-left text-xs font-semibold', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-green-800' : 'text-blue-800']">Status</th>
                         </tr>
                       </thead>
@@ -2366,7 +2370,7 @@
                           </td>
                           <td class="px-3 py-2 text-xs">{{ log.program || log.student?.program || '-' }}</td>
                           <td class="px-3 py-2 text-xs">{{ (log.check_in_at || log.check_in_time) ? new Date(log.check_in_at || log.check_in_time).toLocaleTimeString() : '-' }}</td>
-                          <td class="px-3 py-2 text-xs">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</td>
+                          <td v-if="!selectedSession?.check_in_only" class="px-3 py-2 text-xs">{{ (log.check_out_at || log.check_out_time) ? new Date(log.check_out_at || log.check_out_time).toLocaleTimeString() : '-' }}</td>
                           <td class="px-3 py-2">
                             <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', getAttendanceLogStatusClass(log)]">
                               {{ getAttendanceLogStatusLabel(log) }}
@@ -12225,6 +12229,36 @@ const logoutBgStyle = computed(() => {
   return { background: 'linear-gradient(135deg, #080e2e 0%, #0f1f6e 100%)' }
 })
 
+const logoutParticles = computed(() => {
+  const colors = isCOE.value
+    ? ['rgba(251,146,60,0.5)', 'rgba(248,113,113,0.5)', 'rgba(253,186,116,0.4)', 'rgba(255,255,255,0.3)']
+    : isSOM.value
+    ? ['rgba(74,222,128,0.5)', 'rgba(34,197,94,0.4)', 'rgba(253,224,71,0.4)', 'rgba(255,255,255,0.3)']
+    : isCNAHS.value
+    ? ['rgba(52,211,153,0.5)', 'rgba(16,185,129,0.4)', 'rgba(110,231,183,0.4)', 'rgba(255,255,255,0.3)']
+    : ['rgba(96,165,250,0.5)', 'rgba(147,197,253,0.4)', 'rgba(165,180,252,0.4)', 'rgba(255,255,255,0.3)']
+  return Array.from({ length: 40 }, (_, i) => {
+    const size = Math.random() * 8 + 3
+    const left = Math.random() * 100
+    const delay = Math.random() * 4
+    const duration = Math.random() * 4 + 4
+    const color = colors[Math.floor(Math.random() * colors.length)]
+    return {
+      id: i,
+      style: {
+        width: size + 'px',
+        height: size + 'px',
+        left: left + '%',
+        bottom: '-10px',
+        background: color,
+        animationDelay: delay + 's',
+        animationDuration: duration + 's',
+        boxShadow: `0 0 ${size * 2}px ${color}`
+      }
+    }
+  })
+})
+
 // Attendance Events Search & Pagination
 const filteredAttendanceEvents = computed(() => {
   if (!attendanceSearchQuery.value.trim()) {
@@ -18817,6 +18851,27 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.logout-particle {
+  animation: logout-float linear infinite both;
+}
+
+@keyframes logout-float {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 0.7;
+  }
+  100% {
+    transform: translateY(-100vh) scale(0.5);
+    opacity: 0;
+  }
+}
+
 .fade-scale-enter-active {
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
