@@ -1188,7 +1188,12 @@ export default {
           return
         }
 
-        // Super admin fetches ALL colleges at once; co-admin/regular fetches own college only
+        // Master admin fetches ALL colleges at once; co-admin/regular admin
+        // fetches own college only. /apis/students/list/all returns every
+        // approved student in the chosen college (the previous endpoint
+        // /apis/students/search with no query was filtering down to the
+        // calling user's own student record only, which is why admins were
+        // seeing nothing but themselves).
         const isMaster = this.currentUser?.isMaster === true
         const college = this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
 
@@ -1197,7 +1202,7 @@ export default {
           url = buildAPIUrl('/apis/students/all-colleges')
           headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-SSAAM-College': 'CCS' }
         } else {
-          url = buildAPIUrl('/apis/students/search?limit=1000')
+          url = buildAPIUrl('/apis/students/list/all')
           headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-SSAAM-College': college }
         }
 

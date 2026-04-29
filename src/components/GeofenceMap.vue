@@ -59,7 +59,7 @@
           isCOE ? 'gfm-frame-coe' : isSOM ? 'gfm-frame-som' : 'gfm-frame-blue']">
           <!-- Inner frame -->
           <div class="relative rounded-3xl overflow-hidden bg-white m-[3px]">
-            <div ref="mapEl" class="w-full h-80 sm:h-[28rem] bg-gray-100"></div>
+            <div ref="mapEl" class="w-full h-64 sm:h-80 lg:h-[22rem] bg-gray-100"></div>
 
             <!-- Loading overlay -->
             <div v-if="mapLoading" class="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm pointer-events-none z-[500]">
@@ -140,7 +140,9 @@
             <svg :class="['w-4 h-4', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
             <p :class="['text-xs font-bold uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Quick Actions</p>
           </div>
-          <div class="flex flex-wrap gap-2">
+          <!-- On large screens force all 4 buttons onto one line; on small
+               screens still wrap so the toolbar never overflows. -->
+          <div class="flex flex-wrap lg:flex-nowrap gap-2">
             <!-- Live tracking toggle -->
             <button
               type="button"
@@ -378,10 +380,10 @@ let meAccuracyCircle = null
 const hasCoords = computed(() => Number.isFinite(props.latitude) && Number.isFinite(props.longitude))
 const hasMyLocation = computed(() => Number.isFinite(myLat.value) && Number.isFinite(myLng.value))
 
-// Default fallback: JRMSU Katipunan-area coordinates, just so the map has
-// somewhere reasonable to open before the admin sets a pin.
-const DEFAULT_LAT = 8.5023
-const DEFAULT_LNG = 123.3464
+// Default fallback: JRMSU Main Campus, Dapitan City — the map opens here
+// when there is no pin and the admin has not yet shared their location.
+const DEFAULT_LAT = 8.6585
+const DEFAULT_LNG = 123.4250
 
 const formatCoord = (v) => Number.isFinite(v) ? v.toFixed(6) : '—'
 
@@ -678,6 +680,48 @@ function onRadiusInput(v) {
   if (circle) circle.setRadius(n)
 }
 
+// Take several GPS samples and pick the one with the best accuracy.
+// The first fix from the browser is often a coarse network/IP estimate; the
+// second/third reading after the chip warms up is usually much tighter.
+function getBestFix({ samples = 4, perSampleTimeoutMs = 8000 } = {}) {
+  return new Promise((resolve, reject) => {
+    if (!('geolocation' in navigator)) {
+      reject(new Error('Geolocation unsupported'))
+      return
+    }
+    let best = null
+    let remaining = samples
+    let lastErr = null
+    const tick = () => {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (!best || (pos.coords.accuracy || Infinity) < (best.coords.accuracy || Infinity)) {
+            best = pos
+          }
+          remaining -= 1
+          if (remaining <= 0 || (best.coords.accuracy && best.coords.accuracy <= 10)) {
+            resolve(best)
+          } else {
+            tick()
+          }
+        },
+        (err) => {
+          lastErr = err
+          remaining -= 1
+          if (remaining <= 0) {
+            if (best) resolve(best)
+            else reject(lastErr || err)
+          } else {
+            tick()
+          }
+        },
+        { enableHighAccuracy: true, timeout: perSampleTimeoutMs, maximumAge: 0 }
+      )
+    }
+    tick()
+  })
+}
+
 async function useMyLocation() {
   if (!('geolocation' in navigator)) {
     locationError.value = 'Your device does not support geolocation.'
@@ -686,13 +730,8 @@ async function useMyLocation() {
   locating.value = true
   locationError.value = ''
   try {
-    const pos = await new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-      })
-    })
+    // Sample a few readings and keep the most accurate one.
+    const pos = await getBestFix({ samples: 4, perSampleTimeoutMs: 8000 })
     // Update live "me" state too so the user sees themselves on the map
     myLat.value = pos.coords.latitude
     myLng.value = pos.coords.longitude

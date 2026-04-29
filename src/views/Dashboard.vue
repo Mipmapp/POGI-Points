@@ -1874,7 +1874,7 @@
                 <img src="/events.svg" alt="No Events" class="w-16 h-16 mx-auto mb-4 text-gray-300" style="filter: invert(0.5);" />
                 <p>{{ attendanceSearchQuery ? 'No events match your search.' : 'No attendance events yet. Create one to get started!' }}</p>
               </div>
-              <div v-else class="space-y-4">
+              <transition-group v-else name="event-slide-in" tag="div" class="space-y-4" appear>
                 <div v-for="event in paginatedAttendanceEvents" :key="event._id" class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition">
                   <!-- Event Header - Clickable to expand -->
                   <div class="p-3 sm:p-4 cursor-pointer" @click="toggleEventExpansion(event._id)">
@@ -1956,7 +1956,7 @@
                     </div>
                   </transition>
                 </div>
-              </div>
+              </transition-group>
 
               <!-- Bottom Pagination -->
               <div v-if="attendanceTotalPages > 1" class="flex items-center justify-between pt-6 mt-6 border-t" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200'">
@@ -3260,7 +3260,7 @@
             <div class="absolute top-4 right-4">
               <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold shadow-lg" :class="currentUser.isMaster ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white' : 'bg-white/20 text-white border border-white/30'">
                 <img v-if="currentUser.isMaster" src="/crown.svg" alt="" class="w-3.5 h-3.5 brightness-0 invert" />
-                {{ currentUser.isMaster ? 'Super Admin' : currentUser.role === 'co-admin' ? 'Co-Admin' : 'Admin' }}
+                {{ currentUser.role === 'co-admin' ? 'Co-Admin' : 'Admin' }}
                 <span v-if="currentUser.role === 'co-admin' && currentUser.college" class="font-normal opacity-80">({{ currentUser.college }})</span>
               </span>
             </div>
@@ -4264,7 +4264,7 @@
             </button>
           </div>
 
-          <!-- College Tabs (Super Admin only) -->
+          <!-- College Tabs (Master Admin only) -->
           <div v-if="currentUser.isMaster && !isCoAdmin && !isTreasurer" class="flex flex-wrap gap-2 mb-5">
             <button @click="statsViewCollege = null" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === null ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300']">All</button>
             <button @click="statsViewCollege = 'CCS'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'CCS' ? 'bg-blue-600 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300']">CCS</button>
@@ -4490,7 +4490,7 @@
           </div>
         </div>
 
-        <!-- All Colleges Statistics (Super Admin Only) -->
+        <!-- All Colleges Statistics (Master Admin Only) -->
         <div v-if="currentPage === 'dashboard' && currentUser.isMaster && !isCoAdmin && !isTreasurer" class="mt-6">
           <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
             <div class="relative h-24 bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light overflow-hidden">
@@ -4694,7 +4694,7 @@
                   </div>
                   <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
                     <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Your account is bound to one of the JRMSU colleges (<strong>CCS, COE, SOM, CNAHS</strong>) and you may only access data within your college unless granted broader authority.</span></li>
-                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, <strong>Admin</strong>, and <strong>Super Admin (Master)</strong>. Each role has clearly scoped permissions enforced by both the app and the server.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, and <strong>Admin</strong>. Each role has clearly scoped permissions enforced by both the app and the server.</span></li>
                     <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You are responsible for safeguarding your password. Sharing credentials or RFID cards is prohibited.</span></li>
                     <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins are required to change their default passwords on first login and may be prompted to do so periodically.</span></li>
                   </ul>
@@ -5277,12 +5277,14 @@
 
   <!-- Time Picker Modal - Clock Design -->
   <!-- Backdrop Fade Only -->
+  <!-- z-[150] so this backdrop covers the Add Session modal (z-[80]) when the
+       time picker is opened from inside that modal. -->
   <transition name="fade">
-    <div v-if="showTimePicker" class="fixed inset-0 bg-black bg-opacity-50"></div>
+    <div v-if="showTimePicker" class="fixed inset-0 bg-black bg-opacity-50 z-[150]"></div>
   </transition>
-  <!-- Modal Pop -->
+  <!-- Modal Pop (z-[160] — above its own backdrop and above Add Session modal) -->
   <transition name="fade-scale">
-    <div v-if="showTimePicker" class="fixed inset-0 flex items-center justify-center z-[100]" @click.self="showTimePicker = false">
+    <div v-if="showTimePicker" class="fixed inset-0 flex items-center justify-center z-[160]" @click.self="showTimePicker = false">
       <div class="bg-white rounded-2xl shadow-2xl p-5 max-w-sm w-full mx-4">
       <div class="flex justify-between items-center mb-6">
         <h3 :class="['text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-600' : 'from-ssaam-dark to-ssaam-light']">Select Time</h3>
@@ -5422,17 +5424,17 @@
               <!-- Title -->
               <div>
                 <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Event Title *</label>
-                <input v-model="newEvent.title" type="text" placeholder="e.g., CCS General Assembly" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition font-medium', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
+                <input ref="newEventTitleInput" v-model="newEvent.title" type="text" placeholder="e.g., CCS General Assembly" @keydown.enter.prevent="focusNewEventLocation" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition font-medium', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
               </div>
               <!-- Location -->
               <div>
                 <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Location</label>
-                <input v-model="newEvent.location" type="text" placeholder="e.g., CCS AVR" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
+                <input ref="newEventLocationInput" v-model="newEvent.location" type="text" placeholder="e.g., CCS AVR" @keydown.enter.prevent="focusNewEventDescription" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
               </div>
               <!-- Description -->
               <div>
                 <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Description</label>
-                <textarea v-model="newEvent.description" placeholder="Event description..." rows="2" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none resize-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']"></textarea>
+                <textarea ref="newEventDescriptionInput" v-model="newEvent.description" placeholder="Event description..." rows="2" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none resize-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']"></textarea>
               </div>
             </div>
           </div>
@@ -15282,17 +15284,55 @@ const toggleEventExpansion = async (eventId) => {
   }
 }
 
+// Refs/helpers used by the Create Event modal so pressing Enter inside the
+// Title / Location fields advances focus to the next field instead of
+// submitting the form. Description is the last field, so Enter inside it just
+// inserts a newline as usual.
+const newEventTitleInput = ref(null)
+const newEventLocationInput = ref(null)
+const newEventDescriptionInput = ref(null)
+
+const focusNewEventLocation = () => {
+  nextTick(() => {
+    const el = newEventLocationInput.value
+    if (el && typeof el.focus === 'function') el.focus()
+  })
+}
+
+const focusNewEventDescription = () => {
+  nextTick(() => {
+    const el = newEventDescriptionInput.value
+    if (el && typeof el.focus === 'function') el.focus()
+  })
+}
+
+// Pull the parent event's start/end window so newly opened session modals can
+// pre-fill those times. Falls back to the safe defaults used elsewhere.
+const getDefaultSessionTimesFromEventContext = () => {
+  let source = null
+  if (isCreatingEventSessionContext.value) {
+    source = newEvent.value
+  } else if (selectedEvent.value) {
+    source = selectedEvent.value
+  }
+  return {
+    start_time: (source && (source.start_time || source.startTime)) || '08:00',
+    end_time: (source && (source.end_time || source.endTime)) || '17:00',
+  }
+}
+
 const openAddSessionModal = () => {
   // Trigger button animation
   addSessionButtonAnimating.value = true
   setTimeout(() => {
     addSessionButtonAnimating.value = false
   }, 600)
-  
+
   editingSession.value = null
   editingNewEventSessionIdx.value = null
   isCreatingEventSessionContext.value = false
-  newSession.value = { label: 'Morning', start_time: '', end_time: '', status: 'active', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60, check_in_only: false }
+  const defaults = getDefaultSessionTimesFromEventContext()
+  newSession.value = { label: 'Morning', start_time: defaults.start_time, end_time: defaults.end_time, status: 'active', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60, check_in_only: false }
   showSessionModal.value = true
 }
 
@@ -15315,8 +15355,11 @@ const creatingEventInProgress = ref(false)
 const openAddSessionForNewEvent = () => {
   editingSession.value = null
   editingNewEventSessionIdx.value = null
+  // Set the context flag BEFORE pulling defaults so the helper reads from
+  // newEvent (the in-progress create form) instead of selectedEvent.
   isCreatingEventSessionContext.value = true
-  newSession.value = { label: 'Morning', start_time: '', end_time: '', status: 'active', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60, check_in_only: false }
+  const defaults = getDefaultSessionTimesFromEventContext()
+  newSession.value = { label: 'Morning', start_time: defaults.start_time, end_time: defaults.end_time, status: 'active', check_in_locked: false, check_out_locked: false, late_timer_minutes: 60, check_in_only: false }
   showSessionModal.value = true
 }
 
@@ -18910,5 +18953,36 @@ onUnmounted(() => {
 
 .sidebar-scroll::-webkit-scrollbar-thumb:hover {
   background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Slide-In Animation for the Attendance > Events list. The TransitionGroup
+   gives each event card a soft fade + slide as it enters/leaves, and shifts
+   neighbours smoothly when the list reorders or paginates. */
+.event-slide-in-enter-active {
+  transition: opacity 0.35s ease, transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.event-slide-in-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  position: absolute;
+  width: 100%;
+}
+.event-slide-in-enter-from {
+  opacity: 0;
+  transform: translateX(-24px);
+}
+.event-slide-in-enter-to {
+  opacity: 1;
+  transform: translateX(0);
+}
+.event-slide-in-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+.event-slide-in-leave-to {
+  opacity: 0;
+  transform: translateX(24px);
+}
+.event-slide-in-move {
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 </style>
