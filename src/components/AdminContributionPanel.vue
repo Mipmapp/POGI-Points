@@ -335,24 +335,19 @@
               <span :class="['w-1.5 h-1.5 rounded-full', filterPaidDatePreset === 'today' ? 'bg-white' : 'bg-emerald-500 animate-pulse']"></span>
               Today
             </button>
-            <button
-              type="button"
-              @click="setDatePreset('tomorrow')"
-              :class="['px-3 py-1.5 rounded-xl text-xs font-bold border-2 transition-all duration-150 active:scale-95',
-                filterPaidDatePreset === 'tomorrow'
-                  ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white border-transparent shadow-md shadow-blue-200'
-                  : 'bg-white text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-700']"
-            >Tomorrow</button>
-
             <!-- Tiny separator dot for visual rhythm -->
             <span class="hidden sm:inline-block w-1 h-1 rounded-full bg-gray-300 mx-0.5"></span>
 
             <!-- Custom date input — sits flush with the chips so admins can
-                 jump to any historical day without leaving the filter row. -->
+                 jump to any historical day without leaving the filter row.
+                 `:max="todayDateString"` blocks future dates: collections
+                 haven't happened yet, so picking tomorrow would always be
+                 empty and was confusing in the UI. -->
             <div class="relative flex-1 min-w-[10rem]">
               <input
                 type="date"
                 v-model="filterPaidDate"
+                :max="todayDateString"
                 class="w-full pl-9 pr-3 py-2 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-xs sm:text-sm bg-white text-gray-700 font-semibold transition"
               />
               <svg class="absolute left-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -365,12 +360,73 @@
             <div v-if="filterPaidDate" class="mt-3 flex items-start gap-2 px-3 py-2 rounded-xl bg-white border border-blue-200">
               <svg class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               <p class="text-xs text-gray-700 leading-snug">
-                Showing <span class="font-extrabold text-blue-700">{{ filteredContributions.filter(c => c.payment_status === 'paid').length }}</span>
-                payment<span v-if="filteredContributions.filter(c => c.payment_status === 'paid').length !== 1">s</span> collected on
-                <span class="font-bold text-gray-900">{{ formatFilterDate(filterPaidDate) }}</span>.
+                <span class="font-extrabold text-blue-700">{{ filteredContributions.filter(c => c.payment_status === 'paid').length }}</span>
+                payment<span v-if="filteredContributions.filter(c => c.payment_status === 'paid').length !== 1">s</span>
+                · <span class="font-extrabold text-emerald-700">₱{{ filterPaidDateCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                collected on <span class="font-bold text-gray-900">{{ formatFilterDate(filterPaidDate) }}</span>.
               </p>
             </div>
           </transition>
+
+          <!-- ─── Daily collection counters ───────────────────────────────
+               Quick-glance totals so admins know how much money came in
+               today / yesterday / this week / this month without having to
+               toggle filters. Tappable: clicking a chip applies the
+               matching date filter (week/month chips clear the date filter
+               and rely on the running balance instead). Stays scrollable on
+               mobile via flex + overflow-x-auto so nothing wraps weirdly. -->
+          <div class="mt-3 -mx-1 px-1 flex items-stretch gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <button
+              type="button"
+              @click="setDatePreset('today')"
+              :class="['flex-shrink-0 min-w-[8.5rem] text-left px-3 py-2 rounded-xl border-2 transition-all duration-150 active:scale-[0.97]',
+                filterPaidDatePreset === 'today'
+                  ? 'bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-200'
+                  : 'bg-white border-emerald-200 hover:border-emerald-400']"
+            >
+              <p :class="['text-[9px] font-bold uppercase tracking-wider leading-none', filterPaidDatePreset === 'today' ? 'text-white/80' : 'text-emerald-600']">Today</p>
+              <p :class="['text-sm font-extrabold leading-tight mt-1', filterPaidDatePreset === 'today' ? 'text-white' : 'text-gray-900']">
+                ₱{{ dailyTotals.today.amount.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
+              </p>
+              <p :class="['text-[10px] leading-none mt-0.5', filterPaidDatePreset === 'today' ? 'text-white/70' : 'text-gray-400']">
+                {{ dailyTotals.today.count }} payment{{ dailyTotals.today.count === 1 ? '' : 's' }}
+              </p>
+            </button>
+            <button
+              type="button"
+              @click="setDatePreset('yesterday')"
+              :class="['flex-shrink-0 min-w-[8.5rem] text-left px-3 py-2 rounded-xl border-2 transition-all duration-150 active:scale-[0.97]',
+                filterPaidDatePreset === 'yesterday'
+                  ? 'bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-200'
+                  : 'bg-white border-blue-200 hover:border-blue-400']"
+            >
+              <p :class="['text-[9px] font-bold uppercase tracking-wider leading-none', filterPaidDatePreset === 'yesterday' ? 'text-white/80' : 'text-blue-600']">Yesterday</p>
+              <p :class="['text-sm font-extrabold leading-tight mt-1', filterPaidDatePreset === 'yesterday' ? 'text-white' : 'text-gray-900']">
+                ₱{{ dailyTotals.yesterday.amount.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
+              </p>
+              <p :class="['text-[10px] leading-none mt-0.5', filterPaidDatePreset === 'yesterday' ? 'text-white/70' : 'text-gray-400']">
+                {{ dailyTotals.yesterday.count }} payment{{ dailyTotals.yesterday.count === 1 ? '' : 's' }}
+              </p>
+            </button>
+            <div class="flex-shrink-0 min-w-[8.5rem] text-left px-3 py-2 rounded-xl border-2 bg-white border-purple-200">
+              <p class="text-[9px] font-bold uppercase tracking-wider leading-none text-purple-600">This Week</p>
+              <p class="text-sm font-extrabold leading-tight mt-1 text-gray-900">
+                ₱{{ dailyTotals.week.amount.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
+              </p>
+              <p class="text-[10px] leading-none mt-0.5 text-gray-400">
+                {{ dailyTotals.week.count }} payment{{ dailyTotals.week.count === 1 ? '' : 's' }}
+              </p>
+            </div>
+            <div class="flex-shrink-0 min-w-[8.5rem] text-left px-3 py-2 rounded-xl border-2 bg-white border-amber-200">
+              <p class="text-[9px] font-bold uppercase tracking-wider leading-none text-amber-600">This Month</p>
+              <p class="text-sm font-extrabold leading-tight mt-1 text-gray-900">
+                ₱{{ dailyTotals.month.amount.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
+              </p>
+              <p class="text-[10px] leading-none mt-0.5 text-gray-400">
+                {{ dailyTotals.month.count }} payment{{ dailyTotals.month.count === 1 ? '' : 's' }}
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- Filter Row -->
@@ -664,89 +720,105 @@
         </div>
       </div>
 
-      <!-- Desktop Table View (hidden on mobile) -->
+      <!-- Desktop Table View (hidden on mobile) ────────────────────────
+           Tightened padding + hidden low-priority columns so the table
+           stops feeling cramped on standard 1024-1280px monitors:
+             - Student ID:  always
+             - Name:        always
+             - College:     always (master only)
+             - Program:     always
+             - Year:        ≥ lg
+             - Original:    ≥ xl  (rarely useful when no discount)
+             - Discount:    ≥ xl  (still listed in mobile cards inline)
+             - Target:      always (the headline number)
+             - Status:      always
+             - Paid Date:   ≥ lg
+             - Actions:     always
+           Discount column also auto-hides if no row in this page has one.
+      -->
       <div class="hidden md:block overflow-x-auto">
         <table class="w-full">
           <thead>
             <tr class="bg-gradient-to-r from-ssaam-dark to-ssaam-light">
-              <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Student ID</th>
-              <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Name</th>
-              <th v-if="isMaster" class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">College</th>
-              <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Program</th>
-              <th class="px-4 py-3 text-left text-xs font-bold text-white uppercase tracking-wider">Year</th>
-              <th class="px-4 py-3 text-right text-xs font-bold text-white uppercase tracking-wider">Original</th>
-              <th class="px-4 py-3 text-right text-xs font-bold text-white uppercase tracking-wider">Discount</th>
-              <th class="px-4 py-3 text-right text-xs font-bold text-white uppercase tracking-wider">Target</th>
-              <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Status</th>
-              <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider whitespace-nowrap">Paid Date</th>
-              <th class="px-4 py-3 text-center text-xs font-bold text-white uppercase tracking-wider">Actions</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-white uppercase tracking-wider whitespace-nowrap">Student ID</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-white uppercase tracking-wider">Name</th>
+              <th v-if="isMaster" class="px-3 py-2.5 text-left text-[11px] font-bold text-white uppercase tracking-wider">College</th>
+              <th class="px-3 py-2.5 text-left text-[11px] font-bold text-white uppercase tracking-wider">Program</th>
+              <th class="hidden lg:table-cell px-3 py-2.5 text-left text-[11px] font-bold text-white uppercase tracking-wider">Year</th>
+              <th class="hidden xl:table-cell px-3 py-2.5 text-right text-[11px] font-bold text-white uppercase tracking-wider">Original</th>
+              <th v-if="anyRowHasDiscount" class="hidden xl:table-cell px-3 py-2.5 text-right text-[11px] font-bold text-white uppercase tracking-wider">Discount</th>
+              <th class="px-3 py-2.5 text-right text-[11px] font-bold text-white uppercase tracking-wider">Target</th>
+              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-white uppercase tracking-wider">Status</th>
+              <th class="hidden lg:table-cell px-3 py-2.5 text-center text-[11px] font-bold text-white uppercase tracking-wider whitespace-nowrap">Paid Date</th>
+              <th class="px-3 py-2.5 text-center text-[11px] font-bold text-white uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
             <tr v-if="filteredContributions.length === 0">
-              <td :colspan="isMaster ? 11 : 10" class="px-4 py-12 text-center text-gray-400 text-sm">
+              <td :colspan="desktopColspan" class="px-4 py-12 text-center text-gray-400 text-sm">
                 No records match the current filters.
               </td>
             </tr>
             <tr v-for="(c, idx) in paginatedContributions" :key="c._id"
               class="hover:bg-blue-50/40 transition-colors ssaam-row-anim"
               :style="{ animationDelay: Math.min(idx * 35, 700) + 'ms' }">
-              <td class="px-4 py-3 text-sm font-semibold text-gray-700">{{ c.student_id }}</td>
-              <td class="px-4 py-3 text-sm text-gray-900 font-medium">
-                <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 rounded-full bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white text-xs font-bold flex-shrink-0 overflow-hidden">
+              <td class="px-3 py-2 text-xs font-semibold text-gray-700 whitespace-nowrap">{{ c.student_id }}</td>
+              <td class="px-3 py-2 text-sm text-gray-900 font-medium">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-full bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white text-[11px] font-bold flex-shrink-0 overflow-hidden">
                     <img v-if="c.photo && !photoFailed['ct-' + (c._id || c.student_id)]" :src="c.photo" :alt="c.student_name" class="w-full h-full object-cover" @error="markPhotoFailed('ct-' + (c._id || c.student_id))" referrerpolicy="no-referrer" />
                     <span v-else>{{ (c.student_name || '?').charAt(0).toUpperCase() }}</span>
                   </div>
-                  <span class="truncate">{{ c.student_name }}</span>
+                  <span class="truncate text-xs sm:text-sm">{{ c.student_name }}</span>
                 </div>
               </td>
-              <td v-if="isMaster" class="px-4 py-3 text-sm">
-                <span :class="['inline-flex px-2 py-0.5 rounded-full text-xs font-bold', c.college === 'COE' ? 'bg-orange-100 text-orange-700' : c.college === 'SOM' ? 'bg-green-100 text-green-700' : c.college === 'CNAHS' ? 'bg-teal-100 text-teal-700' : 'bg-blue-100 text-blue-700']">{{ c.college || '—' }}</span>
+              <td v-if="isMaster" class="px-3 py-2 text-sm">
+                <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold', c.college === 'COE' ? 'bg-orange-100 text-orange-700' : c.college === 'SOM' ? 'bg-green-100 text-green-700' : c.college === 'CNAHS' ? 'bg-teal-100 text-teal-700' : 'bg-blue-100 text-blue-700']">{{ c.college || '—' }}</span>
               </td>
-              <td class="px-4 py-3 text-sm text-gray-600">{{ c.program || '—' }}</td>
-              <td class="px-4 py-3 text-sm text-gray-600">{{ c.year_level || '—' }}</td>
-              <td class="px-4 py-3 text-sm text-right text-gray-700">₱{{ c.original_amount?.toFixed(2) || '0.00' }}</td>
-              <td class="px-4 py-3 text-sm text-right font-semibold text-orange-600">
+              <td class="px-3 py-2 text-xs text-gray-600">{{ c.program || '—' }}</td>
+              <td class="hidden lg:table-cell px-3 py-2 text-xs text-gray-600 whitespace-nowrap">{{ c.year_level || '—' }}</td>
+              <td class="hidden xl:table-cell px-3 py-2 text-xs text-right text-gray-700 whitespace-nowrap">₱{{ c.original_amount?.toFixed(2) || '0.00' }}</td>
+              <td v-if="anyRowHasDiscount" class="hidden xl:table-cell px-3 py-2 text-xs text-right font-semibold text-orange-600 whitespace-nowrap">
                 {{ c.discount_value > 0 ? `–₱${c.discount_value.toFixed(2)}` : '—' }}
               </td>
-              <td class="px-4 py-3 text-sm text-right font-extrabold text-blue-700">₱{{ c.target_amount?.toFixed(2) || '0.00' }}</td>
-              <td class="px-4 py-3 text-center">
-                <span :class="['inline-flex px-2.5 py-1 rounded-full text-xs font-bold', c.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600']">
+              <td class="px-3 py-2 text-sm text-right font-extrabold text-blue-700 whitespace-nowrap">₱{{ c.target_amount?.toFixed(2) || '0.00' }}</td>
+              <td class="px-3 py-2 text-center">
+                <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold', c.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600']">
                   {{ c.payment_status === 'paid' ? 'PAID' : 'UNPAID' }}
                 </span>
               </td>
-              <td class="px-4 py-3 text-center text-xs text-gray-600 whitespace-nowrap">
+              <td class="hidden lg:table-cell px-3 py-2 text-center text-[11px] text-gray-600 whitespace-nowrap">
                 <span v-if="c.payment_status === 'paid' && c.paid_at" :title="new Date(c.paid_at).toLocaleString()">
-                  {{ new Date(c.paid_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) }}
+                  {{ new Date(c.paid_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' }) }}
                   <span class="block text-[10px] text-gray-400">{{ new Date(c.paid_at).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) }}</span>
                 </span>
                 <span v-else class="text-gray-300">—</span>
               </td>
-              <td class="px-4 py-3 text-center">
-                <div class="flex items-center justify-center gap-1.5">
+              <td class="px-3 py-2 text-center">
+                <div class="flex items-center justify-center gap-1">
                   <button
                     v-if="c.payment_status !== 'paid'"
                     @click="markAsPayment(c)"
                     :disabled="processingPaymentId === (c._id || c.student_id)"
-                    class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition disabled:opacity-60 flex items-center gap-1"
+                    class="px-2.5 py-1 bg-green-600 hover:bg-green-700 text-white rounded-md text-[11px] font-bold transition disabled:opacity-60 inline-flex items-center gap-1 whitespace-nowrap"
+                    title="Mark as Paid"
                   >
                     <svg v-if="processingPaymentId === (c._id || c.student_id)" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                    <span>{{ processingPaymentId === (c._id || c.student_id) ? '...' : 'Mark Paid' }}</span>
+                    <span>{{ processingPaymentId === (c._id || c.student_id) ? '...' : 'Paid' }}</span>
                   </button>
                   <button
                     v-else
                     @click="markAsUnpaid(c)"
                     :disabled="processingPaymentId === (c._id || c.student_id)"
-                    class="px-3 py-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg text-xs font-bold transition disabled:opacity-60 flex items-center gap-1"
+                    class="px-2.5 py-1 bg-red-500 hover:bg-red-600 text-white rounded-md text-[11px] font-bold transition disabled:opacity-60 inline-flex items-center gap-1 whitespace-nowrap"
                     title="Reverse this payment"
                   >
                     <svg v-if="processingPaymentId === (c._id || c.student_id)" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                     <svg v-else class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-                    <span>{{ processingPaymentId === (c._id || c.student_id) ? '...' : 'Mark Unpaid' }}</span>
+                    <span>{{ processingPaymentId === (c._id || c.student_id) ? '...' : 'Unpaid' }}</span>
                   </button>
-                  <button @click="applyDiscount(c)" class="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-lg text-xs font-bold transition">
-                    Discount
+                  <button @click="applyDiscount(c)" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md text-[11px] font-bold transition whitespace-nowrap" title="Apply / change discount">
+                    Disc
                   </button>
                 </div>
               </td>
@@ -1247,8 +1319,9 @@ export default {
       filterCollege: '',
       // Date filter: when set, only payments whose `paid_at` falls on the
       // selected calendar day (in the admin's local timezone) are shown.
-      // 'today' / 'yesterday' / 'tomorrow' are convenience presets that map
-      // to a concrete YYYY-MM-DD string in setDatePreset().
+      // 'today' / 'yesterday' are convenience presets that map to a
+      // concrete YYYY-MM-DD string in setDatePreset(). Future dates are
+      // blocked at the input level via :max="todayDateString".
       filterPaidDate: '',
       filterPaidDatePreset: '',
       isLoading: false,
@@ -1405,10 +1478,20 @@ export default {
         return matchesLevel && matchesProgram && matchesStatus && matchesCollege && matchesQuery && matchesDate;
       });
 
+      // Sort: paid first (so the most recent collections lead the list),
+      // then within each group order by paid_at DESC so the newest payment
+      // sits at the top — matches how an admin reviews "what just came in".
+      // Unpaid rows fall to the bottom and keep their natural order.
       return filtered.sort((a, b) => {
         const aPaid = a.payment_status === 'paid' ? 0 : 1;
         const bPaid = b.payment_status === 'paid' ? 0 : 1;
-        return aPaid - bPaid;
+        if (aPaid !== bPaid) return aPaid - bPaid;
+        if (aPaid === 0) {
+          const at = a.paid_at ? new Date(a.paid_at).getTime() : 0;
+          const bt = b.paid_at ? new Date(b.paid_at).getTime() : 0;
+          return bt - at;
+        }
+        return 0;
       });
     },
     filteredCount() {
@@ -1507,6 +1590,78 @@ export default {
       }
       return map;
     },
+    // True when any record on the current page actually has a discount.
+    // Used to auto-hide the Discount column when no one has one (the column
+    // was just an "—" wall otherwise, which made the table feel cramped).
+    anyRowHasDiscount() {
+      return (this.paginatedContributions || []).some(c => Number(c.discount_value || 0) > 0);
+    },
+    // Colspan for the "no records" empty-state row in the desktop table.
+    // Mirrors the actual visible column count so the empty cell spans the
+    // full width regardless of which optional columns are showing.
+    desktopColspan() {
+      // Always-visible: ID, Name, Program, Target, Status, Actions = 6
+      let n = 6;
+      if (this.isMaster) n += 1;            // College
+      if (this.anyRowHasDiscount) n += 1;   // Discount
+      // Year + Original + Paid Date are hidden by CSS but still render in
+      // the DOM, so they count toward colspan; CSS just hides them visually.
+      n += 3;
+      return n;
+    },
+    // Today as YYYY-MM-DD in the admin's local timezone — used as the `max`
+    // attribute on the date input so the browser disables tomorrow + beyond.
+    todayDateString() {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    },
+    // Total ₱ collected on the day the date filter is currently set to.
+    // Used by the inline summary chip under the date picker.
+    filterPaidDateCollected() {
+      return this.filteredContributions
+        .filter(c => c.payment_status === 'paid')
+        .reduce((sum, c) => sum + Number(c.amount_paid || c.original_amount || 0), 0);
+    },
+    // Buckets of paid contributions by today / yesterday / this week / this
+    // month, computed against ALL contributions (ignoring the active date
+    // filter on purpose) so the totals chip strip is a stable dashboard:
+    // it always shows real money-in for each window, regardless of what the
+    // admin is currently filtering. Other filters (year/program/status/
+    // college) still apply because they live in `contributions` after the
+    // server returns them.
+    dailyTotals() {
+      const now = new Date();
+      const todayKey = this.todayDateString;
+      const yesterday = new Date(now); yesterday.setDate(yesterday.getDate() - 1);
+      const yKey = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+      // Week starts Monday in PH context — go back (now.getDay()+6)%7 days.
+      const weekStart = new Date(now); weekStart.setHours(0, 0, 0, 0);
+      weekStart.setDate(weekStart.getDate() - ((weekStart.getDay() + 6) % 7));
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+      const out = {
+        today: { amount: 0, count: 0 },
+        yesterday: { amount: 0, count: 0 },
+        week: { amount: 0, count: 0 },
+        month: { amount: 0, count: 0 },
+      };
+
+      for (const c of (this.contributions || [])) {
+        if (c.payment_status !== 'paid' || !c.paid_at) continue;
+        const d = new Date(c.paid_at);
+        if (isNaN(d.getTime())) continue;
+        const amt = Number(c.amount_paid || c.original_amount || 0);
+        const localKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        if (localKey === todayKey) { out.today.amount += amt; out.today.count++; }
+        if (localKey === yKey)     { out.yesterday.amount += amt; out.yesterday.count++; }
+        if (d >= weekStart)        { out.week.amount += amt; out.week.count++; }
+        if (d >= monthStart)       { out.month.amount += amt; out.month.count++; }
+      }
+      return out;
+    },
   },
   watch: {
     filteredContributions() { this.paymentsPage = 1; },
@@ -1516,8 +1671,8 @@ export default {
     filterCollege() { this.loadAllContributions(); },
     filterPaidDate(val) {
       // Keep preset chips in sync: if the picked date matches one of our
-      // presets (today/yesterday/tomorrow), keep that chip highlighted;
-      // otherwise drop the highlight so it's clear the admin chose a custom day.
+      // presets (today/yesterday), keep that chip highlighted; otherwise
+      // drop the highlight so it's clear the admin chose a custom day.
       const presetVal = this._presetDateString(this.filterPaidDatePreset);
       if (val !== presetVal) this.filterPaidDatePreset = '';
     },
@@ -1718,13 +1873,14 @@ export default {
       this.hasSearched = false;
     },
     // ── Date filter helpers ────────────────────────────────────────────
-    // Internal: turn a preset key ('today' | 'yesterday' | 'tomorrow') into
-    // the corresponding YYYY-MM-DD string in the admin's local timezone.
+    // Internal: turn a preset key ('today' | 'yesterday') into the
+    // corresponding YYYY-MM-DD string in the admin's local timezone.
+    // 'tomorrow' was intentionally removed — collections can't happen in
+    // the future, so the chip would always show empty results.
     _presetDateString(key) {
       if (!key) return '';
       const d = new Date();
       if (key === 'yesterday') d.setDate(d.getDate() - 1);
-      else if (key === 'tomorrow') d.setDate(d.getDate() + 1);
       const y = d.getFullYear();
       const m = String(d.getMonth() + 1).padStart(2, '0');
       const day = String(d.getDate()).padStart(2, '0');
