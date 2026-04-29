@@ -2408,12 +2408,67 @@
                   <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
                   Active Events
                 </h3>
-                <!-- Inline notification for face check-in result -->
-                <div v-if="dashFaceCheckInNotif.show" :class="['flex items-center gap-2 px-4 py-3 rounded-xl mb-3 text-sm font-medium', dashFaceCheckInNotif.type === 'success' ? 'bg-green-50 border border-green-200 text-green-700' : 'bg-red-50 border border-red-200 text-red-700']">
-                  <svg v-if="dashFaceCheckInNotif.type === 'success'" class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                  <svg v-else class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                  {{ dashFaceCheckInNotif.message }}
-                </div>
+                <!-- ============================================================
+                     Animated face / scanner notification card.
+                     Wrapped in a <Transition> so the message slides + scales
+                     in on appear and slides out on dismiss. The :key forces
+                     a re-mount on every new notification so the intro
+                     animation (and the progress bar) restart cleanly even
+                     when the same message text fires twice in a row.
+                     The progress bar uses an inline animation-duration so
+                     it always stays in sync with the dismiss timeout.
+                     ============================================================ -->
+                <Transition name="dash-notif">
+                  <div v-if="dashFaceCheckInNotif.show"
+                       :key="dashFaceCheckInNotifKey"
+                       class="dash-notif-card relative overflow-hidden rounded-2xl mb-3 border shadow-sm backdrop-blur-sm"
+                       :class="dashFaceCheckInNotif.type === 'success'
+                         ? 'bg-gradient-to-br from-emerald-50 to-green-50/80 border-emerald-200/80'
+                         : dashFaceCheckInNotif.type === 'locked'
+                           ? 'bg-gradient-to-br from-amber-50 to-orange-50/80 border-amber-200/80'
+                           : 'bg-gradient-to-br from-rose-50 to-red-50/80 border-rose-200/80'">
+                    <div class="flex items-start gap-3 px-4 py-3.5 sm:px-5 sm:py-4">
+                      <!-- Bouncy icon badge -->
+                      <div class="dash-notif-icon flex-shrink-0 w-9 h-9 rounded-full flex items-center justify-center text-white shadow-md"
+                           :class="dashFaceCheckInNotif.type === 'success'
+                             ? 'bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-emerald-500/30'
+                             : dashFaceCheckInNotif.type === 'locked'
+                               ? 'bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-500/30'
+                               : 'bg-gradient-to-br from-rose-400 to-rose-600 shadow-rose-500/30'">
+                        <svg v-if="dashFaceCheckInNotif.type === 'success'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        <svg v-else-if="dashFaceCheckInNotif.type === 'locked'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      </div>
+                      <!-- Message body -->
+                      <div class="flex-1 min-w-0 pt-1">
+                        <p class="text-sm font-semibold leading-snug"
+                           :class="dashFaceCheckInNotif.type === 'success'
+                             ? 'text-emerald-900'
+                             : dashFaceCheckInNotif.type === 'locked'
+                               ? 'text-amber-900'
+                               : 'text-rose-900'">
+                          {{ dashFaceCheckInNotif.message }}
+                        </p>
+                      </div>
+                      <!-- Manual dismiss -->
+                      <button @click="dismissDashNotif"
+                              class="dash-notif-close flex-shrink-0 w-7 h-7 rounded-full flex items-center justify-center transition hover:bg-black/5 text-gray-500 hover:text-gray-800"
+                              aria-label="Dismiss">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                      </button>
+                    </div>
+                    <!-- Auto-dismiss progress bar -->
+                    <div class="absolute left-0 right-0 bottom-0 h-1 overflow-hidden">
+                      <div class="dash-notif-progress h-full origin-left"
+                           :class="dashFaceCheckInNotif.type === 'success'
+                             ? 'bg-gradient-to-r from-emerald-400 to-emerald-600'
+                             : dashFaceCheckInNotif.type === 'locked'
+                               ? 'bg-gradient-to-r from-amber-400 to-orange-500'
+                               : 'bg-gradient-to-r from-rose-400 to-rose-600'"
+                           :style="{ animationDuration: (dashFaceCheckInNotif.duration || 4000) + 'ms' }"></div>
+                    </div>
+                  </div>
+                </Transition>
                 <div class="space-y-4">
                   <div v-for="event in activeNonEndedEvents" :key="event._id || event.event_id" :class="['rounded-2xl shadow-sm border overflow-hidden bg-gradient-to-br', isCOE ? 'from-white to-orange-50 border-orange-100' : isSOM ? 'from-white to-green-50 border-green-100' : 'from-white to-blue-50 border-blue-100']">
                     <!-- Header row: clickable text on the left, scanner button on the right -->
@@ -8846,7 +8901,34 @@ const faceEnrolled = computed(() => !!(faceData.value && faceData.value.count &&
 const dashFaceCheckInOpen = ref(false)
 const dashFaceCheckInEvent = ref(null)
 const dashFaceCheckInSession = ref(null)
-const dashFaceCheckInNotif = ref({ show: false, type: 'success', message: '' })
+// Notification state for the User > Attendance face/scanner card.
+//   type: 'success' | 'error' | 'locked'  — drives color/icon
+//   duration: ms used by the auto-dismiss progress bar so it stays in sync
+//   key: bumped on every showDashNotif() call so the <Transition> re-mounts
+//        and the intro animation + progress bar restart cleanly even when
+//        the same message is fired twice in a row.
+const dashFaceCheckInNotif = ref({ show: false, type: 'success', message: '', duration: 4000 })
+const dashFaceCheckInNotifKey = ref(0)
+let dashFaceCheckInNotifTimer = null
+const showDashNotif = (type, message, duration = 4000) => {
+  if (dashFaceCheckInNotifTimer) {
+    clearTimeout(dashFaceCheckInNotifTimer)
+    dashFaceCheckInNotifTimer = null
+  }
+  dashFaceCheckInNotifKey.value++
+  dashFaceCheckInNotif.value = { show: true, type, message, duration }
+  dashFaceCheckInNotifTimer = setTimeout(() => {
+    dashFaceCheckInNotif.value.show = false
+    dashFaceCheckInNotifTimer = null
+  }, duration)
+}
+const dismissDashNotif = () => {
+  if (dashFaceCheckInNotifTimer) {
+    clearTimeout(dashFaceCheckInNotifTimer)
+    dashFaceCheckInNotifTimer = null
+  }
+  dashFaceCheckInNotif.value.show = false
+}
 
 // Location Gate — appears BEFORE the Face ID modal whenever the event has
 // `geofence_enabled`. It shows a live radar with the user's distance from
@@ -8988,12 +9070,7 @@ const openEventScanner = async (event) => {
   // Admins can disable Face ID Recognition for an event entirely; surface that to
   // the student instead of opening the camera so they know to use RFID/manual check-in.
   if (event && event.face_id_enabled === false) {
-    dashFaceCheckInNotif.value = {
-      show: true,
-      type: 'error',
-      message: 'Face ID Recognition has been disabled for this event by the admin. Please use the RFID scanner or contact your administrator for manual check-in.'
-    }
-    setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 6000)
+    showDashNotif('error', 'Face ID Recognition has been disabled for this event by the admin. Please use the RFID scanner or contact your administrator for manual check-in.', 6000)
     return
   }
   dashFaceCheckInLoading.value = true
@@ -9002,19 +9079,18 @@ const openEventScanner = async (event) => {
     await ensureEventSessions(eventId)
     const info = getEventScannerInfo(event)
     if (info.state === 'no_active') {
-      dashFaceCheckInNotif.value = { show: true, type: 'error', message: 'There is no active session for this event right now.' }
-      setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 4000)
+      showDashNotif('error', 'There is no active session for this event right now.', 4000)
       return
     }
     if (info.state === 'done') {
-      dashFaceCheckInNotif.value = { show: true, type: 'success', message: "You've already completed attendance for this event." }
-      setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 4000)
+      showDashNotif('success', "You've already completed attendance for this event.", 4000)
       return
     }
     if (info.state === 'locked') {
       const reason = info.waiting[0]?.reason || "You're checked in. Please wait for check-out to be opened."
-      dashFaceCheckInNotif.value = { show: true, type: 'error', message: reason }
-      setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 4500)
+      // 'locked' type renders amber + lock icon to clearly distinguish a
+      // soft "wait" state from a hard error.
+      showDashNotif('locked', reason, 4500)
       return
     }
     // state === 'ready'
@@ -9055,15 +9131,14 @@ const getSessionLockReason = (session, event) => {
 const handleSessionButtonClick = (session, event) => {
   const reason = getSessionLockReason(session, event)
   if (reason) {
-    dashFaceCheckInNotif.value = { show: true, type: 'error', message: reason }
-    setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 4500)
+    showDashNotif('locked', reason, 4500)
     return
   }
   openDashFaceCheckIn(session, event)
 }
 
 const openDashFaceCheckIn = async (session, event) => {
-  dashFaceCheckInNotif.value = { show: false, type: 'success', message: '' }
+  dismissDashNotif()
   // Geofenced events go through the Location Gate first — it shows the user
   // a live radar, blocks if they're outside the allowed radius, and (on
   // pass) calls back into _openFaceScannerWithCoords with the GPS fix.
@@ -9118,8 +9193,7 @@ const onLocationGateClose = () => {
 const onDashFaceCheckInSuccess = async (data) => {
   dashFaceCheckInOpen.value = false
   const action = data.action === 'check_in' ? 'Check in' : data.action === 'check_out' ? 'Check out' : 'Attendance'
-  dashFaceCheckInNotif.value = { show: true, type: 'success', message: `${action} recorded successfully!` }
-  setTimeout(() => { dashFaceCheckInNotif.value.show = false }, 4000)
+  showDashNotif('success', `${action} recorded successfully!`, 4000)
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('studentToken')
     const res = await fetch(buildAPIUrl('/apis/attendance/my-records'), {
@@ -19307,5 +19381,99 @@ onUnmounted(() => {
 }
 .event-slide-in-move {
   transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ============================================================
+   Dashboard scanner / face check-in notification animations.
+   Used by the inline notification card under "Active Events"
+   in User > Attendance. Triggered by openEventScanner() and
+   handleSessionButtonClick() — most notably when tapping the
+   amber "Locked" Face ID button while waiting for check-out
+   to be opened ("You're checked in. Please wait …").
+   - Intro: slight overshoot bounce sliding down from above
+   - Outro: faster slide up + scale down + fade
+   - Icon:  delayed pop-in for a polished feel
+   - Bar:   linear shrink synced with the auto-dismiss timer
+   ============================================================ */
+.dash-notif-enter-active {
+  transition: opacity 0.42s cubic-bezier(0.34, 1.56, 0.64, 1),
+              transform 0.42s cubic-bezier(0.34, 1.56, 0.64, 1),
+              max-height 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.dash-notif-leave-active {
+  transition: opacity 0.24s ease-in,
+              transform 0.24s ease-in,
+              max-height 0.28s ease-in,
+              margin 0.28s ease-in,
+              padding 0.28s ease-in;
+}
+.dash-notif-enter-from {
+  opacity: 0;
+  transform: translateY(-14px) scale(0.94);
+  max-height: 0;
+}
+.dash-notif-enter-to {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  max-height: 220px;
+}
+.dash-notif-leave-from {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  max-height: 220px;
+}
+.dash-notif-leave-to {
+  opacity: 0;
+  transform: translateY(-8px) scale(0.97);
+  max-height: 0;
+  margin-bottom: 0;
+}
+
+/* Card hover lift — gentle, doesn't fight the intro animation */
+.dash-notif-card {
+  will-change: transform, opacity;
+}
+
+/* Bouncy icon badge: pops in slightly after the card has settled */
+@keyframes dash-notif-icon-pop {
+  0%   { transform: scale(0.3) rotate(-18deg); opacity: 0; }
+  55%  { transform: scale(1.18) rotate(6deg);  opacity: 1; }
+  80%  { transform: scale(0.96) rotate(-2deg); }
+  100% { transform: scale(1) rotate(0);        opacity: 1; }
+}
+.dash-notif-icon {
+  animation: dash-notif-icon-pop 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s both;
+}
+
+/* Linear progress bar — animation-duration is bound inline so it
+   always matches the auto-dismiss timeout passed to showDashNotif(). */
+@keyframes dash-notif-progress {
+  from { transform: scaleX(1); }
+  to   { transform: scaleX(0); }
+}
+.dash-notif-progress {
+  animation-name: dash-notif-progress;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  animation-iteration-count: 1;
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .dash-notif-enter-active,
+  .dash-notif-leave-active {
+    transition: opacity 0.15s linear;
+  }
+  .dash-notif-enter-from,
+  .dash-notif-leave-to {
+    transform: none;
+    max-height: none;
+  }
+  .dash-notif-icon {
+    animation: none;
+  }
+  .dash-notif-progress {
+    animation: none;
+  }
 }
 </style>
