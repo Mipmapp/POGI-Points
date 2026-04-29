@@ -12008,19 +12008,56 @@ const inRoleView = computed(() => !canSwitchView.value || roleViewMode.value ===
 const inUserView = computed(() => canSwitchView.value && roleViewMode.value === 'user')
 watch(canSwitchView, (v) => { if (!v) roleViewMode.value = 'role' })
 
-// Auto-load Statistics whenever the admin returns to the dashboard view
-// (sidebar click, mobile menu, programmatic navigation). On first F5 the
-// onMounted hook already calls fetchStats(); this watcher keeps the figures
-// fresh without requiring a manual "Refresh" tap.
-watch(currentPage, (page, prev) => {
-  if (page !== 'dashboard' || page === prev) return
-  if (!currentUser.value) return
-  if (currentUser.value.role !== 'admin' && !currentUser.value.isMaster) return
-  fetchStats().catch(err => console.error('Auto-fetchStats on dashboard nav failed:', err))
-  if (currentUser.value.isMaster) {
+// ─── Auto-load Statistics on every visit to the dashboard ──────────
+// The Statistics view is what every admin-like role (admin, master,
+// co-admin, treasurer) sees when currentPage === 'dashboard' and they
+// are in role view. Previously this only auto-fetched for plain
+// `admin`/`isMaster` and only on currentPage *change*, which meant:
+//   - co-admins / treasurers had to tap the Refresh button every visit,
+//   - and even regular admins had to refresh after F5 if their saved
+//     page was already 'dashboard' (the watcher doesn't fire when the
+//     value doesn't change, and onMounted's fetchStats() ran before the
+//     admin-verify request resolved on slower connections).
+//
+// `runStatsAutoLoad` is the single source of truth — it's called from
+// the page watcher, the user-becomes-available watcher, and onMounted.
+// It silently no-ops when the user isn't admin-like or when we're not
+// on the dashboard view, and it dedupes concurrent fetches via
+// `statsLoading`.
+const runStatsAutoLoad = () => {
+  if (currentPage.value !== 'dashboard') return
+  const u = currentUser.value
+  if (!u) return
+  const isAdminLikeUser = u.role === 'admin'
+    || u.isMaster
+    || u.role === 'co-admin'
+    || u.role === 'treasurer'
+  if (!isAdminLikeUser) return
+  if (statsLoading.value) return // dedupe in-flight fetches
+  fetchStats().catch(err => console.error('Auto-fetchStats failed:', err))
+  if (u.isMaster) {
     fetchAllCollegesStats().catch(err => console.error('Auto-fetchAllCollegesStats failed:', err))
   }
+}
+
+// Trigger 1: any time the admin lands on the dashboard view.
+watch(currentPage, (page, prev) => {
+  if (page !== 'dashboard' || page === prev) return
+  runStatsAutoLoad()
 })
+
+// Trigger 2: covers the F5-on-dashboard case. When the page mounts, the
+// admin-verify roundtrip can finish AFTER our initial fetchStats() call
+// in onMounted; that earlier call would then bail because currentUser
+// was still the bare localStorage stub. This watcher catches the moment
+// `currentUser.isMaster` (or any admin role) actually becomes truthy.
+watch(
+  () => currentUser.value && (currentUser.value.role || currentUser.value.isMaster),
+  (val, prev) => {
+    if (!val || val === prev) return
+    runStatsAutoLoad()
+  }
+)
 
 // Persist active page across browser refreshes
 watch(currentPage, (newPage) => {
