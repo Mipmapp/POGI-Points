@@ -615,8 +615,8 @@
 
   <!-- Edit Attendance (Excuse) Modal -->
   <transition name="fade">
-    <div v-if="showEditAttendanceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] overflow-y-auto" @click.self="showEditAttendanceModal = false">
-      <div class="bg-white rounded-lg p-4 w-full max-w-md mx-4 my-8 shadow-2xl">
+    <div v-if="showEditAttendanceModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100] overflow-hidden" @click.self="showEditAttendanceModal = false">
+      <div class="bg-white rounded-lg p-4 w-full max-w-md mx-4 my-8 shadow-2xl max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-semibold">Edit Attendance (Excuse)</h3>
           <button @click="showEditAttendanceModal = false" class="text-gray-500 hover:text-gray-700">&times;</button>
@@ -5631,7 +5631,7 @@
   </transition>
   <!-- Modal Pop -->
   <transition name="fade-scale">
-    <div v-if="showCreateEventModal" class="fixed inset-0 flex items-center justify-center z-50" @click.self="showCreateEventModal = false">
+    <div v-if="showCreateEventModal" class="fixed inset-0 flex items-center justify-center z-50 overflow-hidden" @click.self="showCreateEventModal = false">
       <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-2xl w-full mx-4 max-h-[95vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
           <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Create Attendance Event</h3>
@@ -5906,7 +5906,7 @@
   </transition>
   <!-- Modal Pop -->
   <transition name="fade-scale">
-    <div v-if="showEditEventModal && selectedEvent" class="fixed inset-0 flex items-center justify-center z-50" @click.self="showEditEventModal = false">
+    <div v-if="showEditEventModal && selectedEvent" class="fixed inset-0 flex items-center justify-center z-50 overflow-hidden" @click.self="showEditEventModal = false">
       <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-2xl w-full mx-4 max-h-[95vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-6">
           <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Edit Attendance Event</h3>
@@ -6259,7 +6259,7 @@
   </transition>
   <!-- Modal Pop with fade-scale -->
   <transition name="fade-scale">
-    <div v-if="showEventLogsModal && selectedEvent" class="fixed inset-0 flex items-center justify-center z-50" @click.self="showEventLogsModal = false">
+    <div v-if="showEventLogsModal && selectedEvent" class="fixed inset-0 flex items-center justify-center z-50 overflow-hidden" @click.self="showEventLogsModal = false">
       <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center mb-6">
         <div>
