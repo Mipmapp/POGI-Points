@@ -7503,6 +7503,7 @@ const refreshSettingsSection = async () => {
 // Refresh Attendance section (clears cache and re-fetches)
 const refreshAttendanceSection = async () => {
   clearSectionCache('attendance')
+  expandedEventSessions.value = {}
   await fetchAttendanceData()
 }
 
@@ -12142,6 +12143,23 @@ watch(
 // Persist active page across browser refreshes
 watch(currentPage, (newPage) => {
   sessionStorage.setItem('ssaam_current_page', newPage)
+
+  // Start session-settings polling when user is on the attendance page in user view
+  // so admin check-in/check-out toggles are reflected without a manual refresh.
+  if (attendanceRefreshInterval.value) {
+    clearInterval(attendanceRefreshInterval.value)
+    attendanceRefreshInterval.value = null
+  }
+  if (newPage === 'attendance' && !inRoleView.value) {
+    attendanceRefreshInterval.value = setInterval(async () => {
+      const eventIds = Object.keys(expandedEventSessions.value)
+      if (!eventIds.length) return
+      expandedEventSessions.value = {}
+      for (const id of eventIds) {
+        await ensureEventSessions(id)
+      }
+    }, 30000)
+  }
 })
 
 watch(roleViewMode, () => {
