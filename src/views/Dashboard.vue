@@ -733,7 +733,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
           <span>Manage</span>
         </button>
-        <button v-if="(isAdminLike) && !isTreasurer && inRoleView" @click="currentPage = 'pending'; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'pending'; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
         </button>
@@ -745,7 +745,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
           <span>Assign</span>
         </button>
-        <button v-if="(!currentUser.isMaster || inRoleView)" @click="currentPage = 'attendance'; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(!currentUser.isMaster || inRoleView) && !isTreasurer" @click="currentPage = 'attendance'; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
           <span>Attendance</span>
         </button>
@@ -869,7 +869,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
             <span>Manage</span>
           </button>
-          <button v-if="(isAdminLike) && !isTreasurer && inRoleView" @click="currentPage = 'pending'; showMobileMenu = false; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'pending'; showMobileMenu = false; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
           </button>
@@ -881,7 +881,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
             <span>Assign</span>
           </button>
-          <button v-if="(!currentUser.isMaster || inRoleView)" @click="currentPage = 'attendance'; showMobileMenu = false; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(!currentUser.isMaster || inRoleView) && !isTreasurer" @click="currentPage = 'attendance'; showMobileMenu = false; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
             <span>Attendance</span>
           </button>
@@ -8132,7 +8132,7 @@ const confirmMarkPaymentAsPaid = async () => {
     if (response.ok) {
       showNotification(`${selectedPaymentStudent.value.full_name || selectedPaymentStudent.value.first_name + ' ' + selectedPaymentStudent.value.last_name} marked as paid!`, 'success')
       clearPaymentStudent()
-      await fetchPayments()
+      await refreshContributions()
     } else {
       // Check if it's an "already paid" error
       if (result.alreadyPaid) {
