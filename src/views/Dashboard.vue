@@ -592,7 +592,7 @@
 
   <!-- Logout Animation -->
   <transition name="fade">
-    <div v-if="showLogoutAnimation" :class="logoutBgClass" :style="logoutBgStyle" class="relative overflow-hidden">
+    <div v-if="showLogoutAnimation" :class="logoutBgClass" :style="logoutBgStyle" class="fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden">
       <!-- Particle background -->
       <div class="absolute inset-0 pointer-events-none">
         <span v-for="p in logoutParticles" :key="p.id" class="absolute rounded-full logout-particle" :style="p.style"></span>
