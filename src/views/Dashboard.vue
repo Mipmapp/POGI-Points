@@ -363,11 +363,11 @@
             <div class="bg-green-500/15 backdrop-blur-lg rounded-2xl p-5 lg:p-6 border-2 border-green-400/60 shadow-2xl">
               <div class="flex items-center gap-4">
                 <div class="relative flex-shrink-0">
-                  <div class="w-16 h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-2 border-green-300/60 shadow-lg bg-white/10">
-                    <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="w-full h-full object-cover" />
-                    <div v-else :class="['w-full h-full flex items-center justify-center font-bold text-lg text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+                  <div class="relative w-16 h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-2 border-green-300/60 shadow-lg">
+                    <div :class="['absolute inset-0 flex items-center justify-center font-bold text-lg text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
                       {{ (rfidResult.student?.full_name || rfidResult.student_name || '?').charAt(0) }}
                     </div>
+                    <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="absolute inset-0 w-full h-full object-cover" @error="$event.target.style.display='none'" />
                   </div>
                   <div class="absolute -bottom-1 -right-1 w-7 h-7 bg-green-500 rounded-full flex items-center justify-center border-2 border-white/30 shadow">
                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
@@ -399,11 +399,11 @@
             <div class="bg-yellow-500/15 backdrop-blur-lg rounded-2xl p-5 lg:p-6 border-2 border-yellow-400/60 shadow-2xl">
               <div class="flex items-center gap-4">
                 <div class="relative flex-shrink-0">
-                  <div class="w-16 h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-2 border-yellow-300/60 shadow-lg bg-white/10">
-                    <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="w-full h-full object-cover" />
-                    <div v-else :class="['w-full h-full flex items-center justify-center font-bold text-lg text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+                  <div class="relative w-16 h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-2 border-yellow-300/60 shadow-lg">
+                    <div :class="['absolute inset-0 flex items-center justify-center font-bold text-lg text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
                       {{ (rfidResult.student?.full_name || rfidResult.student_name || '?').charAt(0) }}
                     </div>
+                    <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="absolute inset-0 w-full h-full object-cover" @error="$event.target.style.display='none'" />
                   </div>
                   <div class="absolute -bottom-1 -right-1 w-7 h-7 bg-yellow-500 rounded-full flex items-center justify-center border-2 border-white/30 shadow">
                     <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
