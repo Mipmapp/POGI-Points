@@ -150,25 +150,29 @@
 
       <!-- Statistics Panel -->
       <div v-if="activePayment && filteredContributions.length > 0" class="px-4 sm:px-6 md:px-8 py-4 border-b border-gray-100">
-        <button @click="showStatsPanel = !showStatsPanel" class="w-full flex items-center gap-2 mb-3 group">
-          <div class="w-1 h-5 rounded-full bg-teal-500"></div>
-          <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Statistics</h3>
-          <div class="ml-2 flex items-center gap-2">
-            <span class="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">
-              {{ statsOverall.paid }}/{{ statsOverall.total }} Paid
-            </span>
-            <span class="inline-flex items-center gap-1 text-xs font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
-              {{ statsOverall.unpaid }} Unpaid
-            </span>
-            <span class="inline-flex items-center gap-1 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
-              {{ statsOverall.pct }}%
-            </span>
-            <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full" :title="`Total collected (after discounts) — Expected ₱${statsOverall.expected.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              ₱{{ statsOverall.totalCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }} collected
-            </span>
+        <button @click="showStatsPanel = !showStatsPanel" class="w-full flex items-start gap-2 mb-3 group text-left">
+          <div class="w-1 h-5 rounded-full bg-teal-500 flex-shrink-0 mt-0.5"></div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+              <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Statistics</h3>
+              <svg :class="['ml-auto w-4 h-4 text-gray-400 transition-transform duration-200 flex-shrink-0', showStatsPanel ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+            <div class="flex items-center gap-1.5 flex-wrap mt-1.5">
+              <span class="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">
+                {{ statsOverall.paid }}/{{ statsOverall.total }} Paid
+              </span>
+              <span class="inline-flex items-center gap-1 text-xs font-bold text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">
+                {{ statsOverall.unpaid }} Unpaid
+              </span>
+              <span class="inline-flex items-center gap-1 text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-full">
+                {{ statsOverall.pct }}%
+              </span>
+              <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full" :title="`Total collected (after discounts) — Expected ₱${statsOverall.expected.toLocaleString('en-PH', { minimumFractionDigits: 2 })}`">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                ₱{{ statsOverall.totalCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }} collected
+              </span>
+            </div>
           </div>
-          <svg :class="['ml-auto w-4 h-4 text-gray-400 transition-transform duration-200', showStatsPanel ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
         </button>
 
         <transition name="ssaam-stats">
