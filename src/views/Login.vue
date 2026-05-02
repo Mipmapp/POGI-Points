@@ -1325,7 +1325,10 @@ function manualRetryFace() {
   top: 0; left: 0; right: 0; bottom: 0;
   overflow-x: hidden;
   overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.mobile-bg-panel::-webkit-scrollbar { display: none; }
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s ease;
