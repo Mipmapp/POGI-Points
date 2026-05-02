@@ -7117,221 +7117,290 @@
 
   <!-- Contact/Help Modal -->
   <transition name="fade">
-    <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" @click.self="showContactModal = false">
-      <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
-        <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl p-6 flex items-center justify-between flex-shrink-0">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+    <div v-if="showContactModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" @click.self="showContactModal = false">
+      <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[92vh] sm:max-h-[88vh] overflow-hidden flex flex-col">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light px-4 sm:px-6 pt-4 sm:pt-5 pb-0 flex-shrink-0 relative overflow-hidden">
+          <div class="light-sweep"></div>
+          <div class="relative z-10">
+            <div class="flex items-center justify-between mb-3 sm:mb-4">
+              <div class="flex items-center gap-2.5 sm:gap-3">
+                <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+                <div>
+                  <h3 class="text-base sm:text-lg font-bold text-white leading-tight">Help &amp; Support</h3>
+                  <p class="text-blue-100/80 text-[10px] sm:text-xs">SSAAM &middot; JRMSU</p>
+                </div>
+              </div>
+              <button @click="showContactModal = false" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
             </div>
-            <div>
-              <h3 class="text-xl font-bold text-white">Help &amp; Support</h3>
-              <p class="text-blue-100 text-xs">SSAAM · JRMSU</p>
+            <!-- Tabs (flush inside header) -->
+            <div class="flex gap-0.5 -mx-4 sm:-mx-6 px-2 sm:px-3 overflow-x-auto scrollbar-hide">
+              <button @click="helpTab = 'about'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0', helpTab === 'about' ? 'bg-white text-blue-900' : 'text-white/80 hover:text-white hover:bg-white/10']">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                About
+              </button>
+              <button @click="helpTab = 'faq'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0', helpTab === 'faq' ? 'bg-white text-blue-900' : 'text-white/80 hover:text-white hover:bg-white/10']">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                FAQ
+              </button>
+              <button @click="helpTab = 'contact'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0', helpTab === 'contact' ? 'bg-white text-blue-900' : 'text-white/80 hover:text-white hover:bg-white/10']">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                Contact
+              </button>
+              <button @click="helpTab = 'terms'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0', helpTab === 'terms' ? 'bg-white text-blue-900' : 'text-white/80 hover:text-white hover:bg-white/10']">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Terms
+              </button>
             </div>
           </div>
-          <button @click="showContactModal = false" class="text-white/70 hover:text-white text-2xl leading-none transition">&times;</button>
         </div>
 
-        <div class="p-6 overflow-y-auto dev-modal-scroll">
-        <!-- Tabs -->
-        <div class="flex gap-1 mb-6 bg-blue-50 rounded-2xl p-1">
-          <button 
-            @click="helpTab = 'about'"
-            :class="['flex-1 px-2 py-2 rounded-xl font-medium text-xs transition', helpTab === 'about' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' : 'text-blue-700 hover:bg-blue-100']"
-          >
-            About
-          </button>
-          <button 
-            @click="helpTab = 'faq'"
-            :class="['flex-1 px-2 py-2 rounded-xl font-medium text-xs transition', helpTab === 'faq' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' : 'text-blue-700 hover:bg-blue-100']"
-          >
-            FAQ
-          </button>
-          <button 
-            @click="helpTab = 'contact'"
-            :class="['flex-1 px-2 py-2 rounded-xl font-medium text-xs transition', helpTab === 'contact' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' : 'text-blue-700 hover:bg-blue-100']"
-          >
-            Contact
-          </button>
-          <button 
-            @click="helpTab = 'terms'"
-            :class="['flex-1 px-2 py-2 rounded-xl font-medium text-xs transition', helpTab === 'terms' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' : 'text-blue-700 hover:bg-blue-100']"
-          >
-            Terms
-          </button>
-        </div>
+        <div class="px-4 sm:px-6 py-4 sm:py-5 overflow-y-auto dev-modal-scroll flex-1">
 
         <!-- Tab Content -->
         <div v-if="helpTab === 'about'" class="space-y-3">
-          <div class="bg-green-50 rounded-2xl p-4">
-            <h4 class="font-bold text-base mb-2 text-blue-900">SSAAM - Student School Activities Attendance Monitoring</h4>
-            <p class="text-gray-700 text-sm leading-relaxed">
-              SSAAM is a comprehensive attendance management system designed for educational institutions. It provides real-time RFID scanning, automated attendance tracking, and detailed reporting capabilities.
-            </p>
+          <!-- Hero card -->
+          <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden">
+            <div class="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full"></div>
+            <div class="absolute -bottom-6 -left-3 w-20 h-20 bg-white/5 rounded-full"></div>
+            <div class="relative z-10">
+              <div class="flex items-center gap-2 mb-2">
+                <div class="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                </div>
+                <span class="text-xs font-semibold text-blue-200 uppercase tracking-widest">About SSAAM</span>
+              </div>
+              <h4 class="font-bold text-sm sm:text-base leading-snug mb-2">Student School Activities<br>Attendance Monitoring</h4>
+              <p class="text-blue-100 text-xs leading-relaxed">A comprehensive attendance management system for JRMSU — providing real-time RFID scanning, automated tracking, and detailed reporting.</p>
+            </div>
           </div>
-          <div class="bg-green-50 rounded-2xl p-4">
-            <h5 class="font-semibold text-blue-900 mb-2">Key Features:</h5>
-            <ul class="text-gray-700 text-sm space-y-1.5">
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>RFID-based attendance scanning</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>Real-time session management</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>Student contributions tracking</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>Automated attendance reports</li>
-              <li class="flex items-center gap-2"><span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>Role-based access control</li>
-            </ul>
+          <!-- Features grid -->
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2 px-0.5">Key Features</p>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex items-center gap-2 bg-blue-50 rounded-xl p-2.5">
+                <div class="w-7 h-7 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </div>
+                <span class="text-xs font-medium text-blue-900 leading-tight">Face Recognition</span>
+              </div>
+              <div class="flex items-center gap-2 bg-indigo-50 rounded-xl p-2.5">
+                <div class="w-7 h-7 bg-indigo-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <span class="text-xs font-medium text-indigo-900 leading-tight">Session Management</span>
+              </div>
+              <div class="flex items-center gap-2 bg-emerald-50 rounded-xl p-2.5">
+                <div class="w-7 h-7 bg-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <span class="text-xs font-medium text-emerald-900 leading-tight">Contributions</span>
+              </div>
+              <div class="flex items-center gap-2 bg-amber-50 rounded-xl p-2.5">
+                <div class="w-7 h-7 bg-amber-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <span class="text-xs font-medium text-amber-900 leading-tight">Attendance Reports</span>
+              </div>
+              <div class="flex items-center gap-2 bg-purple-50 rounded-xl p-2.5">
+                <div class="w-7 h-7 bg-purple-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                </div>
+                <span class="text-xs font-medium text-purple-900 leading-tight">Role-Based Access</span>
+              </div>
+              <div class="flex items-center gap-2 bg-rose-50 rounded-xl p-2.5">
+                <div class="w-7 h-7 bg-rose-500 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                </div>
+                <span class="text-xs font-medium text-rose-900 leading-tight">Geofence Check-In</span>
+              </div>
+            </div>
+          </div>
+          <!-- Version info -->
+          <div class="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2.5 text-xs text-gray-500">
+            <span>SSAAM &middot; JRMSU · CCS</span>
+            <span class="font-semibold text-gray-700">v1.0.0</span>
           </div>
         </div>
 
-        <div v-if="helpTab === 'faq'" class="space-y-6">
+        <div v-if="helpTab === 'faq'" class="space-y-4">
           <!-- USER FAQs -->
           <div>
-            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">For Students & General Users</h4>
-            <div class="space-y-3">
-              <div class="border-l-4 border-blue-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">What is SSAAM?</h5>
-                <p class="text-gray-700 text-sm">SSAAM (Student School Activities Attendance Monitoring) is a system designed to track attendance for school activities and events using RFID technology and manual entry options.</p>
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
               </div>
-              <div class="border-l-4 border-blue-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I check my attendance records?</h5>
-                <p class="text-gray-700 text-sm">Go to the Attendance page, select an event and session, then view your attendance status (Present, Late, Incomplete, or Absent) in the logs.</p>
+              <h4 :class="['font-bold text-sm', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">For Students &amp; General Users</h4>
+            </div>
+            <div class="space-y-2">
+              <div class="border-l-4 border-blue-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">What is SSAAM?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">SSAAM (Student School Activities Attendance Monitoring) is a system designed to track attendance for school activities and events using RFID technology and manual entry options.</p>
               </div>
-              <div class="border-l-4 border-blue-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">What does each attendance status mean?</h5>
-                <p class="text-gray-700 text-sm"><strong>Present:</strong> Checked in and out on time • <strong>Late:</strong> Checked in after the allowed threshold • <strong>Incomplete:</strong> Only checked in, not checked out • <strong>Absent:</strong> No check-in recorded</p>
+              <div class="border-l-4 border-blue-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I check my attendance records?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Go to the Attendance page, select an event and session, then view your attendance status (Present, Late, Incomplete, or Absent) in the logs.</p>
               </div>
-              <div class="border-l-4 border-blue-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I view my contributions?</h5>
-                <p class="text-gray-700 text-sm">Navigate to the Contributions page to see your contribution history, payment status, and any outstanding balances.</p>
+              <div class="border-l-4 border-blue-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">What does each attendance status mean?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed"><strong>Present:</strong> Checked in and out on time • <strong>Late:</strong> Checked in after the allowed threshold • <strong>Incomplete:</strong> Only checked in, not checked out • <strong>Absent:</strong> No check-in recorded</p>
               </div>
-              <div class="border-l-4 border-blue-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I pay my contributions?</h5>
-                <p class="text-gray-700 text-sm">Contact the Treasurer (badge visible in the sidebar) to arrange payment. They will update your payment status in the system.</p>
+              <div class="border-l-4 border-blue-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I view my contributions?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Navigate to the Contributions page to see your contribution history, payment status, and any outstanding balances.</p>
               </div>
-              <div class="border-l-4 border-blue-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I register my RFID card?</h5>
-                <p class="text-gray-700 text-sm">Visit the CCS Office with your RFID card. Staff will register it to your account. Your verification status appears as a badge in your profile.</p>
+              <div class="border-l-4 border-blue-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I pay my contributions?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Contact the Treasurer (badge visible in the sidebar) to arrange payment. They will update your payment status in the system.</p>
               </div>
-              <div class="border-l-4 border-blue-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">What if my RFID card is not working?</h5>
-                <p class="text-gray-700 text-sm">If your RFID shows "Unreadable" status, you have two options: (1) Visit the CCS Office for re-registration, or (2) Ask staff to manually enter your Student ID number in the system for check-in/check-out. Staff can type your ID directly during attendance recording.</p>
+              <div class="border-l-4 border-blue-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I register my RFID card?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Visit the CCS Office with your RFID card. Staff will register it to your account. Your verification status appears as a badge in your profile.</p>
               </div>
-              <div class="border-l-4 border-blue-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">Can I change my profile information?</h5>
-                <p class="text-gray-700 text-sm">Contact an administrator to update your profile. Changes may include name, program, year level, or profile photo.</p>
+              <div class="border-l-4 border-blue-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">What if my RFID card is not working?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">If your RFID shows "Unreadable" status, you have two options: (1) Visit the CCS Office for re-registration, or (2) Ask staff to manually enter your Student ID number in the system for check-in/check-out. Staff can type your ID directly during attendance recording.</p>
               </div>
-              <div class="border-l-4 border-blue-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I request an excused absence?</h5>
-                <p class="text-gray-700 text-sm">Contact an administrator or event coordinator. Admins can mark your attendance as excused with a reason note in the Attendance logs.</p>
+              <div class="border-l-4 border-blue-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">Can I change my profile information?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Contact an administrator to update your profile. Changes may include name, program, year level, or profile photo.</p>
               </div>
-              <div class="border-l-4 border-blue-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I check notifications?</h5>
-                <p class="text-gray-700 text-sm">Click the Notifications button in the sidebar to see important updates about events, contributions, and system announcements.</p>
+              <div class="border-l-4 border-blue-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I request an excused absence?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Contact an administrator or event coordinator. Admins can mark your attendance as excused with a reason note in the Attendance logs.</p>
+              </div>
+              <div class="border-l-4 border-blue-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I check notifications?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Click the Notifications button in the sidebar to see important updates about events, contributions, and system announcements.</p>
               </div>
             </div>
           </div>
 
           <!-- ADMIN FAQs -->
           <div v-if="isAdminLike">
-            <h4 :class="['font-bold text-lg mb-4 pb-2 border-b-2', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">For Administrators</h4>
-            <div class="space-y-3">
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I create a new event?</h5>
-                <p class="text-gray-700 text-sm">Go to Dashboard > Manage Events, click "Create New Event", enter event details (title, date, description), assign students, and configure sessions with start/end times.</p>
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-6 h-6 bg-green-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg class="w-3.5 h-3.5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I add sessions to an event?</h5>
-                <p class="text-gray-700 text-sm">Edit an event and click "Add Session". Set the session label, start time, end time, and late threshold minutes. Save to apply changes.</p>
+              <h4 :class="['font-bold text-sm', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">For Administrators</h4>
+            </div>
+            <div class="space-y-2">
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I create a new event?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Go to Dashboard > Manage Events, click "Create New Event", enter event details (title, date, description), assign students, and configure sessions with start/end times.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I assign students to an event?</h5>
-                <p class="text-gray-700 text-sm">Edit the event and use the student search/assignment panel. Filter by program and year level, then select students to assign. Click "Assign Selected Students".</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I add sessions to an event?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Edit an event and click "Add Session". Set the session label, start time, end time, and late threshold minutes. Save to apply changes.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I enable/disable RFID scanning?</h5>
-                <p class="text-gray-700 text-sm">Go to Settings > RFID Scanner Controls. Toggle "Check-In Enabled" and "Check-Out Enabled" globally. Individual sessions can also override these settings.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I assign students to an event?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Edit the event and use the student search/assignment panel. Filter by program and year level, then select students to assign. Click "Assign Selected Students".</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I set the late threshold for a session?</h5>
-                <p class="text-gray-700 text-sm">In Attendance Logs, use the "Late Threshold Editor" to set minutes after session start. Check-ins after this time are marked as late. Click "Apply & Recalculate" to update records.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I enable/disable RFID scanning?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Go to Settings > RFID Scanner Controls. Toggle "Check-In Enabled" and "Check-Out Enabled" globally. Individual sessions can also override these settings.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I mark a student as excused?</h5>
-                <p class="text-gray-700 text-sm">In Attendance Logs, click "Edit" next to a student's record. Check "Mark as Excused" and enter a reason (optional). Save changes.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I set the late threshold for a session?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">In Attendance Logs, use the "Late Threshold Editor" to set minutes after session start. Check-ins after this time are marked as late. Click "Apply & Recalculate" to update records.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I export attendance data?</h5>
-                <p class="text-gray-700 text-sm">Open a session's logs modal and click the "Download Excel" button. The file includes all attendance records with timestamps and status information.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I mark a student as excused?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">In Attendance Logs, click "Edit" next to a student's record. Check "Mark as Excused" and enter a reason (optional). Save changes.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I manage user accounts?</h5>
-                <p class="text-gray-700 text-sm">Go to Manage > Users. View all users, edit roles (student, admin), update permissions, and manage RFID verification status.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I export attendance data?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Open a session's logs modal and click the "Download Excel" button. The file includes all attendance records with timestamps and status information.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I manage roles and permissions?</h5>
-                <p class="text-gray-700 text-sm">Go to Manage > Roles. Create or edit roles, assign specific permissions (view attendance, manage events, approve students, etc.), and apply to users.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I manage user accounts?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Go to Manage > Users. View all users, edit roles (student, admin), update permissions, and manage RFID verification status.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I handle pending student approvals?</h5>
-                <p class="text-gray-700 text-sm">Go to Pending Approvals. Review pending students, verify their information, then approve or reject their registration. Approved students gain system access.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I manage roles and permissions?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Go to Manage > Roles. Create or edit roles, assign specific permissions (view attendance, manage events, approve students, etc.), and apply to users.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I clear session tokens?</h5>
-                <p class="text-gray-700 text-sm">Go to Settings > Security. Click "Clear All Sessions" to force logout all users (except you). Useful for security or system maintenance.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I handle pending student approvals?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Go to Pending Approvals. Review pending students, verify their information, then approve or reject their registration. Approved students gain system access.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I view audit logs?</h5>
-                <p class="text-gray-700 text-sm">System logs track all attendance changes, user actions, and configuration updates. Contact developers for detailed audit trail access if needed.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I clear session tokens?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Go to Settings > Security. Click "Clear All Sessions" to force logout all users (except you). Useful for security or system maintenance.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I create announcements?</h5>
-                <p class="text-gray-700 text-sm">Go to Dashboard and use the Announcement section. Create notifications that broadcast to all users via the notification system.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I view audit logs?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">System logs track all attendance changes, user actions, and configuration updates. Contact developers for detailed audit trail access if needed.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I manage contribution payment types?</h5>
-                <p class="text-gray-700 text-sm">Go to Settings > Contributions. Add or edit payment types (fees, donations, etc.) that admins can use to record student contributions.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I create announcements?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Go to Dashboard and use the Announcement section. Create notifications that broadcast to all users via the notification system.</p>
               </div>
-              <div class="border-l-4 border-green-300 pl-4">
-                <h5 class="font-semibold text-gray-900 mb-1">How do I duplicate or delete an event?</h5>
-                <p class="text-gray-700 text-sm">In the Events list, use the "Duplicate" button to create a copy with the same settings, or "Delete" to permanently remove an event and its logs.</p>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I manage contribution payment types?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">Go to Settings > Contributions. Add or edit payment types (fees, donations, etc.) that admins can use to record student contributions.</p>
+              </div>
+              <div class="border-l-4 border-green-300 pl-3 py-0.5">
+                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I duplicate or delete an event?</h5>
+                <p class="text-gray-600 text-xs leading-relaxed">In the Events list, use the "Duplicate" button to create a copy with the same settings, or "Delete" to permanently remove an event and its logs.</p>
               </div>
             </div>
           </div>
         </div>
 
         <div v-if="helpTab === 'contact'" class="space-y-3">
-          <div class="bg-green-50 rounded-2xl p-4 flex items-start gap-3">
-            <div class="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest px-0.5">Get in Touch</p>
+          <!-- Email -->
+          <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-3.5 flex items-center gap-3 border border-blue-100">
+            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md shadow-blue-200">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
             </div>
-            <div>
-              <p class="font-semibold text-gray-900 text-sm">Email Support</p>
-              <p class="text-blue-600 text-sm font-medium">ssaamjrmsu@gmail.com</p>
-              <p class="text-gray-500 text-xs mt-0.5">For general inquiries, technical issues, and feedback</p>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-gray-900 text-sm">Email Support</p>
+              <p class="text-blue-600 text-xs font-semibold truncate">ssaamjrmsu@gmail.com</p>
+              <p class="text-gray-500 text-[10px] mt-0.5 leading-tight">General inquiries, technical issues &amp; feedback</p>
             </div>
           </div>
-          <div class="bg-green-50 rounded-2xl p-4 flex items-start gap-3">
-            <div class="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <!-- Office -->
+          <div class="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-3.5 flex items-center gap-3 border border-emerald-100">
+            <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md shadow-emerald-200">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
             </div>
-            <div>
-              <p class="font-semibold text-gray-900 text-sm">JRMSU CCS Office</p>
-              <p class="text-gray-700 text-sm">College of Computing Studies</p>
-              <p class="text-gray-500 text-xs mt-0.5">Visit during office hours for in-person assistance</p>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-gray-900 text-sm">JRMSU CCS Office</p>
+              <p class="text-emerald-700 text-xs font-semibold">College of Computing Studies</p>
+              <p class="text-gray-500 text-[10px] mt-0.5 leading-tight">Visit during office hours for in-person assistance</p>
             </div>
           </div>
-          <div class="bg-green-50 rounded-2xl p-4 flex items-start gap-3">
-            <div class="w-9 h-9 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+          <!-- Developers -->
+          <div class="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-3.5 flex items-center gap-3 border border-purple-100">
+            <div class="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md shadow-purple-200">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             </div>
-            <div class="flex-1">
-              <p class="font-semibold text-gray-900 text-sm">Meet Our Developers</p>
-              <p class="text-gray-600 text-xs mb-2">CCS - Creatives Committee</p>
-              <button @click="showDevelopersPopup = true; showContactModal = false" class="text-xs font-semibold px-3 py-1.5 rounded-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white hover:from-ssaam-dark hover:to-ssaam-light transition shadow-sm">View Development Team →</button>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-gray-900 text-sm">Development Team</p>
+              <p class="text-purple-700 text-xs font-semibold">CCS Creatives Committee</p>
+              <button @click="showDevelopersPopup = true; showContactModal = false" class="mt-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-sm transition hover:shadow-md">View Team →</button>
             </div>
           </div>
         </div>
 
         <div v-if="helpTab === 'terms'" class="space-y-3">
-          <p class="text-xs text-gray-500 leading-relaxed">By using SSAAM, you agree to the following terms which govern attendance recording, financial contributions, and your personal data within the JRMSU SSAAM system.</p>
+          <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl px-4 py-3 flex items-center gap-3 text-white">
+            <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-sm leading-tight">Terms &amp; Conditions</p>
+              <p class="text-blue-100/80 text-[10px] mt-0.5 leading-tight">By using SSAAM, you agree to these terms governing attendance, contributions, and personal data within JRMSU.</p>
+            </div>
+          </div>
           <div class="space-y-2">
             <div class="bg-blue-50 rounded-2xl p-4">
               <h5 class="font-bold text-blue-900 text-sm mb-2">1. Attendance Recording</h5>
@@ -7389,9 +7458,11 @@
           </div>
         </div>
 
-        <div class="mt-6 text-center">
-          <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition shadow-md">Close</button>
-        </div>
+        </div><!-- /scroll area -->
+
+        <!-- Sticky Footer -->
+        <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 flex-shrink-0 bg-white">
+          <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-ssaam-dark via-blue-700 to-ssaam-light text-white py-2.5 sm:py-3 rounded-2xl font-bold text-sm hover:opacity-90 active:scale-[0.98] transition shadow-md shadow-blue-200">Done</button>
         </div>
       </div>
     </div>
