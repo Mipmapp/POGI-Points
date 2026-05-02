@@ -394,7 +394,7 @@
       <p class="text-sm opacity-90">Input your JRMSU Student ID to continue.</p>
     </div>
 
-    <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 overflow-auto relative z-10">
+    <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 relative z-10">
       <div class="max-w-md mx-auto">
 
         <div class="mb-6 text-center">
@@ -1321,7 +1321,8 @@ function manualRetryFace() {
   background: linear-gradient(135deg, #1e3bdb 0%, #4f62ff 100%), url('/classroom-bg.jpg');
   background-size: cover;
   background-position: center;
-  position: relative;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
   overflow-x: hidden;
   overflow-y: auto;
 }
