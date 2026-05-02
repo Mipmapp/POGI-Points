@@ -3602,18 +3602,18 @@
             <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
               <div class="light-sweep"></div>
-              <div class="absolute inset-0 flex items-center px-6 md:px-8 gap-4">
-                <div class="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/20">
-                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/20">
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 </div>
                 <div class="min-w-0">
-                  <h2 class="text-white text-lg md:text-xl font-bold leading-tight">My Location</h2>
-                  <p class="text-white/80 text-xs md:text-sm">See where you are relative to today's check-in zones.</p>
+                  <h2 class="text-white text-base sm:text-lg md:text-xl font-bold leading-tight">My Location</h2>
+                  <p class="text-white/80 text-xs sm:text-sm line-clamp-1">See where you are relative to today's check-in zones.</p>
                 </div>
               </div>
             </div>
 
-            <div class="p-4 md:p-6 space-y-4">
+            <div class="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
               <!-- Quick description: tells the student what these maps are for
                    so they understand the location pin isn't generic — it's the
                    exact area where face-scan attendance is allowed. -->
@@ -3822,13 +3822,13 @@
             <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
               <div class="light-sweep"></div>
-              <div class="absolute inset-0 flex items-center px-6 md:px-8 gap-4">
-                <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-white/20' : isSOM ? 'bg-white/20' : isCNAHS ? 'bg-white/20' : 'bg-white/20']">
-                  <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/20">
+                  <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 </div>
-                <div>
-                  <h2 class="text-2xl font-extrabold text-white tracking-tight">Submit a Request</h2>
-                  <p class="text-white/70 text-sm mt-0.5">Request changes to your name or college/department.</p>
+                <div class="min-w-0">
+                  <h2 class="text-base sm:text-xl md:text-2xl font-extrabold text-white tracking-tight leading-tight">Submit a Request</h2>
+                  <p class="text-white/70 text-xs sm:text-sm mt-0.5 line-clamp-1">Request changes to your name or college/department.</p>
                 </div>
               </div>
             </div>
@@ -3836,11 +3836,11 @@
 
           <!-- Past Requests -->
           <div v-if="studentRequests.length > 0" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <div class="px-6 md:px-8 py-5 border-b border-gray-100 flex items-center gap-2">
-              <div :class="['w-1 h-5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : isCNAHS ? 'bg-emerald-500' : 'bg-blue-600']"></div>
-              <h3 :class="['text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-blue-800']">Your Past Requests</h3>
+            <div class="px-4 sm:px-6 md:px-8 py-3.5 sm:py-5 border-b border-gray-100 flex items-center gap-2">
+              <div :class="['w-1 h-5 rounded-full flex-shrink-0', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : isCNAHS ? 'bg-emerald-500' : 'bg-blue-600']"></div>
+              <h3 :class="['text-xs sm:text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-blue-800']">Your Past Requests</h3>
             </div>
-            <div class="p-4 md:p-6 space-y-3">
+            <div class="p-3 sm:p-4 md:p-6 space-y-2.5 sm:space-y-3">
               <div v-for="req in studentRequests" :key="req._id" :class="['rounded-2xl border p-4 text-sm transition hover:shadow-sm', req.status === 'approved' ? 'bg-green-50 border-green-200' : req.status === 'rejected' ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200']">
                 <div class="flex items-start justify-between gap-3 flex-wrap">
                   <div class="flex-1">
@@ -3864,12 +3864,12 @@
 
           <!-- New Request Form -->
           <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <div class="px-6 md:px-8 py-5 border-b border-gray-100 flex items-center gap-2">
-              <div :class="['w-1 h-5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : isCNAHS ? 'bg-emerald-500' : 'bg-blue-600']"></div>
-              <h3 :class="['text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-blue-800']">New Request</h3>
+            <div class="px-4 sm:px-6 md:px-8 py-3.5 sm:py-5 border-b border-gray-100 flex items-center gap-2">
+              <div :class="['w-1 h-5 rounded-full flex-shrink-0', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : isCNAHS ? 'bg-emerald-500' : 'bg-blue-600']"></div>
+              <h3 :class="['text-xs sm:text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-blue-800']">New Request</h3>
             </div>
 
-            <div class="p-6 md:p-8 space-y-6">
+            <div class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
               <!-- Request Type Toggle -->
               <div>
                 <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Request Type</label>
@@ -4561,40 +4561,40 @@
             <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
               <div class="light-sweep"></div>
-              <div class="relative z-10 p-6 flex items-center gap-4 h-full">
-                <div class="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
-                  <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+              <div class="relative z-10 px-4 sm:p-6 flex items-center gap-3 sm:gap-4 h-full">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 </div>
-                <div>
-                  <h2 class="text-xl font-bold text-white">My Contributions</h2>
-                  <p class="text-white/70 text-sm">Track your contribution fees and payment status</p>
+                <div class="min-w-0">
+                  <h2 class="text-base sm:text-xl font-bold text-white leading-tight">My Contributions</h2>
+                  <p class="text-white/70 text-xs sm:text-sm mt-0.5">Track your contribution fees and payment status</p>
                 </div>
               </div>
             </div>
 
             <!-- Summary Cards -->
-            <div class="p-6 grid grid-cols-2 sm:grid-cols-3 gap-4">
-              <div :class="['rounded-2xl p-4 text-center', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
-                <p class="text-2xl font-bold text-gray-800">{{ myPayments.length }}</p>
-                <p class="text-xs text-gray-500 mt-1 font-medium">Total Records</p>
+            <div class="p-3 sm:p-6 grid grid-cols-3 gap-2 sm:gap-4">
+              <div :class="['rounded-2xl p-2.5 sm:p-4 text-center', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                <p class="text-xl sm:text-2xl font-bold text-gray-800">{{ myPayments.length }}</p>
+                <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 font-medium">Total</p>
               </div>
-              <div class="rounded-2xl p-4 text-center bg-green-50">
-                <p class="text-2xl font-bold text-green-700">{{ myPayments.filter(p => p.is_paid).length }}</p>
-                <p class="text-xs text-gray-500 mt-1 font-medium">Paid</p>
+              <div class="rounded-2xl p-2.5 sm:p-4 text-center bg-green-50">
+                <p class="text-xl sm:text-2xl font-bold text-green-700">{{ myPayments.filter(p => p.is_paid).length }}</p>
+                <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 font-medium">Paid</p>
               </div>
-              <div class="rounded-2xl p-4 text-center bg-red-50 col-span-2 sm:col-span-1">
-                <p class="text-2xl font-bold text-red-600">{{ myPayments.filter(p => !p.is_paid).length }}</p>
-                <p class="text-xs text-gray-500 mt-1 font-medium">Outstanding</p>
+              <div class="rounded-2xl p-2.5 sm:p-4 text-center bg-red-50">
+                <p class="text-xl sm:text-2xl font-bold text-red-600">{{ myPayments.filter(p => !p.is_paid).length }}</p>
+                <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 font-medium">Outstanding</p>
               </div>
             </div>
           </div>
 
           <!-- Records Card -->
           <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
               <div class="flex items-center gap-2">
-                <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full']"></div>
-                <h3 class="text-sm font-bold text-gray-700 uppercase tracking-widest">Payment Records</h3>
+                <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full flex-shrink-0']"></div>
+                <h3 class="text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-widest">Payment Records</h3>
               </div>
               <button @click="fetchMyPayments" :disabled="loadingMyPayments" :class="[isCOE ? 'text-orange-600 hover:bg-orange-50' : isSOM ? 'text-green-600 hover:bg-green-50' : isCNAHS ? 'text-green-700 hover:bg-green-50' : 'text-blue-600 hover:bg-blue-50', 'p-2 rounded-xl transition-colors flex items-center gap-1.5 text-xs font-medium']" title="Refresh">
                 <svg :class="['w-4 h-4', loadingMyPayments ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
@@ -4621,14 +4621,38 @@
 
             <!-- Table -->
             <div v-else>
-              <div class="overflow-x-auto">
+              <!-- Mobile card list (xs only) -->
+              <div class="block sm:hidden divide-y divide-gray-100">
+                <div v-for="record in myPayments.slice(0, myPaymentsLimit)" :key="record._id + '-m'" class="px-4 py-3 hover:bg-gray-50 transition-colors">
+                  <div class="flex items-start justify-between gap-2 mb-1.5">
+                    <p class="font-semibold text-sm text-gray-900 leading-tight flex-1">{{ record.title }}</p>
+                    <span :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold flex-shrink-0',
+                      record.is_paid ? 'bg-green-100 text-green-700' :
+                      record.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-red-100 text-red-700']">
+                      <svg v-if="record.is_paid" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                      {{ record.is_paid ? 'Paid' : record.payment_status === 'pending' ? 'Pending' : 'Unpaid' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <span :class="['text-sm font-bold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">₱{{ Number(record.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                      <span v-if="record.is_paid && record.amount_paid" class="text-[10px] text-gray-400">Paid: ₱{{ Number(record.amount_paid).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                    </div>
+                    <span v-if="record.deadline" class="text-[10px] text-gray-400 flex-shrink-0">Due {{ new Date(record.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) }}</span>
+                  </div>
+                  <p v-if="record.description" class="text-[11px] text-gray-400 mt-1 line-clamp-1">{{ record.description }}</p>
+                </div>
+              </div>
+              <!-- Desktop table (sm+) -->
+              <div class="hidden sm:block overflow-x-auto">
                 <table class="w-full text-sm">
                   <thead>
                     <tr :class="[isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
                       <th :class="['text-left px-5 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Description</th>
                       <th :class="['text-right px-5 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Amount</th>
                       <th :class="['text-center px-5 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Status</th>
-                      <th :class="['text-right px-5 py-3 font-bold text-xs uppercase tracking-wider hidden sm:table-cell', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Deadline</th>
+                      <th :class="['text-right px-5 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Deadline</th>
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-gray-100">
@@ -4651,7 +4675,7 @@
                         </span>
                         <p v-if="record.is_paid && record.paid_date" class="text-[10px] text-gray-400 mt-1">{{ new Date(record.paid_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</p>
                       </td>
-                      <td class="px-5 py-4 text-right hidden sm:table-cell">
+                      <td class="px-5 py-4 text-right">
                         <span v-if="record.deadline" class="text-xs text-gray-600">{{ new Date(record.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
                         <span v-else class="text-xs text-gray-400">—</span>
                       </td>
@@ -4660,12 +4684,12 @@
                 </table>
               </div>
               <!-- Load More -->
-              <div v-if="myPayments.length > myPaymentsLimit" class="px-5 py-3 border-t border-gray-100 text-center">
+              <div v-if="myPayments.length > myPaymentsLimit" class="px-4 sm:px-5 py-3 border-t border-gray-100 text-center">
                 <button @click="myPaymentsLimit += 10" :class="['px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95', isCOE ? 'bg-orange-50 text-orange-700 hover:bg-orange-100' : isSOM ? 'bg-green-50 text-green-700 hover:bg-green-100' : isCNAHS ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-blue-50 text-blue-700 hover:bg-blue-100']">
                   Load More ({{ myPayments.length - myPaymentsLimit }} remaining)
                 </button>
               </div>
-              <div :class="['px-5 py-3 flex items-center justify-between border-t border-gray-100', isCOE ? 'bg-orange-50/50' : isSOM ? 'bg-green-50/50' : isCNAHS ? 'bg-green-50/50' : 'bg-blue-50/50']">
+              <div :class="['px-4 sm:px-5 py-3 flex items-center justify-between border-t border-gray-100', isCOE ? 'bg-orange-50/50' : isSOM ? 'bg-green-50/50' : isCNAHS ? 'bg-green-50/50' : 'bg-blue-50/50']">
                 <span class="text-xs text-gray-500">{{ myPayments.filter(p => p.is_paid).length }} of {{ myPayments.length }} paid</span>
                 <span :class="['text-xs font-bold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">
                   Total: ₱{{ myPayments.reduce((s, p) => s + (p.amount_due || 0), 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}

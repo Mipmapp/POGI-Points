@@ -1,21 +1,22 @@
 <template>
-  <div class="space-y-6">
+  <div class="space-y-4 sm:space-y-6">
     <!-- Header Banner -->
     <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-      <div class="relative h-32 sm:h-36 bg-gradient-to-br from-purple-700 via-violet-700 to-indigo-700 overflow-hidden">
+      <div class="relative h-28 sm:h-32 bg-gradient-to-br from-purple-700 via-violet-700 to-indigo-700 overflow-hidden">
         <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
         <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-violet-400/20 blur-3xl animate-pulse"></div>
         <div class="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-purple-500/20 blur-3xl"></div>
-        <div class="absolute inset-0 flex items-center px-6 md:px-8 gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
             </svg>
           </div>
           <div class="flex-1 min-w-0">
-            <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">My Raffle Results</h2>
-            <p class="text-white/70 text-sm mt-0.5">View your raffle ticket entries and category standing</p>
+            <h2 class="text-base sm:text-xl md:text-2xl font-extrabold text-white tracking-tight leading-tight">My Raffle Results</h2>
+            <p class="text-white/70 text-xs sm:text-sm mt-0.5 line-clamp-1">View your raffle ticket entries and category standing</p>
           </div>
+          <!-- Summary chips — desktop only (shown in content on mobile) -->
           <div v-if="!loading && entries.length > 0" class="flex-shrink-0 hidden sm:flex items-center gap-2">
             <div class="text-center bg-red-500/20 rounded-2xl px-3 py-2 border border-red-300/30">
               <p class="text-white/70 text-[10px] uppercase tracking-wider">Rural</p>
@@ -33,11 +34,27 @@
         </div>
       </div>
 
+      <!-- Mobile summary row (xs only, shown below header gradient) -->
+      <div v-if="!loading && entries.length > 0" class="flex sm:hidden border-b border-gray-100 divide-x divide-gray-100">
+        <div class="flex-1 py-2.5 text-center">
+          <p class="text-lg font-extrabold text-red-600">{{ totalRural }}</p>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">🔴 Rural</p>
+        </div>
+        <div class="flex-1 py-2.5 text-center">
+          <p class="text-lg font-extrabold text-green-600">{{ totalEvergood }}</p>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">🟢 Evergood</p>
+        </div>
+        <div class="flex-1 py-2.5 text-center">
+          <p class="text-lg font-extrabold text-purple-700">{{ totalTickets }}</p>
+          <p class="text-[10px] text-gray-400 font-bold uppercase tracking-wide">Total</p>
+        </div>
+      </div>
+
       <!-- Category Legend -->
-      <div class="px-4 sm:px-6 md:px-8 py-4 border-b border-gray-100">
-        <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Raffle Categories</p>
-        <div class="flex flex-wrap gap-2">
-          <span v-for="cat in categories" :key="cat.key" :class="['inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold border', cat.classes]">
+      <div class="px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-b border-gray-100">
+        <p class="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Raffle Categories</p>
+        <div class="flex flex-wrap gap-1.5 sm:gap-2">
+          <span v-for="cat in categories" :key="cat.key" :class="['inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-[10px] sm:text-xs font-bold border', cat.classes]">
             {{ cat.icon }} {{ cat.label }} <span class="opacity-70">({{ cat.range }})</span>
           </span>
         </div>
@@ -45,19 +62,19 @@
     </div>
 
     <!-- Loading State -->
-    <div v-if="loading" class="flex items-center justify-center py-20">
+    <div v-if="loading" class="flex items-center justify-center py-16 sm:py-20">
       <div class="text-center">
-        <svg class="animate-spin h-12 w-12 text-purple-500 mx-auto mb-4" fill="none" viewBox="0 0 24 24">
+        <svg class="animate-spin h-10 w-10 sm:h-12 sm:w-12 text-purple-500 mx-auto mb-3 sm:mb-4" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
         </svg>
-        <p class="text-gray-500 font-medium">Loading your raffle entries...</p>
+        <p class="text-gray-500 font-medium text-sm">Loading your raffle entries...</p>
       </div>
     </div>
 
     <!-- Error State -->
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-2xl p-6 text-center">
-      <svg class="w-10 h-10 text-red-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-2xl p-5 sm:p-6 text-center">
+      <svg class="w-9 h-9 sm:w-10 sm:h-10 text-red-400 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
       <p class="text-red-700 font-semibold">Failed to load raffle entries</p>
@@ -68,20 +85,20 @@
     </div>
 
     <!-- Empty State -->
-    <div v-else-if="entries.length === 0" class="bg-white rounded-3xl shadow-xl border border-gray-100 p-12 text-center">
-      <div class="w-20 h-20 rounded-full bg-purple-50 flex items-center justify-center mx-auto mb-5">
-        <svg class="w-10 h-10 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div v-else-if="entries.length === 0" class="bg-white rounded-3xl shadow-xl border border-gray-100 p-10 sm:p-12 text-center">
+      <div class="w-16 h-16 rounded-full bg-purple-50 flex items-center justify-center mx-auto mb-4">
+        <svg class="w-8 h-8 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
         </svg>
       </div>
-      <h3 class="text-lg font-bold text-gray-700 mb-2">No Raffle Entries Yet</h3>
+      <h3 class="text-base sm:text-lg font-bold text-gray-700 mb-2">No Raffle Entries Yet</h3>
       <p class="text-gray-400 text-sm max-w-xs mx-auto">Your raffle ticket entries will appear here once an admin has recorded them for you.</p>
     </div>
 
     <!-- Entries -->
-    <div v-else class="space-y-4">
+    <div v-else class="space-y-3 sm:space-y-4">
       <div class="flex items-center justify-between px-1">
-        <p class="text-sm font-bold text-gray-500 uppercase tracking-widest">Your Entries</p>
+        <p class="text-xs sm:text-sm font-bold text-gray-500 uppercase tracking-widest">Your Entries</p>
         <button @click="fetchEntries" :disabled="loading" class="flex items-center gap-1.5 text-xs text-purple-600 hover:bg-purple-50 px-3 py-1.5 rounded-xl font-medium transition-colors">
           <svg :class="['w-3.5 h-3.5', loading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -91,72 +108,72 @@
       </div>
 
       <div v-for="entry in entries" :key="entry._id" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-        <!-- Ticket Type Banner -->
-        <div :class="['relative h-3', entry.ticket_type === 'red' ? 'bg-gradient-to-r from-red-500 to-rose-600' : 'bg-gradient-to-r from-green-500 to-emerald-600']"></div>
+        <!-- Ticket Type Color Bar -->
+        <div :class="['relative h-2.5 sm:h-3', entry.ticket_type === 'red' ? 'bg-gradient-to-r from-red-500 to-rose-600' : 'bg-gradient-to-r from-green-500 to-emerald-600']"></div>
 
-        <div class="p-6">
-          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="p-4 sm:p-6">
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
             <!-- Ticket Type Info -->
-            <div class="flex items-center gap-4">
-              <div :class="['w-14 h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg', entry.ticket_type === 'red' ? 'bg-gradient-to-br from-red-100 to-rose-200' : 'bg-gradient-to-br from-green-100 to-emerald-200']">
-                <svg class="w-7 h-7" :class="entry.ticket_type === 'red' ? 'text-red-600' : 'text-green-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center gap-3 sm:gap-4">
+              <div :class="['w-11 h-11 sm:w-14 sm:h-14 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg', entry.ticket_type === 'red' ? 'bg-gradient-to-br from-red-100 to-rose-200' : 'bg-gradient-to-br from-green-100 to-emerald-200']">
+                <svg class="w-5 h-5 sm:w-7 sm:h-7" :class="entry.ticket_type === 'red' ? 'text-red-600' : 'text-green-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
                 </svg>
               </div>
               <div>
                 <div class="flex items-center gap-2 flex-wrap">
-                  <h3 class="text-lg font-extrabold text-gray-800">
+                  <h3 class="text-sm sm:text-base md:text-lg font-extrabold text-gray-800 leading-tight">
                     {{ entry.ticket_type === 'red' ? 'Rural (Red) Ticket' : 'Evergood (Green) Ticket' }}
                   </h3>
-                  <span :class="['px-2.5 py-0.5 rounded-full text-xs font-bold border', entry.ticket_type === 'red' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200']">
+                  <span :class="['px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold border', entry.ticket_type === 'red' ? 'bg-red-50 text-red-700 border-red-200' : 'bg-green-50 text-green-700 border-green-200']">
                     {{ entry.ticket_type === 'red' ? '🔴 Rural' : '🟢 Evergood' }}
                   </span>
                 </div>
-                <p class="text-sm text-gray-400 mt-0.5">Submitted {{ formatDate(entry.submitted_at) }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">Submitted {{ formatDate(entry.submitted_at) }}</p>
               </div>
             </div>
 
             <!-- Category Badge -->
-            <div class="flex flex-col items-start sm:items-end gap-2">
-              <span v-if="entry.category && entry.category !== 'none'" :class="['inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-extrabold border shadow-sm', getCategoryClasses(entry.category)]">
+            <div class="flex sm:flex-col items-center sm:items-end gap-2">
+              <span v-if="entry.category && entry.category !== 'none'" :class="['inline-flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-2xl text-xs sm:text-sm font-extrabold border shadow-sm', getCategoryClasses(entry.category)]">
                 {{ getCategoryIcon(entry.category) }} {{ capitalize(entry.category) }}
               </span>
-              <span v-else class="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-bold border bg-gray-50 text-gray-400 border-gray-200">
-                — No Category Yet
+              <span v-else class="inline-flex items-center gap-1 sm:gap-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-2xl text-xs sm:text-sm font-bold border bg-gray-50 text-gray-400 border-gray-200">
+                — No Category
               </span>
             </div>
           </div>
 
           <!-- Stats Row -->
-          <div class="mt-5 space-y-3">
+          <div class="mt-3 sm:mt-5 space-y-2 sm:space-y-3">
             <!-- Ticket Breakdown -->
             <div class="rounded-2xl border border-gray-100 overflow-hidden">
               <div class="grid grid-cols-3 divide-x divide-gray-100">
-                <div class="bg-red-50 p-4 text-center">
-                  <p class="text-2xl font-extrabold text-red-600">{{ entry.rural_count || 0 }}</p>
-                  <p class="text-[11px] text-red-400 mt-0.5 font-bold uppercase tracking-wide">🔴 Rural</p>
+                <div class="bg-red-50 p-2.5 sm:p-4 text-center">
+                  <p class="text-xl sm:text-2xl font-extrabold text-red-600">{{ entry.rural_count || 0 }}</p>
+                  <p class="text-[10px] sm:text-[11px] text-red-400 mt-0.5 font-bold uppercase tracking-wide">🔴 Rural</p>
                 </div>
-                <div class="bg-green-50 p-4 text-center">
-                  <p class="text-2xl font-extrabold text-green-600">{{ entry.evergood_count || 0 }}</p>
-                  <p class="text-[11px] text-green-400 mt-0.5 font-bold uppercase tracking-wide">🟢 Evergood</p>
+                <div class="bg-green-50 p-2.5 sm:p-4 text-center">
+                  <p class="text-xl sm:text-2xl font-extrabold text-green-600">{{ entry.evergood_count || 0 }}</p>
+                  <p class="text-[10px] sm:text-[11px] text-green-400 mt-0.5 font-bold uppercase tracking-wide">🟢 Evergood</p>
                 </div>
-                <div class="bg-purple-50 p-4 text-center">
-                  <p class="text-2xl font-extrabold text-purple-700">{{ entry.ticket_count }}</p>
-                  <p class="text-[11px] text-purple-400 mt-0.5 font-bold uppercase tracking-wide">Total</p>
+                <div class="bg-purple-50 p-2.5 sm:p-4 text-center">
+                  <p class="text-xl sm:text-2xl font-extrabold text-purple-700">{{ entry.ticket_count }}</p>
+                  <p class="text-[10px] sm:text-[11px] text-purple-400 mt-0.5 font-bold uppercase tracking-wide">Total</p>
                 </div>
               </div>
             </div>
             <!-- Category & Recorded By -->
-            <div class="grid grid-cols-2 gap-3">
-              <div class="bg-purple-50 rounded-2xl p-4 text-center border border-purple-100">
-                <p class="text-lg font-extrabold" :class="entry.category !== 'none' ? 'text-purple-700' : 'text-gray-400'">
+            <div class="grid grid-cols-2 gap-2 sm:gap-3">
+              <div class="bg-purple-50 rounded-2xl p-2.5 sm:p-4 text-center border border-purple-100">
+                <p class="text-base sm:text-lg font-extrabold" :class="entry.category !== 'none' ? 'text-purple-700' : 'text-gray-400'">
                   {{ entry.category !== 'none' ? capitalize(entry.category) : 'None' }}
                 </p>
-                <p class="text-xs text-gray-400 mt-0.5 font-medium">Raffle Category</p>
+                <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5 font-medium">Raffle Category</p>
               </div>
-              <div class="bg-gray-50 rounded-2xl p-4 text-center border border-gray-100">
-                <p class="text-sm font-bold text-gray-700 truncate">{{ entry.submitted_by || '—' }}</p>
-                <p class="text-xs text-gray-400 mt-0.5 font-medium">Recorded By</p>
+              <div class="bg-gray-50 rounded-2xl p-2.5 sm:p-4 text-center border border-gray-100">
+                <p class="text-xs sm:text-sm font-bold text-gray-700 truncate">{{ entry.submitted_by || '—' }}</p>
+                <p class="text-[10px] sm:text-xs text-gray-400 mt-0.5 font-medium">Recorded By</p>
               </div>
             </div>
           </div>
