@@ -7092,8 +7092,8 @@
               <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <div>
-              <h3 class="text-xl font-bold text-white">Help & Support</h3>
-              <p class="text-blue-100 text-xs">SSAAM - Student Activity Attendance Management</p>
+              <h3 class="text-xl font-bold text-white">Help &amp; Support</h3>
+              <p class="text-blue-100 text-xs">SSAAM · JRMSU</p>
             </div>
           </div>
           <button @click="showContactModal = false" class="text-white/70 hover:text-white text-2xl leading-none transition">&times;</button>
@@ -7104,21 +7104,27 @@
         <div class="flex gap-1 mb-6 bg-blue-50 rounded-2xl p-1">
           <button 
             @click="helpTab = 'about'"
-            :class="['flex-1 px-3 py-2 rounded-xl font-medium text-sm transition', helpTab === 'about' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' : 'text-blue-700 hover:bg-blue-100']"
+            :class="['flex-1 px-2 py-2 rounded-xl font-medium text-xs transition', helpTab === 'about' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' : 'text-blue-700 hover:bg-blue-100']"
           >
             About
           </button>
           <button 
             @click="helpTab = 'faq'"
-            :class="['flex-1 px-3 py-2 rounded-xl font-medium text-sm transition', helpTab === 'faq' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' : 'text-blue-700 hover:bg-blue-100']"
+            :class="['flex-1 px-2 py-2 rounded-xl font-medium text-xs transition', helpTab === 'faq' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' : 'text-blue-700 hover:bg-blue-100']"
           >
             FAQ
           </button>
           <button 
             @click="helpTab = 'contact'"
-            :class="['flex-1 px-3 py-2 rounded-xl font-medium text-sm transition', helpTab === 'contact' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' : 'text-blue-700 hover:bg-blue-100']"
+            :class="['flex-1 px-2 py-2 rounded-xl font-medium text-xs transition', helpTab === 'contact' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' : 'text-blue-700 hover:bg-blue-100']"
           >
             Contact
+          </button>
+          <button 
+            @click="helpTab = 'terms'"
+            :class="['flex-1 px-2 py-2 rounded-xl font-medium text-xs transition', helpTab === 'terms' ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white shadow' : 'text-blue-700 hover:bg-blue-100']"
+          >
+            Terms
           </button>
         </div>
 
@@ -7291,6 +7297,65 @@
           </div>
         </div>
 
+        <div v-if="helpTab === 'terms'" class="space-y-3">
+          <p class="text-xs text-gray-500 leading-relaxed">By using SSAAM, you agree to the following terms which govern attendance recording, financial contributions, and your personal data within the JRMSU SSAAM system.</p>
+          <div class="space-y-2">
+            <div class="bg-blue-50 rounded-2xl p-4">
+              <h5 class="font-bold text-blue-900 text-sm mb-2">1. Attendance Recording</h5>
+              <ul class="text-xs text-gray-700 space-y-1.5">
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Attendance is recorded via your registered <strong>RFID card</strong> or admin manual check-in for officially scheduled events.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Proxy attendance (scanning for another student) is strictly prohibited and may lead to disciplinary action.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>If GPS geofence is enabled, you must be physically inside the allowed radius for check-in to be accepted.</span></li>
+              </ul>
+            </div>
+            <div class="bg-blue-50 rounded-2xl p-4">
+              <h5 class="font-bold text-blue-900 text-sm mb-2">2. Account &amp; Roles</h5>
+              <ul class="text-xs text-gray-700 space-y-1.5">
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Your account is bound to one JRMSU college (<strong>CCS, COE, SOM, CNAHS</strong>) and you may only access data within your college unless granted broader authority.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, and <strong>Admin (Master)</strong>, each with clearly scoped permissions.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Students may submit <strong>name change requests</strong> through the Request feature, which are reviewed and approved by college Admins or Co-Admins.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>You are responsible for safeguarding your password. Sharing credentials or RFID cards is prohibited.</span></li>
+              </ul>
+            </div>
+            <div class="bg-blue-50 rounded-2xl p-4">
+              <h5 class="font-bold text-blue-900 text-sm mb-2">3. Contributions &amp; Raffle Tickets</h5>
+              <ul class="text-xs text-gray-700 space-y-1.5">
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Contribution amounts and payment statuses are managed by your college's Admin and Treasurer.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Raffle tickets are issued strictly through admin-approved processes; tampering with ticket records is prohibited.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Disputes regarding amounts must be raised with your college Admin in writing.</span></li>
+              </ul>
+            </div>
+            <div class="bg-blue-50 rounded-2xl p-4">
+              <h5 class="font-bold text-blue-900 text-sm mb-2">4. Privacy &amp; Data</h5>
+              <ul class="text-xs text-gray-700 space-y-1.5">
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>SSAAM stores your name, student ID, program, year level, RFID tag, and profile photo strictly for academic and event-attendance purposes.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Student data is isolated per college — one college cannot view another's records.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>You may request review or correction of your records by contacting your college Admin.</span></li>
+              </ul>
+            </div>
+            <div class="bg-blue-50 rounded-2xl p-4">
+              <h5 class="font-bold text-blue-900 text-sm mb-2">5. Acceptable Use</h5>
+              <ul class="text-xs text-gray-700 space-y-1.5">
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>You agree not to bypass authentication, role checks, college isolation, or any system safeguards.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Automated scraping, scripted abuse, or any activity that disrupts the platform is forbidden.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Admins must use their tools only for legitimate institutional purposes; misuse may lead to access revocation.</span></li>
+              </ul>
+            </div>
+            <div class="bg-blue-50 rounded-2xl p-4">
+              <h5 class="font-bold text-blue-900 text-sm mb-2">6. Liability &amp; Updates</h5>
+              <ul class="text-xs text-gray-700 space-y-1.5">
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>SSAAM is provided as-is. JRMSU is not liable for missed events caused by device issues, network outages, or expired RFID cards.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Features and terms may be updated from time to time. Notable changes will be announced in-app.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Continued use of SSAAM after updates indicates acceptance of the revised terms.</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="pt-3 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-xs text-gray-500">
+            <p>Last updated: <span class="font-semibold text-gray-700">May 1, 2026</span></p>
+            <button @click="showContactModal = false; showTermsModal = true" class="text-blue-600 hover:underline text-xs font-medium text-left">View full Terms &amp; Conditions →</button>
+          </div>
+        </div>
+
         <div class="mt-6 text-center">
           <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition shadow-md">Close</button>
         </div>
@@ -7401,6 +7466,7 @@
                 <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
                   <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Your account is bound to one of the JRMSU colleges (<strong>CCS, COE, SOM, CNAHS</strong>) and you may only access data within your college unless granted broader authority.</span></li>
                   <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, and <strong>Admin (Master)</strong>. Each role has clearly scoped permissions enforced by both the app and the server.</span></li>
+                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Students may submit <strong>name change requests</strong> through the Request feature. Submitted requests are reviewed and approved or rejected by college Admins or Co-Admins.</span></li>
                   <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You are responsible for safeguarding your password. Sharing credentials or RFID cards is prohibited.</span></li>
                   <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins are required to change their default passwords on first login and may be prompted to do so periodically.</span></li>
                 </ul>
