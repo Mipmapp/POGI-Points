@@ -737,7 +737,7 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
         </button>
-        <button v-if="(isAdminLike) && !isTreasurer && inUserView" @click="currentPage = 'admin-requests'; fetchAdminRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'admin-requests' ? sidebarItemActive : sidebarItemHover]">
+        <button v-if="(isAdminLike) && !isTreasurer && inRoleView" @click="currentPage = 'admin-requests'; fetchAdminRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'admin-requests' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
           <span class="flex items-center gap-2">Requests <span v-if="pendingRequestsCount > 0" class="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingRequestsCount }}</span></span>
         </button>
@@ -880,7 +880,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
           </button>
-          <button v-if="(isAdminLike) && !isTreasurer && inUserView" @click="currentPage = 'admin-requests'; showMobileMenu = false; fetchAdminRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'admin-requests' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(isAdminLike) && !isTreasurer && inRoleView" @click="currentPage = 'admin-requests'; showMobileMenu = false; fetchAdminRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'admin-requests' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             <span class="flex items-center gap-2">Requests <span v-if="pendingRequestsCount > 0" class="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingRequestsCount }}</span></span>
           </button>
@@ -2400,14 +2400,30 @@
           </div>
 
           <!-- Student Attendance View -->
-          <div v-else class="bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h2 :class="['text-xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">My Attendance</h2>
-              <button @click="refreshAttendanceData" :disabled="attendanceLoading" :class="['px-4 py-2 rounded-lg transition flex items-center gap-2 disabled:opacity-70 text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
-                <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                Refresh
-              </button>
+          <div v-else class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <!-- Header Banner -->
+            <div :class="['relative h-20 sm:h-24 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <div class="light-sweep"></div>
+              <div class="relative z-10 px-4 sm:px-6 h-full flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                  </div>
+                  <div>
+                    <h2 class="text-base sm:text-lg font-bold text-white leading-tight">My Attendance</h2>
+                    <p class="text-white/65 text-[10px] sm:text-xs">Events &amp; sessions</p>
+                  </div>
+                </div>
+                <button @click="refreshAttendanceData" :disabled="attendanceLoading" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white text-xs font-semibold transition disabled:opacity-50">
+                  <svg :class="['w-3.5 h-3.5', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  Refresh
+                </button>
+              </div>
             </div>
+
+            <!-- Content -->
+            <div class="p-3 sm:p-4 md:p-5">
 
             <div v-if="attendanceLoading" class="flex items-center justify-center py-12">
               <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
@@ -2422,8 +2438,8 @@
             <div v-else class="space-y-6">
               <!-- Active Events Section - Social Media Style -->
               <div v-if="activeNonEndedEvents.length > 0">
-                <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2 text-sm">
-                  <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                <h3 class="font-semibold text-gray-700 mb-2 sm:mb-3 flex items-center gap-2 text-xs sm:text-sm uppercase tracking-widest">
+                  <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></span>
                   Active Events
                 </h3>
                 <!-- ============================================================
@@ -2540,26 +2556,26 @@
                       </div>
                     </div>
                     <!-- Event Details Footer -->
-                    <div :class="['bg-white bg-opacity-60 px-4 py-3 border-t', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : 'border-blue-100']">
-                      <div class="flex flex-col gap-2 text-xs text-gray-600">
-                        <div class="flex items-center gap-2">
-                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <div :class="['bg-white bg-opacity-60 px-3 sm:px-4 py-2 sm:py-3 border-t', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : 'border-blue-100']">
+                      <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+                        <div class="flex items-center gap-1.5">
+                          <svg :class="['w-3.5 h-3.5 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                           <span class="font-medium">{{ formatEventDate(event.date || event.event_date) }}</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                          <span class="font-medium">{{ formatEventTime(event.start_time || event.startTime || '07:00') }} - {{ formatEventTime(event.end_time || event.endTime || '17:00') }}</span>
+                        <div class="flex items-center gap-1.5">
+                          <svg :class="['w-3.5 h-3.5 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                          <span class="font-medium">{{ formatEventTime(event.start_time || event.startTime || '07:00') }} – {{ formatEventTime(event.end_time || event.endTime || '17:00') }}</span>
                         </div>
-                        <div v-if="event.location" class="flex items-center gap-2">
-                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <div v-if="event.location" class="flex items-center gap-1.5">
+                          <svg :class="['w-3.5 h-3.5 flex-shrink-0', isCOE ? 'text-orange-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                           <span class="font-medium">{{ event.location }}</span>
                         </div>
                       </div>
                     </div>
                     <!-- Sessions Panel - Expandable with Slide Animation -->
                     <transition name="slide-down">
-                      <div v-if="expandedEvents[event._id || event.event_id]" :class="['border-t px-4 py-3', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
-                        <h4 :class="['text-sm font-semibold mb-2 flex items-center gap-2', isCOE ? 'text-orange-700' : 'text-blue-700']"]>
+                      <div v-if="expandedEvents[event._id || event.event_id]" :class="['border-t px-3 sm:px-4 py-3', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+                        <h4 :class="['text-xs sm:text-sm font-semibold mb-2 flex items-center gap-2', isCOE ? 'text-orange-700' : 'text-blue-700']"]>
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                         Sessions
                       </h4>
@@ -2601,8 +2617,8 @@
 
               <!-- Upcoming Events Section -->
               <div v-if="upcomingEvents.length > 0">
-                <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2 text-sm">
-                  <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
+                <h3 class="font-semibold text-gray-700 mb-2 sm:mb-3 flex items-center gap-2 text-xs sm:text-sm uppercase tracking-widest">
+                  <span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>
                   Upcoming Events
                 </h3>
                 <div class="space-y-4">
@@ -2621,26 +2637,26 @@
                       <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3">{{ event.description }}</p>
                     </div>
                     <!-- Event Details Footer -->
-                    <div :class="['bg-white bg-opacity-60 px-4 py-3 border-t', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : 'border-blue-100']">
-                      <div class="flex flex-col gap-2 text-xs text-gray-600">
-                        <div class="flex items-center gap-2">
-                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    <div :class="['bg-white bg-opacity-60 px-3 sm:px-4 py-2 sm:py-3 border-t', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : 'border-blue-100']">
+                      <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+                        <div class="flex items-center gap-1.5">
+                          <svg :class="['w-3.5 h-3.5 flex-shrink-0', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                           <span class="font-medium">{{ formatEventDate(event.date || event.event_date) }}</span>
                         </div>
-                        <div class="flex items-center gap-2">
-                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                          <span class="font-medium">{{ formatEventTime(event.start_time || event.startTime || '07:00') }} - {{ formatEventTime(event.end_time || event.endTime || '17:00') }}</span>
+                        <div class="flex items-center gap-1.5">
+                          <svg :class="['w-3.5 h-3.5 flex-shrink-0', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                          <span class="font-medium">{{ formatEventTime(event.start_time || event.startTime || '07:00') }} – {{ formatEventTime(event.end_time || event.endTime || '17:00') }}</span>
                         </div>
-                        <div v-if="event.location" class="flex items-center gap-2">
-                          <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        <div v-if="event.location" class="flex items-center gap-1.5">
+                          <svg :class="['w-3.5 h-3.5 flex-shrink-0', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                           <span class="font-medium">{{ event.location }}</span>
                         </div>
                       </div>
                     </div>
                     <!-- Sessions Panel - Expandable with Slide Animation -->
                     <transition name="slide-down">
-                      <div v-if="expandedEvents[event._id || event.event_id]" :class="['border-t px-4 py-3', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
-                        <h4 :class="['text-sm font-semibold mb-2 flex items-center gap-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">
+                      <div v-if="expandedEvents[event._id || event.event_id]" :class="['border-t px-3 sm:px-4 py-3', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+                        <h4 :class="['text-xs sm:text-sm font-semibold mb-2 flex items-center gap-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
                         Sessions
                       </h4>
@@ -2666,8 +2682,8 @@
 
               <!-- My Attendance Records Section - Enhanced with Expandable Event Folders -->
               <div v-if="myAttendanceRecords.length > 0">
-                <h3 class="font-semibold text-gray-700 mb-3 flex items-center gap-2">
-                  <img src="/events.svg" alt="History" class="w-5 h-5 text-blue-600" style="filter: invert(0.3) sepia(1) hue-rotate(270deg) saturate(1.5);" />
+                <h3 class="font-semibold text-gray-700 mb-2 sm:mb-3 flex items-center gap-2 text-xs sm:text-sm uppercase tracking-widest">
+                  <img src="/events.svg" alt="History" class="w-4 h-4 flex-shrink-0" style="filter: invert(0.3) sepia(1) hue-rotate(270deg) saturate(1.5);" />
                   My Attendance History
                 </h3>
                 <div class="space-y-3">
@@ -2801,6 +2817,8 @@
                 </div>
               </div>
             </div>
+
+            </div><!-- /content wrapper -->
           </div>
         </div>
 
