@@ -2046,9 +2046,9 @@
             </div>
 
             <!-- RFID Scanner Tab -->
-            <div v-if="attendanceTab === 'scanner'" class="space-y-4">
+            <div v-if="attendanceTab === 'scanner'" class="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 space-y-3">
               <!-- RFID Scanner Lock Controls -->
-              <div v-if="selectedEvent || selectedSession" :class="['bg-gradient-to-r border rounded-lg p-3 sm:p-4 mb-4', isCOE ? 'from-orange-50 to-red-50 border-orange-200' : isSOM ? 'from-green-50 to-teal-50 border-green-200' : isCNAHS ? 'from-green-50 to-teal-50 border-green-200' : 'from-blue-50 to-blue-50 border-blue-200']">
+              <div v-if="selectedEvent || selectedSession" :class="['bg-gradient-to-r border rounded-xl p-3 sm:p-4', isCOE ? 'from-orange-50 to-red-50 border-orange-200' : isSOM ? 'from-green-50 to-teal-50 border-green-200' : isCNAHS ? 'from-green-50 to-teal-50 border-green-200' : 'from-blue-50 to-blue-50 border-blue-200']">
                 <h3 :class="['font-semibold mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
                   <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                   Attendance Mode (Select One)
@@ -2136,50 +2136,79 @@
                 <p class="text-xs text-gray-500 mt-3 text-center">⚙️ Settings apply only to the selected event/session. Select an event or session to configure.</p>
               </div>
 
-              <div v-if="!selectedEvent" class="text-center py-8">
-                <div class="mb-4">
-                  <select v-model="selectedEvent" @change="onEventSelectForScanner" :class="['px-3 sm:px-4 py-2 sm:py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none w-full max-w-lg text-sm sm:text-base', isCOE ? 'focus:ring-orange-600' : 'focus:ring-blue-600']">
+              <!-- Step 1: No event selected -->
+              <div v-if="!selectedEvent" :class="['rounded-2xl border-2 border-dashed p-6 flex flex-col items-center gap-4', isCOE ? 'border-orange-200 bg-orange-50/40' : isSOM ? 'border-green-200 bg-green-50/40' : isCNAHS ? 'border-emerald-200 bg-emerald-50/40' : 'border-blue-200 bg-blue-50/40']">
+                <!-- Icon -->
+                <div :class="['w-14 h-14 rounded-2xl flex items-center justify-center', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-emerald-100' : 'bg-blue-100']">
+                  <svg :class="['w-7 h-7', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
+                </div>
+                <!-- Label -->
+                <div class="text-center">
+                  <p :class="['font-bold text-sm', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-blue-800']">Select an Event</p>
+                  <p class="text-gray-500 text-xs mt-0.5">Choose an active event to start scanning RFID cards</p>
+                </div>
+                <!-- Dropdown -->
+                <div class="w-full relative">
+                  <select v-model="selectedEvent" @change="onEventSelectForScanner" :class="['w-full px-4 py-3 pr-10 border-2 rounded-xl bg-white focus:ring-2 outline-none text-sm font-medium appearance-none cursor-pointer', isCOE ? 'border-orange-200 focus:border-orange-400 focus:ring-orange-100 text-orange-900' : isSOM ? 'border-green-200 focus:border-green-400 focus:ring-green-100 text-green-900' : isCNAHS ? 'border-emerald-200 focus:border-emerald-400 focus:ring-emerald-100 text-emerald-900' : 'border-blue-200 focus:border-blue-400 focus:ring-blue-100 text-blue-900']">
                     <option :value="null">-- Select Event --</option>
                     <option v-for="event in attendanceEvents.filter(e => getEventDisplayStatus(e).status === 'active')" :key="event._id" :value="event">{{ event.title }} ({{ formatEventDate(event.date || event.event_date) }})</option>
                   </select>
+                  <!-- Custom chevron -->
+                  <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                 </div>
-                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
-                <p class="text-gray-500 mb-4">Select an event to start scanning RFID cards</p>
               </div>
-              <div v-else-if="!selectedSession" class="text-center py-8">
-                <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p class="text-gray-500 mb-2">Selected: <span :class="['font-semibold', isCOE ? 'text-orange-700' : 'text-blue-700']">{{ selectedEvent.title }}</span></p>
-                <p class="text-gray-500 mb-4">Now select a session for attendance</p>
-                <!-- Sessions Loading Bar -->
-                <div v-if="sessionsLoading" class="max-w-md mx-auto mb-4">
-                  <div :class="['flex items-center justify-center gap-2 mb-2', isCOE ? 'text-orange-600' : 'text-blue-600']">
-                    <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+
+              <!-- Step 2: Event selected, no session yet -->
+              <div v-else-if="!selectedSession" :class="['rounded-2xl border overflow-hidden', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-emerald-200' : 'border-blue-200']">
+                <!-- Event summary header -->
+                <div :class="['px-4 py-3 flex items-start justify-between gap-3', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-emerald-50' : 'bg-blue-50']">
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-0.5">Event selected</p>
+                    <p :class="['font-bold text-sm truncate', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-emerald-900' : 'text-blue-900']">{{ selectedEvent.title }}</p>
+                    <p class="text-xs text-gray-500 mt-0.5">{{ formatEventDate(selectedEvent.date || selectedEvent.event_date) }}</p>
+                  </div>
+                  <button @click="selectedEvent = null; selectedSession = null" :class="['flex-shrink-0 p-1.5 rounded-lg transition mt-0.5', isCOE ? 'text-orange-400 hover:text-orange-700 hover:bg-orange-100' : isSOM ? 'text-green-400 hover:text-green-700 hover:bg-green-100' : isCNAHS ? 'text-emerald-400 hover:text-emerald-700 hover:bg-emerald-100' : 'text-blue-400 hover:text-blue-700 hover:bg-blue-100']" title="Change event">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
+                </div>
+                <!-- Sessions body -->
+                <div class="px-4 py-4 bg-white space-y-2">
+                  <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Pick a Session</p>
+                  <!-- Loading -->
+                  <div v-if="sessionsLoading" class="flex flex-col items-center gap-3 py-6">
+                    <svg :class="['animate-spin h-6 w-6', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-blue-500']" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                       <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                     </svg>
-                    <span class="text-sm font-medium">Loading sessions...</span>
-                  </div>
-                  <div class="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
-                    <div :class="['h-2 rounded-full animate-pulse bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500' : 'from-ssaam-dark to-ssaam-light']" style="width: 70%"></div>
-                  </div>
-                </div>
-                <div v-else-if="eventSessions.length === 0" class="text-center py-4">
-                  <p class="text-sm text-orange-600 mb-2">No sessions found for this event.</p>
-                  <p class="text-xs text-gray-500">Please add sessions in the event settings first.</p>
-                  <button @click="selectedEvent = null; selectedSession = null" class="mt-3 text-blue-600 hover:text-blue-800 text-sm underline">Select different event</button>
-                </div>
-                <div v-else class="space-y-2 max-w-md mx-auto">
-                  <button v-for="session in eventSessions.filter(s => getSessionDisplayStatus(s, selectedEvent) === 'active')" :key="session._id" @click="selectedSession = session" :class="['w-full p-3 border rounded-lg transition text-left bg-gradient-to-r', isCOE ? 'from-orange-50 to-red-50 border-orange-200 hover:from-orange-100 hover:to-red-100' : 'from-blue-50 to-blue-50 border-blue-200 hover:from-blue-100 hover:to-blue-100']">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <span :class="['font-medium', isCOE ? 'text-orange-800' : 'text-blue-800']">{{ session.label }}</span>
-                        <span :class="['ml-2 px-2 py-0.5 rounded-full text-xs', getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600']">{{ getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'Active' : 'Not Active' }}</span>
-                      </div>
-                      <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    <span class="text-sm text-gray-500 font-medium">Loading sessions…</span>
+                    <div class="w-full bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                      <div :class="['h-1.5 rounded-full animate-pulse bg-gradient-to-r', isCOE ? 'from-orange-500 to-red-500' : 'from-ssaam-dark to-ssaam-light']" style="width: 70%"></div>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
+                  </div>
+                  <!-- No sessions -->
+                  <div v-else-if="eventSessions.length === 0" class="text-center py-6">
+                    <p class="text-sm font-semibold text-orange-600 mb-1">No sessions found</p>
+                    <p class="text-xs text-gray-500 mb-3">Add sessions to this event from the Events tab first.</p>
+                    <button @click="selectedEvent = null; selectedSession = null" :class="['text-xs font-semibold underline', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-blue-600']">Choose a different event</button>
+                  </div>
+                  <!-- Session list -->
+                  <button
+                    v-else
+                    v-for="session in eventSessions.filter(s => getSessionDisplayStatus(s, selectedEvent) === 'active')"
+                    :key="session._id"
+                    @click="selectedSession = session"
+                    :class="['w-full flex items-center justify-between p-3 rounded-xl border-2 transition text-left active:scale-[0.98]', isCOE ? 'border-orange-100 hover:border-orange-300 hover:bg-orange-50' : isSOM ? 'border-green-100 hover:border-green-300 hover:bg-green-50' : isCNAHS ? 'border-emerald-100 hover:border-emerald-300 hover:bg-emerald-50' : 'border-blue-100 hover:border-blue-300 hover:bg-blue-50']"
+                  >
+                    <div class="min-w-0">
+                      <p :class="['font-semibold text-sm', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-emerald-900' : 'text-blue-900']">{{ session.label }}</p>
+                      <p class="text-xs text-gray-500 mt-0.5">{{ formatDisplayTime(session.start_time) }} – {{ formatDisplayTime(session.end_time) }}</p>
+                    </div>
+                    <div class="flex items-center gap-2 flex-shrink-0 ml-3">
+                      <span class="px-2 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700">Active</span>
+                      <svg :class="['w-4 h-4', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-emerald-400' : 'text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </div>
                   </button>
-                  <button @click="selectedEvent = null; selectedSession = null; eventSessions = []" class="mt-3 text-blue-600 hover:text-blue-800 text-sm underline">Select different event</button>
+                  <button v-if="!sessionsLoading && eventSessions.length > 0" @click="selectedEvent = null; selectedSession = null; eventSessions = []" :class="['w-full text-xs font-semibold underline pt-1 text-center', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-blue-500']">Choose a different event</button>
                 </div>
               </div>
               <div v-else class="space-y-4">
