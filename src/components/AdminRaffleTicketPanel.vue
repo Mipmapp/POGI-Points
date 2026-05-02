@@ -83,10 +83,11 @@
             <!-- Student Photo -->
             <div class="w-12 h-12 rounded-2xl flex-shrink-0 overflow-hidden border-2 border-purple-200 shadow-sm">
               <img
-                v-if="selectedStudent.photo"
+                v-if="selectedStudent.photo && !photoError"
                 :src="selectedStudent.photo"
                 :alt="selectedStudent.full_name || selectedStudent.first_name"
                 class="w-full h-full object-cover"
+                referrerpolicy="no-referrer"
                 @error="photoError = true"
               />
               <div
@@ -242,8 +243,18 @@
         <div v-for="entry in filteredEntries" :key="entry._id" class="p-4 hover:bg-gray-50 transition">
           <div class="flex items-start justify-between gap-3 mb-2">
             <div class="flex items-center gap-3 min-w-0 flex-1">
-              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-purple-700 to-violet-700 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
-                {{ (entry.student_name || '?').charAt(0).toUpperCase() }}
+              <div class="w-10 h-10 rounded-xl flex-shrink-0 overflow-hidden border border-purple-100 shadow-sm">
+                <img
+                  v-if="entry.photo && !entryPhotoErrors[entry._id]"
+                  :src="entry.photo"
+                  :alt="entry.student_name"
+                  class="w-full h-full object-cover"
+                  referrerpolicy="no-referrer"
+                  @error="entryPhotoErrors[entry._id] = true"
+                />
+                <div v-else class="w-full h-full bg-gradient-to-br from-purple-700 to-violet-700 flex items-center justify-center text-white text-sm font-bold">
+                  {{ (entry.student_name || '?').charAt(0).toUpperCase() }}
+                </div>
               </div>
               <div class="min-w-0 flex-1">
                 <p class="font-bold text-gray-900 text-sm truncate">{{ entry.student_name }}</p>
@@ -374,6 +385,7 @@ const selectedStudent = ref(null)
 const ruralCount = ref(null)
 const evergoodCount = ref(null)
 const photoError = ref(false)
+const entryPhotoErrors = ref({})
 const isSearching = ref(false)
 const isSubmitting = ref(false)
 const isLoading = ref(false)

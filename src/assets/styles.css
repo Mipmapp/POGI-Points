@@ -1039,6 +1039,22 @@ input, textarea, select {
   }
 }
 
+/* Help Modal Tab — fade + subtle slide up on enter, fade out on leave */
+.help-tab-enter-active {
+  transition: opacity 0.2s ease-out, transform 0.22s ease-out;
+}
+.help-tab-leave-active {
+  transition: opacity 0.14s ease-in, transform 0.14s ease-in;
+}
+.help-tab-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.help-tab-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
 /* Dev Modal — same sheet animation */
 .dev-modal-enter-active,
 .dev-modal-leave-active {

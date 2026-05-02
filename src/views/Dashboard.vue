@@ -3833,62 +3833,66 @@
           </div>
 
           <!-- Request cards -->
-          <div v-else class="space-y-4">
-            <div v-for="req in adminRequests" :key="req._id" :class="['bg-white rounded-2xl shadow border p-4 md:p-6 transition hover:shadow-md', req.status === 'pending' ? 'border-amber-200' : req.status === 'approved' ? 'border-green-200' : 'border-red-200']">
-              <div class="flex flex-col md:flex-row md:items-start gap-4">
-                <!-- Info -->
-                <div class="flex-1 space-y-2">
-                  <div class="flex flex-wrap items-center gap-2">
-                    <span :class="['px-2.5 py-1 rounded-full text-[11px] font-bold', req.type === 'name' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700']">
-                      {{ req.type === 'name' ? 'Name Change' : 'College Change' }}
+          <div v-else class="space-y-3">
+            <div v-for="req in adminRequests" :key="req._id" :class="['bg-white rounded-2xl shadow-sm border overflow-hidden transition hover:shadow-md', req.status === 'pending' ? 'border-amber-200' : req.status === 'approved' ? 'border-green-200' : 'border-red-200']">
+              <!-- Card top color strip -->
+              <div :class="['h-1 w-full', req.status === 'pending' ? 'bg-amber-400' : req.status === 'approved' ? 'bg-green-400' : 'bg-red-400']"></div>
+              <div class="p-4 sm:p-5">
+                <!-- Top row: student name + status badges -->
+                <div class="flex flex-wrap items-start justify-between gap-2 mb-3">
+                  <div class="flex-1 min-w-0">
+                    <p class="font-bold text-gray-900 text-sm leading-tight">{{ req.student_name || req.student_id }}</p>
+                    <p class="text-[11px] text-gray-400 font-mono mt-0.5">{{ req.student_id }}</p>
+                  </div>
+                  <div class="flex flex-wrap gap-1.5 flex-shrink-0">
+                    <span :class="['px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap', req.type === 'name' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700']">
+                      {{ req.type === 'name' ? '✏️ Name Change' : '🏫 College Change' }}
                     </span>
-                    <span :class="['px-2.5 py-1 rounded-full text-[11px] font-bold', req.status === 'pending' ? 'bg-amber-100 text-amber-700' : req.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                    <span :class="['px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap', req.status === 'pending' ? 'bg-amber-100 text-amber-700' : req.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
                       {{ req.status === 'pending' ? '⏳ Pending' : req.status === 'approved' ? '✓ Approved' : '✕ Rejected' }}
                     </span>
                     <span v-if="isSuperAdmin && req.college" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600">{{ req.college }}</span>
                   </div>
+                </div>
 
-                  <div>
-                    <p class="font-bold text-gray-900 text-sm">{{ req.student_name || req.student_id }}</p>
-                    <p class="text-xs text-gray-500 font-mono">{{ req.student_id }}</p>
+                <!-- Detail grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                  <div class="bg-gray-50 rounded-xl px-3 py-2.5">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Requested Value</p>
+                    <p class="text-sm font-bold text-gray-800 break-words">{{ req.new_value }}</p>
                   </div>
-
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-600">
-                    <div>
-                      <span class="font-semibold text-gray-500">Requested value:</span>
-                      <span class="ml-1 font-bold text-gray-800">{{ req.new_value }}</span>
-                    </div>
-                    <div>
-                      <span class="font-semibold text-gray-500">Submitted:</span>
-                      <span class="ml-1">{{ new Date(req.created_at).toLocaleString() }}</span>
-                    </div>
-                  </div>
-
-                  <div class="text-xs text-gray-600">
-                    <span class="font-semibold text-gray-500">Reason:</span>
-                    <span class="ml-1">{{ req.reason }}</span>
-                  </div>
-
-                  <div v-if="req.admin_note" class="text-xs text-red-600 italic">
-                    <span class="font-semibold">Admin note:</span> {{ req.admin_note }}
-                  </div>
-                  <div v-if="req.reviewed_by" class="text-[10px] text-gray-400">
-                    Reviewed by {{ req.reviewed_by }} on {{ new Date(req.reviewed_at).toLocaleString() }}
-                  </div>
-                  <div v-if="req.status === 'approved' && req.type === 'department'" class="text-xs text-amber-600 bg-amber-50 rounded-lg p-2 mt-1">
-                    Department changes require manually reassigning the student via Manage.
+                  <div class="bg-gray-50 rounded-xl px-3 py-2.5">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Submitted</p>
+                    <p class="text-xs text-gray-700 font-medium">{{ new Date(req.created_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</p>
                   </div>
                 </div>
 
-                <!-- Action buttons (pending only) -->
-                <div v-if="req.status === 'pending'" class="flex flex-col sm:flex-row md:flex-col gap-2 flex-shrink-0">
-                  <button @click="approveAdminRequest(req._id)" :disabled="adminRequestActing === req._id" :class="['px-4 py-2 rounded-xl text-white text-sm font-bold transition flex items-center gap-2 bg-green-500 hover:bg-green-600 disabled:opacity-60 disabled:cursor-not-allowed']">
+                <!-- Reason -->
+                <div class="mb-3 bg-gray-50 rounded-xl px-3 py-2.5">
+                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Reason</p>
+                  <p class="text-xs text-gray-700 leading-relaxed">{{ req.reason }}</p>
+                </div>
+
+                <div v-if="req.admin_note" class="mb-3 bg-red-50 border border-red-100 rounded-xl px-3 py-2.5">
+                  <p class="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-0.5">Admin Note</p>
+                  <p class="text-xs text-red-700 italic">{{ req.admin_note }}</p>
+                </div>
+                <div v-if="req.reviewed_by" class="text-[10px] text-gray-400 mb-3">
+                  Reviewed by <span class="font-semibold">{{ req.reviewed_by }}</span> · {{ new Date(req.reviewed_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+                </div>
+                <div v-if="req.status === 'approved' && req.type === 'department'" class="mb-3 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
+                  ⚠️ Department changes require manually reassigning the student via Manage.
+                </div>
+
+                <!-- Action buttons (pending only) — full-width on mobile -->
+                <div v-if="req.status === 'pending'" class="flex flex-col sm:flex-row gap-2 pt-1">
+                  <button @click="approveAdminRequest(req._id)" :disabled="adminRequestActing === req._id" class="flex-1 py-2.5 px-4 rounded-xl text-white text-sm font-bold transition flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed shadow-sm shadow-green-100">
                     <svg v-if="adminRequestActing === req._id" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
                     Approve
                   </button>
-                  <button @click="openRejectAdminRequest(req)" :disabled="adminRequestActing === req._id" class="px-4 py-2 rounded-xl text-white text-sm font-bold transition flex items-center gap-2 bg-red-500 hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                  <button @click="openRejectAdminRequest(req)" :disabled="adminRequestActing === req._id" class="flex-1 py-2.5 px-4 rounded-xl text-white text-sm font-bold transition flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed shadow-sm shadow-red-100">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
                     Reject
                   </button>
                 </div>
@@ -7295,7 +7299,8 @@
         <div class="px-4 sm:px-6 py-4 sm:py-5 overflow-y-auto dev-modal-scroll flex-1">
 
         <!-- Tab Content -->
-        <div v-if="helpTab === 'about'" class="space-y-3">
+        <transition name="help-tab" mode="out-in">
+        <div v-if="helpTab === 'about'" key="about" class="space-y-3">
           <!-- Hero card -->
           <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden">
             <div class="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full"></div>
@@ -7360,7 +7365,7 @@
           </div>
         </div>
 
-        <div v-if="helpTab === 'faq'" class="space-y-4">
+        <div v-else-if="helpTab === 'faq'" key="faq" class="space-y-4">
           <!-- USER FAQs -->
           <div>
             <div class="flex items-center gap-2 mb-3">
@@ -7486,7 +7491,7 @@
           </div>
         </div>
 
-        <div v-if="helpTab === 'contact'" class="space-y-3">
+        <div v-else-if="helpTab === 'contact'" key="contact" class="space-y-3">
           <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest px-0.5">Get in Touch</p>
           <!-- Email -->
           <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-3.5 flex items-center gap-3 border border-blue-100">
@@ -7523,7 +7528,7 @@
           </div>
         </div>
 
-        <div v-if="helpTab === 'terms'" class="space-y-3">
+        <div v-else-if="helpTab === 'terms'" key="terms" class="space-y-3">
           <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl px-4 py-3 flex items-center gap-3 text-white">
             <div class="w-8 h-8 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
               <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
@@ -7589,6 +7594,7 @@
             <button @click="showContactModal = false; showTermsModal = true" class="text-blue-600 hover:underline text-xs font-medium text-left">View full Terms &amp; Conditions →</button>
           </div>
         </div>
+        </transition>
 
         </div><!-- /scroll area -->
 
