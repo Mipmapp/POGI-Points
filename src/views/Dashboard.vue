@@ -4410,65 +4410,83 @@
                   <!-- subtle grid sheen -->
                   <div class="absolute inset-0 opacity-[0.07] pointer-events-none" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 22px 22px;"></div>
 
-                  <div class="relative z-10 flex flex-row items-center gap-3 sm:gap-5">
-                    <!-- Avatar / status circle -->
-                    <div class="flex-shrink-0">
-                      <div class="relative">
-                        <!-- pulsing ring when not enrolled -->
-                        <span v-if="!faceLoading && !faceEnrolled" class="absolute inset-0 rounded-2xl animate-ping-slow opacity-40" :class="faceAccentRing"></span>
-                        <div :class="['relative w-14 h-14 sm:w-18 sm:h-18 md:w-24 md:h-24 rounded-2xl md:rounded-3xl overflow-hidden flex items-center justify-center shadow-xl ring-2 ring-white/20 backdrop-blur-sm', faceEnrolled ? 'bg-emerald-500/20' : 'bg-white/10']">
-                          <img v-if="faceEnrolled && faceData?.faces?.[0]?.photo" :src="faceData.faces[0].photo" class="w-full h-full object-cover" alt="Face ID preview" />
-                          <svg v-else class="w-7 h-7 sm:w-9 sm:h-9 md:w-12 md:h-12 text-white/85" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0M4 7v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7a3 3 0 00-3 3z" />
-                          </svg>
+                  <div class="relative z-10">
+                    <!-- Top row: avatar + text (+ inline button on sm+) -->
+                    <div class="flex items-start gap-3 sm:gap-5 sm:items-center">
+                      <!-- Avatar / status circle -->
+                      <div class="flex-shrink-0">
+                        <div class="relative">
+                          <span v-if="!faceLoading && !faceEnrolled" class="absolute inset-0 rounded-2xl animate-ping-slow opacity-40" :class="faceAccentRing"></span>
+                          <div :class="['relative w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl md:rounded-3xl overflow-hidden flex items-center justify-center shadow-xl ring-2 ring-white/20 backdrop-blur-sm', faceEnrolled ? 'bg-emerald-500/20' : 'bg-white/10']">
+                            <img v-if="faceEnrolled && faceData?.faces?.[0]?.photo" :src="faceData.faces[0].photo" class="w-full h-full object-cover" alt="Face ID preview" />
+                            <svg v-else class="w-7 h-7 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white/85" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0M4 7v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7a3 3 0 00-3 3z" />
+                            </svg>
+                          </div>
+                          <span v-if="faceEnrolled" class="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full bg-emerald-400 ring-2 ring-[#0a1340] flex items-center justify-center shadow-lg">
+                            <svg class="w-3 h-3 md:w-4 md:h-4 text-[#0a1340]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                          </span>
                         </div>
-                        <!-- enrolled checkmark badge -->
-                        <span v-if="faceEnrolled" class="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full bg-emerald-400 ring-2 ring-[#0a1340] flex items-center justify-center shadow-lg">
-                          <svg class="w-3 h-3 md:w-4 md:h-4 text-[#0a1340]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                        </span>
+                      </div>
+
+                      <!-- Status text -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-1.5 mb-1">
+                          <h4 class="text-sm sm:text-base md:text-lg font-bold text-white leading-tight">Face Recognition</h4>
+                          <span v-if="faceLoading" class="flex-shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-white/10 text-white/80 border border-white/15">Loading…</span>
+                          <span v-else-if="faceEnrolled" class="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-400/20 text-emerald-200 border border-emerald-300/40">
+                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            Enrolled
+                          </span>
+                          <span v-else class="flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold bg-white/10 text-white border border-white/20">Not set up</span>
+                        </div>
+                        <p v-if="faceLoading" class="text-xs text-white/70">Checking Face ID status…</p>
+                        <template v-else-if="faceEnrolled">
+                          <p class="text-xs sm:text-sm text-white/90 font-medium">Use your face to mark attendance during events.</p>
+                          <p class="text-[10px] sm:text-xs text-white/60 mt-0.5 sm:mt-1">
+                            Updated <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.face_updated_at) }}</span>.
+                            <template v-if="faceData.in_cooldown"> Next on <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.next_update_allowed_at) }}</span>.</template>
+                            <template v-else> Can update anytime.</template>
+                          </p>
+                        </template>
+                        <template v-else>
+                          <p class="text-xs sm:text-sm text-white/90 font-medium">Enroll your face to enable self check-in on events.</p>
+                          <p class="text-[10px] sm:text-xs text-white/60 mt-0.5 sm:mt-1">Only takes a few seconds with your camera.</p>
+                        </template>
+                      </div>
+
+                      <!-- Inline button — visible on sm+ only -->
+                      <div class="hidden sm:block flex-shrink-0">
+                        <button
+                          @click="openFaceEnroll"
+                          :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
+                          :class="['face-cta group relative px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 overflow-hidden transition-all duration-300 ease-out border whitespace-nowrap', (faceEnrolled && faceData?.in_cooldown) ? 'bg-white/5 text-white/40 border-white/10 cursor-not-allowed' : 'text-white border-white/25 bg-white/10 hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-black/20 hover:shadow-xl']"
+                          :title="faceEnrolled && faceData?.in_cooldown ? `Locked until ${formatFaceDate(faceData.next_update_allowed_at)}` : ''"
+                        >
+                          <span v-if="!(faceEnrolled && faceData?.in_cooldown)" class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></span>
+                          <svg class="relative w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          <span class="relative">{{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}</span>
+                        </button>
                       </div>
                     </div>
 
-                    <!-- Status text -->
-                    <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-1.5 flex-wrap mb-1">
-                        <h4 class="text-sm sm:text-base md:text-lg font-bold text-white">Face Recognition</h4>
-                        <span v-if="faceLoading" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-white/80 border border-white/15">Loading…</span>
-                        <span v-else-if="faceEnrolled" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-400/20 text-emerald-200 border border-emerald-300/40">
-                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                          Enrolled
-                        </span>
-                        <span v-else class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-white border border-white/20">Not set up</span>
-                      </div>
-                      <p v-if="faceLoading" class="text-xs text-white/70">Checking Face ID status…</p>
-                      <template v-else-if="faceEnrolled">
-                        <p class="text-xs sm:text-sm text-white/90 font-medium">Use your face to mark your own attendance during events.</p>
-                        <p class="text-[10px] sm:text-xs text-white/60 mt-0.5 sm:mt-1">
-                          Updated <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.face_updated_at) }}</span>.
-                          <template v-if="faceData.in_cooldown"> Next on <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.next_update_allowed_at) }}</span>.</template>
-                          <template v-else> Can update anytime.</template>
-                        </p>
-                      </template>
-                      <template v-else>
-                        <p class="text-xs sm:text-sm text-white/90 font-medium">Enroll your face to enable self check-in on events.</p>
-                        <p class="text-[10px] sm:text-xs text-white/60 mt-0.5 sm:mt-1">Only takes a few seconds with your camera.</p>
-                      </template>
-                    </div>
-
-                    <!-- Action button (sidebar-style glass) -->
-                    <div class="flex-shrink-0">
+                    <!-- Full-width button — mobile only -->
+                    <div class="sm:hidden mt-3">
                       <button
                         @click="openFaceEnroll"
                         :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
-                        :class="['face-cta group relative px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 overflow-hidden transition-all duration-300 ease-out border whitespace-nowrap', (faceEnrolled && faceData?.in_cooldown) ? 'bg-white/5 text-white/40 border-white/10 cursor-not-allowed' : 'text-white border-white/25 bg-white/10 hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-black/20 hover:shadow-xl']"
+                        :class="['face-cta group relative w-full px-4 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-2 overflow-hidden transition-all duration-300 ease-out border', (faceEnrolled && faceData?.in_cooldown) ? 'bg-white/5 text-white/40 border-white/10 cursor-not-allowed' : 'text-white border-white/25 bg-white/10 hover:bg-white/20 hover:border-white/40 active:translate-y-0 shadow-lg shadow-black/20']"
                         :title="faceEnrolled && faceData?.in_cooldown ? `Locked until ${formatFaceDate(faceData.next_update_allowed_at)}` : ''"
                       >
                         <span v-if="!(faceEnrolled && faceData?.in_cooldown)" class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></span>
-                        <svg class="relative w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="relative w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
-                        <span class="relative">{{ faceEnrolled ? 'Update' : 'Set Up' }}</span>
+                        <span class="relative">{{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}</span>
                       </button>
                     </div>
                   </div>
