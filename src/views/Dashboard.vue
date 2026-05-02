@@ -1895,7 +1895,7 @@
                 <img src="/events.svg" alt="No Events" class="w-16 h-16 mx-auto mb-4 text-gray-300" style="filter: invert(0.5);" />
                 <p>{{ attendanceSearchQuery ? 'No events match your search.' : 'No attendance events yet. Create one to get started!' }}</p>
               </div>
-              <transition-group v-else name="event-slide-in" tag="div" class="space-y-4" appear>
+              <transition-group v-else name="event-slide-in" tag="div" class="space-y-4 relative" appear>
                 <div v-for="event in paginatedAttendanceEvents" :key="event._id" class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition">
                   <!-- Event Header - Clickable to expand -->
                   <div class="p-3 sm:p-4 cursor-pointer" @click="toggleEventExpansion(event._id)">
