@@ -810,7 +810,10 @@
         <div class="flex items-center justify-between px-4 py-4 border-b border-white/15 bg-white/5 flex-shrink-0">
           <div class="flex items-center gap-2.5">
             <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-lg flex-shrink-0" />
-            <h1 class="text-xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
+            <div class="flex flex-col leading-tight">
+              <h1 class="text-xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
+              <p class="text-[9px] uppercase tracking-widest font-semibold text-white/50">JRMSU</p>
+            </div>
           </div>
           <button @click="showMobileMenu = false" class="text-2xl text-white/80 hover:text-white leading-none">×</button>
         </div>
@@ -959,7 +962,10 @@
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
           <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" />
-          <h1 :class="['text-xl font-extrabold italic', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">SSAAM</h1>
+          <div class="flex flex-col leading-tight">
+            <h1 :class="['text-xl font-extrabold italic', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">SSAAM</h1>
+            <p :class="['text-[9px] uppercase tracking-widest font-semibold', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-green-400' : 'text-blue-400']">JRMSU</p>
+          </div>
         </div>
         <div class="flex items-center gap-2">
           <button @click="showContactModal = true" :class="['p-2 rounded-lg transition', isCOE ? 'hover:bg-orange-100' : isSOM ? 'hover:bg-green-100' : isCNAHS ? 'hover:bg-green-100' : 'hover:bg-blue-100']">
