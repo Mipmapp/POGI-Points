@@ -1885,139 +1885,139 @@
             </div>
 
             <!-- Events List Tab -->
-            <div v-if="attendanceTab === 'events'">
-              <!-- Search & Pagination Controls -->
-              <div :class="['rounded-lg p-4 shadow-sm mb-4 border', isCOE ? 'bg-white border-orange-200' : 'bg-white border-blue-200']">
-                <div class="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                  <!-- Search Input -->
-                  <div class="flex-1 w-full md:w-auto">
-                    <div class="relative">
-                      <svg class="w-5 h-5 absolute left-3 top-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                      </svg>
-                      <input
-                        v-model="attendanceSearchQuery"
-                        type="text"
-                        placeholder="Search events by title..."
-                        :class="['w-full pl-10 pr-4 py-2 rounded-lg border transition-all outline-none', isCOE ? 'border-orange-200 focus:border-orange-500 focus:ring-2 focus:ring-orange-200' : isSOM ? 'border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-200' : 'border-blue-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200']"
-                      />
-                    </div>
-                  </div>
-                  <!-- Info & Pagination -->
-                  <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
-                    <div :class="['text-sm font-medium whitespace-nowrap', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">
-                      {{ filteredAttendanceEvents.length }} of {{ attendanceEvents.length }} events
-                    </div>
-                    <div class="flex gap-2">
-                      <button
-                        @click="prevAttendancePage"
-                        :disabled="attendanceCurrentPage === 1"
-                        :class="['px-3 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
-                      >
-                        ← Prev
-                      </button>
-                      <button
-                        @click="nextAttendancePage"
-                        :disabled="attendanceCurrentPage === attendanceTotalPages"
-                        :class="['px-3 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === attendanceTotalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
-                      >
-                        Next →
-                      </button>
-                    </div>
-                  </div>
+            <div v-if="attendanceTab === 'events'" class="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 space-y-3">
+              <!-- Search + Compact Pagination Row -->
+              <div class="space-y-2.5">
+                <!-- Search Input -->
+                <div class="relative">
+                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                  <input
+                    v-model="attendanceSearchQuery"
+                    type="text"
+                    placeholder="Search events by title..."
+                    :class="['w-full pl-9 pr-4 py-2.5 rounded-xl border-2 bg-gray-50 focus:bg-white transition-all outline-none text-sm', isCOE ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100' : isSOM ? 'border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100' : isCNAHS ? 'border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100' : 'border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100']"
+                  />
                 </div>
-                <div v-if="attendanceTotalPages > 1" :class="['text-sm font-medium mt-3 pt-3 border-t', isCOE ? 'text-orange-700 border-orange-200' : isSOM ? 'text-green-700 border-green-200' : isCNAHS ? 'text-green-700 border-green-200' : 'text-blue-700 border-blue-200']">
-                  Page {{ attendanceCurrentPage }} of {{ attendanceTotalPages }}
+                <!-- Count + Pagination inline -->
+                <div class="flex items-center justify-between gap-2">
+                  <span :class="['text-xs font-semibold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-blue-600']">
+                    {{ filteredAttendanceEvents.length }} of {{ attendanceEvents.length }} events
+                    <span v-if="attendanceTotalPages > 1" class="text-gray-400 font-normal"> · Page {{ attendanceCurrentPage }}/{{ attendanceTotalPages }}</span>
+                  </span>
+                  <div class="flex gap-1.5">
+                    <button
+                      @click="prevAttendancePage"
+                      :disabled="attendanceCurrentPage === 1"
+                      :class="['px-3 py-1.5 rounded-lg font-semibold transition-all text-xs flex items-center gap-1', attendanceCurrentPage === 1 ? 'opacity-40 cursor-not-allowed bg-gray-100 text-gray-500' : isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 active:scale-95' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200 active:scale-95' : isCNAHS ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 active:scale-95' : 'bg-blue-100 text-blue-700 hover:bg-blue-200 active:scale-95']"
+                    >
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+                      Prev
+                    </button>
+                    <button
+                      @click="nextAttendancePage"
+                      :disabled="attendanceCurrentPage === attendanceTotalPages"
+                      :class="['px-3 py-1.5 rounded-lg font-semibold transition-all text-xs flex items-center gap-1', attendanceCurrentPage === attendanceTotalPages ? 'opacity-40 cursor-not-allowed bg-gray-100 text-gray-500' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
+                    >
+                      Next
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                  </div>
                 </div>
               </div>
 
+              <!-- Loading -->
               <div v-if="attendanceLoading" class="flex items-center justify-center py-12">
-                <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
+                <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-blue-500']" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                 </svg>
               </div>
-              <div v-else-if="paginatedAttendanceEvents.length === 0" class="text-center py-12 text-gray-500">
-                <img src="/events.svg" alt="No Events" class="w-16 h-16 mx-auto mb-4 text-gray-300" style="filter: invert(0.5);" />
-                <p>{{ attendanceSearchQuery ? 'No events match your search.' : 'No attendance events yet. Create one to get started!' }}</p>
+
+              <!-- Empty -->
+              <div v-else-if="paginatedAttendanceEvents.length === 0" class="flex flex-col items-center justify-center py-14 text-center">
+                <img src="/events.svg" alt="No Events" class="w-14 h-14 mb-3 opacity-30" />
+                <p class="text-gray-500 text-sm font-medium">{{ attendanceSearchQuery ? 'No events match your search.' : 'No attendance events yet.' }}</p>
+                <p v-if="!attendanceSearchQuery" class="text-gray-400 text-xs mt-1">Click "Create Event" above to get started.</p>
               </div>
-              <transition-group v-else name="event-slide-in" tag="div" class="space-y-4 relative" appear>
-                <div v-for="event in paginatedAttendanceEvents" :key="event._id" class="border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition">
-                  <!-- Event Header - Clickable to expand -->
-                  <div class="p-3 sm:p-4 cursor-pointer" @click="toggleEventExpansion(event._id)">
-                    <div class="flex flex-col gap-3">
-                      <div class="flex-1">
-                        <div class="flex flex-wrap items-center gap-2 mb-2">
-                          <svg :class="['w-4 h-4 sm:w-5 sm:h-5 transition-transform flex-shrink-0', isCOE ? 'text-orange-600' : 'text-blue-600', expandedEvents[event._id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                          <h3 :class="['font-semibold text-base sm:text-lg break-words', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ event.title }}</h3>
-                          <span :class="['px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap', getStatusBadgeClass(getEventDisplayStatus(event).status)]">{{ getEventDisplayStatus(event).label }}</span>
-                          <span v-if="event.status === 'active' && getEventTimeRemaining(event._id) && getEventTimeRemaining(event._id) !== 'Ended'" :class="['px-2 py-0.5 rounded-full text-xs font-medium whitespace-nowrap', 'bg-orange-100 text-orange-800']">
-                            {{ getEventTimeRemaining(event._id) }}
-                          </span>
-                        </div>
-                        <p v-if="event.description" class="text-gray-600 text-sm mb-2 ml-0 sm:ml-6">{{ event.description }}</p>
-                        <div class="flex flex-wrap gap-2 sm:gap-4 text-xs sm:text-sm text-gray-500 ml-0 sm:ml-6">
-                          <span class="flex items-center gap-1">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                            {{ formatEventDate(event.date || event.event_date) }}
-                          </span>
-                          <span class="flex items-center gap-1">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            {{ formatEventTime(event.start_time || event.startTime || '07:00') }} - {{ formatEventTime(event.end_time || event.endTime || '17:00') }}
-                          </span>
-                          <span v-if="event.location" class="flex items-center gap-1">
-                            <svg class="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                            {{ event.location }}
-                          </span>
-                        </div>
-                      </div>
-                      <div class="flex items-center gap-2 ml-0 sm:ml-6" @click.stop>
-                        <button @click="duplicateEvent(event)" class="bg-blue-100 text-blue-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-blue-200 transition text-xs sm:text-sm flex items-center gap-1" title="Duplicate">
-                          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                          <span class="sr-only sm:not-sr-only">Duplicate</span>
-                        </button>
-                        <button @click="openEditEvent(event)" class="bg-yellow-100 text-yellow-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-yellow-200 transition text-xs sm:text-sm flex items-center gap-1" title="Edit">
-                          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                          <span class="sr-only sm:not-sr-only">Edit</span>
-                        </button>
-                        <button @click="requestDeleteEvent(event)" class="bg-red-100 text-red-700 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg hover:bg-red-200 transition text-xs sm:text-sm flex items-center gap-1" title="Delete">
-                          <svg class="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                          <span class="sr-only sm:not-sr-only">Delete</span>
-                        </button>
+
+              <!-- Event Cards -->
+              <transition-group v-else name="event-slide-in" tag="div" class="space-y-2.5 relative" appear>
+                <div v-for="event in paginatedAttendanceEvents" :key="event._id" :class="['bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-shadow', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-emerald-100' : 'border-blue-100']">
+                  <!-- Clickable Header -->
+                  <div class="p-3 sm:p-4 cursor-pointer select-none" @click="toggleEventExpansion(event._id)">
+                    <!-- Title row -->
+                    <div class="flex items-start gap-2 mb-2">
+                      <svg :class="['w-4 h-4 mt-0.5 transition-transform flex-shrink-0', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-blue-500', expandedEvents[event._id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
+                      <div class="flex-1 min-w-0">
+                        <h3 :class="['font-bold text-sm sm:text-base leading-snug', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-emerald-900' : 'text-blue-900']">{{ event.title }}</h3>
+                        <p v-if="event.description" class="text-gray-500 text-xs mt-0.5 leading-relaxed line-clamp-2">{{ event.description }}</p>
                       </div>
                     </div>
+                    <!-- Badges row -->
+                    <div class="flex flex-wrap gap-1.5 mb-2.5 pl-6">
+                      <span :class="['px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap', getStatusBadgeClass(getEventDisplayStatus(event).status)]">{{ getEventDisplayStatus(event).label }}</span>
+                      <span v-if="event.status === 'active' && getEventTimeRemaining(event._id) && getEventTimeRemaining(event._id) !== 'Ended'" class="px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap bg-orange-100 text-orange-700">
+                        {{ getEventTimeRemaining(event._id) }}
+                      </span>
+                    </div>
+                    <!-- Meta chips -->
+                    <div class="flex flex-wrap gap-1.5 pl-6">
+                      <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-lg text-[11px] text-gray-600 font-medium">
+                        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        {{ formatEventDate(event.date || event.event_date) }}
+                      </span>
+                      <span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-lg text-[11px] text-gray-600 font-medium">
+                        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        {{ formatEventTime(event.start_time || event.startTime || '07:00') }} – {{ formatEventTime(event.end_time || event.endTime || '17:00') }}
+                      </span>
+                      <span v-if="event.location" class="inline-flex items-center gap-1 px-2 py-1 bg-gray-50 rounded-lg text-[11px] text-gray-600 font-medium">
+                        <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                        {{ event.location }}
+                      </span>
+                    </div>
                   </div>
-                  <!-- Sessions Panel - Expandable with Slide Animation -->
+
+                  <!-- Action buttons row — stop propagation so click doesn't toggle expand -->
+                  <div :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2.5 border-t', isCOE ? 'border-orange-50 bg-orange-50/40' : isSOM ? 'border-green-50 bg-green-50/40' : isCNAHS ? 'border-emerald-50 bg-emerald-50/40' : 'border-blue-50 bg-blue-50/40']" @click.stop>
+                    <button @click="duplicateEvent(event)" class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 active:scale-95 transition text-xs font-semibold" title="Duplicate">
+                      <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                      <span>Duplicate</span>
+                    </button>
+                    <button @click="openEditEvent(event)" class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 active:scale-95 transition text-xs font-semibold" title="Edit">
+                      <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                      <span>Edit</span>
+                    </button>
+                    <button @click="requestDeleteEvent(event)" class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 active:scale-95 transition text-xs font-semibold" title="Delete">
+                      <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                      <span>Delete</span>
+                    </button>
+                  </div>
+
+                  <!-- Sessions Panel - Expandable -->
                   <transition name="slide-down">
-                    <div v-if="expandedEvents[event._id]" class="bg-gray-50 border-t border-gray-200 px-3 sm:px-4 py-3">
-                      <div class="ml-0 sm:ml-6">
-                        <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                          Sessions
-                        </h4>
-                        <div v-if="!expandedEventSessions[event._id] || expandedEventSessions[event._id].length === 0" class="text-sm text-gray-500 py-2">
-                          No sessions added yet. Click "Edit" to add sessions.
-                        </div>
-                        <div v-else class="space-y-2">
-                          <div v-for="session in expandedEventSessions[event._id]" :key="session._id" @click="selectSession(session, event, $event)" :class="['flex flex-col sm:flex-row sm:items-center justify-between bg-white rounded-lg px-3 py-2 border border-gray-200 gap-2', 'cursor-pointer hover:shadow']">
-                            <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                              <span class="font-medium text-gray-800 text-sm">{{ session.label }}</span>
-                              <span class="text-xs text-gray-500">{{ formatEventTime(session.start_time) }} - {{ formatEventTime(session.end_time) }}</span>
-                              <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', getSessionDisplayStatus(session, event) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, event) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
-                                {{ getSessionDisplayStatus(session, event) === 'active' ? 'Active' : getSessionDisplayStatus(session, event) === 'draft' ? 'Upcoming' : 'Closed' }}
-                              </span>
-                            </div>
-                            <div class="flex items-center gap-2 flex-wrap">
-                              <button @click="openSessionLogs(session, event)" class="bg-blue-100 text-blue-700 px-2 py-1 rounded-lg hover:bg-blue-200 transition text-xs flex items-center gap-1">
-                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                Logs
-                              </button>
-                              <div class="flex items-center gap-1 text-xs text-gray-400">
-                                <span v-if="session.check_in_locked" class="text-red-500">Check-in locked</span>
-                                <span v-if="session.check_out_locked" class="text-red-500">Check-out locked</span>
-                              </div>
-                            </div>
+                    <div v-if="expandedEvents[event._id]" :class="['border-t px-3 sm:px-4 py-3', isCOE ? 'bg-orange-50/60 border-orange-100' : isSOM ? 'bg-green-50/60 border-green-100' : isCNAHS ? 'bg-emerald-50/60 border-emerald-100' : 'bg-blue-50/60 border-blue-100']">
+                      <h4 :class="['text-xs font-bold uppercase tracking-wider mb-2.5 flex items-center gap-1.5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-blue-600']">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                        Sessions
+                      </h4>
+                      <div v-if="!expandedEventSessions[event._id] || expandedEventSessions[event._id].length === 0" class="text-xs text-gray-500 py-2 italic">
+                        No sessions added yet — click Edit to add sessions.
+                      </div>
+                      <div v-else class="space-y-2">
+                        <div v-for="session in expandedEventSessions[event._id]" :key="session._id" @click="selectSession(session, event, $event)" class="bg-white rounded-xl px-3 py-2.5 border border-gray-200 cursor-pointer hover:shadow-sm active:scale-[0.99] transition flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                          <div class="flex flex-wrap items-center gap-1.5">
+                            <span class="font-semibold text-gray-800 text-sm">{{ session.label }}</span>
+                            <span class="text-xs text-gray-400 font-medium">{{ formatEventTime(session.start_time) }} – {{ formatEventTime(session.end_time) }}</span>
+                            <span :class="['px-2 py-0.5 rounded-full text-[11px] font-semibold', getSessionDisplayStatus(session, event) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, event) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500']">
+                              {{ getSessionDisplayStatus(session, event) === 'active' ? 'Active' : getSessionDisplayStatus(session, event) === 'draft' ? 'Upcoming' : 'Closed' }}
+                            </span>
+                            <span v-if="session.check_in_locked" class="text-[10px] text-red-500 font-medium">Check-in locked</span>
+                            <span v-if="session.check_out_locked" class="text-[10px] text-red-500 font-medium">Check-out locked</span>
                           </div>
+                          <button @click.stop="openSessionLogs(session, event)" :class="['flex-shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : isCNAHS ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200']">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Logs
+                          </button>
                         </div>
                       </div>
                     </div>
@@ -2026,25 +2026,21 @@
               </transition-group>
 
               <!-- Bottom Pagination -->
-              <div v-if="attendanceTotalPages > 1" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-6 mt-6 border-t" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200'">
-                <div :class="['text-sm font-medium text-center sm:text-left', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">
+              <div v-if="attendanceTotalPages > 1" class="flex items-center justify-between gap-2 pt-2 border-t border-gray-100">
+                <span :class="['text-xs font-semibold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-blue-600']">
                   Page {{ attendanceCurrentPage }} of {{ attendanceTotalPages }}
-                </div>
-                <div class="flex gap-2 justify-center">
+                </span>
+                <div class="flex gap-2">
                   <button
                     @click="prevAttendancePage"
                     :disabled="attendanceCurrentPage === 1"
-                    :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === 1 ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
-                  >
-                    ← Previous
-                  </button>
+                    :class="['px-4 py-2 rounded-xl font-semibold transition-all text-xs', attendanceCurrentPage === 1 ? 'opacity-40 cursor-not-allowed bg-gray-100 text-gray-500' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
+                  >← Previous</button>
                   <button
                     @click="nextAttendancePage"
                     :disabled="attendanceCurrentPage === attendanceTotalPages"
-                    :class="['px-4 py-2 rounded-lg font-medium transition-all text-sm', attendanceCurrentPage === attendanceTotalPages ? 'opacity-50 cursor-not-allowed bg-gray-200 text-gray-600' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-green-700 text-white hover:bg-green-800 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
-                  >
-                    Next →
-                  </button>
+                    :class="['px-4 py-2 rounded-xl font-semibold transition-all text-xs', attendanceCurrentPage === attendanceTotalPages ? 'opacity-40 cursor-not-allowed bg-gray-100 text-gray-500' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
+                  >Next →</button>
                 </div>
               </div>
             </div>
