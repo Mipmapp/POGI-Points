@@ -1017,15 +1017,25 @@
         </div>
 
 
-        <div v-if="currentPage === 'settings' && (isAdminLike)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Access Control Settings</h2>
-            <button @click="refreshSettingsSection" :disabled="settingsLoading" :class="['px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">
-              <svg v-if="settingsLoading" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              {{ settingsLoading ? 'Loading...' : 'Refresh' }}
-            </button>
+        <div v-if="currentPage === 'settings' && (isAdminLike)" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+            <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+            <div class="light-sweep"></div>
+            <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Access Control Settings</h2>
+                <p class="text-white/70 text-xs sm:text-sm mt-0.5">Manage registration, login, and system configurations</p>
+              </div>
+              <button @click="refreshSettingsSection" :disabled="settingsLoading" class="px-3 sm:px-4 py-2 rounded-xl text-white text-sm font-semibold bg-white/20 hover:bg-white/30 border border-white/20 transition flex items-center gap-2 disabled:opacity-60 flex-shrink-0">
+                <svg :class="['w-4 h-4', settingsLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span class="hidden sm:inline">{{ settingsLoading ? 'Loading...' : 'Refresh' }}</span>
+              </button>
+            </div>
           </div>
+          <div class="p-3 sm:p-4 md:p-6">
 
           <div v-if="settingsLoading" class="flex items-center justify-center py-12">
             <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -1373,6 +1383,7 @@
                 {{ settingsSaving ? 'Saving...' : 'Save Settings' }}
               </button>
             </div>
+          </div>
           </div>
         </div>
 
@@ -1803,11 +1814,24 @@
         <!-- Attendance Page -->
         <div v-if="currentPage === 'attendance'" class="space-y-6">
           <!-- Admin Attendance Management -->
-          <div v-if="isAdminLike && inRoleView" class="bg-white rounded-lg shadow-lg p-4 md:p-6">
-            <div class="flex flex-col gap-4 mb-6">
+          <div v-if="isAdminLike && inRoleView" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <div class="light-sweep"></div>
+              <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Attendance Events</h2>
+                  <p class="text-white/70 text-xs sm:text-sm mt-0.5">Manage events, sessions, and RFID scanner</p>
+                </div>
+              </div>
+            </div>
+            <div class="p-3 sm:p-4 md:p-6 flex flex-col gap-4">
               <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="flex items-center gap-2">
-                  <h2 :class="['text-lg sm:text-xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Attendance Events</h2>
+                  <h2 class="sr-only">Attendance Events</h2>
                   <div class="group relative">
                     <button :class="['p-1.5 rounded-full transition-all', isCOE ? 'hover:bg-orange-100 text-orange-600' : isSOM ? 'hover:bg-green-100 text-green-600' : 'hover:bg-blue-100 text-blue-600']" title="Information">
                       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
@@ -3172,14 +3196,25 @@
         </div>
 
         <!-- Pending Approvals Page -->
-        <div v-if="currentPage === 'pending' && (isAdminLike)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
-          <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
-            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Pending Student Approvals</h2>
-            <button @click="refreshPendingSection" :disabled="pendingLoading" :class="['text-white px-4 py-2 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Refresh Pending List">
-              <svg :class="{'animate-spin': pendingLoading}" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              Refresh
-            </button>
+        <div v-if="currentPage === 'pending' && (isAdminLike)" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+            <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+            <div class="light-sweep"></div>
+            <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Pending Approvals</h2>
+                <p class="text-white/70 text-xs sm:text-sm mt-0.5">Review and approve or reject student registrations</p>
+              </div>
+              <button @click="refreshPendingSection" :disabled="pendingLoading" class="px-3 sm:px-4 py-2 rounded-xl text-white text-sm font-semibold bg-white/20 hover:bg-white/30 border border-white/20 transition flex items-center gap-2 disabled:opacity-60 flex-shrink-0">
+                <svg :class="['w-4 h-4', pendingLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span class="hidden sm:inline">Refresh</span>
+              </button>
+            </div>
           </div>
+          <div class="p-3 sm:p-4 md:p-6">
 
           <!-- Search Input for Pending Students -->
           <div class="mb-4">
@@ -3288,6 +3323,7 @@
               </button>
             </div>
           </div>
+          </div>
         </div>
 
         <!-- Reject Modal -->
@@ -3310,18 +3346,26 @@
         </div>
 
         <!-- User Management Page -->
-        <div v-if="currentPage === 'users' && (isAdminLike)" class="bg-white rounded-lg shadow-lg p-4 md:p-8">
-          <div class="flex flex-col gap-4 mb-6">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-              <h2 class="text-xl md:text-2xl font-bold text-blue-900">Manage Users</h2>
-              <div class="flex items-center gap-2">
-                <button @click="refreshStudents" :disabled="isRefreshing" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all duration-200 hover:scale-105 active:scale-95 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed" title="Refresh Student List">
-                  <svg v-if="isRefreshing" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                  {{ isRefreshing ? 'Refreshing...' : 'Refresh' }}
-                </button>
+        <div v-if="currentPage === 'users' && (isAdminLike)" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+          <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+            <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+            <div class="light-sweep"></div>
+            <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               </div>
+              <div class="flex-1 min-w-0">
+                <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Manage Users</h2>
+                <p class="text-white/70 text-xs sm:text-sm mt-0.5">View, search, edit, and manage student accounts</p>
+              </div>
+              <button @click="refreshStudents" :disabled="isRefreshing" class="px-3 sm:px-4 py-2 rounded-xl text-white text-sm font-semibold bg-white/20 hover:bg-white/30 border border-white/20 transition flex items-center gap-2 disabled:opacity-60 flex-shrink-0">
+                <svg :class="['w-4 h-4', isRefreshing ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span class="hidden sm:inline">{{ isRefreshing ? 'Refreshing...' : 'Refresh' }}</span>
+              </button>
             </div>
+          </div>
+          <div class="p-3 sm:p-4 md:p-6">
+          <div class="mb-4">
             <div class="flex flex-col sm:flex-row gap-3">
               <div class="flex-1 relative">
                 <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
@@ -3358,7 +3402,43 @@
             </div>
           </div>
 
-          <div class="overflow-x-auto">
+          <!-- Mobile Card List -->
+          <div class="block sm:hidden divide-y divide-gray-100 -mx-3 sm:mx-0 mb-2">
+            <div v-if="filteredUsers.length === 0" class="px-4 py-8 text-center text-gray-500 text-sm">No users found matching your search.</div>
+            <div v-for="user in filteredUsers" :key="user.studentId || user.student_id" class="px-4 py-4 hover:bg-gray-50 transition">
+              <div class="flex items-center gap-3 mb-3">
+                <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-500 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+                  {{ ((user.firstName || user.first_name || '?').charAt(0)).toUpperCase() }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-gray-900 text-sm truncate">{{ (user.firstName || user.first_name) }} {{ (user.lastName || user.last_name) }}</p>
+                  <p class="text-xs text-gray-500 font-mono truncate">{{ user.studentId || user.student_id }}</p>
+                </div>
+                <span :class="['px-2 py-1 rounded-full text-xs font-medium flex-shrink-0', (user.rfid_status === 'verified') ? 'bg-green-100 text-green-800' : (user.rfid_status === 'Unreadable') ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800']">
+                  {{ (user.rfid_status === 'verified') ? 'Verified' : (user.rfid_status === 'Unreadable') ? 'Unreadable' : 'Unverified' }}
+                </span>
+              </div>
+              <div class="grid grid-cols-2 gap-1.5 text-xs text-gray-600 mb-3 bg-gray-50 rounded-lg p-2">
+                <div><span class="text-gray-400">Program:</span> <span class="font-medium">{{ user.program || '—' }}</span></div>
+                <div><span class="text-gray-400">Level:</span> <span class="font-medium">{{ user.yearLevel || user.year_level || '—' }}</span></div>
+                <div class="col-span-2 truncate"><span class="text-gray-400">Email:</span> <span class="font-medium">{{ user.email || '—' }}</span></div>
+                <div class="col-span-2 truncate"><span class="text-gray-400">RFID:</span> <span class="font-mono font-medium">{{ user.rfidCode || user.rfid_code || '—' }}</span></div>
+              </div>
+              <div class="flex gap-2">
+                <button @click="editUser(user)" :class="['flex-1 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm font-medium text-white', isCOE ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-500 hover:bg-blue-600']">
+                  <img src="/edit.svg" alt="Edit" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
+                  Edit
+                </button>
+                <button @click="deleteUser(user.studentId || user.student_id)" class="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2 text-sm font-medium">
+                  <img src="/delete.svg" alt="Delete" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Desktop Table -->
+          <div class="hidden sm:block overflow-x-auto">
             <table class="w-full border-collapse text-sm">
               <thead>
                 <tr class="bg-blue-100">
@@ -3433,6 +3513,7 @@
                 </button>
               </div>
             </div>
+          </div>
           </div>
         </div>
 
@@ -3624,7 +3705,7 @@
                 </div>
                 <div class="min-w-0">
                   <h2 class="text-white text-base sm:text-lg md:text-xl font-bold leading-tight">My Location</h2>
-                  <p class="text-white/80 text-xs sm:text-sm line-clamp-1">See where you are relative to today's check-in zones.</p>
+                  <p class="text-white/80 text-xs sm:text-sm">See where you are relative to today's check-in zones.</p>
                 </div>
               </div>
             </div>
@@ -3693,13 +3774,13 @@
             <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
               <div class="light-sweep"></div>
-              <div class="absolute inset-0 flex items-center px-6 md:px-8 gap-4">
-                <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 </div>
-                <div>
-                  <h2 class="text-2xl font-extrabold text-white tracking-tight">Student Requests</h2>
-                  <p class="text-white/70 text-sm mt-0.5">Review name and college change requests from students.</p>
+                <div class="min-w-0">
+                  <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Student Requests</h2>
+                  <p class="text-white/70 text-xs sm:text-sm mt-0.5">Review name and college change requests from students.</p>
                 </div>
               </div>
             </div>
@@ -4715,15 +4796,25 @@
           </div>
         </div>
 
-        <div v-if="currentPage === 'dashboard' && isAdminLike && inRoleView" class="bg-white rounded-lg shadow-lg p-4 md:p-8 mb-8">
-          <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
-            <h2 :class="['text-xl md:text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Registered Students</h2>
-            <button @click="handleStatsRefresh" :disabled="statsLoading" :class="['w-full sm:w-auto px-6 py-3 rounded-lg transition-all duration-200 hover:scale-105 active:scale-95 font-bold text-base flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed shrink-0 text-white border-2', isCOE ? 'bg-orange-600 hover:bg-orange-700 border-orange-700 shadow-lg' : isSOM ? 'bg-green-600 hover:bg-green-700 border-green-700 shadow-lg' : isCNAHS ? 'bg-green-700 hover:bg-green-800 border-green-800 shadow-lg' : 'bg-blue-600 hover:bg-blue-700 border-blue-700 shadow-lg']" title="Refresh Statistics">
-              <svg v-if="statsLoading" class="w-5 h-5 animate-spin text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              <svg v-else class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              <span class="text-white font-bold text-base">{{ statsLoading ? 'Refreshing...' : 'Refresh' }}</span>
-            </button>
+        <div v-if="currentPage === 'dashboard' && isAdminLike && inRoleView" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+          <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+            <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+            <div class="light-sweep"></div>
+            <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Registered Students</h2>
+                <p class="text-white/70 text-xs sm:text-sm mt-0.5">Overview of enrolled students by year level and program</p>
+              </div>
+              <button @click="handleStatsRefresh" :disabled="statsLoading" class="px-3 sm:px-4 py-2 rounded-xl text-white text-sm font-semibold bg-white/20 hover:bg-white/30 border border-white/20 transition flex items-center gap-2 disabled:opacity-60 flex-shrink-0">
+                <svg :class="['w-4 h-4', statsLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span class="hidden sm:inline">{{ statsLoading ? 'Refreshing...' : 'Refresh' }}</span>
+              </button>
+            </div>
           </div>
+          <div class="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
 
           <!-- College Tabs (Master Admin only) -->
           <div v-if="currentUser.isMaster && !isCoAdmin && !isTreasurer" class="flex flex-wrap gap-2 mb-5">
@@ -4739,21 +4830,21 @@
             <table class="w-full border-collapse">
               <thead>
                 <tr :class="themeColors.headerBg">
-                  <th :class="['border px-6 py-3 text-left font-semibold', themeColors.headerText]"></th>
-                  <th v-for="prog in displayPrograms" :key="prog" :class="['border px-6 py-3 text-center font-semibold', themeColors.headerText]">{{ prog }}</th>
-                  <th :class="['border px-6 py-3 text-center font-semibold', themeColors.headerText]">Total</th>
+                  <th :class="['border px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm', themeColors.headerText]"></th>
+                  <th v-for="prog in displayPrograms" :key="prog" :class="['border px-2 sm:px-4 py-2 sm:py-3 text-center font-semibold text-xs sm:text-sm', themeColors.headerText]">{{ prog }}</th>
+                  <th :class="['border px-2 sm:px-4 py-2 sm:py-3 text-center font-semibold text-xs sm:text-sm', themeColors.headerText]">Total</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="year in ['1st Year', '2nd Year', '3rd Year', '4th Year']" :key="year" class="hover:bg-gray-50">
-                  <td :class="['border px-6 py-4 font-medium text-gray-700', themeColors.rowBorder]">{{ year.toLowerCase().replace('year', 'years') }}</td>
-                  <td v-for="prog in displayPrograms" :key="prog" :class="['border px-6 py-4 text-center', themeColors.rowBorder]">{{ displayStats[prog]?.[year] || 0 }}</td>
-                  <td :class="`border px-6 py-4 text-center font-bold ${themeColors.rowBorder} ${isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700'}`">{{ displayPrograms.reduce((sum, prog) => sum + (displayStats[prog]?.[year] || 0), 0) }}</td>
+                  <td :class="['border px-2 sm:px-4 py-2 sm:py-4 font-medium text-gray-700 text-xs sm:text-sm', themeColors.rowBorder]">{{ year.toLowerCase().replace('year', 'years') }}</td>
+                  <td v-for="prog in displayPrograms" :key="prog" :class="['border px-2 sm:px-4 py-2 sm:py-4 text-center text-xs sm:text-sm', themeColors.rowBorder]">{{ displayStats[prog]?.[year] || 0 }}</td>
+                  <td :class="`border px-2 sm:px-4 py-2 sm:py-4 text-center font-bold text-xs sm:text-sm ${themeColors.rowBorder} ${isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700'}`">{{ displayPrograms.reduce((sum, prog) => sum + (displayStats[prog]?.[year] || 0), 0) }}</td>
                 </tr>
                 <tr :class="`font-bold ${themeColors.rowBgAlt}`">
-                  <td :class="['border px-6 py-4 font-bold text-gray-900', themeColors.rowBorder]">All year levels</td>
-                  <td v-for="prog in displayPrograms" :key="prog" :class="['border px-6 py-4 text-center', themeColors.rowBorder]">{{ displayStats[prog]?.total || 0 }}</td>
-                  <td :class="`border px-6 py-4 text-center ${themeColors.rowBgAltText}`">{{ displayTotal }}</td>
+                  <td :class="['border px-2 sm:px-4 py-2 sm:py-4 font-bold text-gray-900 text-xs sm:text-sm', themeColors.rowBorder]">All year levels</td>
+                  <td v-for="prog in displayPrograms" :key="prog" :class="['border px-2 sm:px-4 py-2 sm:py-4 text-center text-xs sm:text-sm', themeColors.rowBorder]">{{ displayStats[prog]?.total || 0 }}</td>
+                  <td :class="`border px-2 sm:px-4 py-2 sm:py-4 text-center text-xs sm:text-sm ${themeColors.rowBgAltText}`">{{ displayTotal }}</td>
                 </tr>
               </tbody>
             </table>
@@ -4765,7 +4856,7 @@
             </p>
           </div>
           
-          <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
             <div :class="['rounded-lg p-4 text-center cursor-pointer transition',
                           isCOE ? 'bg-orange-50 border border-orange-200 hover:bg-orange-100' :
                           isSOM ? 'bg-green-50 border border-green-200 hover:bg-green-100' :
@@ -4898,9 +4989,10 @@
             </div>
           </div>
           </transition>
+          </div>
 
           <!-- Quick Actions: Create Event -->
-          <div class="mt-6 px-4 pb-4 md:px-8 md:pb-8">
+          <div class="px-4 pb-4 sm:px-6 md:px-8 md:pb-6 border-t border-gray-100 pt-4">
             <div class="flex items-center gap-2 mb-4">
               <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
               <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Quick Actions</h3>
