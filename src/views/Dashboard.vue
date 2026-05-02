@@ -16924,10 +16924,15 @@ const processRfidScan = async (inputCode) => {
       const userNotFound = /(?:no\s+.*found|student\s+not\s+found|not\s+found|not\s+registered|user\s+not\s+found|not\s+verified|unknown)/i.test(msg) || ['user_not_found', 'not_registered'].includes(result.action)
       // Detect assignment-related messages and treat them as errors (red)
       const notAssigned = /not\s+assigned|only\s+assigned\s+students|not\s+assigned\s+to\s+this/i.test(msg)
+      // VPN / proxy blocked by geofence security check
+      const vpnBlocked = result.code === 'GEOFENCE_VPN_DETECTED'
 
       if (alreadyCompleted) {
         rfidResult.value = { success: false, warning: true, action: result.action || 'already_checked_in', ...result }
         showNotification(result.message || 'Student already completed session', 'warning')
+      } else if (vpnBlocked) {
+        rfidResult.value = { success: false, error: true, message: result.message }
+        showNotification('VPN detected — disable your VPN to check in', 'error')
       } else if (userNotFound || notAssigned) {
         rfidResult.value = { success: false, error: true, message: result.message }
         showNotification(result.message || 'User not found', 'error')

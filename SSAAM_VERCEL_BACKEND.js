@@ -7084,6 +7084,63 @@ function getEventAutoStatus(eventDate) {
 // handler. Centralised so behaviour stays consistent if we ever change the
 // rules (e.g. tighten the radius bounds or add altitude later).
 
+// ── VPN / Proxy detection ────────────────────────────────────────────────────
+// Results are cached per IP for 5 minutes so a classroom of students checking
+// in simultaneously doesn't hammer the free ip-api.com rate limit (45 req/min).
+// On any external-API error we fail OPEN — a downed lookup service should never
+// lock out a legitimate student.
+const _vpnCache = new Map(); // ip → { ts, isVpn, reason }
+const VPN_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+// CIDR ranges that are definitively private / local — skip the external lookup.
+const PRIVATE_IP_RE = /^(127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|::1$|fc|fd)/i;
+
+async function isVpnOrProxy(ip) {
+    if (!ip || ip === 'unknown' || PRIVATE_IP_RE.test(ip)) {
+        return { isVpn: false, reason: 'private' };
+    }
+
+    const now = Date.now();
+    const cached = _vpnCache.get(ip);
+    if (cached && (now - cached.ts) < VPN_CACHE_TTL_MS) {
+        return { isVpn: cached.isVpn, reason: cached.reason };
+    }
+
+    try {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 4000); // 4 s hard limit
+
+        const resp = await fetch(
+            `http://ip-api.com/json/${encodeURIComponent(ip)}?fields=status,proxy,hosting,query,countryCode`,
+            { signal: controller.signal }
+        );
+        clearTimeout(timeout);
+
+        if (!resp.ok) throw new Error(`ip-api HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        const isVpn = data.status === 'success' && (data.proxy === true || data.hosting === true);
+        const reason = data.proxy ? 'proxy/vpn' : data.hosting ? 'datacenter/hosting' : 'clean';
+
+        // Evict stale entries when the cache grows large
+        if (_vpnCache.size >= 1000) {
+            const cutoff = now - VPN_CACHE_TTL_MS;
+            for (const [k, v] of _vpnCache) {
+                if (v.ts < cutoff) _vpnCache.delete(k);
+            }
+        }
+        _vpnCache.set(ip, { ts: now, isVpn, reason });
+
+        console.log(`[VPN Check] ip=${ip} proxy=${data.proxy} hosting=${data.hosting} country=${data.countryCode} → ${reason}`);
+        return { isVpn, reason };
+
+    } catch (err) {
+        console.warn(`[VPN Check] lookup failed for ${ip} (fail-open): ${err.message}`);
+        return { isVpn: false, reason: 'api_error' };
+    }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 // Haversine distance between two lat/lng pairs, in metres.
 function haversineMeters(lat1, lng1, lat2, lng2) {
     const R = 6371000; // Earth radius in metres
@@ -8413,6 +8470,25 @@ const sessionAttendanceCheck = async (req, res) => {
         // someone standing at the venue. Applies to RFID, manual, and face flows
         // because all three funnel through this handler.
         if (event.geofence_enabled && Number.isFinite(event.geofence_lat) && Number.isFinite(event.geofence_lng)) {
+            // ── VPN / Proxy guard ──────────────────────────────────────────
+            // Block check-ins that arrive through a VPN, proxy, or datacenter
+            // IP so that a student cannot spoof their GPS coordinates from a
+            // remote network. Private/LAN IPs are always allowed (on-campus Wi-Fi).
+            const clientIP = (req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+                req.headers['x-real-ip'] ||
+                req.connection?.remoteAddress ||
+                'unknown');
+            const vpnResult = await isVpnOrProxy(clientIP);
+            if (vpnResult.isVpn) {
+                console.log(`[Geofence] VPN/proxy blocked: ip=${clientIP} reason=${vpnResult.reason}`);
+                return res.status(403).json({
+                    message: "VPN or proxy usage detected. Please disable your VPN and try again — a real GPS location from the event venue is required.",
+                    geofence_blocked: true,
+                    code: 'GEOFENCE_VPN_DETECTED'
+                });
+            }
+            // ──────────────────────────────────────────────────────────────
+
             const lat = Number(latitude);
             const lng = Number(longitude);
             if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
