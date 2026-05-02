@@ -1814,8 +1814,8 @@
         <!-- Attendance Page -->
         <div v-if="currentPage === 'attendance'" class="space-y-6">
           <!-- Admin Attendance Management -->
-          <div v-if="isAdminLike && inRoleView" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+          <div v-if="isAdminLike && inRoleView" class="relative bg-white rounded-3xl shadow-xl border border-gray-100 overflow-visible">
+            <div :class="['relative h-24 sm:h-28 overflow-hidden rounded-t-3xl', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
               <div class="light-sweep"></div>
               <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
@@ -1827,26 +1827,29 @@
                   <p class="text-white/70 text-xs sm:text-sm mt-0.5">Manage events, sessions, and RFID scanner</p>
                 </div>
               </div>
-              <!-- Info button — top-right of hero -->
-              <div class="absolute top-3 right-3 group">
+              <!-- Info button sits inside the hero visually, but tooltip escapes via outer overflow-visible -->
+              <div class="absolute top-3 right-3 group z-10">
                 <button class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all" title="About Attendance Events">
                   <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
                 </button>
-                <!-- Tooltip anchored to the right -->
-                <div :class="['invisible group-hover:visible absolute right-0 top-full mt-2 w-64 p-3 rounded-xl shadow-xl z-40 border text-xs space-y-2', isCOE ? 'bg-orange-50 border-orange-200 text-orange-900' : isSOM ? 'bg-green-50 border-green-200 text-green-900' : isCNAHS ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-blue-50 border-blue-200 text-blue-900']">
-                  <div class="font-bold flex items-center gap-1">
-                    <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
-                    Attendance Events
-                  </div>
-                  <p>Browse active and upcoming events. Click an event to view and manage its sessions.</p>
-                  <div class="pt-2 border-t" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-emerald-200' : 'border-blue-200'">
-                    <p class="font-semibold mb-1">What you can do:</p>
-                    <ul class="space-y-1">
-                      <li class="flex gap-1"><span class="font-bold">✓</span><span>Auto-select session (1 active) or choose manually</span></li>
-                      <li class="flex gap-1"><span class="font-bold">✓</span><span>View session details and times</span></li>
-                      <li class="flex gap-1"><span class="font-bold">✓</span><span>Manage attendance with RFID Scanner</span></li>
-                    </ul>
-                  </div>
+              </div>
+            </div>
+            <!-- Tooltip rendered OUTSIDE the overflow-hidden hero, anchored top-right of card -->
+            <div class="absolute top-3 right-3 group z-50 pointer-events-none">
+              <div class="w-8 h-8 pointer-events-auto"></div>
+              <div :class="['invisible group-hover:visible absolute right-0 top-full mt-1 w-64 p-3 rounded-xl shadow-xl border text-xs space-y-2 pointer-events-none', isCOE ? 'bg-orange-50 border-orange-200 text-orange-900' : isSOM ? 'bg-green-50 border-green-200 text-green-900' : isCNAHS ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-blue-50 border-blue-200 text-blue-900']">
+                <div class="font-bold flex items-center gap-1">
+                  <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
+                  Attendance Events
+                </div>
+                <p>Browse active and upcoming events. Click an event to view and manage its sessions.</p>
+                <div class="pt-2 border-t" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-emerald-200' : 'border-blue-200'">
+                  <p class="font-semibold mb-1">What you can do:</p>
+                  <ul class="space-y-1">
+                    <li class="flex gap-1"><span class="font-bold">✓</span><span>Auto-select session (1 active) or choose manually</span></li>
+                    <li class="flex gap-1"><span class="font-bold">✓</span><span>View session details and times</span></li>
+                    <li class="flex gap-1"><span class="font-bold">✓</span><span>Manage attendance with RFID Scanner</span></li>
+                  </ul>
                 </div>
               </div>
             </div>
