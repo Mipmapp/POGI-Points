@@ -1827,60 +1827,46 @@
                   <p class="text-white/70 text-xs sm:text-sm mt-0.5">Manage events, sessions, and RFID scanner</p>
                 </div>
               </div>
-            </div>
-            <div class="p-3 sm:p-4 md:p-6 flex flex-col gap-4">
-              <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div class="flex items-center gap-2">
-                  <h2 class="sr-only">Attendance Events</h2>
-                  <div class="group relative">
-                    <button :class="['p-1.5 rounded-full transition-all', isCOE ? 'hover:bg-orange-100 text-orange-600' : isSOM ? 'hover:bg-green-100 text-green-600' : 'hover:bg-blue-100 text-blue-600']" title="Information">
-                      <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-                    </button>
-                    <!-- Tooltip -->
-                    <div :class="['invisible group-hover:visible absolute left-0 top-full mt-2 w-64 p-3 rounded-lg shadow-xl z-40 transition-all', isCOE ? 'bg-orange-50 border border-orange-200 text-orange-900' : isSOM ? 'bg-green-50 border border-green-200 text-green-900' : 'bg-blue-50 border border-blue-200 text-blue-900']">
-                      <div class="text-xs space-y-2">
-                        <div class="font-bold flex items-center gap-1">
-                          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
-                          Attendance Events
-                        </div>
-                        <p>Browse all active and upcoming attendance events. Click an event to select it and view/manage its sessions.</p>
-                        <div class="pt-2 border-t" :class="isCOE ? 'border-orange-200' : 'border-blue-200'">
-                          <p class="font-semibold mb-1">What you can do:</p>
-                          <ul class="space-y-1 text-xs">
-                            <li class="flex gap-1">
-                              <span class="font-bold">✓</span>
-                              <span>Auto-select session (1 active) or choose manually (multiple active)</span>
-                            </li>
-                            <li class="flex gap-1">
-                              <span class="font-bold">✓</span>
-                              <span>View session details and times</span>
-                            </li>
-                            <li class="flex gap-1">
-                              <span class="font-bold">✓</span>
-                              <span>Manage attendance with RFID Scanner</span>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
+              <!-- Info button — top-right of hero -->
+              <div class="absolute top-3 right-3 group">
+                <button class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all" title="About Attendance Events">
+                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                </button>
+                <!-- Tooltip anchored to the right -->
+                <div :class="['invisible group-hover:visible absolute right-0 top-full mt-2 w-64 p-3 rounded-xl shadow-xl z-40 border text-xs space-y-2', isCOE ? 'bg-orange-50 border-orange-200 text-orange-900' : isSOM ? 'bg-green-50 border-green-200 text-green-900' : isCNAHS ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-blue-50 border-blue-200 text-blue-900']">
+                  <div class="font-bold flex items-center gap-1">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
+                    Attendance Events
+                  </div>
+                  <p>Browse active and upcoming events. Click an event to view and manage its sessions.</p>
+                  <div class="pt-2 border-t" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-emerald-200' : 'border-blue-200'">
+                    <p class="font-semibold mb-1">What you can do:</p>
+                    <ul class="space-y-1">
+                      <li class="flex gap-1"><span class="font-bold">✓</span><span>Auto-select session (1 active) or choose manually</span></li>
+                      <li class="flex gap-1"><span class="font-bold">✓</span><span>View session details and times</span></li>
+                      <li class="flex gap-1"><span class="font-bold">✓</span><span>Manage attendance with RFID Scanner</span></li>
+                    </ul>
                   </div>
                 </div>
-                <div class="flex gap-2 flex-wrap sm:flex-nowrap">
-                  <button @click="refreshAttendanceSection" :disabled="attendanceLoading" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm disabled:opacity-70 text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Refresh">
-                    <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    <span>Refresh</span>
-                  </button>
-                  <button @click="openCreateEventModal" :class="['flex-1 sm:flex-none px-3 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Create Event">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                    <span>Create Event</span>
-                  </button>
-                </div>
               </div>
-
-                
-              <div class="flex gap-2 overflow-x-auto pb-1">
-                <button @click="attendanceTab = 'events'" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'events' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">Events</button>
-                <button @click="switchToScannerTab" :class="['flex-1 sm:flex-none px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap', attendanceTab === 'scanner' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-700 hover:bg-gray-200']">Scanner</button>
+            </div>
+            <div class="p-3 sm:p-4 md:p-6 flex flex-col gap-3">
+              <h2 class="sr-only">Attendance Events</h2>
+              <!-- Action buttons row -->
+              <div class="flex gap-2">
+                <button @click="refreshAttendanceSection" :disabled="attendanceLoading" :class="['flex-1 px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-sm font-semibold disabled:opacity-70 text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Refresh">
+                  <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  <span>Refresh</span>
+                </button>
+                <button @click="openCreateEventModal" :class="['flex-1 px-3 py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-sm font-semibold text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Create Event">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  <span>Create Event</span>
+                </button>
+              </div>
+              <!-- Tab switcher -->
+              <div class="flex gap-2">
+                <button @click="attendanceTab = 'events'" :class="['flex-1 px-4 py-2 rounded-xl text-sm font-semibold transition whitespace-nowrap', attendanceTab === 'events' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">Events</button>
+                <button @click="switchToScannerTab" :class="['flex-1 px-4 py-2 rounded-xl text-sm font-semibold transition whitespace-nowrap', attendanceTab === 'scanner' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">Scanner</button>
               </div>
             </div>
 
