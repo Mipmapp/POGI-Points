@@ -2,12 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent body/html from scrolling — the app is contained in h-screen */
+/* Prevent bounce/overscroll on the document level without breaking iOS Safari */
 html, body {
   height: 100%;
-  overflow: hidden;
+  overscroll-behavior: none;
 }
 
+/* The app container owns all scrolling — keeps double-scrollbar off on mobile */
 #app {
   height: 100%;
   overflow: hidden;

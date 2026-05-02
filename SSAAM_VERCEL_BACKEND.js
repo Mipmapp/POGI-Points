@@ -3620,7 +3620,7 @@ app.get('/apis/students/list/all', auth, async (req, res) => {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
         const students = await StudentModel.find({ status: 'approved' })
-            .select('student_id first_name middle_name last_name suffix program year_level photo email rfid_status rfid_code')
+            .select('student_id first_name middle_name last_name suffix program year_level photo email rfid_status rfid_code role college')
             .sort({ first_name: 1, last_name: 1 });
 
         const formattedStudents = students.map(s => ({
@@ -3635,7 +3635,9 @@ app.get('/apis/students/list/all', auth, async (req, res) => {
             photo: s.photo || '',
             email: s.email || '',
             rfid_status: s.rfid_status || 'unverified',
-            rfid_code: s.rfid_code || 'N/A'
+            rfid_code: s.rfid_code || 'N/A',
+            role: s.role || 'student',
+            college: s.college || ''
         }));
 
         res.json({
@@ -4753,8 +4755,10 @@ app.post('/apis/students/change-password', async (req, res) => {
             return res.status(400).json({ message: "Password is too long (max 128 characters)" });
         }
 
-        // Find the student (college-aware)
-        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        // Find the student (college-aware) — use college from JWT since this
+        // endpoint has no middleware that sets req.college from headers
+        const college = decoded.college || getCollegeFromRequest(req) || 'CCS';
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
         const student = await StudentModel.findOne({ student_id });
         if (!student) {
             return res.status(404).json({ message: "Student not found" });
