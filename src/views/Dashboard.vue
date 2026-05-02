@@ -4254,7 +4254,7 @@
         <!-- Dashboard Page -->
         <div v-if="currentPage === 'dashboard' && (!isAdminLike || inUserView)" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
           <!-- Profile Header -->
-          <div :class="['relative h-40 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+          <div :class="['relative h-28 sm:h-36 md:h-40 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
             <!-- Artistic Blurred Background -->
             <div 
               v-if="currentUser.image || currentUser.photo"
@@ -4278,10 +4278,10 @@
             </button>
           </div>
 
-          <div class="px-8 pb-8">
-            <div class="relative -mt-16 mb-6">
+          <div class="px-4 sm:px-6 md:px-8 pb-4 sm:pb-6 md:pb-8">
+            <div class="relative -mt-10 sm:-mt-14 md:-mt-16 mb-3 sm:mb-5 md:mb-6">
               <div class="inline-block relative">
-                <div :class="[isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light', 'w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center']">
+                <div :class="[isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light', 'w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-2xl md:rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center']">
                   <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
                     <svg class="animate-spin h-10 w-10 text-white/80" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                       <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -4319,40 +4319,40 @@
               />
             </div>
 
-            <div class="mb-8">
-              <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">{{ displayName }}</h1>
-              <p :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'text-lg font-medium']">ID: {{ currentUser.studentId || currentUser.student_id }}</p>
+            <div class="mb-4 sm:mb-6 md:mb-8">
+              <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">{{ displayName }}</h1>
+              <p :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'text-sm sm:text-base md:text-lg font-medium']">ID: {{ currentUser.studentId || currentUser.student_id }}</p>
               <p v-if="studentPhotoUploading" :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'text-xs mt-2 font-medium']">Uploading photo...</p>
             </div>
 
             <!-- Info Grid -->
-            <div class="space-y-8">
+            <div class="space-y-4 sm:space-y-6 md:space-y-8">
               <section>
-                <div class="flex items-center gap-2 mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
-                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Personal Information</h3>
+                <div class="flex items-center gap-2 mb-2 sm:mb-3 md:mb-4">
+                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full']"></div>
+                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Personal Information</h3>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                   <div v-for="(val, label) in { 'First Name': currentUser.firstName || currentUser.first_name, 'Middle Name': currentUser.middleName || currentUser.middle_name || 'N/A', 'Last Name': currentUser.lastName || currentUser.last_name, 'Suffix': currentUser.suffix || 'N/A' }" :key="label" 
-                       :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ label }}</p>
-                    <p class="text-gray-900 font-semibold truncate">{{ val }}</p>
+                       :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-2.5 sm:p-3 md:p-4 bg-gray-50 rounded-xl md:rounded-2xl border border-gray-100 transition-colors']">
+                    <p class="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 sm:mb-1">{{ label }}</p>
+                    <p class="text-sm sm:text-base text-gray-900 font-semibold truncate">{{ val }}</p>
                   </div>
                 </div>
-                <p class="text-xs text-gray-500 mt-3">Account created on {{ formatDateTimeShort(currentUser.created_date) }}</p>
+                <p class="text-xs text-gray-500 mt-2">Account created on {{ formatDateTimeShort(currentUser.created_date) }}</p>
               </section>
 
               <section>
-                <div class="flex items-center gap-2 mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
-                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Contact & Identification</h3>
+                <div class="flex items-center gap-2 mb-2 sm:mb-3 md:mb-4">
+                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full']"></div>
+                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Contact & Identification</h3>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+                  <div :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-2.5 sm:p-3 md:p-4 bg-gray-50 rounded-xl md:rounded-2xl border border-gray-100 transition-colors']">
                     <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email Address</p>
                     <p class="text-gray-900 font-semibold truncate">{{ currentUser.email || 'Not provided' }}</p>
                   </div>
-                  <div :class="['p-4 bg-white rounded-2xl border-2 shadow-sm relative overflow-hidden group', currentUser.rfid_status === 'verified' ? 'border-green-100' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'border-gray-200' : 'border-yellow-100']">
+                  <div :class="['p-2.5 sm:p-3 md:p-4 bg-white rounded-xl md:rounded-2xl border-2 shadow-sm relative overflow-hidden group', currentUser.rfid_status === 'verified' ? 'border-green-100' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'border-gray-200' : 'border-yellow-100']">
                     <div class="absolute top-0 right-0 p-2">
                       <span :class="['px-2 py-0.5 rounded-full text-[10px] font-bold', currentUser.rfid_status === 'verified' ? 'bg-green-100 text-green-700' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-100 text-gray-700' : 'bg-yellow-100 text-yellow-700']">
                         {{ currentUser.rfid_status === 'verified' ? 'Verified' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'Unreadable' : 'Pending' }}
@@ -4379,60 +4379,60 @@
               </section>
 
               <section>
-                <div class="flex items-center gap-2 mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
-                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Academic Information</h3>
+                <div class="flex items-center gap-2 mb-2 sm:mb-3 md:mb-4">
+                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full']"></div>
+                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Academic Information</h3>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                   <div v-for="(val, label) in { 
                     'Program': currentUser.program || 'N/A', 
                     'Year': currentUser.yearLevel || currentUser.year_level || 'N/A', 
                     'Semester': appSettings.semester || 'N/A', 
                     'School Year': appSettings.schoolYear || 'N/A' 
                   }" :key="label" 
-                       :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-4 bg-gray-50 rounded-2xl border border-gray-100 transition-colors']">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">{{ label }}</p>
-                    <p class="text-gray-900 font-bold">{{ val }}</p>
+                       :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-2.5 sm:p-3 md:p-4 bg-gray-50 rounded-xl md:rounded-2xl border border-gray-100 transition-colors']">
+                    <p class="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 sm:mb-1">{{ label }}</p>
+                    <p class="text-sm sm:text-base text-gray-900 font-bold">{{ val }}</p>
                   </div>
                 </div>
               </section>
 
               <!-- Face ID Section (sidebar-styled: deep navy + glass) -->
               <section>
-                <div class="flex items-center gap-2 mb-4">
-                  <div :class="[faceAccentBar, 'w-1 h-6 rounded-full']"></div>
-                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Face ID</h3>
+                <div class="flex items-center gap-2 mb-2 sm:mb-3 md:mb-4">
+                  <div :class="[faceAccentBar, 'w-1 h-5 rounded-full']"></div>
+                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Face ID</h3>
                 </div>
-                <div class="face-id-card relative overflow-hidden rounded-2xl p-6 border border-white/10 shadow-2xl bg-gradient-to-b from-[#080e2e] to-[#0f1f6e] text-white">
+                <div class="face-id-card relative overflow-hidden rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-white/10 shadow-2xl bg-gradient-to-b from-[#080e2e] to-[#0f1f6e] text-white">
                   <!-- Soft animated orbs (sidebar vibe) -->
                   <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-30 animate-pulse-slow" :class="faceOrbA"></div>
                   <div class="absolute -bottom-20 -left-20 w-60 h-60 rounded-full blur-3xl opacity-20 animate-pulse-slower" :class="faceOrbB"></div>
                   <!-- subtle grid sheen -->
                   <div class="absolute inset-0 opacity-[0.07] pointer-events-none" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 22px 22px;"></div>
 
-                  <div class="relative z-10 flex flex-col md:flex-row md:items-center gap-5">
+                  <div class="relative z-10 flex flex-row items-center gap-3 sm:gap-5">
                     <!-- Avatar / status circle -->
                     <div class="flex-shrink-0">
                       <div class="relative">
                         <!-- pulsing ring when not enrolled -->
-                        <span v-if="!faceLoading && !faceEnrolled" class="absolute inset-0 rounded-3xl animate-ping-slow opacity-40" :class="faceAccentRing"></span>
-                        <div :class="['relative w-24 h-24 rounded-3xl overflow-hidden flex items-center justify-center shadow-xl ring-2 ring-white/20 backdrop-blur-sm', faceEnrolled ? 'bg-emerald-500/20' : 'bg-white/10']">
+                        <span v-if="!faceLoading && !faceEnrolled" class="absolute inset-0 rounded-2xl animate-ping-slow opacity-40" :class="faceAccentRing"></span>
+                        <div :class="['relative w-14 h-14 sm:w-18 sm:h-18 md:w-24 md:h-24 rounded-2xl md:rounded-3xl overflow-hidden flex items-center justify-center shadow-xl ring-2 ring-white/20 backdrop-blur-sm', faceEnrolled ? 'bg-emerald-500/20' : 'bg-white/10']">
                           <img v-if="faceEnrolled && faceData?.faces?.[0]?.photo" :src="faceData.faces[0].photo" class="w-full h-full object-cover" alt="Face ID preview" />
-                          <svg v-else class="w-12 h-12 text-white/85" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg v-else class="w-7 h-7 sm:w-9 sm:h-9 md:w-12 md:h-12 text-white/85" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0M4 7v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7a3 3 0 00-3 3z" />
                           </svg>
                         </div>
                         <!-- enrolled checkmark badge -->
-                        <span v-if="faceEnrolled" class="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-emerald-400 ring-4 ring-[#0a1340] flex items-center justify-center shadow-lg">
-                          <svg class="w-4 h-4 text-[#0a1340]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                        <span v-if="faceEnrolled" class="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full bg-emerald-400 ring-2 ring-[#0a1340] flex items-center justify-center shadow-lg">
+                          <svg class="w-3 h-3 md:w-4 md:h-4 text-[#0a1340]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                         </span>
                       </div>
                     </div>
 
                     <!-- Status text -->
                     <div class="flex-1 min-w-0">
-                      <div class="flex items-center gap-2 flex-wrap mb-1.5">
-                        <h4 class="text-lg font-bold text-white">Face Recognition</h4>
+                      <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                        <h4 class="text-sm sm:text-base md:text-lg font-bold text-white">Face Recognition</h4>
                         <span v-if="faceLoading" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-white/80 border border-white/15">Loading…</span>
                         <span v-else-if="faceEnrolled" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-400/20 text-emerald-200 border border-emerald-300/40">
                           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
@@ -4440,78 +4440,75 @@
                         </span>
                         <span v-else class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-white/10 text-white border border-white/20">Not set up</span>
                       </div>
-                      <p v-if="faceLoading" class="text-sm text-white/70">Checking your Face ID status…</p>
+                      <p v-if="faceLoading" class="text-xs text-white/70">Checking Face ID status…</p>
                       <template v-else-if="faceEnrolled">
-                        <p class="text-sm text-white/90 font-medium">Use your face to mark your own attendance during events.</p>
-                        <p class="text-xs text-white/60 mt-1">
-                          Last updated <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.face_updated_at) }}</span>.
-                          <template v-if="faceData.in_cooldown">
-                            You can change it again on <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.next_update_allowed_at) }}</span>.
-                          </template>
-                          <template v-else>You can update it any time.</template>
+                        <p class="text-xs sm:text-sm text-white/90 font-medium">Use your face to mark your own attendance during events.</p>
+                        <p class="text-[10px] sm:text-xs text-white/60 mt-0.5 sm:mt-1">
+                          Updated <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.face_updated_at) }}</span>.
+                          <template v-if="faceData.in_cooldown"> Next on <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.next_update_allowed_at) }}</span>.</template>
+                          <template v-else> Can update anytime.</template>
                         </p>
                       </template>
                       <template v-else>
-                        <p class="text-sm text-white/90 font-medium">Enroll your face once to enable self check-in on attendance events.</p>
-                        <p class="text-xs text-white/60 mt-1">It only takes a few seconds — your phone or laptop camera is all you need.</p>
+                        <p class="text-xs sm:text-sm text-white/90 font-medium">Enroll your face to enable self check-in on events.</p>
+                        <p class="text-[10px] sm:text-xs text-white/60 mt-0.5 sm:mt-1">Only takes a few seconds with your camera.</p>
                       </template>
                     </div>
 
                     <!-- Action button (sidebar-style glass) -->
-                    <div class="flex-shrink-0 w-full md:w-auto">
+                    <div class="flex-shrink-0">
                       <button
                         @click="openFaceEnroll"
                         :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
-                        :class="['face-cta group relative w-full md:w-auto px-5 py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 overflow-hidden transition-all duration-300 ease-out border', (faceEnrolled && faceData?.in_cooldown) ? 'bg-white/5 text-white/40 border-white/10 cursor-not-allowed' : 'text-white border-white/25 bg-white/10 hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-black/20 hover:shadow-xl']"
+                        :class="['face-cta group relative px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 sm:gap-2 overflow-hidden transition-all duration-300 ease-out border whitespace-nowrap', (faceEnrolled && faceData?.in_cooldown) ? 'bg-white/5 text-white/40 border-white/10 cursor-not-allowed' : 'text-white border-white/25 bg-white/10 hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-black/20 hover:shadow-xl']"
                         :title="faceEnrolled && faceData?.in_cooldown ? `Locked until ${formatFaceDate(faceData.next_update_allowed_at)}` : ''"
                       >
-                        <!-- shine sweep -->
                         <span v-if="!(faceEnrolled && faceData?.in_cooldown)" class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></span>
-                        <svg class="relative w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="relative w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
-                        <span class="relative">{{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}</span>
+                        <span class="relative">{{ faceEnrolled ? 'Update' : 'Set Up' }}</span>
                       </button>
                     </div>
                   </div>
 
-                  <!-- tip strip (sidebar-style glass items) -->
-                  <div class="relative z-10 mt-5 pt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs text-white/80">
-                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
-                      <span class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
-                        <svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                  <!-- tip strip -->
+                  <div class="relative z-10 mt-3 sm:mt-5 pt-3 sm:pt-4 border-t border-white/10 grid grid-cols-3 gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-white/80">
+                    <div class="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
+                      <span class="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
+                        <svg class="w-2.5 h-2.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                       </span>
-                      <span>Works on phone &amp; laptop</span>
+                      <span class="leading-tight">Phone &amp; laptop</span>
                     </div>
-                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
-                      <span class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
-                        <svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                    <div class="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
+                      <span class="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
+                        <svg class="w-2.5 h-2.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                       </span>
-                      <span>Your face is unique - it only works on yours</span>
+                      <span class="leading-tight">Unique to you</span>
                     </div>
-                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
-                      <span class="w-5 h-5 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
-                        <svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                    <div class="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
+                      <span class="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
+                        <svg class="w-2.5 h-2.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                       </span>
-                      <span>Updatable every {{ (faceData && faceData.cooldown_days) || 7 }} days</span>
+                      <span class="leading-tight">Every {{ (faceData && faceData.cooldown_days) || 7 }}d update</span>
                     </div>
                   </div>
                 </div>
               </section>
 
               <section>
-                <div class="flex items-center gap-2 mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
-                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Account Security</h3>
+                <div class="flex items-center gap-2 mb-2 sm:mb-3 md:mb-4">
+                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full']"></div>
+                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Account Security</h3>
                 </div>
-                <div class="p-6 bg-gray-50 rounded-2xl border border-gray-100 flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-4">
-                  <div class="flex-1">
-                    <h4 class="font-bold text-gray-900 mb-1">Password</h4>
-                    <p class="text-xs text-gray-500">Keep your account secure by updating your password regularly.</p>
+                <div class="p-3 sm:p-4 md:p-6 bg-gray-50 rounded-xl md:rounded-2xl border border-gray-100 flex items-center justify-between gap-3">
+                  <div class="flex-1 min-w-0">
+                    <h4 class="font-bold text-sm text-gray-900 mb-0.5">Password</h4>
+                    <p class="text-xs text-gray-500">Keep your account secure with a strong password.</p>
                   </div>
-                  <button @click="showPasswordChangeModal = true" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 shadow-lg shadow-orange-200 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-yellow-500 shadow-lg shadow-green-200 hover:from-green-700 hover:to-yellow-600' : isCNAHS ? 'bg-gradient-to-r from-green-700 to-green-600 shadow-lg shadow-green-300 hover:from-green-800 hover:to-green-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light shadow-lg shadow-blue-200 hover:from-ssaam-dark hover:to-ssaam-light', 'px-6 py-2.5 text-white rounded-xl font-bold text-sm hover:scale-105 transition-transform flex items-center justify-center md:justify-start gap-2 whitespace-nowrap']">
-                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                  <button @click="showPasswordChangeModal = true" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 shadow-lg shadow-orange-200 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-yellow-500 shadow-lg shadow-green-200 hover:from-green-700 hover:to-yellow-600' : isCNAHS ? 'bg-gradient-to-r from-green-700 to-green-600 shadow-lg shadow-green-300 hover:from-green-800 hover:to-green-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light shadow-lg shadow-blue-200 hover:from-ssaam-dark hover:to-ssaam-light', 'flex-shrink-0 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 text-white rounded-xl font-bold text-xs sm:text-sm hover:scale-105 transition-transform flex items-center gap-1.5 whitespace-nowrap']">
+                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
                     Change Password
                   </button>
                 </div>
