@@ -1011,6 +1011,62 @@ input, textarea, select {
   opacity: 0;
 }
 
+/* Help Modal — backdrop fade + card slides up (mobile) / scales (desktop) */
+.help-modal-enter-active,
+.help-modal-leave-active {
+  transition: opacity 0.28s ease;
+}
+.help-modal-enter-from,
+.help-modal-leave-to {
+  opacity: 0;
+}
+.help-modal-enter-active .help-modal-card {
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease;
+}
+.help-modal-leave-active .help-modal-card {
+  transition: transform 0.28s ease, opacity 0.22s ease;
+}
+.help-modal-enter-from .help-modal-card,
+.help-modal-leave-to .help-modal-card {
+  transform: translateY(64px);
+  opacity: 0;
+}
+@media (min-width: 640px) {
+  .help-modal-enter-from .help-modal-card,
+  .help-modal-leave-to .help-modal-card {
+    transform: scale(0.95) translateY(12px);
+    opacity: 0;
+  }
+}
+
+/* Dev Modal — same sheet animation */
+.dev-modal-enter-active,
+.dev-modal-leave-active {
+  transition: opacity 0.28s ease;
+}
+.dev-modal-enter-from,
+.dev-modal-leave-to {
+  opacity: 0;
+}
+.dev-modal-enter-active .dev-modal-card {
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease;
+}
+.dev-modal-leave-active .dev-modal-card {
+  transition: transform 0.28s ease, opacity 0.22s ease;
+}
+.dev-modal-enter-from .dev-modal-card,
+.dev-modal-leave-to .dev-modal-card {
+  transform: translateY(64px);
+  opacity: 0;
+}
+@media (min-width: 640px) {
+  .dev-modal-enter-from .dev-modal-card,
+  .dev-modal-leave-to .dev-modal-card {
+    transform: scale(0.95) translateY(12px);
+    opacity: 0;
+  }
+}
+
 /* Scale In Animation for Modals */
 @keyframes scale-in {
   0% {

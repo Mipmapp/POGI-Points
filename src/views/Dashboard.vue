@@ -10,38 +10,54 @@
     :event-title="selectedEventTitleForContributions"
     @close="showContributionsModal = false" />
 
-  <transition name="fade">
-    <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" @click.self="showDevelopersPopup = false">
-      <div class="bg-white rounded-3xl shadow-2xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col transform transition-all duration-300">
-        <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl p-6 flex items-center justify-between flex-shrink-0">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+  <transition name="dev-modal">
+    <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" @click.self="showDevelopersPopup = false">
+      <div class="dev-modal-card bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[88vh] sm:max-h-[85vh] overflow-hidden flex flex-col">
+
+        <!-- Header -->
+        <div class="bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light px-4 sm:px-6 py-4 sm:py-5 flex-shrink-0 relative overflow-hidden">
+          <div class="light-sweep"></div>
+          <div class="relative z-10 flex items-center justify-between">
+            <div class="flex items-center gap-2.5 sm:gap-3">
+              <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
+                <svg class="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+              </div>
+              <div>
+                <h3 class="text-base sm:text-lg font-bold text-white leading-tight">Meet Our Developers</h3>
+                <p class="text-blue-100/80 text-[10px] sm:text-xs">CCS &middot; Creatives Committee</p>
+              </div>
             </div>
-            <div>
-              <h3 class="text-xl font-bold text-white">Meet Our Developers</h3>
-              <p class="text-blue-100 text-xs">CCS - Creatives Committee</p>
-            </div>
+            <button @click="showDevelopersPopup = false" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition flex-shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
           </div>
-          <button @click="showDevelopersPopup = false" class="text-white/70 hover:text-white text-2xl leading-none transition">&times;</button>
         </div>
-        <div class="p-6 overflow-y-auto dev-modal-scroll">
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5 mb-6">
-            <div v-for="(dev, index) in developers" :key="dev.name" class="flex flex-col items-center cursor-pointer hover:transform hover:scale-105 transition-all duration-300 bg-green-50 rounded-2xl p-3" :style="{ transitionDelay: `${index * 50}ms` }">
-              <div class="w-16 h-16 rounded-full flex items-center justify-center text-white text-2xl shadow-lg mb-2 overflow-hidden flex-shrink-0 ring-2 ring-blue-200 bg-gradient-to-br from-ssaam-dark to-ssaam-light">
+
+        <!-- Scrollable content -->
+        <div class="px-3 sm:px-5 py-3 sm:py-5 overflow-y-auto dev-modal-scroll flex-1">
+          <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4">
+            <div
+              v-for="(dev, index) in developers"
+              :key="dev.name"
+              class="flex flex-col items-center bg-blue-50/60 hover:bg-blue-50 rounded-2xl p-2.5 sm:p-3 transition-all duration-200 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              :style="{ transitionDelay: `${index * 40}ms` }"
+            >
+              <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-blue-200 shadow-md bg-gradient-to-br from-ssaam-dark to-ssaam-light mb-2 flex items-center justify-center text-white">
                 <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover rounded-full" />
                 <span v-else class="text-sm font-bold">{{ dev.initials }}</span>
               </div>
-              <p class="text-xs font-semibold text-center line-clamp-2 min-h-[2rem] flex items-center text-blue-700 hover:text-blue-900">
-                <a :href="dev.facebook" target="_blank" rel="noopener noreferrer" class="underline">{{ dev.name }}</a>
+              <p class="text-[10px] sm:text-xs font-bold text-center leading-tight text-blue-700 hover:text-blue-900 mb-0.5 line-clamp-2">
+                <a :href="dev.facebook" target="_blank" rel="noopener noreferrer" class="underline underline-offset-1">{{ dev.name }}</a>
               </p>
-              <p class="text-xs text-gray-600 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-              <p class="text-xs text-gray-500 text-center line-clamp-1">{{ dev.role }}</p>
+              <p class="text-[9px] sm:text-[10px] text-gray-500 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
+              <p class="text-[9px] sm:text-[10px] text-blue-400 text-center font-semibold line-clamp-1 mt-0.5">{{ dev.role }}</p>
             </div>
           </div>
-          <div class="text-center">
-            <button @click="showDevelopersPopup = false" class="bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-8 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition shadow-md">Close</button>
-          </div>
+        </div>
+
+        <!-- Sticky Footer -->
+        <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 flex-shrink-0 bg-white">
+          <button @click="showDevelopersPopup = false" class="w-full bg-gradient-to-r from-ssaam-dark via-blue-700 to-ssaam-light text-white py-2.5 sm:py-3 rounded-2xl font-bold text-sm hover:opacity-90 active:scale-[0.98] transition shadow-md shadow-blue-200">Done</button>
         </div>
       </div>
     </div>
@@ -7140,9 +7156,9 @@
   </transition>
 
   <!-- Contact/Help Modal -->
-  <transition name="fade">
+  <transition name="help-modal">
     <div v-if="showContactModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" @click.self="showContactModal = false">
-      <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[92vh] sm:max-h-[88vh] overflow-hidden flex flex-col">
+      <div class="help-modal-card bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[92vh] sm:max-h-[88vh] overflow-hidden flex flex-col">
 
         <!-- Header -->
         <div class="bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light px-4 sm:px-6 pt-4 sm:pt-5 pb-0 flex-shrink-0 relative overflow-hidden">
