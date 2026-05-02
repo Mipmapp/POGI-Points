@@ -398,7 +398,7 @@
                matching date filter (week/month chips clear the date filter
                and rely on the running balance instead). Stays scrollable on
                mobile via flex + overflow-x-auto so nothing wraps weirdly. -->
-          <div class="mt-3 -mx-1 px-1 flex items-stretch gap-2 overflow-x-auto pb-1 no-scrollbar">
+          <div class="mt-3 -mx-1 px-1 flex items-stretch gap-2 overflow-x-auto pb-1 scrollbar-gray">
             <button
               type="button"
               @click="setDatePreset('today')"
@@ -2320,4 +2320,9 @@ export default {
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-gray::-webkit-scrollbar { height: 4px; }
+.scrollbar-gray::-webkit-scrollbar-track { background: transparent; border-radius: 2px; }
+.scrollbar-gray::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
+.scrollbar-gray::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+.scrollbar-gray { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
 </style>
