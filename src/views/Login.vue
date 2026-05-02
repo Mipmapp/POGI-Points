@@ -382,7 +382,7 @@
     </div>
   </div>
 
-  <div class="mobile-bg-panel md:hidden min-h-screen flex flex-col w-full">
+  <div class="mobile-bg-panel md:hidden h-screen flex flex-col w-full">
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
       <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
         <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
@@ -1322,7 +1322,8 @@ function manualRetryFace() {
   background-size: cover;
   background-position: center;
   position: relative;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 .fade-enter-active,
 .fade-leave-active {
