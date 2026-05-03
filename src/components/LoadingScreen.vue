@@ -63,11 +63,11 @@ const loadingScreenStyle = computed(() => {
       backgroundAttachment: 'fixed'
     }
   }
-  // default/CCS — deep dark navy matching new sidebar
+  // default/CCS — vivid blue matching app icon
   return {
-    background: 'linear-gradient(135deg, rgba(8, 14, 46, 0.85) 0%, rgba(15, 31, 110, 0.85) 100%), url(/assets/classroom-bg.jpg)',
+    background: 'linear-gradient(160deg, rgba(30, 136, 229, 0.62) 0%, rgba(18, 70, 160, 0.80) 100%), url(/jrmsu-landscape.jpg)',
     backgroundSize: 'cover',
-    backgroundPosition: 'center',
+    backgroundPosition: 'center 35%',
     backgroundAttachment: 'fixed'
   }
 })
