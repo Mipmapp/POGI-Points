@@ -1562,24 +1562,52 @@
             </div>
 
             <!-- Per-Event Transaction Details -->
-            <div v-for="evData in reportData.events" :key="'detail-' + evData.event._id" class="mb-8 print:break-inside-avoid-page">
-              <div class="flex items-start sm:items-center gap-2 mb-3 flex-wrap">
-                <div class="w-1 h-5 rounded-full bg-blue-500 flex-shrink-0 mt-0.5 sm:mt-0 print:hidden"></div>
+            <div v-for="evData in reportData.events" :key="'detail-' + evData.event._id" class="mb-4 print:mb-8 print:break-inside-avoid-page">
+              <!-- Clickable event header -->
+              <button
+                @click="expandedReportEvents.includes(evData.event._id) ? expandedReportEvents.splice(expandedReportEvents.indexOf(evData.event._id), 1) : expandedReportEvents.push(evData.event._id)"
+                class="print:hidden w-full flex items-center gap-3 px-4 py-3 rounded-2xl border transition-all duration-150 text-left group"
+                :class="expandedReportEvents.includes(evData.event._id) ? 'bg-blue-50 border-blue-300 shadow-sm' : 'bg-gray-50 border-gray-200 hover:border-blue-200 hover:bg-blue-50/50'"
+              >
+                <div class="w-1 h-8 rounded-full flex-shrink-0 transition-colors" :class="expandedReportEvents.includes(evData.event._id) ? 'bg-blue-500' : 'bg-gray-300 group-hover:bg-blue-300'"></div>
                 <div class="flex-1 min-w-0">
                   <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <h2 class="text-sm font-bold text-gray-800">{{ evData.event.title }}</h2>
                     <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold capitalize', evData.event.type === 'fee' ? 'bg-blue-100 text-blue-700' : evData.event.type === 'membership' ? 'bg-green-100 text-green-700' : evData.event.type === 'donation' ? 'bg-orange-100 text-orange-700' : 'bg-gray-200 text-gray-600']">{{ evData.event.type || 'event' }}</span>
+                    <span class="text-xs font-semibold text-blue-700">₱{{ Number(evData.event.amount_due || 0).toFixed(2) }}</span>
+                  </div>
+                  <div class="flex flex-wrap items-center gap-1.5 mt-1">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">{{ evData.stats.paid }} paid</span>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">{{ evData.stats.unpaid }} unpaid</span>
+                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">₱{{ evData.stats.totalCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                  </div>
+                </div>
+                <div class="flex-shrink-0 flex items-center gap-2">
+                  <span class="text-xs font-semibold px-2.5 py-1 rounded-full transition-colors" :class="expandedReportEvents.includes(evData.event._id) ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-700'">
+                    {{ expandedReportEvents.includes(evData.event._id) ? 'Hide' : 'View' }}
+                  </span>
+                  <svg :class="['w-4 h-4 text-gray-400 transition-transform duration-200 flex-shrink-0', expandedReportEvents.includes(evData.event._id) ? 'rotate-180 text-blue-500' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                </div>
+              </button>
+
+              <!-- Print-only static header (no button) -->
+              <div class="hidden print:flex items-start gap-2 mb-3 flex-wrap">
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <h2 class="text-sm font-bold text-gray-800">{{ evData.event.title }}</h2>
                     <span class="text-xs font-semibold text-blue-700">₱{{ Number(evData.event.amount_due || 0).toFixed(2) }} each</span>
                   </div>
                   <div v-if="evData.event.deadline" class="text-[10px] text-gray-400 mt-0.5">Deadline: {{ new Date(evData.event.deadline).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }) }}</div>
                 </div>
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">{{ evData.stats.paid }} paid</span>
-                  <span class="inline-flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">{{ evData.stats.unpaid }} unpaid</span>
-                  <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full whitespace-nowrap">₱{{ evData.stats.totalCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                  <span class="text-[10px] font-bold text-teal-700">{{ evData.stats.paid }} paid</span>
+                  <span class="text-[10px] font-bold text-red-600">{{ evData.stats.unpaid }} unpaid</span>
                 </div>
               </div>
 
+              <!-- Collapsible transaction table (screen) / always visible (print) -->
+              <transition name="ssaam-stats">
+                <div v-show="expandedReportEvents.includes(evData.event._id)" class="print:block mt-2">
               <div v-if="evData.contributions.length === 0" class="border border-dashed border-gray-200 rounded-2xl px-4 py-8 text-center text-sm text-gray-400">
                 No transactions recorded for this event.
               </div>
@@ -1642,6 +1670,8 @@
                   </table>
                 </div>
               </div>
+                </div>
+              </transition>
             </div>
 
             <!-- Report Footer -->
@@ -1743,6 +1773,7 @@ export default {
       reportData: null,
       showReportConfig: false,
       selectedReportEventIds: [],
+      expandedReportEvents: [],
     };
   },
   computed: {
@@ -2676,6 +2707,7 @@ export default {
       if (this.isGeneratingReport) return;
       this.isGeneratingReport = true;
       this.reportData = null;
+      this.expandedReportEvents = [];
       this.showReportModal = true;
       try {
         const token = localStorage.getItem('authToken');
