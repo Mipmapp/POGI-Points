@@ -2620,7 +2620,7 @@ export default {
       }
     },
     openReportConfig() {
-      this.selectedReportEventIds = this.paymentEvents.map(e => e._id);
+      this.selectedReportEventIds = [];
       this.showReportConfig = true;
     },
     formatPaidBy(c) {
