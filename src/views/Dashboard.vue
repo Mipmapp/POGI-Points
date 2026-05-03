@@ -7445,7 +7445,7 @@
           <!-- Version info -->
           <div class="flex items-center justify-between bg-gray-50 rounded-xl px-3 py-2.5 text-xs text-gray-500">
             <span>SSAAM &middot; JRMSU · CCS</span>
-            <span class="font-semibold text-gray-700">v1.0.0</span>
+            <span class="font-semibold text-gray-700">v3.0</span>
           </div>
         </div>
 
