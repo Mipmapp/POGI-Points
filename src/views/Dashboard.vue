@@ -12646,12 +12646,7 @@ const isSuperAdmin = computed(() => !!(currentUser.value.isMaster && currentUser
 // dashboard is blocked with a full-screen overlay until they enroll.
 const faceSetupNeeded = ref(false)
 const faceSetupChecking = ref(false)
-const isRestrictedMasterRole = computed(() => {
-  const u = currentUser.value
-  if (!u || !u.isMaster) return false
-  const role = u.actualRole || ''
-  return role === 'co-admin' || role === 'treasurer'
-})
+const isRestrictedMasterRole = computed(() => isCoAdmin.value || isTreasurer.value)
 const requiresFaceSetup = computed(() => isRestrictedMasterRole.value && faceSetupNeeded.value)
 const faceSetupTerms = [
   { title: 'Access to sensitive financial data', body: 'Your role gives you access to student contribution records, payment transactions, and financial reports that must be protected.' },
