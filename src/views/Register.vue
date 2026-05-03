@@ -1545,8 +1545,6 @@ const goToLogin = () => {
 .mobile-hero-bg {
   background: linear-gradient(to bottom, rgba(8, 20, 70, 0.48) 0%, rgba(8, 20, 70, 0.72) 100%),
               url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;
-  border-radius: 0 0 2rem 2rem;
-  overflow: hidden;
 }
 
 .fade-enter-active,
