@@ -1344,8 +1344,7 @@ async function proceedToFaceVerification() {
   showFaceModal.value = true;
 
   if (!pendingUser || !pendingUser.token) {
-    if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; await startFaceCamera(); }
-    else { noFacesEnrolled.value = true; }
+    noFacesEnrolled.value = true;
     return;
   }
 
@@ -1354,22 +1353,19 @@ async function proceedToFaceVerification() {
       headers: { 'Authorization': `Bearer ${pendingUser.token}` },
     });
     if (!res.ok) {
-      if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; await startFaceCamera(); }
-      else { noFacesEnrolled.value = true; }
+      noFacesEnrolled.value = true;
       return;
     }
     const data = await res.json();
     faceEnrolled = (data.faces || []).filter(f => Array.isArray(f.descriptor) && f.descriptor.length === 128);
     if (faceEnrolled.length === 0) {
-      if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; await startFaceCamera(); }
-      else { noFacesEnrolled.value = true; }
+      noFacesEnrolled.value = true;
       return;
     }
     setFaceStatus('Position your face', 'scanning');
     await startFaceCamera();
   } catch (e) {
-    if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; }
-    else { noFacesEnrolled.value = true; }
+    noFacesEnrolled.value = true;
   }
 }
 

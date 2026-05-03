@@ -1016,6 +1016,76 @@
           </div>
         </div>
 
+        <!-- ── Face ID Setup Required Banner ──────────────────────────────────── -->
+        <!-- Shown to co-admin / treasurer who have NOT enrolled a face yet.      -->
+        <!-- Non-dismissable — disappears only once they set up Face ID.          -->
+        <transition name="fade">
+          <div v-if="isRestrictedMasterRole && faceIdEnrolledCount === 0" class="mb-5">
+            <!-- Main urgent banner -->
+            <div class="relative overflow-hidden rounded-2xl border border-red-300/60 bg-gradient-to-br from-red-50 via-orange-50 to-amber-50 shadow-lg shadow-red-100/60 px-4 py-4 sm:px-5 sm:py-4">
+              <!-- Pulsing left accent stripe -->
+              <div class="absolute left-0 inset-y-0 w-1.5 rounded-l-2xl bg-gradient-to-b from-red-500 to-orange-500 animate-pulse"></div>
+
+              <div class="pl-3 flex flex-col sm:flex-row sm:items-start gap-4">
+                <!-- Icon block -->
+                <div class="flex-shrink-0 flex items-start gap-3">
+                  <div class="relative">
+                    <div class="absolute inset-0 rounded-xl bg-red-400/30 blur-md animate-pulse"></div>
+                    <div class="relative w-11 h-11 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center shadow-md">
+                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <!-- Role badge (mobile inline) -->
+                  <div class="sm:hidden flex items-center">
+                    <span class="px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider bg-red-100 border border-red-300 text-red-700">
+                      {{ restrictedRoleLabel }} · Action Required
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Text block -->
+                <div class="flex-1 min-w-0">
+                  <!-- Role badge (desktop) -->
+                  <div class="hidden sm:inline-flex items-center mb-1.5">
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase tracking-wider bg-red-100 border border-red-300 text-red-700">
+                      {{ restrictedRoleLabel }} · Action Required
+                    </span>
+                  </div>
+                  <h4 class="text-sm font-bold text-red-900 leading-snug">Face ID Not Set Up</h4>
+                  <p class="mt-0.5 text-xs text-red-700/90 leading-relaxed max-w-lg">
+                    As a <strong>{{ restrictedRoleLabel }}</strong>, you are required to enroll your Face ID for account security. You currently have <strong>no biometric on file</strong>. Set it up now from Settings to secure your access.
+                  </p>
+
+                  <!-- Steps hint -->
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    <div v-for="(step, i) in ['Go to Settings', 'Open Face ID section', 'Capture your face']" :key="i"
+                      class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/80 border border-red-200 text-xs text-red-800 font-medium shadow-sm">
+                      <span class="w-4 h-4 rounded-full bg-gradient-to-br from-red-500 to-orange-400 text-white text-[10px] font-black flex items-center justify-center flex-shrink-0">{{ i + 1 }}</span>
+                      {{ step }}
+                    </div>
+                  </div>
+                </div>
+
+                <!-- CTA button -->
+                <div class="flex-shrink-0 self-start sm:self-center">
+                  <button
+                    @click="currentPage = 'settings'"
+                    class="relative inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 shadow-md hover:shadow-lg hover:shadow-red-200/60 transition-all duration-200 hover:scale-[1.03] active:scale-95 whitespace-nowrap"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
+                    </svg>
+                    Set Up Face ID
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+
 
         <div v-if="currentPage === 'settings' && (isAdminLike)" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
           <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
@@ -12564,6 +12634,44 @@ const userCollegeCode = computed(() => {
 const userCollegeIcon = computed(() => userCollegeCode.value ? `/icons/${userCollegeCode.value.toLowerCase()}.svg` : '')
 const isCoAdmin = computed(() => currentUser.value.role === 'co-admin')
 const isAdminLike = computed(() => currentUser.value.role === 'admin' || currentUser.value.isMaster || isCoAdmin.value || isTreasurer.value)
+
+// Face ID setup reminder — for co-admin / treasurer without an enrolled face
+// Uses the `actualRole` field added to the normalizedUser during login.
+const isRestrictedMasterRole = computed(() => {
+  const r = currentUser.value.actualRole || ''
+  return r === 'co-admin' || r === 'treasurer'
+})
+const restrictedRoleLabel = computed(() => {
+  const r = currentUser.value.actualRole || ''
+  if (r === 'treasurer') return 'Treasurer'
+  if (r === 'co-admin') return 'Co-Admin'
+  return 'Admin'
+})
+const faceIdEnrolledCount = ref(-1) // -1 = loading/not checked, 0 = none, N = count
+
+async function checkFaceIdEnrollment() {
+  if (!isRestrictedMasterRole.value) return
+  const token = localStorage.getItem('authToken')
+  if (!token) { faceIdEnrolledCount.value = 0; return }
+  try {
+    const res = await fetch(buildAPIUrl('/apis/masters/face'), {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if (!res.ok) { faceIdEnrolledCount.value = 0; return }
+    const d = await res.json()
+    faceIdEnrolledCount.value = (d.faces || []).filter(f => Array.isArray(f.descriptor) && f.descriptor.length === 128).length
+  } catch {
+    faceIdEnrolledCount.value = 0
+  }
+}
+
+// Refresh the face count whenever the user leaves the Settings page
+// so the banner hides immediately after they enroll their face.
+watch(currentPage, (newPage, oldPage) => {
+  if (oldPage === 'settings' && isRestrictedMasterRole.value) {
+    checkFaceIdEnrollment()
+  }
+})
 const canSwitchView = computed(() => isCoAdmin.value || isTreasurer.value)
 const roleViewMode = ref('role')
 const inRoleView = computed(() => !canSwitchView.value || roleViewMode.value === 'role')
@@ -12873,6 +12981,8 @@ onMounted(async () => {
       
       currentUser.value.isMaster = true
       currentUser.value.isPrimaryAdmin = verifyData.isPrimaryAdmin
+      // Trigger face ID enrollment check for co-admin / treasurer
+      checkFaceIdEnrollment()
     } catch (error) {
       console.error('Failed to verify admin status:', error)
       currentUser.value.isMaster = false
