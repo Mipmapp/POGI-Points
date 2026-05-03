@@ -80,6 +80,7 @@ export function encodeTimestamp() {
   return btoa(encoded);
 }
 
+// [AI WARNING] Possibly unused export — decodeTimestamp is not called in any .vue file. Used in the backend (SSAAM_VERCEL_BACKEND.js) which has its own copy. Consider removing frontend export.
 export function decodeTimestamp(encodedString) {
   try {
     const decoded = atob(encodedString);
@@ -94,6 +95,7 @@ export function decodeTimestamp(encodedString) {
   }
 }
 
+// [AI WARNING] Possibly unused export — isValidTimestamp is not called in any .vue file. Timestamp validation is handled server-side. Consider removing frontend export.
 export function isValidTimestamp(encodedString, maxAgeMinutes = 1) {
   const timestamp = decodeTimestamp(encodedString);
   if (!timestamp) return false;

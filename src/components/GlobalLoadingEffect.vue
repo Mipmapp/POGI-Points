@@ -1,3 +1,4 @@
+<!-- [AI WARNING] Unused component — GlobalLoadingEffect is never imported in any .vue or .js file. ProgrammerLoadingEffect is used instead everywhere. Safe to delete. -->
 <template>
   <transition name="fade">
     <div v-if="visible" class="fixed inset-0 z-[100] flex items-center justify-center bg-purple-950/80 backdrop-blur-md">

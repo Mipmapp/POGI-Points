@@ -46,7 +46,7 @@ export const getCollege = () => {
   }
 }
 
-// Helper function to get college prefix for collection naming
+// [AI WARNING] Possibly unused export — no references found outside this file. Safe to delete if collection-prefix logic stays on the backend.
 export const getCollegePrefix = () => {
   const college = getCollege()
   switch (college) {

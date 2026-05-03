@@ -1,3 +1,4 @@
+// [AI WARNING] Developer debug script only — hardcodes a local Windows path that does not exist on any other machine or on the server. Not part of the app build. Safe to delete.
 const fs = require('fs');
 const p = 'c:/Users/Jullan/OneDrive/Documents/Code Projects/POGI-Points/src/views/Dashboard.vue';
 const s = fs.readFileSync(p, 'utf8');

@@ -1,3 +1,4 @@
+<!-- [AI WARNING] Orphaned view — Attendance.vue is NOT registered in router/index.js and is not imported by any other component. The attendance UI is rendered inline inside Dashboard.vue via currentPage === 'attendance'. This entire file appears to be an unused standalone alternative. Needs Review before deletion. -->
 <template>
   <div :class="['rounded-lg shadow-lg p-3 md:p-8 min-h-screen', isCOE ? 'bg-gradient-to-br from-orange-50 to-orange-100' : isSOM ? 'bg-gradient-to-br from-green-50 to-green-100' : isCNAHS ? 'bg-gradient-to-br from-emerald-50 to-emerald-100' : 'bg-gradient-to-br from-purple-50 to-purple-100']">
     <!-- Loading State -->
