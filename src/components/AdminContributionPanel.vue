@@ -54,6 +54,15 @@
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             {{ isDownloading ? 'Preparing...' : 'Export Excel' }}
           </button>
+          <button
+            @click="openGenerateReport"
+            :disabled="isGeneratingReport || paymentEvents.length === 0"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl hover:from-violet-700 hover:to-purple-800 transition-all font-semibold text-sm disabled:opacity-60 shadow-md shadow-purple-200 active:scale-95"
+          >
+            <svg v-if="isGeneratingReport" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            {{ isGeneratingReport ? 'Generating...' : 'Generate Report' }}
+          </button>
         </div>
       </div>
 
@@ -1313,6 +1322,240 @@
       </div>
     </transition>
     </Teleport>
+
+    <!-- ====== GENERATE REPORT MODAL ====== -->
+    <Teleport to="body">
+      <transition name="fade">
+        <div v-if="showReportModal" class="fixed inset-0 z-[60] bg-white overflow-y-auto">
+          <!-- Sticky top bar (screen-only) -->
+          <div class="print:hidden sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm px-4 sm:px-6 py-3 flex items-center gap-3">
+            <button
+              @click="showReportModal = false"
+              class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
+              title="Close"
+            >
+              <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-gray-900 text-sm leading-tight truncate">Payment Transactions Report</p>
+              <p v-if="reportData" class="text-[11px] text-gray-400 truncate">
+                Generated {{ new Date(reportData.generatedAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+              </p>
+            </div>
+            <button
+              v-if="reportData"
+              @click="printReport"
+              class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl text-sm font-semibold hover:opacity-90 transition shadow-md shadow-purple-200 active:scale-95"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              <span class="hidden sm:inline">Print / Save PDF</span>
+              <span class="sm:hidden">Print</span>
+            </button>
+          </div>
+
+          <!-- Loading State -->
+          <div v-if="!reportData" class="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-purple-100 flex items-center justify-center">
+              <svg class="w-7 h-7 animate-spin text-purple-600" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            </div>
+            <div class="text-center">
+              <p class="font-bold text-gray-800">Generating Report…</p>
+              <p class="text-sm text-gray-400 mt-1">Fetching all payment transactions</p>
+            </div>
+          </div>
+
+          <!-- Report Content -->
+          <div v-else class="max-w-5xl mx-auto px-4 sm:px-6 py-6 pb-16 print:px-6 print:py-4 print:max-w-none">
+
+            <!-- Print-only header -->
+            <div class="hidden print:block mb-6 text-center">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Jose Rizal Memorial State University</p>
+              <h1 class="text-2xl font-extrabold text-gray-900 mt-1">Payment Transactions Report</h1>
+              <p class="text-sm text-gray-500 mt-1">Generated: {{ new Date(reportData.generatedAt).toLocaleString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</p>
+              <div class="mt-4 border-t-2 border-gray-300"></div>
+            </div>
+
+            <!-- Screen-only section label -->
+            <div class="print:hidden mb-5">
+              <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Overall Summary</p>
+            </div>
+
+            <!-- Summary Cards -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+              <div class="bg-gradient-to-br from-blue-50 to-blue-100 border border-blue-200 rounded-2xl p-3 sm:p-4 text-center print:rounded-lg print:border print:border-blue-300">
+                <p class="text-[10px] sm:text-xs font-bold text-blue-600 uppercase tracking-wider">Events</p>
+                <p class="text-2xl sm:text-3xl font-extrabold text-blue-800 mt-1">{{ reportData.overall.totalEvents }}</p>
+                <p class="text-[10px] text-blue-500 mt-0.5">payment events</p>
+              </div>
+              <div class="bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-2xl p-3 sm:p-4 text-center print:rounded-lg">
+                <p class="text-[10px] sm:text-xs font-bold text-teal-600 uppercase tracking-wider">Paid</p>
+                <p class="text-2xl sm:text-3xl font-extrabold text-teal-800 mt-1">{{ reportData.overall.totalPaid }}</p>
+                <p class="text-[10px] text-teal-600 mt-0.5">of {{ reportData.overall.totalStudents }} students</p>
+              </div>
+              <div class="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-2xl p-3 sm:p-4 text-center print:rounded-lg">
+                <p class="text-[10px] sm:text-xs font-bold text-red-600 uppercase tracking-wider">Unpaid</p>
+                <p class="text-2xl sm:text-3xl font-extrabold text-red-800 mt-1">{{ reportData.overall.totalUnpaid }}</p>
+                <p class="text-[10px] text-red-500 mt-0.5">{{ reportData.overall.pct }}% overall rate</p>
+              </div>
+              <div class="bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-2xl p-3 sm:p-4 text-center print:rounded-lg">
+                <p class="text-[10px] sm:text-xs font-bold text-emerald-600 uppercase tracking-wider">Collected</p>
+                <p class="text-base sm:text-lg font-extrabold text-emerald-800 mt-1 leading-tight">₱{{ reportData.overall.totalCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</p>
+                <p class="text-[10px] text-emerald-600 mt-0.5">of ₱{{ reportData.overall.expectedTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</p>
+              </div>
+            </div>
+
+            <!-- Event Summary Table -->
+            <div class="mb-8">
+              <div class="flex items-center gap-2 mb-3">
+                <div class="w-1 h-5 rounded-full bg-purple-500 print:hidden"></div>
+                <h2 class="text-sm font-bold text-gray-500 uppercase tracking-widest">Event Summary</h2>
+              </div>
+              <div class="border border-gray-200 rounded-2xl overflow-hidden print:rounded-none print:border-gray-300">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th class="px-3 sm:px-4 py-3 text-left text-xs font-bold text-gray-500 whitespace-nowrap">Event</th>
+                        <th class="px-3 sm:px-4 py-3 text-left text-xs font-bold text-gray-500 whitespace-nowrap hidden sm:table-cell">Type</th>
+                        <th class="px-3 sm:px-4 py-3 text-right text-xs font-bold text-gray-500 whitespace-nowrap">Amt Due</th>
+                        <th class="px-3 sm:px-4 py-3 text-right text-xs font-bold text-gray-500 whitespace-nowrap">Paid</th>
+                        <th class="px-3 sm:px-4 py-3 text-right text-xs font-bold text-gray-500 whitespace-nowrap">Unpaid</th>
+                        <th class="px-3 sm:px-4 py-3 text-right text-xs font-bold text-gray-500 whitespace-nowrap hidden md:table-cell">Rate</th>
+                        <th class="px-3 sm:px-4 py-3 text-right text-xs font-bold text-gray-500 whitespace-nowrap">Collected</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr v-for="evData in reportData.events" :key="'sum-' + evData.event._id" class="hover:bg-gray-50 transition">
+                        <td class="px-3 sm:px-4 py-3">
+                          <p class="font-semibold text-gray-900 text-sm leading-tight">{{ evData.event.title }}</p>
+                          <p v-if="evData.event.deadline" class="text-[10px] text-gray-400 mt-0.5">Due: {{ new Date(evData.event.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</p>
+                        </td>
+                        <td class="px-3 sm:px-4 py-3 hidden sm:table-cell">
+                          <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold capitalize', evData.event.type === 'fee' ? 'bg-blue-100 text-blue-700' : evData.event.type === 'membership' ? 'bg-green-100 text-green-700' : evData.event.type === 'donation' ? 'bg-orange-100 text-orange-700' : 'bg-gray-200 text-gray-600']">{{ evData.event.type || 'event' }}</span>
+                        </td>
+                        <td class="px-3 sm:px-4 py-3 text-right text-xs font-semibold text-blue-700 whitespace-nowrap">₱{{ Number(evData.event.amount_due || 0).toFixed(2) }}</td>
+                        <td class="px-3 sm:px-4 py-3 text-right">
+                          <span class="inline-flex items-center gap-1 text-teal-700 font-bold text-xs whitespace-nowrap">
+                            <span class="w-1.5 h-1.5 rounded-full bg-teal-500 flex-shrink-0 print:hidden"></span>{{ evData.stats.paid }}
+                          </span>
+                        </td>
+                        <td class="px-3 sm:px-4 py-3 text-right">
+                          <span class="inline-flex items-center gap-1 text-red-600 font-bold text-xs whitespace-nowrap">
+                            <span class="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0 print:hidden"></span>{{ evData.stats.unpaid }}
+                          </span>
+                        </td>
+                        <td class="px-3 sm:px-4 py-3 text-right hidden md:table-cell">
+                          <div class="flex items-center justify-end gap-2">
+                            <div class="w-14 h-1.5 rounded-full bg-gray-200 overflow-hidden print:hidden">
+                              <div class="h-full rounded-full bg-teal-500 transition-all" :style="{ width: evData.stats.pct + '%' }"></div>
+                            </div>
+                            <span class="text-xs font-semibold text-gray-700 w-8 text-right">{{ evData.stats.pct }}%</span>
+                          </div>
+                        </td>
+                        <td class="px-3 sm:px-4 py-3 text-right font-bold text-emerald-700 whitespace-nowrap text-xs">₱{{ evData.stats.totalCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</td>
+                      </tr>
+                    </tbody>
+                    <tfoot class="bg-gray-50 border-t-2 border-gray-300">
+                      <tr>
+                        <td class="px-3 sm:px-4 py-3 font-extrabold text-gray-800 text-xs">GRAND TOTAL</td>
+                        <td class="px-3 sm:px-4 py-3 hidden sm:table-cell"></td>
+                        <td class="px-3 sm:px-4 py-3 text-right text-xs font-extrabold text-blue-800 whitespace-nowrap">₱{{ reportData.overall.expectedTotal.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</td>
+                        <td class="px-3 sm:px-4 py-3 text-right text-xs font-extrabold text-teal-800">{{ reportData.overall.totalPaid }}</td>
+                        <td class="px-3 sm:px-4 py-3 text-right text-xs font-extrabold text-red-700">{{ reportData.overall.totalUnpaid }}</td>
+                        <td class="px-3 sm:px-4 py-3 text-right text-xs font-extrabold text-gray-700 hidden md:table-cell">{{ reportData.overall.pct }}%</td>
+                        <td class="px-3 sm:px-4 py-3 text-right text-xs font-extrabold text-emerald-800 whitespace-nowrap">₱{{ reportData.overall.totalCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Per-Event Transaction Details -->
+            <div v-for="evData in reportData.events" :key="'detail-' + evData.event._id" class="mb-8 print:break-inside-avoid-page">
+              <div class="flex items-start sm:items-center gap-2 mb-3 flex-wrap">
+                <div class="w-1 h-5 rounded-full bg-blue-500 flex-shrink-0 mt-0.5 sm:mt-0 print:hidden"></div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <h2 class="text-sm font-bold text-gray-800">{{ evData.event.title }}</h2>
+                    <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold capitalize', evData.event.type === 'fee' ? 'bg-blue-100 text-blue-700' : evData.event.type === 'membership' ? 'bg-green-100 text-green-700' : evData.event.type === 'donation' ? 'bg-orange-100 text-orange-700' : 'bg-gray-200 text-gray-600']">{{ evData.event.type || 'event' }}</span>
+                    <span class="text-xs font-semibold text-blue-700">₱{{ Number(evData.event.amount_due || 0).toFixed(2) }} each</span>
+                  </div>
+                  <div v-if="evData.event.deadline" class="text-[10px] text-gray-400 mt-0.5">Deadline: {{ new Date(evData.event.deadline).toLocaleDateString('en-PH', { month: 'long', day: 'numeric', year: 'numeric' }) }}</div>
+                </div>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="inline-flex items-center gap-1 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">{{ evData.stats.paid }} paid</span>
+                  <span class="inline-flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 border border-red-200 px-2 py-0.5 rounded-full">{{ evData.stats.unpaid }} unpaid</span>
+                  <span class="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full whitespace-nowrap">₱{{ evData.stats.totalCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                </div>
+              </div>
+
+              <div v-if="evData.contributions.length === 0" class="border border-dashed border-gray-200 rounded-2xl px-4 py-8 text-center text-sm text-gray-400">
+                No transactions recorded for this event.
+              </div>
+              <div v-else class="border border-gray-200 rounded-2xl overflow-hidden print:rounded-none print:border-gray-300">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead class="bg-gray-50 border-b border-gray-200">
+                      <tr>
+                        <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-500 w-8">#</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-500 whitespace-nowrap">Student ID</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-500">Name</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-500 hidden sm:table-cell">Program</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-500 hidden md:table-cell whitespace-nowrap">Year Level</th>
+                        <th class="px-3 py-2.5 text-right text-xs font-bold text-gray-500 whitespace-nowrap">Amount</th>
+                        <th class="px-3 py-2.5 text-center text-xs font-bold text-gray-500">Status</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-500 hidden sm:table-cell whitespace-nowrap">Paid Date</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                      <tr
+                        v-for="(c, idx) in evData.contributions"
+                        :key="c._id || idx"
+                        :class="['transition-colors', c.payment_status === 'paid' ? 'hover:bg-teal-50/40' : 'hover:bg-red-50/30']"
+                      >
+                        <td class="px-3 py-2.5 text-xs text-gray-400 tabular-nums">{{ idx + 1 }}</td>
+                        <td class="px-3 py-2.5 text-xs font-mono text-gray-600 whitespace-nowrap">{{ c.student_id || c.id_number || '—' }}</td>
+                        <td class="px-3 py-2.5 text-xs font-semibold text-gray-900 whitespace-nowrap">{{ c.student_name || c.full_name || [c.first_name, c.last_name].filter(Boolean).join(' ') || '—' }}</td>
+                        <td class="px-3 py-2.5 text-xs text-gray-600 hidden sm:table-cell">{{ c.program || '—' }}</td>
+                        <td class="px-3 py-2.5 text-xs text-gray-600 hidden md:table-cell whitespace-nowrap">{{ c.year_level || '—' }}</td>
+                        <td class="px-3 py-2.5 text-right text-xs font-bold text-blue-700 whitespace-nowrap tabular-nums">₱{{ Number(c.target_amount || c.amount_paid || c.original_amount || 0).toFixed(2) }}</td>
+                        <td class="px-3 py-2.5 text-center">
+                          <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap', c.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600']">
+                            {{ c.payment_status === 'paid' ? 'PAID' : 'UNPAID' }}
+                          </span>
+                        </td>
+                        <td class="px-3 py-2.5 text-xs text-gray-500 hidden sm:table-cell whitespace-nowrap">
+                          <span v-if="c.payment_status === 'paid' && c.paid_at">{{ new Date(c.paid_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</span>
+                          <span v-else class="text-gray-300">—</span>
+                        </td>
+                      </tr>
+                    </tbody>
+                    <tfoot class="bg-gray-50 border-t border-gray-200">
+                      <tr>
+                        <td colspan="5" class="px-3 py-2 text-xs font-extrabold text-gray-700 hidden md:table-cell">Subtotal</td>
+                        <td colspan="3" class="px-3 py-2 text-xs font-extrabold text-gray-700 md:hidden">Subtotal</td>
+                        <td class="px-3 py-2 text-right text-xs font-extrabold text-emerald-700 whitespace-nowrap tabular-nums">₱{{ evData.stats.totalCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</td>
+                        <td class="px-3 py-2"></td>
+                        <td class="px-3 py-2 hidden sm:table-cell"></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <!-- Report Footer -->
+            <div class="mt-8 pt-5 border-t border-gray-100 text-center text-xs text-gray-400 space-y-0.5">
+              <p class="font-semibold text-gray-500">SSAAM · Student School Activities Attendance Monitoring</p>
+              <p>Jose Rizal Memorial State University</p>
+              <p>Report generated on {{ new Date(reportData.generatedAt).toLocaleString('en-PH', { month: 'long', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</p>
+              <p class="italic print:block hidden">This report is computer-generated and does not require a signature.</p>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
   </div>
 </template>
 
@@ -1396,6 +1639,9 @@ export default {
       isRefreshingPaidOn: false,
       paidOnLastRefreshed: null,
       _paidOnRefreshFlashTimer: null,
+      showReportModal: false,
+      isGeneratingReport: false,
+      reportData: null,
     };
   },
   computed: {
@@ -2276,6 +2522,87 @@ export default {
         window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Failed to fetch export preview', type: 'error' } }));
       }
     },
+    async openGenerateReport() {
+      if (this.isGeneratingReport) return;
+      this.isGeneratingReport = true;
+      this.reportData = null;
+      this.showReportModal = true;
+      try {
+        const token = localStorage.getItem('authToken');
+        const eventResults = [];
+        let totalStudents = 0, totalPaid = 0, totalUnpaid = 0, totalCollected = 0, expectedTotal = 0;
+
+        for (const event of this.paymentEvents) {
+          const params = new URLSearchParams();
+          params.set('limit', '5000');
+          params.set('payment_id', event._id);
+          let contribs = [];
+          try {
+            const res = await fetch(buildAPIUrl(`/apis/contributions/search?${params.toString()}`), {
+              headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (res.ok) {
+              const d = await res.json();
+              contribs = d.data || [];
+            }
+          } catch (fetchErr) {
+            console.warn('Could not fetch contributions for event', event._id, fetchErr);
+          }
+
+          const paid = contribs.filter(c => c.payment_status === 'paid').length;
+          const unpaid = contribs.length - paid;
+          const tc = contribs
+            .filter(c => c.payment_status === 'paid')
+            .reduce((s, c) => s + Number(c.amount_paid || c.target_amount || c.original_amount || event.amount_due || 0), 0);
+          const exp = contribs.reduce((s, c) => s + Number(c.original_amount || event.amount_due || 0), 0);
+
+          totalStudents += contribs.length;
+          totalPaid += paid;
+          totalUnpaid += unpaid;
+          totalCollected += tc;
+          expectedTotal += exp;
+
+          const sorted = [...contribs].sort((a, b) => {
+            const ap = a.payment_status === 'paid' ? 0 : 1;
+            const bp = b.payment_status === 'paid' ? 0 : 1;
+            if (ap !== bp) return ap - bp;
+            if (ap === 0) {
+              return (b.paid_at ? new Date(b.paid_at).getTime() : 0) - (a.paid_at ? new Date(a.paid_at).getTime() : 0);
+            }
+            return (a.student_name || a.full_name || '').localeCompare(b.student_name || b.full_name || '');
+          });
+
+          eventResults.push({
+            event,
+            contributions: sorted,
+            stats: { total: contribs.length, paid, unpaid, pct: contribs.length ? Math.round((paid / contribs.length) * 100) : 0, totalCollected: tc, expected: exp }
+          });
+        }
+
+        this.reportData = {
+          generatedAt: new Date().toISOString(),
+          events: eventResults,
+          overall: {
+            totalEvents: this.paymentEvents.length,
+            totalStudents,
+            totalPaid,
+            totalUnpaid,
+            totalCollected,
+            expectedTotal,
+            pct: totalStudents ? Math.round((totalPaid / totalStudents) * 100) : 0
+          }
+        };
+      } catch (e) {
+        console.error('Error generating report:', e);
+        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Failed to generate report', type: 'error' } }));
+        this.showReportModal = false;
+      } finally {
+        this.isGeneratingReport = false;
+      }
+    },
+    printReport() {
+      window.print();
+    },
     async confirmAndExportFilteredExcel() {
       if (this.isDownloading) return;
       this.isDownloading = true;
@@ -2329,4 +2656,17 @@ export default {
 .scrollbar-gray::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 2px; }
 .scrollbar-gray::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
 .scrollbar-gray { scrollbar-width: thin; scrollbar-color: #d1d5db transparent; }
+
+@media print {
+  body * { visibility: hidden !important; }
+  .fixed.inset-0.z-\\[60\\], .fixed.inset-0.z-\\[60\\] * { visibility: visible !important; }
+  .fixed.inset-0.z-\\[60\\] { position: absolute !important; inset: 0 !important; overflow: visible !important; }
+  .print\\:hidden { display: none !important; }
+  .hidden.print\\:block { display: block !important; }
+  .hidden.print\\:inline { display: inline !important; }
+  table { border-collapse: collapse !important; width: 100% !important; }
+  th, td { padding: 6px 10px !important; font-size: 11px !important; }
+  thead { background-color: #f9fafb !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .print\\:break-inside-avoid-page { break-inside: avoid-page; }
+}
 </style>
