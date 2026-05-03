@@ -1368,7 +1368,8 @@ function manualRetryFace() {
 
 .mobile-bg-full {
   background:
-    linear-gradient(160deg, rgba(20, 65, 200, 0.58) 0%, rgba(8, 28, 125, 0.72) 100%),
+    linear-gradient(160deg, rgba(20, 65, 200, 0.68) 0%, rgba(8, 28, 125, 0.80) 100%),
+    linear-gradient(rgba(0, 5, 30, 0.30), rgba(0, 5, 30, 0.30)),
     url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;
 }
 .fade-enter-active,
