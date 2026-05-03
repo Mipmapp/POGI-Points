@@ -114,6 +114,7 @@
 
   <div class="hidden md:flex min-h-screen bg-white">
     <div class="desktop-bg-panel">
+      <ParticleBackground />
       <div class="relative z-10 text-center px-6 py-8">
         <div class="mb-4">
           <div class="w-40 h-40 mx-auto flex items-center justify-center" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
@@ -445,6 +446,7 @@
   </div>
 
   <div class="mobile-bg-full md:hidden min-h-screen flex flex-col w-full fixed inset-0 overflow-x-hidden overflow-y-auto" style="scrollbar-width:none;-ms-overflow-style:none;">
+    <ParticleBackground />
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
       <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
         <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
@@ -776,6 +778,7 @@
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
+import ParticleBackground from '../components/ParticleBackground.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
 import departments from '../config/departments.js'

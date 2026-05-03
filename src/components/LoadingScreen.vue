@@ -1,6 +1,7 @@
 <template>
   <div class="loading-screen" :style="loadingScreenStyle">
-    <div class="flex flex-col items-center justify-center gap-4 text-center">
+    <ParticleBackground />
+    <div class="flex flex-col items-center justify-center gap-4 text-center relative z-10">
       <div class="w-32 h-32 flex items-center justify-center animate-bounce">
         <img :src="departmentLogo" :alt="isCOE ? 'COE Logo' : 'JRMSU CCS Logo'" class="w-full h-full object-contain drop-shadow-2xl" />
       </div>
@@ -22,6 +23,7 @@
 import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
+import ParticleBackground from './ParticleBackground.vue'
 
 const router = useRouter()
 
@@ -122,5 +124,6 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
 }
 </style>
