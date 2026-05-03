@@ -55,7 +55,7 @@
                     </div>
                     <!-- SSAAM Logo -->
                     <div style="flex: 1; text-align: center;">
-                      <img src="/assets/ssaam_logo.jpg" alt="SSAAM" style="height: 80px; width: auto;" />
+                      <img src="/assets/ccs_logo.png" alt="SSAAM" style="height: 80px; width: auto;" />
                     </div>
                   </div>
 
@@ -194,7 +194,7 @@
           </div>
           <!-- SSAAM Logo -->
           <div style="flex: 1; text-align: center;">
-            <img src="/assets/ssaam_logo.jpg" alt="SSAAM" style="height: 80px; width: auto;" />
+            <img src="/assets/ccs_logo.png" alt="SSAAM" style="height: 80px; width: auto;" />
           </div>
         </div>
 
