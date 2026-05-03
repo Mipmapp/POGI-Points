@@ -1348,7 +1348,7 @@ function manualRetryFace() {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(to bottom, rgba(8, 20, 70, 0.52) 0%, rgba(8, 20, 70, 0.70) 100%),
+  background: linear-gradient(160deg, rgba(30, 80, 220, 0.55) 0%, rgba(10, 30, 130, 0.72) 100%),
               url('/jrmsu-landscape.jpg') center center / cover no-repeat;
   display: flex;
   flex-direction: column;
@@ -1358,7 +1358,8 @@ function manualRetryFace() {
   padding: 2rem;
   position: relative;
   overflow: hidden;
-  box-shadow: inset -18px 0 40px rgba(0,0,0,0.35), 6px 0 24px rgba(0,0,0,0.28);
+  border-radius: 0 2rem 2rem 0;
+  box-shadow: inset -18px 0 40px rgba(0,0,0,0.25), 8px 0 32px rgba(10,30,130,0.30);
 }
 
 .mobile-hero-bg {
