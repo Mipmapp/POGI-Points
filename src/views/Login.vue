@@ -861,6 +861,16 @@ const handleLogin = async () => {
   }
 
   isLoading.value = true
+
+  // Ensure the client clock is synced with the server before sending any
+  // timestamp-protected request. Cap at 3 s so slow networks don't stall login.
+  try {
+    await Promise.race([
+      syncServerTime(buildAPIUrl('')),
+      new Promise(resolve => setTimeout(resolve, 3000))
+    ])
+  } catch (_) { /* best-effort — proceed with whatever offset we have */ }
+
   // safeFetch: try buildAPIUrl first, then fallback to default API if network/SSL fails
   const safeFetch = async (endpoint, options = {}) => {
     // endpoint may be full URL or path
@@ -935,38 +945,70 @@ const handleLogin = async () => {
       let finalData = null
       let detectedCollege = null
 
-      for (const college of collegeOrder) {
-        const resp = await safeFetch('/apis/students/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer SSAAMStudents`,
-            'X-SSAAM-College': college
-          },
-          body: JSON.stringify({
-            student_id: enteredId,
-            last_name: enteredPass,
-            _ssaam_access_token: encodeTimestamp()
+      // Helper: run the full college-detection loop with the current clock offset.
+      const tryCollegeLoop = async () => {
+        let _finalResponse = null
+        let _finalData = null
+        let _detectedCollege = null
+        for (const college of collegeOrder) {
+          const resp = await safeFetch('/apis/students/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer SSAAMStudents`,
+              'X-SSAAM-College': college
+            },
+            body: JSON.stringify({
+              student_id: enteredId,
+              last_name: enteredPass,
+              _ssaam_access_token: encodeTimestamp()
+            })
           })
-        })
-        const d = await resp.json()
-        console.log(`API STUDENT LOGIN RESPONSE (${college}):`, d)
+          // Keep server clock updated on every response.
+          updateServerOffsetFromHeaders(resp.clone ? resp.clone() : resp)
+          const d = await resp.json()
+          console.log(`API STUDENT LOGIN RESPONSE (${college}):`, d)
 
-        if (d.student && d.message === 'Login successful') {
-          finalResponse = resp
-          finalData = d
-          detectedCollege = college
+          if (d.student && d.message === 'Login successful') {
+            _finalResponse = resp
+            _finalData = d
+            _detectedCollege = college
+            break
+          }
+          // 403 mismatch means this college is wrong — try the next one
+          if (resp.status === 403 && d && typeof d.message === 'string' && /belongs to the/i.test(d.message)) {
+            continue
+          }
+          // Any other error (wrong password, not found, pending, timestamp) — stop immediately
+          _finalResponse = resp
+          _finalData = d
           break
         }
-        // 403 mismatch means this college is wrong — try the next one
-        if (resp.status === 403 && d && typeof d.message === 'string' && /belongs to the/i.test(d.message)) {
-          continue
-        }
-        // Any other error (wrong password, not found, pending) — surface immediately
-        finalResponse = resp
-        finalData = d
-        break
+        return { response: _finalResponse, data: _finalData, college: _detectedCollege }
       }
+
+      let attempt = await tryCollegeLoop()
+
+      // If the first attempt failed with a timestamp error, re-sync the clock and
+      // retry once — handles phones with automatic-time that is still drifted at
+      // the point of first call.
+      if (
+        attempt.response?.status === 401 &&
+        typeof attempt.data?.message === 'string' &&
+        /timestamp/i.test(attempt.data.message)
+      ) {
+        try {
+          await Promise.race([
+            syncServerTime(buildAPIUrl('')),
+            new Promise(resolve => setTimeout(resolve, 3000))
+          ])
+        } catch (_) { /* best-effort */ }
+        attempt = await tryCollegeLoop()
+      }
+
+      finalResponse = attempt.response
+      finalData = attempt.data
+      detectedCollege = attempt.college
 
       const data = finalData || {}
       if (data.student && data.message === 'Login successful') {
@@ -975,9 +1017,12 @@ const handleLogin = async () => {
         user.requiresPasswordUpdate = finalData.requiresPasswordUpdate || false
         user._detectedCollege = detectedCollege
       } else if (data.message) {
+        const isTimestampError = /timestamp/i.test(data.message) && finalResponse?.status === 401
         errorMessage.value = data.accountPending
           ? 'Your account is pending approval. Please wait for an admin to approve your registration. You will receive an email notification once approved.'
-          : data.message
+          : isTimestampError
+            ? 'Login failed due to a clock sync issue. Please make sure your device\'s date and time are set to "Automatic" and try again.'
+            : data.message
         showErrorNotification.value = true
         isLoading.value = false
         return

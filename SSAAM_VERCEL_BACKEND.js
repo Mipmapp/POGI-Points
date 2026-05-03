@@ -712,7 +712,7 @@ function decodeTimestamp(encodedString) {
     return null;
 }
 
-function isValidTimestamp(encodedString, maxAgeMinutes = 5) {
+function isValidTimestamp(encodedString, maxAgeMinutes = 10) {
     const timestamp = decodeTimestamp(encodedString);
     if (!timestamp) return false;
 
@@ -721,7 +721,9 @@ function isValidTimestamp(encodedString, maxAgeMinutes = 5) {
         const now = new Date();
         const diffMinutes = (now - requestTime) / (1000 * 60);
 
-        return diffMinutes >= -2 && diffMinutes <= maxAgeMinutes;
+        // Allow up to 5 min in the future (client clock ahead) and maxAgeMinutes behind.
+        // Wider window handles phones with automatic-time drift or slow networks.
+        return diffMinutes >= -5 && diffMinutes <= maxAgeMinutes;
     } catch (e) {
         return false;
     }
