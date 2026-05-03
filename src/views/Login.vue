@@ -331,7 +331,7 @@
       </div>
     </div>
 
-    <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50">
+    <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50" style="border-radius: 2rem 0 0 2rem; overflow: hidden;">
       <div class="w-full max-w-md">
         <div class="mb-8 text-center">
           <h2 class="text-3xl font-bold text-blue-700 mb-2">Welcome</h2>
@@ -1358,13 +1358,14 @@ function manualRetryFace() {
   padding: 2rem;
   position: relative;
   overflow: hidden;
-  border-radius: 0 2rem 2rem 0;
   box-shadow: inset -18px 0 40px rgba(0,0,0,0.25), 8px 0 32px rgba(10,30,130,0.30);
 }
 
 .mobile-hero-bg {
   background: linear-gradient(to bottom, rgba(8, 20, 70, 0.48) 0%, rgba(8, 20, 70, 0.72) 100%),
               url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;
+  border-radius: 0 0 2rem 2rem;
+  overflow: hidden;
 }
 .fade-enter-active,
 .fade-leave-active {
