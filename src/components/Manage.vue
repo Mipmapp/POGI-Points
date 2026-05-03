@@ -959,7 +959,7 @@
 import { buildAPIUrl } from '../config/api.js'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import departments from '../config/departments.js'
-import { COLLEGES, checkDepartment } from '../config/themes.js'
+import { COLLEGES } from '../config/themes.js'
 
 
 export default {

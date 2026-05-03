@@ -46,17 +46,6 @@ export const getCollege = () => {
   }
 }
 
-// [AI WARNING] Possibly unused export — no references found outside this file. Safe to delete if collection-prefix logic stays on the backend.
-export const getCollegePrefix = () => {
-  const college = getCollege()
-  switch (college) {
-    case 'COE': return 'coe_'
-    case 'SOM': return 'som_'
-    case 'CNAHS': return 'cnahs_'
-    default: return 'ccs_'
-  }
-}
-
 // Helper function to get the appropriate API URL based on user's college
 export const getAPIBaseURL = () => {
   try {
