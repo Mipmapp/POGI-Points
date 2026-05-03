@@ -1530,7 +1530,7 @@ const goToLogin = () => {
 
 .desktop-bg-panel {
   background:
-    linear-gradient(160deg, rgba(20, 65, 200, 0.58) 0%, rgba(8, 28, 125, 0.72) 100%),
+    linear-gradient(160deg, rgba(20, 65, 200, 0.70) 0%, rgba(8, 28, 125, 0.82) 100%),
     url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;
   width: 40%;
   flex-shrink: 0;
