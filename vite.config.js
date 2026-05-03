@@ -14,7 +14,7 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['jrmsu.svg', 'icons/apple-touch-icon.png'],
+      includeAssets: ['jrmsu.svg', 'icons/app_icon.png'],
       manifest: {
         name: 'SSAAM - Student School Activities Attendance Monitoring',
         short_name: 'SSAAM',
@@ -41,7 +41,8 @@ export default defineConfig({
         ]
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,woff2}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+        globPatterns: ['**/*.{js,css,html,ico,svg,webp,woff2}'],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

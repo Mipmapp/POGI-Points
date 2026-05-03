@@ -1348,9 +1348,8 @@ function manualRetryFace() {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(135deg, #1e3bdb 0%, #4f62ff 100%), url('/classroom-bg.jpg');
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(to bottom, rgba(8, 20, 70, 0.52) 0%, rgba(8, 20, 70, 0.70) 100%),
+              url('/jrmsu-landscape.jpg') center center / cover no-repeat;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1363,9 +1362,8 @@ function manualRetryFace() {
 }
 
 .mobile-bg-panel {
-  background: linear-gradient(135deg, #1e3bdb 0%, #4f62ff 100%), url('/classroom-bg.jpg');
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(to bottom, rgba(8, 20, 70, 0.50) 0%, rgba(8, 20, 70, 0.68) 100%),
+              url('/jrmsu-landscape.jpg') center 40% / cover no-repeat;
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
   overflow-x: hidden;
