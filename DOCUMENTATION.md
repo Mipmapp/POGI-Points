@@ -1,5 +1,7 @@
 # SSAAM — Student School Activities Attendance Monitoring
 
+---
+
 **SSAAM** is a multi-college web platform for Jose Rizal Memorial State University (JRMSU) that manages student registration, RFID-based attendance tracking, contribution/payment collection, and administrative management across multiple colleges.
 
 ---
