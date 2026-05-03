@@ -1507,8 +1507,8 @@
           </div>
         </div>
 
-        <!-- Applications Page - Student View -->
-        <div v-if="currentPage === 'applications' && !(isAdminLike) && window.innerWidth >= 768" :class="['bg-gradient-to-br rounded-lg shadow-lg p-4 md:p-8 space-y-6', isCOE ? 'from-orange-50 to-red-50' : isSOM ? 'from-green-50 to-yellow-50' : 'from-blue-50 to-blue-50']">
+        <!-- Applications Page removed: feature was built but never wired to sidebar navigation -->
+        <div v-if="false">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
               <h2 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2', isCOE ? 'from-orange-600 to-red-600' : isSOM ? 'from-green-600 to-yellow-600' : 'from-ssaam-dark to-ssaam-light']">Available Applications</h2>
@@ -1602,8 +1602,8 @@
 
         </div>
 
-        <!-- Applications Page - Admin View -->
-        <div v-if="currentPage === 'applications' && (isAdminLike) && window.innerWidth >= 768" :class="['bg-gradient-to-br rounded-lg shadow-lg p-4 md:p-8 space-y-6', isCOE ? 'from-orange-50 to-red-50' : 'from-blue-50 to-blue-50']">
+        <!-- Applications Page - Admin View (removed) -->
+        <div v-if="false" :class="['bg-gradient-to-br rounded-lg shadow-lg p-4 md:p-8 space-y-6', isCOE ? 'from-orange-50 to-red-50' : 'from-blue-50 to-blue-50']">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
               <h2 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2', isCOE ? 'from-orange-600 to-red-600' : 'from-ssaam-dark to-ssaam-light']">Application Management</h2>
@@ -9422,16 +9422,7 @@ const helpTab = ref('about')
 const termsExpanded = ref(false)
 const showTermsModal = ref(false)
 const currentPage = ref('dashboard')
-const applicationLoading = ref(false)
-const applicationDashboardTab = ref('available')
-const applicationAdminTab = ref('forms')
-const availableApplications = ref([])
-const submittedApplications = ref([])
-const applicationForms = ref([])
-const expandedApplicationForm = ref(null)
-const applicationDashboardModal = { show: ref(false), form: ref(null), submitting: ref(false) }
-const applicationCreateForm = ref({ title: '', description: '', programs: [], years: [], maxApplicants: null })
-const applicationCreateSubmitting = ref(false)
+
 const manageComponent = ref(null)
 const currentPageNum = ref(1)
 const itemsPerPage = ref(20)
@@ -13132,236 +13123,6 @@ const handleAppNotification = (e) => {
   showNotification(d.message || 'Notification', d.type || 'info')
 }
 
-// ============================================
-// APPLICATION FEATURE METHODS
-// ============================================
-
-const fetchApplicationsForDashboard = async () => {
-  applicationLoading.value = true
-  try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    const isAdmin = currentUser.value.role === 'admin' || currentUser.value.isMaster
-    
-    if (isAdmin) {
-      // Fetch all forms for admin
-      const response = await fetch(buildAPIUrl('/apis/admin/applications'), {
-        headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` })
-      })
-      if (response.ok) {
-        const data = await response.json()
-        applicationForms.value = data.data || data || []
-      }
-    } else {
-      // Fetch available applications for student
-      const availResponse = await fetch(buildAPIUrl('/apis/applications/available'), {
-        headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` })
-      })
-      if (availResponse.ok) {
-        const availData = await availResponse.json()
-        availableApplications.value = availData.data || availData || []
-      }
-      
-      // Fetch submitted applications for student
-      const submittedResponse = await fetch(buildAPIUrl('/apis/applications/user/my'), {
-        headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` })
-      })
-      if (submittedResponse.ok) {
-        const submittedData = await submittedResponse.json()
-        submittedApplications.value = submittedData.data || submittedData || []
-      }
-    }
-  } catch (error) {
-    console.error('Failed to fetch applications:', error)
-    showNotification('Failed to load applications', 'error')
-  } finally {
-    applicationLoading.value = false
-  }
-}
-
-const startApplicationDashboard = (app) => {
-  applicationDashboardModal.form.value = app
-  applicationDashboardModal.show.value = true
-  // Ensure submitting flag is reset whenever modal is opened
-  applicationDashboardModal.submitting.value = false
-}
-
-const submitApplicationDashboard = async () => {
-  if (!applicationDashboardModal.form.value) return
-  
-  applicationDashboardModal.submitting.value = true
-  try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    const formId = applicationDashboardModal.form.value._id || applicationDashboardModal.form.value.id
-    
-    const response = await fetch(buildAPIUrl(`/apis/applications/${formId}/apply`), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        student_id: currentUser.value.student_id || currentUser.value.studentId
-      })
-    })
-    
-    if (response.ok) {
-      showNotification('Application submitted successfully!', 'success')
-      applicationDashboardModal.show.value = false
-      applicationDashboardModal.form.value = null
-      await fetchApplicationsForDashboard()
-      applicationDashboardTab.value = 'submitted'
-    } else {
-      const error = await response.json()
-      showNotification(error.message || 'Failed to submit application', 'error')
-    }
-  } catch (error) {
-    console.error('Failed to submit application:', error)
-    showNotification('Failed to submit application', 'error')
-  } finally {
-    applicationDashboardModal.submitting.value = false
-  }
-}
-
-const applyDirectly = async (app) => {
-  try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    const formId = app._id || app.id
-    
-    const response = await fetch(buildAPIUrl(`/apis/applications/${formId}/apply`), {
-      method: 'POST',
-      headers: getFetchHeaders({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }),
-      body: JSON.stringify({
-        student_id: currentUser.value.student_id || currentUser.value.studentId
-      })
-    })
-    
-    if (response.ok) {
-      showNotification('Application submitted successfully!', 'success')
-      await fetchApplicationsForDashboard()
-      applicationDashboardTab.value = 'submitted'
-    } else {
-      const error = await response.json()
-      showNotification(error.message || 'Failed to submit application', 'error')
-    }
-  } catch (error) {
-    console.error('Failed to submit application:', error)
-    showNotification('Failed to submit application', 'error')
-  }
-}
-
-const closeApplicationDashboardModal = () => {
-  applicationDashboardModal.show.value = false
-  applicationDashboardModal.form.value = null
-  applicationDashboardModal.submitting.value = false
-}
-
-const createApplicationFormDashboard = async () => {
-  if (!applicationCreateForm.value.title.trim()) {
-    showNotification('Please enter a form title', 'error')
-    return
-  }
-  
-  applicationCreateSubmitting.value = true
-  try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    
-    const response = await fetch(buildAPIUrl('/apis/admin/applications'), {
-      method: 'POST',
-      headers: getFetchHeaders({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }),
-      body: JSON.stringify({
-        title: applicationCreateForm.value.title.trim(),
-        description: applicationCreateForm.value.description.trim(),
-        eligible_programs: applicationCreateForm.value.programs.length > 0 ? applicationCreateForm.value.programs : null,
-        eligible_year_levels: applicationCreateForm.value.years.length > 0 ? applicationCreateForm.value.years : null,
-        max_applicants: applicationCreateForm.value.maxApplicants
-      })
-    })
-    
-    if (response.ok) {
-      showNotification('Application form created successfully!', 'success')
-      resetApplicationCreateForm()
-      applicationAdminTab.value = 'forms'
-      await fetchApplicationsForDashboard()
-    } else {
-      const error = await response.json()
-      showNotification(error.message || 'Failed to create form', 'error')
-    }
-  } catch (error) {
-    console.error('Failed to create application form:', error)
-    showNotification('Failed to create form', 'error')
-  } finally {
-    applicationCreateSubmitting.value = false
-  }
-}
-
-const approveApplicationDashboard = async (formId, appId) => {
-  try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    
-    const response = await fetch(buildAPIUrl(`/apis/admin/applications/${formId}/review/${appId}`), {
-      method: 'PUT',
-      headers: getFetchHeaders({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }),
-      body: JSON.stringify({ status: 'approved' })
-    })
-    
-    if (response.ok) {
-      showNotification('Application approved!', 'success')
-      await fetchApplicationsForDashboard()
-    } else {
-      const error = await response.json()
-      showNotification(error.message || 'Failed to approve application', 'error')
-    }
-  } catch (error) {
-    console.error('Failed to approve application:', error)
-    showNotification('Failed to approve application', 'error')
-  }
-}
-
-const rejectApplicationDashboard = async (formId, appId) => {
-  try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
-    
-    const response = await fetch(buildAPIUrl(`/apis/admin/applications/${formId}/review/${appId}`), {
-      method: 'PUT',
-      headers: getFetchHeaders({
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }),
-      body: JSON.stringify({ status: 'rejected' })
-    })
-    
-    if (response.ok) {
-      showNotification('Application rejected!', 'success')
-      await fetchApplicationsForDashboard()
-    } else {
-      const error = await response.json()
-      showNotification(error.message || 'Failed to reject application', 'error')
-    }
-  } catch (error) {
-    console.error('Failed to reject application:', error)
-    showNotification('Failed to reject application', 'error')
-  }
-}
-
-const resetApplicationCreateForm = () => {
-  applicationCreateForm.value = {
-    title: '',
-    description: '',
-    programs: [],
-    years: [],
-    maxApplicants: null
-  }
-}
-
 const _handleOnline = () => {
   rfidIsOnline.value = true
   flushOfflineRfidQueue()
@@ -13396,12 +13157,6 @@ watch([
   paymentRecordsFilter.value.currentPage = 1
 })
 
-// Reset submitting flag when application dashboard modal opens
-watch(() => applicationDashboardModal.show.value, (isOpen) => {
-  if (isOpen) {
-    applicationDashboardModal.submitting.value = false
-  }
-})
 
 // Handle stats refresh button click
 const handleStatsRefresh = async () => {

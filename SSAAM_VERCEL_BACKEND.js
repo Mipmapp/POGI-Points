@@ -2484,37 +2484,6 @@ const COE_NotificationSeen = mongoose.model("COE_NotificationSeen", notification
 const SOM_NotificationSeen = mongoose.model("SOM_NotificationSeen", notificationSeenSchema, 'som_notificationseens');
 const CNAHS_NotificationSeen = mongoose.model("CNAHS_NotificationSeen", notificationSeenSchema, 'cnahs_notificationseens');
 
-// ==================== APPLICATION SCHEMAS ====================
-
-// Application Form Configuration - Admin-managed application settings
-const applicationFormSchema = new mongoose.Schema({
-    title: { type: String, required: true, maxlength: 200 },
-    description: { type: String, maxlength: 2000, default: "" },
-    status: {
-        type: String,
-        enum: ['active', 'closed'],
-        default: 'active'
-    },
-    // Eligibility criteria - empty means all students can apply
-    eligible_programs: { type: [String], default: [] }, // e.g., ['BSCS', 'BSIS']
-    eligible_year_levels: { type: [String], default: [] }, // e.g., ['1st Year', '2nd Year']
-    max_applicants: { type: Number, default: null }, // null = unlimited
-    allow_one_per_student: { type: Boolean, default: true }, // Students can only apply once
-    created_by: { type: mongoose.Schema.Types.ObjectId, ref: 'Master', required: true },
-    created_by_name: { type: String, required: true },
-    created_at: { type: Date, default: Date.now },
-    updated_at: { type: Date, default: Date.now },
-    opened_at: { type: Date, default: null },
-    closed_at: { type: Date, default: null }
-});
-
-applicationFormSchema.index({ status: 1, created_at: -1 });
-
-const ApplicationForm = mongoose.model("ApplicationForm", applicationFormSchema);
-const CCS_ApplicationForm = mongoose.model("CCS_ApplicationForm", applicationFormSchema, 'ccs_applicationforms');
-const COE_ApplicationForm = mongoose.model("COE_ApplicationForm", applicationFormSchema, 'coe_applicationforms');
-const SOM_ApplicationForm = mongoose.model("SOM_ApplicationForm", applicationFormSchema, 'som_applicationforms');
-const CNAHS_ApplicationForm = mongoose.model("CNAHS_ApplicationForm", applicationFormSchema, 'cnahs_applicationforms');
 
 // ── Student Change Requests ──────────────────────────────────────────────────
 // Single global collection with a `college` field so super-admin can query
@@ -2539,38 +2508,6 @@ const changeRequestSchema = new mongoose.Schema({
 const ChangeRequest = mongoose.model('ChangeRequest', changeRequestSchema, 'change_requests');
 // ────────────────────────────────────────────────────────────────────────────
 
-// Student Application Records - Individual student applications
-const studentApplicationSchema = new mongoose.Schema({
-    form_id: { type: mongoose.Schema.Types.ObjectId, ref: 'ApplicationForm', required: true },
-    student_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Student', required: true },
-    student_id_number: { type: String, required: true }, // e.g., "21-A-12345"
-    student_name: { type: String, required: true },
-    program: { type: String, required: true },
-    year_level: { type: String, required: true },
-    email: { type: String, required: true },
-    status: {
-        type: String,
-        enum: ['pending', 'approved', 'rejected'],
-        default: 'pending'
-    },
-    application_data: { type: mongoose.Schema.Types.Mixed, default: {} }, // Flexible for custom form fields
-    notes: { type: String, maxlength: 1000, default: "" },
-    reviewed_by: { type: mongoose.Schema.Types.ObjectId, ref: 'Master', default: null },
-    reviewed_by_name: { type: String, default: "" },
-    applied_at: { type: Date, default: Date.now },
-    reviewed_at: { type: Date, default: null }
-});
-
-studentApplicationSchema.index({ form_id: 1, student_id: 1 }, { unique: true });
-studentApplicationSchema.index({ form_id: 1, status: 1 });
-studentApplicationSchema.index({ student_id: 1 });
-studentApplicationSchema.index({ form_id: 1 });
-
-const StudentApplication = mongoose.model("StudentApplication", studentApplicationSchema);
-const CCS_StudentApplication = mongoose.model("CCS_StudentApplication", studentApplicationSchema, 'ccs_studentapplications');
-const COE_StudentApplication = mongoose.model("COE_StudentApplication", studentApplicationSchema, 'coe_studentapplications');
-const SOM_StudentApplication = mongoose.model("SOM_StudentApplication", studentApplicationSchema, 'som_studentapplications');
-const CNAHS_StudentApplication = mongoose.model("CNAHS_StudentApplication", studentApplicationSchema, 'cnahs_studentapplications');
 
 // ==================== ATTENDANCE SCHEMAS ====================
 
