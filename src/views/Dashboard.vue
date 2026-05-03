@@ -188,7 +188,7 @@
       <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
     </button>
     
-    <div class="h-full flex flex-col lg:flex-row overflow-y-auto lg:overflow-hidden relative z-10">
+    <div class="h-full flex flex-col lg:flex-row overflow-hidden relative z-10">
       <!-- Left Panel - Scanner (Kiosk Style) -->
       <div class="lg:w-[460px] xl:w-1/2 flex-shrink-0 min-h-max lg:h-full flex flex-col items-center justify-center px-5 py-8 lg:py-10 border-b lg:border-b-0 lg:border-r border-white/20">
 
@@ -973,7 +973,7 @@
     </transition>
 
     <!-- Main Content Area -->
-    <div class="flex-1 bg-slate-50 overflow-y-auto overflow-x-hidden order-2 md:order-2">
+    <div class="flex-1 bg-slate-50 overflow-x-hidden order-2 md:order-2">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
