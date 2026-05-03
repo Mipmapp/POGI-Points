@@ -250,10 +250,10 @@
           </span>
         </div>
 
-        <!-- Camera + controls -->
-        <div class="flex-1 flex flex-col items-center justify-center px-5 sm:px-8 lg:px-12 xl:px-16 py-6 lg:py-10 gap-5">
+        <!-- FaceRecognitionSettings + footer links -->
+        <div class="flex-1 px-4 sm:px-6 lg:px-8 xl:px-10 py-6 lg:py-8 flex flex-col gap-4">
 
-          <!-- Mobile role label -->
+          <!-- Mobile step label -->
           <div :class="['lg:hidden flex items-center gap-2', pendingUser?.actualRole === 'treasurer' ? 'text-teal-600' : 'text-violet-600']">
             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -262,76 +262,21 @@
             <span class="text-[11px] font-black uppercase tracking-widest">Step 3 of 3 · Face Enrollment</span>
           </div>
 
-          <!-- Camera frame -->
-          <div class="w-full max-w-xs lg:max-w-sm">
-            <div :class="['relative rounded-2xl overflow-hidden bg-black shadow-xl border-2', pendingUser?.actualRole === 'treasurer' ? 'border-teal-400/40' : 'border-violet-500/40']" style="aspect-ratio:1/1;">
-              <video ref="faceVideoEl" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover -scale-x-100"></video>
-
-              <!-- Loading spinner -->
-              <div v-if="!faceCameraOn" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-950/95 gap-3">
-                <div :class="['w-10 h-10 rounded-full border-2 border-t-current animate-spin', pendingUser?.actualRole === 'treasurer' ? 'border-teal-500/30 text-teal-400' : 'border-violet-500/30 text-violet-400']"></div>
-                <p class="text-xs font-medium text-white/60">{{ faceLoadingModels ? 'Loading face models…' : 'Starting camera…' }}</p>
-              </div>
-
-              <!-- Enrollment corners overlay -->
-              <div v-if="faceCameraOn" class="absolute inset-0 pointer-events-none">
-                <div class="absolute inset-x-8 inset-y-7">
-                  <span class="corner-enroll corner-tl-enroll"></span>
-                  <span class="corner-enroll corner-tr-enroll"></span>
-                  <span class="corner-enroll corner-bl-enroll"></span>
-                  <span class="corner-enroll corner-br-enroll"></span>
-                  <div :class="['absolute inset-0 rounded-[30%] border animate-pulse-ring-violet', pendingUser?.actualRole === 'treasurer' ? 'border-teal-400/25' : 'border-violet-400/25']"></div>
-                  <div v-if="faceCapturing" class="scan-line-enroll"></div>
-                </div>
-                <!-- Status pill -->
-                <div :class="['absolute bottom-3 left-1/2 -translate-x-1/2 px-3 py-1.5 rounded-full text-[11px] font-semibold backdrop-blur-md flex items-center gap-1.5 whitespace-nowrap border', pendingUser?.actualRole === 'treasurer' ? 'bg-teal-500/20 border-teal-400/40 text-teal-200' : 'bg-violet-500/20 border-violet-400/40 text-violet-200']">
-                  <span class="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></span>
-                  {{ faceCapturing ? 'Capturing…' : 'Position your face' }}
-                </div>
-              </div>
-            </div>
+          <!-- Embedded FaceRecognitionSettings (same as dashboard overlay) -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex-1">
+            <FaceRecognitionSettings @enrolled="onLoginFaceEnrolled" />
           </div>
 
-          <!-- Error banner -->
-          <div v-if="faceError" class="w-full max-w-xs lg:max-w-sm px-4 py-2.5 bg-red-50 border border-red-200 rounded-xl text-red-600 text-xs text-center">
-            {{ faceError }}
-          </div>
-
-          <!-- Enroll status message -->
-          <transition name="fade">
-            <div v-if="faceEnrollStatus" class="w-full max-w-xs lg:max-w-sm">
-              <div :class="['px-4 py-3 rounded-xl text-xs font-medium text-center leading-relaxed border', faceEnrollKind === 'error' ? 'bg-red-50 border-red-200 text-red-600' : faceEnrollKind === 'success' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-violet-50 border-violet-200 text-violet-700']">
-                {{ faceEnrollStatus }}
-              </div>
-            </div>
-          </transition>
-
-          <!-- Buttons -->
-          <div class="flex flex-col sm:flex-row gap-3 w-full max-w-xs lg:max-w-sm">
-            <!-- Capture CTA -->
-            <button
-              @click="captureAndEnrollFace"
-              :disabled="!faceCameraOn || faceCapturing || faceEnrollSaving"
-              :class="['flex-1 py-3.5 rounded-2xl text-sm font-bold transition-all active:scale-95 flex items-center justify-center gap-2 text-white disabled:opacity-50 disabled:cursor-not-allowed hover:scale-[1.02] shadow-lg', pendingUser?.actualRole === 'treasurer' ? 'bg-gradient-to-r from-teal-500 to-cyan-600 shadow-teal-200 hover:shadow-[0_0_28px_rgba(20,184,166,0.5)]' : 'bg-gradient-to-r from-violet-500 to-purple-600 shadow-violet-200 hover:shadow-[0_0_28px_rgba(139,92,246,0.5)]']"
-            >
-              <svg v-if="faceCapturing || faceEnrollSaving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72 1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-              {{ faceEnrollSaving ? 'Saving…' : faceCapturing ? 'Detecting…' : 'Capture & Enroll' }}
+          <!-- Footer links -->
+          <div class="flex items-center justify-between gap-4 pb-2">
+            <button @click="cancelFaceVerification" class="text-[11px] text-gray-400 hover:text-gray-600 transition-colors">
+              ← Cancel login
             </button>
-            <!-- Cancel -->
-            <button @click="cancelFaceVerification" class="sm:flex-none px-5 py-3.5 bg-white hover:bg-gray-100 border border-gray-200 text-gray-600 hover:text-gray-800 rounded-2xl text-sm font-medium transition-all active:scale-95">
-              Cancel
-            </button>
-          </div>
-
-          <!-- Set up later link -->
-          <p class="text-center">
             <button @click="completeLoginFromFace" class="text-[11px] text-gray-400 hover:text-gray-600 transition-colors underline underline-offset-2">
               Set up later — dashboard access will be restricted
             </button>
-          </p>
+          </div>
 
-          <div class="h-4"></div>
         </div>
       </div>
 
@@ -792,6 +737,7 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import ParticleBackground from '../components/ParticleBackground.vue'
+import FaceRecognitionSettings from '../components/FaceRecognitionSettings.vue'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import { encodeTimestamp, syncServerTime, updateServerOffsetFromHeaders } from '../utils/ssaamCrypto.js'
 import API_getBaseURL, { buildAPIUrl } from '../config/api.js'
@@ -1465,7 +1411,7 @@ async function proceedToFaceVerification() {
   showFaceModal.value = true;
 
   if (!pendingUser || !pendingUser.token) {
-    if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; await startFaceCamera(); }
+    if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; }
     else { noFacesEnrolled.value = true; }
     return;
   }
@@ -1475,14 +1421,14 @@ async function proceedToFaceVerification() {
       headers: { 'Authorization': `Bearer ${pendingUser.token}` },
     });
     if (!res.ok) {
-      if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; await startFaceCamera(); }
+      if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; }
       else { noFacesEnrolled.value = true; }
       return;
     }
     const data = await res.json();
     faceEnrolled = (data.faces || []).filter(f => Array.isArray(f.descriptor) && f.descriptor.length === 128);
     if (faceEnrolled.length === 0) {
-      if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; await startFaceCamera(); }
+      if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; }
       else { noFacesEnrolled.value = true; }
       return;
     }
@@ -1623,6 +1569,12 @@ async function onFaceMatched() {
 function completeLoginFromFace() {
   stopFaceCamera();
   showFaceModal.value = false;
+  completeLogin();
+}
+
+function onLoginFaceEnrolled() {
+  showFaceModal.value = false;
+  faceEnrollMode.value = false;
   completeLogin();
 }
 
