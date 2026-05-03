@@ -20093,6 +20093,13 @@ onUnmounted(() => {
   overscroll-behavior: none;
 }
 
+/* Mobile: disable nested scrollbars, allow natural page scrolling */
+@media (max-width: 767px) {
+  [class*="overflow-y-auto"]:not(.sidebar-scroll):not(.dev-modal-scroll):not(.fullscreen-scroll):not(.help-modal-scroll) {
+    overflow-y: visible !important;
+  }
+}
+
 *::-webkit-scrollbar {
   width: 6px;
   height: 6px;
