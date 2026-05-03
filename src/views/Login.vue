@@ -1,59 +1,86 @@
 <template>
   <transition name="fade">
-    <div v-if="showContactModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-40" @click.self="showContactModal = false">
+    <div v-if="showContactModal" class="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-40 p-0 sm:p-4" @click.self="showContactModal = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md overflow-hidden flex flex-col max-h-[92vh]">
+
+          <!-- Header -->
           <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
-              <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
+              <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
                 <div class="w-5 h-5" style="-webkit-mask: url(/help.svg) center/contain no-repeat; mask: url(/help.svg) center/contain no-repeat; background-color: white;"></div>
               </div>
-              <h3 class="text-xl font-bold text-white">Need Help?</h3>
+              <div>
+                <h3 class="text-xl font-bold text-white leading-tight">Need Help?</h3>
+                <p class="text-blue-100 text-xs mt-0.5">We're here to assist you</p>
+              </div>
             </div>
-            <button @click="showContactModal = false" class="text-white/70 hover:text-white text-2xl leading-none">&times;</button>
+            <button @click="showContactModal = false" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white text-lg transition flex-shrink-0">&times;</button>
           </div>
 
-          <div class="p-6 space-y-4 overflow-y-auto help-modal-scroll">
+          <!-- Drag handle on mobile -->
+          <div class="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
+            <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
+          </div>
+
+          <!-- Scrollable content -->
+          <div class="px-5 pb-6 pt-4 space-y-4 overflow-y-auto help-modal-scroll">
+
+            <!-- Contact cards -->
             <div class="grid grid-cols-3 gap-3">
-              <div class="flex flex-col items-center text-center p-3 bg-green-50 rounded-2xl">
-                <div class="w-10 h-10 mb-2 bg-blue-100 rounded-full flex items-center justify-center">
-                  <div class="w-5 h-5" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: #2563eb;"></div>
+              <div class="flex flex-col items-center text-center p-4 bg-blue-50 rounded-2xl">
+                <div class="w-12 h-12 mb-3 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div class="w-6 h-6" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: #2563eb;"></div>
                 </div>
-                <p class="font-semibold text-blue-900 text-xs mb-1">Email Support</p>
-                <p class="text-xs text-gray-500 break-all">ssaamjrmsu@gmail.com</p>
-                <p class="text-xs text-gray-400 mt-0.5">For inquiries</p>
+                <p class="font-semibold text-blue-900 text-xs mb-1 leading-tight">Email Support</p>
+                <p class="text-[10px] text-gray-500 leading-snug">ssaamjrmsu<br>@gmail.com</p>
+                <p class="text-[10px] text-gray-400 mt-1">For inquiries</p>
               </div>
 
-              <div class="flex flex-col items-center text-center p-3 bg-green-50 rounded-2xl">
-                <div class="w-10 h-10 mb-2 bg-blue-100 rounded-full flex items-center justify-center">
-                  <div class="w-5 h-5" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat; background-color: #2563eb;"></div>
+              <div class="flex flex-col items-center text-center p-4 bg-blue-50 rounded-2xl">
+                <div class="w-12 h-12 mb-3 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div class="w-6 h-6" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat; background-color: #2563eb;"></div>
                 </div>
-                <p class="font-semibold text-blue-900 text-xs mb-1">CCS Office</p>
-                <p class="text-xs text-gray-500">College of Computing Studies</p>
-                <p class="text-xs text-gray-400 mt-0.5">Office hours</p>
+                <p class="font-semibold text-blue-900 text-xs mb-1 leading-tight">CCS Office</p>
+                <p class="text-[10px] text-gray-500 leading-snug">College of<br>Computing</p>
+                <p class="text-[10px] text-gray-400 mt-1">Office hours</p>
               </div>
 
-              <div class="flex flex-col items-center text-center p-3 bg-green-50 rounded-2xl cursor-pointer hover:bg-blue-50 transition" @click="showDevelopersPopup = true; showContactModal = false">
-                <div class="w-10 h-10 mb-2 bg-blue-100 rounded-full flex items-center justify-center">
-                  <div class="w-5 h-5" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat; background-color: #2563eb;"></div>
+              <div class="flex flex-col items-center text-center p-4 bg-blue-50 rounded-2xl cursor-pointer hover:bg-blue-100 active:scale-95 transition-all" @click="showDevelopersPopup = true; showContactModal = false">
+                <div class="w-12 h-12 mb-3 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                  <div class="w-6 h-6" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat; background-color: #2563eb;"></div>
                 </div>
-                <p class="font-semibold text-blue-900 text-xs mb-1">Meet the Team</p>
-                <p class="text-xs text-gray-500">CCS Creatives</p>
-                <p class="text-xs text-blue-600 mt-0.5 font-medium">View →</p>
+                <p class="font-semibold text-blue-900 text-xs mb-1 leading-tight">Meet the Team</p>
+                <p class="text-[10px] text-gray-500 leading-snug">CCS<br>Creatives</p>
+                <p class="text-[10px] text-blue-600 mt-1 font-semibold">View →</p>
               </div>
             </div>
 
-            <div class="bg-green-50 rounded-2xl p-4">
-              <p class="text-sm font-semibold text-blue-900 mb-2">Quick Help</p>
-              <ul class="text-xs text-gray-600 space-y-1.5">
-                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5 flex-shrink-0">•</span>Your default password is your Last Name (UPPERCASE)</li>
-                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5 flex-shrink-0">•</span>Use "Forgot Password" if needed</li>
-                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5 flex-shrink-0">•</span>Register your RFID at the CCS office</li>
-                <li class="flex items-start gap-2"><span class="text-blue-400 mt-0.5 flex-shrink-0">•</span>For profile issues, contact the Developers or visit the CCS office</li>
+            <!-- Quick Help -->
+            <div class="bg-blue-50 rounded-2xl p-5">
+              <p class="text-sm font-bold text-blue-900 mb-3">Quick Help</p>
+              <ul class="space-y-3">
+                <li class="flex items-start gap-2.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>
+                  <span class="text-xs text-gray-600 leading-relaxed">Your default password is your Last Name (UPPERCASE)</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>
+                  <span class="text-xs text-gray-600 leading-relaxed">Use "Forgot Password" if needed</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>
+                  <span class="text-xs text-gray-600 leading-relaxed">Register your RFID at the CCS office</span>
+                </li>
+                <li class="flex items-start gap-2.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>
+                  <span class="text-xs text-gray-600 leading-relaxed">For profile issues, contact the Developers or visit the CCS office</span>
+                </li>
               </ul>
             </div>
 
-            <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition">
+            <!-- Close button -->
+            <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3.5 rounded-2xl font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-blue-200">
               Close
             </button>
           </div>
