@@ -55,7 +55,7 @@
             {{ isDownloading ? 'Preparing...' : 'Export Excel' }}
           </button>
           <button
-            @click="openGenerateReport"
+            @click="openReportConfig"
             :disabled="isGeneratingReport || paymentEvents.length === 0"
             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl hover:from-violet-700 hover:to-purple-800 transition-all font-semibold text-sm disabled:opacity-60 shadow-md shadow-purple-200 active:scale-95"
           >
@@ -1323,6 +1323,83 @@
     </transition>
     </Teleport>
 
+    <!-- ====== REPORT CONFIG MODAL (event selector) ====== -->
+    <Teleport to="body">
+      <transition name="fade">
+        <div v-if="showReportConfig" class="fixed inset-0 z-[55] flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showReportConfig = false"></div>
+          <div class="relative bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden">
+            <!-- Drag handle (mobile) -->
+            <div class="sm:hidden flex justify-center pt-3 pb-1">
+              <div class="w-10 h-1 rounded-full bg-gray-300"></div>
+            </div>
+            <!-- Header -->
+            <div class="px-5 pt-4 pb-3 border-b border-gray-100">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-violet-100 flex items-center justify-center flex-shrink-0">
+                  <svg class="w-5 h-5 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <div>
+                  <h3 class="font-bold text-gray-900 text-base">Generate Report</h3>
+                  <p class="text-xs text-gray-400">Select which events to include</p>
+                </div>
+                <button @click="showReportConfig = false" class="ml-auto w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition">
+                  <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+              </div>
+            </div>
+            <!-- Event Checkboxes -->
+            <div class="px-5 py-3 max-h-64 overflow-y-auto">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest">Payment Events</p>
+                <div class="flex gap-2">
+                  <button @click="selectedReportEventIds = paymentEvents.map(e => e._id)" class="text-[11px] font-semibold text-violet-600 hover:text-violet-800 transition">Select All</button>
+                  <span class="text-gray-300">·</span>
+                  <button @click="selectedReportEventIds = []" class="text-[11px] font-semibold text-gray-400 hover:text-gray-600 transition">None</button>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label
+                  v-for="event in paymentEvents"
+                  :key="'cfg-' + event._id"
+                  class="flex items-center gap-3 p-2.5 rounded-xl border border-gray-100 hover:border-violet-200 hover:bg-violet-50/40 transition cursor-pointer"
+                  :class="selectedReportEventIds.includes(event._id) ? 'border-violet-300 bg-violet-50' : ''"
+                >
+                  <input
+                    type="checkbox"
+                    :value="event._id"
+                    v-model="selectedReportEventIds"
+                    class="w-4 h-4 rounded accent-violet-600 cursor-pointer flex-shrink-0"
+                  />
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-gray-800 truncate">{{ event.title }}</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                      <span :class="['inline-flex px-1.5 py-0 rounded-full text-[9px] font-bold capitalize', event.type === 'fee' ? 'bg-blue-100 text-blue-700' : event.type === 'membership' ? 'bg-green-100 text-green-700' : event.type === 'donation' ? 'bg-orange-100 text-orange-700' : 'bg-gray-200 text-gray-600']">{{ event.type || 'event' }}</span>
+                      <span class="text-[10px] text-blue-700 font-semibold">₱{{ Number(event.amount_due || 0).toFixed(2) }}</span>
+                      <span v-if="event.deadline" class="text-[10px] text-gray-400">Due: {{ new Date(event.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) }}</span>
+                    </div>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <!-- Footer -->
+            <div class="px-5 py-4 border-t border-gray-100 flex items-center gap-3">
+              <p class="text-xs text-gray-400 flex-1">{{ selectedReportEventIds.length }} of {{ paymentEvents.length }} selected</p>
+              <button @click="showReportConfig = false" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl text-sm font-semibold transition">Cancel</button>
+              <button
+                @click="showReportConfig = false; openGenerateReport()"
+                :disabled="selectedReportEventIds.length === 0"
+                class="px-5 py-2 bg-gradient-to-r from-violet-600 to-purple-700 hover:from-violet-700 hover:to-purple-800 text-white rounded-xl text-sm font-bold transition disabled:opacity-50 shadow-md shadow-purple-200 active:scale-95"
+              >
+                <svg class="w-4 h-4 inline mr-1.5 -mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Generate
+              </button>
+            </div>
+          </div>
+        </div>
+      </transition>
+    </Teleport>
+
     <!-- ====== GENERATE REPORT MODAL ====== -->
     <Teleport to="body">
       <transition name="fade">
@@ -1344,11 +1421,20 @@
             </div>
             <button
               v-if="reportData"
+              @click="downloadReportExcel"
+              class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl text-sm font-semibold hover:opacity-90 transition shadow-md shadow-green-200 active:scale-95"
+              title="Download as Excel"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span class="hidden sm:inline">Excel</span>
+            </button>
+            <button
+              v-if="reportData"
               @click="printReport"
               class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl text-sm font-semibold hover:opacity-90 transition shadow-md shadow-purple-200 active:scale-95"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-              <span class="hidden sm:inline">Print / Save PDF</span>
+              <span class="hidden sm:inline">Print / PDF</span>
               <span class="sm:hidden">Print</span>
             </button>
           </div>
@@ -1390,7 +1476,7 @@
               <div class="bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-2xl p-3 sm:p-4 text-center print:rounded-lg">
                 <p class="text-[10px] sm:text-xs font-bold text-teal-600 uppercase tracking-wider">Paid</p>
                 <p class="text-2xl sm:text-3xl font-extrabold text-teal-800 mt-1">{{ reportData.overall.totalPaid }}</p>
-                <p class="text-[10px] text-teal-600 mt-0.5">of {{ reportData.overall.totalStudents }} students</p>
+                <p class="text-[10px] text-teal-600 mt-0.5">across {{ reportData.overall.totalEvents }} event{{ reportData.overall.totalEvents !== 1 ? 's' : '' }}</p>
               </div>
               <div class="bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-2xl p-3 sm:p-4 text-center print:rounded-lg">
                 <p class="text-[10px] sm:text-xs font-bold text-red-600 uppercase tracking-wider">Unpaid</p>
@@ -1506,6 +1592,7 @@
                         <th class="px-3 py-2.5 text-right text-xs font-bold text-gray-500 whitespace-nowrap">Amount</th>
                         <th class="px-3 py-2.5 text-center text-xs font-bold text-gray-500">Status</th>
                         <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-500 hidden sm:table-cell whitespace-nowrap">Paid Date</th>
+                        <th class="px-3 py-2.5 text-left text-xs font-bold text-gray-500 hidden lg:table-cell whitespace-nowrap">Recorded By</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
@@ -1529,6 +1616,13 @@
                           <span v-if="c.payment_status === 'paid' && c.paid_at">{{ new Date(c.paid_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</span>
                           <span v-else class="text-gray-300">—</span>
                         </td>
+                        <td class="px-3 py-2.5 text-xs text-gray-500 hidden lg:table-cell whitespace-nowrap">
+                          <span v-if="c.payment_status === 'paid'" class="inline-flex items-center gap-1">
+                            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 flex-shrink-0"></span>
+                            {{ formatPaidBy(c) }}
+                          </span>
+                          <span v-else class="text-gray-300">—</span>
+                        </td>
                       </tr>
                     </tbody>
                     <tfoot class="bg-gray-50 border-t border-gray-200">
@@ -1538,6 +1632,7 @@
                         <td class="px-3 py-2 text-right text-xs font-extrabold text-emerald-700 whitespace-nowrap tabular-nums">₱{{ evData.stats.totalCollected.toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</td>
                         <td class="px-3 py-2"></td>
                         <td class="px-3 py-2 hidden sm:table-cell"></td>
+                        <td class="px-3 py-2 hidden lg:table-cell"></td>
                       </tr>
                     </tfoot>
                   </table>
@@ -1642,6 +1737,8 @@ export default {
       showReportModal: false,
       isGeneratingReport: false,
       reportData: null,
+      showReportConfig: false,
+      selectedReportEventIds: [],
     };
   },
   computed: {
@@ -2522,6 +2619,55 @@ export default {
         window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Failed to fetch export preview', type: 'error' } }));
       }
     },
+    openReportConfig() {
+      this.selectedReportEventIds = this.paymentEvents.map(e => e._id);
+      this.showReportConfig = true;
+    },
+    formatPaidBy(c) {
+      if (c.payment_status !== 'paid') return '—';
+      if (!c.paid_by_treasurer) return 'Admin';
+      if (typeof c.paid_by_treasurer === 'string') return c.paid_by_treasurer || 'Admin';
+      const fn = (c.paid_by_treasurer.first_name || '').trim();
+      const ln = (c.paid_by_treasurer.last_name || '').trim();
+      return [fn, ln].filter(Boolean).join(' ') || 'Admin';
+    },
+    downloadReportExcel() {
+      if (!this.reportData) return;
+      const wb = XLSX.utils.book_new();
+      for (const evData of this.reportData.events) {
+        const rows = evData.contributions.map((c, idx) => ({
+          '#': idx + 1,
+          'Student ID': c.student_id || c.id_number || '',
+          'Name': c.student_name || c.full_name || [c.first_name, c.last_name].filter(Boolean).join(' ') || '',
+          'Program': c.program || '',
+          'Year Level': c.year_level || '',
+          'Amount (₱)': Number(c.target_amount || c.amount_paid || c.original_amount || 0).toFixed(2),
+          'Status': c.payment_status === 'paid' ? 'PAID' : 'UNPAID',
+          'Paid Date': (c.payment_status === 'paid' && c.paid_at) ? new Date(c.paid_at).toLocaleString('en-PH') : '',
+          'Recorded By': this.formatPaidBy(c)
+        }));
+        const sheetName = (evData.event.title || 'Event').replace(/[:\\/?*[\]]/g, '').substring(0, 31);
+        const ws = XLSX.utils.json_to_sheet(rows);
+        ws['!cols'] = [{ wch: 4 }, { wch: 14 }, { wch: 28 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 8 }, { wch: 22 }, { wch: 20 }];
+        XLSX.utils.book_append_sheet(wb, ws, sheetName);
+      }
+      const summaryRows = this.reportData.events.map(ed => ({
+        'Event': ed.event.title,
+        'Type': ed.event.type || '',
+        'Amount Due (₱)': Number(ed.event.amount_due || 0).toFixed(2),
+        'Total Students': ed.stats.total,
+        'Paid': ed.stats.paid,
+        'Unpaid': ed.stats.unpaid,
+        'Rate (%)': ed.stats.pct,
+        'Collected (₱)': ed.stats.totalCollected.toFixed(2)
+      }));
+      const wsSummary = XLSX.utils.json_to_sheet(summaryRows);
+      wsSummary['!cols'] = [{ wch: 28 }, { wch: 12 }, { wch: 14 }, { wch: 14 }, { wch: 8 }, { wch: 8 }, { wch: 10 }, { wch: 14 }];
+      XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+      const dateSuffix = new Date().toISOString().split('T')[0];
+      XLSX.writeFile(wb, `Payment_Report_${dateSuffix}.xlsx`);
+      window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Excel report downloaded successfully', type: 'success' } }));
+    },
     async openGenerateReport() {
       if (this.isGeneratingReport) return;
       this.isGeneratingReport = true;
@@ -2531,8 +2677,9 @@ export default {
         const token = localStorage.getItem('authToken');
         const eventResults = [];
         let totalStudents = 0, totalPaid = 0, totalUnpaid = 0, totalCollected = 0, expectedTotal = 0;
+        const eventsToReport = this.paymentEvents.filter(e => this.selectedReportEventIds.includes(e._id));
 
-        for (const event of this.paymentEvents) {
+        for (const event of eventsToReport) {
           const params = new URLSearchParams();
           params.set('limit', '5000');
           params.set('payment_id', event._id);
@@ -2583,7 +2730,7 @@ export default {
           generatedAt: new Date().toISOString(),
           events: eventResults,
           overall: {
-            totalEvents: this.paymentEvents.length,
+            totalEvents: eventsToReport.length,
             totalStudents,
             totalPaid,
             totalUnpaid,
