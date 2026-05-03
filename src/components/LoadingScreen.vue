@@ -59,7 +59,7 @@ const departmentLogo = computed(() => {
 const loadingScreenStyle = computed(() => {
   if (isCOE.value) {
     return {
-      background: 'linear-gradient(135deg, rgba(74, 18, 7, 0.82) 0%, rgba(124, 34, 16, 0.82) 100%), url(/assets/classroom-bg.jpg)',
+      background: 'linear-gradient(135deg, rgba(74, 18, 7, 0.82) 0%, rgba(124, 34, 16, 0.82) 100%), url(/assets/jrmsu-landscape.jpg)',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed'
@@ -88,7 +88,7 @@ const imagesToPreload = [
   '/help.svg',
   '/visibility_on.svg',
   '/visibility_off.svg',
-  '/classroom-bg.jpg',
+  '/jrmsu-landscape.jpg',
   jrmsuLogo
 ]
 
