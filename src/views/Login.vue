@@ -382,19 +382,19 @@
     </div>
   </div>
 
-  <div class="mobile-bg-panel md:hidden min-h-screen flex flex-col w-full">
-    <div class="flex-shrink-0 h-[33vh] flex flex-col items-center justify-center text-center text-white px-4 relative z-10">
-      <div class="w-28 h-28 mx-auto mb-3 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
+  <div class="mobile-bg-panel md:hidden h-screen flex flex-col w-full">
+    <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
+      <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
         <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
       </div>
-      <h1 class="text-5xl font-extrabold italic mb-1">SSAAM</h1>
-      <p class="text-base mb-4">Let's Get Started!</p>
+      <h1 class="text-6xl font-extrabold italic mb-2">SSAAM</h1>
+      <p class="text-lg mb-8">Let's Get Started!</p>
       <p class="text-sm opacity-90">You are a few clicks away from your profile.</p>
       <p class="text-sm opacity-90">Input your JRMSU Student ID to continue.</p>
     </div>
 
-    <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-7 relative z-10 overflow-y-auto">
+    <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 relative z-10">
       <div class="max-w-md mx-auto">
 
         <div class="mb-6 text-center">
@@ -587,12 +587,6 @@ const handleLoadingComplete = () => {
     router.push("/dashboard")
   }
 }
-
-// Navigate the moment the login API succeeds — don't wait for the animation
-// timer, which fires independently and may tick before the API has responded.
-watch(isNavigationPending, (val) => {
-  if (val) router.push("/dashboard")
-})
 
 const showDevelopersPopup = ref(false)
 const showErrorNotification = ref(false)
