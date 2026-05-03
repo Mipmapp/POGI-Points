@@ -20089,7 +20089,8 @@ onUnmounted(() => {
 /* Gray Scrollbar (global) */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #c1c5cc transparent;
+  scrollbar-color: #d1d5db transparent;
+  overscroll-behavior: none;
 }
 
 *::-webkit-scrollbar {
@@ -20102,12 +20103,12 @@ onUnmounted(() => {
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: #c1c5cc;
+  background-color: #d1d5db;
   border-radius: 999px;
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background-color: #a0a6b0;
+  background-color: #bfdbfe;
 }
 
 .sidebar-scroll {
