@@ -135,9 +135,9 @@
 
   <!-- Step 3 of 3: Face ID verification / first-time enrollment -->
   <transition name="fade">
-    <div v-if="showFaceModal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center z-[130] p-0 sm:p-6" @click.self="cancelFaceVerification">
+    <div v-if="showFaceModal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-end sm:items-center justify-center z-[130] p-0 sm:p-6" @click.self="pendingUserIsRestrictedRole() ? undefined : cancelFaceVerification()">
       <transition name="face-slide" appear>
-        <div :class="['relative w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl overflow-hidden border', faceEnrollMode ? 'bg-gradient-to-br from-slate-950 via-violet-950/40 to-slate-950 shadow-[0_0_80px_rgba(139,92,246,0.4)] border-violet-500/25' : 'bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950 shadow-[0_0_80px_rgba(59,130,246,0.4)] border-blue-500/20']">
+        <div :class="['relative w-full sm:max-w-sm rounded-t-3xl sm:rounded-3xl border max-h-[92dvh] sm:max-h-none overflow-y-auto overscroll-contain', faceEnrollMode ? 'bg-gradient-to-br from-slate-950 via-violet-950/40 to-slate-950 shadow-[0_0_80px_rgba(139,92,246,0.4)] border-violet-500/25' : 'bg-gradient-to-br from-slate-950 via-blue-950/30 to-slate-950 shadow-[0_0_80px_rgba(59,130,246,0.4)] border-blue-500/20']">
 
           <!-- Ambient corner glows -->
           <div :class="['absolute -top-20 -left-20 w-44 h-44 rounded-full blur-3xl pointer-events-none opacity-70', faceEnrollMode ? 'bg-violet-500/25' : 'bg-blue-500/25']"></div>
@@ -148,7 +148,7 @@
             <div class="w-10 h-1 rounded-full bg-white/15"></div>
           </div>
 
-          <div class="relative px-5 sm:px-7 pt-5 pb-6 sm:pt-7 sm:pb-8">
+          <div class="relative px-5 sm:px-7 pt-4 pb-5 sm:pt-7 sm:pb-8">
 
             <!-- ── ENROLLMENT MODE header ─────────────────────────────────── -->
             <template v-if="faceEnrollMode">
@@ -225,7 +225,7 @@
             </div>
 
             <!-- ── Camera frame ────────────────────────────────────────────── -->
-            <div :class="['relative mx-auto rounded-2xl overflow-hidden bg-black shadow-2xl', faceEnrollMode ? 'ring-2 ring-violet-500/40' : 'ring-1 ring-blue-500/20']" style="aspect-ratio:1/1; max-width:300px;">
+            <div :class="['relative mx-auto rounded-2xl overflow-hidden bg-black shadow-2xl', faceEnrollMode ? 'ring-2 ring-violet-500/40' : 'ring-1 ring-blue-500/20']" style="aspect-ratio:1/1; width:min(260px,100%); max-width:300px;">
               <video ref="faceVideoEl" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover -scale-x-100"></video>
 
               <!-- Loading spinner (camera starting or models loading) -->
@@ -313,7 +313,12 @@
 
             <!-- ── Buttons ────────────────────────────────────────────────── -->
             <div class="flex gap-3 mt-6">
-              <button @click="cancelFaceVerification" class="flex-none px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white rounded-2xl text-sm font-medium transition-all active:scale-95">
+              <!-- Cancel hidden for restricted roles in enrollment — they must complete setup -->
+              <button
+                v-if="!faceEnrollMode || !pendingUserIsRestrictedRole()"
+                @click="cancelFaceVerification"
+                class="flex-none px-5 py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-white/70 hover:text-white rounded-2xl text-sm font-medium transition-all active:scale-95"
+              >
                 Cancel
               </button>
 
@@ -1374,7 +1379,14 @@ async function proceedToFaceVerification() {
     setFaceStatus('Position your face', 'scanning');
     await startFaceCamera();
   } catch (e) {
-    noFacesEnrolled.value = true;
+    // Even on network/parse errors, restricted roles must go through enrollment
+    // rather than being silently given the bypass button.
+    if (pendingUserIsRestrictedRole()) {
+      faceEnrollMode.value = true;
+      await startFaceCamera();
+    } else {
+      noFacesEnrolled.value = true;
+    }
   }
 }
 
@@ -1433,16 +1445,32 @@ async function startFaceCamera() {
     faceLoadingModels.value = false;
 
     faceStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user', width: 640, height: 480 } });
-    await new Promise(r => setTimeout(r, 30));
+    // Wait for Vue to flush DOM updates so faceVideoEl is mounted
+    await nextTick();
+    await new Promise(r => setTimeout(r, 50));
     const video = faceVideoEl.value;
-    if (!video) return;
-    video.srcObject = faceStream;
-    await new Promise(resolve => { video.onloadedmetadata = () => resolve(); });
-    await video.play();
+    if (!video) {
+      // Still not mounted — retry after one more tick
+      await nextTick();
+      if (!faceVideoEl.value) {
+        faceError.value = 'Camera display not ready. Please try again.';
+        setFaceStatus('Display error', 'error');
+        return;
+      }
+    }
+    const vid = faceVideoEl.value;
+    vid.srcObject = faceStream;
+    await new Promise(resolve => { vid.onloadedmetadata = () => resolve(); });
+    await vid.play();
     faceCameraOn.value = true;
     faceMatchStreak = 0;
     faceMatchStreakDisplay.value = 0;
-    runFaceLoop();
+    // Only run the match loop in verification mode; enrollment mode uses
+    // captureAndEnrollFace() instead — running the loop against an empty
+    // faceEnrolled array would waste CPU and interfere with capture.
+    if (!faceEnrollMode.value) {
+      runFaceLoop();
+    }
   } catch (e) {
     faceLoadingModels.value = false;
     faceError.value = 'Could not access camera. ' + (e.message || '');
