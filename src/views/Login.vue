@@ -382,8 +382,8 @@
     </div>
   </div>
 
-  <div class="md:hidden min-h-screen flex flex-col w-full bg-white fixed inset-0 overflow-x-hidden overflow-y-auto" style="scrollbar-width:none;-ms-overflow-style:none;">
-    <div class="mobile-hero-bg text-center text-white pt-12 pb-8 px-4 relative z-10">
+  <div class="mobile-bg-full md:hidden min-h-screen flex flex-col w-full fixed inset-0 overflow-x-hidden overflow-y-auto" style="scrollbar-width:none;-ms-overflow-style:none;">
+    <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
       <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
         <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
@@ -1361,7 +1361,7 @@ function manualRetryFace() {
   box-shadow: inset -18px 0 40px rgba(0,0,0,0.25), 8px 0 32px rgba(10,30,130,0.30);
 }
 
-.mobile-hero-bg {
+.mobile-bg-full {
   background: linear-gradient(to bottom, rgba(8, 20, 70, 0.48) 0%, rgba(8, 20, 70, 0.72) 100%),
               url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;
 }
