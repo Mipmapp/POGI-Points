@@ -5031,7 +5031,7 @@
             <div v-else-if="rfidListFilteredUsers.length === 0" class="text-center text-gray-500 py-8">
               No users found in this category.
             </div>
-            <div v-else class="max-h-96 overflow-y-auto">
+            <div v-else class="max-h-96">
               <table class="w-full text-sm">
                 <thead :class="['sticky top-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
                   <tr>
@@ -7136,7 +7136,7 @@
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M10.5 1.5H5.75A2.75 2.75 0 003 4.25v11.5A2.75 2.75 0 005.75 18.5h8.5a2.75 2.75 0 002.75-2.75V9.5m-8-8v8m4-4h4m0 0v4"></path></svg>
                 Absent Students ({{ filteredAbsentLogsForCurrentSession.length }})
               </div>
-              <div class="max-h-96 overflow-y-auto space-y-2">
+              <div class="max-h-96 space-y-2">
                 <transition-group tag="div" enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2" class="space-y-2">
                   <div v-for="log in filteredAbsentLogsForCurrentSession" :key="log._id" :class="['flex items-center justify-between p-3 rounded-lg border-2 hover:shadow-md transform-gpu transition-all duration-200 hover:scale-[1.02]', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-blue-50 border-blue-200 hover:border-blue-400']">
                     <div class="flex items-center gap-3">
@@ -7182,7 +7182,7 @@
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                   Excused Records ({{ excusedLogsForCurrentSession.length }})
                 </div>
-                <div class="max-h-96 overflow-y-auto space-y-2">
+                <div class="max-h-96 space-y-2">
                   <transition-group tag="div" enter-active-class="transition transform duration-300" enter-from-class="opacity-0 -translate-y-2" enter-to-class="opacity-100 translate-y-0" leave-active-class="transition transform duration-200" leave-from-class="opacity-100 translate-y-0" leave-to-class="opacity-0 -translate-y-2" class="space-y-2">
                     <div v-for="log in excusedLogsForCurrentSession" :key="log._id" :class="['p-3 rounded-lg border-2 flex items-start justify-between gap-3 hover:shadow-md transform-gpu transition-all duration-250 hover:scale-[1.01]', isCOE ? 'bg-orange-50 border-orange-200 hover:border-orange-400' : 'bg-blue-50 border-blue-200 hover:border-blue-400']">
                       <div class="flex items-start gap-3 min-w-0 flex-1">
