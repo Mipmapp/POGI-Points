@@ -1405,7 +1405,7 @@
       <transition name="fade">
         <div v-if="showReportModal" class="fixed inset-0 z-[60] bg-white overflow-y-auto">
           <!-- Sticky top bar (screen-only) -->
-          <div class="print:hidden sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm px-4 sm:px-6 py-3 flex items-center gap-3">
+          <div class="print:hidden sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-200 shadow-sm px-3 sm:px-6 py-2.5 flex items-center gap-2 sm:gap-3">
             <button
               @click="showReportModal = false"
               class="flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition"
@@ -1414,28 +1414,32 @@
               <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
             <div class="flex-1 min-w-0">
-              <p class="font-bold text-gray-900 text-sm leading-tight truncate">Payment Transactions Report</p>
-              <p v-if="reportData" class="text-[11px] text-gray-400 truncate">
-                Generated {{ new Date(reportData.generatedAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+              <p class="font-bold text-gray-900 text-sm leading-tight truncate">
+                <span class="sm:hidden">Transactions Report</span>
+                <span class="hidden sm:inline">Payment Transactions Report</span>
+              </p>
+              <p v-if="reportData" class="text-[10px] sm:text-[11px] text-gray-400 truncate">
+                <span class="sm:hidden">{{ new Date(reportData.generatedAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</span>
+                <span class="hidden sm:inline">Generated {{ new Date(reportData.generatedAt).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</span>
               </p>
             </div>
             <button
               v-if="reportData"
               @click="downloadReportExcel"
-              class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl text-sm font-semibold hover:opacity-90 transition shadow-md shadow-green-200 active:scale-95"
+              class="flex-shrink-0 inline-flex items-center justify-center gap-1.5 w-9 h-9 sm:w-auto sm:h-auto sm:px-4 sm:py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl text-sm font-semibold hover:opacity-90 transition shadow-md shadow-green-200 active:scale-95"
               title="Download as Excel"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
               <span class="hidden sm:inline">Excel</span>
             </button>
             <button
               v-if="reportData"
               @click="printReport"
-              class="flex-shrink-0 inline-flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl text-sm font-semibold hover:opacity-90 transition shadow-md shadow-purple-200 active:scale-95"
+              class="flex-shrink-0 inline-flex items-center justify-center gap-1.5 w-9 h-9 sm:w-auto sm:h-auto sm:px-4 sm:py-2 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl text-sm font-semibold hover:opacity-90 transition shadow-md shadow-purple-200 active:scale-95"
+              title="Print / Save PDF"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+              <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
               <span class="hidden sm:inline">Print / PDF</span>
-              <span class="sm:hidden">Print</span>
             </button>
           </div>
 
