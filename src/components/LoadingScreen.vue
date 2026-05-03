@@ -67,7 +67,7 @@ const loadingScreenStyle = computed(() => {
   }
   // default/CCS — dark blue with side silhouette
   return {
-    background: 'linear-gradient(160deg, rgba(20, 65, 200, 0.70) 0%, rgba(8, 28, 125, 0.82) 100%), url(/jrmsu-landscape.jpg) center 35% / cover no-repeat'
+    background: 'linear-gradient(160deg, rgba(20, 65, 200, 0.82) 0%, rgba(8, 28, 125, 0.91) 100%), url(/jrmsu-landscape.jpg) center 35% / cover no-repeat'
   }
 })
 
