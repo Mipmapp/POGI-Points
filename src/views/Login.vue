@@ -588,6 +588,12 @@ const handleLoadingComplete = () => {
   }
 }
 
+// Navigate the moment the login API succeeds — don't wait for the animation
+// timer, which fires independently and may tick before the API has responded.
+watch(isNavigationPending, (val) => {
+  if (val) router.push("/dashboard")
+})
+
 const showDevelopersPopup = ref(false)
 const showErrorNotification = ref(false)
 const showContactModal = ref(false)
