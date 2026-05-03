@@ -1344,7 +1344,8 @@ async function proceedToFaceVerification() {
   showFaceModal.value = true;
 
   if (!pendingUser || !pendingUser.token) {
-    noFacesEnrolled.value = true;
+    if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; await startFaceCamera(); }
+    else { noFacesEnrolled.value = true; }
     return;
   }
 
@@ -1353,13 +1354,21 @@ async function proceedToFaceVerification() {
       headers: { 'Authorization': `Bearer ${pendingUser.token}` },
     });
     if (!res.ok) {
-      noFacesEnrolled.value = true;
+      if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; await startFaceCamera(); }
+      else { noFacesEnrolled.value = true; }
       return;
     }
     const data = await res.json();
     faceEnrolled = (data.faces || []).filter(f => Array.isArray(f.descriptor) && f.descriptor.length === 128);
     if (faceEnrolled.length === 0) {
-      noFacesEnrolled.value = true;
+      // Co-admin / treasurer must enroll their face inline — no bypass allowed.
+      // Super-admin gets the "Continue Anyway" option.
+      if (pendingUserIsRestrictedRole()) {
+        faceEnrollMode.value = true;
+        await startFaceCamera();
+      } else {
+        noFacesEnrolled.value = true;
+      }
       return;
     }
     setFaceStatus('Position your face', 'scanning');
