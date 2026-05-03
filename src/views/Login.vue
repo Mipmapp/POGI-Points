@@ -1352,7 +1352,8 @@ function manualRetryFace() {
 
 .desktop-bg-panel {
   background:
-    linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.52) 100%),
+    radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%),
+    linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 100%),
     url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;
   display: flex;
   flex-direction: column;
@@ -1367,7 +1368,8 @@ function manualRetryFace() {
 
 .mobile-bg-full {
   background:
-    linear-gradient(to bottom, rgba(0,0,0,0.18) 0%, rgba(0,0,0,0.52) 100%),
+    radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%),
+    linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 100%),
     url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;
 }
 .fade-enter-active,
