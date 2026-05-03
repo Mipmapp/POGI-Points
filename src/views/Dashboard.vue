@@ -2,98 +2,133 @@
 
   <!-- ── Face ID Setup Required ── blocks all dashboard access for co-admin / treasurer ── -->
   <transition name="fade">
-    <div v-if="requiresFaceSetup" class="fixed inset-0 z-[400] bg-gray-100/95 backdrop-blur-sm flex flex-col overflow-y-auto">
+    <div v-if="requiresFaceSetup" class="fixed inset-0 z-[400] flex flex-col lg:flex-row overflow-hidden bg-white">
 
-      <!-- Sticky gradient header -->
-      <div :class="['sticky top-0 z-10 flex-shrink-0 px-4 sm:px-8 pt-safe-top', isTreasurer ? 'bg-gradient-to-r from-teal-600 to-cyan-500' : 'bg-gradient-to-r from-violet-600 to-purple-600']">
-        <div class="max-w-2xl mx-auto py-4 sm:py-5 flex items-center gap-4">
-          <!-- Icon -->
-          <div class="w-11 h-11 sm:w-13 sm:h-13 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0 shadow-inner">
-            <svg class="w-6 h-6 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
-            </svg>
+      <!-- ═══ LEFT PANEL — info + terms (desktop: fixed sidebar, mobile: top section) ═══ -->
+      <div :class="['flex flex-col flex-shrink-0 lg:w-[420px] xl:w-[460px] lg:h-full lg:overflow-y-auto', isTreasurer ? 'bg-gradient-to-br from-teal-700 via-teal-600 to-cyan-500' : 'bg-gradient-to-br from-violet-700 via-violet-600 to-purple-600']">
+
+        <!-- Top branding area -->
+        <div class="px-6 sm:px-8 lg:px-10 pt-8 sm:pt-10 lg:pt-12 pb-6 lg:pb-8 flex-shrink-0">
+
+          <!-- SSAAM + role badge row -->
+          <div class="flex items-center gap-3 mb-8 lg:mb-10">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                </svg>
+              </div>
+              <span class="text-white/80 text-sm font-bold tracking-wide">SSAAM · JRMSU</span>
+            </div>
+            <div class="flex-1"></div>
+            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest bg-white/15 border border-white/25 text-white">
+              {{ isTreasurer ? 'Treasurer' : 'Co-Admin' }}
+            </span>
           </div>
-          <div class="min-w-0 flex-1">
-            <p class="text-white/70 text-[11px] font-bold uppercase tracking-widest leading-none mb-0.5">
-              {{ isTreasurer ? 'Treasurer' : 'Co-Admin' }} · One-time Security Setup
-            </p>
-            <h1 class="text-white text-lg sm:text-xl font-extrabold leading-tight tracking-tight">Face ID Setup Required</h1>
+
+          <!-- Big Face ID icon -->
+          <div class="flex items-center justify-center lg:justify-start mb-6">
+            <div class="relative">
+              <div class="absolute inset-0 rounded-3xl bg-white/20 blur-2xl scale-110"></div>
+              <div class="relative w-20 h-20 lg:w-24 lg:h-24 rounded-3xl bg-white/15 border border-white/25 backdrop-blur-sm flex items-center justify-center shadow-xl">
+                <svg class="w-10 h-10 lg:w-12 lg:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
+                </svg>
+              </div>
+            </div>
           </div>
-          <!-- Step pill -->
-          <span class="flex-shrink-0 px-3 py-1 rounded-full text-[11px] font-black bg-white/20 text-white border border-white/20">
-            Required
-          </span>
+
+          <!-- Headline -->
+          <h1 class="text-white font-extrabold text-2xl sm:text-3xl lg:text-3xl tracking-tight leading-tight mb-2 text-center lg:text-left">
+            Face ID Setup<br class="hidden lg:block"/> Required
+          </h1>
+          <p class="text-white/65 text-sm leading-relaxed text-center lg:text-left max-w-xs mx-auto lg:mx-0">
+            Your account requires Face ID enrollment before you can access the dashboard. This is a <strong class="text-white/90">one-time setup</strong> that takes less than a minute.
+          </p>
         </div>
-      </div>
 
-      <!-- Page body -->
-      <div class="flex-1 w-full max-w-2xl mx-auto px-4 sm:px-6 py-6 space-y-4">
+        <!-- Divider -->
+        <div class="mx-6 sm:mx-8 lg:mx-10 border-t border-white/15 flex-shrink-0"></div>
 
-        <!-- Intro card -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 px-5 py-4 flex items-start gap-4">
-          <div :class="['flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center mt-0.5', isTreasurer ? 'bg-teal-100' : 'bg-violet-100']">
-            <svg :class="['w-5 h-5', isTreasurer ? 'text-teal-600' : 'text-violet-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-          </div>
-          <div class="min-w-0">
-            <p class="text-sm font-bold text-gray-800 mb-0.5">Your dashboard is locked</p>
-            <p class="text-xs text-gray-500 leading-relaxed">
-              As a <strong class="text-gray-700">{{ isTreasurer ? 'Treasurer' : 'Co-Admin' }}</strong>, JRMSU requires you to enroll Face ID before accessing the dashboard. Scroll down to complete the one-time setup below.
-            </p>
-          </div>
-        </div>
-
-        <!-- Terms & Conditions card -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          <!-- Card header -->
-          <div :class="['px-5 py-3 border-b border-gray-100 flex items-center gap-2', isTreasurer ? 'bg-teal-50' : 'bg-violet-50']">
-            <svg :class="['w-4 h-4 flex-shrink-0', isTreasurer ? 'text-teal-600' : 'text-violet-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-            </svg>
-            <span :class="['text-[11px] font-black uppercase tracking-widest', isTreasurer ? 'text-teal-700' : 'text-violet-700']">Why Face ID is required for your role</span>
-          </div>
-          <!-- Terms list -->
-          <div class="divide-y divide-gray-100">
-            <div v-for="(term, i) in faceSetupTerms" :key="i" class="flex items-start gap-3 px-5 py-3.5">
-              <div :class="['flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-black mt-0.5', isTreasurer ? 'bg-gradient-to-br from-teal-500 to-cyan-600' : 'bg-gradient-to-br from-violet-500 to-purple-600']">
+        <!-- Terms list -->
+        <div class="px-6 sm:px-8 lg:px-10 py-6 lg:py-8 flex-shrink-0 lg:flex-1">
+          <p class="text-white/50 text-[10px] font-black uppercase tracking-widest mb-4">Why this is required</p>
+          <div class="space-y-4">
+            <div v-for="(term, i) in faceSetupTerms" :key="i" class="flex items-start gap-3">
+              <div class="flex-shrink-0 w-6 h-6 rounded-lg bg-white/15 border border-white/20 flex items-center justify-center text-white text-[10px] font-black mt-px">
                 {{ i + 1 }}
               </div>
               <div class="min-w-0">
-                <p class="text-xs font-bold text-gray-800 leading-snug">{{ term.title }}</p>
-                <p class="text-[11px] text-gray-500 leading-relaxed mt-0.5">{{ term.body }}</p>
+                <p class="text-white/90 text-[13px] font-bold leading-snug">{{ term.title }}</p>
+                <p class="text-white/50 text-[11px] leading-relaxed mt-0.5">{{ term.body }}</p>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Face ID enrollment card -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          <div :class="['px-5 py-3 border-b border-gray-100 flex items-center gap-2', isTreasurer ? 'bg-teal-50' : 'bg-violet-50']">
-            <svg :class="['w-4 h-4 flex-shrink-0', isTreasurer ? 'text-teal-600' : 'text-violet-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
-            </svg>
-            <span :class="['text-[11px] font-black uppercase tracking-widest', isTreasurer ? 'text-teal-700' : 'text-violet-700']">Enroll your Face ID to unlock the dashboard</span>
-          </div>
-          <div class="p-4 sm:p-5">
-            <FaceRecognitionSettings @enrolled="onMasterFaceEnrolled" />
-          </div>
-        </div>
-
-        <!-- Auto-unlock notice -->
-        <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5">
-          <svg class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-2.194-.833-2.964 0L3.232 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+        <!-- Auto-unlock tip at bottom of left panel (desktop only) -->
+        <div class="hidden lg:flex items-start gap-3 mx-10 mb-10 bg-white/10 border border-white/15 rounded-2xl px-4 py-3.5 flex-shrink-0">
+          <svg class="w-4 h-4 text-white/70 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
           </svg>
-          <p class="text-[11px] text-amber-700 leading-relaxed">
-            <strong>Auto-unlock:</strong> Once you successfully enroll at least one face above, this screen will automatically dismiss and you will have full access to your dashboard.
+          <p class="text-[11px] text-white/65 leading-relaxed">
+            This screen <strong class="text-white/90">auto-unlocks</strong> the moment your face is successfully enrolled — no button needed.
           </p>
         </div>
 
-        <!-- Bottom padding for mobile safe area -->
-        <div class="h-4 sm:h-2"></div>
+      </div>
+
+      <!-- ═══ RIGHT PANEL — Face ID enrollment (desktop: scrollable main area, mobile: bottom) ═══ -->
+      <div class="flex-1 bg-gray-50 lg:h-full lg:overflow-y-auto flex flex-col">
+
+        <!-- Right panel header (desktop) -->
+        <div class="hidden lg:flex items-center gap-3 px-8 xl:px-12 py-6 border-b border-gray-200 bg-white flex-shrink-0">
+          <div :class="['w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0', isTreasurer ? 'bg-teal-100' : 'bg-violet-100']">
+            <svg :class="['w-4 h-4', isTreasurer ? 'text-teal-600' : 'text-violet-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
+            </svg>
+          </div>
+          <div>
+            <p :class="['text-[10px] font-black uppercase tracking-widest', isTreasurer ? 'text-teal-600' : 'text-violet-600']">Step 1 of 1</p>
+            <p class="text-gray-800 text-sm font-bold leading-none">Enroll your Face ID</p>
+          </div>
+          <div class="flex-1"></div>
+          <span class="px-3 py-1.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
+            Dashboard Locked
+          </span>
+        </div>
+
+        <!-- Enrollment area -->
+        <div class="flex-1 px-4 sm:px-6 lg:px-8 xl:px-12 py-6 lg:py-8">
+
+          <!-- Mobile section label -->
+          <div :class="['lg:hidden flex items-center gap-2 mb-4', isTreasurer ? 'text-teal-600' : 'text-violet-600']">
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
+            </svg>
+            <span class="text-[11px] font-black uppercase tracking-widest">Enroll your Face ID to continue</span>
+          </div>
+
+          <!-- FaceRecognitionSettings embedded -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <FaceRecognitionSettings @enrolled="onMasterFaceEnrolled" />
+          </div>
+
+          <!-- Auto-unlock tip (mobile only) -->
+          <div class="lg:hidden mt-4 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3.5">
+            <svg class="w-4 h-4 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="text-[11px] text-amber-700 leading-relaxed">
+              <strong>Auto-unlock:</strong> This screen automatically dismisses the moment your face is successfully enrolled.
+            </p>
+          </div>
+
+          <div class="h-6"></div>
+        </div>
       </div>
 
     </div>
