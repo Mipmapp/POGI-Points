@@ -95,7 +95,7 @@
               <div class="px-5 py-3.5 flex items-center justify-between gap-3">
                 <p class="text-[11px] text-gray-500 leading-snug flex-1">Download the APK and install it directly on your Android device for a faster, offline-ready experience.</p>
                 <a
-                  href="https://www.mediafire.com/file/g3v17bvzzrot54q/app-debug.apk/file"
+                  href="https://www.mediafire.com/file/g3v17bvzzrot54q/ssaam.apk/file"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold shadow-sm hover:shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition-all"
