@@ -340,6 +340,13 @@
               </button>
             </div>
 
+            <!-- Set up later escape hatch (enroll mode only) -->
+            <p v-if="faceEnrollMode" class="text-center mt-3">
+              <button @click="completeLoginFromFace" class="text-[11px] text-white/25 hover:text-white/50 transition-colors underline underline-offset-2">
+                Set up later — dashboard access will be restricted
+              </button>
+            </p>
+
           </div>
         </div>
       </transition>

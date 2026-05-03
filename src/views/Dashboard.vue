@@ -1,4 +1,91 @@
 <template>
+
+  <!-- ── Face ID Setup Required ── blocks all dashboard access for co-admin / treasurer ── -->
+  <transition name="fade">
+    <div v-if="requiresFaceSetup" class="fixed inset-0 z-[400] bg-black/95 backdrop-blur-xl flex items-end sm:items-center justify-center p-0 sm:p-6 overflow-y-auto">
+      <div class="relative w-full sm:max-w-lg bg-gradient-to-br from-slate-950 via-violet-950/25 to-slate-950 rounded-t-3xl sm:rounded-3xl border border-violet-500/20 shadow-[0_0_100px_rgba(139,92,246,0.35)] flex flex-col max-h-[93vh] sm:max-h-[90vh]">
+
+        <!-- Ambient glows -->
+        <div class="absolute -top-24 -left-24 w-60 h-60 bg-violet-500/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-24 -right-24 w-60 h-60 bg-purple-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <!-- Drag handle (mobile only) -->
+        <div class="sm:hidden flex justify-center pt-3 pb-1 flex-shrink-0">
+          <div class="w-10 h-1 rounded-full bg-white/15"></div>
+        </div>
+
+        <!-- Fixed header -->
+        <div class="px-6 sm:px-8 pt-6 sm:pt-8 pb-5 flex-shrink-0">
+          <!-- Role badge -->
+          <div class="flex items-center justify-center mb-5">
+            <span :class="['px-4 py-1.5 rounded-full text-[11px] font-black uppercase tracking-widest border', currentUser.actualRole === 'treasurer' ? 'bg-teal-500/15 border-teal-400/30 text-teal-300' : 'bg-violet-500/15 border-violet-400/30 text-violet-300']">
+              {{ currentUser.actualRole === 'treasurer' ? 'Treasurer' : 'Co-Admin' }} · Security Required
+            </span>
+          </div>
+
+          <!-- Icon -->
+          <div class="flex items-center justify-center mb-5">
+            <div class="relative">
+              <div class="absolute inset-0 rounded-2xl blur-3xl opacity-60 animate-pulse" :class="currentUser.actualRole === 'treasurer' ? 'bg-teal-500' : 'bg-violet-500'"></div>
+              <div :class="['relative w-20 h-20 sm:w-24 sm:h-24 rounded-3xl flex items-center justify-center shadow-2xl', currentUser.actualRole === 'treasurer' ? 'bg-gradient-to-br from-teal-500 to-cyan-600' : 'bg-gradient-to-br from-violet-500 to-purple-700']">
+                <svg class="w-10 h-10 sm:w-12 sm:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <h2 class="text-2xl sm:text-3xl font-extrabold text-white text-center mb-2 tracking-tight">Face ID Setup Required</h2>
+          <p class="text-sm text-white/45 text-center leading-relaxed max-w-sm mx-auto">
+            Your account cannot access the dashboard until Face ID is enrolled. This is a one-time setup.
+          </p>
+        </div>
+
+        <!-- Scrollable content area -->
+        <div class="flex-1 overflow-y-auto px-6 sm:px-8 pb-8 min-h-0 space-y-5">
+
+          <!-- Terms & Conditions -->
+          <div class="bg-white/[0.04] border border-white/[0.08] rounded-2xl overflow-hidden">
+            <div class="px-4 py-3 border-b border-white/[0.06] flex items-center gap-2">
+              <svg class="w-4 h-4 text-white/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              <span class="text-[11px] font-black uppercase tracking-widest text-white/40">Why Face ID is required for your role</span>
+            </div>
+            <div class="p-4 space-y-4">
+              <div v-for="(term, i) in faceSetupTerms" :key="i" class="flex items-start gap-3">
+                <div :class="['flex-shrink-0 w-6 h-6 rounded-lg flex items-center justify-center text-white text-[10px] font-black mt-px', currentUser.actualRole === 'treasurer' ? 'bg-teal-500/25 text-teal-300' : 'bg-violet-500/25 text-violet-300']">
+                  {{ i + 1 }}
+                </div>
+                <div class="min-w-0">
+                  <p class="text-xs font-bold text-white/80 leading-snug">{{ term.title }}</p>
+                  <p class="text-[11px] text-white/38 leading-relaxed mt-0.5">{{ term.body }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Face ID enrollment -->
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <svg class="w-4 h-4 text-white/40 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/></svg>
+              <span class="text-[11px] font-black uppercase tracking-widest text-white/40">Enroll your Face ID to continue</span>
+            </div>
+            <FaceRecognitionSettings @enrolled="onMasterFaceEnrolled" />
+          </div>
+
+          <!-- Bottom notice -->
+          <div class="flex items-start gap-3 bg-amber-500/8 border border-amber-500/18 rounded-2xl px-4 py-3.5">
+            <svg class="w-4 h-4 text-amber-400/80 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <p class="text-[11px] text-amber-200/55 leading-relaxed">
+              Once you successfully enroll at least one face above, this screen will automatically unlock and you will have full access to your dashboard.
+            </p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </transition>
+
   <ProgrammerLoadingEffect :visible="isPageLoading" message="AUTHENTICATING" :theme="userDepartment ? userDepartment.label : ''" />
   <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" :theme="userDepartment ? userDepartment.label : ''" />
   <SessionExpiredModal :visible="showSessionExpiredModal" @logout="confirmLogout" />
@@ -12553,6 +12640,48 @@ const isCNAHS = computed(() => false)
 // Admin role helpers
 const isTreasurer = computed(() => currentUser.value.role === 'treasurer')
 const isSuperAdmin = computed(() => !!(currentUser.value.isMaster && currentUser.value.role === 'admin'))
+
+// ── Face ID Setup Gate (co-admin / treasurer) ────────────────────────────
+// If a co-admin or treasurer logs in without an enrolled Face ID, the
+// dashboard is blocked with a full-screen overlay until they enroll.
+const faceSetupNeeded = ref(false)
+const faceSetupChecking = ref(false)
+const isRestrictedMasterRole = computed(() => {
+  const u = currentUser.value
+  if (!u || !u.isMaster) return false
+  const role = u.actualRole || ''
+  return role === 'co-admin' || role === 'treasurer'
+})
+const requiresFaceSetup = computed(() => isRestrictedMasterRole.value && faceSetupNeeded.value)
+const faceSetupTerms = [
+  { title: 'Access to sensitive financial data', body: 'Your role gives you access to student contribution records, payment transactions, and financial reports that must be protected.' },
+  { title: 'System modification privileges', body: 'Co-Admins and Treasurers can create, edit, and manage contribution events and student payment records.' },
+  { title: 'JRMSU data protection policy', body: 'JRMSU requires multi-factor authentication for all accounts with administrative access to sensitive student financial data.' },
+  { title: 'Prevent unauthorized access', body: 'Face ID ensures only you — the assigned account holder — can access this account, even if your password is compromised.' },
+  { title: 'Accurate audit trail', body: 'All actions under your account are logged. Face ID guarantees these logs accurately reflect your own personal actions.' },
+  { title: 'One-time setup', body: 'This is a one-time requirement. After enrolling, Face ID will be your 3rd verification step on every login.' },
+]
+async function checkFaceSetup() {
+  if (!isRestrictedMasterRole.value) return
+  faceSetupChecking.value = true
+  try {
+    const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+    const res = await fetch(buildAPIUrl('/apis/masters/face'), {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    if (!res.ok) { faceSetupNeeded.value = true; return }
+    const data = await res.json()
+    const enrolled = (data.faces || []).filter(f => Array.isArray(f.descriptor) && f.descriptor.length === 128)
+    faceSetupNeeded.value = enrolled.length === 0
+  } catch {
+    faceSetupNeeded.value = false
+  } finally {
+    faceSetupChecking.value = false
+  }
+}
+function onMasterFaceEnrolled() {
+  faceSetupNeeded.value = false
+}
 const userCollegeCode = computed(() => {
   const raw = (currentUser.value.college
     || currentUser.value.assigned_college
@@ -12819,6 +12948,9 @@ onMounted(async () => {
     return
   }
   currentUser.value = user
+
+  // Check if co-admin/treasurer needs to enroll Face ID before using dashboard
+  await checkFaceSetup()
   
   // Check if user needs to update password (still using last name as password)
   if (user.requiresPasswordUpdate && !user.isMaster && user.role !== 'admin') {

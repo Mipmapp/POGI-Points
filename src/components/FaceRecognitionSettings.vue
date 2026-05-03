@@ -91,6 +91,7 @@ import { ensureModelsLoaded, detectDescriptor } from '../utils/faceapi.js';
 
 export default {
   name: 'FaceRecognitionSettings',
+  emits: ['enrolled'],
   data() {
     return {
       faces: [],
@@ -185,6 +186,7 @@ export default {
         this.setStatus('Face enrolled successfully ✓', 'success');
         this.newLabel = '';
         await this.fetchFaces();
+        this.$emit('enrolled');
       } catch (e) {
         this.setStatus(e.message || String(e), 'error');
       } finally {
