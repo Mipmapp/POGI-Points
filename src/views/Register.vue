@@ -444,24 +444,19 @@
     </div>
   </div>
 
-  <div class="mobile-bg-panel md:hidden h-screen flex flex-col">
-    <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
-      <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
+  <div class="mobile-bg-panel md:hidden min-h-screen flex flex-col">
+    <div class="flex-shrink-0 min-h-[38vh] flex flex-col items-center justify-center text-center text-white pt-8 pb-5 px-4 relative z-10">
+      <div class="w-24 h-24 mx-auto mb-2 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
         <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
       </div>
-      <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="hidden sm:w-16 sm:h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg" :class="registrationIconGradientClass">
-        <img src="/user_plus.svg" alt="Register" class="w-10 h-10" style="filter: brightness(0) invert(1);" />
-      </div>
-      <h1 class="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Let's Create</h1>
-      <h2 class="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Your Profile!</h2>
-      <p class="text-xs sm:text-sm opacity-90 italic mb-3 sm:mb-4">Please provide your basic information.</p>
-      <p class="text-sm sm:text-base font-semibold">
-        {{ stepTitle }}
-      </p>
+      <h1 class="text-2xl font-bold mb-0.5">Let's Create</h1>
+      <h2 class="text-2xl font-bold mb-2">Your Profile!</h2>
+      <p class="text-xs opacity-90 italic mb-1">Please provide your basic information.</p>
+      <p class="text-sm font-semibold">{{ stepTitle }}</p>
     </div>
 
-    <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 relative z-10">
+    <div class="flex-shrink-0 bg-white rounded-t-3xl shadow-2xl px-6 py-7 relative z-10 overflow-y-auto">
       <div class="max-w-md mx-auto">
 
         <div class="mb-5 text-center">
