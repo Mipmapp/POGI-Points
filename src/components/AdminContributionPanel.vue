@@ -624,18 +624,18 @@
       </div>
 
       <!-- Top Pagination Controls -->
-      <div v-if="!isLoading && filteredContributions.length > 0" class="flex flex-wrap items-center justify-between gap-3 px-5 sm:px-6 md:px-8 py-3 border-b border-gray-100">
-        <div class="text-sm text-gray-600">
-          Showing {{ (paymentsPage - 1) * paymentsPerPage + 1 }} to {{ Math.min(paymentsPage * paymentsPerPage, filteredContributions.length) }} of {{ filteredContributions.length }} records
+      <div v-if="!isLoading && filteredContributions.length > 0" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-6 md:px-8 py-3 border-b border-gray-100">
+        <div class="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
+          Showing {{ (paymentsPage - 1) * paymentsPerPage + 1 }}–{{ Math.min(paymentsPage * paymentsPerPage, filteredContributions.length) }} of {{ filteredContributions.length }} records
         </div>
-        <div class="flex gap-2 items-center">
+        <div class="flex items-center justify-center gap-1.5">
           <button
             @click="paymentsPage = Math.max(1, paymentsPage - 1)"
             :disabled="paymentsPage === 1"
-            class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+            class="h-9 px-2 sm:px-3 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-            Previous
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            <span class="hidden sm:inline">Previous</span>
           </button>
           <div class="flex gap-1 items-center">
             <button
@@ -654,10 +654,10 @@
           <button
             @click="paymentsPage = Math.min(paymentsTotalPages, paymentsPage + 1)"
             :disabled="paymentsPage === paymentsTotalPages"
-            class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+            class="h-9 px-2 sm:px-3 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
           >
-            Next
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="hidden sm:inline">Next</span>
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
       </div>
@@ -864,18 +864,18 @@
       </div>
 
       <!-- Bottom Pagination Controls -->
-      <div v-if="!isLoading && filteredContributions.length > 0" class="flex flex-wrap items-center justify-between gap-3 px-5 sm:px-6 md:px-8 py-3 border-t border-gray-100">
-        <div class="text-sm text-gray-600">
-          Showing {{ (paymentsPage - 1) * paymentsPerPage + 1 }} to {{ Math.min(paymentsPage * paymentsPerPage, filteredContributions.length) }} of {{ filteredContributions.length }} records
+      <div v-if="!isLoading && filteredContributions.length > 0" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-6 md:px-8 py-3 border-t border-gray-100">
+        <div class="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
+          Showing {{ (paymentsPage - 1) * paymentsPerPage + 1 }}–{{ Math.min(paymentsPage * paymentsPerPage, filteredContributions.length) }} of {{ filteredContributions.length }} records
         </div>
-        <div class="flex gap-2 items-center">
+        <div class="flex items-center justify-center gap-1.5">
           <button
             @click="paymentsPage = Math.max(1, paymentsPage - 1)"
             :disabled="paymentsPage === 1"
-            class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+            class="h-9 px-2 sm:px-3 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-            Previous
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            <span class="hidden sm:inline">Previous</span>
           </button>
           <div class="flex gap-1 items-center">
             <button
@@ -894,10 +894,10 @@
           <button
             @click="paymentsPage = Math.min(paymentsTotalPages, paymentsPage + 1)"
             :disabled="paymentsPage === paymentsTotalPages"
-            class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+            class="h-9 px-2 sm:px-3 rounded-lg border border-gray-300 text-gray-700 text-sm font-medium hover:bg-gray-50 transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1"
           >
-            Next
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            <span class="hidden sm:inline">Next</span>
+            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
       </div>
