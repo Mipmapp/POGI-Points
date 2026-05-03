@@ -1530,8 +1530,7 @@ const goToLogin = () => {
 
 .desktop-bg-panel {
   background:
-    linear-gradient(to right, rgba(4, 12, 50, 0.55) 0%, rgba(4, 12, 50, 0.08) 30%, rgba(4, 12, 50, 0.08) 70%, rgba(4, 12, 50, 0.55) 100%),
-    linear-gradient(160deg, rgba(18, 60, 180, 0.62) 0%, rgba(10, 35, 130, 0.76) 100%),
+    linear-gradient(160deg, rgba(20, 65, 200, 0.58) 0%, rgba(8, 28, 125, 0.72) 100%),
     url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;
   width: 40%;
   flex-shrink: 0;
@@ -1549,8 +1548,7 @@ const goToLogin = () => {
 
 .mobile-bg-full {
   background:
-    linear-gradient(to right, rgba(4, 12, 50, 0.55) 0%, rgba(4, 12, 50, 0.08) 30%, rgba(4, 12, 50, 0.08) 70%, rgba(4, 12, 50, 0.55) 100%),
-    linear-gradient(160deg, rgba(18, 60, 180, 0.62) 0%, rgba(10, 35, 130, 0.76) 100%),
+    linear-gradient(160deg, rgba(20, 65, 200, 0.58) 0%, rgba(8, 28, 125, 0.72) 100%),
     url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;
 }
 
