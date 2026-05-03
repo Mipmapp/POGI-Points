@@ -136,7 +136,7 @@
         Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
       </div>
     </div>
-    <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50">
+    <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50" style="border-radius: 2rem 0 0 2rem; overflow: hidden;">
       <div class="w-full max-w-md">
         <div class="text-center mb-6">
           <h2 class="text-3xl font-bold text-blue-700 mb-2">Create Your Account</h2>
@@ -444,8 +444,8 @@
     </div>
   </div>
 
-  <div class="mobile-bg-panel md:hidden h-screen flex flex-col">
-    <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
+  <div class="md:hidden min-h-screen flex flex-col w-full bg-white fixed inset-0 overflow-x-hidden overflow-y-auto" style="scrollbar-width:none;-ms-overflow-style:none;">
+    <div class="mobile-hero-bg text-center text-white pt-12 pb-8 px-4 relative z-10">
       <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
         <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
@@ -1526,9 +1526,8 @@ const goToLogin = () => {
 }
 
 .desktop-bg-panel {
-  background: linear-gradient(135deg, #1e3bdb 0%, #4f62ff 100%), url('/classroom-bg.jpg');
-  background-size: cover;
-  background-position: center;
+  background: linear-gradient(160deg, rgba(30, 80, 220, 0.55) 0%, rgba(10, 30, 130, 0.72) 100%),
+              url('/jrmsu-landscape.jpg') center center / cover no-repeat;
   width: 40%;
   flex-shrink: 0;
   display: flex;
@@ -1539,22 +1538,16 @@ const goToLogin = () => {
   padding: 2rem;
   position: relative;
   overflow: hidden;
-  box-shadow: inset -18px 0 40px rgba(0,0,0,0.35), 6px 0 24px rgba(0,0,0,0.28);
+  box-shadow: inset -18px 0 40px rgba(0,0,0,0.25), 8px 0 32px rgba(10,30,130,0.30);
   transition: all 0.5s ease-in-out;
 }
 
-.mobile-bg-panel {
-  background: linear-gradient(135deg, #1e3bdb 0%, #4f62ff 100%), url('/classroom-bg.jpg');
-  background-size: cover;
-  background-position: center;
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+.mobile-hero-bg {
+  background: linear-gradient(to bottom, rgba(8, 20, 70, 0.48) 0%, rgba(8, 20, 70, 0.72) 100%),
+              url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;
+  border-radius: 0 0 2rem 2rem;
+  overflow: hidden;
 }
-.mobile-bg-panel::-webkit-scrollbar { display: none; }
 
 .fade-enter-active,
 .fade-leave-active {
