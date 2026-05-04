@@ -2543,16 +2543,8 @@ export default {
           // selection; loadAllPaymentEvents will sync server-fresh data
           // (including any newly created event) into the dropdown.
           await this.loadAllPaymentEvents();
-          // If a brand-new event was returned, switch to it so the admin can
-          // immediately start collecting against the campaign they just made.
-          if (data && data.data && data.data._id) {
-            const fresh = (this.paymentEvents || []).find(p => p._id === data.data._id);
-            if (fresh) {
-              this.activePayment = fresh;
-              this.campaignFee = fresh.amount_due;
-            }
-          }
-          this.loadAllContributions();
+          // Refresh contributions only if the admin already had an event selected
+          if (this.activePayment) this.loadAllContributions();
         } else {
           this.createEventError = data.message || 'Failed to create event. Please try again.';
         }
