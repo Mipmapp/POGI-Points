@@ -2636,7 +2636,7 @@ function getRaffleCategory(count) {
     if (count >= 20 && count <= 25) return 'bronze';
     if (count >= 26 && count <= 50) return 'silver';
     if (count >= 51 && count <= 80) return 'gold';
-    if (count >= 81 && count <= 110) return 'platinum';
+    if (count >= 81 && count <= 149) return 'platinum';
     if (count >= 150) return 'diamond';
     return 'none';
 }

@@ -401,7 +401,7 @@ const categories = [
   { key: 'bronze', icon: '🥉', label: 'Bronze', range: '20–25 tickets', classes: 'bg-amber-50 border-amber-300 text-amber-700' },
   { key: 'silver', icon: '🥈', label: 'Silver', range: '26–50 tickets', classes: 'bg-slate-50 border-slate-300 text-slate-600' },
   { key: 'gold', icon: '🥇', label: 'Gold', range: '51–80 tickets', classes: 'bg-yellow-50 border-yellow-400 text-yellow-700' },
-  { key: 'platinum', icon: '💠', label: 'Platinum', range: '81–110 tickets', classes: 'bg-cyan-50 border-cyan-400 text-cyan-700' },
+  { key: 'platinum', icon: '💠', label: 'Platinum', range: '81–149 tickets', classes: 'bg-cyan-50 border-cyan-400 text-cyan-700' },
   { key: 'diamond', icon: '💎', label: 'Diamond', range: '150+ tickets', classes: 'bg-blue-50 border-blue-400 text-blue-700' },
 ]
 
@@ -430,7 +430,7 @@ const previewCategory = computed(() => {
   if (count >= 20 && count <= 25) return 'bronze'
   if (count >= 26 && count <= 50) return 'silver'
   if (count >= 51 && count <= 80) return 'gold'
-  if (count >= 81 && count <= 110) return 'platinum'
+  if (count >= 81 && count <= 149) return 'platinum'
   if (count >= 150) return 'diamond'
   return null
 })

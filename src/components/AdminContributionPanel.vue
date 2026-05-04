@@ -2179,7 +2179,6 @@ export default {
   },
   mounted() {
     this.loadAllPaymentEvents();
-    this.loadAllContributions();
   },
   methods: {
     markPhotoFailed(key) {
@@ -2197,10 +2196,6 @@ export default {
           const data = await response.json();
           const payments = (data.payments || data.data || []).filter(p => p.amount_due > 0);
           this.paymentEvents = payments;
-          if (payments.length > 0 && !this.activePayment) {
-            this.activePayment = payments[0];
-            this.campaignFee = payments[0].amount_due;
-          }
         }
       } catch (e) {
         console.error('Error loading payment events:', e);

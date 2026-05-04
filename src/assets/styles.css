@@ -567,7 +567,7 @@ input, textarea, select {
 }
 
 .dashboard-container {
-  @apply flex h-screen;
+  @apply flex min-h-screen;
 }
 
 .dashboard-sidebar {

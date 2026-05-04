@@ -197,7 +197,7 @@ export default {
         { key: 'bronze',   label: 'Bronze',   range: '20–25',   icon: '🥉', classes: 'bg-amber-50 text-amber-700 border-amber-200' },
         { key: 'silver',   label: 'Silver',   range: '26–50',   icon: '🥈', classes: 'bg-slate-50 text-slate-600 border-slate-200' },
         { key: 'gold',     label: 'Gold',     range: '51–80',   icon: '🥇', classes: 'bg-yellow-50 text-yellow-700 border-yellow-200' },
-        { key: 'platinum', label: 'Platinum', range: '81–110',  icon: '💎', classes: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
+        { key: 'platinum', label: 'Platinum', range: '81–149',  icon: '💎', classes: 'bg-cyan-50 text-cyan-700 border-cyan-200' },
         { key: 'diamond',  label: 'Diamond',  range: '150+', icon: '✨', classes: 'bg-purple-50 text-purple-700 border-purple-200' },
       ]
     }
