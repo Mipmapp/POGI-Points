@@ -173,7 +173,12 @@
         <div v-else class="flex flex-col items-center gap-3">
 
           <!-- Viewport: overflow-hidden clips side cards cleanly, no fades needed -->
-          <div class="relative w-full overflow-hidden rounded-3xl" style="min-height: 310px;">
+          <div
+            class="relative w-full overflow-hidden rounded-3xl"
+            style="min-height: 310px;"
+            @touchstart.passive="handleSwipeStart"
+            @touchend.passive="handleSwipeEnd"
+          >
 
             <!-- Left arrow — desktop only, floats over carousel sides -->
             <button
@@ -2532,6 +2537,17 @@ export default {
     handleCarouselKeydown(e) {
       if (e.key === 'ArrowLeft') { e.preventDefault(); this.prevCarousel(); }
       else if (e.key === 'ArrowRight') { e.preventDefault(); this.nextCarousel(); }
+    },
+    handleSwipeStart(e) {
+      this._swipeStartX = e.touches[0].clientX;
+    },
+    handleSwipeEnd(e) {
+      if (this._swipeStartX === null) return;
+      const diff = this._swipeStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) {
+        diff > 0 ? this.nextCarousel() : this.prevCarousel();
+      }
+      this._swipeStartX = null;
     },
     cancelDeleteEvent() {
       this.showDeleteEventConfirm = false;
