@@ -103,8 +103,26 @@ Vite proxies `/apis/*` to the Express backend running on port 3001. The proxy co
 | `node server.js` | Start Express backend (port 3001) |
 
 ## External Dependencies
-- **Database:** MongoDB Atlas (connection string in Replit userenv `MONGODB_URI`)
-- **Image Hosting:** ImgBB
+- **Database:** MongoDB Atlas (connection string in Replit userenv `MONGODB_URL`)
+- **Image Hosting:** Cloudinary (`app_uploads` folder) — notification images + student/admin profile photos
 - **Email Service:** Gmail SMTP via Nodemailer
 - **Face Recognition:** `@vladmandic/face-api` (WASM models served from `/public`)
 - **Maps:** Leaflet + OpenStreetMap (no API key required)
+
+## Cloudinary Image Lifecycle
+Notification images are automatically deleted from Cloudinary (with CDN cache invalidation via `invalidate: true`) when:
+- A notification is deleted (`DELETE /apis/notifications/:id`)
+- A notification's image is replaced with a new one (`PUT /apis/notifications/:id`)
+
+### Orphan Cleanup Script
+`scripts/cleanup_cloudinary.js` cross-references every notification, student, and admin document in MongoDB against all assets in the Cloudinary `app_uploads` folder and removes any that are no longer referenced.
+
+```bash
+# Preview what would be deleted (safe — no changes made)
+node scripts/cleanup_cloudinary.js
+
+# Actually delete orphaned images (with CDN invalidation)
+node scripts/cleanup_cloudinary.js --delete
+```
+
+Requires env vars: `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `MONGODB_URL`.
