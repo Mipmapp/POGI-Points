@@ -18397,7 +18397,7 @@ const handleImageFileSelect = async (event) => {
         const originalData = e.target.result
         notificationImagePreview.value = originalData
         
-        const compressed = await compressNotificationImage(originalData, 100)
+        const compressed = await compressNotificationImage(originalData, 80)
         notificationImageBase64.value = compressed
         notificationImageUrl.value = ''
         
@@ -18469,7 +18469,7 @@ const handleEditImageFileSelect = async (event) => {
         const originalData = e.target.result
         editNotificationImagePreview.value = originalData
         
-        const compressed = await compressNotificationImage(originalData, 100)
+        const compressed = await compressNotificationImage(originalData, 80)
         editNotificationImageBase64.value = compressed
         editNotificationImageUrl.value = ''
         

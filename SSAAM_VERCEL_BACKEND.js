@@ -6151,8 +6151,9 @@ async function uploadToCloudinary(base64Image) {
     const result = await cloudinary.uploader.upload(base64Image, {
         folder: 'app_uploads',
         format: 'webp',
-        quality: 'auto',
-        resource_type: 'image'
+        quality: 70,
+        resource_type: 'image',
+        transformation: [{ width: 800, height: 800, crop: 'limit' }]
     });
     return { url: result.secure_url, public_id: result.public_id };
 }
