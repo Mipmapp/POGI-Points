@@ -1,0 +1,82 @@
+You are a senior frontend engineer debugging a mobile scrolling issue in a responsive web app.
+
+PROBLEM DESCRIPTION:
+- On mobile view:
+  - Scrolling works ONLY when swiping at the TOP or BOTTOM of the screen
+  - Swiping in the CENTER does NOT scroll at all
+- This suggests that a middle container or overlay is blocking touch events
+
+---
+
+TASK: FIND ROOT CAUSE (DO NOT FIX YET)
+
+1. Scan ALL layout, page, and component files for:
+   - Containers with:
+     overflow: hidden
+     position: fixed
+     position: absolute
+     height: 100vh
+     z-index (high values)
+     pointer-events: none or auto
+     touch-action: none
+
+2. Identify elements that:
+   - Cover the center of the screen
+   - Might intercept touch/swipe events
+
+3. Search for JavaScript that uses:
+   - addEventListener("touchstart", "touchmove", "wheel")
+   - event.preventDefault()
+   - custom scroll handling
+
+4. For EACH suspicious element or code:
+   - Show file name and exact line
+   - Explain HOW it blocks scrolling
+   - Confirm whether it affects mobile behavior
+
+5. Clearly identify the MOST LIKELY ROOT CAUSE
+
+---
+
+TASK: APPLY SAFE FIX
+
+After identifying the root cause:
+
+1. Fix ONLY the problematic elements by:
+   - Removing or adjusting overflow: hidden
+   - Replacing height: 100vh with min-height: 100vh if needed
+   - Fixing z-index layering issues
+   - Removing unnecessary preventDefault() calls
+   - Ensuring scrollable container uses:
+       overflow-y: auto
+
+2. Ensure:
+   - Full page scroll works from ANY part of the screen
+   - No UI components are broken
+   - Desktop behavior remains unchanged
+
+---
+
+EXTRA VALIDATION:
+
+Simulate mobile behavior and confirm:
+- Swipe from center → scroll works
+- Swipe from top → scroll works
+- Swipe from bottom → scroll works
+
+---
+
+OUTPUT FORMAT:
+
+1. ROOT CAUSE
+2. AFFECTED FILES
+3. EXACT FIX APPLIED (code before/after)
+4. WHY THE FIX WORKS
+5. TEST RESULTS
+
+---
+
+IMPORTANT:
+- Do NOT rewrite the entire layout
+- Do NOT remove components blindly
+- Make minimal, precise fixes only

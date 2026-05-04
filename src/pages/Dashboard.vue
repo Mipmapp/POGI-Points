@@ -19826,7 +19826,6 @@ onUnmounted(() => {
 * {
   scrollbar-width: thin;
   scrollbar-color: #d1d5db transparent;
-  overscroll-behavior: none;
 }
 
 /* Mobile: disable nested scroll containers so body scroll is used throughout */
