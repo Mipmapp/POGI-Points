@@ -175,8 +175,8 @@
           <!-- Viewport: clips side cards, arrows overlay on the fades -->
           <div class="relative w-full" style="min-height: 310px;">
 
-            <!-- Left gradient fade + arrow -->
-            <div class="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white via-white/70 to-transparent z-20 pointer-events-none rounded-l-3xl"></div>
+            <!-- Left gradient fade + arrow — fade hidden on mobile to avoid bleed -->
+            <div class="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white via-white/70 to-transparent z-20 pointer-events-none rounded-l-3xl hidden sm:block"></div>
             <button
               @click="prevCarousel"
               :disabled="displayedEvents.length <= 1"
@@ -185,8 +185,8 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
             </button>
 
-            <!-- Right gradient fade + arrow -->
-            <div class="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white via-white/70 to-transparent z-20 pointer-events-none rounded-r-3xl"></div>
+            <!-- Right gradient fade + arrow — fade hidden on mobile to avoid bleed -->
+            <div class="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white via-white/70 to-transparent z-20 pointer-events-none rounded-r-3xl hidden sm:block"></div>
             <button
               @click="nextCarousel"
               :disabled="displayedEvents.length <= 1"
@@ -2385,6 +2385,10 @@ export default {
   },
   mounted() {
     this.loadAllPaymentEvents();
+    document.addEventListener('keydown', this.handleCarouselKeydown);
+  },
+  unmounted() {
+    document.removeEventListener('keydown', this.handleCarouselKeydown);
   },
   methods: {
     markPhotoFailed(key) {
@@ -2463,12 +2467,12 @@ export default {
       if (abs === 1) {
         const dir = offset > 0 ? 1 : -1;
         return {
-          transform: `translateX(${dir * 76}%) scale(0.86)`,
-          opacity: '0.48',
+          transform: `translateX(${dir * 62}%) scale(0.88)`,
+          opacity: '0.72',
           zIndex: 5,
           pointerEvents: 'auto',
           cursor: 'pointer',
-          filter: 'blur(0.6px)',
+          filter: 'none',
           transformOrigin: dir > 0 ? 'left center' : 'right center',
         };
       }
@@ -2481,12 +2485,16 @@ export default {
       };
     },
     prevCarousel() {
-      if (this.paymentEvents.length <= 1) return;
-      this.carouselIndex = (this.carouselIndex - 1 + this.paymentEvents.length) % this.paymentEvents.length;
+      if (this.displayedEvents.length <= 1) return;
+      this.carouselIndex = (this.carouselIndex - 1 + this.displayedEvents.length) % this.displayedEvents.length;
     },
     nextCarousel() {
-      if (this.paymentEvents.length <= 1) return;
-      this.carouselIndex = (this.carouselIndex + 1) % this.paymentEvents.length;
+      if (this.displayedEvents.length <= 1) return;
+      this.carouselIndex = (this.carouselIndex + 1) % this.displayedEvents.length;
+    },
+    handleCarouselKeydown(e) {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); this.prevCarousel(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); this.nextCarousel(); }
     },
     cancelDeleteEvent() {
       this.showDeleteEventConfirm = false;
