@@ -305,7 +305,7 @@
         </div>
 
         <!-- ============ Date Filter (Paid On) ============ -->
-        <div class="rounded-2xl border-2 border-blue-100 bg-gradient-to-br from-blue-50/60 via-indigo-50/40 to-white p-3 sm:p-4 shadow-sm">
+        <div v-if="!selectedStudent" class="rounded-2xl border-2 border-blue-100 bg-gradient-to-br from-blue-50/60 via-indigo-50/40 to-white p-3 sm:p-4 shadow-sm">
           <div class="flex items-center justify-between gap-2 mb-2.5">
             <div class="flex items-center gap-2 min-w-0">
               <div class="flex-shrink-0 w-7 h-7 rounded-xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center shadow-sm">
