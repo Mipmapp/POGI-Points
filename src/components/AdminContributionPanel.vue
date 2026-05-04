@@ -157,8 +157,52 @@
         </div>
       </div>
 
+      <!-- ── No-event placeholder ──────────────────────────────────────────
+           Shown when events exist but none is selected yet. Fades out the
+           moment the admin clicks a card above.                            -->
+      <Transition name="contrib-reveal">
+        <div v-if="!activePayment && !isLoadingEvents && paymentEvents.length > 0"
+          class="px-4 sm:px-6 md:px-8 py-14 sm:py-20 flex flex-col items-center justify-center text-center gap-6 border-t border-gray-100">
+          <!-- Animated icon -->
+          <div class="relative flex items-center justify-center">
+            <div class="absolute w-32 h-32 rounded-full bg-purple-100/60 animate-ping" style="animation-duration:2.4s"></div>
+            <div class="absolute w-24 h-24 rounded-full bg-indigo-100/70 animate-pulse" style="animation-duration:1.8s"></div>
+            <div class="relative w-20 h-20 rounded-3xl bg-gradient-to-br from-purple-500 via-indigo-500 to-blue-500 flex items-center justify-center shadow-xl shadow-purple-200">
+              <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
+                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+              </svg>
+            </div>
+          </div>
+          <!-- Message -->
+          <div>
+            <h3 class="text-xl sm:text-2xl font-extrabold text-gray-800 mb-2 tracking-tight">Select an Event to Get Started</h3>
+            <p class="text-sm text-gray-500 max-w-xs sm:max-w-sm leading-relaxed mx-auto">
+              Choose an event from the cards above to view its statistics, manage payments, and track contributions.
+            </p>
+          </div>
+          <!-- Available count pill -->
+          <div class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-2xl shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse flex-shrink-0"></span>
+            <span class="text-sm font-bold text-purple-700">
+              {{ paymentEvents.length }} event{{ paymentEvents.length === 1 ? '' : 's' }} available — tap one above
+            </span>
+          </div>
+          <!-- Animated arrow pointing up toward the event cards -->
+          <div class="flex flex-col items-center gap-1 text-gray-300 -mt-2 animate-bounce" style="animation-duration:1.6s">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+            </svg>
+            <svg class="w-5 h-5 -mt-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>
+            </svg>
+          </div>
+        </div>
+      </Transition>
+
       <!-- Statistics Panel -->
-      <div v-if="activePayment && filteredContributions.length > 0" class="px-4 sm:px-6 md:px-8 py-4 border-b border-gray-100">
+      <Transition name="contrib-reveal">
+      <div v-if="activePayment" class="px-4 sm:px-6 md:px-8 py-4 border-b border-gray-100">
         <button @click="showStatsPanel = !showStatsPanel" class="w-full flex items-start gap-2 mb-3 group text-left">
           <div class="w-1 h-5 rounded-full bg-teal-500 flex-shrink-0 mt-0.5"></div>
           <div class="flex-1 min-w-0">
@@ -240,9 +284,10 @@
         </div>
         </transition>
       </div>
+      </Transition>
 
       <!-- Search & Filters -->
-      <div class="px-4 sm:px-6 md:px-8 py-5 space-y-4">
+      <div v-if="activePayment" class="px-4 sm:px-6 md:px-8 py-5 space-y-4">
         <!-- Search Row -->
         <form @submit.prevent="searchStudent" class="flex gap-2">
           <div class="flex-1 relative">
@@ -512,7 +557,8 @@
     </div>
 
     <!-- Selected Student Payment Card -->
-    <div v-if="selectedStudent" class="bg-white rounded-3xl shadow-xl border border-blue-200 overflow-hidden">
+    <Transition name="contrib-slide">
+    <div v-if="activePayment && selectedStudent" class="bg-white rounded-3xl shadow-xl border border-blue-200 overflow-hidden">
       <div class="px-5 sm:px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white font-bold text-lg flex-shrink-0 overflow-hidden">
@@ -606,10 +652,11 @@
         </button>
       </div>
     </div>
+    </Transition>
 
     <!-- Loyverse POS Panel (visible only when a student is selected) -->
     <LoyversePOSPanel
-      v-if="selectedStudent"
+      v-if="activePayment && selectedStudent"
       :student="selectedStudent"
       :suggested-amount="targetPayment"
       :active-payment="activePayment"
@@ -618,7 +665,8 @@
     <!-- Contributions List — hidden while a student is selected so the
          admin can focus on the payment card + POS panel without the table
          distracting underneath. -->
-    <div v-if="!selectedStudent" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+    <Transition name="contrib-slide">
+    <div v-if="activePayment && !selectedStudent" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
       <div class="px-5 sm:px-6 md:px-8 py-4 border-b border-gray-100 flex items-center gap-2">
         <div class="w-1 h-5 rounded-full bg-blue-600"></div>
         <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Payment Records</h3>
@@ -924,6 +972,7 @@
         </div>
       </div>
     </div>
+    </Transition>
 
     <!-- Delete Event Confirmation Modal -->
     <Teleport to="body">
@@ -2899,6 +2948,38 @@ export default {
   transform: translateY(-8px);
   max-height: 0;
 }
+/* ── contrib-reveal: empty-state ↔ stats+filters inside the white card ── */
+.contrib-reveal-enter-active {
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+.contrib-reveal-leave-active {
+  transition: opacity 0.22s ease, transform 0.22s ease;
+}
+.contrib-reveal-enter-from {
+  opacity: 0;
+  transform: translateY(14px);
+}
+.contrib-reveal-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+/* ── contrib-slide: outer cards (student card + contributions list) ────── */
+.contrib-slide-enter-active {
+  transition: opacity 0.38s ease, transform 0.38s ease;
+}
+.contrib-slide-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.contrib-slide-enter-from {
+  opacity: 0;
+  transform: translateY(18px);
+}
+.contrib-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-gray::-webkit-scrollbar { height: 4px; }
