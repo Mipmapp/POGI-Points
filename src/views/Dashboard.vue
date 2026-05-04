@@ -973,7 +973,7 @@
     </transition>
 
     <!-- Main Content Area -->
-    <div class="flex-1 bg-slate-50 overflow-x-hidden overflow-y-auto main-scroll-area order-2 md:order-2" tabindex="-1" @mouseenter="$event.currentTarget.focus()">
+    <div class="flex-1 bg-slate-50 overflow-x-hidden overflow-y-auto main-scroll-area order-2 md:order-2">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
@@ -19803,8 +19803,6 @@ onUnmounted(() => {
 .main-scroll-area {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-  touch-action: pan-y;
-  outline: none;
 }
 
 *::-webkit-scrollbar {
