@@ -7874,16 +7874,14 @@
             </div>
           </div>
           <!-- Scroll-down floating button -->
-          <Transition name="fade">
-            <button
-              v-show="!termsAtBottom"
-              @click="scrollTermsDown"
-              :class="['absolute bottom-4 right-4 w-9 h-9 rounded-full shadow-lg flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-emerald-600' : 'bg-ssaam-dark']"
-              aria-label="Scroll down"
-            >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-            </button>
-          </Transition>
+          <button
+            v-if="!termsAtBottom"
+            @click="scrollTermsDown"
+            :class="['absolute bottom-4 right-4 z-10 w-9 h-9 rounded-full shadow-lg flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 pointer-events-auto', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-emerald-600' : 'bg-ssaam-dark']"
+            aria-label="Scroll down"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+          </button>
           </div>
           <!-- Modal footer -->
           <div class="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100">
@@ -9439,14 +9437,28 @@ const helpTab = ref('about')
 const showTermsModal = ref(false)
 const termsBody = ref(null)
 const termsAtBottom = ref(false)
+
+// Reset scroll state every time the modal opens so the button always appears
+watch(showTermsModal, (open) => {
+  if (open) {
+    termsAtBottom.value = false
+    // After Vue renders the modal, scroll back to top
+    nextTick(() => {
+      if (termsBody.value) termsBody.value.scrollTop = 0
+    })
+  }
+})
+
 const onTermsScroll = () => {
   if (!termsBody.value) return
   const el = termsBody.value
   termsAtBottom.value = el.scrollTop + el.clientHeight >= el.scrollHeight - 30
 }
 const scrollTermsDown = () => {
-  if (!termsBody.value) return
-  termsBody.value.scrollBy({ top: 260, behavior: 'smooth' })
+  nextTick(() => {
+    if (!termsBody.value) return
+    termsBody.value.scrollBy({ top: 280, behavior: 'smooth' })
+  })
 }
 const currentPage = ref('dashboard')
 const mainContentEl = ref(null)
