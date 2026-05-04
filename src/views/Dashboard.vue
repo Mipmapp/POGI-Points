@@ -973,7 +973,7 @@
     </transition>
 
     <!-- Main Content Area -->
-    <div ref="mainContentEl" tabindex="-1" class="bg-slate-50 md:flex-1 min-w-0 min-h-screen md:min-h-0 overflow-y-auto outline-none">
+    <div ref="mainContentEl" tabindex="-1" class="bg-slate-50 md:flex-1 md:order-2 min-w-0 min-h-screen md:min-h-0 overflow-y-auto outline-none">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
