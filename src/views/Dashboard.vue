@@ -3076,7 +3076,7 @@
                       </div>
                       <div class="flex items-center justify-between text-sm">
                         <span class="text-gray-600">Unpaid</span>
-                        <span class="font-bold text-red-600">{{ Math.max(0, totalStudents - (payment.stats?.paid_count || 0)) }}</span>
+                        <span class="font-bold text-red-600">{{ Math.max(0, (payment.stats?.total_students || 0) - (payment.stats?.paid_count || 0)) }}</span>
                       </div>
                     </div>
 
@@ -3264,7 +3264,7 @@
 
                 <div class="bg-gradient-to-br from-red-50 to-blue-50 rounded-lg p-4 border border-red-200">
                   <p class="text-sm text-red-800 mb-1">Still Unpaid</p>
-                  <p class="text-3xl font-bold text-red-600">{{ Math.max(0, totalStudents - (selectedPayment.stats?.paid_count || 0)) }}</p>
+                  <p class="text-3xl font-bold text-red-600">{{ Math.max(0, (selectedPayment.stats?.total_students || 0) - (selectedPayment.stats?.paid_count || 0)) }}</p>
                 </div>
 
                 <div class="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">

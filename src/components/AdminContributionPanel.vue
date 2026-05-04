@@ -662,8 +662,8 @@
         </div>
       </div>
 
-      <!-- Loading Skeleton -->
-      <div v-if="isLoading" class="p-4 space-y-3">
+      <!-- Loading Skeleton (mobile cards only — desktop uses in-table skeleton rows below) -->
+      <div v-if="isLoading" class="p-4 space-y-3 md:hidden">
         <div v-for="i in 8" :key="i" class="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 animate-pulse">
           <div class="w-9 h-9 rounded-xl bg-gray-200 flex-shrink-0"></div>
           <div class="flex-1 space-y-2">
@@ -790,12 +790,32 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">
-            <tr v-if="filteredContributions.length === 0">
+            <!-- Desktop loading skeleton rows (thead/blue bar stays visible above these) -->
+            <template v-if="isLoading">
+              <tr v-for="i in 8" :key="'skel-' + i" class="animate-pulse">
+                <td class="px-3 py-3"><div class="h-3 bg-gray-200 rounded-full w-24"></div></td>
+                <td class="px-3 py-3">
+                  <div class="flex items-center gap-2">
+                    <div class="w-7 h-7 rounded-full bg-gray-200 flex-shrink-0"></div>
+                    <div class="h-3 bg-gray-200 rounded-full w-32"></div>
+                  </div>
+                </td>
+                <td v-if="isMaster" class="px-3 py-3"><div class="h-3 bg-gray-200 rounded-full w-12"></div></td>
+                <td class="px-3 py-3"><div class="h-3 bg-gray-200 rounded-full w-16"></div></td>
+                <td class="hidden lg:table-cell px-3 py-3"><div class="h-3 bg-gray-200 rounded-full w-8"></div></td>
+                <td class="hidden xl:table-cell px-3 py-3"><div class="h-3 bg-gray-200 rounded-full w-14 ml-auto"></div></td>
+                <td class="px-3 py-3"><div class="h-3 bg-gray-200 rounded-full w-14 ml-auto"></div></td>
+                <td class="px-3 py-3"><div class="h-5 bg-gray-100 rounded-full w-14 mx-auto"></div></td>
+                <td class="hidden lg:table-cell px-3 py-3"><div class="h-3 bg-gray-200 rounded-full w-20 mx-auto"></div></td>
+                <td class="px-3 py-3"><div class="h-6 bg-gray-100 rounded-lg w-20 mx-auto"></div></td>
+              </tr>
+            </template>
+            <tr v-else-if="filteredContributions.length === 0">
               <td :colspan="desktopColspan" class="px-4 py-12 text-center text-gray-400 text-sm">
                 No records match the current filters.
               </td>
             </tr>
-            <tr v-for="(c, idx) in paginatedContributions" :key="c._id"
+            <tr v-else v-for="(c, idx) in paginatedContributions" :key="c._id"
               class="hover:bg-blue-50/40 transition-colors ssaam-row-anim"
               :style="{ animationDelay: Math.min(idx * 35, 700) + 'ms' }">
               <td class="px-3 py-2 text-xs font-semibold text-gray-700 whitespace-nowrap">{{ c.student_id }}</td>
