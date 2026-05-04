@@ -676,9 +676,9 @@
     <div v-if="showMobileMenu" class="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" @click="showMobileMenu = false"></div>
   </transition>
 
-  <div class="flex h-screen flex-col md:flex-row">
+  <div class="flex min-h-screen flex-col md:flex-row">
     <!-- Sidebar (Hidden on mobile, visible on desktop) -->
-    <div :class="[ 'hidden md:flex w-64 bg-gradient-to-b text-white flex-col order-1 border-r border-white/10 h-screen shadow-2xl', sidebarGradient ]">
+    <div :class="[ 'hidden md:flex w-64 bg-gradient-to-b text-white flex-col order-1 border-r border-white/10 h-screen shadow-2xl sticky top-0 self-start', sidebarGradient ]">
       <div class="px-5 py-5 border-b border-white/15 flex-shrink-0 bg-white/5 backdrop-blur-sm">
         <div class="flex items-center gap-3">
           <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU Logo" class="w-11 h-11 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
@@ -973,7 +973,7 @@
     </transition>
 
     <!-- Main Content Area -->
-    <div class="flex-1 bg-slate-50 overflow-x-hidden overflow-y-auto main-scroll-area order-2 md:order-2">
+    <div class="flex-1 bg-slate-50 order-2 md:order-2 min-w-0">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
@@ -7662,7 +7662,7 @@
               <h5 class="font-bold text-blue-900 text-sm mb-2">2. Account &amp; Roles</h5>
               <ul class="text-xs text-gray-700 space-y-1.5">
                 <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Your account is bound to one JRMSU college (<strong>CCS, COE, SOM, CNAHS</strong>) and you may only access data within your college unless granted broader authority.</span></li>
-                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, and <strong>Admin (Master)</strong>, each with clearly scoped permissions.</span></li>
+                <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, and <strong>Admin</strong>, each with clearly scoped permissions.</span></li>
                 <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>Students may submit <strong>name change requests</strong> through the Request feature, which are reviewed and approved by college Admins or Co-Admins.</span></li>
                 <li class="flex gap-2"><span class="flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full bg-blue-500"></span><span>You are responsible for safeguarding your password. Sharing credentials or RFID cards is prohibited.</span></li>
               </ul>
@@ -7818,7 +7818,7 @@
                 <div class="flex items-center gap-3 mb-3"><div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md', isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-blue-600 to-indigo-600']"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg></div><h3 class="font-extrabold text-gray-900">2. Account &amp; Roles</h3></div>
                 <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
                   <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Your account is bound to one of the JRMSU colleges (<strong>CCS, COE, SOM, CNAHS</strong>) and you may only access data within your college unless granted broader authority.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, and <strong>Admin (Master)</strong>. Each role has clearly scoped permissions enforced by both the app and the server.</span></li>
+                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, and <strong>Admin</strong>. Each role has clearly scoped permissions enforced by both the app and the server.</span></li>
                   <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Students may submit <strong>name change requests</strong> through the Request feature. Submitted requests are reviewed and approved or rejected by college Admins or Co-Admins.</span></li>
                   <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You are responsible for safeguarding your password. Sharing credentials or RFID cards is prohibited.</span></li>
                   <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins are required to change their default passwords on first login and may be prompted to do so periodically.</span></li>
