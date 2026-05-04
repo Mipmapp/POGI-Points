@@ -973,7 +973,7 @@
     </transition>
 
     <!-- Main Content Area -->
-    <div class="flex-1 bg-slate-50 order-2 md:order-2 min-w-0 md:h-screen md:overflow-y-auto">
+    <div ref="mainContentEl" class="flex-1 bg-slate-50 order-2 md:order-2 min-w-0 md:h-screen md:overflow-y-auto">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
@@ -8092,14 +8092,14 @@ const refreshAttendanceSection = async () => {
 const nextAttendancePage = () => {
   if (attendanceCurrentPage.value < attendanceTotalPages.value) {
     attendanceCurrentPage.value++
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (mainContentEl.value) mainContentEl.value.scrollTop = 0
   }
 }
 
 const prevAttendancePage = () => {
   if (attendanceCurrentPage.value > 1) {
     attendanceCurrentPage.value--
-    window.scrollTo({ top: 0, behavior: 'smooth' })
+    if (mainContentEl.value) mainContentEl.value.scrollTop = 0
   }
 }
 
@@ -9419,6 +9419,7 @@ const showContactModal = ref(false)
 const helpTab = ref('about')
 const showTermsModal = ref(false)
 const currentPage = ref('dashboard')
+const mainContentEl = ref(null)
 
 const manageComponent = ref(null)
 const currentPageNum = ref(1)
@@ -12698,6 +12699,7 @@ watch(
 // Persist active page across browser refreshes
 watch(currentPage, (newPage) => {
   sessionStorage.setItem('ssaam_current_page', newPage)
+  if (mainContentEl.value) mainContentEl.value.scrollTop = 0
 
   // Start session-settings polling when user is on the attendance page in user view
   // so admin check-in/check-out toggles are reflected without a manual refresh.
