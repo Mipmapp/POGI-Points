@@ -194,6 +194,7 @@
 const CCS_LOGO_URL = '/assets/ccs_logo.png';
 
 const SETTINGS_KEY = 'ssaam_pos_receipt_v2';
+const BT_LAST_DEVICE_KEY = 'ssaam_pos_bt_last_device';
 
 const DEFAULT_SETTINGS = {
   businessHeader: 'ACADEMIC',
@@ -335,6 +336,8 @@ export default {
     // Hydrate from the singleton so a re-mounted panel reflects an existing
     // connection instead of looking like nothing is paired.
     this.btConnected = btState.connected;
+    // Attempt silent auto-reconnect using previously authorized devices.
+    if (!btState.connected) this.autoReconnectBT();
     if (btState.connected) {
       this.printerStatus = `BT ready: ${btState.device?.name || 'Printer'}`;
     }
@@ -593,6 +596,44 @@ export default {
       return out;
     },
 
+    // ---------- Bluetooth auto-reconnect on page load ----------
+    async autoReconnectBT() {
+      if (!navigator.bluetooth || typeof navigator.bluetooth.getDevices !== 'function') return;
+      const savedName = localStorage.getItem(BT_LAST_DEVICE_KEY);
+      try {
+        const devices = await navigator.bluetooth.getDevices();
+        if (!devices || devices.length === 0) return;
+        const device = savedName
+          ? (devices.find(d => d.name === savedName) || devices[0])
+          : devices[0];
+        if (!device) return;
+        this.connectingBT = true;
+        btState.notify(`Auto-reconnecting to ${device.name || 'printer'}...`);
+        const server = await device.gatt.connect();
+        const characteristic = await this.findWritableCharacteristic(server);
+        if (!characteristic) { this.connectingBT = false; return; }
+        btState.device = device;
+        btState.characteristic = characteristic;
+        btState.connected = true;
+        if (!btState.listenerBound) {
+          device.addEventListener('gattserverdisconnected', () => {
+            btState.connected = false;
+            btState.characteristic = null;
+            btState.notify('Bluetooth disconnected — reconnecting...');
+            tryReconnectBT();
+          });
+          btState.listenerBound = true;
+        }
+        localStorage.setItem(BT_LAST_DEVICE_KEY, device.name || '');
+        btState.notify(`BT ready: ${device.name || 'Printer'}`);
+        this.notify('Bluetooth printer reconnected', 'success');
+      } catch (_) {
+        // Silent — user can press Connect manually if auto-reconnect fails
+      } finally {
+        this.connectingBT = false;
+      }
+    },
+
     // ---------- Bluetooth printer ----------
     async pickBTDevice() {
       try {
@@ -651,6 +692,7 @@ export default {
         btState.characteristic = characteristic;
         btState.connected = true;
         btState.notify(`BT ready: ${device.name || 'Printer'}`);
+        localStorage.setItem(BT_LAST_DEVICE_KEY, device.name || '');
 
         // Bind the disconnect handler ONCE per device so we don't double-fire.
         if (!btState.listenerBound) {
@@ -688,6 +730,7 @@ export default {
         btState.characteristic = null;
         btState.connected = false;
         btState.listenerBound = false;
+        localStorage.removeItem(BT_LAST_DEVICE_KEY);
         btState.notify(silent ? '' : 'Disconnected');
       }
     },

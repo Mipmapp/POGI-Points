@@ -7807,7 +7807,8 @@
             </button>
           </div>
           <!-- Modal body (scrollable) -->
-          <div class="overflow-y-auto flex-1 p-5 md:p-8">
+          <div class="relative flex-1 overflow-hidden">
+          <div ref="termsBody" @scroll="onTermsScroll" class="overflow-y-auto h-full p-5 md:p-8">
             <p class="text-sm text-gray-600 mb-6 leading-relaxed">
               By using SSAAM, you agree to the following terms which govern attendance recording, financial contributions, and your personal data within the JRMSU SSAAM system. Please read them carefully — continued use of the system constitutes acceptance.
             </p>
@@ -7871,6 +7872,18 @@
               <p>Last updated: <span class="font-semibold text-gray-700">May 1, 2026</span></p>
               <p class="flex items-center gap-2"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>By continuing to use SSAAM, you acknowledge and agree to these terms.</p>
             </div>
+          </div>
+          <!-- Scroll-down floating button -->
+          <Transition name="fade">
+            <button
+              v-show="!termsAtBottom"
+              @click="scrollTermsDown"
+              :class="['absolute bottom-4 right-4 w-9 h-9 rounded-full shadow-lg flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-emerald-600' : 'bg-ssaam-dark']"
+              aria-label="Scroll down"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+            </button>
+          </Transition>
           </div>
           <!-- Modal footer -->
           <div class="flex-shrink-0 px-6 py-4 border-t border-gray-100">
@@ -9423,6 +9436,17 @@ const showMobileMenu = ref(false)
 const showContactModal = ref(false)
 const helpTab = ref('about')
 const showTermsModal = ref(false)
+const termsBody = ref(null)
+const termsAtBottom = ref(false)
+const onTermsScroll = () => {
+  if (!termsBody.value) return
+  const el = termsBody.value
+  termsAtBottom.value = el.scrollTop + el.clientHeight >= el.scrollHeight - 30
+}
+const scrollTermsDown = () => {
+  if (!termsBody.value) return
+  termsBody.value.scrollBy({ top: 260, behavior: 'smooth' })
+}
 const currentPage = ref('dashboard')
 const mainContentEl = ref(null)
 
