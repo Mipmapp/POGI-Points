@@ -172,11 +172,10 @@
         <!-- Carousel — 3 cards visible -->
         <div v-else class="flex flex-col items-center gap-3">
 
-          <!-- Viewport: clips side cards, arrows overlay on the fades -->
-          <div class="relative w-full" style="min-height: 310px;">
+          <!-- Viewport: overflow-hidden clips side cards cleanly, no fades needed -->
+          <div class="relative w-full overflow-hidden rounded-3xl" style="min-height: 310px;">
 
-            <!-- Left gradient fade + arrow — fade hidden on mobile to avoid bleed -->
-            <div class="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white via-white/70 to-transparent z-20 pointer-events-none rounded-l-3xl hidden sm:block"></div>
+            <!-- Left arrow -->
             <button
               @click="prevCarousel"
               :disabled="displayedEvents.length <= 1"
@@ -185,8 +184,7 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
             </button>
 
-            <!-- Right gradient fade + arrow — fade hidden on mobile to avoid bleed -->
-            <div class="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white via-white/70 to-transparent z-20 pointer-events-none rounded-r-3xl hidden sm:block"></div>
+            <!-- Right arrow -->
             <button
               @click="nextCarousel"
               :disabled="displayedEvents.length <= 1"
@@ -195,21 +193,20 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </button>
 
-            <!-- All event cards — absolutely stacked, transformed into position -->
+            <!-- All event cards — fixed-width, centered via left:50%, offset by pixels -->
             <div
               v-for="(event, idx) in displayedEvents"
               :key="event._id"
-              class="absolute inset-x-0 top-0 transition-all duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+              class="transition-all duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
               :style="getCarouselCardStyle(idx)"
               @click="() => { if (idx !== carouselIndex) carouselIndex = idx }"
             >
-              <!-- Inner card — centered, max width -->
+              <!-- Inner card -->
               <div
-                :class="['mx-auto rounded-3xl overflow-hidden border-2 shadow-xl transition-shadow duration-450',
+                :class="['rounded-3xl overflow-hidden border-2 shadow-xl transition-shadow duration-450',
                   activePayment && activePayment._id === event._id
                     ? 'border-purple-400 shadow-purple-200'
                     : 'border-gray-200 shadow-gray-100']"
-                style="max-width: 390px"
               >
                 <!-- Gradient header -->
                 <div :class="['relative px-5 pt-5 pb-4 overflow-hidden',
@@ -229,25 +226,36 @@
                     <span class="text-white text-[10px] font-bold tracking-widest uppercase">Active</span>
                   </div>
 
-                  <!-- Edit / Delete — only on center card -->
-                  <div v-if="idx === carouselIndex" class="absolute top-3 left-3 flex gap-1.5 z-10">
-                    <button @click.stop="openEditEvent(event)"
-                      class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all" title="Edit">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15.414 9 16l.586-3z"/></svg>
-                    </button>
-                    <button @click.stop="confirmDeleteEvent(event)"
-                      class="w-7 h-7 rounded-full bg-white/20 hover:bg-red-500/70 text-white flex items-center justify-center transition-all" title="Delete">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    </button>
+                  <!-- Top-left: Type badge always, then edit/delete only on center card -->
+                  <div class="absolute top-3 left-3 flex items-center gap-1.5 z-10">
+                    <!-- Type badge — pill shape, distinct from icon buttons -->
+                    <span :class="['inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider border backdrop-blur-sm shadow-sm',
+                      event.type === 'fee'        ? 'bg-blue-500/40 border-blue-300/60 text-white'       :
+                      event.type === 'membership' ? 'bg-green-500/40 border-green-300/60 text-white'     :
+                      event.type === 'donation'   ? 'bg-amber-500/40 border-amber-300/60 text-white'     :
+                                                    'bg-violet-500/40 border-violet-300/60 text-white']">
+                      {{ event.type || 'event' }}
+                    </span>
+                    <!-- Divider + edit/delete only on center card -->
+                    <template v-if="idx === carouselIndex">
+                      <div class="w-px h-4 bg-white/30 rounded-full"></div>
+                      <button @click.stop="openEditEvent(event)"
+                        class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all" title="Edit">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15.414 9 16l.586-3z"/></svg>
+                      </button>
+                      <button @click.stop="confirmDeleteEvent(event)"
+                        class="w-7 h-7 rounded-full bg-white/20 hover:bg-red-500/70 text-white flex items-center justify-center transition-all" title="Delete">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </template>
                   </div>
 
-                  <!-- Type chip + Amount -->
-                  <div class="mt-5 flex items-center justify-between relative z-10">
-                    <span class="inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold capitalize bg-white/20 text-white border border-white/30 backdrop-blur-sm">{{ event.type || 'event' }}</span>
+                  <!-- Amount only (type chip moved to top-left) -->
+                  <div class="mt-6 flex items-center justify-end relative z-10">
                     <span class="text-xl font-extrabold text-white drop-shadow tracking-tight">₱{{ Number(event.amount_due || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
                   </div>
                   <!-- Title -->
-                  <h4 class="text-white font-extrabold text-[1.05rem] mt-1.5 leading-snug relative z-10 pr-2 line-clamp-2">{{ event.title }}</h4>
+                  <h4 class="text-white font-extrabold text-[1.05rem] mt-1 leading-snug relative z-10 pr-2 line-clamp-2">{{ event.title }}</h4>
                 </div>
 
                 <!-- Card body -->
@@ -2455,33 +2463,41 @@ export default {
     getCarouselCardStyle(idx) {
       const offset = idx - this.carouselIndex;
       const abs = Math.abs(offset);
+      // Cards have fixed width, positioned with left:50% so transform centers them.
+      // Adjacent cards shift by a fixed pixel offset so they always sit right beside
+      // the center card regardless of container width.
+      const base = {
+        position: 'absolute',
+        top: '0',
+        left: '50%',
+        width: 'min(390px, 88vw)',
+      };
       if (abs === 0) {
         return {
-          transform: 'translateX(0) scale(1)',
+          ...base,
+          transform: 'translateX(-50%) scale(1)',
           opacity: '1',
           zIndex: 10,
           pointerEvents: 'auto',
-          filter: 'none',
         };
       }
       if (abs === 1) {
         const dir = offset > 0 ? 1 : -1;
         return {
-          transform: `translateX(${dir * 62}%) scale(0.88)`,
-          opacity: '0.72',
+          ...base,
+          transform: `translateX(calc(-50% + ${dir * 370}px)) scale(0.88)`,
+          opacity: '0.82',
           zIndex: 5,
           pointerEvents: 'auto',
           cursor: 'pointer',
-          filter: 'none',
-          transformOrigin: dir > 0 ? 'left center' : 'right center',
         };
       }
       return {
-        transform: `translateX(${offset > 0 ? 1 : -1}50%) scale(0.75)`,
+        ...base,
+        transform: `translateX(calc(-50% + ${(offset > 0 ? 1 : -1) * 780}px))`,
         opacity: '0',
         zIndex: 1,
         pointerEvents: 'none',
-        filter: 'blur(2px)',
       };
     },
     prevCarousel() {
