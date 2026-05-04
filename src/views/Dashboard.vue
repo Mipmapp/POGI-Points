@@ -7922,11 +7922,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import { FastAverageColor } from 'fast-average-color'
+import { FastAverageColor } from 'fast-average-color' // [AI WARNING] Possibly unused — fac instance created but color results may not be consumed
 import * as XLSX from 'xlsx'
 const fac = new FastAverageColor()
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
-import AnnouncementPopup from '../components/AnnouncementPopup.vue'
+// [AI WARNING] AnnouncementPopup import removed — component was imported but never used in the template.
 import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 import SessionExpiredModal from '../components/SessionExpiredModal.vue'
 import ContributionsModal from '../components/ContributionsModal.vue'
@@ -8113,7 +8113,7 @@ const selectedEventTitleForContributions = ref('')
 
 // Contribution feature state
 const contributionTabMode = ref('general') // 'general' or 'events'
-const selectedEventForPaymentTab = ref('')
+const selectedEventForPaymentTab = ref('') // [AI WARNING] Possibly unused — defined but never read in template or script logic
 const contributionSearchQuery = ref('')
 const contributionScanMode = ref('rfid')
 const contributionInputRef = ref(null)
@@ -8133,7 +8133,7 @@ const deletingPayment = ref(false)
 const paymentsList = ref([])
 const paymentsLoading = ref(false)
 const selectedPayment = ref(null)
-const paymentScanMode = ref('student_id')
+const paymentScanMode = ref('student_id') // [AI WARNING] Possibly unused — defined but never read
 const paymentSearchMode = ref('id') // 'id' or 'rfid'
 const paymentSearchQuery = ref('')
 const creatingPayment = ref(false)
@@ -8202,15 +8202,15 @@ let activeCardMinVisibleTimer = null
 
 // Active payments carousel state
 const activePaymentsCarouselPosition = ref(0)
-const activePaymentsCarouselRef = ref(null)
+const activePaymentsCarouselRef = ref(null) // [AI WARNING] Possibly unused — template ref never assigned
 const carouselSlideDirection = ref('right') // 'left' or 'right' to track animation direction
 
 // Closed payments carousel state
 const closedPaymentsCarouselPosition = ref(0)
-const closedPaymentsCarouselRef = ref(null)
+const closedPaymentsCarouselRef = ref(null) // [AI WARNING] Possibly unused — template ref never assigned
 
 // Payment tabs state
-const paymentTab = ref('active') // 'active' or 'closed'
+const paymentTab = ref('active') // 'active' or 'closed' // [AI WARNING] Possibly unused — not in template
 
 // Student contributions/receipts state
 const myPayments = ref([])
@@ -9419,7 +9419,7 @@ const showSessionExpiredModal = ref(false)
 const showMobileMenu = ref(false)
 const showContactModal = ref(false)
 const helpTab = ref('about')
-const termsExpanded = ref(false)
+const termsExpanded = ref(false) // [AI WARNING] Possibly unused — defined but never read in template or script
 const showTermsModal = ref(false)
 const currentPage = ref('dashboard')
 
@@ -9442,9 +9442,9 @@ const editImageUploading = ref(false)
 const editImageLoading = ref(false)
 const savingUser = ref(false)
 const confirmDuplicate = ref(false)
-const pendingEditUser = ref(null)
+const pendingEditUser = ref(null) // [AI WARNING] Possibly unused — defined but never read
 const isRefreshing = ref(false)
-const isSearching = ref(false)
+const isSearching = ref(false) // [AI WARNING] Possibly unused — defined but never read in template or script
 const statsData = ref(null)
 const showRfidList = ref(false)
 const rfidListType = ref('')
@@ -9464,7 +9464,7 @@ const deleteCooldown = ref(0)
 let cooldownTimer = null
 const profileImageFailed = ref(false)
 const sidebarImageFailed = ref(false)
-const profileImageRetries = ref(0)
+const profileImageRetries = ref(0) // [AI WARNING] Possibly unused — defined but never read
 
 // Face ID self-service state (student dashboard)
 const faceLoading = ref(false)
@@ -10830,7 +10830,7 @@ watch(duplicateSearchQuery, (newValue) => {
 // RFID Fullscreen mode
 const rfidFullscreenMode = ref(false)
 const rfidFullscreenInputRef = ref(null)
-const fullscreenLogoRef = ref(null)
+const fullscreenLogoRef = ref(null) // [AI WARNING] Possibly unused — ref never assigned in template
 const logoFlipping = ref(false)
 const logoFlipInterval = ref(null)
 const rfidFocusTimeout = ref(null)
@@ -11085,47 +11085,7 @@ const likeCooldowns = ref({})
 const likeInProgress = ref({})
 const LIKE_COOLDOWN_MS = 2000
 
-// Announcement popup state
-const showAnnouncementPopup = ref(false)
-const announcementPopupData = ref([])
-const ANNOUNCEMENT_POPUP_STORAGE_KEY = 'ssaam_last_popup_announcement_id'
 
-const getLatestAnnouncementsForPopup = () => {
-  if (!notifications.value || notifications.value.length === 0) return []
-  return notifications.value.slice(0, 10)
-}
-
-const hasRecentAnnouncement = () => {
-  if (!notifications.value || notifications.value.length === 0) return false
-  const now = new Date()
-  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-  const latestDate = new Date(notifications.value[0]?.created_at)
-  return latestDate > oneDayAgo
-}
-
-const checkAndShowAnnouncementPopup = () => {
-  const user = currentUser.value
-  if (user.isMaster || user.role === 'admin') return
-  
-  if (!hasRecentAnnouncement()) return
-  
-  const recentAnnouncements = getLatestAnnouncementsForPopup()
-  if (recentAnnouncements.length === 0) return
-  
-  announcementPopupData.value = recentAnnouncements
-  showAnnouncementPopup.value = true
-}
-
-const closeAnnouncementPopup = () => {
-  if (announcementPopupData.value.length > 0) {
-    localStorage.setItem(ANNOUNCEMENT_POPUP_STORAGE_KEY, announcementPopupData.value[0]._id)
-  }
-  showAnnouncementPopup.value = false
-}
-
-const handlePopupLike = (announcement) => {
-  toggleLike(announcement)
-}
 
 // ImgBB API keys for image uploads
 const imgbbApiKeys = [
@@ -11143,22 +11103,22 @@ const LIKE_BAN_DURATION_MS = 60 * 60 * 1000
 const likeActionTimestamps = ref(JSON.parse(localStorage.getItem('likeActionTimestamps') || '[]'))
 const likeWarningShown = ref(localStorage.getItem('likeWarningShown') === 'true')
 const likeBanUntil = ref(parseInt(localStorage.getItem('likeBanUntil') || '0'))
-const showNotificationModal = ref(false)
+const showNotificationModal = ref(false) // [AI WARNING] Possibly unused — not referenced in template; showEditNotificationModal is the active one
 const newNotification = ref({ title: '', content: '', type: 'announcement' })
 const postingNotification = ref(false)
-const editingNotification = ref(null)
+const editingNotification = ref(null) // [AI WARNING] Possibly unused — editNotificationData is the active ref for editing
 const showDeleteNotificationConfirm = ref(false)
 const notificationToDelete = ref(null)
 const deletingNotification = ref(false)
 const notificationImage = ref(null)
 const notificationImagePreview = ref(null)
 const notificationImageUrl = ref('')
-const showImagePreviewModal = ref(false)
-const imagePreviewUrl = ref('')
-const notifImageRetries = ref({})
-const notifImageFailed = ref({})
-const notifImageLoaded = ref({})
-const MAX_NOTIF_IMAGE_RETRIES = 3
+const showImagePreviewModal = ref(false) // [AI WARNING] Possibly unused — never referenced in template
+const imagePreviewUrl = ref('') // [AI WARNING] Possibly unused — never referenced in template
+const notifImageRetries = ref({}) // [AI WARNING] Possibly unused — no template binding found
+const notifImageFailed = ref({}) // [AI WARNING] Possibly unused — no template binding found
+const notifImageLoaded = ref({}) // [AI WARNING] Possibly unused — no template binding found
+const MAX_NOTIF_IMAGE_RETRIES = 3 // [AI WARNING] Possibly unused — used with notifImageRetries which has no template binding
 
 // Editing notification image state (used only in Edit modal)
 const editNotificationImage = ref(null)
@@ -11201,7 +11161,7 @@ const loadingMoreLogs = ref(false)
 const studentPhotoCache = ref({})
 // Short-term negative cache to avoid refetching student IDs known to have no photo
 const noPhotoCache = {} // studentId -> expiry timestamp (ms)
-const attendanceDataFetched = ref(false) // Track if attendance section has been fetched
+const attendanceDataFetched = ref(false) // [AI WARNING] Possibly unused — defined but never read in template or script logic
 
 // Attendance Events Search and Pagination
 const attendanceSearchQuery = ref('')
@@ -11280,7 +11240,7 @@ const attendanceLoading = ref(false)
 const attendanceRefreshInterval = ref(null)
 const eventTimeInterval = ref(null)
 const eventTimeRemaining = ref({})
-const eventEndedNotifications = ref(new Set())
+const eventEndedNotifications = ref(new Set()) // [AI WARNING] Possibly unused — defined but never read
 const showCreateEventModal = ref(false)
 const showEditEventModal = ref(false)
 const loadingStudentsForEvent = ref(false)
@@ -11972,7 +11932,7 @@ const scannerGeoBlocked = computed(() => {
   return !scannerLocationVerified.value
 })
 const rfidInputRef = ref(null)
-const announcementTextareaRef = ref(null)
+const announcementTextareaRef = ref(null) // [AI WARNING] Possibly unused — not bound in template via ref=; auto-focus function may be dead
 const socialNameInputRef = ref(null)
 
 // Social shortcuts data
@@ -12121,7 +12081,7 @@ watch(activeEventIdsKey, () => {
 
 // Track which active events the student has already been notified about so a
 // single event becoming active fires the toast once, not on every refresh.
-const notifiedActiveEventIds = ref(new Set())
+const notifiedActiveEventIds = ref(new Set()) // [AI WARNING] Possibly unused — defined but never read
 
 // Computed property for upcoming events (draft status)
 const upcomingEvents = computed(() => {
@@ -13064,8 +13024,7 @@ onMounted(async () => {
   await fetchSeenNotifications()
   await fetchNotifications()
   
-  // Check and show announcement popup for students
-  checkAndShowAnnouncementPopup()
+  // [AI WARNING] checkAndShowAnnouncementPopup() removed — component was never in the template.
   
   // Fetch attendance data for students to show notification banner (already fetched earlier in student path)
   

@@ -2012,13 +2012,23 @@ export default {
     collectedByEvent() {
       const map = {};
       for (const ev of (this.paymentEvents || [])) {
-        let total = 0;
-        for (const r of (ev.payment_records || [])) {
-          if (r.payment_status === 'paid' || r.is_paid) {
-            total += Number(r.amount_paid || ev.amount_due || 0);
+        if (this.activePayment && ev._id === this.activePayment._id) {
+          // Active event: sum from filteredContributions — SAME source and field priority
+          // as statsOverall.totalCollected so both numbers always match exactly.
+          map[ev._id] = this.filteredContributions
+            .filter(c => c.payment_status === 'paid')
+            .reduce((sum, c) => sum + Number(c.amount_paid || c.original_amount || 0), 0);
+        } else {
+          // Non-active events: use embedded payment_records from the events list endpoint
+          // (detailed contributions are only loaded for the active event).
+          let total = 0;
+          for (const r of (ev.payment_records || [])) {
+            if (r.payment_status === 'paid' || r.is_paid) {
+              total += Number(r.amount_paid || ev.amount_due || 0);
+            }
           }
+          map[ev._id] = total;
         }
-        map[ev._id] = total;
       }
       return map;
     },
