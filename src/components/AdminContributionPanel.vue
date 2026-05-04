@@ -66,11 +66,11 @@
         </div>
       </div>
 
-      <!-- Event Selector -->
-      <div class="px-4 sm:px-6 md:px-8 py-4 border-b border-gray-100">
-        <div class="flex items-center gap-2 mb-3">
+      <!-- Event Selector — Carousel -->
+      <div class="px-4 sm:px-6 md:px-8 py-6 border-b border-gray-100">
+        <div class="flex items-center gap-2 mb-5">
           <div class="w-1 h-5 rounded-full bg-purple-500"></div>
-          <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Active Event</h3>
+          <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Select Event</h3>
           <span v-if="activePayment" class="ml-auto inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-full">
             <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
             {{ activePayment.title }}
@@ -78,9 +78,12 @@
           <span v-else-if="!isLoadingEvents" class="ml-auto text-xs text-gray-400 font-medium">No event selected</span>
         </div>
 
-        <!-- Loading Events -->
-        <div v-if="isLoadingEvents" class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-          <div v-for="i in 3" :key="i" class="flex-shrink-0 h-20 w-48 rounded-2xl bg-gray-100 animate-pulse"></div>
+        <!-- Loading -->
+        <div v-if="isLoadingEvents" class="flex flex-col items-center gap-3 py-4">
+          <div class="w-full max-w-sm h-56 rounded-3xl bg-gray-100 animate-pulse"></div>
+          <div class="flex gap-1.5">
+            <div v-for="i in 3" :key="i" class="w-2.5 h-2.5 rounded-full bg-gray-200 animate-pulse"></div>
+          </div>
         </div>
 
         <!-- No Events -->
@@ -89,71 +92,121 @@
           <p class="text-sm text-gray-500">No events created yet. Click <strong>Create Event</strong> to get started.</p>
         </div>
 
-        <!-- Events List -->
-        <div v-else class="flex gap-2.5 overflow-x-auto pb-1 no-scrollbar">
-          <div
-            v-for="event in paymentEvents"
-            :key="event._id"
-            :class="[
-              'relative flex-shrink-0 w-52 rounded-2xl border-2 p-3.5 transition-all duration-150 cursor-pointer group',
-              activePayment && activePayment._id === event._id
-                ? 'border-purple-500 bg-purple-50 shadow-md shadow-purple-100'
-                : 'border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50'
-            ]"
-            @click="selectEvent(event)"
-          >
-            <!-- Action buttons (edit + delete) — hidden while this card's edit modal is open -->
-            <div v-show="!(showEditEventModal && editEventForm._id === event._id)"
-              class="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-150 z-10">
-              <button
-                @click.stop="openEditEvent(event)"
-                class="w-5 h-5 rounded-full bg-blue-100 hover:bg-blue-500 text-blue-500 hover:text-white flex items-center justify-center transition-all duration-150"
-                title="Edit event"
-              >
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15.414 9 16l.586-3z"/></svg>
-              </button>
-              <button
-                @click.stop="confirmDeleteEvent(event)"
-                class="w-5 h-5 rounded-full bg-red-100 hover:bg-red-500 text-red-500 hover:text-white flex items-center justify-center transition-all duration-150"
-                title="Delete event"
-              >
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-              </button>
+        <!-- Carousel -->
+        <div v-else class="flex flex-col items-center gap-4">
+          <!-- Navigation row -->
+          <div class="flex items-center gap-3 w-full max-w-md">
+            <!-- Prev -->
+            <button
+              @click="prevCarousel"
+              :disabled="paymentEvents.length <= 1"
+              class="flex-shrink-0 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-md transition-all disabled:opacity-25 disabled:cursor-not-allowed"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+            </button>
+
+            <!-- Card -->
+            <div class="flex-1 min-w-0">
+              <Transition name="carousel-slide" mode="out-in">
+                <div
+                  :key="carouselIndex"
+                  v-if="carouselEvent"
+                  :class="['rounded-3xl overflow-hidden border-2 transition-all duration-300 shadow-lg', activePayment && activePayment._id === carouselEvent._id ? 'border-purple-400 shadow-purple-100' : 'border-gray-200 shadow-gray-100']"
+                >
+                  <!-- Gradient header -->
+                  <div :class="['relative px-5 pt-6 pb-5', carouselEvent.type === 'fee' ? 'bg-gradient-to-br from-blue-600 to-indigo-700' : carouselEvent.type === 'membership' ? 'bg-gradient-to-br from-green-600 to-teal-700' : carouselEvent.type === 'donation' ? 'bg-gradient-to-br from-orange-500 to-amber-600' : 'bg-gradient-to-br from-purple-600 to-violet-700']">
+                    <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+                    <!-- Active badge -->
+                    <div v-if="activePayment && activePayment._id === carouselEvent._id" class="absolute top-3 right-3 flex items-center gap-1.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-2.5 py-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                      <span class="text-white text-[10px] font-bold tracking-wide uppercase">Active</span>
+                    </div>
+                    <!-- Edit / Delete -->
+                    <div class="absolute top-3 left-3 flex gap-1.5">
+                      <button @click.stop="openEditEvent(carouselEvent)" class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition" title="Edit">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15.414 9 16l.586-3z"/></svg>
+                      </button>
+                      <button @click.stop="confirmDeleteEvent(carouselEvent)" class="w-7 h-7 rounded-full bg-white/20 hover:bg-red-500/70 text-white flex items-center justify-center transition" title="Delete">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                      </button>
+                    </div>
+                    <!-- Type + Amount -->
+                    <div class="mt-4 flex items-center justify-between relative z-10">
+                      <span class="inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold capitalize bg-white/20 text-white border border-white/30 backdrop-blur-sm">{{ carouselEvent.type || 'event' }}</span>
+                      <span class="text-2xl font-extrabold text-white drop-shadow">₱{{ Number(carouselEvent.amount_due || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                    </div>
+                    <!-- Title -->
+                    <h4 class="text-white font-extrabold text-lg mt-2 leading-snug relative z-10">{{ carouselEvent.title }}</h4>
+                  </div>
+
+                  <!-- Card body -->
+                  <div class="bg-white px-5 py-4 space-y-3">
+                    <!-- Description -->
+                    <p v-if="carouselEvent.description" class="text-sm text-gray-500 leading-relaxed line-clamp-2">{{ carouselEvent.description }}</p>
+
+                    <!-- Stats row -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <div class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 flex-1 min-w-0">
+                        <svg class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
+                        <span class="text-xs font-bold text-emerald-700 truncate">₱{{ Number(collectedByEvent[carouselEvent._id] || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }} collected</span>
+                      </div>
+                      <div v-if="carouselEvent.deadline" class="flex items-center gap-1 text-xs text-gray-400 font-medium flex-shrink-0">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        Due {{ new Date(carouselEvent.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}
+                      </div>
+                    </div>
+
+                    <!-- Target badges -->
+                    <div class="flex flex-wrap gap-1">
+                      <template v-if="(carouselEvent.target_year_levels && carouselEvent.target_year_levels.length > 0) || (carouselEvent.target_programs && carouselEvent.target_programs.length > 0)">
+                        <span v-for="yl in (carouselEvent.target_year_levels || [])" :key="'yl-'+yl" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-700">{{ yl }}</span>
+                        <span v-for="prog in (carouselEvent.target_programs || [])" :key="'prog-'+prog" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">{{ prog }}</span>
+                      </template>
+                      <span v-else class="text-[11px] text-gray-400 italic">All students</span>
+                    </div>
+
+                    <!-- Select button -->
+                    <button
+                      @click="selectEvent(carouselEvent)"
+                      :disabled="activePayment && activePayment._id === carouselEvent._id"
+                      :class="['w-full py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95',
+                        activePayment && activePayment._id === carouselEvent._id
+                          ? 'bg-purple-50 text-purple-600 border-2 border-purple-200 cursor-default'
+                          : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 shadow-md shadow-purple-200']"
+                    >
+                      <span v-if="activePayment && activePayment._id === carouselEvent._id" class="flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        Currently Selected
+                      </span>
+                      <span v-else>Select This Event</span>
+                    </button>
+                  </div>
+                </div>
+              </Transition>
             </div>
 
-            <!-- Active checkmark badge — bottom-right, never overlaps hover buttons -->
-            <div v-if="activePayment && activePayment._id === event._id"
-              class="absolute bottom-2.5 right-2.5 w-5 h-5 rounded-full bg-purple-500 shadow-md flex items-center justify-center z-10">
-              <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-            </div>
-
-            <div class="flex items-start mb-2 pr-2">
-              <p :class="['font-bold text-sm leading-tight line-clamp-2 flex-1', activePayment && activePayment._id === event._id ? 'text-purple-800' : 'text-gray-800']">{{ event.title }}</p>
-            </div>
-            <div class="flex items-center justify-between gap-1">
-              <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold capitalize',
-                event.type === 'fee' ? 'bg-blue-100 text-blue-700' :
-                event.type === 'membership' ? 'bg-green-100 text-green-700' :
-                event.type === 'donation' ? 'bg-orange-100 text-orange-700' :
-                'bg-gray-200 text-gray-600'
-              ]">{{ event.type || 'event' }}</span>
-              <span :class="['font-extrabold text-sm', activePayment && activePayment._id === event._id ? 'text-purple-700' : 'text-blue-700']">₱{{ Number(event.amount_due || 0).toFixed(2) }}</span>
-            </div>
-            <div v-if="event.description" class="mt-1.5 text-[10px] text-gray-500 line-clamp-2 leading-relaxed">{{ event.description }}</div>
-            <div class="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold leading-none" :title="'Total collected (after discounts) for this event'">
-              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
-              ₱{{ Number(collectedByEvent[event._id] || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }} collected
-            </div>
-            <div v-if="event.deadline" class="mt-1 text-[10px] text-gray-400 font-medium">
-              Due: {{ new Date(event.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}
-            </div>
-            <!-- Targeting badges -->
-            <div v-if="(event.target_year_levels && event.target_year_levels.length > 0) || (event.target_programs && event.target_programs.length > 0)" class="mt-1.5 flex flex-wrap gap-1">
-              <span v-for="yl in (event.target_year_levels || [])" :key="'yl-'+yl" class="inline-block px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-teal-100 text-teal-700 leading-none">{{ yl }}</span>
-              <span v-for="prog in (event.target_programs || [])" :key="'prog-'+prog" class="inline-block px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-indigo-100 text-indigo-700 leading-none">{{ prog }}</span>
-            </div>
-            <div v-else class="mt-1 text-[9px] text-gray-400 italic">All students</div>
+            <!-- Next -->
+            <button
+              @click="nextCarousel"
+              :disabled="paymentEvents.length <= 1"
+              class="flex-shrink-0 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-md transition-all disabled:opacity-25 disabled:cursor-not-allowed"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </button>
           </div>
+
+          <!-- Dot indicators -->
+          <div class="flex items-center gap-1.5">
+            <button
+              v-for="(event, idx) in paymentEvents"
+              :key="event._id"
+              @click="carouselIndex = idx"
+              :class="['rounded-full transition-all duration-300', idx === carouselIndex ? 'w-6 h-2.5 bg-purple-500' : 'w-2.5 h-2.5 bg-gray-300 hover:bg-purple-300']"
+            ></button>
+          </div>
+
+          <!-- Counter -->
+          <p class="text-xs text-gray-400 font-medium -mt-1">{{ carouselIndex + 1 }} of {{ paymentEvents.length }} event{{ paymentEvents.length === 1 ? '' : 's' }}</p>
         </div>
       </div>
 
@@ -1840,6 +1893,7 @@ export default {
       createEventError: '',
       paymentEvents: [],
       isLoadingEvents: false,
+      carouselIndex: 0,
       showDeleteEventConfirm: false,
       eventToDelete: null,
       isDeletingEvent: false,
@@ -2095,6 +2149,9 @@ export default {
         expected,
       };
     },
+    carouselEvent() {
+      return this.paymentEvents[this.carouselIndex] || null;
+    },
     collectedByEvent() {
       const map = {};
       for (const ev of (this.paymentEvents || [])) {
@@ -2276,6 +2333,14 @@ export default {
       } finally {
         this.isLoadingDeleteCount = false;
       }
+    },
+    prevCarousel() {
+      if (this.paymentEvents.length <= 1) return;
+      this.carouselIndex = (this.carouselIndex - 1 + this.paymentEvents.length) % this.paymentEvents.length;
+    },
+    nextCarousel() {
+      if (this.paymentEvents.length <= 1) return;
+      this.carouselIndex = (this.carouselIndex + 1) % this.paymentEvents.length;
     },
     cancelDeleteEvent() {
       this.showDeleteEventConfirm = false;
@@ -2989,6 +3054,22 @@ export default {
   transform: translateY(-8px);
   max-height: 0;
 }
+/* ── carousel-slide: card swap animation ── */
+.carousel-slide-enter-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.carousel-slide-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.carousel-slide-enter-from {
+  opacity: 0;
+  transform: translateX(24px);
+}
+.carousel-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-24px);
+}
+
 /* ── contrib-reveal: empty-state ↔ stats+filters inside the white card ── */
 .contrib-reveal-enter-active {
   transition: opacity 0.4s ease, transform 0.4s ease;
