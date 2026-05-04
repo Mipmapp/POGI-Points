@@ -27,17 +27,49 @@
       </div>
 
       <!-- Action Bar -->
-      <div class="px-4 sm:px-6 md:px-8 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-gray-100">
-        <div class="flex items-center gap-2 sm:hidden">
-          <div class="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 text-sm font-bold text-blue-700">
+      <div class="px-4 sm:px-6 md:px-8 py-3 sm:py-4 border-b border-gray-100 space-y-3">
+        <!-- Row 1: label + matched count -->
+        <div class="flex items-center justify-between gap-2">
+          <div class="flex items-center gap-2">
+            <div class="w-1 h-5 rounded-full bg-blue-600"></div>
+            <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Filters &amp; Search</h3>
+          </div>
+          <div class="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1 text-xs font-bold text-blue-700">
             {{ serverFilteredCount !== null ? serverFilteredCount : filteredCount }} matched
           </div>
         </div>
-        <div class="flex items-center gap-2">
-          <div class="w-1 h-5 rounded-full bg-blue-600"></div>
-          <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Filters &amp; Search</h3>
+
+        <!-- Mobile: 3-column compact icon+label buttons -->
+        <div class="grid grid-cols-3 gap-2 sm:hidden">
+          <button
+            @click="showCreateEventModal = true"
+            class="flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-2xl bg-gradient-to-b from-blue-600 to-indigo-700 text-white shadow-md shadow-blue-200/70 active:scale-95 transition-all"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <span class="text-[11px] font-bold leading-tight">Create Event</span>
+          </button>
+          <button
+            @click="downloadPaymentExcel"
+            :disabled="isDownloading"
+            class="flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-2xl bg-gradient-to-b from-green-600 to-green-700 text-white shadow-md shadow-green-200/70 active:scale-95 transition-all disabled:opacity-60"
+          >
+            <svg v-if="isDownloading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span class="text-[11px] font-bold leading-tight">{{ isDownloading ? 'Loading…' : 'Export Excel' }}</span>
+          </button>
+          <button
+            @click="openReportConfig"
+            :disabled="isGeneratingReport || paymentEvents.length === 0"
+            class="flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-2xl bg-gradient-to-b from-violet-600 to-purple-700 text-white shadow-md shadow-purple-200/70 active:scale-95 transition-all disabled:opacity-60"
+          >
+            <svg v-if="isGeneratingReport" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="text-[11px] font-bold leading-tight">{{ isGeneratingReport ? 'Loading…' : 'Gen. Report' }}</span>
+          </button>
         </div>
-        <div class="flex items-center gap-2 flex-wrap">
+
+        <!-- Desktop: original flex row buttons -->
+        <div class="hidden sm:flex items-center gap-2 flex-wrap">
           <button
             @click="showCreateEventModal = true"
             class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-xl hover:opacity-90 transition-all font-semibold text-sm shadow-md shadow-blue-200 active:scale-95"
@@ -67,20 +99,53 @@
       </div>
 
       <!-- Event Selector — Carousel -->
-      <div class="px-4 sm:px-6 md:px-8 py-6 border-b border-gray-100">
-        <div class="flex items-center gap-2 mb-5">
+      <div class="px-4 sm:px-6 md:px-8 py-4 sm:py-5 border-b border-gray-100">
+        <!-- Header row -->
+        <div class="flex items-center gap-2 mb-3 sm:mb-4">
           <div class="w-1 h-5 rounded-full bg-purple-500"></div>
           <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Select Event</h3>
-          <span v-if="activePayment" class="ml-auto inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-full">
-            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></span>
-            {{ activePayment.title }}
+          <span v-if="activePayment" class="ml-auto inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-full max-w-[140px] sm:max-w-none truncate">
+            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse flex-shrink-0"></span>
+            <span class="truncate">{{ activePayment.title }}</span>
           </span>
-          <span v-else-if="!isLoadingEvents" class="ml-auto text-xs text-gray-400 font-medium">No event selected</span>
+          <span v-else-if="!isLoadingEvents && paymentEvents.length > 0" class="ml-auto text-xs text-gray-400 font-medium">No event selected</span>
+        </div>
+
+        <!-- Search bar — shown when events exist -->
+        <div v-if="!isLoadingEvents && paymentEvents.length > 0" class="mb-4">
+          <div class="relative group">
+            <div class="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none transition-colors duration-200"
+              :class="eventSearchQuery ? 'text-purple-500' : 'text-gray-400 group-focus-within:text-purple-500'">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+            </div>
+            <input
+              v-model="eventSearchQuery"
+              type="text"
+              placeholder="Search events by name or type…"
+              class="w-full pl-10 pr-9 py-2.5 bg-gray-50 border border-gray-200 rounded-2xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-purple-400 focus:ring-2 focus:ring-purple-400/20 transition-all duration-200"
+            />
+            <button
+              v-if="eventSearchQuery"
+              @click="eventSearchQuery = ''; carouselIndex = 0"
+              class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center transition-all duration-150 active:scale-90"
+            >
+              <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <!-- Search results badge -->
+          <Transition name="carousel-slide">
+            <div v-if="eventSearchQuery" class="mt-2 flex items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 text-[11px] text-purple-700 font-bold bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-full">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
+                {{ displayedEvents.length }} of {{ paymentEvents.length }} event{{ paymentEvents.length === 1 ? '' : 's' }} found
+              </span>
+            </div>
+          </Transition>
         </div>
 
         <!-- Loading -->
         <div v-if="isLoadingEvents" class="flex flex-col items-center gap-3 py-4">
-          <div class="w-full max-w-sm h-56 rounded-3xl bg-gray-100 animate-pulse"></div>
+          <div class="w-full max-w-sm h-52 rounded-3xl bg-gray-100 animate-pulse"></div>
           <div class="flex gap-1.5">
             <div v-for="i in 3" :key="i" class="w-2.5 h-2.5 rounded-full bg-gray-200 animate-pulse"></div>
           </div>
@@ -90,6 +155,18 @@
         <div v-else-if="paymentEvents.length === 0" class="flex items-center gap-3 bg-gray-50 border border-dashed border-gray-300 rounded-2xl px-4 py-3">
           <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
           <p class="text-sm text-gray-500">No events created yet. Click <strong>Create Event</strong> to get started.</p>
+        </div>
+
+        <!-- No Search Results -->
+        <div v-else-if="displayedEvents.length === 0" class="flex flex-col items-center gap-3 py-8 text-center">
+          <div class="w-14 h-14 rounded-2xl bg-gray-100 flex items-center justify-center">
+            <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/></svg>
+          </div>
+          <div>
+            <p class="text-sm font-bold text-gray-700 mb-1">No events found</p>
+            <p class="text-xs text-gray-400">No match for "<span class="font-semibold text-gray-600">{{ eventSearchQuery }}</span>"</p>
+          </div>
+          <button @click="eventSearchQuery = ''; carouselIndex = 0" class="text-xs font-bold text-purple-600 hover:text-purple-800 underline underline-offset-2 transition">Clear search</button>
         </div>
 
         <!-- Carousel — 3 cards visible -->
@@ -102,7 +179,7 @@
             <div class="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white via-white/70 to-transparent z-20 pointer-events-none rounded-l-3xl"></div>
             <button
               @click="prevCarousel"
-              :disabled="paymentEvents.length <= 1"
+              :disabled="displayedEvents.length <= 1"
               class="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg flex items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-purple-100 transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
@@ -112,7 +189,7 @@
             <div class="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white via-white/70 to-transparent z-20 pointer-events-none rounded-r-3xl"></div>
             <button
               @click="nextCarousel"
-              :disabled="paymentEvents.length <= 1"
+              :disabled="displayedEvents.length <= 1"
               class="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg flex items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-purple-100 transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
@@ -120,7 +197,7 @@
 
             <!-- All event cards — absolutely stacked, transformed into position -->
             <div
-              v-for="(event, idx) in paymentEvents"
+              v-for="(event, idx) in displayedEvents"
               :key="event._id"
               class="absolute inset-x-0 top-0 transition-all duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
               :style="getCarouselCardStyle(idx)"
@@ -220,15 +297,15 @@
           </div>
 
           <!-- Dot indicators -->
-          <div class="flex items-center gap-1.5 mt-1">
+          <div class="flex items-center gap-1.5 mt-1 flex-wrap justify-center max-w-xs mx-auto">
             <button
-              v-for="(event, idx) in paymentEvents"
+              v-for="(event, idx) in displayedEvents"
               :key="event._id"
               @click="carouselIndex = idx"
               :class="['rounded-full transition-all duration-300', idx === carouselIndex ? 'w-7 h-2.5 bg-purple-500' : 'w-2.5 h-2.5 bg-gray-300 hover:bg-purple-300']"
             ></button>
           </div>
-          <p class="text-xs text-gray-400 font-medium">{{ carouselIndex + 1 }} of {{ paymentEvents.length }} event{{ paymentEvents.length === 1 ? '' : 's' }}</p>
+          <p class="text-xs text-gray-400 font-medium">{{ carouselIndex + 1 }} of {{ displayedEvents.length }} event{{ displayedEvents.length === 1 ? '' : 's' }}</p>
         </div>
       </div>
 
@@ -1916,6 +1993,7 @@ export default {
       paymentEvents: [],
       isLoadingEvents: false,
       carouselIndex: 0,
+      eventSearchQuery: '',
       showDeleteEventConfirm: false,
       eventToDelete: null,
       isDeletingEvent: false,
@@ -2172,7 +2250,16 @@ export default {
       };
     },
     carouselEvent() {
-      return this.paymentEvents[this.carouselIndex] || null;
+      return this.displayedEvents[this.carouselIndex] || null;
+    },
+    displayedEvents() {
+      if (!this.eventSearchQuery) return this.paymentEvents;
+      const q = this.eventSearchQuery.toLowerCase();
+      return this.paymentEvents.filter(e =>
+        (e.title || '').toLowerCase().includes(q) ||
+        (e.type || '').toLowerCase().includes(q) ||
+        (e.description || '').toLowerCase().includes(q)
+      );
     },
     collectedByEvent() {
       const map = {};
@@ -2271,6 +2358,11 @@ export default {
     },
   },
   watch: {
+    displayedEvents(newVal) {
+      if (this.carouselIndex >= newVal.length) {
+        this.carouselIndex = Math.max(0, newVal.length - 1);
+      }
+    },
     filteredContributions() { this.paymentsPage = 1; },
     filterStatus() { this.loadAllContributions(); },
     filterProgram() { this.loadAllContributions(); },
