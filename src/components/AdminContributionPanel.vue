@@ -305,6 +305,7 @@
         </div>
 
         <!-- ============ Date Filter (Paid On) ============ -->
+        <Transition name="paid-on-slide">
         <div v-if="!selectedStudent" class="rounded-2xl border-2 border-blue-100 bg-gradient-to-br from-blue-50/60 via-indigo-50/40 to-white p-3 sm:p-4 shadow-sm">
           <div class="flex items-center justify-between gap-2 mb-2.5">
             <div class="flex items-center gap-2 min-w-0">
@@ -464,6 +465,7 @@
             </div>
           </div>
         </div>
+        </Transition>
 
         <!-- Filter Row -->
         <div :class="['grid gap-3 grid-cols-1 sm:grid-cols-2', isMaster ? 'md:grid-cols-4' : 'md:grid-cols-3']">
@@ -2862,6 +2864,35 @@ export default {
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.paid-on-slide-enter-active {
+  transition: opacity 0.3s ease, transform 0.3s ease, max-height 0.35s ease;
+  overflow: hidden;
+}
+.paid-on-slide-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease, max-height 0.3s ease;
+  overflow: hidden;
+}
+.paid-on-slide-enter-from {
+  opacity: 0;
+  transform: translateY(-8px);
+  max-height: 0;
+}
+.paid-on-slide-enter-to {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 600px;
+}
+.paid-on-slide-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+  max-height: 600px;
+}
+.paid-on-slide-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+  max-height: 0;
+}
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 .scrollbar-gray::-webkit-scrollbar { height: 4px; }
