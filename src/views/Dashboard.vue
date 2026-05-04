@@ -797,6 +797,10 @@
 
         <div class="mt-3 border-t border-white/10 pt-3">
           <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
+          <button v-if="false" @click="currentPage = 'admin-profile'; fetchAdminProfile()" :class="[sidebarItemBase, 'mb-1', currentPage === 'admin-profile' ? sidebarItemActive : sidebarItemHover]">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+            <span>My Profile</span>
+          </button>
           <button 
             @click="handleLogoutWithAnimation"
             :class="[
@@ -944,6 +948,10 @@
           </button>
           <div class="mt-3 border-t border-white/10 pt-3">
             <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
+            <button v-if="false" @click="currentPage = 'admin-profile'; showMobileMenu = false; fetchAdminProfile()" :class="[sidebarItemBase, 'mb-1', currentPage === 'admin-profile' ? sidebarItemActive : sidebarItemHover]">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+              <span>My Profile</span>
+            </button>
             <button 
               @click="handleLogoutWithAnimation"
               :class="[
@@ -1499,7 +1507,8 @@
           </div>
         </div>
 
-        <div v-if="false" style="display:none!important"><!-- application blocks removed -->
+        <!-- Applications Page removed: feature was built but never wired to sidebar navigation -->
+        <div v-if="false">
           <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div>
               <h2 :class="['text-3xl md:text-4xl font-bold bg-gradient-to-r bg-clip-text text-transparent mb-2', isCOE ? 'from-orange-600 to-red-600' : isSOM ? 'from-green-600 to-yellow-600' : 'from-ssaam-dark to-ssaam-light']">Available Applications</h2>
@@ -3604,7 +3613,170 @@
         <!-- Manage Page (Roles & Users) -->
         <Manage ref="manageComponent" v-if="currentPage === 'manage' && (isAdminLike)" />
 
-        <!-- Admin / Co-Admin Profile Page (removed) -->
+        <!-- Admin / Co-Admin Profile Page -->
+        <div v-if="false" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
+          <!-- Hidden file input for photo upload -->
+          <input ref="adminPhotoFileRef" type="file" accept="image/*" class="hidden" @change="handleAdminPhotoUpload" />
+
+          <!-- Profile Banner with college-aware gradient -->
+          <div :class="['relative h-44 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 via-red-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 via-teal-600 to-teal-700' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 via-green-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+            <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+            <div :class="['absolute -top-20 -right-20 w-72 h-72 rounded-full blur-3xl animate-pulse', isCOE ? 'bg-red-400/20' : isSOM ? 'bg-teal-400/20' : isCNAHS ? 'bg-green-400/20' : 'bg-blue-500/20']"></div>
+            <div :class="['absolute -bottom-20 -left-20 w-72 h-72 rounded-full blur-3xl animate-pulse-slow', isCOE ? 'bg-orange-400/20' : isSOM ? 'bg-green-400/20' : isCNAHS ? 'bg-emerald-400/20' : 'bg-blue-400/20']"></div>
+            <div class="light-sweep"></div>
+            <!-- Role badge in banner -->
+            <div class="absolute top-4 right-4">
+              <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold shadow-lg" :class="currentUser.isMaster ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white' : 'bg-white/20 text-white border border-white/30'">
+                <img v-if="currentUser.isMaster" src="/crown.svg" alt="" class="w-3.5 h-3.5 brightness-0 invert" />
+                {{ currentUser.role === 'co-admin' ? 'Co-Admin' : 'Admin' }}
+                <span v-if="currentUser.role === 'co-admin' && currentUser.college" class="font-normal opacity-80">({{ currentUser.college }})</span>
+              </span>
+            </div>
+          </div>
+
+          <div v-if="adminProfileLoading" class="flex items-center justify-center py-16">
+            <svg :class="['animate-spin w-10 h-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          </div>
+
+          <div v-else-if="adminProfile" class="px-6 md:px-8 pb-8">
+            <!-- Avatar + Name Row -->
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 -mt-16 mb-8">
+              <div class="flex items-end gap-4">
+                <!-- Avatar with upload overlay -->
+                <div class="relative group flex-shrink-0">
+                  <div :class="['w-28 h-28 rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+                    <img v-if="adminProfileForm.photo || adminProfile.photo" :src="adminProfileForm.photo || adminProfile.photo" alt="Profile Photo" class="w-full h-full object-cover" @error="(e) => e.target.style.display='none'" />
+                    <span v-else class="text-4xl font-bold text-white">{{ (adminProfile.username || 'A').charAt(0).toUpperCase() }}</span>
+                  </div>
+                  <!-- Upload overlay -->
+                  <button @click="adminPhotoFileRef && adminPhotoFileRef.click()" class="absolute inset-0 rounded-3xl bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer" type="button">
+                    <div class="text-center">
+                      <svg class="w-6 h-6 text-white mx-auto mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                      <p class="text-white text-[10px] font-bold">Upload</p>
+                    </div>
+                  </button>
+                </div>
+                <div class="pb-1">
+                  <h2 class="text-2xl font-extrabold text-gray-900 tracking-tight">{{ adminProfile.full_name || adminProfile.username }}</h2>
+                  <p class="text-sm text-gray-500">@{{ adminProfile.username }}</p>
+                  <p :class="['text-xs font-medium mt-1', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']">{{ adminProfile.college || currentUser.college || 'All Colleges' }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Info Cards Row -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+              <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email</p>
+                <p v-if="adminProfile.email" class="text-gray-900 font-semibold text-sm truncate">{{ adminProfile.email }}</p>
+                <p v-else class="text-gray-400 text-sm italic">No email set</p>
+              </div>
+              <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Phone</p>
+                <p v-if="adminProfile.phone" class="text-gray-900 font-semibold text-sm">{{ adminProfile.phone }}</p>
+                <p v-else class="text-gray-400 text-sm italic">No phone set</p>
+              </div>
+              <div class="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">College</p>
+                <p class="text-gray-900 font-semibold text-sm">{{ adminProfile.college || currentUser.college || 'All Colleges' }}</p>
+              </div>
+            </div>
+
+            <!-- Bio Card -->
+            <div v-if="adminProfile.bio || adminProfileForm.bio" class="mb-8 p-4 bg-blue-50/40 rounded-2xl border border-blue-100">
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">About</p>
+              <p class="text-gray-700 text-sm leading-relaxed">{{ adminProfile.bio || '—' }}</p>
+            </div>
+
+            <!-- Edit Form -->
+            <div class="space-y-6">
+              <div>
+                <div class="flex items-center gap-2 mb-4">
+                  <div :class="['w-1 h-6 rounded-full', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-600' : 'bg-blue-600']"></div>
+                  <h3 :class="['text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-green-400' : 'text-gray-400']">Edit Profile</h3>
+                </div>
+                <!-- Photo Upload Section -->
+                <div class="mb-4 p-4 bg-gray-50 rounded-2xl border border-gray-200">
+                  <p class="text-xs font-semibold text-gray-600 mb-3">Profile Photo</p>
+                  <div class="flex items-center gap-4">
+                    <div :class="['w-16 h-16 rounded-2xl overflow-hidden ring-2 ring-white shadow-md flex items-center justify-center flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-400 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+                      <img v-if="adminProfileForm.photo || adminProfile.photo" :src="adminProfileForm.photo || adminProfile.photo" alt="" class="w-full h-full object-cover" @error="(e) => e.target.style.display='none'" />
+                      <svg v-else class="w-7 h-7 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <button @click="adminPhotoFileRef && adminPhotoFileRef.click()" :class="['w-full py-2.5 px-4 border-2 border-dashed rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2', isCOE ? 'border-orange-300 text-orange-600 hover:bg-orange-50 hover:border-orange-400' : isSOM ? 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400' : isCNAHS ? 'border-green-300 text-green-600 hover:bg-green-50 hover:border-green-400' : 'border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400']" type="button">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        Choose Photo
+                      </button>
+                      <p v-if="adminProfileForm.photo && adminProfileForm.photo.startsWith('data:')" class="text-xs text-green-600 mt-1.5 font-medium text-center">✓ New photo selected — save to apply</p>
+                      <p v-else class="text-xs text-gray-400 mt-1.5 text-center">JPG, PNG or GIF · Max 5MB</p>
+                    </div>
+                    <button v-if="adminProfileForm.photo" @click="adminProfileForm.photo = ''" type="button" class="p-1.5 text-gray-400 hover:text-red-500 transition flex-shrink-0" title="Remove photo">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Full Name</label>
+                    <input v-model="adminProfileForm.full_name" type="text" placeholder="Your full name" :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 outline-none text-sm bg-gray-50 focus:bg-white transition', isCOE ? 'focus:ring-orange-300 focus:border-orange-400' : isSOM ? 'focus:ring-green-300 focus:border-green-400' : isCNAHS ? 'focus:ring-green-300 focus:border-green-400' : 'focus:ring-blue-400']" />
+                  </div>
+                  <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Phone</label>
+                    <input v-model="adminProfileForm.phone" type="text" placeholder="Contact number" :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 outline-none text-sm bg-gray-50 focus:bg-white transition', isCOE ? 'focus:ring-orange-300 focus:border-orange-400' : isSOM ? 'focus:ring-green-300 focus:border-green-400' : isCNAHS ? 'focus:ring-green-300 focus:border-green-400' : 'focus:ring-blue-400']" />
+                  </div>
+                </div>
+                <div class="mt-4">
+                  <label class="block text-xs font-semibold text-gray-600 mb-1">Bio</label>
+                  <textarea v-model="adminProfileForm.bio" rows="3" placeholder="Brief description about yourself..." :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 outline-none text-sm resize-none bg-gray-50 focus:bg-white transition', isCOE ? 'focus:ring-orange-300 focus:border-orange-400' : isSOM ? 'focus:ring-green-300 focus:border-green-400' : isCNAHS ? 'focus:ring-green-300 focus:border-green-400' : 'focus:ring-blue-400']"></textarea>
+                </div>
+              </div>
+
+              <div class="border-t border-gray-100 pt-6">
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-1 h-6 rounded-full bg-blue-600"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Security</h3>
+                </div>
+                <div class="p-5 bg-gray-50 rounded-2xl border border-gray-100">
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-600 mb-1">Current Password</label>
+                      <input v-model="adminProfileForm.current_password" type="password" placeholder="Current password" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm bg-white transition" />
+                    </div>
+                    <div>
+                      <label class="block text-xs font-semibold text-gray-600 mb-1">New Password</label>
+                      <input v-model="adminProfileForm.new_password" type="password" placeholder="New password (min 8 chars)" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-400 outline-none text-sm bg-white transition" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="flex flex-col sm:flex-row gap-3">
+                <button @click="saveAdminProfile" :disabled="adminProfileSaving" :class="['flex-1 text-white py-2.5 px-6 rounded-xl font-bold transition-all hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-60 shadow-lg bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-700 shadow-orange-200' : isSOM ? 'from-green-600 to-teal-700 shadow-green-200' : isCNAHS ? 'from-emerald-600 to-green-700 shadow-green-200' : 'from-ssaam-dark to-ssaam-light shadow-blue-200']">
+                  <svg v-if="adminProfileSaving" class="animate-spin w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  {{ adminProfileSaving ? 'Saving...' : 'Save Changes' }}
+                </button>
+              </div>
+
+              <!-- Co-Admin Transfer Role Section -->
+              <div v-if="currentUser.role === 'co-admin'" class="border-t border-gray-100 pt-6">
+                <div class="flex items-center gap-2 mb-4">
+                  <div class="w-1 h-6 rounded-full bg-orange-500"></div>
+                  <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Transfer Role</h3>
+                </div>
+                <p class="text-xs text-gray-500 mb-3">Transfer your co-admin responsibilities to another account. You will be removed and the target account will take over.</p>
+                <div class="flex gap-2">
+                  <input v-model="transferTargetUsername" type="text" placeholder="Target username" class="flex-1 px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-orange-400 outline-none text-sm bg-gray-50" />
+                  <button @click="requestTransferRole" :disabled="transferringRole" class="px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-sm font-bold transition disabled:opacity-60">
+                    {{ transferringRole ? 'Transferring...' : 'Transfer' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Student Location Section — mirrors the admin Scanner geofence preview -->
         <div v-if="currentPage === 'location' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-6">
           <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
@@ -5120,7 +5292,160 @@
             >Terms &amp; Conditions</button>.
           </p>
 
-          <!-- Terms content lives in the modal only. -->
+          <!-- Legacy inline content (kept hidden — terms now live in the modal only). -->
+          <div v-if="false">
+              <div>
+                <div>
+              <p class="text-sm text-gray-600 mb-6 leading-relaxed">
+                By using SSAAM, you agree to the following terms which govern attendance recording, financial contributions, and your personal data within the JRMSU SSAAM system. Please read them carefully — continued use of the system constitutes acceptance.
+              </p>
+
+              <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+                <!-- Card 1: Attendance & RFID/Face ID -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </div>
+                    <h3 class="font-extrabold text-gray-900">1. Attendance Recording</h3>
+                  </div>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Attendance is recorded through your registered <strong>RFID card</strong>, <strong>Face ID</strong>, or admin manual check-in for officially scheduled events.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Attempting to scan on behalf of another student (proxy attendance) is strictly prohibited and may result in disciplinary action.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>If <strong>GPS geofence</strong> is enabled for an event, you must be physically inside the allowed radius for your check-in to be accepted.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Where Face ID is disabled by the admin, please use the RFID scanner or request manual check-in.</span></li>
+                  </ul>
+                </div>
+
+                <!-- Card 2: Account & Roles -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg>
+                    </div>
+                    <h3 class="font-extrabold text-gray-900">2. Account &amp; Roles</h3>
+                  </div>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Your account is bound to one of the JRMSU colleges (<strong>CCS, COE, SOM, CNAHS</strong>) and you may only access data within your college unless granted broader authority.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, and <strong>Admin</strong>. Each role has clearly scoped permissions enforced by both the app and the server.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You are responsible for safeguarding your password. Sharing credentials or RFID cards is prohibited.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins are required to change their default passwords on first login and may be prompted to do so periodically.</span></li>
+                  </ul>
+                </div>
+
+                <!-- Card 3: Contributions & Raffle -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <h3 class="font-extrabold text-gray-900">3. Contributions &amp; Raffle Tickets</h3>
+                  </div>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Contribution amounts, discounts, and payment statuses are managed by your college's Admin and Treasurer.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Payments are recorded in-system and the <strong>Paid Date</strong> is preserved for transparency. Reversals (Mark Unpaid) are logged.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Raffle tickets are issued strictly through admin-approved processes; tampering with ticket records is prohibited.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Disputes regarding amounts must be raised with your college Admin in writing.</span></li>
+                  </ul>
+                </div>
+
+                <!-- Card 4: Privacy & Data -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <h3 class="font-extrabold text-gray-900">4. Privacy &amp; Data</h3>
+                  </div>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>SSAAM stores your name, student ID, program, year level, RFID tag, profile photo, and (if enrolled) face encoding strictly for academic and event-attendance purposes.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Sensitive fields are encrypted at rest, and student data is isolated per college so one college cannot view another's records.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>GPS coordinates captured at check-in are used only to validate the geofence; they are not used for tracking outside event windows.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You may request review or correction of your records by contacting your college Admin.</span></li>
+                  </ul>
+                </div>
+
+                <!-- Card 5: Acceptable Use -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    </div>
+                    <h3 class="font-extrabold text-gray-900">5. Acceptable Use</h3>
+                  </div>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You agree not to attempt to bypass authentication, role checks, college isolation, or any of the system's safeguards.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Automated scraping, scripted abuse, or any activity that disrupts the platform or other users is forbidden.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins must use Admin/Co-Admin tools only for legitimate institutional purposes; misuse may lead to revocation of access.</span></li>
+                  </ul>
+                </div>
+
+                <!-- Card 6: Liability & Updates -->
+                <div :class="['rounded-2xl border-2 p-5 transition hover:shadow-md',
+                  isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white'
+                  : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white'
+                  : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
+                  <div class="flex items-center gap-3 mb-3">
+                    <div :class="['w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md',
+                      isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600'
+                      : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600'
+                      : 'bg-gradient-to-br from-blue-600 to-indigo-600']">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                    </div>
+                    <h3 class="font-extrabold text-gray-900">6. Liability &amp; Updates</h3>
+                  </div>
+                  <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>While we strive for accuracy, SSAAM is provided as-is. JRMSU and the SSAAM team are not liable for missed events caused by personal device issues, network outages, or expired RFID cards.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Features, policies, and these terms may be updated from time to time. Notable changes will be announced in-app.</span></li>
+                    <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Continued use of SSAAM after updates indicates your acceptance of the revised terms.</span></li>
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Footer -->
+              <div class="mt-6 pt-5 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-gray-500">
+                <p>
+                  Last updated: <span class="font-semibold text-gray-700">May 1, 2026</span>
+                </p>
+                <p class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                  By continuing to use SSAAM, you acknowledge and agree to these terms.
+                </p>
+              </div>
+                </div>
+              </div>
+            </div>
+        </div>
 
       </div>
       </Transition>
@@ -7633,6 +7958,10 @@ const loggingOut = ref(false)
 const isPageLoading = ref(false)
 const statsLoading = ref(false)
 
+const adminProfile = ref(null)
+const adminProfileLoading = ref(false)
+const adminProfileSaving = ref(false)
+const adminProfileForm = ref({ full_name: '', phone: '', bio: '', photo: '', current_password: '', new_password: '' })
 const transferTargetUsername = ref('')
 const transferringRole = ref(false)
 
@@ -10602,6 +10931,25 @@ const stopParticles = () => {
   }
 }
 
+// Admin photo upload helper
+const adminPhotoFileRef = ref(null)
+const handleAdminPhotoUpload = (event) => {
+  const file = event.target.files[0]
+  if (!file) return
+  if (!file.type.startsWith('image/')) {
+    showNotification('Please select a valid image file', 'error')
+    return
+  }
+  if (file.size > 5 * 1024 * 1024) {
+    showNotification('Image must be smaller than 5MB', 'error')
+    return
+  }
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    adminProfileForm.value.photo = e.target.result
+  }
+  reader.readAsDataURL(file)
+}
 
 // Fullscreen live clock
 const fsLiveClock = ref('')
@@ -10737,6 +11085,47 @@ const likeCooldowns = ref({})
 const likeInProgress = ref({})
 const LIKE_COOLDOWN_MS = 2000
 
+// Announcement popup state
+const showAnnouncementPopup = ref(false)
+const announcementPopupData = ref([])
+const ANNOUNCEMENT_POPUP_STORAGE_KEY = 'ssaam_last_popup_announcement_id'
+
+const getLatestAnnouncementsForPopup = () => {
+  if (!notifications.value || notifications.value.length === 0) return []
+  return notifications.value.slice(0, 10)
+}
+
+const hasRecentAnnouncement = () => {
+  if (!notifications.value || notifications.value.length === 0) return false
+  const now = new Date()
+  const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+  const latestDate = new Date(notifications.value[0]?.created_at)
+  return latestDate > oneDayAgo
+}
+
+const checkAndShowAnnouncementPopup = () => {
+  const user = currentUser.value
+  if (user.isMaster || user.role === 'admin') return
+  
+  if (!hasRecentAnnouncement()) return
+  
+  const recentAnnouncements = getLatestAnnouncementsForPopup()
+  if (recentAnnouncements.length === 0) return
+  
+  announcementPopupData.value = recentAnnouncements
+  showAnnouncementPopup.value = true
+}
+
+const closeAnnouncementPopup = () => {
+  if (announcementPopupData.value.length > 0) {
+    localStorage.setItem(ANNOUNCEMENT_POPUP_STORAGE_KEY, announcementPopupData.value[0]._id)
+  }
+  showAnnouncementPopup.value = false
+}
+
+const handlePopupLike = (announcement) => {
+  toggleLike(announcement)
+}
 
 // ImgBB API keys for image uploads
 const imgbbApiKeys = [
@@ -12675,6 +13064,8 @@ onMounted(async () => {
   await fetchSeenNotifications()
   await fetchNotifications()
   
+  // Check and show announcement popup for students
+  checkAndShowAnnouncementPopup()
   
   // Fetch attendance data for students to show notification banner (already fetched earlier in student path)
   
@@ -13387,6 +13778,102 @@ const refreshStudents = async () => {
   }
 }
 
+// ============================================
+// ADMIN / CO-ADMIN PROFILE
+// ============================================
+const fetchAdminProfile = async () => {
+  adminProfileLoading.value = true
+  try {
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
+    const res = await fetch(buildAPIUrl('/apis/admin/me'), {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+    const data = await res.json()
+    if (res.ok) {
+      adminProfile.value = data
+      adminProfileForm.value = {
+        full_name: data.full_name || '',
+        phone: data.phone || '',
+        bio: data.bio || '',
+        photo: data.photo || '',
+        current_password: '',
+        new_password: ''
+      }
+    } else {
+      // Fallback to current user data so profile never appears blank
+      adminProfile.value = {
+        username: currentUser.value?.username || 'admin',
+        full_name: currentUser.value?.full_name || currentUser.value?.username || '',
+        email: currentUser.value?.email || '',
+        phone: currentUser.value?.phone || '',
+        bio: currentUser.value?.bio || '',
+        photo: currentUser.value?.photo || '',
+        college: currentUser.value?.college || '',
+        role: currentUser.value?.role || 'admin'
+      }
+      adminProfileForm.value = {
+        full_name: adminProfile.value.full_name,
+        phone: adminProfile.value.phone,
+        bio: adminProfile.value.bio,
+        photo: adminProfile.value.photo,
+        current_password: '',
+        new_password: ''
+      }
+      showNotification(data.message || 'Could not load full profile — showing cached data.', 'warning')
+    }
+  } catch {
+    // Use currentUser as fallback
+    adminProfile.value = {
+      username: currentUser.value?.username || 'admin',
+      full_name: currentUser.value?.full_name || currentUser.value?.username || '',
+      email: currentUser.value?.email || '',
+      phone: '',
+      bio: '',
+      photo: '',
+      college: currentUser.value?.college || '',
+      role: currentUser.value?.role || 'admin'
+    }
+    adminProfileForm.value = { full_name: adminProfile.value.full_name, phone: '', bio: '', photo: '', current_password: '', new_password: '' }
+    showNotification('Network error — showing cached data.', 'warning')
+  } finally {
+    adminProfileLoading.value = false
+  }
+}
+
+const saveAdminProfile = async () => {
+  adminProfileSaving.value = true
+  try {
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
+    const payload = {
+      full_name: adminProfileForm.value.full_name,
+      phone: adminProfileForm.value.phone,
+      bio: adminProfileForm.value.bio,
+      photo: adminProfileForm.value.photo
+    }
+    if (adminProfileForm.value.new_password) {
+      payload.current_password = adminProfileForm.value.current_password
+      payload.new_password = adminProfileForm.value.new_password
+    }
+    const res = await fetch(buildAPIUrl('/apis/admin/me'), {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload)
+    })
+    const data = await res.json()
+    if (res.ok) {
+      showNotification('Profile updated successfully', 'success')
+      adminProfile.value = { ...adminProfile.value, ...payload }
+      adminProfileForm.value.current_password = ''
+      adminProfileForm.value.new_password = ''
+    } else {
+      showNotification(data.message || 'Failed to save profile', 'error')
+    }
+  } catch {
+    showNotification('Network error saving profile', 'error')
+  } finally {
+    adminProfileSaving.value = false
+  }
+}
 
 const requestTransferRole = async () => {
   if (!transferTargetUsername.value.trim()) {

@@ -9297,7 +9297,7 @@ app.put('/apis/requests/:id/approve', auth, requireCoAdminOrAbove, async (req, r
     }
 });
 
-// Admin: reject a request with an optional note ID
+// Admin: reject a request with an optional note
 app.put('/apis/requests/:id/reject', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const { admin_note } = req.body;
