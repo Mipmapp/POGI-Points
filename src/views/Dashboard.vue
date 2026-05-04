@@ -12639,6 +12639,11 @@ watch(currentPage, (newPage, oldPage) => {
   if (oldPage === 'settings' && isRestrictedMasterRole.value) {
     checkFaceIdEnrollment()
   }
+  // Scroll to top on every page navigation (desktop: internal scroll container; mobile: body scroll)
+  nextTick(() => {
+    if (mainContentEl.value) mainContentEl.value.scrollTop = 0
+    window.scrollTo({ top: 0, behavior: 'instant' })
+  })
 })
 const canSwitchView = computed(() => isCoAdmin.value || isTreasurer.value)
 const roleViewMode = ref('role')
