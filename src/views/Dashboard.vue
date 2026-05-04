@@ -2445,10 +2445,10 @@
 
                 <!-- Recent Logs -->
                 <div class="mt-6">
-                  <h4 class="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                    Recent Attendance Logs
-                    <span v-if="selectedEvent?.title" :class="['text-sm font-normal', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']">- {{ selectedEvent.title }}</span>
+                  <h4 class="font-medium text-gray-700 mb-3 flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <svg :class="['w-5 h-5 flex-shrink-0', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                    <span>Recent Attendance Logs</span>
+                    <span v-if="selectedEvent?.title" :class="['text-sm font-normal truncate max-w-[180px] sm:max-w-none', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']">— {{ selectedEvent.title }}</span>
                   </h4>
                   <div v-if="attendanceLogs.length === 0" class="text-center py-4 text-gray-500">
                     No attendance records yet for this event.
@@ -2526,7 +2526,7 @@
           <!-- Student Attendance View -->
           <div v-else class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
             <!-- Header Banner -->
-            <div :class="['relative h-20 sm:h-24 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+            <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
               <div class="light-sweep"></div>
               <div class="relative z-10 px-4 sm:px-6 h-full flex items-center justify-between">
@@ -2642,9 +2642,9 @@
                           </span>
                         </div>
                         <!-- Event Title -->
-                        <h3 class="font-bold text-base md:text-lg text-blue-900 leading-tight mb-2">{{ event.title }}</h3>
+                        <h3 :class="['font-bold text-base md:text-lg leading-tight mb-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ event.title }}</h3>
                         <!-- Description -->
-                        <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3">{{ event.description }}</p>
+                        <p v-if="event.description" class="text-gray-600 text-sm leading-relaxed mb-3 line-clamp-2">{{ event.description }}</p>
                       </div>
 
                       <!-- Face ID Scanner button (always visible on the right) -->
@@ -2825,10 +2825,10 @@
                       <div class="flex items-center gap-3 flex-1 min-w-0">
                         <!-- Folder Icon with expand indicator -->
                         <div class="flex-shrink-0 relative">
-                          <svg :class="['w-8 h-8 transition-all duration-200', expandedAttendanceRecords[record.event_id] ? 'text-blue-600' : 'text-gray-400']" fill="currentColor" viewBox="0 0 24 24">
+                          <svg :class="['w-8 h-8 transition-all duration-200', expandedAttendanceRecords[record.event_id] ? (isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-blue-600') : 'text-gray-400']" fill="currentColor" viewBox="0 0 24 24">
                             <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
                           </svg>
-                          <svg :class="['w-3 h-3 absolute -right-0.5 -bottom-0.5 transition-transform duration-200', expandedAttendanceRecords[record.event_id] ? 'rotate-90 text-blue-600' : 'text-gray-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <svg :class="['w-3 h-3 absolute -right-0.5 -bottom-0.5 transition-transform duration-200', expandedAttendanceRecords[record.event_id] ? ('rotate-90 ' + (isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-blue-600')) : 'text-gray-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
                           </svg>
                         </div>
@@ -4457,7 +4457,7 @@
         <!-- Dashboard Page -->
         <div v-if="currentPage === 'dashboard' && (!isAdminLike || inUserView)" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
           <!-- Profile Header -->
-          <div :class="['relative h-28 sm:h-36 md:h-40 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+          <div :class="['relative h-32 sm:h-36 md:h-40 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
             <!-- Artistic Blurred Background -->
             <div 
               v-if="currentUser.image || currentUser.photo"
@@ -4482,7 +4482,7 @@
           </div>
 
           <div class="px-4 sm:px-6 md:px-8 pb-4 sm:pb-6 md:pb-8">
-            <div class="relative -mt-10 sm:-mt-14 md:-mt-16 mb-3 sm:mb-5 md:mb-6">
+            <div class="relative -mt-12 sm:-mt-14 md:-mt-16 mb-3 sm:mb-5 md:mb-6">
               <div class="inline-block relative">
                 <div :class="[isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light', 'w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-2xl md:rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center']">
                   <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
@@ -4914,8 +4914,12 @@
           </div>
 
           <!-- Table: show when not "All" for isMaster, or always for regular admin / co-admin / treasurer -->
-          <div v-if="!currentUser.isMaster || statsViewCollege !== null || isCoAdmin || isTreasurer" class="overflow-x-auto text-sm md:text-base">
-            <table class="w-full border-collapse">
+          <div v-if="!currentUser.isMaster || statsViewCollege !== null || isCoAdmin || isTreasurer" class="overflow-x-auto text-sm md:text-base rounded-xl">
+            <p class="sm:hidden text-[10px] text-gray-400 mb-1 flex items-center justify-end gap-1">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              Swipe to see all columns
+            </p>
+            <table class="w-full border-collapse min-w-[360px]">
               <thead>
                 <tr :class="themeColors.headerBg">
                   <th :class="['border px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm', themeColors.headerText]"></th>
@@ -4958,7 +4962,7 @@
                 <svg :class="['w-5 h-5 sm:w-6 sm:h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-green-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span :class="['text-[10px] sm:text-xs font-semibold leading-tight', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-green-700']">RFID Verified</span>
               </div>
-              <p :class="['text-2xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-green-600']">{{ verifiedCount }}</p>
+              <p :class="['text-xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-green-600']">{{ verifiedCount }}</p>
               <p :class="['text-[10px] sm:text-xs mt-1', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-500' : 'text-green-500']">tap to view</p>
             </div>
             <!-- RFID Unverified -->
@@ -4974,7 +4978,7 @@
                 <svg :class="['w-5 h-5 sm:w-6 sm:h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-yellow-600' : isCNAHS ? 'text-yellow-600' : 'text-yellow-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span :class="['text-[10px] sm:text-xs font-semibold leading-tight', isCOE ? 'text-orange-700' : isSOM ? 'text-yellow-700' : isCNAHS ? 'text-yellow-700' : 'text-yellow-700']">Unverified</span>
               </div>
-              <p :class="['text-2xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-yellow-600' : isCNAHS ? 'text-yellow-600' : 'text-yellow-600']">{{ unverifiedCount }}</p>
+              <p :class="['text-xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-yellow-600' : isCNAHS ? 'text-yellow-600' : 'text-yellow-600']">{{ unverifiedCount }}</p>
               <p :class="['text-[10px] sm:text-xs mt-1', isCOE ? 'text-orange-500' : isSOM ? 'text-yellow-500' : isCNAHS ? 'text-yellow-500' : 'text-yellow-500']">tap to view</p>
             </div>
             <!-- RFID Unreadable -->
@@ -4990,7 +4994,7 @@
                 <svg :class="['w-5 h-5 sm:w-6 sm:h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-gray-600' : isCNAHS ? 'text-gray-600' : 'text-gray-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span :class="['text-[10px] sm:text-xs font-semibold leading-tight', isCOE ? 'text-orange-700' : isSOM ? 'text-gray-700' : isCNAHS ? 'text-gray-700' : 'text-gray-700']">Unreadable</span>
               </div>
-              <p :class="['text-2xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-gray-600' : isCNAHS ? 'text-gray-600' : 'text-gray-600']">{{ unreadableCount }}</p>
+              <p :class="['text-xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-gray-600' : isCNAHS ? 'text-gray-600' : 'text-gray-600']">{{ unreadableCount }}</p>
               <p :class="['text-[10px] sm:text-xs mt-1', isCOE ? 'text-orange-500' : isSOM ? 'text-gray-500' : isCNAHS ? 'text-gray-500' : 'text-gray-500']">tap to view</p>
             </div>
           </div>
@@ -5034,8 +5038,8 @@
             <div v-else-if="rfidListFilteredUsers.length === 0" class="text-center text-gray-500 py-8">
               No users found in this category.
             </div>
-            <div v-else class="max-h-96 overflow-y-auto">
-              <table class="w-full text-sm">
+            <div v-else class="max-h-96 overflow-x-auto overflow-y-auto">
+              <table class="w-full text-sm min-w-[560px]">
                 <thead :class="['sticky top-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
                   <tr>
                     <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Student ID</th>
