@@ -5051,7 +5051,6 @@ setInterval(() => {
     }
 }, 60 * 1000).unref?.();
 
-const FACE_CHALLENGE_POOL = ['turn_left', 'turn_right'];
 function _pickFaceChallenges() {
     // ONE random head-turn challenge. A single turn (left OR right, picked
     // randomly per request) still defeats a held-up still photo because the
