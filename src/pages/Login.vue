@@ -717,11 +717,18 @@ const password = ref('')
 const isLoading = ref(false)
 const isNavigationPending = ref(false)
 
-const handleLoadingComplete = () => {
-  if (isNavigationPending.value) {
-    router.push("/dashboard")
+// Navigate as soon as auth is confirmed — do NOT wait for the loading
+// animation's @complete event, which fires on its own timer and can race
+// against a slow API response (causing the "must click twice" bug).
+watch(isNavigationPending, (pending) => {
+  if (pending) {
+    router.push('/dashboard')
   }
-}
+})
+
+// Kept as a no-op safety net so the @complete binding on the template
+// continues to compile without errors.
+const handleLoadingComplete = () => {}
 
 const showDevelopersPopup = ref(false)
 const showErrorNotification = ref(false)
@@ -1220,7 +1227,9 @@ const handleLogin = async () => {
       try { localStorage.removeItem('loginChosenDepartment') } catch (e) {}
       try { localStorage.removeItem('loginChosenProgram') } catch (e) {}
       console.log("Navigating to dashboard...");
-      isNavigationPending.value = true;
+      // Navigate immediately — authentication is complete. The loading overlay
+      // (isLoading) will be cleared by the finally block after we return.
+      router.push('/dashboard');
       return;
     }
 
