@@ -999,8 +999,40 @@
 
             <h3 class="text-lg font-extrabold text-gray-900 mb-1">Delete Event?</h3>
             <p class="text-sm text-gray-500 mb-1">You are about to permanently delete:</p>
-            <p class="text-sm font-bold text-gray-800 mb-1">{{ eventToDelete?.title }}</p>
-            <p class="text-xs text-red-500 font-medium mb-2">This will also remove all payment records linked to this event. This cannot be undone.</p>
+            <p class="text-sm font-bold text-gray-800 mb-3">{{ eventToDelete?.title }}</p>
+
+            <!-- Record count summary -->
+            <div class="mb-3 rounded-xl border overflow-hidden text-sm"
+              :class="deleteEventRecordCount > 0 ? 'border-red-200 bg-red-50' : 'border-gray-100 bg-gray-50'">
+              <div v-if="isLoadingDeleteCount" class="flex items-center justify-center gap-2 py-3 text-gray-400">
+                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                <span class="text-xs">Checking linked records…</span>
+              </div>
+              <div v-else-if="deleteEventRecordCount !== null" class="px-4 py-3">
+                <div v-if="deleteEventRecordCount === 0" class="text-gray-500 text-xs font-medium">No student payment records are linked to this event.</div>
+                <div v-else>
+                  <p class="font-bold text-red-700 text-xs uppercase tracking-wide mb-2">Linked student records that will be deleted:</p>
+                  <div class="flex justify-around">
+                    <div class="text-center">
+                      <p class="text-2xl font-extrabold text-red-600">{{ deleteEventRecordCount }}</p>
+                      <p class="text-xs text-gray-500 mt-0.5">Total records</p>
+                    </div>
+                    <div class="w-px bg-red-200"></div>
+                    <div class="text-center">
+                      <p class="text-2xl font-extrabold text-green-600">{{ deleteEventPaidCount }}</p>
+                      <p class="text-xs text-gray-500 mt-0.5">Already paid</p>
+                    </div>
+                    <div class="w-px bg-red-200"></div>
+                    <div class="text-center">
+                      <p class="text-2xl font-extrabold text-orange-500">{{ deleteEventRecordCount - deleteEventPaidCount }}</p>
+                      <p class="text-xs text-gray-500 mt-0.5">Unpaid</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <p class="text-xs text-red-500 font-medium mb-2">This cannot be undone.</p>
             <p v-if="deleteConfirmCooldown > 0" class="text-xs text-gray-400 mb-4 font-medium">Please wait {{ deleteConfirmCooldown }}s before confirming...</p>
             <p v-else class="text-xs text-orange-600 font-semibold mb-4">You may now confirm the deletion.</p>
 
@@ -1813,6 +1845,9 @@ export default {
       isDeletingEvent: false,
       deleteConfirmCooldown: 0,
       _deleteConfirmTimer: null,
+      deleteEventRecordCount: null,
+      deleteEventPaidCount: null,
+      isLoadingDeleteCount: false,
       showEditEventModal: false,
       isEditingEvent: false,
       editEventError: '',
@@ -2210,10 +2245,13 @@ export default {
       this.discountValue = 0;
       this.loadAllContributions();
     },
-    confirmDeleteEvent(event) {
+    async confirmDeleteEvent(event) {
       this.eventToDelete = event;
       this.showDeleteEventConfirm = true;
       this.deleteConfirmCooldown = 5;
+      this.deleteEventRecordCount = null;
+      this.deleteEventPaidCount = null;
+      this.isLoadingDeleteCount = true;
       clearInterval(this._deleteConfirmTimer);
       this._deleteConfirmTimer = setInterval(() => {
         if (this.deleteConfirmCooldown > 0) {
@@ -2222,6 +2260,22 @@ export default {
           clearInterval(this._deleteConfirmTimer);
         }
       }, 1000);
+      // Fetch how many student records are linked to this event
+      try {
+        const token = localStorage.getItem('authToken');
+        const res = await fetch(buildAPIUrl(`/apis/payments/${event._id}`), {
+          headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-College': getCollege() }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          this.deleteEventRecordCount = data.data?.stats?.total_students ?? 0;
+          this.deleteEventPaidCount = data.data?.stats?.paid_count ?? 0;
+        }
+      } catch (e) {
+        console.error('Error fetching event record count:', e);
+      } finally {
+        this.isLoadingDeleteCount = false;
+      }
     },
     cancelDeleteEvent() {
       this.showDeleteEventConfirm = false;
