@@ -7970,6 +7970,7 @@ import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl, getCollege } from '../config/api.js'
 import { handleTokenError, setTokenExpiredCallback } from '../utils/tokenHandler.js'
 import departments from '../config/departments.js'
+import { useCollege } from '../composables/useCollege.js'
 
 const router = useRouter()
 const currentUser = ref({})
@@ -12608,13 +12609,7 @@ const userDepartmentLogo = computed(() => {
   return '/src/assets/jrmsu-logo.webp'
 })
 
-const isCCS = computed(() => true)
-
-// College-specific theme computed properties are removed.
-// All colleges now share the same SSAAM default theme (blue/navy).
-const isCOE = computed(() => false)
-const isSOM = computed(() => false)
-const isCNAHS = computed(() => false)
+const { isCCS, isCOE, isSOM, isCNAHS } = useCollege()
 
 // Admin role helpers
 const isTreasurer = computed(() => currentUser.value.role === 'treasurer')

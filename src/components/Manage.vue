@@ -956,7 +956,7 @@
 </template>
 
 <script>
-import { buildAPIUrl } from '../config/api.js'
+import { buildAPIUrl, getCollege } from '../config/api.js'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import departments from '../config/departments.js'
 import { COLLEGES } from '../config/themes.js'
@@ -1039,15 +1039,40 @@ export default {
       }
       return null
     },
-    isCOE() { return false },
-    isSOM() { return false },
-    isCCS() { return true },
-    isCNAHS() { return false },
-    primaryButtonGradient() { return 'from-ssaam-dark to-ssaam-light' },
-    primaryButtonHover() { return 'hover:from-ssaam-dark hover:to-ssaam-light' },
-    primaryTextColor() { return 'text-blue-600' },
-    primaryTextHover() { return 'hover:text-blue-800' },
-    primaryDarkText() { return 'text-blue-900' },
+    isCOE() { return getCollege() === 'COE' },
+    isSOM() { return getCollege() === 'SOM' },
+    isCCS() { return getCollege() === 'CCS' },
+    isCNAHS() { return getCollege() === 'CNAHS' },
+    primaryButtonGradient() {
+      if (this.isCOE) return 'from-orange-600 to-red-500'
+      if (this.isSOM) return 'from-green-600 to-yellow-500'
+      if (this.isCNAHS) return 'from-green-700 to-green-600'
+      return 'from-ssaam-dark to-ssaam-light'
+    },
+    primaryButtonHover() {
+      if (this.isCOE) return 'hover:from-orange-700 hover:to-red-600'
+      if (this.isSOM) return 'hover:from-green-700 hover:to-yellow-600'
+      if (this.isCNAHS) return 'hover:from-green-800 hover:to-green-700'
+      return 'hover:from-ssaam-dark hover:to-ssaam-light'
+    },
+    primaryTextColor() {
+      if (this.isCOE) return 'text-orange-600'
+      if (this.isSOM) return 'text-green-600'
+      if (this.isCNAHS) return 'text-green-700'
+      return 'text-blue-600'
+    },
+    primaryTextHover() {
+      if (this.isCOE) return 'hover:text-orange-800'
+      if (this.isSOM) return 'hover:text-green-800'
+      if (this.isCNAHS) return 'hover:text-green-900'
+      return 'hover:text-blue-800'
+    },
+    primaryDarkText() {
+      if (this.isCOE) return 'text-orange-900'
+      if (this.isSOM) return 'text-green-900'
+      if (this.isCNAHS) return 'text-green-900'
+      return 'text-blue-900'
+    },
     isMaster() { return this.currentUser?.isMaster === true },
     isCoAdmin() { return this.currentUser?.role === 'co-admin' },
     isTreasurer() { return this.currentUser?.isMaster === true && this.currentUser?.role === 'treasurer' },
