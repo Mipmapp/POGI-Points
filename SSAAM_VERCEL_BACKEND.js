@@ -712,7 +712,7 @@ function decodeTimestamp(encodedString) {
     return null;
 }
 
-function isValidTimestamp(encodedString, maxAgeMinutes = 10) {
+function isValidTimestamp(encodedString, maxAgeMinutes = 30) {
     const timestamp = decodeTimestamp(encodedString);
     if (!timestamp) return false;
 
@@ -721,9 +721,9 @@ function isValidTimestamp(encodedString, maxAgeMinutes = 10) {
         const now = new Date();
         const diffMinutes = (now - requestTime) / (1000 * 60);
 
-        // Allow up to 5 min in the future (client clock ahead) and maxAgeMinutes behind.
+        // Allow up to 10 min in the future (client clock ahead) and maxAgeMinutes behind.
         // Wider window handles phones with automatic-time drift or slow networks.
-        return diffMinutes >= -5 && diffMinutes <= maxAgeMinutes;
+        return diffMinutes >= -10 && diffMinutes <= maxAgeMinutes;
     } catch (e) {
         return false;
     }
@@ -3126,11 +3126,14 @@ app.get('/', (req, res) => {
 });
 
 app.get('/apis/health', (req, res) => {
+    const now = new Date();
+    res.set('X-SSAAM-Server-Time', now.toISOString());
+    res.set('Date', now.toUTCString());
     res.status(200).json({
         message: "SSAAM API Health Check",
         status: "operational",
         database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
-        timestamp: new Date().toISOString()
+        timestamp: now.toISOString()
     });
 });
 

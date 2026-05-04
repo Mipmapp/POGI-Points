@@ -57,7 +57,24 @@ export function syncServerTime(apiBase = '') {
   if (inFlightSync) return inFlightSync;
   const url = `${apiBase}/apis/health`;
   inFlightSync = fetch(url, { method: 'GET', cache: 'no-store' })
-    .then(resp => { updateServerOffsetFromHeaders(resp); return serverOffsetMs; })
+    .then(async resp => {
+      // Primary: read X-SSAAM-Server-Time header (set explicitly by health endpoint)
+      const ssaamTime = resp.headers.get('x-ssaam-server-time') || resp.headers.get('X-SSAAM-Server-Time');
+      if (ssaamTime) {
+        updateServerOffsetFromHeaders(ssaamTime);
+      } else {
+        // Secondary: read standard Date header
+        updateServerOffsetFromHeaders(resp);
+      }
+      // Tertiary: also read timestamp from response body as final fallback
+      try {
+        const data = await resp.clone().json();
+        if (data?.timestamp && !ssaamTime) {
+          updateServerOffsetFromHeaders(data.timestamp);
+        }
+      } catch (_) { /* ignore body parse errors */ }
+      return serverOffsetMs;
+    })
     .catch(() => serverOffsetMs)
     .finally(() => { inFlightSync = null; });
   return inFlightSync;
