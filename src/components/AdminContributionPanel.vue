@@ -92,121 +92,143 @@
           <p class="text-sm text-gray-500">No events created yet. Click <strong>Create Event</strong> to get started.</p>
         </div>
 
-        <!-- Carousel -->
-        <div v-else class="flex flex-col items-center gap-4">
-          <!-- Navigation row -->
-          <div class="flex items-center gap-3 w-full max-w-md">
-            <!-- Prev -->
+        <!-- Carousel — 3 cards visible -->
+        <div v-else class="flex flex-col items-center gap-3">
+
+          <!-- Viewport: clips side cards, arrows overlay on the fades -->
+          <div class="relative w-full" style="min-height: 310px;">
+
+            <!-- Left gradient fade + arrow -->
+            <div class="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-white via-white/70 to-transparent z-20 pointer-events-none rounded-l-3xl"></div>
             <button
               @click="prevCarousel"
               :disabled="paymentEvents.length <= 1"
-              class="flex-shrink-0 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-md transition-all disabled:opacity-25 disabled:cursor-not-allowed"
+              class="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg flex items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-purple-100 transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
             </button>
 
-            <!-- Card -->
-            <div class="flex-1 min-w-0">
-              <Transition name="carousel-slide" mode="out-in">
-                <div
-                  :key="carouselIndex"
-                  v-if="carouselEvent"
-                  :class="['rounded-3xl overflow-hidden border-2 transition-all duration-300 shadow-lg', activePayment && activePayment._id === carouselEvent._id ? 'border-purple-400 shadow-purple-100' : 'border-gray-200 shadow-gray-100']"
-                >
-                  <!-- Gradient header -->
-                  <div :class="['relative px-5 pt-6 pb-5', carouselEvent.type === 'fee' ? 'bg-gradient-to-br from-blue-600 to-indigo-700' : carouselEvent.type === 'membership' ? 'bg-gradient-to-br from-green-600 to-teal-700' : carouselEvent.type === 'donation' ? 'bg-gradient-to-br from-orange-500 to-amber-600' : 'bg-gradient-to-br from-purple-600 to-violet-700']">
-                    <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-                    <!-- Active badge -->
-                    <div v-if="activePayment && activePayment._id === carouselEvent._id" class="absolute top-3 right-3 flex items-center gap-1.5 bg-white/20 backdrop-blur-sm border border-white/30 rounded-full px-2.5 py-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                      <span class="text-white text-[10px] font-bold tracking-wide uppercase">Active</span>
-                    </div>
-                    <!-- Edit / Delete -->
-                    <div class="absolute top-3 left-3 flex gap-1.5">
-                      <button @click.stop="openEditEvent(carouselEvent)" class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition" title="Edit">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15.414 9 16l.586-3z"/></svg>
-                      </button>
-                      <button @click.stop="confirmDeleteEvent(carouselEvent)" class="w-7 h-7 rounded-full bg-white/20 hover:bg-red-500/70 text-white flex items-center justify-center transition" title="Delete">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                      </button>
-                    </div>
-                    <!-- Type + Amount -->
-                    <div class="mt-4 flex items-center justify-between relative z-10">
-                      <span class="inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold capitalize bg-white/20 text-white border border-white/30 backdrop-blur-sm">{{ carouselEvent.type || 'event' }}</span>
-                      <span class="text-2xl font-extrabold text-white drop-shadow">₱{{ Number(carouselEvent.amount_due || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
-                    </div>
-                    <!-- Title -->
-                    <h4 class="text-white font-extrabold text-lg mt-2 leading-snug relative z-10">{{ carouselEvent.title }}</h4>
-                  </div>
-
-                  <!-- Card body -->
-                  <div class="bg-white px-5 py-4 space-y-3">
-                    <!-- Description -->
-                    <p v-if="carouselEvent.description" class="text-sm text-gray-500 leading-relaxed line-clamp-2">{{ carouselEvent.description }}</p>
-
-                    <!-- Stats row -->
-                    <div class="flex items-center gap-2 flex-wrap">
-                      <div class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 flex-1 min-w-0">
-                        <svg class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
-                        <span class="text-xs font-bold text-emerald-700 truncate">₱{{ Number(collectedByEvent[carouselEvent._id] || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }} collected</span>
-                      </div>
-                      <div v-if="carouselEvent.deadline" class="flex items-center gap-1 text-xs text-gray-400 font-medium flex-shrink-0">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                        Due {{ new Date(carouselEvent.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}
-                      </div>
-                    </div>
-
-                    <!-- Target badges -->
-                    <div class="flex flex-wrap gap-1">
-                      <template v-if="(carouselEvent.target_year_levels && carouselEvent.target_year_levels.length > 0) || (carouselEvent.target_programs && carouselEvent.target_programs.length > 0)">
-                        <span v-for="yl in (carouselEvent.target_year_levels || [])" :key="'yl-'+yl" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-700">{{ yl }}</span>
-                        <span v-for="prog in (carouselEvent.target_programs || [])" :key="'prog-'+prog" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">{{ prog }}</span>
-                      </template>
-                      <span v-else class="text-[11px] text-gray-400 italic">All students</span>
-                    </div>
-
-                    <!-- Select button -->
-                    <button
-                      @click="selectEvent(carouselEvent)"
-                      :disabled="activePayment && activePayment._id === carouselEvent._id"
-                      :class="['w-full py-2.5 rounded-2xl text-sm font-bold transition-all active:scale-95',
-                        activePayment && activePayment._id === carouselEvent._id
-                          ? 'bg-purple-50 text-purple-600 border-2 border-purple-200 cursor-default'
-                          : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 shadow-md shadow-purple-200']"
-                    >
-                      <span v-if="activePayment && activePayment._id === carouselEvent._id" class="flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                        Currently Selected
-                      </span>
-                      <span v-else>Select This Event</span>
-                    </button>
-                  </div>
-                </div>
-              </Transition>
-            </div>
-
-            <!-- Next -->
+            <!-- Right gradient fade + arrow -->
+            <div class="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-white via-white/70 to-transparent z-20 pointer-events-none rounded-r-3xl"></div>
             <button
               @click="nextCarousel"
               :disabled="paymentEvents.length <= 1"
-              class="flex-shrink-0 w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm flex items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-md transition-all disabled:opacity-25 disabled:cursor-not-allowed"
+              class="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg flex items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-purple-100 transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
             >
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </button>
+
+            <!-- All event cards — absolutely stacked, transformed into position -->
+            <div
+              v-for="(event, idx) in paymentEvents"
+              :key="event._id"
+              class="absolute inset-x-0 top-0 transition-all duration-[450ms] ease-[cubic-bezier(0.4,0,0.2,1)]"
+              :style="getCarouselCardStyle(idx)"
+              @click="() => { if (idx !== carouselIndex) carouselIndex = idx }"
+            >
+              <!-- Inner card — centered, max width -->
+              <div
+                :class="['mx-auto rounded-3xl overflow-hidden border-2 shadow-xl transition-shadow duration-450',
+                  activePayment && activePayment._id === event._id
+                    ? 'border-purple-400 shadow-purple-200'
+                    : 'border-gray-200 shadow-gray-100']"
+                style="max-width: 390px"
+              >
+                <!-- Gradient header -->
+                <div :class="['relative px-5 pt-5 pb-4 overflow-hidden',
+                  event.type === 'fee'        ? 'bg-gradient-to-br from-blue-600 to-indigo-700'   :
+                  event.type === 'membership' ? 'bg-gradient-to-br from-green-600 to-teal-700'    :
+                  event.type === 'donation'   ? 'bg-gradient-to-br from-orange-500 to-amber-600'  :
+                                                'bg-gradient-to-br from-purple-600 to-violet-700']">
+                  <!-- Decorative blobs -->
+                  <div class="absolute inset-0 opacity-[0.15] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+                  <div class="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+                  <div class="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-black/10 blur-2xl pointer-events-none"></div>
+
+                  <!-- Active badge -->
+                  <div v-if="activePayment && activePayment._id === event._id"
+                    class="absolute top-3 right-3 flex items-center gap-1.5 bg-white/20 backdrop-blur border border-white/30 rounded-full px-2.5 py-1 z-10">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+                    <span class="text-white text-[10px] font-bold tracking-widest uppercase">Active</span>
+                  </div>
+
+                  <!-- Edit / Delete — only on center card -->
+                  <div v-if="idx === carouselIndex" class="absolute top-3 left-3 flex gap-1.5 z-10">
+                    <button @click.stop="openEditEvent(event)"
+                      class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all" title="Edit">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15.414 9 16l.586-3z"/></svg>
+                    </button>
+                    <button @click.stop="confirmDeleteEvent(event)"
+                      class="w-7 h-7 rounded-full bg-white/20 hover:bg-red-500/70 text-white flex items-center justify-center transition-all" title="Delete">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    </button>
+                  </div>
+
+                  <!-- Type chip + Amount -->
+                  <div class="mt-5 flex items-center justify-between relative z-10">
+                    <span class="inline-flex px-2.5 py-1 rounded-full text-[11px] font-bold capitalize bg-white/20 text-white border border-white/30 backdrop-blur-sm">{{ event.type || 'event' }}</span>
+                    <span class="text-xl font-extrabold text-white drop-shadow tracking-tight">₱{{ Number(event.amount_due || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                  </div>
+                  <!-- Title -->
+                  <h4 class="text-white font-extrabold text-[1.05rem] mt-1.5 leading-snug relative z-10 pr-2 line-clamp-2">{{ event.title }}</h4>
+                </div>
+
+                <!-- Card body -->
+                <div class="bg-white px-4 py-3 space-y-2.5">
+                  <p v-if="event.description" class="text-xs text-gray-500 leading-relaxed line-clamp-2">{{ event.description }}</p>
+
+                  <!-- Collected + Deadline -->
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <div class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 flex-1 min-w-0">
+                      <svg class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
+                      <span class="text-xs font-bold text-emerald-700 truncate">₱{{ Number(collectedByEvent[event._id] || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }} collected</span>
+                    </div>
+                    <div v-if="event.deadline" class="flex items-center gap-1 text-[10px] text-gray-400 font-medium flex-shrink-0">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                      Due {{ new Date(event.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) }}
+                    </div>
+                  </div>
+
+                  <!-- Target badges -->
+                  <div class="flex flex-wrap gap-1 min-h-[18px]">
+                    <template v-if="(event.target_year_levels && event.target_year_levels.length > 0) || (event.target_programs && event.target_programs.length > 0)">
+                      <span v-for="yl in (event.target_year_levels || [])" :key="'yl-'+yl" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-700">{{ yl }}</span>
+                      <span v-for="prog in (event.target_programs || [])" :key="'prog-'+prog" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">{{ prog }}</span>
+                    </template>
+                    <span v-else class="text-[11px] text-gray-400 italic">All students</span>
+                  </div>
+
+                  <!-- Select button — only on center card -->
+                  <button
+                    v-if="idx === carouselIndex"
+                    @click.stop="selectEvent(event)"
+                    :disabled="!!(activePayment && activePayment._id === event._id)"
+                    :class="['w-full py-2.5 rounded-2xl text-sm font-bold transition-all duration-200 active:scale-[0.97]',
+                      activePayment && activePayment._id === event._id
+                        ? 'bg-purple-50 text-purple-600 border-2 border-purple-200 cursor-default'
+                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 shadow-md shadow-purple-200 hover:shadow-lg hover:shadow-purple-200']"
+                  >
+                    <span v-if="activePayment && activePayment._id === event._id" class="flex items-center justify-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                      Currently Selected
+                    </span>
+                    <span v-else>Select This Event</span>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- Dot indicators -->
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center gap-1.5 mt-1">
             <button
               v-for="(event, idx) in paymentEvents"
               :key="event._id"
               @click="carouselIndex = idx"
-              :class="['rounded-full transition-all duration-300', idx === carouselIndex ? 'w-6 h-2.5 bg-purple-500' : 'w-2.5 h-2.5 bg-gray-300 hover:bg-purple-300']"
+              :class="['rounded-full transition-all duration-300', idx === carouselIndex ? 'w-7 h-2.5 bg-purple-500' : 'w-2.5 h-2.5 bg-gray-300 hover:bg-purple-300']"
             ></button>
           </div>
-
-          <!-- Counter -->
-          <p class="text-xs text-gray-400 font-medium -mt-1">{{ carouselIndex + 1 }} of {{ paymentEvents.length }} event{{ paymentEvents.length === 1 ? '' : 's' }}</p>
+          <p class="text-xs text-gray-400 font-medium">{{ carouselIndex + 1 }} of {{ paymentEvents.length }} event{{ paymentEvents.length === 1 ? '' : 's' }}</p>
         </div>
       </div>
 
@@ -2333,6 +2355,38 @@ export default {
       } finally {
         this.isLoadingDeleteCount = false;
       }
+    },
+    getCarouselCardStyle(idx) {
+      const offset = idx - this.carouselIndex;
+      const abs = Math.abs(offset);
+      if (abs === 0) {
+        return {
+          transform: 'translateX(0) scale(1)',
+          opacity: '1',
+          zIndex: 10,
+          pointerEvents: 'auto',
+          filter: 'none',
+        };
+      }
+      if (abs === 1) {
+        const dir = offset > 0 ? 1 : -1;
+        return {
+          transform: `translateX(${dir * 76}%) scale(0.86)`,
+          opacity: '0.48',
+          zIndex: 5,
+          pointerEvents: 'auto',
+          cursor: 'pointer',
+          filter: 'blur(0.6px)',
+          transformOrigin: dir > 0 ? 'left center' : 'right center',
+        };
+      }
+      return {
+        transform: `translateX(${offset > 0 ? 1 : -1}50%) scale(0.75)`,
+        opacity: '0',
+        zIndex: 1,
+        pointerEvents: 'none',
+        filter: 'blur(2px)',
+      };
     },
     prevCarousel() {
       if (this.paymentEvents.length <= 1) return;
