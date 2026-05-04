@@ -6218,6 +6218,17 @@ app.post('/apis/notifications', canPostNotification, async (req, res) => {
     }
 });
 
+// Helper to delete a Cloudinary image by public_id (silently ignores errors)
+async function deleteFromCloudinary(publicId) {
+    if (!publicId) return;
+    try {
+        await cloudinary.uploader.destroy(publicId, { invalidate: true });
+        console.log(`[Cloudinary] Deleted image: ${publicId}`);
+    } catch (err) {
+        console.error(`[Cloudinary] Failed to delete image ${publicId}:`, err.message);
+    }
+}
+
 // Update notification (only admin can update — global collection)
 app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
     try {
@@ -6260,12 +6271,18 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
         // default to existing image unless explicitly changed/removed
         let imageUrl = notification.image_url || null;
         let imagePublicId = notification.public_id || null;
+        const oldPublicId = notification.public_id || null;
+
         if (image) {
-            // if a base64 image was provided, try uploading to Cloudinary
+            // A new base64 image was provided — upload it, then delete the old one
             try {
                 const uploadResult = await uploadToCloudinary(image);
                 imageUrl = uploadResult.url;
                 imagePublicId = uploadResult.public_id;
+                // Delete old Cloudinary image if it's being replaced
+                if (oldPublicId && oldPublicId !== imagePublicId) {
+                    await deleteFromCloudinary(oldPublicId);
+                }
             } catch (imgErr) {
                 console.error('Image upload failed during update:', imgErr);
                 // don't abort the whole update, just keep previous image
@@ -6273,7 +6290,11 @@ app.put('/apis/notifications/:id', canPostNotification, async (req, res) => {
         } else if (typeof image_url !== 'undefined') {
             // image_url provided (could be empty string/null to remove)
             imageUrl = image_url || null;
-            if (!imageUrl) imagePublicId = null;
+            if (!imageUrl) {
+                // Image is being removed — delete the old one from Cloudinary
+                await deleteFromCloudinary(oldPublicId);
+                imagePublicId = null;
+            }
         }
         notification.image_url = imageUrl;
         notification.public_id = imagePublicId;
@@ -6300,6 +6321,11 @@ app.delete('/apis/notifications/:id', canPostNotification, async (req, res) => {
 
         if (!notification) {
             return res.status(404).json({ message: "Notification not found" });
+        }
+
+        // Delete the associated Cloudinary image before removing the record
+        if (notification.public_id) {
+            await deleteFromCloudinary(notification.public_id);
         }
 
         await Notification.deleteOne({ _id: req.params.id });

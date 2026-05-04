@@ -7808,7 +7808,7 @@
           </div>
           <!-- Modal body (scrollable) -->
           <div class="relative flex-1 overflow-hidden">
-          <div ref="termsBody" @scroll="onTermsScroll" class="overflow-y-auto h-full p-5 md:p-8">
+          <div ref="termsBody" @scroll="onTermsScroll" class="overflow-y-auto h-full p-5 md:p-8 terms-modal-scroll">
             <p class="text-sm text-gray-600 mb-6 leading-relaxed">
               By using SSAAM, you agree to the following terms which govern attendance recording, financial contributions, and your personal data within the JRMSU SSAAM system. Please read them carefully — continued use of the system constitutes acceptance.
             </p>
