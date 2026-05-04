@@ -113,7 +113,7 @@
 </template>
 
 <script>
-import { buildAPIUrl } from '../config/api.js'
+import { buildAPIUrl, getCollege } from '../config/api.js'
 
 export default {
   name: 'ContributionsModal',
@@ -143,31 +143,9 @@ export default {
     completionRate() {
       return this.stats.total === 0 ? 0 : Math.round((this.stats.paid / this.stats.total) * 100)
     },
-    currentUser() {
-      try {
-        return JSON.parse(localStorage.getItem('currentUser') || '{}')
-      } catch (e) {
-        return {}
-      }
-    },
-    userDepartment() {
-      if (this.currentUser.selectedDepartment) return this.currentUser.selectedDepartment
-      const userProgram = this.currentUser.program
-      const departments = [
-        { label: 'CCS', programs: [{ shortName: 'BSCS' }, { shortName: 'BSIT' }, { shortName: 'BSIS' }] },
-        { label: 'COE', programs: [{ shortName: 'BSCE' }, { shortName: 'BSME' }] },
-        { label: 'SOM', programs: [{ shortName: 'BSM' }] }
-      ]
-      if (userProgram) {
-        for (const dept of departments) {
-          if (dept.programs.some(p => p.shortName === userProgram)) return dept
-        }
-      }
-      return null
-    },
-    isCOE() {
-      return (this.userDepartment && this.userDepartment.label === 'COE')
-    },
+    isCOE()   { return getCollege() === 'COE' },
+    isSOM()   { return getCollege() === 'SOM' },
+    isCNAHS() { return getCollege() === 'CNAHS' },
     filteredContributions() {
       return this.contributions.filter(c => {
         const matchesSearch = !this.searchQuery || c.student_name.toLowerCase().includes(this.searchQuery.toLowerCase()) || c.student_id_number.includes(this.searchQuery)

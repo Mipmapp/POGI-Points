@@ -24,48 +24,48 @@ import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import ParticleBackground from './ParticleBackground.vue'
+import { getCollege } from '../config/api.js'
 
 const router = useRouter()
 
-// Check both sessionStorage and localStorage for department
-const getUserDepartment = () => {
-  const sessionDept = sessionStorage.getItem('userDepartment')
-  const localDept = localStorage.getItem('userDepartment')
-  const userDataStr = localStorage.getItem('userData')
-  
-  if (sessionDept) return sessionDept
-  if (localDept) return localDept
-  
-  // Try to parse userData to get department
-  if (userDataStr) {
-    try {
-      const userData = JSON.parse(userDataStr)
-      return userData.program || userData.department
-    } catch (e) {
-      console.error('Failed to parse userData:', e)
-    }
-  }
-  
-  return 'ccs' // default to CCS
-}
-
-const userDept = computed(() => getUserDepartment())
-const isCOE = computed(() => userDept.value?.toLowerCase().includes('coe'))
+const college   = computed(() => getCollege())
+const isCOE     = computed(() => college.value === 'COE')
+const isSOM     = computed(() => college.value === 'SOM')
+const isCNAHS   = computed(() => college.value === 'CNAHS')
 
 const departmentLogo = computed(() => {
-  return isCOE.value ? '/icons/coe.svg' : jrmsuLogo
+  if (isCOE.value)   return '/icons/coe.svg'
+  if (isSOM.value)   return '/icons/som.svg'
+  if (isCNAHS.value) return '/icons/cnahs.svg'
+  return jrmsuLogo
 })
 
 const loadingScreenStyle = computed(() => {
   if (isCOE.value) {
     return {
-      background: 'linear-gradient(135deg, rgba(74, 18, 7, 0.82) 0%, rgba(124, 34, 16, 0.82) 100%), url(/assets/jrmsu-landscape.jpg)',
+      background: 'linear-gradient(135deg, rgba(74, 18, 7, 0.82) 0%, rgba(124, 34, 16, 0.82) 100%), url(/jrmsu-landscape.jpg)',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
       backgroundAttachment: 'fixed'
     }
   }
-  // default/CCS — dark blue with side silhouette
+  if (isSOM.value) {
+    return {
+      background: 'linear-gradient(135deg, rgba(5, 46, 22, 0.85) 0%, rgba(20, 83, 45, 0.82) 100%), url(/jrmsu-landscape.jpg)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed'
+    }
+  }
+  if (isCNAHS.value) {
+    return {
+      background: 'linear-gradient(135deg, rgba(6, 78, 59, 0.85) 0%, rgba(4, 120, 87, 0.82) 100%), url(/jrmsu-landscape.jpg)',
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundAttachment: 'fixed'
+    }
+  }
+  // Default CCS — dark blue
   return {
     background: 'radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%), linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 100%), url(/jrmsu-landscape.jpg) center 35% / cover no-repeat'
   }
