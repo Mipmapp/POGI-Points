@@ -9108,21 +9108,6 @@ app.post('/apis/admin/raffle-tickets', auth, async (req, res) => {
         const category = getRaffleCategory(totalCount);
         const RaffleTicketModel = getCollegeModel(RaffleTicket, CCS_RaffleTicket, COE_RaffleTicket, req.college);
 
-        const existing = await RaffleTicketModel.findOne({
-            student_id_number: student.student_id
-        });
-        if (existing) {
-            existing.rural_count = ruralCount;
-            existing.evergood_count = evergoodCount;
-            existing.ticket_count = totalCount;
-            existing.ticket_type = 'both';
-            existing.category = category;
-            existing.submitted_by = admin_username || '';
-            existing.submitted_at = new Date();
-            await existing.save();
-            return res.json({ success: true, message: 'Raffle ticket entry updated', entry: existing, category });
-        }
-
         const entry = new RaffleTicketModel({
             student_id_number: student.student_id,
             student_name: student.full_name || `${student.first_name} ${student.last_name}`,

@@ -189,8 +189,8 @@
             class="w-full py-3 px-4 bg-gradient-to-r from-purple-700 to-violet-700 text-white rounded-2xl font-bold text-sm transition-all hover:from-purple-800 hover:to-violet-800 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-purple-200 active:scale-[0.99]"
           >
             <svg v-if="isSubmitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-            {{ isSubmitting ? 'Recording...' : 'Record Ticket Submission' }}
+            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            {{ isSubmitting ? 'Adding Entry...' : 'Add New Entry' }}
           </button>
 
           <!-- Success Message -->
@@ -549,8 +549,8 @@ async function submitTicket() {
     if (data.success) {
       const catInfo = data.category && data.category !== 'none' ? categoryInfo(data.category) : null
       successMsg.value = catInfo
-        ? `Recorded! ${catInfo.icon} Assigned to ${catInfo.label} category.`
-        : 'Recorded! (Ticket count is outside a valid raffle range)'
+        ? `New entry added! ${catInfo.icon} Assigned to ${catInfo.label} category.`
+        : 'New entry added! (Ticket count is outside a valid raffle range)'
       ruralCount.value = null
       evergoodCount.value = null
       await fetchEntries()
