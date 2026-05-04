@@ -2307,11 +2307,17 @@ export default {
         const response = await fetch(buildAPIUrl('/apis/students/search-multi'), {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-SSAAM-College': getCollege() },
-          body: JSON.stringify({ search_query: q })
+          body: JSON.stringify({
+            search_query: q,
+            ...(this.filterYearLevel && { year_level: this.filterYearLevel }),
+            ...(this.filterProgram && { program: this.filterProgram })
+          })
         });
         if (response.ok) {
           const data = await response.json();
-          const list = Array.isArray(data.students) ? data.students : [];
+          let list = Array.isArray(data.students) ? data.students : [];
+          if (this.filterYearLevel) list = list.filter(s => s.year_level === this.filterYearLevel);
+          if (this.filterProgram) list = list.filter(s => s.program === this.filterProgram);
           this.searchResults = list;
           if (list.length === 0) {
             window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'No matching students found', type: 'warning' } }));

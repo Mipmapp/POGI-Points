@@ -4944,51 +4944,54 @@
             </p>
           </div>
           
-          <div class="mt-2 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-            <div :class="['rounded-lg p-4 text-center cursor-pointer transition',
+          <div class="mt-2 grid grid-cols-3 gap-2 sm:gap-4">
+            <!-- RFID Verified -->
+            <div :class="['relative rounded-lg p-3 sm:p-4 text-center cursor-pointer transition',
                           isCOE ? 'bg-orange-50 border border-orange-200 hover:bg-orange-100' :
                           isSOM ? 'bg-green-50 border border-green-200 hover:bg-green-100' :
                           isCNAHS ? 'bg-green-50 border border-green-200 hover:bg-green-100' :
                           'bg-green-50 border border-green-200 hover:bg-green-100']" @click="toggleRfidList('verified')">
-              <div class="flex items-center justify-center gap-2 mb-2">
-                <svg :class="['w-6 h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-green-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span :class="['text-sm font-medium', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-green-700']">RFID Verified</span>
-                <button @click.stop="fetchStats" :class="['ml-1 p-1 rounded-full transition', isCOE ? 'hover:bg-orange-200' : isSOM ? 'hover:bg-green-200' : isCNAHS ? 'hover:bg-green-200' : 'hover:bg-green-200']" title="Refresh">
-                  <svg :class="['w-4 h-4', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-green-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
+              <button @click.stop="fetchStats" :class="['absolute top-1.5 right-1.5 p-1 rounded-full transition', isCOE ? 'hover:bg-orange-200' : isSOM ? 'hover:bg-green-200' : isCNAHS ? 'hover:bg-green-200' : 'hover:bg-green-200']" title="Refresh">
+                <svg :class="['w-3 h-3', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-500' : 'text-green-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              </button>
+              <div class="flex flex-col items-center gap-1 mb-2">
+                <svg :class="['w-5 h-5 sm:w-6 sm:h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-green-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span :class="['text-[10px] sm:text-xs font-semibold leading-tight', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-green-700']">RFID Verified</span>
               </div>
-              <p :class="['text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-green-600']">{{ verifiedCount }}</p>
-              <p :class="['text-xs mt-1', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-green-600']">Click to view list</p>
+              <p :class="['text-2xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-green-600']">{{ verifiedCount }}</p>
+              <p :class="['text-[10px] sm:text-xs mt-1', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-500' : 'text-green-500']">tap to view</p>
             </div>
-            <div :class="['rounded-lg p-4 text-center cursor-pointer transition',
+            <!-- RFID Unverified -->
+            <div :class="['relative rounded-lg p-3 sm:p-4 text-center cursor-pointer transition',
                           isCOE ? 'bg-orange-50 border border-orange-200 hover:bg-orange-100' :
                           isSOM ? 'bg-yellow-50 border border-yellow-200 hover:bg-yellow-100' :
                           isCNAHS ? 'bg-yellow-50 border border-yellow-200 hover:bg-yellow-100' :
                           'bg-yellow-50 border border-yellow-200 hover:bg-yellow-100']" @click="toggleRfidList('unverified')">
-              <div class="flex items-center justify-center gap-2 mb-2">
-                <svg :class="['w-6 h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-yellow-600' : isCNAHS ? 'text-yellow-600' : 'text-yellow-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span :class="['text-sm font-medium', isCOE ? 'text-orange-700' : isSOM ? 'text-yellow-700' : isCNAHS ? 'text-yellow-700' : 'text-yellow-700']">RFID Unverified</span>
-                <button @click.stop="fetchStats" :class="['ml-1 p-1 rounded-full transition', isCOE ? 'hover:bg-orange-200' : isSOM ? 'hover:bg-yellow-200' : isCNAHS ? 'hover:bg-yellow-200' : 'hover:bg-yellow-200']" title="Refresh">
-                  <svg :class="['w-4 h-4', isCOE ? 'text-orange-600' : isSOM ? 'text-yellow-600' : isCNAHS ? 'text-yellow-600' : 'text-yellow-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
+              <button @click.stop="fetchStats" :class="['absolute top-1.5 right-1.5 p-1 rounded-full transition', isCOE ? 'hover:bg-orange-200' : isSOM ? 'hover:bg-yellow-200' : isCNAHS ? 'hover:bg-yellow-200' : 'hover:bg-yellow-200']" title="Refresh">
+                <svg :class="['w-3 h-3', isCOE ? 'text-orange-500' : isSOM ? 'text-yellow-500' : isCNAHS ? 'text-yellow-500' : 'text-yellow-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              </button>
+              <div class="flex flex-col items-center gap-1 mb-2">
+                <svg :class="['w-5 h-5 sm:w-6 sm:h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-yellow-600' : isCNAHS ? 'text-yellow-600' : 'text-yellow-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span :class="['text-[10px] sm:text-xs font-semibold leading-tight', isCOE ? 'text-orange-700' : isSOM ? 'text-yellow-700' : isCNAHS ? 'text-yellow-700' : 'text-yellow-700']">Unverified</span>
               </div>
-              <p :class="['text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-yellow-600' : isCNAHS ? 'text-yellow-600' : 'text-yellow-600']">{{ unverifiedCount }}</p>
-              <p :class="['text-xs mt-1', isCOE ? 'text-orange-600' : isSOM ? 'text-yellow-600' : isCNAHS ? 'text-yellow-600' : 'text-yellow-600']">Click to view list</p>
+              <p :class="['text-2xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-yellow-600' : isCNAHS ? 'text-yellow-600' : 'text-yellow-600']">{{ unverifiedCount }}</p>
+              <p :class="['text-[10px] sm:text-xs mt-1', isCOE ? 'text-orange-500' : isSOM ? 'text-yellow-500' : isCNAHS ? 'text-yellow-500' : 'text-yellow-500']">tap to view</p>
             </div>
-            <div :class="['rounded-lg p-4 text-center cursor-pointer transition',
+            <!-- RFID Unreadable -->
+            <div :class="['relative rounded-lg p-3 sm:p-4 text-center cursor-pointer transition',
                           isCOE ? 'bg-orange-50 border border-orange-200 hover:bg-orange-100' :
                           isSOM ? 'bg-gray-50 border border-gray-200 hover:bg-gray-100' :
                           isCNAHS ? 'bg-gray-50 border border-gray-200 hover:bg-gray-100' :
                           'bg-gray-50 border border-gray-200 hover:bg-gray-100']" @click="toggleRfidList('unreadable')">
-              <div class="flex items-center justify-center gap-2 mb-2">
-                <svg :class="['w-6 h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-gray-600' : isCNAHS ? 'text-gray-600' : 'text-gray-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span :class="['text-sm font-medium', isCOE ? 'text-orange-700' : isSOM ? 'text-gray-700' : isCNAHS ? 'text-gray-700' : 'text-gray-700']">RFID Unreadable</span>
-                <button @click.stop="fetchStats" :class="['ml-1 p-1 rounded-full transition', isCOE ? 'hover:bg-orange-200' : isSOM ? 'hover:bg-gray-200' : isCNAHS ? 'hover:bg-gray-200' : 'hover:bg-gray-200']" title="Refresh">
-                  <svg :class="['w-4 h-4', isCOE ? 'text-orange-600' : isSOM ? 'text-gray-600' : isCNAHS ? 'text-gray-600' : 'text-gray-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
+              <button @click.stop="fetchStats" :class="['absolute top-1.5 right-1.5 p-1 rounded-full transition', isCOE ? 'hover:bg-orange-200' : isSOM ? 'hover:bg-gray-200' : isCNAHS ? 'hover:bg-gray-200' : 'hover:bg-gray-200']" title="Refresh">
+                <svg :class="['w-3 h-3', isCOE ? 'text-orange-500' : isSOM ? 'text-gray-500' : isCNAHS ? 'text-gray-500' : 'text-gray-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              </button>
+              <div class="flex flex-col items-center gap-1 mb-2">
+                <svg :class="['w-5 h-5 sm:w-6 sm:h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-gray-600' : isCNAHS ? 'text-gray-600' : 'text-gray-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span :class="['text-[10px] sm:text-xs font-semibold leading-tight', isCOE ? 'text-orange-700' : isSOM ? 'text-gray-700' : isCNAHS ? 'text-gray-700' : 'text-gray-700']">Unreadable</span>
               </div>
-              <p :class="['text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-gray-600' : isCNAHS ? 'text-gray-600' : 'text-gray-600']">{{ unreadableCount }}</p>
-              <p :class="['text-xs mt-1', isCOE ? 'text-orange-600' : isSOM ? 'text-gray-600' : isCNAHS ? 'text-gray-600' : 'text-gray-600']">Click to view list</p>
+              <p :class="['text-2xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-gray-600' : isCNAHS ? 'text-gray-600' : 'text-gray-600']">{{ unreadableCount }}</p>
+              <p :class="['text-[10px] sm:text-xs mt-1', isCOE ? 'text-orange-500' : isSOM ? 'text-gray-500' : isCNAHS ? 'text-gray-500' : 'text-gray-500']">tap to view</p>
             </div>
           </div>
           
@@ -5031,7 +5034,7 @@
             <div v-else-if="rfidListFilteredUsers.length === 0" class="text-center text-gray-500 py-8">
               No users found in this category.
             </div>
-            <div v-else class="max-h-96">
+            <div v-else class="max-h-96 overflow-y-auto">
               <table class="w-full text-sm">
                 <thead :class="['sticky top-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
                   <tr>
