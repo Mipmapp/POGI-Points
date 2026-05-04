@@ -7784,111 +7784,185 @@
 
   <!-- Terms & Conditions Modal -->
   <Transition name="fade">
-    <div v-if="showTermsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[80] p-2 sm:p-4" @click.self="showTermsModal = false">
+    <div v-if="showTermsModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-end sm:items-center justify-center z-[80] p-0 sm:p-4" @click.self="showTermsModal = false">
       <Transition name="modal-bounce" appear>
-        <div v-if="showTermsModal" class="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-3xl max-h-[95vh] sm:max-h-[90vh] flex flex-col overflow-hidden">
-          <!-- Modal header -->
-          <div :class="['flex items-center justify-between px-4 sm:px-6 py-3 sm:py-5 text-white flex-shrink-0',
-            isCOE ? 'bg-gradient-to-r from-orange-700 to-amber-500'
-            : isSOM ? 'bg-gradient-to-r from-green-700 to-emerald-500'
-            : isCNAHS ? 'bg-gradient-to-r from-emerald-700 to-teal-500'
-            : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
-            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-              <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white/20 flex items-center justify-center border border-white/20 flex-shrink-0">
-                <svg class="w-4 h-4 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <div v-if="showTermsModal" class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full max-w-lg sm:max-w-xl flex flex-col overflow-hidden" style="max-height: 92vh;">
+
+          <!-- Header -->
+          <div :class="['flex-shrink-0 px-5 pt-5 pb-4 text-white relative overflow-hidden',
+            isCOE ? 'bg-gradient-to-br from-orange-600 to-amber-500'
+            : isSOM ? 'bg-gradient-to-br from-green-700 to-emerald-500'
+            : isCNAHS ? 'bg-gradient-to-br from-emerald-700 to-teal-500'
+            : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
+            <!-- decorative circles -->
+            <div class="absolute -top-6 -right-6 w-24 h-24 rounded-full bg-white/10 pointer-events-none"></div>
+            <div class="absolute -bottom-4 -left-4 w-16 h-16 rounded-full bg-white/10 pointer-events-none"></div>
+            <!-- drag pill (mobile) -->
+            <div class="w-10 h-1 rounded-full bg-white/40 mx-auto mb-4 sm:hidden"></div>
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-2xl bg-white/20 border border-white/25 flex items-center justify-center flex-shrink-0 shadow-inner">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <div class="min-w-0">
+                  <h2 class="text-lg font-extrabold leading-tight tracking-tight">Terms &amp; Conditions</h2>
+                  <p class="text-white/70 text-[11px] mt-0.5">SSAAM · JRMSU · Last updated May 1, 2026</p>
+                </div>
               </div>
-              <div class="min-w-0">
-                <h2 class="text-base sm:text-xl font-extrabold leading-tight">Terms &amp; Conditions</h2>
-                <p class="text-white/75 text-[10px] sm:text-xs truncate">SSAAM · JRMSU · Student School Activities Attendance Monitoring</p>
+              <button @click="showTermsModal = false" class="flex-shrink-0 w-8 h-8 rounded-full bg-white/20 hover:bg-white/35 flex items-center justify-center transition-colors active:scale-90" aria-label="Close">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <!-- Reading progress bar -->
+            <div class="mt-4 h-1 bg-white/20 rounded-full overflow-hidden">
+              <div
+                :class="['h-full rounded-full transition-all duration-150', isCOE ? 'bg-amber-200' : isSOM ? 'bg-emerald-200' : 'bg-blue-200']"
+                :style="{ width: termsReadPct + '%' }"
+              ></div>
+            </div>
+            <p class="text-white/60 text-[10px] mt-1 text-right">{{ termsAtBottom ? 'Read ✓' : Math.round(termsReadPct) + '% read' }}</p>
+          </div>
+
+          <!-- Scrollable body -->
+          <div class="relative flex-1 min-h-0">
+            <div ref="termsBody" @scroll="onTermsScroll" class="h-full overflow-y-auto overscroll-contain terms-modal-scroll">
+
+              <!-- Intro -->
+              <div class="px-5 pt-5 pb-3">
+                <p class="text-sm text-gray-500 leading-relaxed">
+                  By using SSAAM, you agree to the following terms which govern attendance recording, financial contributions, and your personal data within the JRMSU SSAAM system. Please read them carefully — continued use constitutes acceptance.
+                </p>
+              </div>
+
+              <!-- Sections -->
+              <div class="px-5 pb-6 space-y-0">
+
+                <!-- Section 1 -->
+                <div :class="['border-l-4 pl-4 py-4', isCOE ? 'border-orange-400' : isSOM ? 'border-green-500' : isCNAHS ? 'border-emerald-500' : 'border-ssaam-dark']">
+                  <div class="flex items-center gap-2.5 mb-3">
+                    <div :class="['w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-emerald-600' : 'bg-ssaam-dark']">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                    </div>
+                    <h3 class="font-bold text-sm text-gray-900">1. Attendance Recording</h3>
+                  </div>
+                  <ul class="space-y-2.5 text-sm text-gray-600 leading-relaxed">
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Attendance is recorded through your registered <strong class="text-gray-800">RFID card</strong>, <strong class="text-gray-800">Face ID</strong>, or admin manual check-in for officially scheduled events.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Attempting to scan on behalf of another student (proxy attendance) is strictly prohibited and may result in disciplinary action.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>If <strong class="text-gray-800">GPS geofence</strong> is enabled, you must be physically inside the allowed radius for your check-in to be accepted.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Where Face ID is disabled, please use the RFID scanner or request manual check-in.</span></li>
+                  </ul>
+                </div>
+                <div class="border-l-4 border-transparent pl-4 py-1"><div class="border-t border-gray-100"></div></div>
+
+                <!-- Section 2 -->
+                <div :class="['border-l-4 pl-4 py-4', isCOE ? 'border-orange-400' : isSOM ? 'border-green-500' : isCNAHS ? 'border-emerald-500' : 'border-ssaam-dark']">
+                  <div class="flex items-center gap-2.5 mb-3">
+                    <div :class="['w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-emerald-600' : 'bg-ssaam-dark']">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg>
+                    </div>
+                    <h3 class="font-bold text-sm text-gray-900">2. Account &amp; Roles</h3>
+                  </div>
+                  <ul class="space-y-2.5 text-sm text-gray-600 leading-relaxed">
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Your account is bound to one of the JRMSU colleges (<strong class="text-gray-800">CCS, COE, SOM, CNAHS</strong>) and you may only access data within your college unless granted broader authority.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Roles include <strong class="text-gray-800">Student</strong>, <strong class="text-gray-800">Treasurer</strong>, <strong class="text-gray-800">Co-Admin</strong>, and <strong class="text-gray-800">Admin</strong>. Each role has clearly scoped permissions enforced by both the app and the server.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Students may submit <strong class="text-gray-800">name change requests</strong> through the Request feature, reviewed and approved by college Admins or Co-Admins.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You are responsible for safeguarding your password. Sharing credentials or RFID cards is prohibited.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins are required to change their default passwords on first login and may be prompted periodically.</span></li>
+                  </ul>
+                </div>
+                <div class="border-l-4 border-transparent pl-4 py-1"><div class="border-t border-gray-100"></div></div>
+
+                <!-- Section 3 -->
+                <div :class="['border-l-4 pl-4 py-4', isCOE ? 'border-orange-400' : isSOM ? 'border-green-500' : isCNAHS ? 'border-emerald-500' : 'border-ssaam-dark']">
+                  <div class="flex items-center gap-2.5 mb-3">
+                    <div :class="['w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-emerald-600' : 'bg-ssaam-dark']">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    </div>
+                    <h3 class="font-bold text-sm text-gray-900">3. Contributions &amp; Raffle Tickets</h3>
+                  </div>
+                  <ul class="space-y-2.5 text-sm text-gray-600 leading-relaxed">
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Contribution amounts, discounts, and payment statuses are managed by your college's Admin and Treasurer.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Payments are recorded in-system and the <strong class="text-gray-800">Paid Date</strong> is preserved for transparency. Reversals are logged.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Raffle tickets are issued strictly through admin-approved processes; tampering with ticket records is prohibited.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Disputes regarding amounts must be raised with your college Admin in writing.</span></li>
+                  </ul>
+                </div>
+                <div class="border-l-4 border-transparent pl-4 py-1"><div class="border-t border-gray-100"></div></div>
+
+                <!-- Section 4 -->
+                <div :class="['border-l-4 pl-4 py-4', isCOE ? 'border-orange-400' : isSOM ? 'border-green-500' : isCNAHS ? 'border-emerald-500' : 'border-ssaam-dark']">
+                  <div class="flex items-center gap-2.5 mb-3">
+                    <div :class="['w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-emerald-600' : 'bg-ssaam-dark']">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <h3 class="font-bold text-sm text-gray-900">4. Privacy &amp; Data</h3>
+                  </div>
+                  <ul class="space-y-2.5 text-sm text-gray-600 leading-relaxed">
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>SSAAM stores your name, student ID, program, year level, RFID tag, profile photo, and (if enrolled) face encoding strictly for academic and event-attendance purposes.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Sensitive fields are encrypted at rest. Student data is isolated per college — one college cannot view another's records.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>GPS coordinates captured at check-in are used only to validate the geofence and are not used for tracking outside event windows.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You may request review or correction of your records by contacting your college Admin.</span></li>
+                  </ul>
+                </div>
+                <div class="border-l-4 border-transparent pl-4 py-1"><div class="border-t border-gray-100"></div></div>
+
+                <!-- Section 5 -->
+                <div :class="['border-l-4 pl-4 py-4', isCOE ? 'border-orange-400' : isSOM ? 'border-green-500' : isCNAHS ? 'border-emerald-500' : 'border-ssaam-dark']">
+                  <div class="flex items-center gap-2.5 mb-3">
+                    <div :class="['w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-emerald-600' : 'bg-ssaam-dark']">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    </div>
+                    <h3 class="font-bold text-sm text-gray-900">5. Acceptable Use</h3>
+                  </div>
+                  <ul class="space-y-2.5 text-sm text-gray-600 leading-relaxed">
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You agree not to attempt to bypass authentication, role checks, college isolation, or any of the system's safeguards.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Automated scraping, scripted abuse, or any activity that disrupts the platform or other users is forbidden.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins must use Admin/Co-Admin tools only for legitimate institutional purposes; misuse may lead to revocation of access.</span></li>
+                  </ul>
+                </div>
+                <div class="border-l-4 border-transparent pl-4 py-1"><div class="border-t border-gray-100"></div></div>
+
+                <!-- Section 6 -->
+                <div :class="['border-l-4 pl-4 py-4', isCOE ? 'border-orange-400' : isSOM ? 'border-green-500' : isCNAHS ? 'border-emerald-500' : 'border-ssaam-dark']">
+                  <div class="flex items-center gap-2.5 mb-3">
+                    <div :class="['w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 text-white', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-emerald-600' : 'bg-ssaam-dark']">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg>
+                    </div>
+                    <h3 class="font-bold text-sm text-gray-900">6. Liability &amp; Updates</h3>
+                  </div>
+                  <ul class="space-y-2.5 text-sm text-gray-600 leading-relaxed">
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>SSAAM is provided as-is. JRMSU and the SSAAM team are not liable for missed events caused by personal device issues, network outages, or expired RFID cards.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Features, policies, and these terms may be updated from time to time. Notable changes will be announced in-app.</span></li>
+                    <li class="flex gap-2.5"><span :class="['flex-shrink-0 mt-2 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Continued use of SSAAM after updates indicates your acceptance of the revised terms.</span></li>
+                  </ul>
+                </div>
+
+                <!-- Footer note -->
+                <div class="mt-2 pt-4 border-t border-gray-100 flex items-center gap-2 text-xs text-gray-400">
+                  <svg class="w-4 h-4 flex-shrink-0 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                  <p>By continuing to use SSAAM you acknowledge and agree to these terms.</p>
+                </div>
               </div>
             </div>
-            <button @click="showTermsModal = false" class="ml-2 flex-shrink-0 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors" aria-label="Close">
-              <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+
+            <!-- Scroll-down FAB -->
+            <button
+              v-if="!termsAtBottom"
+              @click="scrollTermsDown"
+              :class="['absolute bottom-4 right-4 z-10 w-10 h-10 rounded-full shadow-lg flex items-center justify-center text-white transition-all hover:scale-110 active:scale-90 pointer-events-auto', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-emerald-600' : 'bg-ssaam-dark']"
+              aria-label="Scroll down"
+            >
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
             </button>
           </div>
-          <!-- Modal body (scrollable) -->
-          <div class="relative flex-1 min-h-0 overflow-hidden">
-          <div ref="termsBody" @scroll="onTermsScroll" class="overflow-y-auto h-full p-4 sm:p-6 md:p-8 terms-modal-scroll overscroll-contain">
-            <p class="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6 leading-relaxed">
-              By using SSAAM, you agree to the following terms which govern attendance recording, financial contributions, and your personal data within the JRMSU SSAAM system. Please read them carefully — continued use of the system constitutes acceptance.
-            </p>
-            <div class="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
-              <div :class="['rounded-xl sm:rounded-2xl border-2 p-3 sm:p-5 transition hover:shadow-md', isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white' : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white' : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
-                <div class="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3"><div :class="['w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex-shrink-0 flex items-center justify-center text-white shadow-md', isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-blue-600 to-indigo-600']"><svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg></div><h3 class="font-extrabold text-sm sm:text-base text-gray-900">1. Attendance Recording</h3></div>
-                <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Attendance is recorded through your registered <strong>RFID card</strong>, <strong>Face ID</strong>, or admin manual check-in for officially scheduled events.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Attempting to scan on behalf of another student (proxy attendance) is strictly prohibited and may result in disciplinary action.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>If <strong>GPS geofence</strong> is enabled for an event, you must be physically inside the allowed radius for your check-in to be accepted.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Where Face ID is disabled by the admin, please use the RFID scanner or request manual check-in.</span></li>
-                </ul>
-              </div>
-              <div :class="['rounded-xl sm:rounded-2xl border-2 p-3 sm:p-5 transition hover:shadow-md', isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white' : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white' : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
-                <div class="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3"><div :class="['w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex-shrink-0 flex items-center justify-center text-white shadow-md', isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-blue-600 to-indigo-600']"><svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0 3.517-1.009 6.799-2.753 9.571m-3.44-2.04l.054-.09A13.916 13.916 0 008 11a4 4 0 118 0c0 1.017-.07 2.019-.203 3m-2.118 6.844A21.88 21.88 0 0015.171 17m3.839 1.132c.645-2.266.99-4.659.99-7.132A8 8 0 008 4.07M3 15.364c.64-1.319 1-2.8 1-4.364 0-1.457.39-2.823 1.07-4"/></svg></div><h3 class="font-extrabold text-sm sm:text-base text-gray-900">2. Account &amp; Roles</h3></div>
-                <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Your account is bound to one of the JRMSU colleges (<strong>CCS, COE, SOM, CNAHS</strong>) and you may only access data within your college unless granted broader authority.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, and <strong>Admin
-                  He</strong>. Each role has clearly scoped permissions enforced by both the app and the server.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Students may submit <strong>name change requests</strong> through the Request feature. Submitted requests are reviewed and approved or rejected by college Admins or Co-Admins.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You are responsible for safeguarding your password. Sharing credentials or RFID cards is prohibited.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins are required to change their default passwords on first login and may be prompted to do so periodically.</span></li>
-                </ul>
-              </div>
-              <div :class="['rounded-xl sm:rounded-2xl border-2 p-3 sm:p-5 transition hover:shadow-md', isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white' : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white' : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
-                <div class="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3"><div :class="['w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex-shrink-0 flex items-center justify-center text-white shadow-md', isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-blue-600 to-indigo-600']"><svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div><h3 class="font-extrabold text-sm sm:text-base text-gray-900">3. Contributions &amp; Raffle Tickets</h3></div>
-                <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Contribution amounts, discounts, and payment statuses are managed by your college's Admin and Treasurer.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Payments are recorded in-system and the <strong>Paid Date</strong> is preserved for transparency. Reversals (Mark Unpaid) are logged.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Raffle tickets are issued strictly through admin-approved processes; tampering with ticket records is prohibited.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Disputes regarding amounts must be raised with your college Admin in writing.</span></li>
-                </ul>
-              </div>
-              <div :class="['rounded-xl sm:rounded-2xl border-2 p-3 sm:p-5 transition hover:shadow-md', isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white' : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white' : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
-                <div class="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3"><div :class="['w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex-shrink-0 flex items-center justify-center text-white shadow-md', isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-blue-600 to-indigo-600']"><svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></div><h3 class="font-extrabold text-sm sm:text-base text-gray-900">4. Privacy &amp; Data</h3></div>
-                <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>SSAAM stores your name, student ID, program, year level, RFID tag, profile photo, and (if enrolled) face encoding strictly for academic and event-attendance purposes.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Sensitive fields are encrypted at rest, and student data is isolated per college so one college cannot view another's records.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>GPS coordinates captured at check-in are used only to validate the geofence; they are not used for tracking outside event windows.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You may request review or correction of your records by contacting your college Admin.</span></li>
-                </ul>
-              </div>
-              <div :class="['rounded-xl sm:rounded-2xl border-2 p-3 sm:p-5 transition hover:shadow-md', isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white' : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white' : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
-                <div class="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3"><div :class="['w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex-shrink-0 flex items-center justify-center text-white shadow-md', isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-blue-600 to-indigo-600']"><svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div><h3 class="font-extrabold text-sm sm:text-base text-gray-900">5. Acceptable Use</h3></div>
-                <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>You agree not to attempt to bypass authentication, role checks, college isolation, or any of the system's safeguards.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Automated scraping, scripted abuse, or any activity that disrupts the platform or other users is forbidden.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Admins must use Admin/Co-Admin tools only for legitimate institutional purposes; misuse may lead to revocation of access.</span></li>
-                </ul>
-              </div>
-              <div :class="['rounded-xl sm:rounded-2xl border-2 p-3 sm:p-5 transition hover:shadow-md', isCOE ? 'border-orange-100 bg-gradient-to-br from-orange-50/50 to-white' : isSOM ? 'border-green-100 bg-gradient-to-br from-green-50/50 to-white' : 'border-blue-100 bg-gradient-to-br from-blue-50/50 to-white']">
-                <div class="flex items-center gap-2 sm:gap-3 mb-2 sm:mb-3"><div :class="['w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex-shrink-0 flex items-center justify-center text-white shadow-md', isCOE ? 'bg-gradient-to-br from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-br from-green-500 to-green-600' : 'bg-gradient-to-br from-blue-600 to-indigo-600']"><svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/></svg></div><h3 class="font-extrabold text-sm sm:text-base text-gray-900">6. Liability &amp; Updates</h3></div>
-                <ul class="text-xs sm:text-sm text-gray-700 space-y-2 leading-relaxed">
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>While we strive for accuracy, SSAAM is provided as-is. JRMSU and the SSAAM team are not liable for missed events caused by personal device issues, network outages, or expired RFID cards.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Features, policies, and these terms may be updated from time to time. Notable changes will be announced in-app.</span></li>
-                  <li class="flex gap-2"><span :class="['flex-shrink-0 mt-1 w-1.5 h-1.5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : 'bg-blue-500']"></span><span>Continued use of SSAAM after updates indicates your acceptance of the revised terms.</span></li>
-                </ul>
-              </div>
-            </div>
-            <div class="mt-6 pt-5 border-t border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-gray-500">
-              <p>Last updated: <span class="font-semibold text-gray-700">May 1, 2026</span></p>
-              <p class="flex items-center gap-2"><svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>By continuing to use SSAAM, you acknowledge and agree to these terms.</p>
-            </div>
-          </div>
-          <!-- Scroll-down floating button -->
-          <button
-            v-if="!termsAtBottom"
-            @click="scrollTermsDown"
-            :class="['absolute bottom-4 right-4 z-10 w-9 h-9 rounded-full shadow-lg flex items-center justify-center text-white transition-all hover:scale-110 active:scale-95 pointer-events-auto', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-emerald-600' : 'bg-ssaam-dark']"
-            aria-label="Scroll down"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-          </button>
-          </div>
-          <!-- Modal footer -->
-          <div class="flex-shrink-0 px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100">
-            <button @click="showTermsModal = false" :class="['w-full py-2.5 sm:py-3 rounded-xl sm:rounded-2xl font-semibold text-white text-sm transition-all hover:-translate-y-0.5 active:scale-95 bg-gradient-to-r', isCOE ? 'from-orange-600 to-amber-500 hover:from-orange-700' : isSOM ? 'from-green-600 to-emerald-500 hover:from-green-700' : isCNAHS ? 'from-emerald-600 to-teal-500 hover:from-emerald-700' : 'from-ssaam-dark to-ssaam-light']">
-              Close
+
+          <!-- Footer -->
+          <div class="flex-shrink-0 px-5 py-4 border-t border-gray-100 bg-gray-50/70">
+            <button @click="showTermsModal = false" :class="['w-full py-3 rounded-2xl font-bold text-white text-sm tracking-wide transition-all hover:-translate-y-0.5 active:scale-95 shadow-sm bg-gradient-to-r', isCOE ? 'from-orange-600 to-amber-500 hover:from-orange-700' : isSOM ? 'from-green-600 to-emerald-500 hover:from-green-700' : isCNAHS ? 'from-emerald-600 to-teal-500 hover:from-emerald-700' : 'from-ssaam-dark to-ssaam-light']">
+              I Understand &amp; Close
             </button>
           </div>
+
         </div>
       </Transition>
     </div>
@@ -9437,6 +9511,7 @@ const helpTab = ref('about')
 const showTermsModal = ref(false)
 const termsBody = ref(null)
 const termsAtBottom = ref(false)
+const termsReadPct = ref(0)
 
 // Lock background scroll when modal is open; restore when it closes
 const lockBodyScroll = () => {
@@ -9455,6 +9530,7 @@ watch(showTermsModal, (open) => {
   if (open) {
     lockBodyScroll()
     termsAtBottom.value = false
+    termsReadPct.value = 0
     // After Vue renders the modal, scroll back to top
     nextTick(() => {
       if (termsBody.value) termsBody.value.scrollTop = 0
@@ -9467,6 +9543,8 @@ watch(showTermsModal, (open) => {
 const onTermsScroll = () => {
   if (!termsBody.value) return
   const el = termsBody.value
+  const scrollable = el.scrollHeight - el.clientHeight
+  termsReadPct.value = scrollable > 0 ? Math.min(100, (el.scrollTop / scrollable) * 100) : 100
   termsAtBottom.value = el.scrollTop + el.clientHeight >= el.scrollHeight - 30
 }
 const scrollTermsDown = () => {
