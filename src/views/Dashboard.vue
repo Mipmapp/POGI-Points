@@ -676,7 +676,7 @@
     <div v-if="showMobileMenu" class="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" @click="showMobileMenu = false"></div>
   </transition>
 
-  <div class="flex min-h-screen flex-col md:flex-row">
+  <div class="flex min-h-screen md:h-screen flex-col md:flex-row md:overflow-hidden">
     <!-- Sidebar (Hidden on mobile, visible on desktop) -->
     <div :class="[ 'hidden md:flex w-64 bg-gradient-to-b text-white flex-col order-1 border-r border-white/10 h-screen shadow-2xl sticky top-0 self-start', sidebarGradient ]">
       <div class="px-5 py-5 border-b border-white/15 flex-shrink-0 bg-white/5 backdrop-blur-sm">
@@ -973,7 +973,7 @@
     </transition>
 
     <!-- Main Content Area -->
-    <div ref="mainContentEl" class="flex-1 bg-slate-50 order-2 md:order-2 min-w-0 self-start min-h-screen">
+    <div ref="mainContentEl" tabindex="-1" class="flex-1 bg-slate-50 order-2 md:order-2 min-w-0 overflow-y-auto outline-none">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
@@ -12886,6 +12886,9 @@ onMounted(async () => {
   
   // Add ESC key listener for fullscreen mode
   document.addEventListener('keydown', handleEscKey)
+
+  // Focus main content on load so arrow-key scrolling works immediately
+  nextTick(() => { mainContentEl.value?.focus() })
   
   // Set default profile gradient based on theme
   profileGradient.value = getDefaultProfileGradient()
