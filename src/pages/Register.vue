@@ -903,10 +903,6 @@ const programDepartment = computed(() => {
   return flattenedPrograms.value.find(p => p.shortName === formData.program) || null
 })
 
-const isSOMSelected = computed(() => {
-  return programDepartment.value && String(programDepartment.value.departmentLabel).toUpperCase() === 'SOM'
-})
-
 const isCOE = computed(() => {
   return programDepartment.value && String(programDepartment.value.departmentLabel).toUpperCase() === 'COE'
 })

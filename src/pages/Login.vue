@@ -707,34 +707,9 @@ import jrmsuLogo from '../assets/jrmsu-logo.webp'
 import { encodeTimestamp, syncServerTime, updateServerOffsetFromHeaders } from '../utils/ssaamCrypto.js'
 import API_getBaseURL, { buildAPIUrl } from '../config/api.js'
 import departments from '../config/departments.js'
+import { useCollege } from '../composables/useCollege.js'
 
-const isCOE = computed(() => {
-  try {
-    const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
-    const user = userJson ? JSON.parse(userJson) : {}
-    const userProgram = user.program
-    if (userProgram) {
-      for (const dept of departments) {
-        if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'COE'
-      }
-    }
-  } catch (e) {}
-  return false
-})
-
-const isSOM = computed(() => {
-  try {
-    const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
-    const user = userJson ? JSON.parse(userJson) : {}
-    const userProgram = user.program
-    if (userProgram) {
-      for (const dept of departments) {
-        if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'SOM'
-      }
-    }
-  } catch (e) {}
-  return false
-})
+const { isCCS, isCOE, isSOM, isCNAHS } = useCollege()
 
 const router = useRouter()
 const studentId = ref('')

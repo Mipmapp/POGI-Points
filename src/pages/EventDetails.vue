@@ -90,9 +90,8 @@
 </template>
 
 <script>
-import departments from '../config/departments'
 import * as XLSX from 'xlsx'
-import { buildAPIUrl } from '../config/api.js'
+import { buildAPIUrl, getCollege } from '../config/api.js'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import StudentFaceCheckIn from '../components/StudentFaceCheckIn.vue'
 
@@ -114,45 +113,9 @@ export default {
     }
   },
   computed: {
-    isCOE() {
-      try {
-        const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
-        const user = userJson ? JSON.parse(userJson) : {}
-        const userProgram = user.program
-        if (userProgram) {
-          for (const dept of departments) {
-            if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'COE'
-          }
-        }
-      } catch (e) {}
-      return false
-    },
-    isSOM() {
-      try {
-        const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
-        const user = userJson ? JSON.parse(userJson) : {}
-        const userProgram = user.program
-        if (userProgram) {
-          for (const dept of departments) {
-            if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'SOM'
-          }
-        }
-      } catch (e) {}
-      return false
-    },
-    isCNAHS() {
-      try {
-        const userJson = localStorage.getItem('currentUser') || localStorage.getItem('user')
-        const user = userJson ? JSON.parse(userJson) : {}
-        const userProgram = user.program
-        if (userProgram) {
-          for (const dept of departments) {
-            if (dept.programs.some(p => p.shortName === userProgram)) return dept.label === 'CNAHS'
-          }
-        }
-      } catch (e) {}
-      return false
-    }
+    isCOE()   { return getCollege() === 'COE' },
+    isSOM()   { return getCollege() === 'SOM' },
+    isCNAHS() { return getCollege() === 'CNAHS' }
   },
   mounted() {
     this.loadEvent()
