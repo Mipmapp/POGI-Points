@@ -1,0 +1,112 @@
+You are a senior software engineer responsible for cleaning, organizing, and improving a full JavaScript web application.
+
+GOAL:
+Make the entire codebase clean, scalable, and maintainable WITHOUT breaking existing functionality.
+
+---
+
+PHASE 1: FULL PROJECT ANALYSIS
+Scan ALL files in the project and:
+
+1. Map the structure of the application:
+   - Pages (dashboard, attendance, admin, etc.)
+   - Components
+   - Utilities
+   - API/services
+   - Styles
+
+2. Identify:
+   - Unused files, components, functions, variables, and imports
+   - Duplicate logic across files
+   - Overly large or messy files
+   - Bad naming conventions
+   - Inconsistent folder structure
+
+3. Output a FULL REPORT:
+   - File-by-file explanation
+   - What each file does
+   - Issues found per file
+   - Tag each issue:
+     [DELETE] – safe to remove
+     [REFACTOR] – improve structure
+     [KEEP] – required
+
+DO NOT MODIFY CODE YET.
+
+---
+
+PHASE 2: CLEANUP (SAFE)
+After analysis:
+
+1. Remove ONLY:
+   - Unused imports
+   - Unused variables/functions
+   - Dead files with zero references
+
+2. Ensure:
+   - No runtime errors introduced
+   - No UI/UX features are broken
+
+---
+
+PHASE 3: REFACTORING
+Improve code quality:
+
+1. Break large files into smaller modules
+2. Extract reusable logic into:
+   - /utils
+   - /services
+3. Convert repeated UI into reusable components
+4. Simplify complex functions
+
+---
+
+PHASE 4: PROJECT STRUCTURE STANDARDIZATION
+
+Reorganize the project into a clean structure like:
+
+/src
+  /components
+  /pages
+  /layouts
+  /services
+  /utils
+  /hooks
+  /styles
+
+Rules:
+- Move files logically
+- Fix all import paths after moving
+- Group related features together
+
+---
+
+PHASE 5: NAMING & CONSISTENCY
+
+1. Standardize:
+   - File names (camelCase or PascalCase consistently)
+   - Function names
+   - Variables
+
+2. Improve readability:
+   - Clear naming
+   - Remove unnecessary comments
+   - Add comments only where needed
+
+---
+
+PHASE 6: DOCUMENTATION
+
+Generate:
+1. A short README explaining:
+   - Project structure
+   - How each major part works
+2. Inline comments for complex logic only
+
+---
+
+IMPORTANT RULES:
+
+- DO NOT break existing features
+- DO NOT modify business logic unless necessary
+- D
