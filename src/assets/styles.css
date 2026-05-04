@@ -4,14 +4,13 @@
 
 /* Prevent bounce/overscroll on the document level without breaking iOS Safari */
 html, body {
-  height: 100%;
+  min-height: 100%;
   overscroll-behavior: none;
 }
 
-/* The app container owns all scrolling — keeps double-scrollbar off on mobile */
+/* App container grows with content — body scroll provides the scrollbar */
 #app {
-  height: 100%;
-  overflow: hidden;
+  min-height: 100%;
 }
 
 /* Custom Scrollbar Styling for Sidebar */
