@@ -676,7 +676,7 @@
     <div v-if="showMobileMenu" class="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden" @click="showMobileMenu = false"></div>
   </transition>
 
-  <div class="flex min-h-screen md:h-screen flex-col md:flex-row md:overflow-hidden">
+  <div class="md:flex md:h-screen md:overflow-hidden">
     <!-- Sidebar (Hidden on mobile, visible on desktop) -->
     <div :class="[ 'hidden md:flex w-64 bg-gradient-to-b text-white flex-col order-1 border-r border-white/10 h-screen shadow-2xl sticky top-0 self-start', sidebarGradient ]">
       <div class="px-5 py-5 border-b border-white/15 flex-shrink-0 bg-white/5 backdrop-blur-sm">
@@ -973,7 +973,7 @@
     </transition>
 
     <!-- Main Content Area -->
-    <div ref="mainContentEl" tabindex="-1" class="flex-1 bg-slate-50 order-2 md:order-2 min-w-0 overflow-y-auto outline-none">
+    <div ref="mainContentEl" tabindex="-1" class="bg-slate-50 md:flex-1 min-w-0 min-h-screen md:min-h-0 overflow-y-auto outline-none">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
@@ -5088,7 +5088,7 @@
               <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
               <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Quick Actions</h3>
             </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
               <!-- Create Event Card -->
               <button @click="openCreateEventModal" :class="['group relative overflow-hidden rounded-2xl border-2 p-5 text-left transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-95',
                 isCOE ? 'border-orange-100 bg-orange-50 hover:border-orange-300' :
