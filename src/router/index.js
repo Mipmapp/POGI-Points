@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Login from '../views/Login.vue'
-import Register from '../views/Register.vue'
-import Dashboard from '../views/Dashboard.vue'
-import EventDetails from '../views/EventDetails.vue'
+import Login from '../pages/Login.vue'
+import Register from '../pages/Register.vue'
+import Dashboard from '../pages/Dashboard.vue'
+import EventDetails from '../pages/EventDetails.vue'
 
 const routes = [
   {
@@ -25,7 +25,7 @@ const routes = [
     name: 'EventDetails',
     component: EventDetails,
     props: true
-  },
+  }
 ]
 
 const router = createRouter({

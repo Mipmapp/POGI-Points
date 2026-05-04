@@ -14,7 +14,7 @@ html, body {
 }
 
 
-/* Custom Scrollbar Styling for Sidebar */
+/* ── Sidebar Scrollbar ────────────────────────────────────────────────── */
 .sidebar-scroll::-webkit-scrollbar {
   width: 6px;
 }
@@ -33,13 +33,12 @@ html, body {
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* Firefox scrollbar */
 .sidebar-scroll {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.3) rgba(255, 255, 255, 0.1);
 }
 
-/* Fullscreen RFID Scanner Scrollbar */
+/* ── Fullscreen RFID Scanner Scrollbar ───────────────────────────────── */
 .fullscreen-scroll::-webkit-scrollbar {
   width: 8px;
 }
@@ -63,17 +62,11 @@ html, body {
   scrollbar-color: rgba(255, 255, 255, 0.4) rgba(255, 255, 255, 0.1);
 }
 
-/* Logo Flip Animation */
+/* ── Logo Flip Animation ──────────────────────────────────────────────── */
 @keyframes logoFlipRight {
-  0% {
-    transform: perspective(400px) rotateY(0deg);
-  }
-  50% {
-    transform: perspective(400px) rotateY(180deg);
-  }
-  100% {
-    transform: perspective(400px) rotateY(360deg);
-  }
+  0%   { transform: perspective(400px) rotateY(0deg); }
+  50%  { transform: perspective(400px) rotateY(180deg); }
+  100% { transform: perspective(400px) rotateY(360deg); }
 }
 
 .logo-flip-animation {
@@ -82,6 +75,7 @@ html, body {
   backface-visibility: visible;
 }
 
+/* ── Base Element Resets ──────────────────────────────────────────────── */
 body {
   margin: 0;
   padding: 0;
@@ -112,7 +106,7 @@ input, textarea, select {
   user-select: text;
 }
 
-/* Background Panel Styles */
+/* ── Background Panel Styles (Login / Register / Loading) ────────────── */
 .desktop-bg-panel {
   @apply w-2/5 flex flex-col items-center justify-center text-white p-12 relative overflow-hidden;
   background: linear-gradient(135deg, rgba(30, 59, 219, 0.8) 0%, rgba(79, 98, 255, 0.75) 100%), url('/jrmsu-landscape.jpg');
@@ -137,408 +131,10 @@ input, textarea, select {
   background-blend-mode: multiply;
 }
 
-/* Login Page Styles */
-.login-desktop-container {
-  @apply hidden md:flex min-h-screen bg-white;
-}
-
-.login-right-panel {
-  @apply w-3/5 flex items-center justify-center p-8 bg-gray-50;
-}
-
-.login-container {
-  @apply w-full max-w-md;
-}
-
-.login-header {
-  @apply mb-8 text-center;
-}
-
-.login-header-title {
-  @apply text-3xl font-bold text-purple-900 mb-4;
-}
-
-.login-header-text {
-  @apply text-gray-600 text-sm mb-2;
-}
-
-.login-form-card {
-  @apply bg-white rounded-2xl shadow-lg p-8;
-}
-
-.login-tabs {
-  @apply flex mb-6 border-b border-gray-200;
-}
-
-.login-tab {
-  @apply flex-1 py-3 px-4 text-center font-medium;
-}
-
-.login-tab-active {
-  @apply border-b-2 border-purple-600 text-purple-600;
-}
-
-.login-tab-inactive {
-  @apply text-gray-500 hover:text-gray-700;
-}
-
-.login-form {
-  @apply space-y-6;
-}
-
-.login-input-group {
-  @apply relative;
-}
-
-.login-input-icon {
-  @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400;
-}
-
-.login-input {
-  @apply w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none;
-}
-
-.login-submit-btn {
-  @apply w-full text-white py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center;
-  background-image: linear-gradient(to right, #1e3bdb, #4f62ff);
-}
-.login-submit-btn:hover {
-  background-image: linear-gradient(to right, #1830c4, #3d50ee);
-}
-
-.login-help-section {
-  @apply text-center text-sm text-gray-600;
-}
-
-.login-help-link {
-  @apply text-purple-600 hover:underline;
-}
-
-.login-footer {
-  @apply mt-6 text-center text-xs text-gray-500;
-}
-
-.login-powered-by {
-  @apply text-yellow-500 font-medium;
-}
-
-.login-left-panel {
-  @apply w-2/5 flex flex-col items-center justify-center text-white p-12 relative overflow-hidden;
-}
-
-.login-left-content {
-  @apply relative z-10 text-center;
-}
-
-.login-logo-container {
-  @apply mb-8;
-}
-
-.login-logo {
-  @apply w-64 h-64 mx-auto mb-4 flex items-center justify-center;
-}
-
-.login-logo-image {
-  @apply w-full h-full object-contain drop-shadow-2xl;
-}
-
-.login-title {
-  @apply text-5xl font-bold mb-4;
-}
-
-.login-subtitle {
-  @apply text-xl;
-}
-
-.login-copyright {
-  @apply absolute bottom-4 left-4 right-4 text-center text-sm text-white opacity-75;
-}
-
-.login-mobile-container {
-  @apply md:hidden min-h-screen flex flex-col;
-}
-
-.login-mobile-header {
-  @apply text-center text-white pt-12 pb-8 px-4 relative z-10;
-}
-
-.login-mobile-logo {
-  @apply w-32 h-32 mx-auto mb-4;
-}
-
-.login-mobile-title {
-  @apply text-4xl font-bold mb-2;
-}
-
-.login-mobile-subtitle {
-  @apply text-lg mb-8;
-}
-
-.login-mobile-text {
-  @apply text-sm opacity-90;
-}
-
-.login-mobile-form-card {
-  @apply flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 overflow-auto;
-}
-
-.login-mobile-form-container {
-  @apply max-w-md mx-auto;
-}
-
-.login-mobile-tabs {
-  @apply flex mb-8 bg-gray-100 rounded-lg p-1;
-}
-
-.login-mobile-tab-active {
-  @apply flex-1 py-3 px-4 text-center font-medium rounded-md bg-white text-purple-600 shadow-sm;
-}
-
-.login-mobile-tab-inactive {
-  @apply flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700;
-}
-
-/*  Register Page Styles  */
-.register-desktop-container {
-  @apply hidden md:flex min-h-screen bg-white;
-}
-
-.register-right-panel {
-  @apply w-3/5 flex items-center justify-center p-8 bg-gray-50;
-}
-
-.register-container {
-  @apply w-full max-w-md;
-}
-
-.register-header {
-  @apply text-center mb-8;
-}
-
-.register-header-icon {
-  @apply flex items-center justify-center gap-3 mb-4;
-}
-
-.register-icon-circle {
-  @apply w-12 h-12 rounded-full bg-purple-700 flex items-center justify-center text-white text-2xl;
-}
-
-.register-header-text {
-  @apply text-left;
-}
-
-.register-header-title {
-  @apply text-2xl font-bold text-purple-900;
-}
-
-.register-header-desc {
-  @apply text-gray-600 text-sm italic mb-4;
-}
-
-.register-step-indicator {
-  @apply text-sm font-semibold text-purple-900;
-}
-
-.register-form-card {
-  @apply bg-white rounded-2xl shadow-lg p-8;
-}
-
-.register-tabs {
-  @apply flex mb-6 border-b border-gray-200;
-}
-
-.register-tab {
-  @apply flex-1 py-3 px-4 text-center font-medium;
-}
-
-.register-tab-active {
-  @apply border-b-2 border-purple-600 text-purple-600;
-}
-
-.register-tab-inactive {
-  @apply text-gray-500 hover:text-gray-700;
-}
-
-.register-form {
-  @apply space-y-4;
-}
-
-.register-input-group {
-  @apply relative;
-}
-
-.register-input-icon {
-  @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400;
-}
-
-.register-input {
-  @apply w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none;
-}
-
-.register-select {
-  @apply w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white;
-}
-
-.register-progress-bar {
-  @apply flex items-center justify-center pt-4;
-}
-
-.register-progress-item {
-  @apply w-16 h-1 rounded;
-}
-
-.register-progress-active {
-  @apply bg-purple-600;
-}
-
-.register-progress-inactive {
-  @apply bg-gray-300;
-}
-
-.register-button-group {
-  @apply flex gap-4;
-}
-
-.register-button {
-  @apply flex-1 py-3 px-6 rounded-lg font-medium transition duration-300 flex items-center justify-center;
-}
-
-.register-button-primary {
-  @apply text-white;
-  background-image: linear-gradient(to right, #1e3bdb, #4f62ff);
-}
-.register-button-primary:hover {
-  background-image: linear-gradient(to right, #1830c4, #3d50ee);
-}
-
-.register-button-secondary {
-  @apply bg-white border-2 border-purple-600 text-purple-600 hover:bg-purple-50;
-}
-
-.register-image-upload {
-  @apply text-center;
-}
-
-.register-image-preview {
-  @apply w-48 h-48 mx-auto mb-4 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden;
-}
-
-.register-image-placeholder {
-  @apply flex flex-col items-center justify-center;
-}
-
-.register-placeholder-avatar {
-  @apply w-24 h-24 rounded-full bg-gray-400 mb-4;
-}
-
-.register-placeholder-body {
-  @apply w-32 h-20 bg-gray-500 rounded-t-full;
-}
-
-.register-image-label {
-  @apply block text-sm font-medium text-gray-700 mb-4;
-}
-
-.register-file-input {
-  @apply hidden;
-}
-
-.register-file-label {
-  @apply cursor-pointer inline-flex items-center justify-center px-8 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition duration-300;
-}
-
-.register-footer {
-  @apply mt-6 text-center text-xs text-gray-500;
-}
-
-.register-powered-by {
-  @apply text-yellow-500 font-medium;
-}
-
-.register-left-panel {
-  @apply w-2/5 flex flex-col items-center justify-center text-white p-12 relative overflow-hidden;
-}
-
-.register-left-content {
-  @apply relative z-10 text-center;
-}
-
-.register-logo-container {
-  @apply mb-8;
-}
-
-.register-logo {
-  @apply w-64 h-64 mx-auto mb-4 flex items-center justify-center;
-}
-
-.register-logo-image {
-  @apply w-full h-full object-contain drop-shadow-2xl;
-}
-
-.register-title {
-  @apply text-5xl font-bold mb-4;
-}
-
-.register-subtitle {
-  @apply text-xl;
-}
-
-.register-copyright {
-  @apply absolute bottom-4 left-4 right-4 text-center text-sm text-white opacity-75;
-}
-
-.register-mobile-container {
-  @apply md:hidden min-h-screen flex flex-col;
-}
-
-.register-mobile-header {
-  @apply text-center text-white pt-12 pb-8 px-4 relative z-10;
-}
-
-.register-mobile-icon {
-  @apply w-16 h-16 mx-auto mb-4 rounded-full bg-white bg-opacity-20 flex items-center justify-center;
-}
-
-.register-mobile-title {
-  @apply text-3xl font-bold mb-2;
-}
-
-.register-mobile-desc {
-  @apply text-sm opacity-90 italic mb-4;
-}
-
-.register-mobile-step {
-  @apply text-base font-semibold;
-}
-
-.register-mobile-form-card {
-  @apply flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 overflow-auto;
-}
-
-.register-mobile-form-container {
-  @apply max-w-md mx-auto;
-}
-
-.register-mobile-tabs {
-  @apply flex mb-8 bg-gray-100 rounded-lg p-1;
-}
-
-.register-mobile-tab-active {
-  @apply flex-1 py-3 px-4 text-center font-medium rounded-md bg-white text-purple-600 shadow-sm;
-}
-
-.register-mobile-tab-inactive {
-  @apply flex-1 py-3 px-4 text-center font-medium text-gray-500 hover:text-gray-700;
-}
-
-.register-mobile-copyright {
-  @apply mt-4 text-center text-xs text-gray-400;
-}
-
-/*  Dashboard Page Styles  */
+/* ── Sweep / Shine Animation (Dashboard logo kiosk effect) ───────────── */
 @keyframes sweep {
-  0% { transform: translateX(-100%); }
-  50% { transform: translateX(100%); }
+  0%   { transform: translateX(-100%); }
+  50%  { transform: translateX(100%); }
   100% { transform: translateX(100%); }
 }
 
@@ -567,395 +163,7 @@ input, textarea, select {
   mix-blend-mode: screen;
 }
 
-.dashboard-container {
-  @apply flex min-h-screen;
-}
-
-.dashboard-sidebar {
-  @apply w-64 bg-gradient-to-b from-purple-600 to-pink-400 text-white flex flex-col;
-}
-
-.dashboard-sidebar-header {
-  @apply p-6 border-b border-white border-opacity-20;
-}
-
-.dashboard-logo-container {
-  @apply flex items-center justify-center mb-2;
-}
-
-.dashboard-logo {
-  @apply w-32 h-32 object-contain drop-shadow-xl;
-}
-
-.dashboard-logo-title {
-  @apply text-xl font-bold text-center;
-}
-
-.dashboard-profile-section {
-  @apply p-6 border-b border-white border-opacity-20;
-}
-
-.dashboard-profile-content {
-  @apply flex items-center space-x-3;
-}
-
-.dashboard-profile-avatar {
-  @apply w-12 h-12 rounded-full bg-white bg-opacity-30 flex items-center justify-center text-2xl overflow-hidden;
-}
-
-.dashboard-profile-image {
-  @apply w-full h-full object-cover;
-}
-
-.dashboard-profile-info {
-  @apply flex-1;
-}
-
-.dashboard-profile-label {
-  @apply text-sm;
-}
-
-.dashboard-profile-name {
-  @apply font-bold;
-}
-
-.dashboard-nav {
-  @apply flex-1 p-4 overflow-y-auto;
-  min-height: 0;
-}
-
-.dashboard-nav-item {
-  @apply flex items-center space-x-3 px-4 py-3 rounded-lg;
-}
-
-.dashboard-nav-active {
-  @apply bg-white bg-opacity-20 mb-2;
-}
-
-.dashboard-nav-inactive {
-  @apply hover:bg-white hover:bg-opacity-10 w-full text-left;
-}
-
-.dashboard-nav-logout {
-  @apply cursor-pointer;
-}
-
-.dashboard-footer {
-  @apply p-4 text-xs text-white opacity-75;
-}
-
-.dashboard-footer-label {
-  @apply block;
-}
-
-.dashboard-footer-credit {
-  @apply text-yellow-300;
-}
-
-.dashboard-main {
-  @apply flex-1 bg-gray-100 overflow-auto;
-}
-
-.dashboard-content {
-  @apply p-8;
-}
-
-.dashboard-title {
-  @apply text-4xl font-bold text-purple-900 mb-8 pb-4 border-b-2 border-purple-900;
-}
-
-.dashboard-profile-card {
-  @apply bg-white rounded-lg shadow-lg p-8 mb-8;
-}
-
-.dashboard-profile-heading {
-  @apply text-2xl font-bold text-purple-900 mb-6;
-}
-
-.dashboard-profile-layout {
-  @apply flex flex-col md:flex-row gap-8;
-}
-
-.dashboard-profile-image-section {
-  @apply flex flex-col items-center;
-}
-
-.dashboard-profile-image-container {
-  @apply w-32 h-32 rounded-full bg-gray-200 overflow-hidden mb-4 shadow-lg;
-}
-
-.dashboard-profile-name-display {
-  @apply text-lg font-semibold text-purple-900;
-}
-
-.dashboard-profile-id {
-  @apply text-sm text-gray-600;
-}
-
-.dashboard-profile-details {
-  @apply flex-1 grid grid-cols-1 md:grid-cols-2 gap-4;
-}
-
-.dashboard-profile-detail {
-  @apply block;
-}
-
-.dashboard-profile-detail-label {
-  @apply text-sm text-gray-500 font-medium;
-}
-
-.dashboard-profile-detail-value {
-  @apply text-base text-gray-900;
-}
-
-.dashboard-stats-card {
-  @apply bg-white rounded-lg shadow-lg p-8;
-}
-
-.dashboard-stats-heading {
-  @apply text-2xl font-bold text-purple-900 mb-6;
-}
-
-.dashboard-stats-table-wrapper {
-  @apply overflow-x-auto;
-}
-
-.dashboard-stats-table {
-  @apply w-full border-collapse;
-}
-
-.dashboard-stats-thead {
-  @apply bg-purple-100;
-}
-
-.dashboard-stats-header-cell {
-  @apply border border-purple-300 px-6 py-3 text-left font-semibold text-purple-900;
-}
-
-.dashboard-stats-header-cell-center {
-  @apply border border-purple-300 px-6 py-3 text-center font-semibold text-purple-900;
-}
-
-.dashboard-stats-row {
-  @apply hover:bg-gray-50;
-}
-
-.dashboard-stats-row-highlight {
-  @apply bg-purple-50 font-bold;
-}
-
-.dashboard-stats-cell {
-  @apply border border-purple-300 px-6 py-4;
-}
-
-.dashboard-stats-cell-label {
-  @apply font-medium text-gray-700;
-}
-
-.dashboard-stats-cell-center {
-  @apply border border-purple-300 px-6 py-4 text-center;
-}
-
-.dashboard-stats-cell-highlight {
-  @apply border border-purple-300 px-6 py-4 font-bold text-gray-900;
-}
-
-.dashboard-stats-total {
-  @apply mt-6 text-center;
-}
-
-.dashboard-stats-total-label {
-  @apply text-lg font-semibold text-purple-900;
-}
-
-.dashboard-stats-total-number {
-  @apply text-2xl;
-}
-
-/*  Component Styles */
-.form-label {
-  @apply block text-sm font-medium text-gray-700 mb-2;
-}
-
-.form-input-wrapper {
-  @apply relative;
-}
-
-.form-input {
-  @apply w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none;
-}
-
-.form-input-icon {
-  @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400;
-}
-
-.form-select {
-  @apply w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-600 focus:border-transparent outline-none appearance-none bg-white;
-}
-
-.btn {
-  @apply inline-flex items-center justify-center rounded-lg font-medium transition duration-300;
-}
-
-.btn-primary {
-  @apply text-white;
-  background-image: linear-gradient(to right, #1e3bdb, #4f62ff);
-}
-.btn-primary:hover {
-  background-image: linear-gradient(to right, #1830c4, #3d50ee);
-}
-
-.btn-secondary {
-  @apply bg-white border-2 border-purple-600 text-purple-600 hover:bg-purple-50;
-}
-
-.btn-lg {
-  @apply py-3 px-6;
-}
-
-.btn-md {
-  @apply py-2 px-4;
-}
-
-.btn-sm {
-  @apply py-1 px-2;
-}
-
-.btn-full {
-  @apply w-full;
-}
-
-.card {
-  @apply bg-white rounded-lg shadow-lg;
-}
-
-.card-lg {
-  @apply p-8;
-}
-
-.card-md {
-  @apply p-6;
-}
-
-.card-sm {
-  @apply p-4;
-}
-
-.progress-bar {
-  @apply flex items-center justify-center gap-2;
-}
-
-.progress-item {
-  @apply w-16 h-1 rounded;
-}
-
-.progress-active {
-  @apply bg-purple-600;
-}
-
-.progress-inactive {
-  @apply bg-gray-300;
-}
-
-.tabs-container {
-  @apply flex border-b border-gray-200;
-}
-
-.tabs-item {
-  @apply flex-1 py-3 px-4 text-center font-medium cursor-pointer;
-}
-
-.tabs-item-active {
-  @apply border-b-2 border-purple-600 text-purple-600;
-}
-
-.tabs-item-inactive {
-  @apply text-gray-500 hover:text-gray-700;
-}
-
-.text-heading-lg {
-  @apply text-4xl font-bold;
-}
-
-.text-heading-md {
-  @apply text-2xl font-bold;
-}
-
-.text-heading-sm {
-  @apply text-lg font-bold;
-}
-
-.text-body-lg {
-  @apply text-base;
-}
-
-.text-body-md {
-  @apply text-sm;
-}
-
-.text-body-sm {
-  @apply text-xs;
-}
-
-.text-primary {
-  @apply text-purple-900;
-}
-
-.text-secondary {
-  @apply text-gray-600;
-}
-
-.text-muted {
-  @apply text-gray-500;
-}
-
-.text-light {
-  @apply text-white;
-}
-
-.bg-primary {
-  @apply bg-purple-600;
-}
-
-.bg-secondary {
-  @apply bg-pink-500;
-}
-
-.bg-light {
-  @apply bg-gray-50;
-}
-
-.bg-white-panel {
-  @apply bg-white;
-}
-
-.section-spacing {
-  @apply mb-8;
-}
-
-.item-spacing {
-  @apply mb-4;
-}
-
-.shadow-sm {
-  @apply shadow;
-}
-
-.shadow-md {
-  @apply shadow-lg;
-}
-
-.shadow-lg {
-  @apply shadow-2xl;
-}
-
-.border-light {
-  @apply border border-gray-300;
-}
-
-.border-purple {
-  @apply border border-purple-300;
-}
+/* ── Progress Bar (Registration multi-step) ──────────────────────────── */
 .progress-bar-container {
   width: 100%;
   height: 4px;
@@ -971,7 +179,7 @@ input, textarea, select {
   transition: width 0.3s ease;
 }
 
-/* Modal Animations */
+/* ── Modal Bounce Animation ──────────────────────────────────────────── */
 .modal-bounce-enter-active {
   animation: modal-bounce-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -981,28 +189,16 @@ input, textarea, select {
 }
 
 @keyframes modal-bounce-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+  0%   { opacity: 0; transform: scale(0.9); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 @keyframes modal-bounce-out {
-  0% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(0.9);
-  }
+  0%   { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.9); }
 }
 
-/* Base Fade Animation */
+/* ── Base Fade Animation ─────────────────────────────────────────────── */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.3s ease;
 }
@@ -1011,7 +207,7 @@ input, textarea, select {
   opacity: 0;
 }
 
-/* Help Modal — backdrop fade + card slides up (mobile) / scales (desktop) */
+/* ── Help Modal ──────────────────────────────────────────────────────── */
 .help-modal-enter-active,
 .help-modal-leave-active {
   transition: opacity 0.28s ease;
@@ -1039,7 +235,7 @@ input, textarea, select {
   }
 }
 
-/* Help Modal Tab — fade + subtle slide up on enter, fade out on leave */
+/* ── Help Modal Tab ──────────────────────────────────────────────────── */
 .help-tab-enter-active {
   transition: opacity 0.2s ease-out, transform 0.22s ease-out;
 }
@@ -1055,7 +251,7 @@ input, textarea, select {
   transform: translateY(-6px);
 }
 
-/* Dev Modal — same sheet animation */
+/* ── Developer Modal ─────────────────────────────────────────────────── */
 .dev-modal-enter-active,
 .dev-modal-leave-active {
   transition: opacity 0.28s ease;
@@ -1083,24 +279,17 @@ input, textarea, select {
   }
 }
 
-/* Scale In Animation for Modals */
+/* ── Scale-In Animation ──────────────────────────────────────────────── */
 @keyframes scale-in {
-  0% {
-    transform: scale(0.8);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
+  0%   { transform: scale(0.8); opacity: 0; }
+  100% { transform: scale(1);   opacity: 1; }
 }
 
 .animate-scale-in {
   animation: scale-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* Mobile Menu Animations */
-
+/* ── Mobile Menu Slide-In ────────────────────────────────────────────── */
 .slide-in-enter-active, .slide-in-leave-active {
   transition: transform 0.3s ease;
 }
@@ -1113,7 +302,7 @@ input, textarea, select {
   transform: translateX(-100%);
 }
 
-/* Slide Up Animation for Toast Notifications */
+/* ── Toast Slide-Up ──────────────────────────────────────────────────── */
 .slide-up-enter-active, .slide-up-leave-active {
   transition: all 0.3s ease;
 }
@@ -1128,7 +317,7 @@ input, textarea, select {
   transform: translateY(20px);
 }
 
-/* Slide Down Animation for Check-in/Check-out Cards */
+/* ── Check-In Card Slide-Down ────────────────────────────────────────── */
 .slide-down-enter-active {
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -1147,43 +336,32 @@ input, textarea, select {
   transform: translateY(-20px) scale(0.98);
 }
 
-/* Password Visibility Toggle Animation */
+/* ── Password Visibility Toggle ──────────────────────────────────────── */
 @keyframes slash {
-  0% {
-    transform: rotate(0deg) scaleX(1);
-  }
-  50% {
-    transform: rotate(-15deg) scaleX(0.95);
-  }
-  100% {
-    transform: rotate(0deg) scaleX(1);
-  }
+  0%   { transform: rotate(0deg) scaleX(1); }
+  50%  { transform: rotate(-15deg) scaleX(0.95); }
+  100% { transform: rotate(0deg) scaleX(1); }
 }
 
 .animate-slash {
   animation: slash 0.4s ease-in-out;
 }
 
-/* Wipe Animation for Visibility Icon */
 @keyframes wipe {
-  0% {
-    clip-path: inset(0 100% 0 0);
-  }
-  100% {
-    clip-path: inset(0 0 0 0);
-  }
+  0%   { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0 0 0); }
 }
 
 .animate-wipe {
   animation: wipe 0.4s ease-in-out;
 }
 
-/* Gradient Icon for Contact Modal */
+/* ── Gradient Icon ───────────────────────────────────────────────────── */
 .gradient-icon {
   background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
 }
 
-/* Masked icon helper for recoloring SVG icons like register_user.svg */
+/* ── SVG Icon Mask Helper ────────────────────────────────────────────── */
 .icon-mask {
   display: inline-block;
   width: 1.25rem;
@@ -1195,7 +373,6 @@ input, textarea, select {
   flex-shrink: 0;
 }
 
-/* Allow Tailwind w-* and h-* to override .icon-mask size */
 .icon-mask.w-5 {
   width: 1.25rem;
   height: 1.25rem;
@@ -1206,7 +383,7 @@ input, textarea, select {
   height: 2rem;
 }
 
-/* Hide browser default password visibility toggle */
+/* ── Hide Browser Default Password Visibility Toggle ─────────────────── */
 input[type="password"] {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -1217,7 +394,6 @@ input[type="password"] {
   user-select: text;
 }
 
-/* IE/Edge password visibility toggle */
 input::-ms-reveal,
 input::-ms-clear {
   display: none;
@@ -1233,7 +409,7 @@ input[type="password"]::placeholder {
   pointer-events: none;
 }
 
-/* SSAAM Link Gradient Styling */
+/* ── SSAAM Gradient Link ─────────────────────────────────────────────── */
 .ssaam-link {
   background: linear-gradient(135deg, #9333ea 0%, #ec4899 100%);
   -webkit-background-clip: text;
@@ -1248,7 +424,7 @@ input[type="password"]::placeholder {
   opacity: 0.8;
 }
 
-/* Slide Fade Animation for Expandable Panels */
+/* ── Slide Fade (Expandable Panels) ──────────────────────────────────── */
 .slide-fade-enter-active {
   transition: all 0.3s ease-out;
 }
@@ -1269,7 +445,7 @@ input[type="password"]::placeholder {
   transform: translateY(-10px);
 }
 
-/* Attendance Event Card Press Animation */
+/* ── Attendance Event Card ───────────────────────────────────────────── */
 .attendance-event-card {
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   -webkit-tap-highlight-color: transparent;
@@ -1291,7 +467,7 @@ input[type="password"]::placeholder {
   }
 }
 
-/* Global Web Scrollbar */
+/* ── Global Web Scrollbar ────────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 7px;
   height: 7px;
@@ -1314,7 +490,7 @@ input[type="password"]::placeholder {
   scrollbar-color: #1e3bdb #f1f5f9;
 }
 
-/* Developers Modal Scrollbar */
+/* ── Developer Modal Scrollbar ───────────────────────────────────────── */
 .dev-modal-scroll::-webkit-scrollbar {
   width: 6px;
 }
@@ -1333,7 +509,7 @@ input[type="password"]::placeholder {
   scrollbar-color: #c0c0c0 #f1f5f9;
 }
 
-/* ── SSAAM Check-In Button ──────────────────────────────────── */
+/* ── SSAAM Check-In Button Ripple ────────────────────────────────────── */
 .ssaam-checkin-btn {
   position: relative;
   overflow: hidden;
@@ -1359,20 +535,12 @@ input[type="password"]::placeholder {
    SSAAM — shared list & panel transitions (Contributions, Manage, RFID)
    ========================================================================== */
 
-/* Per-row staggered slide-in. Apply via class="ssaam-row-anim" + inline
+/* Per-row staggered slide-in. Apply via class="ssaam-row-anim" and
    :style="{ animationDelay: (idx * 35) + 'ms' }" on each v-for child. */
 @keyframes ssaam-row-slide-in {
-  0% {
-    opacity: 0;
-    transform: translateX(-18px) translateY(2px);
-  }
-  60% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: translateX(0) translateY(0);
-  }
+  0%  { opacity: 0; transform: translateX(-18px) translateY(2px); }
+  60% { opacity: 1; }
+  100%{ opacity: 1; transform: translateX(0) translateY(0); }
 }
 
 .ssaam-row-anim {
@@ -1386,7 +554,7 @@ input[type="password"]::placeholder {
   }
 }
 
-/* Statistics card slide-down / slide-up */
+/* ── Statistics Card Expand/Collapse ─────────────────────────────────── */
 .ssaam-stats-enter-active,
 .ssaam-stats-leave-active {
   transition: max-height 360ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -1407,7 +575,7 @@ input[type="password"]::placeholder {
   transform: translateY(0);
 }
 
-/* RFID list expand/collapse panel */
+/* ── RFID List Expand/Collapse Panel ─────────────────────────────────── */
 .ssaam-rfid-list-enter-active,
 .ssaam-rfid-list-leave-active {
   transition: max-height 380ms cubic-bezier(0.16, 1, 0.3, 1),
@@ -1428,8 +596,7 @@ input[type="password"]::placeholder {
   transform: translateY(0);
 }
 
-/* Modal backdrop fade — pair with <transition name="ssaam-backdrop"> on the
-   outer fixed inset-0 div to make modal opens/closes feel less abrupt. */
+/* ── Modal Backdrop Fade ─────────────────────────────────────────────── */
 .ssaam-backdrop-enter-active,
 .ssaam-backdrop-leave-active {
   transition: opacity 220ms ease;
@@ -1440,10 +607,9 @@ input[type="password"]::placeholder {
 }
 
 /* ============================================================
-   Top-center "check-in" / "check-out" toast.
-   Mounted via <teleport to="body"> so it always slides down from
-   the top of the viewport regardless of scroll position. The
-   notification stays visible for ~3s then slides back up.
+   Top-centre check-in / check-out toast.
+   Mounted via <teleport to="body"> so it always slides down
+   from the top of the viewport regardless of scroll position.
    ============================================================ */
 .ssaam-toast-wrap {
   position: fixed;
