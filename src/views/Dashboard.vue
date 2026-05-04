@@ -973,7 +973,7 @@
     </transition>
 
     <!-- Main Content Area -->
-    <div ref="mainContentEl" class="flex-1 bg-slate-50 order-2 md:order-2 min-w-0 md:h-screen md:overflow-y-auto">
+    <div ref="mainContentEl" class="flex-1 bg-slate-50 order-2 md:order-2 min-w-0">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
@@ -8093,14 +8093,14 @@ const refreshAttendanceSection = async () => {
 const nextAttendancePage = () => {
   if (attendanceCurrentPage.value < attendanceTotalPages.value) {
     attendanceCurrentPage.value++
-    if (mainContentEl.value) mainContentEl.value.scrollTop = 0
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }
 }
 
 const prevAttendancePage = () => {
   if (attendanceCurrentPage.value > 1) {
     attendanceCurrentPage.value--
-    if (mainContentEl.value) mainContentEl.value.scrollTop = 0
+    window.scrollTo({ top: 0, behavior: 'instant' })
   }
 }
 
@@ -12700,7 +12700,7 @@ watch(
 // Persist active page across browser refreshes
 watch(currentPage, (newPage) => {
   sessionStorage.setItem('ssaam_current_page', newPage)
-  if (mainContentEl.value) mainContentEl.value.scrollTop = 0
+  window.scrollTo({ top: 0, behavior: 'instant' })
 
   // Start session-settings polling when user is on the attendance page in user view
   // so admin check-in/check-out toggles are reflected without a manual refresh.
@@ -19798,17 +19798,11 @@ onUnmounted(() => {
   overscroll-behavior: none;
 }
 
-/* Mobile: disable nested scrollbars, allow natural page scrolling */
+/* Mobile: disable nested scroll containers so body scroll is used throughout */
 @media (max-width: 767px) {
-  [class*="overflow-y-auto"]:not(.sidebar-scroll):not(.dev-modal-scroll):not(.fullscreen-scroll):not(.help-modal-scroll):not(.main-scroll-area) {
+  [class*="overflow-y-auto"]:not(.sidebar-scroll):not(.dev-modal-scroll):not(.fullscreen-scroll):not(.help-modal-scroll) {
     overflow-y: visible !important;
   }
-}
-
-/* Main content scroll area — touch-scroll enabled on mobile */
-.main-scroll-area {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
 }
 
 *::-webkit-scrollbar {
