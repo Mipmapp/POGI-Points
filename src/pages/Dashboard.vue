@@ -5492,7 +5492,7 @@
             class="hidden" 
           />
           <p v-if="editImageUploading" class="text-xs text-blue-600 mt-3 font-medium">Uploading...</p>
-          <div v-if="editingUser.image && editingUser.image.includes('imgbb')" class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div v-if="editingUser.image && editingUser.image.startsWith('http')" class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <p class="text-xs font-medium text-gray-700 mb-1">Photo URL:</p>
             <a :href="editingUser.image" target="_blank" class="text-xs text-blue-600 hover:text-blue-800 underline break-all font-medium">{{ editingUser.image }}</a>
           </div>
@@ -11110,16 +11110,6 @@ const likeInProgress = ref({})
 const LIKE_COOLDOWN_MS = 2000
 
 
-
-// ImgBB API keys for image uploads
-const imgbbApiKeys = [
-  "b6a37178abd163036357a7ba35fd0364",
-  "3b523af3b0ffb526efddfb51b8928581"
-]
-
-const getRandomApiKey = () => {
-  return imgbbApiKeys[Math.floor(Math.random() * imgbbApiKeys.length)]
-}
 
 // Like rate limiting with warning and ban
 const LIKE_WARNING_THRESHOLD = 20
@@ -18571,11 +18561,11 @@ const saveEditedNotification = async () => {
     if (editNotificationImageBase64.value) {
       // new file image selected
       showNotification('Uploading image...', 'info')
-      const imgbbResult = await uploadToImgbb(editNotificationImageBase64.value)
-      if (imgbbResult.success) {
-        payload.image_url = imgbbResult.url
+      const uploadResult = await uploadImage(editNotificationImageBase64.value)
+      if (uploadResult.success) {
+        payload.image_url = uploadResult.url
       } else {
-        showNotification('Image upload failed: ' + imgbbResult.error, 'error')
+        showNotification('Image upload failed: ' + uploadResult.error, 'error')
         savingEditedNotification.value = false
         uploadingEditImage.value = false
         return
@@ -18745,25 +18735,20 @@ const formatMessageWithLinks = (text) => {
   return finalHtml
 }
 
-const uploadToImgbb = async (base64Image) => {
+const uploadImage = async (base64Image) => {
   try {
-    const base64Data = base64Image.includes(',') ? base64Image.split(',')[1] : base64Image
-    const formData = new FormData()
-    formData.append('key', getRandomApiKey())
-    formData.append('image', base64Data)
-    
-    const response = await fetch('https://api.imgbb.com/1/upload', {
+    const response = await fetch(buildAPIUrl('/apis/upload-image'), {
       method: 'POST',
-      body: formData
+      headers: getFetchHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ image: base64Image })
     })
-    
     const data = await response.json()
     if (data.success) {
-      return { success: true, url: data.data.url }
+      return { success: true, url: data.url }
     }
-    return { success: false, error: data.error?.message || 'Upload failed' }
+    return { success: false, error: data.message || 'Upload failed' }
   } catch (error) {
-    console.error('ImgBB upload error:', error)
+    console.error('Image upload error:', error)
     return { success: false, error: error.message }
   }
 }
@@ -18783,14 +18768,14 @@ const postNotification = async () => {
       priority: 'normal'
     }
     
-    // If base64 image is selected, upload to ImgBB first then use URL
+    // If base64 image is selected, upload to Cloudinary first then use URL
     if (notificationImageBase64.value) {
       showNotification('Uploading image...', 'info')
-      const imgbbResult = await uploadToImgbb(notificationImageBase64.value)
-      if (imgbbResult.success) {
-        payload.image_url = imgbbResult.url
+      const uploadResult = await uploadImage(notificationImageBase64.value)
+      if (uploadResult.success) {
+        payload.image_url = uploadResult.url
       } else {
-        showNotification('Image upload failed: ' + imgbbResult.error, 'error')
+        showNotification('Image upload failed: ' + uploadResult.error, 'error')
         postingNotification.value = false
         uploadingImage.value = false
         return

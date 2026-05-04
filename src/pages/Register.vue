@@ -1047,15 +1047,6 @@ const chooseProgram = (p) => {
 const isUploading = ref(false)
 const previousStudentIdLength = ref(0)
 
-const imgbbApiKeys = [
-  "b6a37178abd163036357a7ba35fd0364",
-  "3b523af3b0ffb526efddfb51b8928581"
-]
-
-const getRandomApiKey = () => {
-  return imgbbApiKeys[Math.floor(Math.random() * imgbbApiKeys.length)]
-}
-
 const formatStudentId = (value) => {
   let input = value.toUpperCase()
   let cleaned = input.replace(/[^0-9A-Z-]/g, '')
@@ -1177,7 +1168,7 @@ const handleImageUpload = async (event) => {
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const res = await fetch("https://ssaam.vercel.app/apis/upload-image", {
+        const res = await fetch(buildAPIUrl("/apis/upload-image"), {
           method: "POST",
           headers: {
             'Content-Type': 'application/json'
