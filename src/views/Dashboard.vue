@@ -973,7 +973,7 @@
     </transition>
 
     <!-- Main Content Area -->
-    <div class="flex-1 bg-slate-50 overflow-x-hidden order-2 md:order-2">
+    <div class="flex-1 bg-slate-50 overflow-x-hidden overflow-y-auto main-scroll-area order-2 md:order-2">
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
@@ -19850,9 +19850,15 @@ onUnmounted(() => {
 
 /* Mobile: disable nested scrollbars, allow natural page scrolling */
 @media (max-width: 767px) {
-  [class*="overflow-y-auto"]:not(.sidebar-scroll):not(.dev-modal-scroll):not(.fullscreen-scroll):not(.help-modal-scroll) {
+  [class*="overflow-y-auto"]:not(.sidebar-scroll):not(.dev-modal-scroll):not(.fullscreen-scroll):not(.help-modal-scroll):not(.main-scroll-area) {
     overflow-y: visible !important;
   }
+}
+
+/* Main content scroll area — touch-scroll enabled on mobile */
+.main-scroll-area {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 *::-webkit-scrollbar {
