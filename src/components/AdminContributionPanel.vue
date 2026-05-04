@@ -175,20 +175,20 @@
           <!-- Viewport: overflow-hidden clips side cards cleanly, no fades needed -->
           <div class="relative w-full overflow-hidden rounded-3xl" style="min-height: 310px;">
 
-            <!-- Left arrow -->
+            <!-- Left arrow — desktop only, floats over carousel sides -->
             <button
               @click="prevCarousel"
               :disabled="displayedEvents.length <= 1"
-              class="absolute left-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg flex items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-purple-100 transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
+              class="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-purple-100 transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
             </button>
 
-            <!-- Right arrow -->
+            <!-- Right arrow — desktop only -->
             <button
               @click="nextCarousel"
               :disabled="displayedEvents.length <= 1"
-              class="absolute right-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg flex items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-purple-100 transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
+              class="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-purple-100 transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </button>
@@ -302,6 +302,27 @@
                 </div>
               </div>
             </div>
+          </div>
+
+          <!-- Mobile prev/next row — shown only on small screens, sits below the card -->
+          <div class="flex sm:hidden items-center justify-between w-full px-2 -mt-1">
+            <button
+              @click="prevCarousel"
+              :disabled="displayedEvents.length <= 1"
+              class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-200 shadow text-gray-500 text-xs font-semibold hover:text-purple-600 hover:border-purple-300 transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              Prev
+            </button>
+            <span class="text-xs text-gray-400 font-medium">{{ carouselIndex + 1 }} / {{ displayedEvents.length }}</span>
+            <button
+              @click="nextCarousel"
+              :disabled="displayedEvents.length <= 1"
+              class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-200 shadow text-gray-500 text-xs font-semibold hover:text-purple-600 hover:border-purple-300 transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
+            >
+              Next
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </button>
           </div>
 
           <!-- Dot indicators -->
