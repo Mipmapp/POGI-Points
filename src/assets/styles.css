@@ -198,6 +198,15 @@ input, textarea, select {
   100% { opacity: 0; transform: scale(0.9); }
 }
 
+/* ── Modal Scroll Lock ───────────────────────────────────────────────── */
+/* Applied to <body> when any modal is open to prevent background scrolling */
+body.modal-scroll-lock {
+  overflow: hidden;
+  /* Preserve layout width so page doesn't shift when scrollbar disappears */
+  padding-right: var(--scrollbar-width, 0px);
+  touch-action: none;
+}
+
 /* ── Base Fade Animation ─────────────────────────────────────────────── */
 .fade-enter-active, .fade-leave-active {
   transition: opacity 0.3s ease;

@@ -7808,7 +7808,7 @@
           </div>
           <!-- Modal body (scrollable) -->
           <div class="relative flex-1 min-h-0 overflow-hidden">
-          <div ref="termsBody" @scroll="onTermsScroll" class="overflow-y-auto h-full p-4 sm:p-6 md:p-8 terms-modal-scroll">
+          <div ref="termsBody" @scroll="onTermsScroll" class="overflow-y-auto h-full p-4 sm:p-6 md:p-8 terms-modal-scroll overscroll-contain">
             <p class="text-xs sm:text-sm text-gray-600 mb-4 sm:mb-6 leading-relaxed">
               By using SSAAM, you agree to the following terms which govern attendance recording, financial contributions, and your personal data within the JRMSU SSAAM system. Please read them carefully — continued use of the system constitutes acceptance.
             </p>
@@ -9438,14 +9438,29 @@ const showTermsModal = ref(false)
 const termsBody = ref(null)
 const termsAtBottom = ref(false)
 
+// Lock background scroll when modal is open; restore when it closes
+const lockBodyScroll = () => {
+  // Measure scrollbar width before hiding to prevent layout shift
+  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
+  document.documentElement.style.setProperty('--scrollbar-width', `${scrollbarWidth}px`)
+  document.body.classList.add('modal-scroll-lock')
+}
+const unlockBodyScroll = () => {
+  document.body.classList.remove('modal-scroll-lock')
+  document.documentElement.style.removeProperty('--scrollbar-width')
+}
+
 // Reset scroll state every time the modal opens so the button always appears
 watch(showTermsModal, (open) => {
   if (open) {
+    lockBodyScroll()
     termsAtBottom.value = false
     // After Vue renders the modal, scroll back to top
     nextTick(() => {
       if (termsBody.value) termsBody.value.scrollTop = 0
     })
+  } else {
+    unlockBodyScroll()
   }
 })
 
@@ -13122,6 +13137,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  // Safety net: always restore body scroll if component unmounts while modal is open
+  unlockBodyScroll()
   stopStatsAutoRefresh()
   stopLogoFlipAnimation()
   stopSidebarLogoFlipAnimation()
