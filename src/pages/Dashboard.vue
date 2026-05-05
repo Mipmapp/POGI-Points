@@ -2,7 +2,10 @@
   <ProgrammerLoadingEffect :visible="isPageLoading" message="AUTHENTICATING" :theme="userDepartment ? userDepartment.label : ''" />
   <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" :theme="userDepartment ? userDepartment.label : ''" />
   <SessionExpiredModal :visible="showSessionExpiredModal" @logout="confirmLogout" />
-  
+
+  <!-- Welcome + T&C Modal (shown once per login session) -->
+  <WelcomeModal :visible="showWelcomeModal" @agreed="onWelcomeAgreed" />
+
   <!-- Contributions Modal (Treasurer Only) -->
   <ContributionsModal
     :visible="showContributionsModal"
@@ -7908,6 +7911,7 @@ import { FastAverageColor } from 'fast-average-color' // [AI WARNING] Possibly u
 import * as XLSX from 'xlsx'
 const fac = new FastAverageColor()
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
+import WelcomeModal from '../components/WelcomeModal.vue'
 // [AI WARNING] AnnouncementPopup import removed — component was imported but never used in the template.
 import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 import SessionExpiredModal from '../components/SessionExpiredModal.vue'
@@ -9391,6 +9395,11 @@ const handlePaymentUpdated = (data) => {
 
 const profileImageLoading = ref(false)
 const sidebarImageLoading = ref(false)
+const showWelcomeModal = ref(false)
+const onWelcomeAgreed = () => {
+  sessionStorage.setItem('ssaam_welcome_shown', '1')
+  showWelcomeModal.value = false
+}
 const showDevelopersPopup = ref(false)
 const showLogoutConfirmation = ref(false)
 const showSessionExpiredModal = ref(false)
@@ -13057,7 +13066,12 @@ onMounted(async () => {
     return
   }
   currentUser.value = user
-  
+
+  // Show welcome + T&C modal on every new login session (clears when browser/tab closes)
+  if (!sessionStorage.getItem('ssaam_welcome_shown')) {
+    showWelcomeModal.value = true
+  }
+
   // Check if user needs to update password (still using last name as password)
   if (user.requiresPasswordUpdate && !user.isMaster && user.role !== 'admin') {
     showPasswordUpdateWarning.value = true
