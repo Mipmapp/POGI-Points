@@ -5278,7 +5278,7 @@
           </div>
         </div>
 
-        <div v-if="currentPage === 'dashboard'" class="mt-6 pb-2 text-center">
+        <div v-if="currentPage === 'dashboard'" class="mt-6 pb-2 flex items-center justify-center gap-3">
           <button
             type="button"
             @click="showTermsModal = true; tcOpenSection = 0"
@@ -5286,6 +5286,15 @@
           >
             <svg class="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <span class="underline underline-offset-2">Terms &amp; Conditions</span>
+          </button>
+          <span class="text-gray-200 text-xs select-none">·</span>
+          <button
+            type="button"
+            @click="showPrivacyModal = true; privacyOpenSection = 0"
+            class="inline-flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-gray-600 transition-colors group"
+          >
+            <svg class="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <span class="underline underline-offset-2">Privacy Policy</span>
           </button>
         </div>
 
@@ -5371,19 +5380,183 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-5 py-3.5 flex items-center justify-between gap-3">
-          <p class="text-[11px] text-gray-400 leading-tight">
-            Last updated:<br class="sm:hidden">
-            <span class="font-semibold text-gray-600"> May 1, 2026</span>
+        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 space-y-2.5">
+          <!-- Prev / dots / Next row -->
+          <div class="flex items-center justify-between gap-2">
+            <button
+              @click="tcOpenSection = tcOpenSection > 0 ? tcOpenSection - 1 : 0"
+              :disabled="tcOpenSection === 0 || tcOpenSection === null"
+              class="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              Prev
+            </button>
+            <div class="flex items-center gap-1">
+              <button
+                v-for="(_, i) in tcSections"
+                :key="i"
+                @click="tcOpenSection = i"
+                :class="['h-1.5 rounded-full transition-all duration-200', tcOpenSection === i ? 'w-4 bg-indigo-500' : 'w-1.5 bg-gray-300 hover:bg-gray-400']"
+              ></button>
+            </div>
+            <button
+              @click="tcOpenSection = tcOpenSection < tcSections.length - 1 ? tcOpenSection + 1 : tcSections.length - 1"
+              :disabled="tcOpenSection === tcSections.length - 1"
+              class="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
+            >
+              Next
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+          <!-- Last updated + keyboard hint + close -->
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2 min-w-0">
+              <p class="text-[10px] text-gray-400 whitespace-nowrap">Last updated: <span class="font-semibold text-gray-500">May 1, 2026</span></p>
+              <span class="hidden sm:inline-flex items-center gap-0.5 text-[9px] text-gray-300 bg-gray-50 border border-gray-100 rounded-lg px-1.5 py-0.5 whitespace-nowrap">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                arrow keys
+              </span>
+            </div>
+            <button
+              @click="showTermsModal = false"
+              :class="['flex-shrink-0 px-4 py-1.5 rounded-xl font-bold text-white text-xs tracking-wide transition-all hover:-translate-y-0.5 active:scale-95 shadow-sm bg-gradient-to-r',
+                isCOE ? 'from-orange-600 to-amber-500'
+                : isSOM ? 'from-green-600 to-emerald-500'
+                : isCNAHS ? 'from-emerald-600 to-teal-500'
+                : 'from-violet-600 to-indigo-600']"
+            >Close</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </Transition>
+
+  <!-- Privacy Policy Modal -->
+  <Transition name="fade">
+    <div
+      v-if="showPrivacyModal"
+      class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4"
+      style="background: rgba(5,30,30,0.65); backdrop-filter: blur(6px);"
+      @click.self="showPrivacyModal = false"
+    >
+      <div class="bg-white w-full sm:max-w-2xl sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl flex flex-col" style="max-height: 92vh;">
+
+        <!-- Header -->
+        <div class="relative bg-gradient-to-br from-teal-700 via-cyan-700 to-emerald-700 px-5 pt-5 pb-4 flex-shrink-0 overflow-hidden">
+          <div class="pointer-events-none absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/5"></div>
+          <div class="pointer-events-none absolute -bottom-6 left-10 w-20 h-20 rounded-full bg-white/5"></div>
+          <div class="pointer-events-none absolute top-1/2 left-1/3 w-10 h-10 rounded-full bg-white/5"></div>
+          <div class="relative flex items-center gap-3">
+            <div class="w-11 h-11 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center flex-shrink-0 ring-1 ring-white/20">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h2 class="text-white text-base sm:text-lg font-black leading-tight tracking-tight">Privacy Policy</h2>
+              <p class="text-white/60 text-[10px] sm:text-xs mt-0.5 truncate">SSAAM · Jose Rizal Memorial State University</p>
+            </div>
+            <button
+              @click="showPrivacyModal = false"
+              class="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-all active:scale-90 ring-1 ring-white/20"
+              aria-label="Close"
+            >
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <p class="relative text-white/65 text-[11px] mt-3 leading-relaxed">
+            SSAAM is committed to protecting your personal data. This policy explains what we collect, how we use it, and your rights under the Philippine Data Privacy Act of 2012 (R.A. 10173).
           </p>
-          <button
-            @click="showTermsModal = false"
-            :class="['px-5 py-2 rounded-xl font-bold text-white text-xs tracking-wide transition-all hover:-translate-y-0.5 active:scale-95 shadow-sm bg-gradient-to-r',
-              isCOE ? 'from-orange-600 to-amber-500 hover:from-orange-700'
-              : isSOM ? 'from-green-600 to-emerald-500 hover:from-green-700'
-              : isCNAHS ? 'from-emerald-600 to-teal-500 hover:from-emerald-700'
-              : 'from-violet-600 to-indigo-600 hover:from-violet-700']"
-          >Close</button>
+        </div>
+
+        <!-- Accordion Body -->
+        <div class="overflow-y-auto flex-1 bg-gray-50/80">
+          <div class="p-3 sm:p-4 space-y-2">
+            <div
+              v-for="(section, idx) in privacySections"
+              :key="idx"
+              class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition-shadow hover:shadow-md"
+            >
+              <button
+                @click="privacyOpenSection = privacyOpenSection === idx ? null : idx"
+                class="w-full flex items-center gap-3 px-4 py-3 sm:py-3.5 text-left focus:outline-none"
+              >
+                <div :class="['w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-black shadow-sm', section.color]">
+                  {{ idx + 1 }}
+                </div>
+                <span class="flex-1 font-bold text-gray-800 text-sm leading-tight">{{ section.title }}</span>
+                <svg
+                  :class="['w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0', privacyOpenSection === idx ? 'rotate-180 text-teal-500' : '']"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <Transition name="tc-accordion">
+                <div v-if="privacyOpenSection === idx" class="px-4 pb-4">
+                  <div class="h-px bg-gray-100 mb-3"></div>
+                  <ul class="space-y-2.5">
+                    <li
+                      v-for="(point, pi) in section.points"
+                      :key="pi"
+                      class="flex gap-2.5 text-xs text-gray-600 leading-relaxed"
+                    >
+                      <span :class="['flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full', section.dot]"></span>
+                      <span v-html="point"></span>
+                    </li>
+                  </ul>
+                </div>
+              </Transition>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 space-y-2.5">
+          <!-- Prev / dots / Next row -->
+          <div class="flex items-center justify-between gap-2">
+            <button
+              @click="privacyOpenSection = privacyOpenSection > 0 ? privacyOpenSection - 1 : 0"
+              :disabled="privacyOpenSection === 0 || privacyOpenSection === null"
+              class="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+              Prev
+            </button>
+            <div class="flex items-center gap-1">
+              <button
+                v-for="(_, i) in privacySections"
+                :key="i"
+                @click="privacyOpenSection = i"
+                :class="['h-1.5 rounded-full transition-all duration-200', privacyOpenSection === i ? 'w-4 bg-teal-500' : 'w-1.5 bg-gray-300 hover:bg-gray-400']"
+              ></button>
+            </div>
+            <button
+              @click="privacyOpenSection = privacyOpenSection < privacySections.length - 1 ? privacyOpenSection + 1 : privacySections.length - 1"
+              :disabled="privacyOpenSection === privacySections.length - 1"
+              class="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
+            >
+              Next
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+            </button>
+          </div>
+          <!-- Last updated + keyboard hint + close -->
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2 min-w-0">
+              <p class="text-[10px] text-gray-400 whitespace-nowrap">Last updated: <span class="font-semibold text-gray-500">May 1, 2026</span></p>
+              <span class="hidden sm:inline-flex items-center gap-0.5 text-[9px] text-gray-300 bg-gray-50 border border-gray-100 rounded-lg px-1.5 py-0.5 whitespace-nowrap">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                arrow keys
+              </span>
+            </div>
+            <button
+              @click="showPrivacyModal = false"
+              :class="['flex-shrink-0 px-4 py-1.5 rounded-xl font-bold text-white text-xs tracking-wide transition-all hover:-translate-y-0.5 active:scale-95 shadow-sm bg-gradient-to-r',
+                isCOE ? 'from-orange-600 to-amber-500'
+                : isSOM ? 'from-green-600 to-emerald-500'
+                : isCNAHS ? 'from-emerald-600 to-teal-500'
+                : 'from-teal-600 to-emerald-600']"
+            >Close</button>
+          </div>
         </div>
 
       </div>
@@ -7596,6 +7769,13 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             View Full Terms &amp; Conditions
           </button>
+          <button
+            @click="showContactModal = false; showPrivacyModal = true; privacyOpenSection = 0"
+            class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-md shadow-teal-200 hover:shadow-lg hover:-translate-y-0.5"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            View Privacy Policy
+          </button>
           <div class="bg-gray-50 rounded-2xl p-3 space-y-2">
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sections covered</p>
             <div class="grid grid-cols-2 gap-1.5">
@@ -9286,6 +9466,118 @@ const tcSections = [
     ],
   },
 ]
+const showPrivacyModal = ref(false)
+const privacyOpenSection = ref(0)
+const privacySections = [
+  {
+    title: 'Data We Collect',
+    color: 'bg-gradient-to-br from-teal-500 to-cyan-600',
+    dot: 'bg-teal-500',
+    points: [
+      'Your <strong>name, student ID, year level, and program/course</strong> for identity and academic matching.',
+      'Your <strong>RFID tag UID</strong> assigned to you by your college for scanner-based check-ins.',
+      'Your <strong>profile photo</strong>, stored securely on Cloudinary and used only for display and optional Face ID enrollment.',
+      'Your <strong>face encoding</strong> (if you opt in to Face ID) — stored in encrypted form, never as a raw image.',
+      '<strong>GPS coordinates</strong> captured only during active check-in windows to validate geofence requirements.',
+      '<strong>Login timestamps</strong> and session activity logs for security and audit purposes.',
+    ],
+  },
+  {
+    title: 'How We Use Your Data',
+    color: 'bg-gradient-to-br from-blue-500 to-indigo-600',
+    dot: 'bg-blue-500',
+    points: [
+      'Verifying your identity for attendance recording at JRMSU-sanctioned events via RFID, Face ID, or manual check-in.',
+      'Managing your contribution records, payment statuses, and raffle ticket allocations for your college.',
+      'Displaying your personal attendance history, contribution summary, and raffle results to you and authorized staff.',
+      'Enabling <strong>GPS geofence validation</strong> so on-campus check-ins are accepted only within the defined radius.',
+      'Sending in-app notifications about active events, payment reminders, and system updates.',
+    ],
+  },
+  {
+    title: 'Data Isolation & Access',
+    color: 'bg-gradient-to-br from-emerald-500 to-green-600',
+    dot: 'bg-emerald-500',
+    points: [
+      'Your data is scoped exclusively to your enrolled college (<strong>CCS, COE, SOM, or CNAHS</strong>) — other colleges cannot see your records.',
+      'Role-based access ensures <strong>Students</strong> see only their own data, <strong>Treasurers</strong> see payment info, and <strong>Admins</strong> see college-wide data.',
+      'Co-Admins and Admins from another college are blocked by server-side isolation — this is enforced at the API level, not just the UI.',
+      'Master Admins have cross-college oversight strictly for system health and institutional reporting.',
+    ],
+  },
+  {
+    title: 'Data Retention',
+    color: 'bg-gradient-to-br from-amber-500 to-orange-600',
+    dot: 'bg-amber-500',
+    points: [
+      'Attendance logs and contribution records are retained for the full academic year and may be archived for institutional reporting.',
+      'Profile photos can be updated at any time; previous versions are not retained after replacement.',
+      'Face encoding data can be removed by requesting deletion through your college Admin.',
+      'Admin action audit logs (manual check-ins, role changes, payment reversals) are preserved for accountability and cannot be self-deleted.',
+    ],
+  },
+  {
+    title: 'Your Rights',
+    color: 'bg-gradient-to-br from-violet-500 to-purple-600',
+    dot: 'bg-violet-500',
+    points: [
+      'You may <strong>view the data</strong> SSAAM holds about you by contacting your college Admin.',
+      'You may <strong>request correction</strong> of inaccurate records through the in-app Request feature or directly through your Admin.',
+      'You may <strong>request deletion of your face encoding</strong> at any time; other records are retained per institutional policy.',
+      'These rights are aligned with the <strong>Philippine Data Privacy Act of 2012 (R.A. 10173)</strong> and JRMSU\'s data governance policies.',
+    ],
+  },
+  {
+    title: 'Security & Contact',
+    color: 'bg-gradient-to-br from-rose-500 to-pink-600',
+    dot: 'bg-rose-500',
+    points: [
+      'Passwords are hashed using industry-standard algorithms — plaintext passwords are <strong>never stored</strong>.',
+      'JWT session tokens expire automatically to limit unauthorized access risk.',
+      'All API traffic is encrypted in transit via <strong>HTTPS/TLS</strong>.',
+      'To report a privacy concern or suspected data breach, contact: <strong>ssaamjrmsu@gmail.com</strong>.',
+    ],
+  },
+]
+
+const tcKeyHandler = (e) => {
+  if (!showTermsModal.value) return
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault()
+    const cur = tcOpenSection.value ?? -1
+    tcOpenSection.value = cur < tcSections.length - 1 ? cur + 1 : 0
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault()
+    const cur = tcOpenSection.value ?? 0
+    tcOpenSection.value = cur > 0 ? cur - 1 : tcSections.length - 1
+  } else if (e.key === 'Escape') {
+    showTermsModal.value = false
+  }
+}
+watch(showTermsModal, (open) => {
+  if (open) window.addEventListener('keydown', tcKeyHandler)
+  else window.removeEventListener('keydown', tcKeyHandler)
+})
+
+const ppKeyHandler = (e) => {
+  if (!showPrivacyModal.value) return
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    e.preventDefault()
+    const cur = privacyOpenSection.value ?? -1
+    privacyOpenSection.value = cur < privacySections.length - 1 ? cur + 1 : 0
+  } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    e.preventDefault()
+    const cur = privacyOpenSection.value ?? 0
+    privacyOpenSection.value = cur > 0 ? cur - 1 : privacySections.length - 1
+  } else if (e.key === 'Escape') {
+    showPrivacyModal.value = false
+  }
+}
+watch(showPrivacyModal, (open) => {
+  if (open) window.addEventListener('keydown', ppKeyHandler)
+  else window.removeEventListener('keydown', ppKeyHandler)
+})
+
 const currentPage = ref('dashboard')
 const mainContentEl = ref(null)
 
