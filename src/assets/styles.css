@@ -2,13 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Prevent bounce/overscroll on the document level without breaking iOS Safari */
+/* Prevent pull-to-refresh and overscroll bounce without breaking normal scrolling */
 html, body {
   min-height: 100%;
-  overscroll-behavior: none;
+  /* Covers both axes: disables pull-to-refresh (y) and horizontal swipe-nav (x) */
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: none;
 }
 
-/* App container grows with content — body scroll provides the scrollbar */
+/* App container matches the viewport so the browser never scrolls the document root */
 #app {
   min-height: 100%;
 }
