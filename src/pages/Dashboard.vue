@@ -7760,10 +7760,10 @@
             </div>
             <div class="flex-1 min-w-0 relative">
               <p class="font-black text-sm leading-tight">Terms &amp; Conditions</p>
-              <p class="text-white/70 text-[10px] mt-0.5 leading-snug">By using SSAAM, you agree to the terms governing attendance, contributions, and personal data within JRMSU.</p>
+              <p class="text-white/70 text-[10px] mt-0.5 leading-snug">By using SSAAM, you agree to the terms governing system use, attendance, contributions, data privacy, and account security within JRMSU.</p>
             </div>
           </div>
-          <p class="text-xs text-gray-500 px-0.5 leading-relaxed">These terms cover how SSAAM handles your attendance data, account access, financial contributions, and privacy across all JRMSU colleges.</p>
+          <p class="text-xs text-gray-500 px-0.5 leading-relaxed">These terms cover SSAAM's purpose, how your data is collected and protected, attendance and contribution policies, and your responsibilities as a user across all JRMSU colleges.</p>
           <button
             @click="showContactModal = false; showTermsModal = true; tcOpenSection = 0"
             class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-indigo-200 hover:shadow-lg hover:-translate-y-0.5"
@@ -9410,67 +9410,68 @@ const showTermsModal = ref(false)
 const tcOpenSection = ref(0)
 const tcSections = [
   {
-    title: 'Attendance Recording',
-    color: 'bg-gradient-to-br from-violet-500 to-indigo-600',
-    dot: 'bg-violet-500',
-    points: [
-      'Attendance is recorded through your registered <strong>RFID card</strong>, <strong>Face ID</strong>, or admin manual check-in for officially scheduled events.',
-      'Proxy attendance (scanning for another student) is strictly prohibited and may result in disciplinary action.',
-      'If <strong>GPS geofence</strong> is enabled, you must be physically inside the allowed radius for check-in to be accepted.',
-      'Where Face ID is disabled by the admin, please use the RFID scanner or request manual check-in.',
-    ],
-  },
-  {
-    title: 'Account & Roles',
-    color: 'bg-gradient-to-br from-blue-500 to-cyan-600',
+    title: 'System Overview & Purpose',
+    color: 'bg-gradient-to-br from-blue-500 to-blue-700',
     dot: 'bg-blue-500',
     points: [
-      'Your account is bound to one JRMSU college (<strong>CCS, COE, SOM, CNAHS</strong>) and you may only access data within your college unless granted broader authority.',
-      'Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, and <strong>Admin</strong>, each with clearly scoped permissions.',
-      'You are responsible for safeguarding your password. Sharing credentials or RFID cards is prohibited.',
-      'Admins are required to change default passwords on first login and may be prompted periodically.',
+      '<strong>SSAAM</strong> (Student School Activities Attendance Monitoring) is an official digital platform of <strong>Jose Rizal Memorial State University (JRMSU)</strong>.',
+      'It is designed to record, monitor, and manage student attendance in school activities and events.',
+      'The system is operated by the <strong>College of Computing Studies (CCS) — Creatives Society</strong> and is authorized by JRMSU administration.',
+      'Use of this platform is mandatory for enrolled students who are required to attend official school activities.',
+      'This platform covers all JRMSU colleges including <strong>CCS, COE, SOM, and CNAHS</strong>.',
     ],
   },
   {
-    title: 'Contributions & Raffle Tickets',
-    color: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+    title: 'Data Collection & Privacy',
+    color: 'bg-gradient-to-br from-violet-500 to-violet-700',
+    dot: 'bg-violet-500',
+    points: [
+      'SSAAM collects personal information including your <strong>name, student ID, program, year level, and contact details</strong> as provided during registration.',
+      'Biometric data (<strong>facial recognition descriptors</strong>) may be collected for identity verification during attendance check-in.',
+      'Attendance logs, event participation records, and financial transaction histories are stored in a <strong>secured database</strong>.',
+      'Your data is used solely for attendance monitoring, contribution tracking, and academic reporting within JRMSU.',
+      'SSAAM does not sell, share, or distribute your personal information to third parties without explicit written consent, except as required by university policy or law.',
+      'Data is stored securely on cloud infrastructure and protected by <strong>encryption and access controls</strong>.',
+    ],
+  },
+  {
+    title: 'Attendance Policy',
+    color: 'bg-gradient-to-br from-emerald-500 to-emerald-700',
     dot: 'bg-emerald-500',
     points: [
-      'Contribution amounts, discounts, and payment statuses are managed by your college\'s Admin and Treasurer.',
-      'Payments are recorded in-system and the <strong>Paid Date</strong> is preserved for transparency. Reversals are logged.',
-      'Raffle tickets are issued strictly through admin-approved processes; tampering with records is prohibited.',
-      'Disputes regarding amounts must be raised with your college Admin in writing.',
+      'Attendance records generated through SSAAM are considered <strong>official</strong> and may be used for academic or disciplinary purposes.',
+      'Students are responsible for ensuring their own check-in/check-out is properly recorded for each event they attend.',
+      '<strong>Proxy attendance</strong> — checking in on behalf of another student — is strictly prohibited and may result in disciplinary action.',
+      'RFID-based and Face ID check-ins are the supported verification methods. Technical failures must be reported immediately to the event organizer.',
+      'Disputes regarding attendance records must be raised within <strong>48 hours</strong> of the event through the proper university channels.',
+      'The university reserves the right to adjust or correct attendance records based on verified evidence.',
     ],
   },
   {
-    title: 'Privacy & Data',
-    color: 'bg-gradient-to-br from-rose-500 to-pink-600',
-    dot: 'bg-rose-500',
-    points: [
-      'SSAAM stores your name, student ID, program, year level, RFID tag, and profile photo strictly for academic and event-attendance purposes.',
-      'Student data is isolated per college — one college cannot view another\'s records.',
-      'GPS coordinates captured at check-in are used only to validate the geofence, not for tracking outside event windows.',
-      'You may request review or correction of your records by contacting your college Admin.',
-    ],
-  },
-  {
-    title: 'Acceptable Use',
+    title: 'Financial Contributions',
     color: 'bg-gradient-to-br from-amber-500 to-orange-600',
     dot: 'bg-amber-500',
     points: [
-      'You agree not to bypass authentication, role checks, college isolation, or any system safeguards.',
-      'Automated scraping, scripted abuse, or any activity that disrupts the platform is forbidden.',
-      'Admins must use their tools only for legitimate institutional purposes; misuse may lead to access revocation.',
+      'SSAAM tracks student contribution payments for approved school activities as authorized by university administration.',
+      'All payment records reflected in the system are considered <strong>official receipts</strong> and must be settled through approved channels.',
+      'Students are responsible for verifying that their payment status is correctly reflected in the system.',
+      'Discrepancies in payment records must be reported to the designated <strong>Treasurer or Administrator</strong> within the prescribed period.',
+      'Unauthorized modification of payment records is strictly prohibited and subject to <strong>disciplinary and legal action</strong>.',
+      'Contribution amounts and deadlines are set by university policy and may be updated by authorized administrators.',
     ],
   },
   {
-    title: 'Liability & Updates',
-    color: 'bg-gradient-to-br from-slate-500 to-gray-700',
-    dot: 'bg-slate-500',
+    title: 'User Responsibilities & Account Security',
+    color: 'bg-gradient-to-br from-rose-500 to-rose-700',
+    dot: 'bg-rose-500',
     points: [
-      'SSAAM is provided as-is. JRMSU is not liable for missed events caused by device issues, network outages, or expired RFID cards.',
-      'Features, policies, and these terms may be updated from time to time. Notable changes will be announced in-app.',
-      'Continued use of SSAAM after updates indicates your acceptance of the revised terms.',
+      'You are solely responsible for maintaining the confidentiality of your <strong>account credentials</strong> (Student ID and password).',
+      'Do not share your account access with any other person. Any activity performed under your account is your responsibility.',
+      'You must immediately report any unauthorized access or suspicious activity to the <strong>system administrator</strong>.',
+      'Attempting to access, modify, or interfere with other users\' data or system functionality is strictly prohibited.',
+      'SSAAM reserves the right to <strong>suspend or terminate accounts</strong> found to be in violation of these terms.',
+      'By continuing, you confirm that all registration information you have provided is accurate and truthful.',
+      'These terms may be updated periodically. Continued use of SSAAM constitutes acceptance of any revised terms.',
     ],
   },
 ]
