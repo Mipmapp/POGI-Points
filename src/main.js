@@ -17,13 +17,18 @@ setTimeout(applyTheme, 120)
   }, { passive: true })
 
   document.addEventListener('touchmove', (e) => {
+    // When a modal is open the body already has overflow:hidden — background
+    // can't scroll anyway, so let the modal's inner scroll area handle the
+    // touch freely. Calling preventDefault here would kill modal scrolling.
+    if (document.body.classList.contains('modal-scroll-lock')) return
+
     const dy = e.touches[0].clientY - startY
     // Only block when the document itself is at the very top AND user swipes downward
     if (dy > 0 && window.scrollY === 0) {
       // Make sure the touch target (or any ancestor) is not itself a scrollable element
       const target = e.target
       const isInsideScroller = target.closest(
-        '.overflow-y-auto, .overflow-auto, .overflow-scroll, [data-scroll]'
+        '.modal-inner-scroll, .overflow-y-auto, .overflow-auto, .overflow-scroll, [data-scroll]'
       )
       if (!isInsideScroller) {
         e.preventDefault()

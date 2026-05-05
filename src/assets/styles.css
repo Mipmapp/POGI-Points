@@ -201,12 +201,21 @@ input, textarea, select {
 }
 
 /* ── Modal Scroll Lock ───────────────────────────────────────────────── */
-/* Applied to <body> when any modal is open to prevent background scrolling */
+/* Applied to <body> when any modal is open to prevent background scrolling.
+   touch-action is intentionally NOT set here — setting it on body would be
+   inherited by the modal's inner scroll area and break touch-scrolling inside
+   the modal on iOS/Android. */
 body.modal-scroll-lock {
   overflow: hidden;
   /* Preserve layout width so page doesn't shift when scrollbar disappears */
   padding-right: var(--scrollbar-width, 0px);
-  touch-action: none;
+}
+
+/* Inner scroll container used inside modals */
+.modal-inner-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* smooth momentum scroll on iOS */
+  overscroll-behavior: contain;      /* stop scroll chaining to the backdrop */
 }
 
 /* ── Base Fade Animation ─────────────────────────────────────────────── */

@@ -5332,7 +5332,7 @@
         </div>
 
         <!-- Accordion Body -->
-        <div class="overflow-y-auto flex-1 bg-gray-50/80">
+        <div class="modal-inner-scroll flex-1 bg-gray-50/80">
           <div class="p-3 sm:p-4 space-y-2">
             <div
               v-for="(section, idx) in privacySections"
@@ -9309,8 +9309,13 @@ const ppKeyHandler = (e) => {
   }
 }
 watch(showPrivacyModal, (open) => {
-  if (open) window.addEventListener('keydown', ppKeyHandler)
-  else window.removeEventListener('keydown', ppKeyHandler)
+  if (open) {
+    window.addEventListener('keydown', ppKeyHandler)
+    document.body.classList.add('modal-scroll-lock')
+  } else {
+    window.removeEventListener('keydown', ppKeyHandler)
+    document.body.classList.remove('modal-scroll-lock')
+  }
 })
 
 const currentPage = ref('dashboard')
