@@ -5278,10 +5278,117 @@
           </div>
         </div>
 
+        <div v-if="currentPage === 'dashboard'" class="mt-6 pb-2 text-center">
+          <button
+            type="button"
+            @click="showTermsModal = true; tcOpenSection = 0"
+            class="inline-flex items-center gap-1.5 text-[11px] text-gray-400 hover:text-gray-600 transition-colors group"
+          >
+            <svg class="w-3 h-3 opacity-60 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="underline underline-offset-2">Terms &amp; Conditions</span>
+          </button>
+        </div>
+
       </div>
       </Transition>
     </div>
   </div>
+
+  <!-- Terms & Conditions Modal -->
+  <Transition name="fade">
+    <div
+      v-if="showTermsModal"
+      class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4"
+      style="background: rgba(15,10,40,0.65); backdrop-filter: blur(6px);"
+      @click.self="showTermsModal = false"
+    >
+      <div class="bg-white w-full sm:max-w-2xl sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl flex flex-col" style="max-height: 92vh;">
+
+        <!-- Header -->
+        <div class="relative bg-gradient-to-br from-violet-700 via-indigo-700 to-blue-700 px-5 pt-5 pb-4 flex-shrink-0 overflow-hidden">
+          <div class="pointer-events-none absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/5"></div>
+          <div class="pointer-events-none absolute -bottom-6 left-10 w-20 h-20 rounded-full bg-white/5"></div>
+          <div class="pointer-events-none absolute top-1/2 left-1/3 w-10 h-10 rounded-full bg-white/5"></div>
+          <div class="relative flex items-center gap-3">
+            <div class="w-11 h-11 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center flex-shrink-0 ring-1 ring-white/20">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h2 class="text-white text-base sm:text-lg font-black leading-tight tracking-tight">Terms &amp; Conditions</h2>
+              <p class="text-white/60 text-[10px] sm:text-xs mt-0.5 truncate">SSAAM · Jose Rizal Memorial State University</p>
+            </div>
+            <button
+              @click="showTermsModal = false"
+              class="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-all active:scale-90 ring-1 ring-white/20"
+              aria-label="Close"
+            >
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <p class="relative text-white/65 text-[11px] mt-3 leading-relaxed">
+            By using SSAAM you agree to the following terms governing attendance, financial contributions, and your personal data within JRMSU.
+          </p>
+        </div>
+
+        <!-- Accordion Body -->
+        <div class="overflow-y-auto flex-1 bg-gray-50/80">
+          <div class="p-3 sm:p-4 space-y-2">
+            <div
+              v-for="(section, idx) in tcSections"
+              :key="idx"
+              class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition-shadow hover:shadow-md"
+            >
+              <button
+                @click="tcOpenSection = tcOpenSection === idx ? null : idx"
+                class="w-full flex items-center gap-3 px-4 py-3 sm:py-3.5 text-left focus:outline-none"
+              >
+                <div :class="['w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-black shadow-sm', section.color]">
+                  {{ idx + 1 }}
+                </div>
+                <span class="flex-1 font-bold text-gray-800 text-sm leading-tight">{{ section.title }}</span>
+                <svg
+                  :class="['w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0', tcOpenSection === idx ? 'rotate-180 text-indigo-500' : '']"
+                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <Transition name="tc-accordion">
+                <div v-if="tcOpenSection === idx" class="px-4 pb-4">
+                  <div class="h-px bg-gray-100 mb-3"></div>
+                  <ul class="space-y-2.5">
+                    <li
+                      v-for="(point, pi) in section.points"
+                      :key="pi"
+                      class="flex gap-2.5 text-xs text-gray-600 leading-relaxed"
+                    >
+                      <span :class="['flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full', section.dot]"></span>
+                      <span v-html="point"></span>
+                    </li>
+                  </ul>
+                </div>
+              </Transition>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-5 py-3.5 flex items-center justify-between gap-3">
+          <p class="text-[11px] text-gray-400 leading-tight">
+            Last updated:<br class="sm:hidden">
+            <span class="font-semibold text-gray-600"> May 1, 2026</span>
+          </p>
+          <button
+            @click="showTermsModal = false"
+            :class="['px-5 py-2 rounded-xl font-bold text-white text-xs tracking-wide transition-all hover:-translate-y-0.5 active:scale-95 shadow-sm bg-gradient-to-r',
+              isCOE ? 'from-orange-600 to-amber-500 hover:from-orange-700'
+              : isSOM ? 'from-green-600 to-emerald-500 hover:from-green-700'
+              : isCNAHS ? 'from-emerald-600 to-teal-500 hover:from-emerald-700'
+              : 'from-violet-600 to-indigo-600 hover:from-violet-700']"
+          >Close</button>
+        </div>
+
+      </div>
+    </div>
+  </Transition>
 
   <!-- Edit User Modal -->
   <div v-if="showEditModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -7203,6 +7310,10 @@
                 <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
                 Contact
               </button>
+              <button @click="helpTab = 'terms'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0', helpTab === 'terms' ? 'bg-white text-blue-900' : 'text-white/80 hover:text-white hover:bg-white/10']">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Terms
+              </button>
             </div>
           </div>
         </div>
@@ -7464,6 +7575,37 @@
               <button @click="showDevelopersPopup = true; showContactModal = false" class="mt-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-sm transition hover:shadow-md">View Team →</button>
             </div>
           </div>
+        </div>
+
+        <div v-else-if="helpTab === 'terms'" key="terms" class="space-y-3">
+          <div class="bg-gradient-to-br from-violet-700 via-indigo-700 to-blue-700 rounded-2xl p-4 flex items-center gap-3 text-white overflow-hidden relative">
+            <div class="pointer-events-none absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/5"></div>
+            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+            <div class="flex-1 min-w-0 relative">
+              <p class="font-black text-sm leading-tight">Terms &amp; Conditions</p>
+              <p class="text-white/70 text-[10px] mt-0.5 leading-snug">By using SSAAM, you agree to the terms governing attendance, contributions, and personal data within JRMSU.</p>
+            </div>
+          </div>
+          <p class="text-xs text-gray-500 px-0.5 leading-relaxed">These terms cover how SSAAM handles your attendance data, account access, financial contributions, and privacy across all JRMSU colleges.</p>
+          <button
+            @click="showContactModal = false; showTermsModal = true; tcOpenSection = 0"
+            class="w-full flex items-center justify-center gap-2 py-3 rounded-2xl font-bold text-sm transition-all active:scale-95 bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-md shadow-indigo-200 hover:shadow-lg hover:-translate-y-0.5"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            View Full Terms &amp; Conditions
+          </button>
+          <div class="bg-gray-50 rounded-2xl p-3 space-y-2">
+            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Sections covered</p>
+            <div class="grid grid-cols-2 gap-1.5">
+              <div v-for="(s, i) in tcSections" :key="i" class="flex items-center gap-1.5 text-[11px] text-gray-600">
+                <span :class="['w-4 h-4 rounded-md flex items-center justify-center text-white text-[9px] font-black flex-shrink-0', s.color]">{{ i+1 }}</span>
+                <span class="truncate">{{ s.title }}</span>
+              </div>
+            </div>
+          </div>
+          <p class="text-center text-[10px] text-gray-400">Last updated: <span class="font-semibold text-gray-500">May 1, 2026</span></p>
         </div>
 
         </transition>
@@ -9076,6 +9218,74 @@ const showSessionExpiredModal = ref(false)
 const showMobileMenu = ref(false)
 const showContactModal = ref(false)
 const helpTab = ref('about')
+const showTermsModal = ref(false)
+const tcOpenSection = ref(0)
+const tcSections = [
+  {
+    title: 'Attendance Recording',
+    color: 'bg-gradient-to-br from-violet-500 to-indigo-600',
+    dot: 'bg-violet-500',
+    points: [
+      'Attendance is recorded through your registered <strong>RFID card</strong>, <strong>Face ID</strong>, or admin manual check-in for officially scheduled events.',
+      'Proxy attendance (scanning for another student) is strictly prohibited and may result in disciplinary action.',
+      'If <strong>GPS geofence</strong> is enabled, you must be physically inside the allowed radius for check-in to be accepted.',
+      'Where Face ID is disabled by the admin, please use the RFID scanner or request manual check-in.',
+    ],
+  },
+  {
+    title: 'Account & Roles',
+    color: 'bg-gradient-to-br from-blue-500 to-cyan-600',
+    dot: 'bg-blue-500',
+    points: [
+      'Your account is bound to one JRMSU college (<strong>CCS, COE, SOM, CNAHS</strong>) and you may only access data within your college unless granted broader authority.',
+      'Roles include <strong>Student</strong>, <strong>Treasurer</strong>, <strong>Co-Admin</strong>, and <strong>Admin</strong>, each with clearly scoped permissions.',
+      'You are responsible for safeguarding your password. Sharing credentials or RFID cards is prohibited.',
+      'Admins are required to change default passwords on first login and may be prompted periodically.',
+    ],
+  },
+  {
+    title: 'Contributions & Raffle Tickets',
+    color: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+    dot: 'bg-emerald-500',
+    points: [
+      'Contribution amounts, discounts, and payment statuses are managed by your college\'s Admin and Treasurer.',
+      'Payments are recorded in-system and the <strong>Paid Date</strong> is preserved for transparency. Reversals are logged.',
+      'Raffle tickets are issued strictly through admin-approved processes; tampering with records is prohibited.',
+      'Disputes regarding amounts must be raised with your college Admin in writing.',
+    ],
+  },
+  {
+    title: 'Privacy & Data',
+    color: 'bg-gradient-to-br from-rose-500 to-pink-600',
+    dot: 'bg-rose-500',
+    points: [
+      'SSAAM stores your name, student ID, program, year level, RFID tag, and profile photo strictly for academic and event-attendance purposes.',
+      'Student data is isolated per college — one college cannot view another\'s records.',
+      'GPS coordinates captured at check-in are used only to validate the geofence, not for tracking outside event windows.',
+      'You may request review or correction of your records by contacting your college Admin.',
+    ],
+  },
+  {
+    title: 'Acceptable Use',
+    color: 'bg-gradient-to-br from-amber-500 to-orange-600',
+    dot: 'bg-amber-500',
+    points: [
+      'You agree not to bypass authentication, role checks, college isolation, or any system safeguards.',
+      'Automated scraping, scripted abuse, or any activity that disrupts the platform is forbidden.',
+      'Admins must use their tools only for legitimate institutional purposes; misuse may lead to access revocation.',
+    ],
+  },
+  {
+    title: 'Liability & Updates',
+    color: 'bg-gradient-to-br from-slate-500 to-gray-700',
+    dot: 'bg-slate-500',
+    points: [
+      'SSAAM is provided as-is. JRMSU is not liable for missed events caused by device issues, network outages, or expired RFID cards.',
+      'Features, policies, and these terms may be updated from time to time. Notable changes will be announced in-app.',
+      'Continued use of SSAAM after updates indicates your acceptance of the revised terms.',
+    ],
+  },
+]
 const currentPage = ref('dashboard')
 const mainContentEl = ref(null)
 
@@ -19613,5 +19823,25 @@ onUnmounted(() => {
   .dash-notif-progress {
     animation: none;
   }
+}
+.tc-accordion-enter-active {
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+  overflow: hidden;
+  max-height: 600px;
+  opacity: 1;
+}
+.tc-accordion-leave-active {
+  transition: max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+  overflow: hidden;
+  max-height: 600px;
+  opacity: 1;
+}
+.tc-accordion-enter-from {
+  max-height: 0;
+  opacity: 0;
+}
+.tc-accordion-leave-to {
+  max-height: 0;
+  opacity: 0;
 }
 </style>
