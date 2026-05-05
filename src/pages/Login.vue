@@ -471,10 +471,16 @@
       <div class="relative z-10 text-center">
         <div class="mb-4">
           <div class="relative w-40 h-40 mx-auto">
-            <div class="absolute -inset-3 rounded-full pointer-events-none z-0" style="animation: golden-spin 3s linear infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 48%, rgba(255,185,0,0.45) 63%, rgba(255,235,60,0.90) 75%, rgba(255,185,0,0.45) 87%, transparent 100%);"></div>
-            <div class="absolute inset-0 z-10 logo-sweep" style="mask: url(/ccs.png) no-repeat center / contain; -webkit-mask: url(/ccs.png) no-repeat center / contain;">
-              <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
+            <!-- Soft outer ambient golden aura — stays unmasked so it glows around the logo -->
+            <div class="absolute -inset-6 rounded-full pointer-events-none z-0" style="background: radial-gradient(ellipse at center, rgba(255,200,50,0.55) 0%, rgba(255,160,0,0.28) 45%, transparent 72%); filter: blur(10px);"></div>
+            <!-- Masked container — everything inside is clipped to the CCS logo silhouette -->
+            <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) center/contain no-repeat; -webkit-mask: url(/ccs.png) center/contain no-repeat; mask-mode: alpha; -webkit-mask-mode: alpha;">
+              <!-- Base logo image -->
+              <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain relative z-10" />
+              <!-- Golden spinning light INSIDE the mask — shines through the logo shape only -->
+              <div class="absolute inset-0 pointer-events-none z-20" style="animation: golden-spin 4s linear infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 32%, rgba(255,175,0,0.55) 50%, rgba(255,230,60,1) 62%, rgba(255,175,0,0.55) 74%, transparent 100%); mix-blend-mode: screen;"></div>
+              <!-- Shimmer sweep blended over the golden effect -->
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-sweep z-30 pointer-events-none" style="mix-blend-mode: overlay;"></div>
             </div>
           </div>
         </div>
@@ -541,10 +547,16 @@
     <ParticleBackground />
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
       <div class="relative w-32 h-32 mx-auto mb-4">
-        <div class="absolute -inset-3 rounded-full pointer-events-none z-0" style="animation: golden-spin 3s linear infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 48%, rgba(255,185,0,0.45) 63%, rgba(255,235,60,0.90) 75%, rgba(255,185,0,0.45) 87%, transparent 100%);"></div>
-        <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) no-repeat center / contain; -webkit-mask: url(/ccs.png) no-repeat center / contain;">
-          <img src="/src/assets/ccs-logo.png" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
+        <!-- Soft outer ambient golden aura -->
+        <div class="absolute -inset-6 rounded-full pointer-events-none z-0" style="background: radial-gradient(ellipse at center, rgba(255,200,50,0.55) 0%, rgba(255,160,0,0.28) 45%, transparent 72%); filter: blur(10px);"></div>
+        <!-- Masked container — everything inside is clipped to the CCS logo silhouette -->
+        <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) center/contain no-repeat; -webkit-mask: url(/ccs.png) center/contain no-repeat; mask-mode: alpha; -webkit-mask-mode: alpha;">
+          <!-- Base logo image -->
+          <img src="/src/assets/ccs-logo.png" alt="JRMSU CCS Logo" class="w-full h-full object-contain relative z-10" />
+          <!-- Golden spinning light INSIDE the mask — shines through the logo shape only -->
+          <div class="absolute inset-0 pointer-events-none z-20" style="animation: golden-spin 4s linear infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 32%, rgba(255,175,0,0.55) 50%, rgba(255,230,60,1) 62%, rgba(255,175,0,0.55) 74%, transparent 100%); mix-blend-mode: screen;"></div>
+          <!-- Shimmer sweep blended over the golden effect -->
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-sweep z-30 pointer-events-none" style="mix-blend-mode: overlay;"></div>
         </div>
       </div>
       <h1 class="text-6xl font-extrabold italic mb-2">SSAAM</h1>
