@@ -703,7 +703,7 @@
         <div v-else class="bg-white/[0.06] rounded-xl px-2.5 py-2.5 border border-white/10">
           <div class="flex items-center gap-2.5">
             <div :class="['relative w-10 h-10 aspect-square rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 ring-white/20', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
-              <img v-if="currentUser.image || currentUser.photo" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" />
+              <img v-if="!sidebarImageFailed && (currentUser.image || currentUser.photo)" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @error="sidebarImageFailed = true" />
               <span v-else class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
             </div>
             <div class="flex-1 min-w-0">
@@ -846,7 +846,7 @@
           <div v-else class="bg-white/[0.06] rounded-xl px-2.5 py-2.5 border border-white/10">
             <div class="flex items-center gap-2.5">
               <div :class="['relative w-10 h-10 aspect-square rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 ring-white/20', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
-                <img v-if="currentUser.image || currentUser.photo" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" />
+                <img v-if="!sidebarImageFailed && (currentUser.image || currentUser.photo)" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @error="sidebarImageFailed = true" />
                 <span v-else class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
               </div>
               <div class="flex-1 min-w-0">
@@ -15352,6 +15352,7 @@ const handleStudentPhotoUpload = async (event) => {
               }
             } catch (_) {}
             profileImageFailed.value = false;
+            sidebarImageFailed.value = false;
             uploadSuccess = true;
             showNotification('Photo updated successfully!', 'success');
             break;
