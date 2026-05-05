@@ -7824,8 +7824,8 @@
           </div>
 
           <!-- Scrollable body -->
-          <div class="relative flex-1 min-h-0">
-            <div ref="termsBody" @scroll="onTermsScroll" class="h-full overflow-y-auto overscroll-contain terms-modal-scroll">
+          <div class="relative flex-1 min-h-0 overflow-hidden">
+            <div ref="termsBody" @scroll="onTermsScroll" class="absolute inset-0 overflow-y-auto overscroll-contain terms-modal-scroll">
 
               <!-- Intro -->
               <div class="px-5 pt-5 pb-3">
@@ -9529,6 +9529,8 @@ const unlockBodyScroll = () => {
 watch(showTermsModal, (open) => {
   if (open) {
     lockBodyScroll()
+    // Also lock the dashboard's own scroll container (it uses overflow-y-auto, not body)
+    if (mainContentEl.value) mainContentEl.value.style.overflow = 'hidden'
     termsAtBottom.value = false
     termsReadPct.value = 0
     // After Vue renders the modal, scroll back to top
@@ -9537,6 +9539,8 @@ watch(showTermsModal, (open) => {
     })
   } else {
     unlockBodyScroll()
+    // Restore the dashboard scroll container
+    if (mainContentEl.value) mainContentEl.value.style.overflow = ''
   }
 })
 
