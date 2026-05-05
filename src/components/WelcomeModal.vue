@@ -37,23 +37,23 @@
         </div>
 
         <!-- T&C Accordion (scrollable) -->
-        <div ref="accordionRef" class="flex-1 overflow-y-auto welcome-scroll bg-gray-50 overscroll-contain">
+        <div
+          ref="accordionRef"
+          class="flex-1 overflow-y-auto welcome-scroll bg-gray-50 overscroll-contain"
+          @scroll="onScroll"
+        >
           <div class="p-3 space-y-2">
             <div
               v-for="(section, idx) in tcSections"
               :key="idx"
-              class="bg-white rounded-2xl overflow-hidden shadow-sm border transition-shadow hover:shadow-md"
-              :class="readSections.has(idx) ? 'border-blue-200' : 'border-gray-100'"
+              class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition-shadow hover:shadow-md"
             >
               <button
-                @click="toggleSection(idx)"
+                @click="openSection = openSection === idx ? null : idx"
                 class="w-full flex items-center gap-3 px-4 py-3 text-left focus:outline-none active:bg-gray-50 transition-colors"
               >
-                <div :class="['w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-black shadow-sm transition-all', readSections.has(idx) ? 'ring-2 ring-offset-1 ring-blue-400' : '', section.color]">
-                  <svg v-if="readSections.has(idx)" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/>
-                  </svg>
-                  <span v-else>{{ idx + 1 }}</span>
+                <div :class="['w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-black shadow-sm', section.color]">
+                  {{ idx + 1 }}
                 </div>
                 <span class="flex-1 font-bold text-gray-800 text-sm leading-tight">{{ section.title }}</span>
                 <svg
@@ -81,46 +81,46 @@
             </div>
           </div>
 
-          <!-- Progress nudge -->
-          <div class="px-4 pb-3">
-            <div v-if="!allRead" class="flex items-center gap-2">
-              <div class="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
-                <div
-                  class="h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500"
-                  :style="{ width: `${(readSections.size / tcSections.length) * 100}%` }"
-                ></div>
-              </div>
-              <p class="text-[10px] text-gray-400 whitespace-nowrap flex-shrink-0">
-                {{ readSections.size }}/{{ tcSections.length }} sections read
-              </p>
-            </div>
-            <p v-else class="text-center text-[10px] text-emerald-600 font-semibold flex items-center justify-center gap-1">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-              All sections read — you may now agree below.
-            </p>
-          </div>
+          <!-- Scroll nudge at the bottom of the scroll area -->
+          <p class="text-center text-[10px] text-gray-400 pb-4 px-4">
+            — End of Terms &amp; Conditions —
+          </p>
         </div>
+
+        <!-- Scroll-down hint (fades out once scrolled to bottom) -->
+        <Transition name="hint-fade">
+          <div
+            v-if="!hasScrolledToBottom"
+            class="flex-shrink-0 flex items-center justify-center gap-1.5 py-1.5 bg-blue-50 border-t border-blue-100 cursor-pointer"
+            @click="scrollToBottom"
+          >
+            <svg class="w-3.5 h-3.5 text-blue-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
+            </svg>
+            <p class="text-[10px] text-blue-500 font-medium">Scroll down to read all terms</p>
+          </div>
+        </Transition>
 
         <!-- Footer -->
         <div class="flex-shrink-0 bg-white border-t border-gray-100 px-4 pt-3 pb-4 space-y-3">
 
           <!-- Agree checkbox -->
           <label
-            :class="['flex items-start gap-3 select-none transition-opacity', allRead ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-50']"
+            :class="['flex items-start gap-3 select-none transition-opacity', hasScrolledToBottom ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-50']"
           >
             <div class="relative flex-shrink-0 mt-0.5">
-              <input type="checkbox" v-model="agreed" :disabled="!allRead" class="sr-only" />
+              <input type="checkbox" v-model="agreed" :disabled="!hasScrolledToBottom" class="sr-only" />
               <div
                 :class="[
                   'w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200',
-                  agreed && allRead
+                  agreed && hasScrolledToBottom
                     ? 'bg-[#0f2080] border-[#0f2080]'
-                    : allRead
-                    ? 'bg-white border-gray-300 group-hover:border-blue-400'
+                    : hasScrolledToBottom
+                    ? 'bg-white border-gray-300'
                     : 'bg-gray-100 border-gray-200'
                 ]"
               >
-                <svg v-if="agreed && allRead" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg v-if="agreed && hasScrolledToBottom" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/>
                 </svg>
               </div>
@@ -129,7 +129,7 @@
               I have read and understood SSAAM's
               <button
                 type="button"
-                @click.prevent="scrollToTerms"
+                @click.prevent="scrollToBottom"
                 class="font-bold text-[#0f2080] underline underline-offset-2 decoration-dotted hover:text-blue-800 transition-colors focus:outline-none"
               >Terms &amp; Conditions</button>.
               I acknowledge that my attendance data and contributions are managed through this system.
@@ -139,26 +139,21 @@
           <!-- CTA button -->
           <button
             @click="handleAgree"
-            :disabled="!agreed || !allRead"
+            :disabled="!agreed || !hasScrolledToBottom"
             :class="[
               'w-full py-3 rounded-2xl font-bold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2',
-              agreed && allRead
+              agreed && hasScrolledToBottom
                 ? 'bg-gradient-to-r from-[#080e2e] to-[#1a3a8f] text-white shadow-lg hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             ]"
           >
-            <svg v-if="agreed && allRead" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg v-if="agreed && hasScrolledToBottom" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <svg v-else-if="!allRead" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-            </svg>
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
-            <span>
-              {{ !allRead ? 'Read all sections to continue' : agreed ? 'I Agree — Continue to SSAAM' : 'Please agree to the Terms & Conditions' }}
-            </span>
+            <span>{{ agreed && hasScrolledToBottom ? 'I Agree — Continue to SSAAM' : !hasScrolledToBottom ? 'Scroll down to continue' : 'Please check the box above' }}</span>
           </button>
 
           <!-- Welcome message -->
@@ -178,7 +173,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, watch, nextTick } from 'vue'
 
 const props = defineProps({
   visible: {
@@ -195,45 +190,37 @@ const emit = defineEmits(['agreed'])
 
 const agreed = ref(false)
 const openSection = ref(null)
-const readSections = ref(new Set())
+const hasScrolledToBottom = ref(false)
 const accordionRef = ref(null)
-
-const allRead = computed(() => readSections.value.size >= tcSections.length)
 
 watch(() => props.visible, (val) => {
   if (val) {
     agreed.value = false
     openSection.value = null
-    readSections.value = new Set()
+    hasScrolledToBottom.value = false
+    nextTick(() => {
+      if (accordionRef.value) {
+        accordionRef.value.scrollTop = 0
+      }
+    })
   }
 })
 
-const toggleSection = (idx) => {
-  if (openSection.value === idx) {
-    openSection.value = null
-  } else {
-    openSection.value = idx
-    const updated = new Set(readSections.value)
-    updated.add(idx)
-    readSections.value = updated
-  }
+const onScroll = () => {
+  if (!accordionRef.value) return
+  const el = accordionRef.value
+  const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40
+  if (nearBottom) hasScrolledToBottom.value = true
 }
 
-const scrollToTerms = () => {
+const scrollToBottom = () => {
   if (accordionRef.value) {
-    accordionRef.value.scrollTo({ top: 0, behavior: 'smooth' })
-    const firstUnread = tcSections.findIndex((_, i) => !readSections.value.has(i))
-    if (firstUnread !== -1) {
-      openSection.value = firstUnread
-      const updated = new Set(readSections.value)
-      updated.add(firstUnread)
-      readSections.value = updated
-    }
+    accordionRef.value.scrollTo({ top: accordionRef.value.scrollHeight, behavior: 'smooth' })
   }
 }
 
 const handleAgree = () => {
-  if (!agreed.value || !allRead.value) return
+  if (!agreed.value || !hasScrolledToBottom.value) return
   emit('agreed')
 }
 
@@ -307,16 +294,10 @@ const tcSections = [
 </script>
 
 <style scoped>
-.welcome-fade-enter-active {
-  transition: opacity 0.3s ease;
-}
-.welcome-fade-leave-active {
-  transition: opacity 0.25s ease;
-}
+.welcome-fade-enter-active { transition: opacity 0.3s ease; }
+.welcome-fade-leave-active { transition: opacity 0.25s ease; }
 .welcome-fade-enter-from,
-.welcome-fade-leave-to {
-  opacity: 0;
-}
+.welcome-fade-leave-to { opacity: 0; }
 
 .welcome-fade-enter-active .welcome-card {
   transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease;
@@ -324,14 +305,8 @@ const tcSections = [
 .welcome-fade-leave-active .welcome-card {
   transition: transform 0.22s ease-in, opacity 0.22s ease-in;
 }
-.welcome-fade-enter-from .welcome-card {
-  transform: translateY(48px);
-  opacity: 0;
-}
-.welcome-fade-leave-to .welcome-card {
-  transform: translateY(24px);
-  opacity: 0;
-}
+.welcome-fade-enter-from .welcome-card { transform: translateY(48px); opacity: 0; }
+.welcome-fade-leave-to .welcome-card { transform: translateY(24px); opacity: 0; }
 
 .welcome-accordion-enter-active {
   transition: max-height 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
@@ -342,23 +317,15 @@ const tcSections = [
   transition: max-height 0.22s ease-in, opacity 0.2s ease-in;
   overflow: hidden;
 }
-.welcome-accordion-enter-from {
-  max-height: 0;
-  opacity: 0;
-}
-.welcome-accordion-leave-to {
-  max-height: 0;
-  opacity: 0;
-}
+.welcome-accordion-enter-from { max-height: 0; opacity: 0; }
+.welcome-accordion-leave-to { max-height: 0; opacity: 0; }
 
-.welcome-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-.welcome-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.welcome-scroll::-webkit-scrollbar-thumb {
-  background-color: #d1d5db;
-  border-radius: 999px;
-}
+.hint-fade-enter-active { transition: opacity 0.3s ease, max-height 0.3s ease; overflow: hidden; max-height: 40px; }
+.hint-fade-leave-active { transition: opacity 0.25s ease, max-height 0.25s ease; overflow: hidden; }
+.hint-fade-enter-from { opacity: 0; max-height: 0; }
+.hint-fade-leave-to { opacity: 0; max-height: 0; }
+
+.welcome-scroll::-webkit-scrollbar { width: 4px; }
+.welcome-scroll::-webkit-scrollbar-track { background: transparent; }
+.welcome-scroll::-webkit-scrollbar-thumb { background-color: #d1d5db; border-radius: 999px; }
 </style>
