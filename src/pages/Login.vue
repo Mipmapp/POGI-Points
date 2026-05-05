@@ -471,14 +471,14 @@
       <div class="relative z-10 text-center">
         <div class="mb-4">
           <div class="relative w-40 h-40 mx-auto">
-            <!-- Soft outer ambient golden aura — stays unmasked so it glows around the logo -->
-            <div class="absolute -inset-6 rounded-full pointer-events-none z-0" style="background: radial-gradient(ellipse at center, rgba(255,200,50,0.55) 0%, rgba(255,160,0,0.28) 45%, transparent 72%); filter: blur(10px);"></div>
+            <!-- Soft outer ambient golden aura — pulses slowly -->
+            <div class="absolute -inset-6 rounded-full pointer-events-none z-0" style="background: radial-gradient(ellipse at center, rgba(255,200,50,0.55) 0%, rgba(255,160,0,0.28) 45%, transparent 72%); filter: blur(10px); animation: golden-pulse 3s ease-in-out infinite;"></div>
             <!-- Masked container — everything inside is clipped to the CCS logo silhouette -->
             <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) center/contain no-repeat; -webkit-mask: url(/ccs.png) center/contain no-repeat; mask-mode: alpha; -webkit-mask-mode: alpha;">
               <!-- Base logo image -->
               <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain relative z-10" />
-              <!-- Golden spinning light INSIDE the mask — shines through the logo shape only -->
-              <div class="absolute inset-0 pointer-events-none z-20" style="animation: golden-spin 4s linear infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 32%, rgba(255,175,0,0.55) 50%, rgba(255,230,60,1) 62%, rgba(255,175,0,0.55) 74%, transparent 100%); mix-blend-mode: screen;"></div>
+              <!-- Golden light: spins slowly + pulses -->
+              <div class="absolute inset-0 pointer-events-none z-20" style="animation: golden-spin 8s linear infinite, golden-pulse 3s ease-in-out infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 32%, rgba(255,175,0,0.55) 50%, rgba(255,230,60,1) 62%, rgba(255,175,0,0.55) 74%, transparent 100%); mix-blend-mode: screen;"></div>
               <!-- Shimmer sweep blended over the golden effect -->
               <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-sweep z-30 pointer-events-none" style="mix-blend-mode: overlay;"></div>
             </div>
@@ -547,14 +547,14 @@
     <ParticleBackground />
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
       <div class="relative w-32 h-32 mx-auto mb-4">
-        <!-- Soft outer ambient golden aura -->
-        <div class="absolute -inset-6 rounded-full pointer-events-none z-0" style="background: radial-gradient(ellipse at center, rgba(255,200,50,0.55) 0%, rgba(255,160,0,0.28) 45%, transparent 72%); filter: blur(10px);"></div>
+        <!-- Soft outer ambient golden aura — pulses slowly -->
+        <div class="absolute -inset-6 rounded-full pointer-events-none z-0" style="background: radial-gradient(ellipse at center, rgba(255,200,50,0.55) 0%, rgba(255,160,0,0.28) 45%, transparent 72%); filter: blur(10px); animation: golden-pulse 3s ease-in-out infinite;"></div>
         <!-- Masked container — everything inside is clipped to the CCS logo silhouette -->
         <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) center/contain no-repeat; -webkit-mask: url(/ccs.png) center/contain no-repeat; mask-mode: alpha; -webkit-mask-mode: alpha;">
           <!-- Base logo image -->
           <img src="/src/assets/ccs-logo.png" alt="JRMSU CCS Logo" class="w-full h-full object-contain relative z-10" />
-          <!-- Golden spinning light INSIDE the mask — shines through the logo shape only -->
-          <div class="absolute inset-0 pointer-events-none z-20" style="animation: golden-spin 4s linear infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 32%, rgba(255,175,0,0.55) 50%, rgba(255,230,60,1) 62%, rgba(255,175,0,0.55) 74%, transparent 100%); mix-blend-mode: screen;"></div>
+          <!-- Golden light: spins slowly + pulses -->
+          <div class="absolute inset-0 pointer-events-none z-20" style="animation: golden-spin 8s linear infinite, golden-pulse 3s ease-in-out infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 32%, rgba(255,175,0,0.55) 50%, rgba(255,230,60,1) 62%, rgba(255,175,0,0.55) 74%, transparent 100%); mix-blend-mode: screen;"></div>
           <!-- Shimmer sweep blended over the golden effect -->
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-sweep z-30 pointer-events-none" style="mix-blend-mode: overlay;"></div>
         </div>
@@ -1867,6 +1867,11 @@ function manualRetryFace() {
 @keyframes golden-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+}
+
+@keyframes golden-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 1;    }
 }
 
 .modal-logo-container {

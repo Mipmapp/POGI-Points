@@ -117,9 +117,16 @@
       <ParticleBackground />
       <div class="relative z-10 text-center px-6 py-8">
         <div class="mb-4">
-          <div class="w-40 h-40 mx-auto flex items-center justify-center" style="mask: url(/ccs.png) no-repeat center / contain; -webkit-mask: url(/ccs.png) no-repeat center / contain;">
-            <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
-            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
+          <div class="relative w-40 h-40 mx-auto">
+            <!-- Ambient golden aura — pulses slowly -->
+            <div class="absolute -inset-6 rounded-full pointer-events-none z-0" style="background: radial-gradient(ellipse at center, rgba(255,200,50,0.55) 0%, rgba(255,160,0,0.28) 45%, transparent 72%); filter: blur(10px); animation: golden-pulse 3s ease-in-out infinite;"></div>
+            <!-- Masked container clipped to CCS logo silhouette -->
+            <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) center/contain no-repeat; -webkit-mask: url(/ccs.png) center/contain no-repeat; mask-mode: alpha; -webkit-mask-mode: alpha;">
+              <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain relative z-10" />
+              <!-- Golden light: spins slowly + pulses -->
+              <div class="absolute inset-0 pointer-events-none z-20" style="animation: golden-spin 8s linear infinite, golden-pulse 3s ease-in-out infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 32%, rgba(255,175,0,0.55) 50%, rgba(255,230,60,1) 62%, rgba(255,175,0,0.55) 74%, transparent 100%); mix-blend-mode: screen;"></div>
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-sweep z-30 pointer-events-none" style="mix-blend-mode: overlay;"></div>
+            </div>
           </div>
         </div>
 
@@ -448,9 +455,16 @@
   <div class="mobile-bg-full md:hidden min-h-screen flex flex-col w-full fixed inset-0 overflow-x-hidden overflow-y-auto" style="scrollbar-width:none;-ms-overflow-style:none;">
     <ParticleBackground />
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
-      <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/ccs.png) no-repeat center / contain; -webkit-mask: url(/ccs.png) no-repeat center / contain;">
-        <img src="/src/assets/ccs-logo.png" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
-        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
+      <div class="relative w-32 h-32 mx-auto mb-4">
+        <!-- Ambient golden aura — pulses slowly -->
+        <div class="absolute -inset-6 rounded-full pointer-events-none z-0" style="background: radial-gradient(ellipse at center, rgba(255,200,50,0.55) 0%, rgba(255,160,0,0.28) 45%, transparent 72%); filter: blur(10px); animation: golden-pulse 3s ease-in-out infinite;"></div>
+        <!-- Masked container clipped to CCS logo silhouette -->
+        <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) center/contain no-repeat; -webkit-mask: url(/ccs.png) center/contain no-repeat; mask-mode: alpha; -webkit-mask-mode: alpha;">
+          <img src="/src/assets/ccs-logo.png" alt="JRMSU CCS Logo" class="w-full h-full object-contain relative z-10" />
+          <!-- Golden light: spins slowly + pulses -->
+          <div class="absolute inset-0 pointer-events-none z-20" style="animation: golden-spin 8s linear infinite, golden-pulse 3s ease-in-out infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 32%, rgba(255,175,0,0.55) 50%, rgba(255,230,60,1) 62%, rgba(255,175,0,0.55) 74%, transparent 100%); mix-blend-mode: screen;"></div>
+          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-sweep z-30 pointer-events-none" style="mix-blend-mode: overlay;"></div>
+        </div>
       </div>
       <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="hidden sm:w-16 sm:h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg" :class="registrationIconGradientClass">
         <img src="/user_plus.svg" alt="Register" class="w-10 h-10" style="filter: brightness(0) invert(1);" />
@@ -1490,6 +1504,16 @@ const goToLogin = () => {
 </script>
 
 <style scoped>
+@keyframes golden-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+@keyframes golden-pulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 1;    }
+}
+
 .fade-scale-enter-active {
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
