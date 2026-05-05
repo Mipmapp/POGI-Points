@@ -536,30 +536,6 @@ input[type="password"]::placeholder {
   scrollbar-color: #c0c0c0 #f1f5f9;
 }
 
-/* ── Terms & Conditions Modal Scrollbar ──────────────────────────────── */
-.terms-modal-scroll {
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: #4f62ff #e8ecff;
-  touch-action: pan-y;
-  -webkit-overflow-scrolling: touch;
-}
-.terms-modal-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-.terms-modal-scroll::-webkit-scrollbar-track {
-  background: #e8ecff;
-  border-radius: 6px;
-  margin: 4px 0;
-}
-.terms-modal-scroll::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #1e3bdb, #4f62ff);
-  border-radius: 6px;
-}
-.terms-modal-scroll::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #1630c0, #3d4fe0);
-}
-
 /* ── SSAAM Check-In Button Ripple ────────────────────────────────────── */
 .ssaam-checkin-btn {
   position: relative;
