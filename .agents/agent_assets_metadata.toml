@@ -6,3 +6,9 @@ id = "qY8sM5rmyJxs-CZ_7KmC9"
 uri = "file://DOCUMENTATION.md"
 type = "text"
 title = "SSAAM Project Documentation"
+
+[[outputs]]
+id = "LqlnT1YFXnqP1iItNxe3O"
+uri = "file://docs/theme-migration.md"
+type = "text"
+title = "Theme Migration — Blue → CCS Purple + Gold"
