@@ -1,0 +1,112 @@
+You are a senior full-stack security-focused engineer.
+
+GOAL:
+Refactor the application to remove sensitive data from localStorage and ensure secure client-side storage practices.
+
+---
+
+PROBLEM:
+The app currently stores the entire user object in localStorage, including sensitive data such as:
+- JWT token
+- password hash
+- admin verification token
+- RFID and other internal fields
+
+This is a security risk.
+
+---
+
+PHASE 1: ANALYSIS (DO NOT MODIFY YET)
+
+1. Scan the entire codebase for:
+   - localStorage.setItem
+   - sessionStorage.setItem
+   - any storage of "currentUser" or similar
+
+2. Identify:
+   - What data is being stored
+   - Where it is used
+   - Which fields are sensitive
+
+3. List ALL sensitive fields:
+   - tokens
+   - passwords
+   - verification keys
+   - internal system flags
+
+---
+
+PHASE 2: DEFINE SAFE USER OBJECT
+
+Create a SAFE client-side user object that only includes:
+
+- _id
+- firstName / lastName
+- role
+- image
+- student_id
+
+Ensure NO sensitive fields are included.
+
+---
+
+PHASE 3: REFACTOR STORAGE
+
+1. Replace:
+   localStorage.setItem("currentUser", fullUserObject)
+
+   WITH:
+   localStorage.setItem("currentUser", safeUserObject)
+
+2. Remove sensitive fields BEFORE storing:
+   - destructure or filter object
+
+Example:
+const { token, custom_password, admin_verification_token, ...safeUser } = user
+
+---
+
+PHASE 4: AUTH TOKEN HANDLING
+
+1. Remove token storage from localStorage
+2. Instead:
+   - Use httpOnly cookies (if backend supports)
+   OR
+   - Store token in memory (temporary state)
+
+3. Update API calls to still authenticate properly
+
+---
+
+PHASE 5: UPDATE USAGE
+
+1. Update all components that read from localStorage:
+   - Ensure they only rely on safe fields
+   - Avoid accessing removed sensitive data
+
+---
+
+PHASE 6: VALIDATION
+
+Confirm:
+- Login still works
+- User session persists correctly
+- No sensitive data exists in localStorage
+- No console errors
+
+---
+
+OUTPUT FORMAT:
+
+1. SENSITIVE DATA FOUND
+2. SAFE OBJECT STRUCTURE
+3. CODE CHANGES (before/after)
+4. AUTH HANDLING UPDATE
+5. FINAL SECURITY CONFIRMATION
+
+---
+
+IMPORTANT:
+- Do NOT break authentication
+- Do NOT expose tokens in frontend storage
+- Make minimal but secure changes

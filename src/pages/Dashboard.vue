@@ -3,8 +3,8 @@
   <ProgrammerLoadingEffect :visible="loggingOut" message="LOGGING OUT" :theme="userDepartment ? userDepartment.label : ''" />
   <SessionExpiredModal :visible="showSessionExpiredModal" @logout="confirmLogout" />
 
-  <!-- Welcome + T&C Modal (shown once per login session) -->
-  <WelcomeModal :visible="showWelcomeModal" @agreed="onWelcomeAgreed" />
+  <!-- Welcome + T&C Modal (shown on every login) -->
+  <WelcomeModal :visible="showWelcomeModal" :user-name="displayName" @agreed="onWelcomeAgreed" />
 
   <!-- Contributions Modal (Treasurer Only) -->
   <ContributionsModal
@@ -9397,7 +9397,7 @@ const profileImageLoading = ref(false)
 const sidebarImageLoading = ref(false)
 const showWelcomeModal = ref(false)
 const onWelcomeAgreed = () => {
-  sessionStorage.setItem('ssaam_welcome_shown', '1')
+  sessionStorage.removeItem('ssaam_justLoggedIn')
   showWelcomeModal.value = false
 }
 const showDevelopersPopup = ref(false)
@@ -13067,8 +13067,8 @@ onMounted(async () => {
   }
   currentUser.value = user
 
-  // Show welcome + T&C modal on every new login session (clears when browser/tab closes)
-  if (!sessionStorage.getItem('ssaam_welcome_shown')) {
+  // Show welcome + T&C modal on every fresh login (flag set by Login.vue)
+  if (sessionStorage.getItem('ssaam_justLoggedIn')) {
     showWelcomeModal.value = true
   }
 

@@ -749,8 +749,10 @@ let pendingUser = null
 // Persists the pending user to localStorage and triggers the navigation.
 function completeLogin() {
   if (!pendingUser) return
-  localStorage.setItem('currentUser', JSON.stringify(pendingUser))
+  const { token: _t, custom_password: _cp, password_hash: _ph, admin_verification_token: _avt, ...safeUser } = pendingUser
+  localStorage.setItem('currentUser', JSON.stringify(safeUser))
   localStorage.setItem('authToken', pendingUser.token)
+  sessionStorage.setItem('ssaam_justLoggedIn', '1')
   isLoading.value = true
   isNavigationPending.value = true
 }
@@ -1221,8 +1223,10 @@ const handleLogin = async () => {
         return;
       }
 
-      localStorage.setItem("currentUser", JSON.stringify(normalizedUser));
+      const { token: _tok, custom_password: _cp, password_hash: _ph, admin_verification_token: _avt, ...safeUser } = normalizedUser
+      localStorage.setItem("currentUser", JSON.stringify(safeUser));
       localStorage.setItem("authToken", normalizedUser.token);
+      sessionStorage.setItem('ssaam_justLoggedIn', '1');
       // clear pre-login department/program hints
       try { localStorage.removeItem('loginChosenDepartment') } catch (e) {}
       try { localStorage.removeItem('loginChosenProgram') } catch (e) {}
