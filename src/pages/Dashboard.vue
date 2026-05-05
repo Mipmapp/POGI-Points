@@ -9397,7 +9397,7 @@ const profileImageLoading = ref(false)
 const sidebarImageLoading = ref(false)
 const showWelcomeModal = ref(false)
 const onWelcomeAgreed = () => {
-  sessionStorage.removeItem('ssaam_justLoggedIn')
+  localStorage.setItem('ssaam_tc_agreed', '1')
   showWelcomeModal.value = false
 }
 const showDevelopersPopup = ref(false)
@@ -13067,8 +13067,8 @@ onMounted(async () => {
   }
   currentUser.value = user
 
-  // Show welcome + T&C modal on every fresh login (flag set by Login.vue)
-  if (sessionStorage.getItem('ssaam_justLoggedIn')) {
+  // Show welcome + T&C modal on every login until user explicitly agrees
+  if (!localStorage.getItem('ssaam_tc_agreed')) {
     showWelcomeModal.value = true
   }
 
@@ -15130,6 +15130,7 @@ const confirmLogout = async () => {
     localStorage.removeItem('likeActionTimestamps')
     localStorage.removeItem('likeBanUntil')
     localStorage.removeItem('likeWarningShown')
+    localStorage.removeItem('ssaam_tc_agreed')
     sessionStorage.removeItem('ssaam_current_page')
     router.push('/')
   }, 1500)
