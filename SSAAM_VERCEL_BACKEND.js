@@ -286,7 +286,9 @@ function applyCollegeContext(req, res, next) {
 
 if (!process.env.SSAAM_API_KEY || !process.env.SSAAM_CRYPTO_KEY || !process.env.ADMIN_VERIFICATION_SECRET) {
     console.error('CRITICAL: Required security secrets (SSAAM_API_KEY, SSAAM_CRYPTO_KEY, ADMIN_VERIFICATION_SECRET) are not set!');
-    if (process.env.NODE_ENV === 'production') {
+    // Don't process.exit() on Vercel — it would kill the Lambda cold-start before
+    // any response can be sent. Log loudly instead so it shows in Vercel logs.
+    if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
         process.exit(1);
     }
 }
@@ -1957,13 +1959,22 @@ const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 50
             console.error('Main MongoDB connection error:', err.message);
         });
 
-        app.listen(PORT, () => {
-            console.log(`Server running on ${PORT}`);
-            // Run auto-update after server starts and DB is connected
+        // On Vercel serverless, Vercel owns the HTTP layer — calling app.listen()
+        // conflicts with it and causes the function to fail. Only call listen() in
+        // the local/traditional server environment.
+        if (process.env.VERCEL) {
+            console.log('Server running on Vercel serverless');
             if (typeof autoUpdateEventStatuses === 'function') {
                 autoUpdateEventStatuses();
             }
-        });
+        } else {
+            app.listen(PORT, () => {
+                console.log(`Server running on ${PORT}`);
+                if (typeof autoUpdateEventStatuses === 'function') {
+                    autoUpdateEventStatuses();
+                }
+            });
+        }
     } catch (err) {
         console.error(`MongoDB connection attempt ${retryCount + 1} failed:`, err.message);
         if (retryCount < maxRetries) {
@@ -1971,7 +1982,9 @@ const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 50
             setTimeout(() => connectWithRetry(retryCount + 1, maxRetries, retryDelay), retryDelay);
         } else {
             console.error('Max retries reached. Could not connect to MongoDB.');
-            process.exit(1);
+            // Don't process.exit() on Vercel — it terminates the Lambda before the
+            // ensureDatabaseConnection middleware can attempt a per-request reconnect.
+            if (!process.env.VERCEL) process.exit(1);
         }
     }
 };
