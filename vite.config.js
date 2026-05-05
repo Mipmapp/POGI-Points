@@ -14,7 +14,7 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['jrmsu.svg'],
+      includeAssets: ['ccs.png'],
       manifest: {
         name: 'SSAAM - Student School Activities Attendance Monitoring',
         short_name: 'SSAAM',

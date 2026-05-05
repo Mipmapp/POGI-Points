@@ -46,7 +46,7 @@
                   <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6b21a8; padding-bottom: 1rem; margin-bottom: 1.5rem;">
                     <!-- JRMSU Logo -->
                     <div style="flex: 1; text-align: center;">
-                      <img src="/jrmsu.svg" alt="JRMSU" style="height: 80px; width: auto;" />
+                      <img src="/ccs.png" alt="JRMSU" style="height: 80px; width: auto;" />
                     </div>
                     <!-- Center Title -->
                     <div style="flex: 2; text-align: center; padding: 0 1rem;">
@@ -185,7 +185,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #6b21a8; padding-bottom: 1rem; margin-bottom: 1.5rem;">
           <!-- JRMSU Logo -->
           <div style="flex: 1; text-align: center;">
-            <img src="/jrmsu.svg" alt="JRMSU" style="height: 80px; width: auto;" />
+            <img src="/ccs.png" alt="JRMSU" style="height: 80px; width: auto;" />
           </div>
           <!-- Center Title -->
           <div style="flex: 2; text-align: center; padding: 0 1rem;">

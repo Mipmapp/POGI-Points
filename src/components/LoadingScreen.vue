@@ -22,7 +22,7 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import jrmsuLogo from '../assets/jrmsu-logo.webp'
+import jrmsuLogo from '../assets/ccs-logo.png'
 import ParticleBackground from './ParticleBackground.vue'
 import { getCollege } from '../config/api.js'
 

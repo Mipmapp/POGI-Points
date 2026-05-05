@@ -117,7 +117,7 @@
       <ParticleBackground />
       <div class="relative z-10 text-center px-6 py-8">
         <div class="mb-4">
-          <div class="w-40 h-40 mx-auto flex items-center justify-center" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
+          <div class="w-40 h-40 mx-auto flex items-center justify-center" style="mask: url(/ccs.png) no-repeat center / contain; -webkit-mask: url(/ccs.png) no-repeat center / contain;">
             <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
           </div>
@@ -448,8 +448,8 @@
   <div class="mobile-bg-full md:hidden min-h-screen flex flex-col w-full fixed inset-0 overflow-x-hidden overflow-y-auto" style="scrollbar-width:none;-ms-overflow-style:none;">
     <ParticleBackground />
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
-      <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
-        <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
+      <div class="w-32 h-32 mx-auto mb-4 relative" style="mask: url(/ccs.png) no-repeat center / contain; -webkit-mask: url(/ccs.png) no-repeat center / contain;">
+        <img src="/src/assets/ccs-logo.png" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
       </div>
       <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="hidden sm:w-16 sm:h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg" :class="registrationIconGradientClass">
@@ -777,7 +777,7 @@
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import jrmsuLogo from '../assets/jrmsu-logo.webp'
+import jrmsuLogo from '../assets/ccs-logo.png'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'

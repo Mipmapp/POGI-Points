@@ -472,7 +472,7 @@
         <div class="mb-4">
           <div class="relative w-40 h-40 mx-auto">
             <div class="absolute -inset-3 rounded-full pointer-events-none z-0" style="animation: golden-spin 3s linear infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 48%, rgba(255,185,0,0.45) 63%, rgba(255,235,60,0.90) 75%, rgba(255,185,0,0.45) 87%, transparent 100%);"></div>
-            <div class="absolute inset-0 z-10 logo-sweep" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
+            <div class="absolute inset-0 z-10 logo-sweep" style="mask: url(/ccs.png) no-repeat center / contain; -webkit-mask: url(/ccs.png) no-repeat center / contain;">
               <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
               <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
             </div>
@@ -542,8 +542,8 @@
     <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
       <div class="relative w-32 h-32 mx-auto mb-4">
         <div class="absolute -inset-3 rounded-full pointer-events-none z-0" style="animation: golden-spin 3s linear infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 48%, rgba(255,185,0,0.45) 63%, rgba(255,235,60,0.90) 75%, rgba(255,185,0,0.45) 87%, transparent 100%);"></div>
-        <div class="absolute inset-0 z-10" style="mask: url(/jrmsu.svg) no-repeat center / contain; -webkit-mask: url(/jrmsu.svg) no-repeat center / contain;">
-          <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
+        <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) no-repeat center / contain; -webkit-mask: url(/ccs.png) no-repeat center / contain;">
+          <img src="/src/assets/ccs-logo.png" alt="JRMSU CCS Logo" class="w-full h-full object-contain drop-shadow-2xl relative z-10" />
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-sweep z-20 pointer-events-none"></div>
         </div>
       </div>
@@ -703,7 +703,7 @@ import { ref, onMounted, computed, watch, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import ParticleBackground from '../components/ParticleBackground.vue'
-import jrmsuLogo from '../assets/jrmsu-logo.webp'
+import jrmsuLogo from '../assets/ccs-logo.png'
 import { encodeTimestamp, syncServerTime, updateServerOffsetFromHeaders } from '../utils/ssaamCrypto.js'
 import API_getBaseURL, { buildAPIUrl } from '../config/api.js'
 import departments from '../config/departments.js'

@@ -618,7 +618,7 @@
       </div>
       <div class="text-center text-white flex flex-col items-center gap-4 relative z-10">
         <div class="flex items-center gap-4">
-          <img src="/jrmsu.svg" alt="JRMSU Logo" class="w-20 h-20 object-contain drop-shadow-2xl flex-shrink-0" />
+          <img src="/ccs.png" alt="JRMSU Logo" class="w-20 h-20 object-contain drop-shadow-2xl flex-shrink-0" />
           <div class="leading-tight text-left">
             <h1 class="text-6xl font-extrabold italic tracking-wide drop-shadow-lg">SSAAM</h1>
           </div>
@@ -684,7 +684,7 @@
     <div :class="[ 'hidden md:flex w-64 bg-gradient-to-b text-white flex-col order-1 border-r border-white/10 h-screen shadow-2xl sticky top-0 self-start', sidebarGradient ]">
       <div class="px-5 py-5 border-b border-white/15 flex-shrink-0 bg-white/5 backdrop-blur-sm">
         <div class="flex items-center gap-3">
-          <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU Logo" class="w-11 h-11 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
+          <img src="/src/assets/ccs-logo.png" alt="JRMSU Logo" class="w-11 h-11 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
           <div class="flex flex-col leading-tight">
             <h1 class="text-2xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
             <p class="text-white/50 text-[9px] uppercase tracking-widest">JRMSU</p>
@@ -828,7 +828,7 @@
       <div v-if="showMobileMenu" :class="[ 'fixed left-0 top-0 h-screen w-72 bg-gradient-to-b text-white flex flex-col z-40 md:hidden shadow-2xl', sidebarGradient ]">
         <div class="flex items-center justify-between px-4 py-4 border-b border-white/15 bg-white/5 flex-shrink-0">
           <div class="flex items-center gap-2.5">
-            <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-lg flex-shrink-0" />
+            <img src="/src/assets/ccs-logo.png" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-lg flex-shrink-0" />
             <div class="flex flex-col leading-tight">
               <h1 class="text-xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
               <p class="text-[9px] uppercase tracking-widest font-semibold text-white/50">JRMSU</p>
@@ -980,7 +980,7 @@
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
-          <img src="/src/assets/jrmsu-logo.webp" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" />
+          <img src="/src/assets/ccs-logo.png" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" />
           <div class="flex flex-col leading-tight">
             <h1 :class="['text-xl font-extrabold italic', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">SSAAM</h1>
             <p :class="['text-[9px] uppercase tracking-widest font-semibold', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-green-400' : 'text-blue-400']">JRMSU</p>
@@ -7923,7 +7923,7 @@ import AdminContributionPanel from '../components/AdminContributionPanel.vue'
 // mask-image. A bare `/src/assets/...` string in inline `mask-image` is
 // not reliably loaded as a mask — importing it gives us a stable hashed
 // URL that the browser can fetch and use as an alpha mask.
-import jrmsuLogoUrl from '../assets/jrmsu-logo.webp'
+import jrmsuLogoUrl from '../assets/ccs-logo.png'
 import AdminRaffleTicketPanel from '../components/AdminRaffleTicketPanel.vue'
 import FaceRecognitionSettings from '../components/FaceRecognitionSettings.vue'
 import Manage from '../components/Manage.vue'
@@ -12746,7 +12746,7 @@ const userDepartmentLogo = computed(() => {
     }
   }
 
-  return '/src/assets/jrmsu-logo.webp'
+  return '/src/assets/ccs-logo.png'
 })
 
 const { isCCS, isCOE, isSOM, isCNAHS } = useCollege()
