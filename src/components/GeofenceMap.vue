@@ -470,8 +470,8 @@ function loadLeaflet() {
 // its tip looked off-center even though it was geometrically correct.
 function buildPinIcon() {
   if (!leaflet) return null
-  const accentHex = props.isCOE ? '#ea580c' : props.isSOM ? '#16a34a' : '#6a2590'
-  const accentSoft = props.isCOE ? 'rgba(234,88,12,.35)' : props.isSOM ? 'rgba(22,163,74,.35)' : 'rgba(106,37,144,.35)'
+  const accentHex = props.isCOE ? '#ea580c' : props.isSOM ? '#16a34a' : '#2563eb'
+  const accentSoft = props.isCOE ? 'rgba(234,88,12,.35)' : props.isSOM ? 'rgba(22,163,74,.35)' : 'rgba(37,99,235,.35)'
   const html = `
     <div style="position:relative;width:30px;height:30px;">
       <div style="position:absolute;inset:-10px;border-radius:50%;background:${accentSoft};animation:gfm-pin-pulse 2.2s ease-in-out infinite;"></div>
@@ -492,8 +492,8 @@ function buildMeIcon() {
   if (!leaflet) return null
   const html = `
     <div style="position:relative;width:22px;height:22px;transform:translate(-50%,-50%);">
-      <div style="position:absolute;inset:0;border-radius:50%;background:#7d2fa3;border:3px solid white;box-shadow:0 0 0 2px rgba(125,47,163,.35),0 4px 10px rgba(0,0,0,.25);"></div>
-      <div style="position:absolute;inset:-6px;border-radius:50%;background:rgba(125,47,163,.35);animation:gfm-ping 1.6s cubic-bezier(0,0,.2,1) infinite;"></div>
+      <div style="position:absolute;inset:0;border-radius:50%;background:#3b82f6;border:3px solid white;box-shadow:0 0 0 2px rgba(59,130,246,.35),0 4px 10px rgba(0,0,0,.25);"></div>
+      <div style="position:absolute;inset:-6px;border-radius:50%;background:rgba(59,130,246,.35);animation:gfm-ping 1.6s cubic-bezier(0,0,.2,1) infinite;"></div>
     </div>
   `
   return leaflet.divIcon({
@@ -599,8 +599,8 @@ function drawMarker(lat, lng) {
     suppressMoveEvent = false
   }
 
-  const accentHex = props.isCOE ? '#ea580c' : props.isSOM ? '#16a34a' : '#6a2590'
-  const accentFill = props.isCOE ? '#fb923c' : props.isSOM ? '#22c55e' : '#7d2fa3'
+  const accentHex = props.isCOE ? '#ea580c' : props.isSOM ? '#16a34a' : '#2563eb'
+  const accentFill = props.isCOE ? '#fb923c' : props.isSOM ? '#22c55e' : '#3b82f6'
   if (!circle) {
     circle = leaflet.circle([lat, lng], {
       radius: props.radius || 80,
@@ -627,9 +627,9 @@ function drawMeMarker(lat, lng, accuracy) {
     if (!meAccuracyCircle) {
       meAccuracyCircle = leaflet.circle([lat, lng], {
         radius: accuracy,
-        color: '#7d2fa3',
+        color: '#3b82f6',
         weight: 1,
-        fillColor: '#7d2fa3',
+        fillColor: '#3b82f6',
         fillOpacity: 0.08,
         interactive: false
       }).addTo(map)
@@ -899,7 +899,7 @@ onBeforeUnmount(() => {
 
 /* ============ Premium gradient frames around the map ============ */
 .gfm-frame-blue {
-  background: linear-gradient(135deg, #3d1154 0%, #7d2fa3 50%, #9a5dd0 100%);
+  background: linear-gradient(135deg, #1e3bdb 0%, #4f62ff 50%, #6366f1 100%);
 }
 .gfm-frame-coe {
   background: linear-gradient(135deg, #ea580c 0%, #f97316 50%, #fb923c 100%);
@@ -954,7 +954,7 @@ onBeforeUnmount(() => {
 }
 :deep(.leaflet-control-zoom a:hover) {
   background: rgba(255, 255, 255, 1) !important;
-  color: #3d1154 !important;
+  color: #1e3bdb !important;
 }
 
 /* ============ Hide any stray Leaflet attribution badge ============ */

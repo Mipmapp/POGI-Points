@@ -492,8 +492,8 @@ onBeforeUnmount(() => cleanupTimers())
 .lg-center-dot {
   width: 12px; height: 12px;
   border-radius: 50%;
-  background: radial-gradient(circle, #7d2fa3 0%, #3d1154 100%);
-  box-shadow: 0 0 12px rgba(125,47,163,0.8), 0 0 24px rgba(125,47,163,0.4);
+  background: radial-gradient(circle, #4f62ff 0%, #1e3bdb 100%);
+  box-shadow: 0 0 12px rgba(99,146,255,0.8), 0 0 24px rgba(99,146,255,0.4);
   position: relative;
 }
 .lg-center-dot::after {
@@ -638,12 +638,12 @@ onBeforeUnmount(() => cleanupTimers())
 .lg-btn-cancel:hover:not(:disabled) { background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
 .lg-btn-cancel:disabled { opacity: 0.4; cursor: not-allowed; }
 .lg-btn-retry {
-  background: linear-gradient(135deg, #3d1154, #7d2fa3);
+  background: linear-gradient(135deg, #1e3bdb, #4f62ff);
   color: white;
-  border: 1px solid rgba(125,47,163,0.4);
-  box-shadow: 0 8px 20px rgba(61,17,84,0.35);
+  border: 1px solid rgba(99,146,255,0.4);
+  box-shadow: 0 8px 20px rgba(30,59,219,0.35);
 }
-.lg-btn-retry:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(61,17,84,0.45); }
+.lg-btn-retry:hover { transform: translateY(-1px); box-shadow: 0 12px 24px rgba(30,59,219,0.45); }
 .lg-btn-retry:active { transform: translateY(0); }
 
 /* ── Overlay & panel transitions ──────────────────────────── */

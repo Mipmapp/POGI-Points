@@ -30,7 +30,7 @@
             <div class="grid grid-cols-3 gap-3">
               <div class="flex flex-col items-center text-center p-4 bg-blue-50 rounded-2xl">
                 <div class="w-12 h-12 mb-3 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <div class="w-6 h-6" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: #6a2590;"></div>
+                  <div class="w-6 h-6" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: #2563eb;"></div>
                 </div>
                 <p class="font-semibold text-blue-900 text-xs mb-1 leading-tight">Email Support</p>
                 <p class="text-[10px] text-gray-500 leading-snug">ssaamjrmsu<br>@gmail.com</p>
@@ -39,7 +39,7 @@
 
               <div class="flex flex-col items-center text-center p-4 bg-blue-50 rounded-2xl">
                 <div class="w-12 h-12 mb-3 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <div class="w-6 h-6" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat; background-color: #6a2590;"></div>
+                  <div class="w-6 h-6" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat; background-color: #2563eb;"></div>
                 </div>
                 <p class="font-semibold text-blue-900 text-xs mb-1 leading-tight">CCS Office</p>
                 <p class="text-[10px] text-gray-500 leading-snug">College of<br>Computing</p>
@@ -48,7 +48,7 @@
 
               <div class="flex flex-col items-center text-center p-4 bg-blue-50 rounded-2xl cursor-pointer hover:bg-blue-100 active:scale-95 transition-all" @click="showDevelopersPopup = true; showContactModal = false">
                 <div class="w-12 h-12 mb-3 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <div class="w-6 h-6" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat; background-color: #6a2590;"></div>
+                  <div class="w-6 h-6" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat; background-color: #2563eb;"></div>
                 </div>
                 <p class="font-semibold text-blue-900 text-xs mb-1 leading-tight">Meet the Team</p>
                 <p class="text-[10px] text-gray-500 leading-snug">CCS<br>Creatives</p>
@@ -1629,7 +1629,7 @@ function manualRetryFace() {
   padding: 2rem;
   position: relative;
   overflow: hidden;
-  box-shadow: inset -18px 0 40px rgba(0,0,0,0.20), 8px 0 32px rgba(61,17,84,0.25);
+  box-shadow: inset -18px 0 40px rgba(0,0,0,0.20), 8px 0 32px rgba(10,30,130,0.25);
 }
 
 .mobile-bg-full {
@@ -1910,9 +1910,9 @@ function manualRetryFace() {
 
 /* Button hover glow and subtle gradient animation */
 .modal-primary {
-  background-image: linear-gradient(90deg, #3d1154 0%, #7d2fa3 100%);
+  background-image: linear-gradient(90deg, #1e3bdb 0%, #4f62ff 100%);
 }
-.modal-primary:hover { box-shadow: 0 12px 30px rgba(61,17,84,0.18); }
+.modal-primary:hover { box-shadow: 0 12px 30px rgba(37,99,235,0.18); }
 .modal-secondary:hover { box-shadow: 0 8px 20px rgba(15,23,42,0.06); }
 
 /* Ensure modal content doesn't get clipped on very small screens */

@@ -121,7 +121,7 @@ const accentColors = computed(() => {
     ccs: {
       dot1: '#60a5fa', dot2: '#93c5fd', dot3: '#818cf8',
       prompt: '#93c5fd', cursor: '#60a5fa', progress: '#93c5fd',
-      barGradient: 'linear-gradient(to right, #3d1154, #7d2fa3)',
+      barGradient: 'linear-gradient(to right, #1e3bdb, #4f62ff)',
       scanner: 'rgba(96,165,250,0.5)',
     },
   }
