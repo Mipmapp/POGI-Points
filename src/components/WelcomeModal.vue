@@ -325,7 +325,9 @@ const tcSections = [
 .hint-fade-enter-from { opacity: 0; max-height: 0; }
 .hint-fade-leave-to { opacity: 0; max-height: 0; }
 
-.welcome-scroll::-webkit-scrollbar { width: 4px; }
+.welcome-scroll { scrollbar-width: thin; scrollbar-color: #9ca3af transparent; }
+.welcome-scroll::-webkit-scrollbar { width: 5px; }
 .welcome-scroll::-webkit-scrollbar-track { background: transparent; }
-.welcome-scroll::-webkit-scrollbar-thumb { background-color: #d1d5db; border-radius: 999px; }
+.welcome-scroll::-webkit-scrollbar-thumb { background-color: #9ca3af; border-radius: 999px; }
+.welcome-scroll::-webkit-scrollbar-thumb:hover { background-color: #6b7280; }
 </style>
