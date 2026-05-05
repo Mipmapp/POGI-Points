@@ -58,7 +58,7 @@ export function useCollege() {
     if (isCOE.value)   return '#ea580c'
     if (isSOM.value)   return '#16a34a'
     if (isCNAHS.value) return '#15803d'
-    return '#1e3bdb'
+    return '#3d1154'
   })
 
   return {

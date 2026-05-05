@@ -26,10 +26,25 @@ SSAAM is a Vue 3 + Vite SPA for JRMSU that monitors student attendance at school
 | Face ID    | `@vladmandic/face-api` (in-browser) |
 | Maps       | Leaflet + OpenStreetMap |
 
+## Theme System
+The app uses a **CCS purple + gold** palette matching the JRMSU College of Computer Studies shield logo.
+
+| Token | Hex | Usage |
+|-------|-----|-------|
+| `ssaam-dark` | `#3d1154` | Deep royal purple (shield background) |
+| `ssaam-light` | `#7d2fa3` | Medium purple (buttons, gradients) |
+| `ssaam-gold` | `#c9952b` | Antique gold (banner accent) |
+| `ssaam-gold-light` | `#e8c840` | Bright gold highlight |
+
+**Tailwind blue palette is overridden** in `tailwind.config.js` to remap all `blue-*` classes to purple tones automatically. Every `bg-blue-600`, `text-blue-700`, `ring-blue-300` etc. becomes brand-purple without touching any template code.
+
+CSS variables are defined in `src/assets/theme.css` (imported first in `main.js`) under `:root` and `[data-theme="ccs"]`. Use `var(--ssaam-dark)`, `var(--ssaam-light)`, `var(--ssaam-gold)` in any inline style.
+
 ## Project Structure
 ```
 src/
 ├── assets/
+│   ├── theme.css           CSS custom properties — CCS purple+gold palette
 │   └── styles.css          Global CSS (Tailwind directives + shared animations)
 ├── components/             Reusable Vue components
 │   ├── AdminContributionPanel.vue

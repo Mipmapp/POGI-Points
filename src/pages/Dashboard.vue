@@ -2723,7 +2723,7 @@
                               v-if="getSessionDisplayStatus(session, event) === 'active' && getSessionCheckAction(session, event)"
                               @click.stop="handleSessionButtonClick(session, event)"
                               :title="getSessionLockReason(session, event) || ''"
-                              :class="['ssaam-checkin-btn px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 active:scale-95 shadow-md text-white', getSessionLockReason(session, event) ? 'bg-gradient-to-r from-amber-500 to-orange-600 ring-2 ring-amber-300/60 cursor-not-allowed' : (getSessionCheckAction(session, event) === 'Check In' ? (isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-orange-500/30' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-green-500/30' : 'bg-gradient-to-r from-[#1e3bdb] to-[#4f62ff] hover:from-[#1730c0] hover:to-[#3d52e8] shadow-blue-600/30') : 'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-emerald-500/30')]"
+                              :class="['ssaam-checkin-btn px-3 py-1.5 rounded-xl text-xs font-bold tracking-wide transition-all duration-200 active:scale-95 shadow-md text-white', getSessionLockReason(session, event) ? 'bg-gradient-to-r from-amber-500 to-orange-600 ring-2 ring-amber-300/60 cursor-not-allowed' : (getSessionCheckAction(session, event) === 'Check In' ? (isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-orange-500/30' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-green-500/30' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light hover:from-[#2d0845] hover:to-[#5c1d80] shadow-purple-900/30') : 'bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 shadow-emerald-500/30')]"
                             >
                               <span class="flex items-center gap-1.5">
                                 <!-- Locked icon overrides the action icon when scanner is closed -->
@@ -7868,7 +7868,7 @@
       @click.self="closeEventSessionPicker"
     >
       <div class="ssaam-picker-card w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden">
-        <div :class="['px-5 pt-5 pb-4 text-white', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600' : isCNAHS ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-gradient-to-r from-[#1e3bdb] to-[#4f62ff]']">
+        <div :class="['px-5 pt-5 pb-4 text-white', isCOE ? 'bg-gradient-to-r from-orange-500 to-orange-600' : isSOM ? 'bg-gradient-to-r from-green-500 to-green-600' : isCNAHS ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0">
               <p class="text-xs font-semibold opacity-90 uppercase tracking-wider">Choose a session</p>
@@ -7887,14 +7887,14 @@
             :class="['w-full flex items-center gap-3 p-3 rounded-2xl border-2 transition-all duration-200 hover:-translate-y-0.5 active:scale-95 ssaam-picker-item', item.action === 'Check Out' ? 'bg-emerald-50 border-emerald-200 hover:border-emerald-400' : 'bg-blue-50 border-blue-200 hover:border-blue-400']"
             :style="{ animationDelay: (idx * 60) + 'ms' }"
           >
-            <span :class="['w-11 h-11 rounded-xl flex items-center justify-center text-white flex-shrink-0', item.action === 'Check Out' ? 'bg-gradient-to-br from-emerald-500 to-green-600' : 'bg-gradient-to-br from-[#1e3bdb] to-[#4f62ff]']">
+            <span :class="['w-11 h-11 rounded-xl flex items-center justify-center text-white flex-shrink-0', item.action === 'Check Out' ? 'bg-gradient-to-br from-emerald-500 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
               <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2M9 10h.01M15 10h.01M9 16c.85.63 1.885 1 3 1s2.15-.37 3-1"/></svg>
             </span>
             <span class="flex-1 min-w-0 text-left">
               <span class="block text-sm font-bold text-gray-900 truncate">{{ item.session.label || 'Session' }}</span>
               <span class="block text-xs text-gray-600">{{ item.session.start_time }} – {{ item.session.end_time }}</span>
             </span>
-            <span :class="['px-3 py-1 rounded-full text-xs font-bold', item.action === 'Check Out' ? 'bg-emerald-600 text-white' : 'bg-[#1e3bdb] text-white']">
+            <span :class="['px-3 py-1 rounded-full text-xs font-bold', item.action === 'Check Out' ? 'bg-emerald-600 text-white' : 'bg-ssaam-dark text-white']">
               {{ item.action }}
             </span>
           </button>
@@ -9784,7 +9784,7 @@ const getEventScannerBtnClass = (event) => {
   if (isCOE.value) return 'bg-gradient-to-br from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 shadow-lg shadow-orange-500/30'
   if (isSOM.value) return 'bg-gradient-to-br from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 shadow-lg shadow-green-500/30'
   if (isCNAHS.value) return 'bg-gradient-to-br from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/30'
-  return 'bg-gradient-to-br from-[#1e3bdb] to-[#4f62ff] hover:from-[#1730c0] hover:to-[#3d52e8] shadow-lg shadow-blue-600/30'
+  return 'bg-gradient-to-br from-ssaam-dark to-ssaam-light hover:from-[#2d0845] hover:to-[#5c1d80] shadow-lg shadow-purple-900/30'
 }
 const getEventScannerLabel = (event) => {
   if (event && event.face_id_enabled === false) return 'Face ID Off'
@@ -10076,7 +10076,7 @@ const getDefaultProfileGradient = () => {
   if (dept === 'COE') return 'linear-gradient(to bottom right, #fb923c, #dc2626)' // orange to red
   if (dept === 'SOM') return 'linear-gradient(to bottom right, #22c55e, #eab308)' // green to yellow
   if (dept === 'CNAHS') return 'linear-gradient(to bottom right, #22c55e, #16a34a)' // green to darker green
-  return 'linear-gradient(to bottom right, #1e3bdb, #4f62ff)' // ssaam blue
+  return 'linear-gradient(to bottom right, #3d1154, #7d2fa3)' // ssaam purple
 }
 
 const applyPaletteToGradient = (palette) => {

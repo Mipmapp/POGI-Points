@@ -72,7 +72,7 @@
                   </div>
 
                   <!-- Student Information Section -->
-                  <div style="background: linear-gradient(to right, #1e3bdb, #4f62ff); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+                  <div style="background: linear-gradient(to right, #3d1154, #7d2fa3); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
                     <h3 style="margin: 0 0 0.75rem 0; font-size: 14px; font-weight: bold; text-transform: uppercase;">Student Information</h3>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 12px;">
                       <div>
@@ -123,9 +123,9 @@
                   </div>
 
                   <!-- Notes Section -->
-                  <div v-if="notes" style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1.5rem;">
-                    <h3 style="margin: 0 0 0.5rem 0; font-size: 12px; font-weight: bold; color: #1e40af; text-transform: uppercase;">Treasurer Notes</h3>
-                    <p style="margin: 0; font-size: 12px; color: #1e3a8a; line-height: 1.5;">{{ notes }}</p>
+                  <div v-if="notes" style="background: #f5f0ff; border-left: 4px solid #7d2fa3; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1.5rem;">
+                    <h3 style="margin: 0 0 0.5rem 0; font-size: 12px; font-weight: bold; color: #451462; text-transform: uppercase;">Treasurer Notes</h3>
+                    <p style="margin: 0; font-size: 12px; color: #3d1154; line-height: 1.5;">{{ notes }}</p>
                   </div>
 
                   <!-- Approval Section -->
@@ -211,7 +211,7 @@
         </div>
 
         <!-- Student Information Section -->
-        <div style="background: linear-gradient(to right, #1e3bdb, #4f62ff); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
+        <div style="background: linear-gradient(to right, #3d1154, #7d2fa3); color: white; padding: 1rem; border-radius: 0.5rem; margin-bottom: 1.5rem;">
           <h3 style="margin: 0 0 0.75rem 0; font-size: 14px; font-weight: bold; text-transform: uppercase;">Student Information</h3>
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 12px;">
             <div>
@@ -262,9 +262,9 @@
         </div>
 
         <!-- Notes Section -->
-        <div v-if="notes" style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1.5rem;">
-          <h3 style="margin: 0 0 0.5rem 0; font-size: 12px; font-weight: bold; color: #1e40af; text-transform: uppercase;">Treasurer Notes</h3>
-          <p style="margin: 0; font-size: 12px; color: #1e3a8a; line-height: 1.5;">{{ notes }}</p>
+        <div v-if="notes" style="background: #f5f0ff; border-left: 4px solid #7d2fa3; padding: 1rem; border-radius: 0.25rem; margin-bottom: 1.5rem;">
+          <h3 style="margin: 0 0 0.5rem 0; font-size: 12px; font-weight: bold; color: #451462; text-transform: uppercase;">Treasurer Notes</h3>
+          <p style="margin: 0; font-size: 12px; color: #3d1154; line-height: 1.5;">{{ notes }}</p>
         </div>
 
         <!-- Approval Section -->

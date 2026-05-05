@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import router from './router'
+import './assets/theme.css'
 import './assets/styles.css'
 import { applyTheme, initThemeWatcher } from './utils/theme.js'
 

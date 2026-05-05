@@ -1,0 +1,51 @@
+/* ── SSAAM Global Theme System ───────────────────────────────────────────
+   Centralised CSS custom properties for the CCS purple + gold palette.
+   Sourced from the JRMSU College of Computer Studies shield logo:
+     Primary   — deep royal purple (#3d1154, shield background)
+     Secondary — medium purple     (#7d2fa3, interactive elements)
+     Accent    — antique gold      (#c9952b, banner / decorative)
+
+   Components using inline styles reference var(--ssaam-*) so the entire
+   palette can be updated in one place.  Tailwind blue-* classes are also
+   remapped to this purple scale via tailwind.config.js.
+   ─────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Brand gradient endpoints */
+  --ssaam-dark:        #3d1154;
+  --ssaam-light:       #7d2fa3;
+
+  /* Gold accent (banner / decorative highlights) */
+  --ssaam-gold:        #c9952b;
+  --ssaam-gold-light:  #e8c840;
+
+  /* Purple tonal scale — mirrors the Tailwind blue override */
+  --color-50:   #f5f0ff;
+  --color-100:  #ebe0ff;
+  --color-200:  #d4b8f5;
+  --color-300:  #b889e0;
+  --color-400:  #9a5dd0;
+  --color-500:  #7d2fa3;
+  --color-600:  #6a2590;
+  --color-700:  #561c78;
+  --color-800:  #451462;
+  --color-900:  #3d1154;
+
+  /* Semantic aliases */
+  --primary:    var(--ssaam-dark);
+  --secondary:  var(--ssaam-light);
+  --accent:     var(--ssaam-gold);
+  --surface:    #ffffff;
+  --background: #f5f0ff;
+  --text:       #1a0a2e;
+}
+
+/* CCS theme data-attribute — apply via setTheme('ccs') */
+[data-theme="ccs"] {
+  --primary:    #3d1154;
+  --secondary:  #7d2fa3;
+  --accent:     #c9952b;
+  --surface:    #ffffff;
+  --background: #f5f0ff;
+  --text:       #1a0a2e;
+}
