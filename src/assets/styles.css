@@ -541,6 +541,8 @@ input[type="password"]::placeholder {
   scrollbar-gutter: stable;
   scrollbar-width: thin;
   scrollbar-color: #4f62ff #e8ecff;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
 }
 .terms-modal-scroll::-webkit-scrollbar {
   width: 6px;

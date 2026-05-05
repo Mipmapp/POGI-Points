@@ -81,7 +81,8 @@ ADMIN_VERIFICATION_SECRET = "SSAAMAdminVerify"
 MONGODB_URL = "mongodb+srv://SSAAM:ssaam.admin.jrmsu@cluster0.bnwy9iy.mongodb.net/dbconnect?retryWrites=true&w=majority"
 PORT = "3001"
 CLOUDINARY_API_KEY = "715412913547581"
-CLOUDINARY_API_SECRET = ""
+CLOUDINARY_API_SECRET = "651ZOdd6GommbVnhJDDNFKliUaA"
+CLOUDINARY_CLOUD_PROJECT = "devnpfjiu"
 
 [userenv.development]
 VITE_API_URL = ""
