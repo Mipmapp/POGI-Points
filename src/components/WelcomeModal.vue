@@ -22,7 +22,7 @@
               <h2 class="text-white text-xl sm:text-2xl font-black leading-none tracking-tight drop-shadow-md">SSAAM</h2>
               <p class="text-white/60 text-[10px] leading-tight mt-0.5">Student School Activities Attendance Monitoring</p>
             </div>
-            <span class="text-[9px] bg-white/10 text-white/70 border border-white/20 rounded-full px-2 py-0.5 font-semibold backdrop-blur-sm whitespace-nowrap self-end">JRMSU</span>
+            <span class="text-[9px] bg-white/10 text-white/70 border border-white/20 rounded-full px-2 py-0.5 font-semibold backdrop-blur-sm whitespace-nowrap self-end">CCS</span>
           </div>
         </div>
 
@@ -162,7 +162,7 @@
               Welcome, <strong class="text-gray-700">{{ userName }}</strong>! Glad to have you in SSAAM.
             </span>
             <span v-else>
-              Welcome to <strong class="text-gray-700">SSAAM</strong> — your official JRMSU attendance platform.
+              Welcome to <strong class="text-gray-700">SSAAM</strong> — your official CCS attendance platform.
             </span>
           </p>
         </div>
@@ -230,11 +230,11 @@ const tcSections = [
     color: 'bg-blue-600',
     dot: 'bg-blue-400',
     points: [
-      'SSAAM (Student School Activities Attendance Monitoring) is an official digital platform of Jose Rizal Memorial State University (JRMSU).',
+      'SSAAM (Student School Activities Attendance Monitoring) is an official digital platform of the College of Computing Studies.',
       'It is designed to record, monitor, and manage student attendance in school activities and events.',
-      'The system is operated by the College of Computing Studies (CCS) — Creatives Society and is authorized by JRMSU administration.',
+      'The system is operated by the College of Computing Studies (CCS) — Creatives Society and is authorized by the CCS administration.',
       'Use of this platform is mandatory for enrolled students who are required to attend official school activities.',
-      'This platform covers all JRMSU colleges including CCS, COE, SOM, and CNAHS.'
+      'This platform covers the CCS.'
     ]
   },
   {
@@ -245,7 +245,7 @@ const tcSections = [
       'SSAAM collects personal information including your name, student ID, program, year level, and contact details as provided during registration.',
       'Biometric data (facial recognition descriptors) may be collected for identity verification during attendance check-in.',
       'Attendance logs, event participation records, and financial transaction histories are stored in a secured database.',
-      'Your data is used solely for attendance monitoring, contribution tracking, and academic reporting within JRMSU.',
+      'Your data is used solely for attendance monitoring, contribution tracking, and academic reporting within the CCS.',
       'SSAAM does not sell, share, or distribute your personal information to third parties without explicit written consent, except as required by university policy or law.',
       'Data is stored securely on cloud infrastructure and protected by encryption and access controls.'
     ]

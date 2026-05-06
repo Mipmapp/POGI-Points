@@ -18,7 +18,7 @@ export default defineConfig({
       manifest: {
         name: 'SSAAM - Student School Activities Attendance Monitoring',
         short_name: 'SSAAM',
-        description: 'Student School Activities Attendance Monitoring System for JRMSU',
+        description: 'Student School Activities Attendance Monitoring System for ccs',
         theme_color: '#1e3a5f',
         background_color: '#ffffff',
         display: 'standalone',

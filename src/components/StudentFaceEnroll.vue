@@ -50,7 +50,7 @@
                   <p>Your face template is used <strong>only</strong> to verify your identity when you mark your own attendance. It is never shared with other students, never sold, and never used for advertising or surveillance outside of attendance.</p>
 
                   <p class="font-semibold text-white pt-1">3. Your responsibility</p>
-                  <p>You must enrol your <strong>own face</strong>. Enrolling someone else's face, or letting another person use your Face ID to mark attendance, is treated as proxy attendance and may lead to disciplinary action under JRMSU rules.</p>
+                  <p>You must enrol your <strong>own face</strong>. Enrolling someone else's face, or letting another person use your Face ID to mark attendance, is treated as proxy attendance and may lead to disciplinary action under CCS rules.</p>
 
                   <p class="font-semibold text-white pt-1">4. Updating &amp; removing</p>
                   <p>You can update your Face ID once every {{ cooldownDays }} days from this same screen. To remove your Face ID entirely, contact your college admin.</p>
