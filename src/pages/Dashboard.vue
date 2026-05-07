@@ -6150,214 +6150,143 @@
   </transition>
 
   <!-- Create Attendance Event Modal -->
-  <!-- Backdrop Fade Only -->
   <transition name="fade">
-    <div v-if="showCreateEventModal" class="fixed inset-0 bg-black bg-opacity-50"></div>
+    <div v-if="showCreateEventModal" class="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
   </transition>
-  <!-- Modal Pop -->
   <transition name="fade-scale">
-    <div v-if="showCreateEventModal" class="fixed inset-0 flex items-center justify-center z-50 overflow-hidden" @click.self="showCreateEventModal = false">
-      <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-2xl w-full mx-4 max-h-[95vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-6">
-          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Create Attendance Event</h3>
-          <button @click="showCreateEventModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+    <div v-if="showCreateEventModal" class="fixed inset-0 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" @click.self="showCreateEventModal = false">
+      <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[95vh] flex flex-col overflow-hidden">
+
+        <!-- Sticky Header -->
+        <div :class="['flex items-center justify-between px-4 py-3 sm:px-5 border-b flex-shrink-0', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+          <h3 :class="['text-base font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Create Attendance Event</h3>
+          <button @click="showCreateEventModal = false" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition text-xl leading-none">&times;</button>
         </div>
-        
-        <!-- Loading Progress Indicator -->
-        <div v-if="loadingStudentsForEvent" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <div class="flex items-center justify-between mb-2">
-            <p class="text-sm font-medium text-blue-900">Loading students...</p>
-            <span class="text-xs text-blue-700">{{ loadedStudentCount }} / {{ totalStudentCount }}</span>
+
+        <!-- Scrollable Body -->
+        <div class="overflow-y-auto flex-1 px-4 py-3 sm:px-5 space-y-3">
+
+          <!-- Loading Progress -->
+          <div v-if="loadingStudentsForEvent" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div class="flex items-center justify-between mb-1.5">
+              <p class="text-xs font-medium text-blue-900">Loading students...</p>
+              <span class="text-xs text-blue-700">{{ loadedStudentCount }} / {{ totalStudentCount }}</span>
+            </div>
+            <div class="w-full bg-blue-200 rounded-full h-1.5">
+              <div :style="{ width: totalStudentCount > 0 ? (loadedStudentCount / totalStudentCount * 100) + '%' : '0%' }" class="bg-blue-600 h-1.5 rounded-full transition-all duration-200"></div>
+            </div>
           </div>
-          <div class="w-full bg-blue-200 rounded-full h-2">
-            <div :style="{ width: totalStudentCount > 0 ? (loadedStudentCount / totalStudentCount * 100) + '%' : '0%' }" class="bg-blue-600 h-2 rounded-full transition-all duration-200"></div>
-          </div>
-        </div>
-        
-        <div class="space-y-5">
-          <!-- Basic Event Info Section -->
-          <div :class="['p-5 rounded-xl border-2', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
-            <h4 :class="['text-sm font-semibold mb-4', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Basic Information</h4>
-            <div class="space-y-4">
-              <!-- Title -->
+
+          <!-- Basic Information -->
+          <div :class="['p-3 sm:p-4 rounded-xl border', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <p :class="['text-[10px] font-bold uppercase tracking-widest mb-3', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">Basic Information</p>
+            <div class="space-y-2.5">
               <div>
-                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Event Title *</label>
-                <input ref="newEventTitleInput" v-model="newEvent.title" type="text" placeholder="e.g., CCS General Assembly" @keydown.enter.prevent="focusNewEventLocation" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition font-medium', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
+                <label :class="['block text-xs font-semibold mb-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Event Title *</label>
+                <input ref="newEventTitleInput" v-model="newEvent.title" type="text" placeholder="e.g., CCS General Assembly" @keydown.enter.prevent="focusNewEventLocation" :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none transition text-sm font-medium bg-white', isCOE ? 'border-orange-200 focus:ring-orange-400 focus:border-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400 focus:border-green-400' : 'border-blue-200 focus:ring-blue-400 focus:border-blue-400']" />
               </div>
-              <!-- Location -->
-              <div>
-                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Location</label>
-                <input ref="newEventLocationInput" v-model="newEvent.location" type="text" placeholder="e.g., CCS AVR" @keydown.enter.prevent="focusNewEventDescription" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
-              </div>
-              <!-- Description -->
-              <div>
-                <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Description</label>
-                <textarea ref="newEventDescriptionInput" v-model="newEvent.description" placeholder="Event description..." rows="2" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none resize-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']"></textarea>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label :class="['block text-xs font-semibold mb-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Location</label>
+                  <input ref="newEventLocationInput" v-model="newEvent.location" type="text" placeholder="e.g., CCS AVR" @keydown.enter.prevent="focusNewEventDescription" :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none transition text-sm bg-white', isCOE ? 'border-orange-200 focus:ring-orange-400 focus:border-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400 focus:border-green-400' : 'border-blue-200 focus:ring-blue-400 focus:border-blue-400']" />
+                </div>
+                <div>
+                  <label :class="['block text-xs font-semibold mb-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Description</label>
+                  <input ref="newEventDescriptionInput" v-model="newEvent.description" type="text" placeholder="Short description..." :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none transition text-sm bg-white', isCOE ? 'border-orange-200 focus:ring-orange-400 focus:border-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400 focus:border-green-400' : 'border-blue-200 focus:ring-blue-400 focus:border-blue-400']" />
+                </div>
               </div>
             </div>
           </div>
 
-          <!-- Schedule Section -->
-          <div :class="['p-5 rounded-xl border-2', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
-            <h4 :class="['text-sm font-semibold mb-4', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Schedule</h4>
-            <div class="space-y-4">
-              <!-- Date -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-                <button @click="openCalendarPicker('newEvent')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
-                  <span :class="newEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(newEvent.date) }}</span>
-                  <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <!-- Schedule -->
+          <div :class="['p-3 sm:p-4 rounded-xl border', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <p :class="['text-[10px] font-bold uppercase tracking-widest mb-3', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">Schedule</p>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="col-span-3 sm:col-span-1">
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Date *</label>
+                <button @click="openCalendarPicker('newEvent')" type="button" :class="['w-full px-3 py-2 border rounded-lg text-left flex items-center justify-between transition text-sm bg-white', isCOE ? 'border-orange-200 hover:border-orange-300' : isSOM ? 'border-green-200 hover:border-green-300' : 'border-gray-200 hover:border-gray-300']">
+                  <span :class="newEvent.date ? 'text-gray-900 text-xs' : 'text-gray-400 text-xs'">{{ formatCalendarDisplayDate(newEvent.date) || 'Select date' }}</span>
+                  <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                 </button>
               </div>
-              <!-- Times -->
-              <div class="grid grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">Start Time *</label>
-                  <button @click="openTimePicker('event_start_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
-                    <span :class="newEvent.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.start_time) || 'Select time' }}</span>
-                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                  </button>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-2">End Time *</label>
-                  <button @click="openTimePicker('event_end_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
-                    <span :class="newEvent.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(newEvent.end_time) || 'Select time' }}</span>
-                    <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                  </button>
-                </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Start *</label>
+                <button @click="openTimePicker('event_start_time')" type="button" :class="['w-full px-3 py-2 border rounded-lg text-left flex items-center justify-between transition bg-white', isCOE ? 'border-orange-200 hover:border-orange-300' : isSOM ? 'border-green-200 hover:border-green-300' : 'border-gray-200 hover:border-gray-300']">
+                  <span :class="newEvent.start_time ? 'text-gray-900 text-xs' : 'text-gray-400 text-xs'">{{ formatDisplayTime(newEvent.start_time) || 'Time' }}</span>
+                  <svg :class="['w-3.5 h-3.5 flex-shrink-0', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </button>
               </div>
-              <div :class="['p-3 rounded-lg text-sm', isCOE ? 'bg-orange-100 text-orange-800 border border-orange-200' : isSOM ? 'bg-green-100 text-green-800 border border-green-200' : 'bg-blue-100 text-blue-800 border border-blue-200']">
-                <span class="font-medium">Tip:</span> Session times must fall within the event time range.
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">End *</label>
+                <button @click="openTimePicker('event_end_time')" type="button" :class="['w-full px-3 py-2 border rounded-lg text-left flex items-center justify-between transition bg-white', isCOE ? 'border-orange-200 hover:border-orange-300' : isSOM ? 'border-green-200 hover:border-green-300' : 'border-gray-200 hover:border-gray-300']">
+                  <span :class="newEvent.end_time ? 'text-gray-900 text-xs' : 'text-gray-400 text-xs'">{{ formatDisplayTime(newEvent.end_time) || 'Time' }}</span>
+                  <svg :class="['w-3.5 h-3.5 flex-shrink-0', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </button>
               </div>
             </div>
-          </div>
-          
-          <!-- Custom Event Toggle -->
-          <div :class="['flex items-center gap-3 border-2 rounded-xl p-4 transition cursor-pointer', isCOE ? 'bg-orange-50 border-orange-200 hover:bg-orange-100' : isSOM ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-blue-50 border-blue-200 hover:bg-blue-100']" @click="newEvent.is_custom = !newEvent.is_custom">
-            <input type="checkbox" v-model="newEvent.is_custom" id="customEventToggle" :class="['w-5 h-5 rounded cursor-pointer', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" />
-            <label for="customEventToggle" class="flex-1 cursor-pointer">
-              <p :class="['font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Assign to Specific Students</p>
-              <p :class="['text-xs mt-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Select individual students from the complete student list</p>
-            </label>
+            <p :class="['text-[10px] mt-2 px-1', isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : 'text-blue-500']">Session times must fall within the event time range.</p>
           </div>
 
-          <!-- User Selection Section -->
-          <div v-if="newEvent.is_custom" :class="['border-2 rounded-xl p-5 space-y-4', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
-            <h4 :class="['text-sm font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Select Students to Assign to This Event</h4>
-            
-            <!-- Filter Section -->
-            <div :class="['bg-white border rounded-lg p-4 space-y-3', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-blue-200']">
-              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Filter Students</p>
-              
-              <!-- Name/Student ID Filter -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Name or Student ID</label>
-                <input 
-                  v-model="eventUserFilters.name" 
-                  type="text" 
-                  placeholder="Search by name or student ID..." 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
-                />
-              </div>
-              
-              <!-- Program Filter -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
-                <select 
-                  v-model="eventUserFilters.program" 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
-                >
+          <!-- Assign to Specific Students -->
+          <div :class="['flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition', isCOE ? 'bg-orange-50 border-orange-200 hover:bg-orange-100' : isSOM ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-blue-50 border-blue-200 hover:bg-blue-100']" @click="newEvent.is_custom = !newEvent.is_custom">
+            <input type="checkbox" v-model="newEvent.is_custom" id="customEventToggle" @click.stop :class="['w-4 h-4 rounded cursor-pointer flex-shrink-0', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" />
+            <div class="flex-1 min-w-0">
+              <p :class="['text-sm font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Assign to Specific Students</p>
+              <p :class="['text-xs', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']">Select individual students from the list</p>
+            </div>
+          </div>
+
+          <!-- Student Selection -->
+          <div v-if="newEvent.is_custom" :class="['border rounded-xl p-3 sm:p-4 space-y-3', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <p :class="['text-[10px] font-bold uppercase tracking-widest', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">Select Students</p>
+            <div :class="['bg-white border rounded-lg p-3 space-y-2', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-blue-200']">
+              <input v-model="eventUserFilters.name" type="text" placeholder="Search name or student ID..." :class="['w-full px-3 py-1.5 border rounded-lg focus:ring-2 outline-none text-xs', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400' : 'border-blue-200 focus:ring-blue-400']" />
+              <div class="grid grid-cols-2 gap-2">
+                <select v-model="eventUserFilters.program" :class="['w-full px-2 py-1.5 border rounded-lg focus:ring-2 outline-none text-xs', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400' : 'border-blue-200 focus:ring-blue-400']">
                   <option value="">All Programs</option>
                   <option value="BSIT">BSIT</option>
                   <option value="BSCS">BSCS</option>
                   <option value="BSIS">BSIS</option>
                 </select>
-              </div>
-              
-              <!-- Year Level Filter -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Year Level</label>
-                <select 
-                  v-model="eventUserFilters.yearLevel" 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
-                >
-                  <option value="">All Year Levels</option>
+                <select v-model="eventUserFilters.yearLevel" :class="['w-full px-2 py-1.5 border rounded-lg focus:ring-2 outline-none text-xs', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400' : 'border-blue-200 focus:ring-blue-400']">
+                  <option value="">All Years</option>
                   <option value="1st Year">1st Year</option>
                   <option value="2nd Year">2nd Year</option>
                   <option value="3rd Year">3rd Year</option>
                   <option value="4th Year">4th Year</option>
                 </select>
               </div>
-              
-              <!-- Clear Filters Button -->
-              <div class="flex items-center gap-2 flex-wrap">
-                <button 
-                  @click="eventUserFilters = { name: '', program: '', yearLevel: '' }" 
-                  type="button" 
-                  :class="['text-xs font-medium hover:opacity-80', isCOE ? 'text-orange-600' : 'text-blue-600']"
-                >
-                  Clear All Filters
-                </button>
-                <span class="text-xs text-gray-400">•</span>
-                <button 
-                  @click="newEvent.assigned_users = filteredEventUsers.map(u => u._id)" 
-                  type="button" 
-                  class="text-xs text-green-600 hover:text-green-800 font-medium"
-                >
-                  Select All
-                </button>
-                <button 
-                  v-if="newEvent.assigned_users.length > 0"
-                  @click="newEvent.assigned_users = []" 
-                  type="button" 
-                  class="text-xs text-red-600 hover:text-red-800 font-medium"
-                >
-                  Deselect All
-                </button>
+              <div class="flex items-center gap-3">
+                <button @click="eventUserFilters = { name: '', program: '', yearLevel: '' }" type="button" class="text-xs text-gray-500 hover:text-gray-700 font-medium">Clear</button>
+                <button @click="newEvent.assigned_users = filteredEventUsers.map(u => u._id)" type="button" class="text-xs text-green-600 hover:text-green-800 font-medium">Select All</button>
+                <button v-if="newEvent.assigned_users.length > 0" @click="newEvent.assigned_users = []" type="button" class="text-xs text-red-500 hover:text-red-700 font-medium">Deselect All</button>
               </div>
             </div>
-
-            <!-- User List (Search Results) -->
-            <div :class="['max-h-48 overflow-y-auto border rounded-lg bg-white', isCOE ? 'border-orange-200' : 'border-blue-200']">
-              <div v-if="filteredEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
-                No students found
-              </div>
-              <label v-for="user in filteredEventUsers" :key="user._id" class="flex items-start gap-3 p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer last:border-b-0">
-                <input 
-                  type="checkbox" 
-                  :checked="newEvent.assigned_users && (newEvent.assigned_users.includes(user._id) || newEvent.assigned_users.some(u => (typeof u === 'object' ? u._id : u) === user._id))"
-                  @change="toggleEventUser(user._id)"
-                  :class="['mt-1 w-4 h-4 rounded focus:ring-2', isCOE ? 'text-orange-600 focus:ring-orange-600' : isSOM ? 'text-green-600 focus:ring-green-600' : 'text-blue-600 focus:ring-blue-600']"
-                />
-                <div class="flex-1 min-w-0">
-                  <p class="font-semibold text-gray-900 text-sm">{{ getUserDisplayName(user) }}</p>
-                  <p class="text-xs text-gray-600 mt-0.5">{{ user.student_id }} • {{ user.program }} • {{ user.year_level }}</p>
+            <div :class="['max-h-40 overflow-y-auto border rounded-lg bg-white divide-y divide-gray-50', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : 'border-blue-100']">
+              <div v-if="filteredEventUsers.length === 0" class="py-4 text-center text-xs text-gray-400">No students found</div>
+              <label v-for="user in filteredEventUsers" :key="user._id" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" :checked="newEvent.assigned_users && (newEvent.assigned_users.includes(user._id) || newEvent.assigned_users.some(u => (typeof u === 'object' ? u._id : u) === user._id))" @change="toggleEventUser(user._id)" :class="['w-4 h-4 rounded flex-shrink-0', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" />
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold text-gray-900 truncate">{{ getUserDisplayName(user) }}</p>
+                  <p class="text-[10px] text-gray-500">{{ user.student_id }} · {{ user.program }} · {{ user.year_level }}</p>
                 </div>
               </label>
             </div>
-
-            <!-- Selected Users Pills -->
-            <div v-if="newEvent.assigned_users && newEvent.assigned_users.length > 0" :class="['mb-3 pb-3 border-b', isCOE ? 'border-orange-300' : isSOM ? 'border-green-300' : 'border-blue-300']">
-              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Selected: {{ newEvent.assigned_users.length }} student(s)</p>
-              <div class="flex flex-wrap gap-2">
-                <div v-for="userItem in newEventDisplayUsers" :key="typeof userItem === 'string' ? userItem : userItem._id" :class="['text-xs font-medium flex items-center gap-2 px-3 py-1 rounded-full', isCOE ? 'bg-orange-200 text-orange-800' : isSOM ? 'bg-green-200 text-green-800' : 'bg-blue-200 text-blue-800']">
-                  <span>{{ getSelectedEventUserName(userItem) }}</span>
-                  <button @click="newEvent.assigned_users = newEvent.assigned_users.filter(id => (typeof id === 'string' ? id : id._id) !== (typeof userItem === 'string' ? userItem : userItem._id))" type="button" :class="['hover:opacity-80', isCOE ? 'hover:text-orange-900' : 'hover:text-blue-900']">×</button>
-                </div>
+            <div v-if="newEvent.assigned_users && newEvent.assigned_users.length > 0">
+              <p :class="['text-xs font-semibold mb-1.5', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">{{ newEvent.assigned_users.length }} selected</p>
+              <div class="flex flex-wrap gap-1.5">
+                <span v-for="userItem in newEventDisplayUsers" :key="typeof userItem === 'string' ? userItem : userItem._id" :class="['inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full', isCOE ? 'bg-orange-100 text-orange-800' : isSOM ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800']">
+                  {{ getSelectedEventUserName(userItem) }}
+                  <button @click="newEvent.assigned_users = newEvent.assigned_users.filter(id => (typeof id === 'string' ? id : id._id) !== (typeof userItem === 'string' ? userItem : userItem._id))" type="button" class="hover:opacity-60 leading-none ml-0.5">×</button>
+                </span>
               </div>
-            </div>
-
-            <div :class="['border-l-4 p-3 rounded text-xs', isCOE ? 'bg-orange-50 border-orange-500 text-orange-700' : isSOM ? 'bg-green-50 border-green-500 text-green-700' : 'bg-blue-50 border-blue-500 text-blue-700']">
-              <strong>{{ newEvent.assigned_users.length }}</strong> student(s) will be able to see this event
             </div>
           </div>
 
-          <!-- Location Geofence (Create) -->
-          <div class="border-t pt-4 mt-4">
-            <div class="mb-3">
-              <label class="block text-sm font-medium text-gray-700">Location restriction (GPS geofence)</label>
-              <p class="text-xs text-gray-500 mt-0.5">Optional. Limits check-ins to devices physically near the event venue.</p>
-            </div>
+          <!-- GPS Geofence -->
+          <div :class="['p-3 sm:p-4 rounded-xl border', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <p :class="['text-[10px] font-bold uppercase tracking-widest mb-0.5', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">GPS Geofence</p>
+            <p class="text-[10px] text-gray-500 mb-3">Optional — limits check-ins to devices near the venue.</p>
             <GeofenceMap
               :enabled="newEvent.geofence_enabled"
               :latitude="newEvent.geofence_lat"
@@ -6372,258 +6301,200 @@
             />
           </div>
 
-          <!-- Sessions Management Section (Create) -->
-          <div class="border-t pt-4 mt-4">
+          <!-- Sessions -->
+          <div :class="['p-3 sm:p-4 rounded-xl border', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
             <div class="flex items-center justify-between mb-3">
               <div>
-                <label class="block text-sm font-medium text-gray-700">Sessions</label>
-                <p class="text-xs text-gray-500 mt-0.5">Add sessions now so students can check in/out as soon as the event is created.</p>
+                <p :class="['text-[10px] font-bold uppercase tracking-widest', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">Sessions</p>
+                <p class="text-[10px] text-gray-500 mt-0.5">Students can check in right after the event is created.</p>
               </div>
-              <button @click="openAddSessionForNewEvent" type="button" :class="['text-xs px-3 py-1 rounded-lg transition flex items-center gap-1 font-medium flex-shrink-0', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200']">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                Add Session
+              <button @click="openAddSessionForNewEvent" type="button" :class="['text-xs px-2.5 py-1 rounded-lg flex items-center gap-1 font-semibold transition flex-shrink-0', isCOE ? 'bg-orange-200 text-orange-700 hover:bg-orange-300' : isSOM ? 'bg-green-200 text-green-700 hover:bg-green-300' : 'bg-blue-200 text-blue-700 hover:bg-blue-300']">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Add
               </button>
             </div>
-            <div v-if="newEventSessions.length === 0" class="text-center py-4 bg-gray-50 rounded-lg">
-              <p class="text-sm text-gray-500">No sessions added yet. You can also add them later from the event's Edit menu.</p>
+            <div v-if="newEventSessions.length === 0" class="text-center py-3 bg-white/60 rounded-lg border border-dashed border-gray-200">
+              <p class="text-xs text-gray-400">No sessions yet — you can add them later too.</p>
             </div>
             <div v-else class="space-y-2">
-              <div v-for="(session, idx) in newEventSessions" :key="'new-session-' + idx" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+              <div v-for="(session, idx) in newEventSessions" :key="'new-session-' + idx" class="flex items-center gap-2 p-2.5 bg-white rounded-lg border border-gray-100 shadow-sm">
                 <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2">
-                    <span class="font-medium text-gray-800">{{ session.label }}</span>
-                    <span v-if="session.check_in_only" class="px-2 py-0.5 rounded-full text-xs bg-blue-100 text-blue-700">Check-In Only</span>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="font-semibold text-gray-800 text-sm">{{ session.label }}</span>
+                    <span v-if="session.check_in_only" class="px-1.5 py-0.5 rounded-full text-[10px] bg-blue-100 text-blue-700 font-medium">Check-In Only</span>
                   </div>
-                  <p class="text-xs text-gray-500">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
-                  <span class="text-xs text-orange-600">Late after {{ session.late_timer_minutes || 60 }} mins</span>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ formatDisplayTime(session.start_time) }} – {{ formatDisplayTime(session.end_time) }} · <span class="text-orange-500">Late after {{ session.late_timer_minutes || 60 }} min</span></p>
                 </div>
-                <div class="flex items-center gap-2">
-                  <button @click="openEditSessionForNewEvent(idx)" type="button" :class="['p-1', isCOE ? 'text-orange-600 hover:text-orange-800' : isSOM ? 'text-green-600 hover:text-green-800' : 'text-blue-600 hover:text-blue-800']">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                <div class="flex items-center gap-0.5 flex-shrink-0">
+                  <button @click="openEditSessionForNewEvent(idx)" type="button" :class="['p-1.5 rounded-lg hover:bg-gray-100 transition', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                   </button>
-                  <button @click="deleteSessionForNewEvent(idx)" type="button" class="text-red-500 hover:text-red-700 p-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  <button @click="deleteSessionForNewEvent(idx)" type="button" class="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="flex gap-3 mt-6">
-            <button @click="closeCreateEventModal" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-            <button @click="createAttendanceEvent" :disabled="!newEvent.title || !newEvent.date || creatingEventInProgress" :class="['flex-1 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light']">
-              <svg v-if="creatingEventInProgress" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-              </svg>
-              <span>{{ creatingEventInProgress ? 'Creating...' : 'Create Event' }}</span>
-            </button>
-          </div>
         </div>
+
+        <!-- Sticky Footer -->
+        <div class="flex gap-2 px-4 py-3 sm:px-5 border-t border-gray-100 bg-white flex-shrink-0">
+          <button @click="closeCreateEventModal" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 transition">Cancel</button>
+          <button @click="createAttendanceEvent" :disabled="!newEvent.title || !newEvent.date || creatingEventInProgress" :class="['flex-1 text-white py-2.5 rounded-xl text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2', isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
+            <svg v-if="creatingEventInProgress" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <span>{{ creatingEventInProgress ? 'Creating...' : 'Create Event' }}</span>
+          </button>
+        </div>
+
       </div>
     </div>
   </transition>
 
   <!-- Edit Attendance Event Modal -->
-  <!-- Backdrop Fade Only -->
   <transition name="fade">
-    <div v-if="showEditEventModal && selectedEvent" class="fixed inset-0 bg-black bg-opacity-50"></div>
+    <div v-if="showEditEventModal && selectedEvent" class="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
   </transition>
-  <!-- Modal Pop -->
   <transition name="fade-scale">
-    <div v-if="showEditEventModal && selectedEvent" class="fixed inset-0 flex items-center justify-center z-50 overflow-hidden" @click.self="showEditEventModal = false">
-      <div class="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-2xl w-full mx-4 max-h-[95vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-6">
-          <h3 :class="['text-2xl font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Edit Attendance Event</h3>
-          <button @click="showEditEventModal = false" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+    <div v-if="showEditEventModal && selectedEvent" class="fixed inset-0 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" @click.self="showEditEventModal = false">
+      <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[95vh] flex flex-col overflow-hidden">
+
+        <!-- Sticky Header -->
+        <div :class="['flex items-center justify-between px-4 py-3 sm:px-5 border-b flex-shrink-0', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+          <div class="flex items-center gap-2 min-w-0">
+            <h3 :class="['text-base font-bold truncate', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Edit Event</h3>
+            <span v-if="selectedEvent.status" :class="['px-2 py-0.5 rounded-full text-[10px] font-semibold flex-shrink-0', selectedEvent.status === 'active' ? 'bg-green-100 text-green-700' : selectedEvent.status === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
+              {{ selectedEvent.status === 'active' ? 'Active' : selectedEvent.status === 'draft' ? 'Upcoming' : 'Closed' }}
+            </span>
+          </div>
+          <button @click="showEditEventModal = false" class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition text-xl leading-none flex-shrink-0">&times;</button>
         </div>
-        
-        <!-- Loading Progress Indicator -->
-        <div v-if="loadingStudentsForEvent" class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-          <div class="flex items-center justify-between mb-2">
-            <p class="text-sm font-medium text-blue-900">Loading students...</p>
-            <span class="text-xs text-blue-700">{{ loadedStudentCount }} / {{ totalStudentCount }}</span>
-          </div>
-          <div class="w-full bg-blue-200 rounded-full h-2">
-            <div :style="{ width: totalStudentCount > 0 ? (loadedStudentCount / totalStudentCount * 100) + '%' : '0%' }" class="bg-blue-600 h-2 rounded-full transition-all duration-200"></div>
-          </div>
-        </div>
-        
-        <div class="space-y-4">
-          <div>
-            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Event Title *</label>
-            <input v-model="selectedEvent.title" type="text" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none font-medium transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
-          </div>
-          <div>
-            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Description</label>
-            <textarea v-model="selectedEvent.description" rows="3" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none resize-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']"></textarea>
-          </div>
-          <div>
-            <label :class="['block text-sm font-medium mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Location</label>
-            <input v-model="selectedEvent.location" type="text" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none transition', isCOE ? 'border-orange-300 focus:ring-orange-600 focus:border-orange-500' : isSOM ? 'border-green-300 focus:ring-green-600 focus:border-green-500' : 'border-blue-300 focus:ring-blue-600 focus:border-blue-500']" />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-2">Date *</label>
-            <button @click="openCalendarPicker('editEvent')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
-              <span :class="selectedEvent.date ? 'text-gray-900' : 'text-gray-400'">{{ formatCalendarDisplayDate(selectedEvent.date) }}</span>
-              <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-            </button>
-          </div>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Event Start Time *</label>
-              <button @click="openTimePicker('edit_start_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
-                <span :class="selectedEvent.start_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.start_time || selectedEvent.startTime) || 'Select time' }}</span>
-                <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              </button>
+
+        <!-- Scrollable Body -->
+        <div class="overflow-y-auto flex-1 px-4 py-3 sm:px-5 space-y-3">
+
+          <!-- Loading Progress -->
+          <div v-if="loadingStudentsForEvent" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div class="flex items-center justify-between mb-1.5">
+              <p class="text-xs font-medium text-blue-900">Loading students...</p>
+              <span class="text-xs text-blue-700">{{ loadedStudentCount }} / {{ totalStudentCount }}</span>
             </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Event End Time *</label>
-              <button @click="openTimePicker('edit_end_time')" type="button" :class="['w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none text-left flex items-center justify-between hover:bg-opacity-50 transition', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
-                <span :class="selectedEvent.end_time ? 'text-gray-900' : 'text-gray-400'">{{ formatDisplayTime(selectedEvent.end_time || selectedEvent.endTime) || 'Select time' }}</span>
-                <svg :class="['w-5 h-5', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              </button>
+            <div class="w-full bg-blue-200 rounded-full h-1.5">
+              <div :style="{ width: totalStudentCount > 0 ? (loadedStudentCount / totalStudentCount * 100) + '%' : '0%' }" class="bg-blue-600 h-1.5 rounded-full transition-all duration-200"></div>
             </div>
-          </div>
-          <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="text-sm font-medium text-blue-800">Current Status:</span>
-              <span :class="['px-2 py-0.5 rounded-full text-xs font-medium', 
-                selectedEvent.status === 'active' ? 'bg-green-100 text-green-800' : 
-                selectedEvent.status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 
-                'bg-gray-100 text-gray-800']">
-                {{ selectedEvent.status === 'active' ? 'Active' : selectedEvent.status === 'draft' ? 'Upcoming' : 'Closed' }}
-              </span>
-            </div>
-            <p class="text-xs text-blue-700">Status is updated automatically based on the event date and session times.</p>
           </div>
 
-          <!-- Custom Event Toggle (Edit) -->
-          <div :class="['flex items-center gap-3 border rounded-lg p-4', isCOE ? 'bg-orange-50 border-orange-200' : 'bg-blue-50 border-blue-200']">
-            <input type="checkbox" v-model="selectedEvent.is_custom" id="editCustomEventToggle" :class="['w-4 h-4 rounded cursor-pointer', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" />
-            <label for="editCustomEventToggle" class="flex-1 cursor-pointer">
-              <p :class="['font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Custom Event (Select Specific Students)</p>
-              <p :class="['text-xs mt-0.5', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Enable this to assign this event to specific students from the complete student list</p>
-            </label>
-          </div>
-
-          <!-- User Selection Section (Edit) -->
-          <div v-if="selectedEvent.is_custom" :class="['border-2 rounded-xl p-5 space-y-4', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
-            <h4 :class="['text-sm font-semibold', isCOE ? 'text-orange-900' : 'text-blue-900']">Select Students to Assign to This Event</h4>
-            
-            <!-- Filter Section -->
-            <div :class="['bg-white border rounded-lg p-4 space-y-3', isCOE ? 'border-orange-200' : 'border-blue-200']">
-              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : 'text-blue-700']">Filter Students</p>
-              
-              <!-- Name/Student ID Filter -->
+          <!-- Basic Information -->
+          <div :class="['p-3 sm:p-4 rounded-xl border', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <p :class="['text-[10px] font-bold uppercase tracking-widest mb-3', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">Basic Information</p>
+            <div class="space-y-2.5">
               <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Name or Student ID</label>
-                <input 
-                  v-model="editEventUserFilters.name" 
-                  type="text" 
-                  placeholder="Search by name or student ID..." 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
-                />
+                <label :class="['block text-xs font-semibold mb-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Event Title *</label>
+                <input v-model="selectedEvent.title" type="text" :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none transition text-sm font-medium bg-white', isCOE ? 'border-orange-200 focus:ring-orange-400 focus:border-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400 focus:border-green-400' : 'border-blue-200 focus:ring-blue-400 focus:border-blue-400']" />
               </div>
-              
-              <!-- Program Filter -->
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label :class="['block text-xs font-semibold mb-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Location</label>
+                  <input v-model="selectedEvent.location" type="text" :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none transition text-sm bg-white', isCOE ? 'border-orange-200 focus:ring-orange-400 focus:border-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400 focus:border-green-400' : 'border-blue-200 focus:ring-blue-400 focus:border-blue-400']" />
+                </div>
+                <div>
+                  <label :class="['block text-xs font-semibold mb-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Description</label>
+                  <input v-model="selectedEvent.description" type="text" :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none transition text-sm bg-white', isCOE ? 'border-orange-200 focus:ring-orange-400 focus:border-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400 focus:border-green-400' : 'border-blue-200 focus:ring-blue-400 focus:border-blue-400']" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Schedule -->
+          <div :class="['p-3 sm:p-4 rounded-xl border', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <p :class="['text-[10px] font-bold uppercase tracking-widest mb-3', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">Schedule</p>
+            <div class="grid grid-cols-3 gap-2">
+              <div class="col-span-3 sm:col-span-1">
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Date *</label>
+                <button @click="openCalendarPicker('editEvent')" type="button" :class="['w-full px-3 py-2 border rounded-lg text-left flex items-center justify-between transition text-sm bg-white', isCOE ? 'border-orange-200 hover:border-orange-300' : isSOM ? 'border-green-200 hover:border-green-300' : 'border-gray-200 hover:border-gray-300']">
+                  <span :class="selectedEvent.date ? 'text-gray-900 text-xs' : 'text-gray-400 text-xs'">{{ formatCalendarDisplayDate(selectedEvent.date) || 'Select date' }}</span>
+                  <svg :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                </button>
+              </div>
               <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Program</label>
-                <select 
-                  v-model="editEventUserFilters.program" 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
-                >
+                <label class="block text-xs font-semibold text-gray-600 mb-1">Start *</label>
+                <button @click="openTimePicker('edit_start_time')" type="button" :class="['w-full px-3 py-2 border rounded-lg text-left flex items-center justify-between transition bg-white', isCOE ? 'border-orange-200 hover:border-orange-300' : isSOM ? 'border-green-200 hover:border-green-300' : 'border-gray-200 hover:border-gray-300']">
+                  <span :class="(selectedEvent.start_time || selectedEvent.startTime) ? 'text-gray-900 text-xs' : 'text-gray-400 text-xs'">{{ formatDisplayTime(selectedEvent.start_time || selectedEvent.startTime) || 'Time' }}</span>
+                  <svg :class="['w-3.5 h-3.5 flex-shrink-0', isCOE ? 'text-orange-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </button>
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1">End *</label>
+                <button @click="openTimePicker('edit_end_time')" type="button" :class="['w-full px-3 py-2 border rounded-lg text-left flex items-center justify-between transition bg-white', isCOE ? 'border-orange-200 hover:border-orange-300' : isSOM ? 'border-green-200 hover:border-green-300' : 'border-gray-200 hover:border-gray-300']">
+                  <span :class="(selectedEvent.end_time || selectedEvent.endTime) ? 'text-gray-900 text-xs' : 'text-gray-400 text-xs'">{{ formatDisplayTime(selectedEvent.end_time || selectedEvent.endTime) || 'Time' }}</span>
+                  <svg :class="['w-3.5 h-3.5 flex-shrink-0', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </button>
+              </div>
+            </div>
+            <p class="text-[10px] text-gray-400 mt-2 px-1">Status updates automatically based on date and session times.</p>
+          </div>
+
+          <!-- Assign to Specific Students -->
+          <div :class="['flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition', isCOE ? 'bg-orange-50 border-orange-200 hover:bg-orange-100' : isSOM ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-blue-50 border-blue-200 hover:bg-blue-100']" @click="selectedEvent.is_custom = !selectedEvent.is_custom">
+            <input type="checkbox" v-model="selectedEvent.is_custom" id="editCustomEventToggle" @click.stop :class="['w-4 h-4 rounded cursor-pointer flex-shrink-0', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" />
+            <div class="flex-1 min-w-0">
+              <p :class="['text-sm font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">Assign to Specific Students</p>
+              <p :class="['text-xs', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']">Select individual students from the list</p>
+            </div>
+          </div>
+
+          <!-- Student Selection (Edit) -->
+          <div v-if="selectedEvent.is_custom" :class="['border rounded-xl p-3 sm:p-4 space-y-3', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <p :class="['text-[10px] font-bold uppercase tracking-widest', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">Select Students</p>
+            <div :class="['bg-white border rounded-lg p-3 space-y-2', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : 'border-blue-200']">
+              <input v-model="editEventUserFilters.name" type="text" placeholder="Search name or student ID..." :class="['w-full px-3 py-1.5 border rounded-lg focus:ring-2 outline-none text-xs', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400' : 'border-blue-200 focus:ring-blue-400']" />
+              <div class="grid grid-cols-2 gap-2">
+                <select v-model="editEventUserFilters.program" :class="['w-full px-2 py-1.5 border rounded-lg focus:ring-2 outline-none text-xs', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400' : 'border-blue-200 focus:ring-blue-400']">
                   <option value="">All Programs</option>
                   <option value="BSIT">BSIT</option>
                   <option value="BSCS">BSCS</option>
                   <option value="BSIS">BSIS</option>
                 </select>
-              </div>
-              
-              <!-- Year Level Filter -->
-              <div>
-                <label class="block text-xs font-medium text-gray-700 mb-1">Year Level</label>
-                <select 
-                  v-model="editEventUserFilters.yearLevel" 
-                  :class="['w-full px-3 py-2 border rounded-lg focus:ring-2 outline-none text-sm', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : 'border-blue-300 focus:ring-blue-600']"
-                >
-                  <option value="">All Year Levels</option>
+                <select v-model="editEventUserFilters.yearLevel" :class="['w-full px-2 py-1.5 border rounded-lg focus:ring-2 outline-none text-xs', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-400' : 'border-blue-200 focus:ring-blue-400']">
+                  <option value="">All Years</option>
                   <option value="1st Year">1st Year</option>
                   <option value="2nd Year">2nd Year</option>
                   <option value="3rd Year">3rd Year</option>
                   <option value="4th Year">4th Year</option>
                 </select>
               </div>
-              
-              <!-- Clear Filters Button -->
-              <div class="flex items-center gap-2 flex-wrap">
-                <button 
-                  @click="editEventUserFilters = { name: '', program: '', yearLevel: '' }" 
-                  type="button" 
-                  :class="['text-xs font-medium hover:opacity-80', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']"
-                >
-                  Clear All Filters
-                </button>
-                <span class="text-xs text-gray-400">•</span>
-                <button 
-                  @click="selectedEvent.assigned_users = filteredEditEventUsers.map(u => u._id)" 
-                  type="button" 
-                  class="text-xs text-green-600 hover:text-green-800 font-medium"
-                >
-                  Select All
-                </button>
-                <button 
-                  v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0"
-                  @click="selectedEvent.assigned_users = []" 
-                  type="button" 
-                  class="text-xs text-red-600 hover:text-red-800 font-medium"
-                >
-                  Deselect All
-                </button>
+              <div class="flex items-center gap-3">
+                <button @click="editEventUserFilters = { name: '', program: '', yearLevel: '' }" type="button" class="text-xs text-gray-500 hover:text-gray-700 font-medium">Clear</button>
+                <button @click="selectedEvent.assigned_users = filteredEditEventUsers.map(u => u._id)" type="button" class="text-xs text-green-600 hover:text-green-800 font-medium">Select All</button>
+                <button v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0" @click="selectedEvent.assigned_users = []" type="button" class="text-xs text-red-500 hover:text-red-700 font-medium">Deselect All</button>
               </div>
             </div>
-
-            <!-- User List (Search Results) -->
-            <div :class="['max-h-48 overflow-y-auto border rounded-lg bg-white', isCOE ? 'border-orange-200' : 'border-blue-200']">
-              <div v-if="filteredEditEventUsers.length === 0" class="p-4 text-center text-gray-500 text-sm">
-                No students found
-              </div>
-              <label v-for="user in filteredEditEventUsers" :key="user._id" class="flex items-start gap-3 p-3 border-b border-gray-100 hover:bg-gray-50 cursor-pointer last:border-b-0">
-                <input 
-                  type="checkbox" 
-                  :checked="selectedEvent.assigned_users && (selectedEvent.assigned_users.includes(user._id) || selectedEvent.assigned_users.some(u => (typeof u === 'object' ? u._id : u) === user._id))"
-                  @change="toggleEditEventUser(user._id)"
-                  :class="['mt-1 w-4 h-4 rounded focus:ring-2', isCOE ? 'text-orange-600 focus:ring-orange-600' : isSOM ? 'text-green-600 focus:ring-green-600' : 'text-blue-600 focus:ring-blue-600']"
-                />
-                <div class="flex-1 min-w-0">
-                  <p class="font-semibold text-gray-900 text-sm">{{ getUserDisplayName(user) }}</p>
-                  <p class="text-xs text-gray-600 mt-0.5">{{ user.student_id }} • {{ user.program }} • {{ user.year_level }}</p>
+            <div :class="['max-h-40 overflow-y-auto border rounded-lg bg-white divide-y divide-gray-50', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : 'border-blue-100']">
+              <div v-if="filteredEditEventUsers.length === 0" class="py-4 text-center text-xs text-gray-400">No students found</div>
+              <label v-for="user in filteredEditEventUsers" :key="user._id" class="flex items-center gap-2.5 px-3 py-2 hover:bg-gray-50 cursor-pointer">
+                <input type="checkbox" :checked="selectedEvent.assigned_users && (selectedEvent.assigned_users.includes(user._id) || selectedEvent.assigned_users.some(u => (typeof u === 'object' ? u._id : u) === user._id))" @change="toggleEditEventUser(user._id)" :class="['w-4 h-4 rounded flex-shrink-0', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" />
+                <div class="min-w-0">
+                  <p class="text-xs font-semibold text-gray-900 truncate">{{ getUserDisplayName(user) }}</p>
+                  <p class="text-[10px] text-gray-500">{{ user.student_id }} · {{ user.program }} · {{ user.year_level }}</p>
                 </div>
               </label>
             </div>
-
-            <!-- Selected Users Pills -->
-            <div v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0" :class="['mb-3 pb-3 border-b', isCOE ? 'border-orange-300' : isSOM ? 'border-green-300' : 'border-blue-300']">
-              <p :class="['text-xs font-semibold mb-2', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">Selected: {{ selectedEvent.assigned_users.length }} student(s)</p>
-              <div class="flex flex-wrap gap-2">
-                <div v-for="userItem in selectedEventDisplayUsers" :key="typeof userItem === 'string' ? userItem : userItem._id" :class="['text-xs font-medium flex items-center gap-2 px-3 py-1 rounded-full', isCOE ? 'bg-orange-200 text-orange-800' : isSOM ? 'bg-green-200 text-green-800' : 'bg-blue-200 text-blue-800']">
-                  <span>{{ getSelectedEventUserName(userItem) }}</span>
-                  <button @click="selectedEvent.assigned_users = selectedEvent.assigned_users.filter(id => (typeof id === 'string' ? id : id._id) !== (typeof userItem === 'string' ? userItem : userItem._id))" type="button" :class="['hover:opacity-80', isCOE ? 'hover:text-orange-900' : isSOM ? 'hover:text-green-900' : 'hover:text-blue-900']">×</button>
-                </div>
+            <div v-if="selectedEvent.assigned_users && selectedEvent.assigned_users.length > 0">
+              <p :class="['text-xs font-semibold mb-1.5', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">{{ selectedEvent.assigned_users.length }} selected</p>
+              <div class="flex flex-wrap gap-1.5">
+                <span v-for="userItem in selectedEventDisplayUsers" :key="typeof userItem === 'string' ? userItem : userItem._id" :class="['inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full', isCOE ? 'bg-orange-100 text-orange-800' : isSOM ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800']">
+                  {{ getSelectedEventUserName(userItem) }}
+                  <button @click="selectedEvent.assigned_users = selectedEvent.assigned_users.filter(id => (typeof id === 'string' ? id : id._id) !== (typeof userItem === 'string' ? userItem : userItem._id))" type="button" class="hover:opacity-60 leading-none ml-0.5">×</button>
+                </span>
               </div>
             </div>
-
-            <div :class="['border-l-4 p-3 rounded text-xs', isCOE ? 'bg-orange-50 border-orange-500 text-orange-700' : isSOM ? 'bg-green-50 border-green-500 text-green-700' : 'bg-blue-50 border-blue-500 text-blue-700']">
-              <strong>{{ selectedEvent.assigned_users ? selectedEvent.assigned_users.length : 0 }}</strong> student(s) can see this event
-            </div>
           </div>
-          
-          <!-- Location Geofence (Edit) -->
-          <div class="border-t pt-4 mt-4">
-            <div class="mb-3">
-              <label class="block text-sm font-medium text-gray-700">Location restriction (GPS geofence)</label>
-              <p class="text-xs text-gray-500 mt-0.5">Optional. Limits check-ins to devices physically near the event venue.</p>
-            </div>
+
+          <!-- GPS Geofence (Edit) -->
+          <div :class="['p-3 sm:p-4 rounded-xl border', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
+            <p :class="['text-[10px] font-bold uppercase tracking-widest mb-0.5', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">GPS Geofence</p>
+            <p class="text-[10px] text-gray-500 mb-3">Optional — limits check-ins to devices near the venue.</p>
             <GeofenceMap
               :enabled="!!selectedEvent.geofence_enabled"
               :latitude="Number.isFinite(selectedEvent.geofence_lat) ? selectedEvent.geofence_lat : null"
@@ -6638,63 +6509,67 @@
             />
           </div>
 
-          <!-- Face ID Recognition Toggle (Edit) -->
-          <div :class="['flex items-center gap-3 border-2 rounded-xl p-4 mt-4 transition cursor-pointer', isCOE ? 'bg-orange-50 border-orange-200 hover:bg-orange-100' : isSOM ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-blue-50 border-blue-200 hover:bg-blue-100']" @click="selectedEvent.face_id_enabled = selectedEvent.face_id_enabled === false ? true : false">
-            <input type="checkbox" :checked="selectedEvent.face_id_enabled !== false" @change="selectedEvent.face_id_enabled = $event.target.checked" id="faceIdToggleEdit" :class="['w-5 h-5 rounded cursor-pointer', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" />
-            <label for="faceIdToggleEdit" class="flex-1 cursor-pointer">
-              <p :class="['font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2M9 10h.01M15 10h.01M9 16c.85.63 1.885 1 3 1s2.15-.37 3-1"/></svg>
-                Allow Face ID Recognition
+          <!-- Face ID Toggle (Edit) -->
+          <div :class="['flex items-center gap-3 border rounded-xl p-3 cursor-pointer transition', isCOE ? 'bg-orange-50 border-orange-200 hover:bg-orange-100' : isSOM ? 'bg-green-50 border-green-200 hover:bg-green-100' : 'bg-blue-50 border-blue-200 hover:bg-blue-100']" @click="selectedEvent.face_id_enabled = selectedEvent.face_id_enabled === false ? true : false">
+            <input type="checkbox" :checked="selectedEvent.face_id_enabled !== false" @change="selectedEvent.face_id_enabled = $event.target.checked" id="faceIdToggleEdit" @click.stop :class="['w-4 h-4 rounded cursor-pointer flex-shrink-0', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" />
+            <div class="flex-1 min-w-0">
+              <p :class="['text-sm font-semibold flex items-center gap-1.5', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : 'text-blue-900']">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V6a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2m8-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2M9 10h.01M15 10h.01M9 16c.85.63 1.885 1 3 1s2.15-.37 3-1"/></svg>
+                Allow Face ID Check-In
               </p>
-              <p :class="['text-xs mt-1', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : 'text-blue-700']">When disabled, students cannot use the Face ID scanner for this event and will be notified.</p>
-            </label>
+              <p :class="['text-xs', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']">When off, students cannot use Face ID for this event.</p>
+            </div>
           </div>
 
-          <!-- Sessions Management Section -->
-          <div class="border-t pt-4 mt-4">
+          <!-- Sessions (Edit) -->
+          <div :class="['p-3 sm:p-4 rounded-xl border', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : 'bg-blue-50 border-blue-100']">
             <div class="flex items-center justify-between mb-3">
-              <label class="block text-sm font-medium text-gray-700">Sessions</label>
-              <button @click="openAddSessionModal" type="button" :class="['text-xs px-3 py-1 rounded-lg transition flex items-center gap-1 font-medium', addSessionButtonAnimating ? (isCOE ? 'bg-orange-500 text-white scale-105 animate-pulse' : isSOM ? 'bg-green-500 text-white scale-105 animate-pulse' : 'bg-blue-500 text-white scale-105 animate-pulse') : (isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200')]">
-                <svg :class="['w-4 h-4 transition-transform', addSessionButtonAnimating ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                {{ addSessionButtonAnimating ? 'Opening...' : 'Add Session' }}
+              <div>
+                <p :class="['text-[10px] font-bold uppercase tracking-widest', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">Sessions</p>
+              </div>
+              <button @click="openAddSessionModal" type="button" :class="['text-xs px-2.5 py-1 rounded-lg flex items-center gap-1 font-semibold transition flex-shrink-0', addSessionButtonAnimating ? (isCOE ? 'bg-orange-500 text-white animate-pulse' : isSOM ? 'bg-green-500 text-white animate-pulse' : 'bg-blue-500 text-white animate-pulse') : (isCOE ? 'bg-orange-200 text-orange-700 hover:bg-orange-300' : isSOM ? 'bg-green-200 text-green-700 hover:bg-green-300' : 'bg-blue-200 text-blue-700 hover:bg-blue-300')]">
+                <svg :class="['w-3.5 h-3.5', addSessionButtonAnimating ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                {{ addSessionButtonAnimating ? 'Opening...' : 'Add' }}
               </button>
             </div>
-            <div v-if="eventSessions.length === 0" class="text-center py-4 bg-gray-50 rounded-lg">
-              <p class="text-sm text-gray-500">No sessions added yet. Add sessions to enable check-in/check-out.</p>
+            <div v-if="eventSessions.length === 0" class="text-center py-3 bg-white/60 rounded-lg border border-dashed border-gray-200">
+              <p class="text-xs text-gray-400">No sessions yet — add one to enable check-in.</p>
             </div>
             <div v-else class="space-y-2">
-              <div v-for="session in eventSessions" :key="session._id" class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div class="flex-1">
-                  <div class="flex items-center gap-2">
-                    <span class="font-medium text-gray-800">{{ session.label }}</span>
-                    <span :class="['px-2 py-0.5 rounded-full text-xs', getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, selectedEvent) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
+              <div v-for="session in eventSessions" :key="session._id" class="flex items-center gap-2 p-2.5 bg-white rounded-lg border border-gray-100 shadow-sm">
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="font-semibold text-gray-800 text-sm">{{ session.label }}</span>
+                    <span :class="['px-1.5 py-0.5 rounded-full text-[10px] font-medium', getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'bg-green-100 text-green-700' : getSessionDisplayStatus(session, selectedEvent) === 'draft' ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-600']">
                       {{ getSessionDisplayStatus(session, selectedEvent) === 'active' ? 'Active' : getSessionDisplayStatus(session, selectedEvent) === 'draft' ? 'Upcoming' : 'Closed' }}
                     </span>
                   </div>
-                  <p class="text-xs text-gray-500">{{ formatDisplayTime(session.start_time) }} - {{ formatDisplayTime(session.end_time) }}</p>
-                  <div class="flex flex-wrap gap-2 mt-1">
-                    <span class="text-xs text-orange-600">Late after {{ session.late_timer_minutes || 60 }} mins</span>
-                    <span v-if="session.check_in_locked" class="text-xs text-red-600">Check-in locked</span>
-                    <span v-if="session.check_out_locked" class="text-xs text-red-600">Check-out locked</span>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ formatDisplayTime(session.start_time) }} – {{ formatDisplayTime(session.end_time) }} · <span class="text-orange-500">Late after {{ session.late_timer_minutes || 60 }} min</span></p>
+                  <div class="flex gap-2 mt-0.5">
+                    <span v-if="session.check_in_locked" class="text-[10px] text-red-500">Check-in locked</span>
+                    <span v-if="session.check_out_locked" class="text-[10px] text-red-500">Check-out locked</span>
                   </div>
                 </div>
-                <div class="flex items-center gap-2">
-                  <button @click="openEditSessionModal(session)" type="button" :class="['p-1', isCOE ? 'text-orange-600 hover:text-orange-800' : isSOM ? 'text-green-600 hover:text-green-800' : 'text-blue-600 hover:text-blue-800']">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                <div class="flex items-center gap-0.5 flex-shrink-0">
+                  <button @click="openEditSessionModal(session)" type="button" :class="['p-1.5 rounded-lg hover:bg-gray-100 transition', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                   </button>
-                  <button @click="deleteSession(session._id)" type="button" class="text-red-500 hover:text-red-700 p-1">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                  <button @click="deleteSession(session._id)" type="button" class="p-1.5 rounded-lg hover:bg-red-50 text-red-400 hover:text-red-600 transition">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                   </button>
                 </div>
               </div>
             </div>
           </div>
-        
-        <div class="flex gap-3 mt-6">
-          <button @click="showEditEventModal = false" class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition">Cancel</button>
-          <button @click="updateAttendanceEvent" :disabled="!selectedEvent.title || !selectedEvent.date" :class="['flex-1 text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">Save Changes</button>
+
         </div>
+
+        <!-- Sticky Footer -->
+        <div class="flex gap-2 px-4 py-3 sm:px-5 border-t border-gray-100 bg-white flex-shrink-0">
+          <button @click="showEditEventModal = false" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl text-sm font-semibold hover:bg-gray-200 transition">Cancel</button>
+          <button @click="updateAttendanceEvent" :disabled="!selectedEvent.title || !selectedEvent.date" :class="['flex-1 text-white py-2.5 rounded-xl text-sm font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]">Save Changes</button>
         </div>
+
       </div>
     </div>
   </transition>
