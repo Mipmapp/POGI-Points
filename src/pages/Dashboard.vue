@@ -6164,7 +6164,7 @@
         </div>
 
         <!-- Scrollable Body -->
-        <div class="overflow-y-auto overscroll-contain flex-1 px-4 py-3 sm:px-5 space-y-3" style="-webkit-overflow-scrolling: touch;">
+        <div class="overflow-y-auto overscroll-contain flex-1 min-h-0 px-4 py-3 sm:px-5 space-y-3" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
 
           <!-- Loading Progress -->
           <div v-if="loadingStudentsForEvent" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -6372,7 +6372,7 @@
         </div>
 
         <!-- Scrollable Body -->
-        <div class="overflow-y-auto overscroll-contain flex-1 px-4 py-3 sm:px-5 space-y-3" style="-webkit-overflow-scrolling: touch;">
+        <div class="overflow-y-auto overscroll-contain flex-1 min-h-0 px-4 py-3 sm:px-5 space-y-3" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
 
           <!-- Loading Progress -->
           <div v-if="loadingStudentsForEvent" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
