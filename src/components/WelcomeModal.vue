@@ -195,6 +195,7 @@ const accordionRef = ref(null)
 
 watch(() => props.visible, (val) => {
   if (val) {
+    document.body.style.overflow = 'hidden'
     agreed.value = false
     openSection.value = null
     hasScrolledToBottom.value = false
@@ -203,8 +204,10 @@ watch(() => props.visible, (val) => {
         accordionRef.value.scrollTop = 0
       }
     })
+  } else {
+    document.body.style.overflow = ''
   }
-})
+}, { immediate: true })
 
 const onScroll = () => {
   if (!accordionRef.value) return
