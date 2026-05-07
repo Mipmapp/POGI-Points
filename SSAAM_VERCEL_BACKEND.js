@@ -6015,8 +6015,11 @@ app.post('/apis/password-reset/complete', studentAuth, timestampAuth, async (req
         }
 
         // Hash and save the new password as custom_password (doesn't change last_name)
+        // Must use the college-specific StudentModel — NOT the base Student model —
+        // otherwise the update lands in the wrong MongoDB collection and login
+        // never sees the new password.
         const hashedPassword = await bcrypt.hash(new_password, 12);
-        await Student.updateOne(
+        await StudentModel.updateOne(
             { student_id },
             { custom_password: hashedPassword }
         );
