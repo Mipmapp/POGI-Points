@@ -6164,7 +6164,7 @@
         </div>
 
         <!-- Scrollable Body -->
-        <div class="overflow-y-auto flex-1 px-4 py-3 sm:px-5 space-y-3">
+        <div class="overflow-y-auto overscroll-contain flex-1 px-4 py-3 sm:px-5 space-y-3" style="-webkit-overflow-scrolling: touch;">
 
           <!-- Loading Progress -->
           <div v-if="loadingStudentsForEvent" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -6372,7 +6372,7 @@
         </div>
 
         <!-- Scrollable Body -->
-        <div class="overflow-y-auto flex-1 px-4 py-3 sm:px-5 space-y-3">
+        <div class="overflow-y-auto overscroll-contain flex-1 px-4 py-3 sm:px-5 space-y-3" style="-webkit-overflow-scrolling: touch;">
 
           <!-- Loading Progress -->
           <div v-if="loadingStudentsForEvent" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
@@ -11278,6 +11278,14 @@ const eventTimeInterval = ref(null)
 const eventTimeRemaining = ref({})
 const showCreateEventModal = ref(false)
 const showEditEventModal = ref(false)
+watch(showCreateEventModal, (open) => {
+  if (open) document.body.classList.add('modal-scroll-lock')
+  else document.body.classList.remove('modal-scroll-lock')
+})
+watch(showEditEventModal, (open) => {
+  if (open) document.body.classList.add('modal-scroll-lock')
+  else document.body.classList.remove('modal-scroll-lock')
+})
 const loadingStudentsForEvent = ref(false)
 const loadedStudentCount = ref(0)
 const totalStudentCount = ref(0)
