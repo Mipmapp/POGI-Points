@@ -1419,7 +1419,8 @@ app.put('/apis/payments/:paymentId/mark-unpaid', auth, async (req, res) => {
 // Get student's payment status for a specific payment
 app.get('/apis/payments/:paymentId/student/:studentId', async (req, res) => {
     try {
-        const paymentRecord = await PaymentRecord.findOne({
+        const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, getCollegeFromRequest(req));
+        const paymentRecord = await PaymentRecordModel.findOne({
             payment_id: req.params.paymentId,
             student_id: req.params.studentId
         });
@@ -1466,8 +1467,9 @@ app.put('/apis/payments/:paymentId/apply-discount', auth, async (req, res) => {
             return res.status(400).json({ message: 'Invalid discount type. Use "percentage" or "fixed"' });
         }
 
-        // Find the payment record
-        const paymentRecord = await PaymentRecord.findOne({ student_id: studentId });
+        // Find the payment record (college-specific collection)
+        const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
+        const paymentRecord = await PaymentRecordModel.findOne({ student_id: studentId });
         if (!paymentRecord) {
             return res.status(404).json({ message: 'Payment record not found' });
         }
@@ -1738,14 +1740,15 @@ app.post('/apis/payments/:paymentId/sync-students', auth, async (req, res) => {
         const allApprovedStudents = await StudentModel.find({ status: 'approved' });
 
         let addedCount = 0;
+        const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
 
         // Sync: add campaign to all students who don't have it yet
         for (const student of allApprovedStudents) {
-            let paymentRecord = await PaymentRecord.findOne({ student_id: student.student_id });
+            let paymentRecord = await PaymentRecordModel.findOne({ student_id: student.student_id });
 
             if (!paymentRecord) {
                 // Create new record with this campaign
-                paymentRecord = new PaymentRecord({
+                paymentRecord = new PaymentRecordModel({
                     student_id: student.student_id,
                     student_id_number: student.student_id,
                     student_name: student.full_name || `${student.first_name} ${student.last_name}`,
@@ -2116,14 +2119,19 @@ const SESSION_INACTIVITY_MS = 12 * 60 * 60 * 1000;
 async function cleanupInactiveSessionTokens() {
     try {
         const cutoffTime = new Date(Date.now() - SESSION_INACTIVITY_MS);
-        const result = await SessionToken.deleteMany({
+        const query = {
             $or: [
                 { last_used_at: { $lt: cutoffTime } },
                 { last_used_at: null, created_at: { $lt: cutoffTime } }
             ]
-        });
-        if (result.deletedCount > 0) {
-            console.log(`Cleaned up ${result.deletedCount} inactive session tokens`);
+        };
+        let totalDeleted = 0;
+        for (const Model of [SessionToken, CCS_SessionToken, COE_SessionToken, SOM_SessionToken, CNAHS_SessionToken]) {
+            const result = await Model.deleteMany(query);
+            totalDeleted += result.deletedCount;
+        }
+        if (totalDeleted > 0) {
+            console.log(`Cleaned up ${totalDeleted} inactive session tokens across all colleges`);
         }
     } catch (err) {
         console.error('Session token cleanup error:', err.message);
@@ -4701,7 +4709,8 @@ app.post("/apis/masters/login", async (req, res) => {
 
 app.post('/apis/masters/logout', auth, async (req, res) => {
     try {
-        await SessionToken.updateOne(
+        const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, req.college);
+        await SessionTokenModel.updateOne(
             { _id: req.sessionToken._id },
             { is_revoked: true }
         );
@@ -5613,9 +5622,10 @@ app.put('/apis/settings', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
         const { userRegister, userLogin, rfidScanner } = req.body;
 
-        let settings = await Settings.findOne();
+        const SettingsModel = getCollegeModel(Settings, CCS_Settings, COE_Settings, req.college);
+        let settings = await SettingsModel.findOne();
         if (!settings) {
-            settings = new Settings({
+            settings = new SettingsModel({
                 userRegister: userRegister || { register: true, message: "" },
                 userLogin: userLogin || { login: true, message: "" },
                 rfidScanner: rfidScanner || {
@@ -6513,7 +6523,13 @@ app.post('/apis/notifications/:id/like', async (req, res) => {
             });
         }
 
-        const notification = await Notification.findById(req.params.id);
+        // Try global notifications first, then fall back to college-specific
+        let notification = await Notification.findById(req.params.id);
+        if (!notification) {
+            const notifCollege = normalizeCollege(decoded.college) || req.college || 'CCS';
+            const CollegeNotifModel = getCollegeModel(Notification, CCS_Notification, COE_Notification, notifCollege);
+            notification = await CollegeNotifModel.findById(req.params.id);
+        }
         if (!notification) {
             return res.status(404).json({ message: "Notification not found" });
         }
