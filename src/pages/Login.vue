@@ -955,7 +955,7 @@ const developers = [
 onMounted(async () => {
   // Sync our clock against the server early so timestamp-protected endpoints
   // (login, password reset) don't 401 due to user PC clock skew. Fire-and-forget.
-  syncServerTime(buildAPIUrl(''))
+  syncServerTime()
 
   const currentUser = localStorage.getItem('currentUser')
   if (currentUser) {
@@ -1013,7 +1013,7 @@ const handleLogin = async () => {
   // timestamp-protected request. Cap at 3 s so slow networks don't stall login.
   try {
     await Promise.race([
-      syncServerTime(buildAPIUrl('')),
+      syncServerTime(),
       new Promise(resolve => setTimeout(resolve, 3000))
     ])
   } catch (_) { /* best-effort — proceed with whatever offset we have */ }
@@ -1136,7 +1136,7 @@ const handleLogin = async () => {
       ) {
         try {
           await Promise.race([
-            syncServerTime(buildAPIUrl('')),
+            syncServerTime(),
             new Promise(resolve => setTimeout(resolve, 3000))
           ])
         } catch (_) { /* best-effort */ }
