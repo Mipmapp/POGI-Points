@@ -1,0 +1,69 @@
+Access to fetch at 'https://ssaam-api.vercel.app//apis/health' from origin 'https://ssaam.vercel.app' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index-D6I_Zrge.js:25  GET https://ssaam-api.vercel.app//apis/health net::ERR_FAILED 308 (Permanent Redirect)
+Yf @ index-D6I_Zrge.js:25
+(anonymous) @ index-D6I_Zrge.js:25
+(anonymous) @ index-D6I_Zrge.js:13
+cc @ index-D6I_Zrge.js:13
+Ia @ index-D6I_Zrge.js:13
+T1.t.__weh.t.__weh @ index-D6I_Zrge.js:13
+vy @ index-D6I_Zrge.js:13
+by @ index-D6I_Zrge.js:13
+Promise.then
+xy @ index-D6I_Zrge.js:13
+_h @ index-D6I_Zrge.js:13
+Ee.scheduler @ index-D6I_Zrge.js:13
+trigger @ index-D6I_Zrge.js:9
+xh @ index-D6I_Zrge.js:9
+notify @ index-D6I_Zrge.js:9
+trigger @ index-D6I_Zrge.js:9
+set value @ index-D6I_Zrge.js:9
+(anonymous) @ index-D6I_Zrge.js:25
+setTimeout
+(anonymous) @ index-D6I_Zrge.js:25
+(anonymous) @ index-D6I_Zrge.js:13
+cc @ index-D6I_Zrge.js:13
+Ia @ index-D6I_Zrge.js:13
+T1.t.__weh.t.__weh @ index-D6I_Zrge.js:13
+vy @ index-D6I_Zrge.js:13
+Ce @ index-D6I_Zrge.js:13
+mount @ index-D6I_Zrge.js:13
+I7.t.mount @ index-D6I_Zrge.js:17
+(anonymous) @ index-D6I_Zrge.js:181
+(index):1 Access to fetch at 'https://ssaam-api.vercel.app/apis/settings' from origin 'https://ssaam.vercel.app' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource.
+index-D6I_Zrge.js:25  GET https://ssaam-api.vercel.app/apis/settings net::ERR_FAILED
+(anonymous) @ index-D6I_Zrge.js:25
+(anonymous) @ index-D6I_Zrge.js:13
+cc @ index-D6I_Zrge.js:13
+Ia @ index-D6I_Zrge.js:13
+T1.t.__weh.t.__weh @ index-D6I_Zrge.js:13
+vy @ index-D6I_Zrge.js:13
+by @ index-D6I_Zrge.js:13
+Promise.then
+xy @ index-D6I_Zrge.js:13
+_h @ index-D6I_Zrge.js:13
+Ee.scheduler @ index-D6I_Zrge.js:13
+trigger @ index-D6I_Zrge.js:9
+xh @ index-D6I_Zrge.js:9
+notify @ index-D6I_Zrge.js:9
+trigger @ index-D6I_Zrge.js:9
+set value @ index-D6I_Zrge.js:9
+(anonymous) @ index-D6I_Zrge.js:25
+setTimeout
+(anonymous) @ index-D6I_Zrge.js:25
+(anonymous) @ index-D6I_Zrge.js:13
+cc @ index-D6I_Zrge.js:13
+Ia @ index-D6I_Zrge.js:13
+T1.t.__weh.t.__weh @ index-D6I_Zrge.js:13
+vy @ index-D6I_Zrge.js:13
+Ce @ index-D6I_Zrge.js:13
+mount @ index-D6I_Zrge.js:13
+I7.t.mount @ index-D6I_Zrge.js:17
+(anonymous) @ index-D6I_Zrge.js:181
+index-D6I_Zrge.js:25 Failed to fetch settings: TypeError: Failed to fetch
+    at index-D6I_Zrge.js:25:43798
+    at index-D6I_Zrge.js:13:12607
+    at cc (index-D6I_Zrge.js:13:38)
+    at Ia (index-D6I_Zrge.js:13:109)
+    at T1.t.__weh.t.__weh (index-D6I_Zrge.js:13:12487)
+    at vy (index-D6I_Zrge.js:13:1619)
+    at by (index-D6I_Zrge.js:13:1928)
