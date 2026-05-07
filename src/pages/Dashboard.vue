@@ -980,7 +980,7 @@
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
-          <img src="/src/assets/ccs-logo.png" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" />
+          <img src="/src/assets/ccs-logo.png" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" style="filter: invert(1);" />
           <div class="flex flex-col leading-tight">
             <h1 :class="['text-xl font-extrabold italic', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">SSAAM</h1>
             <p :class="['text-[9px] uppercase tracking-widest font-semibold', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-green-400' : 'text-blue-400']">JRMSU</p>
