@@ -82,4 +82,4 @@ CLOUDINARY_CLOUD_NAME = "devnpfjiu"
 VITE_API_URL = ""
 
 [userenv.production]
-VITE_API_URL = "https://ssaam-api.vercel.app"
+VITE_API_URL = ""

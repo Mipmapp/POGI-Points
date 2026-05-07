@@ -1,8 +1,14 @@
 {
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
+  "functions": {
+    "SSAAM_VERCEL_BACKEND.js": {
+      "memory": 1024,
+      "maxDuration": 30
     }
+  },
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [
+    { "source": "/apis/:path*", "destination": "/SSAAM_VERCEL_BACKEND.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

@@ -1025,22 +1025,12 @@ const handleLogin = async () => {
       const resp = await fetch(buildAPIUrl(endpoint), options)
       return resp
     } catch (err) {
-      console.warn('Primary API fetch failed, attempting fallback:', err)
-      // fallback to main API
-      const fallbackBase = 'https://ssaam-api.vercel.app'
-      const url = (typeof endpoint === 'string' && endpoint.startsWith('http')) ? endpoint : (endpoint.startsWith('/') ? `${fallbackBase}${endpoint}` : `${fallbackBase}/${endpoint}`)
-      try {
-        // Mark that fallback is used and clear pre-login COE hint so we don't keep trying COE repeatedly
-        try { apiFallbackUsed.value = true } catch (e) {}
-        try { localStorage.removeItem('loginChosenDepartment') } catch (e) {}
-        try { localStorage.removeItem('loginChosenProgram') } catch (e) {}
-        const resp2 = await fetch(url, options)
-        return resp2
-      } catch (err2) {
-        // rethrow the original error for logging
-        console.error('Fallback API fetch also failed:', err2)
-        throw err2
-      }
+      console.warn('Primary API fetch failed:', err)
+      // Clear pre-login college hints so we don't keep retrying with stale state
+      try { apiFallbackUsed.value = true } catch (e) {}
+      try { localStorage.removeItem('loginChosenDepartment') } catch (e) {}
+      try { localStorage.removeItem('loginChosenProgram') } catch (e) {}
+      throw err
     }
   }
   try {
@@ -1251,7 +1241,7 @@ const handleLogin = async () => {
     
     if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
       errorMessage.value = "Network connection error: Cannot reach the authentication server. Please check your internet connection and try again."
-      console.error("Network error detected - check if API is accessible at https://ssaam-api.vercel.app");
+      console.error("Network error detected - check if the API server is running and reachable");
     } else if (error instanceof SyntaxError) {
       errorMessage.value = "Server error: Invalid response format. The server may be down."
       console.error("JSON parse error - server response was invalid");

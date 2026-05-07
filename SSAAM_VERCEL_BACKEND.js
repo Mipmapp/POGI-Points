@@ -14,7 +14,6 @@ dotenv.config();
 
 const ALLOWED_ORIGINS = [
     'https://ssaam.vercel.app',
-    'https://ssaam-api.vercel.app',
     // 'http://:5000',
     // 'http://:3000',
     // 'http://127.0.0.1:5000',

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import fs from 'fs'
 
-const API_BASE = process.env.API_BASE_URL || 'https://ssaam-api.vercel.app'
+const API_BASE = process.env.API_BASE_URL || 'http://localhost:3001'
 const sessionId = process.argv[2]
 const authToken = process.env.AUTH_TOKEN || ''
 

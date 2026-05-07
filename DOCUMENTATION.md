@@ -614,9 +614,9 @@ Sensitive endpoints require the `X-SSAAM-TS` timestamp header. The server valida
 ### CORS Policy
 Allowed origins:
 - `https://ssaam.vercel.app` (production frontend)
-- `https://ssaam-api.vercel.app` (same-origin API calls)
 - Any `*.replit.dev` or `*.repl.co` origin (Replit development)
 - `localhost` and `127.0.0.1` (local development)
+- Any origin matching `FRONTEND_URL` env var (optional custom domain)
 
 ---
 
@@ -635,7 +635,7 @@ npm install
 ```bash
 npm run dev
 ```
-The Vite dev server starts on `http://localhost:5000`. API requests to `/apis/*` are automatically proxied to the live backend at `https://ssaam-api.vercel.app`.
+The Vite dev server starts on `http://localhost:5000`. API requests to `/apis/*` are automatically proxied to the local backend running on port 3001.
 
 ### Run Backend Locally
 ```bash
@@ -658,35 +658,40 @@ Outputs to `dist/`. The `vercel.json` handles routing for Vercel deployment.
 ### Frontend (`.env`)
 | Variable | Example | Description |
 |---|---|---|
-| `VITE_API_URL` | `https://ssaam-api.vercel.app` | Backend API base URL |
+| `VITE_API_URL` | *(leave empty)* | Leave blank — the app uses relative `/apis/*` URLs so the backend is always co-located |
 | `NODE_ENV` | `development` | Node environment |
 
-### Backend (required for local backend)
-| Variable | Description |
-|---|---|
-| `SSAAM_API_KEY` | JWT signing secret |
-| `SSAAM_CRYPTO_KEY` | Encryption key for sensitive data |
-| `ADMIN_VERIFICATION_SECRET` | Secret for admin verification |
-| `PRIMARY_ADMIN_USERNAME` | Default admin username (defaults to `ssaam`) |
-| `FRONTEND_URL` | Additional allowed CORS origin |
-| `PORT` | Server port (defaults to `5000`) |
+### Backend
+| Variable | Required | Description |
+|---|---|---|
+| `MONGODB_URL` | ✅ | MongoDB Atlas connection string |
+| `SSAAM_API_KEY` | ✅ | JWT signing secret |
+| `SSAAM_CRYPTO_KEY` | ✅ | Encryption key for timestamp tokens |
+| `ADMIN_VERIFICATION_SECRET` | ✅ | Secret for admin verification flow |
+| `CLOUDINARY_CLOUD_NAME` | ✅ | Cloudinary cloud name (e.g. `devnpfjiu`) |
+| `CLOUDINARY_API_KEY` | ✅ | Cloudinary API key |
+| `CLOUDINARY_API_SECRET` | ✅ | Cloudinary API secret |
+| `PRIMARY_ADMIN_USERNAME` | optional | Default super-admin username (defaults to `ssaam`) |
+| `FRONTEND_URL` | optional | Extra CORS-allowed origin (e.g. a custom domain) |
+| `MASTER_CREATION_SECRET` | optional | Secret required when creating new master/teacher accounts |
+| `ADMIN_SECRET_KEY` | optional | Secret required for admin-level account operations |
+| `PORT` | optional | Server port for local dev (defaults to `3001`) |
 
-Set these in Replit's Secrets panel or in a local `.env` file that is never committed to version control.
+Set these in Replit's Secrets panel for development, and in Vercel's Environment Variables panel for production.
 
 ---
 
 ## 13. Deployment
 
-The project is deployed on **Vercel**:
+The project is deployed on **Vercel** as a single unified project — the frontend and backend live together, no separate API deployment needed.
 
 | Service | URL |
 |---|---|
-| Frontend | `https://ssaam.vercel.app` |
-| Backend API | `https://ssaam-api.vercel.app` |
+| Frontend + Backend | `https://ssaam.vercel.app` |
 
 ### `vercel.json` Routing
-- All `/apis/*` requests route to the backend serverless function (`SSAAM_VERCEL_BACKEND.js`)
-- All other requests serve the built Vue SPA (`dist/index.html`)
+- All `/apis/*` requests route to `SSAAM_VERCEL_BACKEND.js` (Vercel Serverless Function)
+- All other requests serve the built Vue SPA from `dist/index.html`
 
 ### Replit Deployment
 When running on Replit, the frontend is served on port `5000` via the `Start application` workflow (`npm run dev`). API calls proxy to the live Vercel backend unless a local backend server is also running.
