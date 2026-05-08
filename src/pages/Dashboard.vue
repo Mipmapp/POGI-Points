@@ -5328,7 +5328,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <h2 class="text-white text-base sm:text-lg font-black leading-tight tracking-tight">Privacy Policy</h2>
-              <p class="text-white/60 text-[10px] sm:text-xs mt-0.5 truncate">SSAAM · Jose Rizal Memorial State University</p>
+              <p class="text-white/60 text-[10px] sm:text-xs mt-0.5 truncate">SSAAM · CCS - Jose Rizal Memorial State University</p>
             </div>
             <button
               @click="showPrivacyModal = false"
@@ -5458,7 +5458,7 @@
             </div>
             <div class="flex-1 min-w-0">
               <h2 class="text-white text-base sm:text-lg font-black leading-tight tracking-tight">Terms &amp; Conditions</h2>
-              <p class="text-white/60 text-[10px] sm:text-xs mt-0.5 truncate">SSAAM · Jose Rizal Memorial State University</p>
+              <p class="text-white/60 text-[10px] sm:text-xs mt-0.5 truncate">SSAAM · CCS - Jose Rizal Memorial State University</p>
             </div>
             <button
               @click="showTermsModal = false"
@@ -9289,7 +9289,7 @@ const tcSections = [
     color: 'bg-gradient-to-br from-blue-500 to-blue-700',
     dot: 'bg-blue-500',
     points: [
-      '<strong>SSAAM</strong> (Student School Activities Attendance Monitoring) is an official digital platform of <strong>Jose Rizal Memorial State University (JRMSU)</strong>.',
+      '<strong>SSAAM</strong> (Student School Activities Attendance Monitoring) is an official digital platform of <strong>the College of Computing Studies in Jose Rizal Memorial State University (JRMSU)</strong>.',
       'It is designed to record, monitor, and manage student attendance in school activities and events.',
       'The system is operated by the <strong>College of Computing Studies (CCS) — Creatives Society</strong> and is authorized by JRMSU administration.',
       'Use of this platform is mandatory for enrolled students who are required to attend official school activities.',
