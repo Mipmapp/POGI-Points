@@ -6991,8 +6991,6 @@
                 <p class="text-gray-600 text-xs leading-relaxed">Contact an administrator or event coordinator. Admins can mark your attendance as excused with a reason note in the Attendance logs.</p>
               </div>
               <div class="border-l-4 border-blue-300 pl-3 py-0.5">
-                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I check notifications?</h5>
-                <p class="text-gray-600 text-xs leading-relaxed">Click the Notifications button in the sidebar to see important updates about events, contributions, and system announcements.</p>
               </div>
             </div>
           </div>
@@ -7055,8 +7053,6 @@
                 <p class="text-gray-600 text-xs leading-relaxed">System logs track all attendance changes, user actions, and configuration updates. Contact developers for detailed audit trail access if needed.</p>
               </div>
               <div class="border-l-4 border-green-300 pl-3 py-0.5">
-                <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I create announcements?</h5>
-                <p class="text-gray-600 text-xs leading-relaxed">Go to Dashboard and use the Announcement section. Create notifications that broadcast to all users via the notification system.</p>
               </div>
               <div class="border-l-4 border-green-300 pl-3 py-0.5">
                 <h5 class="font-semibold text-gray-900 text-xs sm:text-sm mb-0.5">How do I manage contribution payment types?</h5>
