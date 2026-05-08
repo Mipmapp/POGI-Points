@@ -11247,7 +11247,7 @@ const savePhotoToStorage = (studentId, photoData) => {
   try {
     const cacheData = {
       data: photoData,
-      expiry: Date.now() + (30 * 24 * 60 * 60 * 1000) // 30 days
+      expiry: Date.now() + (5 * 24 * 60 * 60 * 1000) // 5 days
     }
     localStorage.setItem(`photo_${studentId}`, JSON.stringify(cacheData))
   } catch (e) {
