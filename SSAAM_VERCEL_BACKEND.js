@@ -4881,11 +4881,13 @@ app.delete('/apis/masters/face/:faceId', auth, requireMaster, async (req, res) =
 // ---------------------------------------------------------------------------
 const STUDENT_FACE_LIMIT = 1;
 const STUDENT_FACE_COOLDOWN_DAYS = 7;
-// 0.45 is a good "definitely the same person" boundary in face-api.js. We use
-// it for both check-in matching and uniqueness rejection so the rules are
-// symmetric: if your face would match someone else at check-in, you can't
-// enroll it.
-const STUDENT_FACE_UNIQUENESS_THRESHOLD = 0.45;
+// Uniqueness threshold for enrollment: reject if a new descriptor is closer
+// than this distance to any existing student's descriptor.
+// Lowered from 0.45 → 0.35 to eliminate false "already registered" rejections:
+// at 0.45 students who merely look similar (same lighting/angle/ethnicity)
+// were being blocked. 0.35 only fires when the face is extremely close —
+// effectively the same person trying to re-register under a different account.
+const STUDENT_FACE_UNIQUENESS_THRESHOLD = 0.35;
 
 // Squared euclidean distance — same shape as the kiosk uses, kept inline so
 // we don't hit a function-call cost in the per-student loop.

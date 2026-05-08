@@ -346,7 +346,7 @@ const confirmedDescriptor = ref(null)
 const confirmedPhoto = ref(null)
 const submitting = ref(false)
 
-const TARGET_SAMPLES = 30
+const TARGET_SAMPLES = 45
 const progressPct = computed(() => Math.min(100, (capturedSamples.value / TARGET_SAMPLES) * 100))
 
 const stageStyle = computed(() => {
@@ -378,7 +378,7 @@ const stageHint = computed(() => {
   if (showConfirmDialog.value) return 'Review the preview below — confirm to save or retake to try again.'
   if (capturing.value) return `Sampling ${TARGET_SAMPLES} frames to build a strong template`
   if (autoCountdown.value > 0) return 'Stay still — capture will begin automatically'
-  if (faceTooFar.value) return 'Move your phone or laptop a little closer so your face fills the oval.'
+  if (faceTooFar.value) return 'Move closer so your face fills most of the oval — this ensures a clear, accurate capture.'
   if (faceOffCenter.value) return 'Slide your face so it sits right inside the oval guide.'
   return ''
 })
@@ -472,11 +472,11 @@ async function runDetectionLoop() {
   try {
     const fa = await getFaceApi()
     const det = await fa
-      .detectSingleFace(videoEl.value, new fa.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
+      .detectSingleFace(videoEl.value, new fa.TinyFaceDetectorOptions({ inputSize: 416, scoreThreshold: 0.6 }))
       .withFaceLandmarks(true)
       .withFaceDescriptor()
 
-    const hasFace = !!det && det.detection && det.detection.score > 0.6
+    const hasFace = !!det && det.detection && det.detection.score > 0.72
     let wellPlaced = false
     let tooFar = false
     let offCenter = false
@@ -497,8 +497,10 @@ async function runDetectionLoop() {
       // off-center check matches what the user actually sees.
       const cxMirrored = 1 - cx
 
-      // "Too far" when the face takes up less than ~22% of the frame width.
-      tooFar = faceFracW < 0.22
+      // "Too far" when the face takes up less than ~28% of the frame width.
+      // Raised from 0.22 → 0.28 so only close, well-lit captures are accepted,
+      // producing a higher-quality descriptor that is less prone to false matches.
+      tooFar = faceFracW < 0.28
       // "Off center" when the face center sits well outside the oval region.
       offCenter = Math.abs(cxMirrored - 0.5) > 0.18 || Math.abs(cy - 0.48) > 0.22
 
@@ -593,9 +595,16 @@ function startCapture() {
 
 async function finishCapture() {
   capturing.value = false
-  const top = [...collectedDescriptors.value]
+  // Keep only high-confidence frames (score > 0.80), then take the top 12 by
+  // score. Using fewer but higher-quality frames produces a tighter, more
+  // distinctive average descriptor — significantly reducing false "already
+  // registered" rejections caused by noisy low-confidence samples drifting
+  // the average toward another student's descriptor.
+  const highQuality = collectedDescriptors.value.filter(s => s.score > 0.80)
+  const pool = highQuality.length >= 5 ? highQuality : collectedDescriptors.value
+  const top = [...pool]
     .sort((a, b) => b.score - a.score)
-    .slice(0, Math.min(20, collectedDescriptors.value.length))
+    .slice(0, Math.min(12, pool.length))
   if (!top.length) {
     errorMessage.value = 'Capture failed — please try again with better lighting.'
     return
