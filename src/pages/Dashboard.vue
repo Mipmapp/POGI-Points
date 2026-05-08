@@ -11370,81 +11370,12 @@ const scannerGeoBlocked = computed(() => {
   return !scannerLocationVerified.value
 })
 const rfidInputRef = ref(null)
-const announcementTextareaRef = ref(null) // [AI WARNING] Possibly unused — not bound in template via ref=; auto-focus function may be dead
-const socialNameInputRef = ref(null)
-
-// Social shortcuts data
-const activeSocialInput = ref(null)
-const socialInputData = ref({ name: '', link: '' })
-const socialInputRange = ref({ start: 0, end: 0 })
-
-const socialIconsShort = {
-  fb: 'https://cdn-icons-png.flaticon.com/512/124/124010.png',
-  insta: 'https://cdn-icons-png.flaticon.com/512/174/174855.png',
-  tiktok: 'https://cdn-icons-png.flaticon.com/512/3046/3046121.png',
-  discord: 'https://cdn-icons-png.flaticon.com/512/3670/3670157.png',
-  telegram: 'https://cdn-icons-png.flaticon.com/512/2111/2111646.png',
-  whatsapp: 'https://cdn-icons-png.flaticon.com/512/733/733585.png'
-}
 // Student ID detection pattern (example: 25-A-01207)
 const studentIdPattern = /^\d{2}-[A-Z]-\d{5}$/i
 
 const onRfidInput = (e) => {
   const val = (e && e.target && e.target.value) ? e.target.value.toUpperCase() : ''
   rfidInput.value = val
-}
-
-const insertSocialTag = (platform) => {
-  const textarea = announcementTextareaRef.value
-  if (!textarea) {
-    activeSocialInput.value = platform
-    socialInputData.value = { name: '', link: '' }
-    socialInputRange.value = { start: newNotification.value.content.length, end: newNotification.value.content.length }
-    return
-  }
-
-  const start = textarea.selectionStart
-  const end = textarea.selectionEnd
-  const text = newNotification.value.content
-  
-  activeSocialInput.value = platform
-  socialInputData.value = { name: '', link: '' }
-  socialInputRange.value = { start, end }
-  
-  // Check if we are selecting an existing tag or near one
-  const beforeText = text.substring(0, start)
-  const afterText = text.substring(end)
-  
-  const tagMatchBefore = beforeText.match(/\[(fb|facebook|insta|instagram|tiktok|discord|telegram|whatsapp)\]\[([^\]]*)\]\[([^\]]*)$/)
-  const tagMatchAfter = afterText.match(/^([^\[]*)\]/)
-  
-  if (tagMatchBefore && tagMatchAfter) {
-    socialInputData.value.name = tagMatchBefore[2] + tagMatchAfter[1]
-    socialInputData.value.link = tagMatchBefore[3]
-    socialInputRange.value.start = start - tagMatchBefore[0].length
-    socialInputRange.value.end = end + tagMatchAfter[0].length
-  }
-
-  setTimeout(() => {
-    if (socialNameInputRef.value && socialNameInputRef.value[0]) {
-      socialNameInputRef.value[0].focus()
-    }
-  }, 100)
-}
-
-const confirmSocialInsert = () => {
-  const platform = activeSocialInput.value
-  const { name, link } = socialInputData.value
-  
-  if (!name) return
-
-  const fullLink = link ? (link.startsWith('http') ? link : `https://${link}`) : ''
-  const tag = `[${platform}][${name}][${fullLink}]`
-  
-  newNotification.value.content += tag
-
-  activeSocialInput.value = null
-  socialInputData.value = { name: '', link: '' }
 }
 
 const rfidLastKeyTime = ref(0)
