@@ -749,10 +749,32 @@ const verificationError = ref(false)
 const verificationErrorMessage = ref('')
 let pendingUser = null
 
+// Sweep localStorage and remove every photo_* entry whose expiry has passed.
+// Runs on every login so the cache never grows unboundedly over time.
+function pruneExpiredPhotoCache() {
+  try {
+    const now = Date.now()
+    const toDelete = []
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i)
+      if (!key || !key.startsWith('photo_')) continue
+      try {
+        const parsed = JSON.parse(localStorage.getItem(key))
+        if (!parsed || !parsed.expiry || now >= parsed.expiry) toDelete.push(key)
+      } catch { toDelete.push(key) }
+    }
+    toDelete.forEach(k => localStorage.removeItem(k))
+    if (toDelete.length) console.log(`[PhotoCache] Pruned ${toDelete.length} expired entries`)
+  } catch (e) {
+    console.warn('[PhotoCache] Prune failed:', e)
+  }
+}
+
 // Complete the login after the admin verification code passes.
 // Persists the pending user to localStorage and triggers the navigation.
 function completeLogin() {
   if (!pendingUser) return
+  pruneExpiredPhotoCache()
   const { token: _t, custom_password: _cp, password_hash: _ph, admin_verification_token: _avt, ...safeUser } = pendingUser
   localStorage.setItem('currentUser', JSON.stringify(safeUser))
   localStorage.setItem('authToken', pendingUser.token)
@@ -1222,6 +1244,7 @@ const handleLogin = async () => {
       // clear pre-login department/program hints
       try { localStorage.removeItem('loginChosenDepartment') } catch (e) {}
       try { localStorage.removeItem('loginChosenProgram') } catch (e) {}
+      pruneExpiredPhotoCache()
       console.log("Navigating to dashboard...");
       // Navigate immediately — authentication is complete. The loading overlay
       // (isLoading) will be cleared by the finally block after we return.
