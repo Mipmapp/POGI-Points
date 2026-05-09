@@ -803,8 +803,21 @@
           </div>
         </div>
 
+        <!-- Loading skeleton while payment status is being fetched from server -->
+        <div v-if="isLoadingPaymentStatus" class="space-y-3 animate-pulse">
+          <div class="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
+            <div class="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3 bg-gray-200 rounded-full w-1/3"></div>
+              <div class="h-2.5 bg-gray-200 rounded-full w-2/3"></div>
+            </div>
+            <svg class="w-5 h-5 animate-spin text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          </div>
+          <div class="w-full py-3 px-4 bg-gray-200 rounded-2xl h-12"></div>
+        </div>
+
         <!-- Already Paid State (Mark as Unpaid) -->
-        <div v-if="selectedStudentAlreadyPaid" class="space-y-3">
+        <div v-else-if="selectedStudentAlreadyPaid" class="space-y-3">
           <div class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-2xl">
             <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
               <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -2128,6 +2141,7 @@ export default {
       _unpaidConfirmTimer: null,
       contributions: [],
       selectedStudent: null,
+      isLoadingPaymentStatus: false,
       // Multi-result student search: list of close matches the user can click.
       searchResults: [],
       isSearchingStudent: false,
@@ -2870,16 +2884,21 @@ export default {
         this.isSearchingStudent = false;
       }
     },
-    selectStudentFromSearch(student) {
+    async selectStudentFromSearch(student) {
       // Click handler on a search result row — promotes a candidate into the
       // active selection used by the payment card and POS panel.
       this.selectedStudent = student;
       this.discountValue = 0;
       this.searchResults = [];
       this.hasSearched = false;
-      // Refresh contributions so the paid/unpaid status shown on the card
-      // always reflects the latest data from the server.
-      this.loadAllContributions();
+      // Show the loading skeleton while we fetch the latest paid/unpaid status
+      // from the server, so the button never "pops" from one state to another.
+      this.isLoadingPaymentStatus = true;
+      try {
+        await this.loadAllContributions();
+      } finally {
+        this.isLoadingPaymentStatus = false;
+      }
     },
     clearSearchResults() {
       this.searchResults = [];
