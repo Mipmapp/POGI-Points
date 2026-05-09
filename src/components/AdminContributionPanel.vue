@@ -815,7 +815,7 @@
             </div>
           </div>
           <button
-            @click="markAsUnpaid()"
+            @click="confirmMarkUnpaid()"
             :disabled="isProcessingPaymentGlobal"
             class="w-full py-3 px-4 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-2xl font-bold text-sm transition-all hover:from-red-600 hover:to-red-700 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-red-200 active:scale-[0.99]"
           >
@@ -853,10 +853,28 @@
          distracting underneath. -->
     <Transition name="contrib-slide">
     <div v-if="activePayment && !selectedStudent" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-      <div class="px-5 sm:px-6 md:px-8 py-4 border-b border-gray-100 flex items-center gap-2">
-        <div class="w-1 h-5 rounded-full bg-blue-600"></div>
-        <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Payment Records</h3>
-        <span class="ml-auto text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">{{ filteredContributions.length }}</span>
+      <div class="px-5 sm:px-6 md:px-8 py-4 border-b border-gray-100 space-y-3">
+        <div class="flex items-center gap-2">
+          <div class="w-1 h-5 rounded-full bg-blue-600"></div>
+          <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Payment Records</h3>
+          <span class="ml-auto text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">{{ filteredContributions.length }}</span>
+        </div>
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input
+            v-model="paymentRecordsQuery"
+            type="text"
+            placeholder="Filter by name or student ID…"
+            class="w-full pl-10 pr-9 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-700 placeholder-gray-400 focus:outline-none focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all"
+          />
+          <button
+            v-if="paymentRecordsQuery"
+            @click="paymentRecordsQuery = ''"
+            class="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-gray-300 hover:bg-gray-400 flex items-center justify-center transition active:scale-90"
+          >
+            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
       </div>
 
       <!-- Top Pagination Controls -->
@@ -978,7 +996,7 @@
             </button>
             <button
               v-else
-              @click="markAsUnpaid(c)"
+              @click="confirmMarkUnpaid(c)"
               :disabled="processingPaymentId === (c._id || c.student_id)"
               class="flex-1 py-2 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl text-xs font-bold transition hover:from-red-600 hover:to-red-700 disabled:opacity-60 flex items-center justify-center gap-1.5"
             >
@@ -1100,7 +1118,7 @@
                   </button>
                   <button
                     v-else
-                    @click="markAsUnpaid(c)"
+                    @click="confirmMarkUnpaid(c)"
                     :disabled="processingPaymentId === (c._id || c.student_id)"
                     class="px-2.5 py-1 bg-red-500 hover:bg-red-600 text-white rounded-md text-[11px] font-bold transition disabled:opacity-60 inline-flex items-center gap-1 whitespace-nowrap"
                     title="Reverse this payment"
@@ -1240,6 +1258,62 @@
                 <span v-if="isDeletingEvent">Deleting...</span>
                 <span v-else-if="deleteConfirmCooldown > 0">Wait ({{ deleteConfirmCooldown }}s)</span>
                 <span v-else>Delete Event</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+    </Teleport>
+
+    <!-- Mark as Unpaid Confirmation Modal -->
+    <Teleport to="body">
+    <transition name="fade">
+      <div v-if="showUnpaidConfirm" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="cancelMarkUnpaid"></div>
+        <div class="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
+          <div class="p-6 text-center">
+            <div class="relative w-16 h-16 mx-auto mb-4">
+              <svg class="absolute inset-0 w-16 h-16 -rotate-90" viewBox="0 0 56 56">
+                <circle cx="28" cy="28" r="24" fill="none" stroke="#fee2e2" stroke-width="4"/>
+                <circle cx="28" cy="28" r="24" fill="none" stroke="#ef4444" stroke-width="4"
+                  stroke-dasharray="150.8"
+                  :stroke-dashoffset="unpaidConfirmCooldown > 0 ? (150.8 * unpaidConfirmCooldown / 3) : 0"
+                  class="transition-all duration-1000 ease-linear"
+                />
+              </svg>
+              <div class="absolute inset-0 flex items-center justify-center">
+                <svg v-if="unpaidConfirmCooldown === 0" class="w-7 h-7 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
+                <span v-else class="text-xl font-extrabold text-red-600">{{ unpaidConfirmCooldown }}</span>
+              </div>
+            </div>
+
+            <h3 class="text-lg font-extrabold text-gray-900 mb-1">Reverse Payment?</h3>
+            <p class="text-sm text-gray-500 mb-1">You are about to mark as <span class="font-bold text-red-600">UNPAID</span>:</p>
+            <p class="text-sm font-bold text-gray-800 mb-1">
+              {{ unpaidConfirmContribution ? (unpaidConfirmContribution.student_name || unpaidConfirmContribution.student_id) : (selectedStudent ? (selectedStudent.full_name || selectedStudent.first_name) : '') }}
+            </p>
+            <p class="text-xs text-gray-400 mb-4">{{ activePayment ? activePayment.title : '' }}</p>
+
+            <p v-if="unpaidConfirmCooldown > 0" class="text-xs text-gray-400 mb-4 font-medium">Please wait {{ unpaidConfirmCooldown }}s before confirming...</p>
+            <p v-else class="text-xs text-orange-600 font-semibold mb-4">You may now confirm this reversal.</p>
+
+            <div class="flex gap-3">
+              <button @click="cancelMarkUnpaid" class="flex-1 px-4 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-700 transition">
+                Cancel
+              </button>
+              <button
+                @click="markAsUnpaid(unpaidConfirmContribution)"
+                :disabled="unpaidConfirmCooldown > 0"
+                :class="[
+                  'flex-1 px-4 py-2.5 rounded-xl text-sm font-bold transition flex items-center justify-center gap-2',
+                  unpaidConfirmCooldown > 0
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700 text-white'
+                ]"
+              >
+                <span v-if="unpaidConfirmCooldown > 0">Wait ({{ unpaidConfirmCooldown }}s)</span>
+                <span v-else>Confirm Unpaid</span>
               </button>
             </div>
           </div>
@@ -1991,6 +2065,11 @@ export default {
       // so the initials fallback inside the same circle becomes visible.
       photoFailed: {},
       searchQuery: '',
+      paymentRecordsQuery: '',
+      showUnpaidConfirm: false,
+      unpaidConfirmContribution: null,
+      unpaidConfirmCooldown: 0,
+      _unpaidConfirmTimer: null,
       contributions: [],
       selectedStudent: null,
       // Multi-result student search: list of close matches the user can click.
@@ -2107,7 +2186,7 @@ export default {
       const fp = this.filterProgram;
 
       const fc = (this.filterCollege || '').toUpperCase();
-      const q = (this.searchQuery || '').toString().trim().toLowerCase();
+      const q = (this.paymentRecordsQuery || '').toString().trim().toLowerCase();
       // Local YYYY-MM-DD string the admin picked (e.g. "2026-04-29"). When
       // empty, the date filter is inactive and every record is allowed
       // through this gate.
@@ -2146,12 +2225,14 @@ export default {
         let matchesQuery = true;
         if (q) {
           const hay = [
+            c.student_name,
             c.name,
             c.first_name,
             c.middle_name,
             c.last_name,
             c.full_name,
             c.student_id,
+            c.student_id_number,
             c.id_number,
             c.rfid_code,
             c.email
@@ -2723,6 +2804,9 @@ export default {
       this.discountValue = 0;
       this.searchResults = [];
       this.hasSearched = false;
+      // Refresh contributions so the paid/unpaid status shown on the card
+      // always reflects the latest data from the server.
+      this.loadAllContributions();
     },
     clearSearchResults() {
       this.searchResults = [];
@@ -2967,25 +3051,50 @@ export default {
         else { this.isProcessingPaymentGlobal = false; }
       }
     },
+    confirmMarkUnpaid(contribution) {
+      this.unpaidConfirmContribution = contribution || null;
+      this.showUnpaidConfirm = true;
+      this.unpaidConfirmCooldown = 3;
+      clearInterval(this._unpaidConfirmTimer);
+      this._unpaidConfirmTimer = setInterval(() => {
+        if (this.unpaidConfirmCooldown > 0) {
+          this.unpaidConfirmCooldown--;
+        } else {
+          clearInterval(this._unpaidConfirmTimer);
+        }
+      }, 1000);
+    },
+    cancelMarkUnpaid() {
+      this.showUnpaidConfirm = false;
+      this.unpaidConfirmContribution = null;
+      this.unpaidConfirmCooldown = 0;
+      clearInterval(this._unpaidConfirmTimer);
+    },
     async markAsUnpaid(contribution) {
-      // Either a row from the table or — when no row is passed — the currently
-      // selected student. Mirrors markAsPayment's signature.
-      if (!this.selectedStudent && !contribution) return;
+      // Called by the confirmation modal after the admin confirms.
+      // Either a row from the table (passed as `contribution`) or — when no
+      // row is passed — the currently selected student.
+      const contrib = contribution !== undefined ? contribution : this.unpaidConfirmContribution;
+      this.showUnpaidConfirm = false;
+      this.unpaidConfirmContribution = null;
+      clearInterval(this._unpaidConfirmTimer);
+
+      if (!this.selectedStudent && !contrib) return;
 
       if (!this.activePayment?._id) {
         window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'No active payment event found.', type: 'warning' } }));
         return;
       }
 
-      const isRow = !!contribution;
-      const processingId = isRow ? (contribution._id || contribution.student_id_number) : 'global';
+      const isRow = !!contrib;
+      const processingId = isRow ? (contrib._id || contrib.student_id_number) : 'global';
       try {
         if (isRow) { this.processingPaymentId = processingId; }
         else { this.isProcessingPaymentGlobal = true; }
 
         const token = localStorage.getItem('authToken');
         const studentIdInput = isRow
-          ? (contribution.student_id_number || contribution.student_id)
+          ? (contrib.student_id_number || contrib.student_id)
           : this.selectedStudent.student_id;
         const paymentId = this.activePayment._id;
 
