@@ -1606,6 +1606,33 @@
       <div v-if="showDownloadConfirm" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showDownloadConfirm = false"></div>
         <div class="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+
+          <!-- Export loading overlay — covers the modal while the file is being built -->
+          <Transition name="fade">
+            <div v-if="isDownloading" class="absolute inset-0 z-20 bg-white/95 backdrop-blur-sm flex flex-col items-center justify-center gap-6 rounded-3xl">
+              <div class="relative flex items-center justify-center">
+                <svg class="w-16 h-16 animate-spin text-blue-200" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                <div class="absolute w-8 h-8 rounded-full bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                  </svg>
+                </div>
+              </div>
+              <div class="text-center space-y-1.5 px-8">
+                <p class="text-base font-extrabold text-gray-800">Preparing Export</p>
+                <p class="text-sm text-gray-500 transition-all duration-500">{{ exportStepMessages[exportStep] }}</p>
+              </div>
+              <div class="flex gap-1.5">
+                <span v-for="i in exportStepMessages.length" :key="i"
+                  :class="['w-2 h-2 rounded-full transition-all duration-400', (i - 1) === exportStep ? 'bg-blue-600 scale-125' : 'bg-gray-200']">
+                </span>
+              </div>
+            </div>
+          </Transition>
+
           <!-- Modal Header -->
           <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center justify-between flex-shrink-0">
             <div>
@@ -2163,6 +2190,13 @@ export default {
       filterPaidDatePreset: '',
       isLoading: false,
       isDownloading: false,
+      exportStep: 0,
+      exportStepMessages: [
+        'Fetching records from server…',
+        'Building spreadsheet…',
+        'Preparing your download…'
+      ],
+      _exportStepTimer: null,
       showDownloadConfirm: false,
       downloadPreviewLimit: 5,
       downloadFormat: 'xlsx',
@@ -3404,6 +3438,11 @@ export default {
     async confirmAndExportFilteredExcel() {
       if (this.isDownloading) return;
       this.isDownloading = true;
+      this.exportStep = 0;
+      // Cycle through step messages so the overlay feels alive
+      this._exportStepTimer = setInterval(() => {
+        this.exportStep = Math.min(this.exportStep + 1, this.exportStepMessages.length - 1);
+      }, 900);
       try {
         const params = new URLSearchParams();
         if (this.exportYears.length < 4) params.set('year_levels', this.exportYears.join(','));
@@ -3488,6 +3527,9 @@ export default {
         console.error('Error exporting payments:', error);
         window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Failed to export payment records', type: 'error' } }));
       } finally {
+        clearInterval(this._exportStepTimer);
+        this._exportStepTimer = null;
+        this.exportStep = 0;
         this.isDownloading = false;
       }
     }
