@@ -2813,10 +2813,19 @@ export default {
       if (!q) {
         this.searchResults = [];
         this.hasSearched = false;
+        // Clear the table filter too when search is cleared
+        this.paymentRecordsQuery = '';
+        this.loadAllContributions();
         return;
       }
       this.isSearchingStudent = true;
       this.hasSearched = true;
+
+      // Always sync the table filter with what the user typed so the
+      // payment records table narrows down to matching rows regardless of
+      // whether the dropdown auto-selects a student or not.
+      this.paymentRecordsQuery = q;
+
       try {
         const token = localStorage.getItem('authToken');
         const response = await fetch(buildAPIUrl('/apis/students/search-multi'), {

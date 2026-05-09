@@ -3231,19 +3231,48 @@ app.post('/apis/students/search-multi', auth, async (req, res) => {
         if (!search_query || !search_query.trim()) {
             return res.status(400).json({ message: 'Search query is required' });
         }
-        const escapedSearch = escapeRegex(search_query.trim());
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+
+        // Split the query by whitespace so "REAH GARCIA" finds students
+        // where "REAH" matches any name field AND "GARCIA" matches any name field,
+        // even when full_name is null or ordered differently.
+        const terms = search_query.trim().split(/\s+/).filter(Boolean);
+
+        let nameFilter;
+        if (terms.length === 1) {
+            const esc = escapeRegex(terms[0]);
+            nameFilter = {
+                $or: [
+                    { student_id: { $regex: esc, $options: 'i' } },
+                    { rfid_code: { $regex: esc, $options: 'i' } },
+                    { first_name: { $regex: esc, $options: 'i' } },
+                    { middle_name: { $regex: esc, $options: 'i' } },
+                    { last_name: { $regex: esc, $options: 'i' } },
+                    { full_name: { $regex: esc, $options: 'i' } }
+                ]
+            };
+        } else {
+            // Every term must appear in at least one of the name fields.
+            // This handles "REAH GARCIA", "Garcia Reah", "22-A-12345 Garcia", etc.
+            nameFilter = {
+                $and: terms.map(t => {
+                    const esc = escapeRegex(t);
+                    return {
+                        $or: [
+                            { first_name: { $regex: esc, $options: 'i' } },
+                            { middle_name: { $regex: esc, $options: 'i' } },
+                            { last_name: { $regex: esc, $options: 'i' } },
+                            { full_name: { $regex: esc, $options: 'i' } },
+                            { student_id: { $regex: esc, $options: 'i' } }
+                        ]
+                    };
+                })
+            };
+        }
 
         const students = await StudentModel.find({
             status: 'approved',
-            $or: [
-                { student_id: { $regex: escapedSearch, $options: 'i' } },
-                { rfid_code: { $regex: escapedSearch, $options: 'i' } },
-                { first_name: { $regex: escapedSearch, $options: 'i' } },
-                { middle_name: { $regex: escapedSearch, $options: 'i' } },
-                { last_name: { $regex: escapedSearch, $options: 'i' } },
-                { full_name: { $regex: escapedSearch, $options: 'i' } }
-            ]
+            ...nameFilter
         })
             .select('student_id first_name last_name middle_name suffix full_name program year_level email rfid_status role photo college')
             .sort({ first_name: 1, last_name: 1 })
