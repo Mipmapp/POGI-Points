@@ -8125,64 +8125,112 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
 // Download payment records as Excel
 app.get('/apis/contributions/download/excel', auth, async (req, res) => {
     try {
-        const { status, year_level = '', program = '' } = req.query;
+        const { status, year_level = '', program = '', payment_id } = req.query;
 
-        const filter = {};
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        const CollegePaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
+        const CollegePaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
+
+        // Resolve which payment event to export
+        let activePayment;
+        if (payment_id) {
+            activePayment = await CollegePaymentModel.findById(payment_id).lean();
+        }
+        if (!activePayment) {
+            activePayment = await CollegePaymentModel.findOne({ amount_due: { $gt: 0 } }).sort({ created_at: -1 }).lean();
+        }
+
+        // Build student_id -> campaign status map from PaymentRecord
+        const paymentRecords = await CollegePaymentRecordModel.find({}).lean();
+        const paymentStatusMap = {};
+        for (const rec of paymentRecords) {
+            if (!activePayment) break;
+            const campaign = rec.campaigns?.find(c => c.payment_id?.toString() === activePayment._id?.toString());
+            if (campaign) {
+                paymentStatusMap[rec.student_id] = {
+                    payment_status: campaign.payment_status || 'unpaid',
+                    amount_paid: campaign.amount_paid || 0,
+                    paid_at: campaign.paid_at || null,
+                    paid_by_treasurer: campaign.paid_by_treasurer || null
+                };
+            }
+        }
+
+        // Fetch all approved students
+        const allStudents = await StudentModel.find({ status: 'approved' }, {
+            student_id: 1, first_name: 1, last_name: 1, full_name: 1, program: 1, year_level: 1
+        }).lean();
+
+        // Merge student list with payment status
+        let merged = allStudents.map(s => {
+            const pr = paymentStatusMap[s.student_id] || {};
+            return {
+                student_id_number: s.student_id,
+                student_name: s.full_name || `${s.first_name || ''} ${s.last_name || ''}`.trim(),
+                program: s.program || '',
+                year_level: s.year_level || '',
+                payment_status: pr.payment_status || 'unpaid',
+                amount_due: activePayment?.amount_due || 0,
+                amount_paid: pr.amount_paid || 0,
+                paid_at: pr.paid_at || null,
+                paid_by_treasurer: pr.paid_by_treasurer || null
+            };
+        });
+
+        // Apply filters
         if (status) {
             const s = String(status).toLowerCase();
             if (s === 'unpaid') {
-                // Include unpaid, pending, and records with missing/null payment_status
-                filter.$or = [
-                    { payment_status: { $regex: '^unpaid$', $options: 'i' } },
-                    { payment_status: { $regex: '^pending$', $options: 'i' } },
-                    { payment_status: { $exists: false } },
-                    { payment_status: null }
-                ];
+                merged = merged.filter(r => !r.payment_status || ['unpaid', 'pending'].includes((r.payment_status || '').toLowerCase()));
             } else {
-                filter.payment_status = { $regex: `^${s}$`, $options: 'i' };
+                merged = merged.filter(r => (r.payment_status || '').toLowerCase() === s);
             }
         }
-        if (year_level) filter.year_level = year_level;
-        if (program) filter.program = program;
+        if (year_level) merged = merged.filter(r => r.year_level === year_level);
+        if (program) merged = merged.filter(r => r.program === program);
 
-        // Log computed filter for download debug
-        console.log('[CONTRIB DOWNLOAD] computed filter:', JSON.stringify(filter));
+        // Sort: paid first, then alphabetically
+        merged.sort((a, b) => {
+            const ap = a.payment_status === 'paid' ? 0 : 1;
+            const bp = b.payment_status === 'paid' ? 0 : 1;
+            if (ap !== bp) return ap - bp;
+            return (a.student_name || '').localeCompare(b.student_name || '');
+        });
 
-        const EventContributionModel = getCollegeModel(EventContribution, CCS_EventContribution, COE_EventContribution, req.college);
+        console.log('[CONTRIB DOWNLOAD] exporting records:', merged.length, '| event:', activePayment?.title || 'none');
 
-        const contributions = await EventContributionModel.find(filter)
-            .sort({ student_name: 1 })
-            .select('student_id_number student_name program year_level payment_status original_amount discount_value target_amount paid_at');
+        const exportHeaders = ['Student ID', 'Name', 'Program', 'Year Level', 'Amount Due', 'Amount Paid', 'Status', 'Date Paid', 'Recorded By'];
 
-        console.log('[CONTRIB DOWNLOAD] found records:', contributions.length);
+        const formatPaidBy = (r) => {
+            if (r.payment_status !== 'paid') return '';
+            if (!r.paid_by_treasurer) return 'Admin';
+            if (typeof r.paid_by_treasurer === 'string') return r.paid_by_treasurer || 'Admin';
+            const fn = (r.paid_by_treasurer.first_name || '').trim();
+            const ln = (r.paid_by_treasurer.last_name || '').trim();
+            return [fn, ln].filter(Boolean).join(' ') || 'Admin';
+        };
 
-        // Format data for Excel - ensure headers even when empty
-        const data = contributions.map(c => ({
-            'Student ID': c.student_id_number || '',
-            'Name': c.student_name || '',
-            'Program': c.program || '',
-            'Year Level': c.year_level || '',
-            'Original Amount': typeof c.original_amount === 'number' ? c.original_amount : 0,
-            'Discount': typeof c.discount_value === 'number' ? c.discount_value : 0,
-            'Final Amount': typeof c.target_amount === 'number' ? c.target_amount : (typeof c.original_amount === 'number' ? c.original_amount : 0),
-            'Status': (c.payment_status || '').toString().toUpperCase(),
-            'Date Paid': c.paid_at ? new Date(c.paid_at).toLocaleDateString('en-PH') : ''
-        }));
+        const exportRows = merged.map(r => [
+            r.student_id_number,
+            r.student_name,
+            r.program,
+            r.year_level,
+            r.amount_due,
+            r.payment_status === 'paid' ? r.amount_paid : '',
+            (r.payment_status || 'unpaid').toUpperCase(),
+            r.paid_at ? new Date(r.paid_at).toLocaleDateString('en-PH') : '',
+            formatPaidBy(r)
+        ]);
 
-        const exportHeaders = ['Student ID', 'Name', 'Program', 'Year Level', 'Original Amount', 'Discount', 'Final Amount', 'Status', 'Date Paid'];
-        const exportRows = data.length ? data.map(row => exportHeaders.map(h => row[h] || '')) : [];
-
-        // Create CSV
         const exportCsv = [exportHeaders, ...exportRows].map(row =>
-            row.map(cell => `"${String(cell || '')}"`).join(',')
+            row.map(cell => `"${String(cell ?? '')}"`).join(',')
         ).join('\n');
-
-        // Use exportCsv for response below
 
         res.setHeader('Content-Type', 'text/csv; charset=utf-8');
         res.setHeader('Content-Disposition', `attachment; filename="payment-records-${new Date().toISOString().split('T')[0]}.csv"`);
         res.send(exportCsv);
     } catch (err) {
+        console.error('[CONTRIB DOWNLOAD] error:', err);
         res.status(500).json({ message: err.message });
     }
 });

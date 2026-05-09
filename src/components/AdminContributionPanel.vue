@@ -3141,10 +3141,11 @@ export default {
         if (this.filterStatus) params.set('status', this.filterStatus);
         if (this.filterYearLevel) params.set('year_level', this.filterYearLevel);
         if (this.filterProgram) params.set('program', this.filterProgram);
-        if (this.searchQuery) params.set('query', this.searchQuery);
+        if (this.paymentRecordsQuery) params.set('query', this.paymentRecordsQuery);
+        if (this.activePayment?._id) params.set('payment_id', this.activePayment._id);
 
         const response = await fetch(buildAPIUrl(`/apis/contributions/search?${params.toString()}`), {
-          headers: { 'Authorization': `Bearer ${token}` }
+          headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-College': getCollege() }
         });
         if (!response.ok) {
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Failed to fetch export preview', type: 'error' } }));
@@ -3303,12 +3304,13 @@ export default {
         if (this.filterStatus) params.set('status', this.filterStatus);
         if (this.filterYearLevel) params.set('year_level', this.filterYearLevel);
         if (this.filterProgram) params.set('program', this.filterProgram);
+        if (this.activePayment?._id) params.set('payment_id', this.activePayment._id);
 
         const filtersSafe = `${this.downloadFiltersSummary.status}_${this.downloadFiltersSummary.year}_${this.downloadFiltersSummary.program}`.replace(/\s+/g, '');
         const dateSuffix = new Date().toISOString().split('T')[0];
         const token = localStorage.getItem('authToken');
         const url = buildAPIUrl(`/apis/contributions/download/excel?${params.toString()}`);
-        const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+        const response = await fetch(url, { headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-College': getCollege() } });
 
         if (!response.ok) throw new Error('Server export failed');
 
