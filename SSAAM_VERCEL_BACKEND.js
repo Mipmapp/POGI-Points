@@ -2286,6 +2286,24 @@ masterSchema.methods.toJSON = function () {
 
 const Master = mongoose.model("Master", masterSchema);
 
+// Export audit log — tracks who downloaded payment data, when, and with what filters.
+const exportLogSchema = new mongoose.Schema({
+    exported_by:   { type: String, default: 'Admin' },
+    exported_at:   { type: Date,   default: Date.now },
+    record_count:  { type: Number, default: 0 },
+    format:        { type: String, default: 'xlsx' },
+    payment_title: { type: String, default: '' },
+    filters: {
+        year_levels: { type: [String], default: [] },
+        statuses:    { type: [String], default: [] },
+        program:     { type: String,   default: '' }
+    }
+});
+
+const ExportLog      = mongoose.model('ExportLog',      exportLogSchema);
+const CCS_ExportLog  = mongoose.model('CCS_ExportLog',  exportLogSchema, 'ccs_exportlogs');
+const COE_ExportLog  = mongoose.model('COE_ExportLog',  exportLogSchema, 'coe_exportlogs');
+
 const settingsSchema = new mongoose.Schema({
     userRegister: {
         register: { type: Boolean, default: true },
@@ -8164,6 +8182,36 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
                 totalPages: Math.ceil(total / parseInt(limit))
             }
         });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Export audit log: record a download
+app.post('/apis/export-logs', auth, async (req, res) => {
+    try {
+        const { record_count, format, payment_title, filters } = req.body;
+        const LogModel = getCollegeModel(ExportLog, CCS_ExportLog, COE_ExportLog, req.college);
+        const log = new LogModel({
+            exported_by:   req.master.full_name || req.master.username || 'Admin',
+            record_count:  record_count  || 0,
+            format:        format        || 'xlsx',
+            payment_title: payment_title || '',
+            filters:       filters       || {}
+        });
+        await log.save();
+        res.json({ message: 'Logged', log });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
+// Export audit log: retrieve recent downloads (most recent 50)
+app.get('/apis/export-logs', auth, async (req, res) => {
+    try {
+        const LogModel = getCollegeModel(ExportLog, CCS_ExportLog, COE_ExportLog, req.college);
+        const logs = await LogModel.find({}).sort({ exported_at: -1 }).limit(50).lean();
+        res.json({ logs });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

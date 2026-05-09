@@ -39,8 +39,8 @@
           </div>
         </div>
 
-        <!-- Mobile: 3-column compact icon+label buttons -->
-        <div class="grid grid-cols-3 gap-2 sm:hidden">
+        <!-- Mobile: 4-column compact icon+label buttons -->
+        <div class="grid grid-cols-4 gap-2 sm:hidden">
           <button
             @click="showCreateEventModal = true"
             class="flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-2xl bg-gradient-to-b from-blue-600 to-indigo-700 text-white shadow-md shadow-blue-200/70 active:scale-95 transition-all"
@@ -65,6 +65,13 @@
             <svg v-if="isGeneratingReport" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
             <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             <span class="text-[11px] font-bold leading-tight">{{ isGeneratingReport ? 'Loading…' : 'Gen. Report' }}</span>
+          </button>
+          <button
+            @click="showExportHistory = true"
+            class="flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-2xl bg-gradient-to-b from-slate-600 to-slate-800 text-white shadow-md shadow-slate-200/70 active:scale-95 transition-all"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="text-[11px] font-bold leading-tight">History</span>
           </button>
         </div>
 
@@ -94,6 +101,13 @@
             <svg v-if="isGeneratingReport" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             {{ isGeneratingReport ? 'Generating...' : 'Generate Report' }}
+          </button>
+          <button
+            @click="showExportHistory = true"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-slate-600 to-slate-800 text-white rounded-xl hover:from-slate-700 hover:to-slate-900 transition-all font-semibold text-sm shadow-md shadow-slate-200 active:scale-95"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            Export History
           </button>
         </div>
       </div>
@@ -1600,6 +1614,92 @@
     </transition>
     </Teleport>
 
+    <!-- Export History Modal -->
+    <Teleport to="body">
+    <transition name="fade">
+      <div v-if="showExportHistory" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showExportHistory = false"></div>
+        <div class="relative z-10 w-full max-w-xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-slate-700 to-slate-900 px-6 py-5 flex items-center justify-between flex-shrink-0">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div>
+                <h3 class="text-base font-extrabold text-white">Export History</h3>
+                <p class="text-white/60 text-xs mt-0.5">Who downloaded payment data and when</p>
+              </div>
+            </div>
+            <button @click="showExportHistory = false" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <!-- Body -->
+          <div class="overflow-y-auto flex-1">
+            <!-- Loading skeleton -->
+            <div v-if="isLoadingExportHistory" class="p-5 space-y-4">
+              <div v-for="i in 4" :key="i" class="flex items-start gap-3 animate-pulse">
+                <div class="w-9 h-9 rounded-full bg-gray-200 flex-shrink-0 mt-0.5"></div>
+                <div class="flex-1 space-y-2 pt-1">
+                  <div class="h-3 bg-gray-200 rounded-full w-1/3"></div>
+                  <div class="h-2.5 bg-gray-200 rounded-full w-2/3"></div>
+                  <div class="h-2.5 bg-gray-200 rounded-full w-1/2"></div>
+                </div>
+              </div>
+            </div>
+            <!-- Empty state -->
+            <div v-else-if="exportHistory.length === 0" class="flex flex-col items-center justify-center py-16 px-6 text-center">
+              <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <p class="text-sm font-bold text-gray-400">No exports yet</p>
+              <p class="text-xs text-gray-400 mt-1">History will appear here after the first download.</p>
+            </div>
+            <!-- Log entries -->
+            <div v-else class="divide-y divide-gray-100">
+              <div v-for="log in exportHistory" :key="log._id" class="flex items-start gap-3 px-5 py-4 hover:bg-gray-50 transition-colors">
+                <div class="w-9 h-9 rounded-full bg-gradient-to-br from-slate-600 to-slate-800 flex items-center justify-center text-white text-xs font-bold flex-shrink-0 mt-0.5">
+                  {{ (log.exported_by || '?').charAt(0).toUpperCase() }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center justify-between gap-2">
+                    <p class="text-sm font-bold text-gray-800 truncate">{{ log.exported_by || 'Admin' }}</p>
+                    <span :class="['text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 uppercase', log.format === 'csv' ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700']">
+                      {{ log.format || 'xlsx' }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-0.5">{{ formatRelativeTime(log.exported_at) }}</p>
+                  <div class="flex flex-wrap items-center gap-1.5 mt-1.5">
+                    <span class="inline-flex items-center gap-1 text-[10px] font-semibold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">
+                      <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                      {{ log.record_count }} records
+                    </span>
+                    <span v-if="log.payment_title" class="text-[10px] font-semibold bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full truncate max-w-[120px]">{{ log.payment_title }}</span>
+                    <span v-if="log.filters && log.filters.program" class="text-[10px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{{ log.filters.program }}</span>
+                    <span v-if="log.filters && log.filters.statuses && log.filters.statuses.length === 1"
+                      :class="['text-[10px] font-semibold px-2 py-0.5 rounded-full', log.filters.statuses[0] === 'paid' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700']">
+                      {{ log.filters.statuses[0] === 'paid' ? 'Paid only' : 'Unpaid only' }}
+                    </span>
+                    <span v-if="log.filters && log.filters.year_levels && log.filters.year_levels.length < 4 && log.filters.year_levels.length > 0"
+                      class="text-[10px] font-semibold bg-indigo-50 text-indigo-700 px-2 py-0.5 rounded-full">
+                      {{ log.filters.year_levels.join(', ') }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Footer -->
+          <div class="px-5 py-3.5 border-t border-gray-100 flex items-center justify-between bg-gray-50 flex-shrink-0">
+            <p class="text-xs text-gray-400">Last {{ exportHistory.length }} export{{ exportHistory.length !== 1 ? 's' : '' }}</p>
+            <button @click="showExportHistory = false" class="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded-xl text-xs font-semibold text-gray-700 transition">Close</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+    </Teleport>
+
     <!-- Download Confirmation Modal -->
     <Teleport to="body">
     <transition name="fade">
@@ -2190,6 +2290,9 @@ export default {
       filterPaidDatePreset: '',
       isLoading: false,
       isDownloading: false,
+      showExportHistory: false,
+      exportHistory: [],
+      isLoadingExportHistory: false,
       exportStep: 0,
       exportStepMessages: [
         'Fetching records from server…',
@@ -2592,6 +2695,7 @@ export default {
     filterYearLevel() { this.loadAllContributions(); },
     filterCollege() { this.loadAllContributions(); },
     showDownloadConfirm(v) { if (v) this.refreshExportPreview(); },
+    showExportHistory(v) { if (v) this.loadExportHistory(); },
     exportYears: { deep: true, handler() { this._scheduleExportPreview(); } },
     exportStatuses: { deep: true, handler() { this._scheduleExportPreview(); } },
     exportProgram() { this._scheduleExportPreview(); },
@@ -3435,6 +3539,57 @@ export default {
     printReport() {
       window.print();
     },
+
+    formatRelativeTime(date) {
+      if (!date) return '';
+      const d = new Date(date);
+      const now = new Date();
+      const diff = now - d;
+      const mins = Math.floor(diff / 60000);
+      if (mins < 1) return 'Just now';
+      if (mins < 60) return `${mins}m ago`;
+      const hrs = Math.floor(mins / 60);
+      if (hrs < 24) return `${hrs}h ago`;
+      const days = Math.floor(hrs / 24);
+      if (days < 7) return `${days}d ago`;
+      return d.toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' });
+    },
+
+    async logExport(count, format, paymentTitle, filters) {
+      try {
+        const token = localStorage.getItem('authToken');
+        await fetch(buildAPIUrl('/apis/export-logs'), {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'X-SSAAM-College': getCollege()
+          },
+          body: JSON.stringify({ record_count: count, format, payment_title: paymentTitle, filters })
+        });
+      } catch (e) {
+        // Silent — export already succeeded, skip the log entry
+      }
+    },
+
+    async loadExportHistory() {
+      this.isLoadingExportHistory = true;
+      try {
+        const token = localStorage.getItem('authToken');
+        const res = await fetch(buildAPIUrl('/apis/export-logs'), {
+          headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-College': getCollege() }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          this.exportHistory = data.logs || [];
+        }
+      } catch (e) {
+        // silent
+      } finally {
+        this.isLoadingExportHistory = false;
+      }
+    },
+
     async confirmAndExportFilteredExcel() {
       if (this.isDownloading) return;
       this.isDownloading = true;
@@ -3471,6 +3626,7 @@ export default {
           document.body.appendChild(a); a.click(); document.body.removeChild(a);
           URL.revokeObjectURL(urlObj);
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${this.serverFilteredCount ?? 0} record(s) (CSV)`, type: 'success' } }));
+          this.logExport(this.serverFilteredCount ?? 0, 'csv', this.activePayment?.title || '', { year_levels: this.exportYears, statuses: this.exportStatuses, program: this.exportProgram });
         } else {
           const wbRaw = XLSX.read(csvText, { type: 'string' });
           const wsRaw = wbRaw.Sheets[wbRaw.SheetNames[0]];
@@ -3521,6 +3677,7 @@ export default {
 
           XLSX.writeFile(wb, `Payments_${filtersSafe}_${dateSuffix}.xlsx`);
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${rows.length} record(s) with summary sheets`, type: 'success' } }));
+          this.logExport(rows.length, 'xlsx', this.activePayment?.title || '', { year_levels: this.exportYears, statuses: this.exportStatuses, program: this.exportProgram });
         }
         this.showDownloadConfirm = false;
       } catch (error) {
