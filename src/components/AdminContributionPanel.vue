@@ -1592,41 +1592,80 @@
     <transition name="fade">
       <div v-if="showDownloadConfirm" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="showDownloadConfirm = false"></div>
-        <div class="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div class="relative z-10 w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
           <!-- Modal Header -->
-          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center justify-between">
+          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center justify-between flex-shrink-0">
             <div>
-              <h3 class="text-lg font-extrabold text-white">Confirm Export</h3>
-              <p class="text-white/70 text-sm mt-0.5">Review records before downloading</p>
+              <h3 class="text-lg font-extrabold text-white">Export Payment Records</h3>
+              <p class="text-white/70 text-sm mt-0.5">Choose what to include in the export</p>
             </div>
             <button @click="showDownloadConfirm = false" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center text-white transition">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
 
-          <div class="p-5 sm:p-6 space-y-4">
-            <!-- Filter Summary -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div class="bg-gray-50 rounded-2xl p-3">
-                <p class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Status</p>
-                <p class="font-bold text-gray-900 text-sm mt-0.5">{{ downloadFiltersSummary.status }}</p>
+          <div class="overflow-y-auto">
+          <div class="p-5 sm:p-6 space-y-5">
+
+            <!-- Year Level Checkboxes -->
+            <div>
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2.5">Year Level</p>
+              <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <label v-for="yr in ['1st Year','2nd Year','3rd Year','4th Year']" :key="yr"
+                  :class="[
+                    'flex items-center gap-2.5 px-3 py-2.5 rounded-xl border-2 cursor-pointer transition select-none',
+                    exportYears.includes(yr)
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300'
+                  ]"
+                >
+                  <input type="checkbox" :value="yr" v-model="exportYears" class="accent-blue-600 w-4 h-4 shrink-0" />
+                  <span class="text-sm font-semibold">{{ yr }}</span>
+                </label>
               </div>
-              <div class="bg-gray-50 rounded-2xl p-3">
-                <p class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Year</p>
-                <p class="font-bold text-gray-900 text-sm mt-0.5">{{ downloadFiltersSummary.year }}</p>
+              <p v-if="exportYears.length === 0" class="text-xs text-red-500 mt-1.5 font-medium">Select at least one year level.</p>
+            </div>
+
+            <!-- Status Checkboxes -->
+            <div>
+              <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2.5">Payment Status</p>
+              <div class="flex gap-3">
+                <label :class="['flex items-center gap-2.5 px-4 py-2.5 rounded-xl border-2 cursor-pointer transition select-none flex-1', exportStatuses.includes('paid') ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300']">
+                  <input type="checkbox" value="paid" v-model="exportStatuses" class="accent-green-600 w-4 h-4 shrink-0" />
+                  <span class="text-sm font-semibold">Paid</span>
+                  <span class="ml-auto text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold">✓</span>
+                </label>
+                <label :class="['flex items-center gap-2.5 px-4 py-2.5 rounded-xl border-2 cursor-pointer transition select-none flex-1', exportStatuses.includes('unpaid') ? 'border-red-400 bg-red-50 text-red-700' : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-gray-300']">
+                  <input type="checkbox" value="unpaid" v-model="exportStatuses" class="accent-red-500 w-4 h-4 shrink-0" />
+                  <span class="text-sm font-semibold">Unpaid</span>
+                  <span class="ml-auto text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-bold">✗</span>
+                </label>
               </div>
-              <div class="bg-gray-50 rounded-2xl p-3">
-                <p class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Program</p>
-                <p class="font-bold text-gray-900 text-sm mt-0.5">{{ downloadFiltersSummary.program }}</p>
+              <p v-if="exportStatuses.length === 0" class="text-xs text-red-500 mt-1.5 font-medium">Select at least one status.</p>
+            </div>
+
+            <!-- Program + Format row -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Program</p>
+                <select v-model="exportProgram" class="w-full px-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm bg-gray-50 focus:border-blue-400 focus:ring-2 focus:ring-blue-200 outline-none transition">
+                  <option value="">All Programs</option>
+                  <option value="BSCS">BSCS</option>
+                  <option value="BSIT">BSIT</option>
+                  <option value="BSIS">BSIS</option>
+                </select>
               </div>
-              <div class="bg-gray-50 rounded-2xl p-3">
-                <p class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Format</p>
-                <div class="flex items-center gap-3 mt-1">
-                  <label class="inline-flex items-center text-sm font-semibold text-gray-700 cursor-pointer gap-1.5">
-                    <input type="radio" v-model="downloadFormat" value="xlsx" class="accent-blue-600" /> XLSX
+              <div>
+                <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">File Format</p>
+                <div class="flex gap-3 mt-0.5">
+                  <label :class="['inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 cursor-pointer transition select-none', downloadFormat === 'xlsx' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300']">
+                    <input type="radio" v-model="downloadFormat" value="xlsx" class="accent-blue-600" />
+                    <span class="text-sm font-semibold text-gray-700">XLSX</span>
+                    <span class="text-xs text-gray-400 hidden sm:inline">+Summary</span>
                   </label>
-                  <label class="inline-flex items-center text-sm font-semibold text-gray-700 cursor-pointer gap-1.5">
-                    <input type="radio" v-model="downloadFormat" value="csv" class="accent-blue-600" /> CSV
+                  <label :class="['inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 cursor-pointer transition select-none', downloadFormat === 'csv' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300']">
+                    <input type="radio" v-model="downloadFormat" value="csv" class="accent-blue-600" />
+                    <span class="text-sm font-semibold text-gray-700">CSV</span>
                   </label>
                 </div>
               </div>
@@ -1634,30 +1673,45 @@
 
             <!-- Preview Table -->
             <div>
-              <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Preview (first {{ downloadPreviewLimit }} records)</p>
+              <div class="flex items-center justify-between mb-2">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">
+                  Preview
+                  <span v-if="!isLoadingExportPreview && serverFilteredCount !== null" class="ml-1 normal-case text-blue-600 font-semibold">({{ serverFilteredCount }} record{{ serverFilteredCount !== 1 ? 's' : '' }} total)</span>
+                </p>
+                <div v-if="isLoadingExportPreview" class="flex items-center gap-1.5 text-xs text-gray-400">
+                  <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  Refreshing...
+                </div>
+              </div>
               <div class="border border-gray-200 rounded-2xl overflow-hidden">
-                <div class="overflow-x-auto max-h-48">
+                <div class="overflow-x-auto max-h-40">
                   <table class="w-full text-sm">
                     <thead class="bg-gray-50 sticky top-0">
                       <tr>
-                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-500">Student</th>
+                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-500">Name</th>
                         <th class="px-3 py-2 text-left text-xs font-bold text-gray-500">ID</th>
-                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-500 hidden sm:table-cell">Program</th>
-                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-500 hidden sm:table-cell">Year</th>
-                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-500">Amount</th>
-                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-500 hidden sm:table-cell">Paid By</th>
-                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-500 hidden md:table-cell">Date</th>
+                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-500 hidden sm:table-cell">Yr</th>
+                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-500">Status</th>
+                        <th class="px-3 py-2 text-left text-xs font-bold text-gray-500 hidden md:table-cell">Date Paid</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100">
+                      <tr v-if="isLoadingExportPreview && downloadPreviewRecords.length === 0">
+                        <td colspan="5" class="px-3 py-4 text-center text-xs text-gray-400">Loading preview...</td>
+                      </tr>
+                      <tr v-else-if="!isLoadingExportPreview && downloadPreviewRecords.length === 0">
+                        <td colspan="5" class="px-3 py-4 text-center text-xs text-gray-400">No records match the selected filters.</td>
+                      </tr>
                       <tr v-for="(c, idx) in downloadPreviewRecords" :key="c._id || idx" class="hover:bg-gray-50">
-                        <td class="px-3 py-2 font-medium">{{ c.student_name }}</td>
-                        <td class="px-3 py-2 text-gray-500">{{ c.student_id }}</td>
-                        <td class="px-3 py-2 text-gray-500 hidden sm:table-cell">{{ c.program || 'N/A' }}</td>
-                        <td class="px-3 py-2 text-gray-500 hidden sm:table-cell">{{ c.year_level || 'N/A' }}</td>
-                        <td class="px-3 py-2 font-semibold text-blue-700">{{ c.amount_paid ? `₱${c.amount_paid.toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : (c.original_amount ? `₱${c.original_amount.toLocaleString('en-PH', { minimumFractionDigits: 2 })}` : '—') }}</td>
-                        <td class="px-3 py-2 text-gray-500 hidden sm:table-cell">{{ c.paid_by_treasurer ? (typeof c.paid_by_treasurer === 'string' ? c.paid_by_treasurer : (c.paid_by_treasurer?.first_name || '') + ' ' + (c.paid_by_treasurer?.last_name || '')) : 'Admin' }}</td>
-                        <td class="px-3 py-2 text-gray-500 text-xs hidden md:table-cell">{{ c.payment_status === 'paid' && c.paid_at ? new Date(c.paid_at).toLocaleString() : 'N/A' }}</td>
+                        <td class="px-3 py-2 font-medium text-xs">{{ c.student_name }}</td>
+                        <td class="px-3 py-2 text-gray-500 text-xs">{{ c.student_id_number || c.student_id }}</td>
+                        <td class="px-3 py-2 text-gray-500 text-xs hidden sm:table-cell">{{ c.year_level || '—' }}</td>
+                        <td class="px-3 py-2">
+                          <span :class="c.payment_status === 'paid' ? 'text-green-700 bg-green-100' : 'text-red-700 bg-red-100'" class="px-2 py-0.5 rounded-full text-xs font-bold">
+                            {{ (c.payment_status || 'UNPAID').toUpperCase() }}
+                          </span>
+                        </td>
+                        <td class="px-3 py-2 text-gray-500 text-xs hidden md:table-cell">{{ c.payment_status === 'paid' && c.paid_at ? new Date(c.paid_at).toLocaleDateString() : '—' }}</td>
                       </tr>
                     </tbody>
                   </table>
@@ -1666,20 +1720,22 @@
             </div>
 
             <!-- Actions -->
-            <div class="flex items-center justify-end gap-3 pt-2">
+            <div class="flex items-center justify-end gap-3 pt-1">
               <button @click="showDownloadConfirm = false" class="px-5 py-2.5 bg-gray-100 hover:bg-gray-200 rounded-xl text-sm font-semibold text-gray-700 transition">
                 Cancel
               </button>
               <button
                 @click="confirmAndExportFilteredExcel"
-                :disabled="isDownloading"
-                class="px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl text-sm font-bold transition flex items-center gap-2 disabled:opacity-70 shadow-md shadow-green-200"
+                :disabled="isDownloading || exportYears.length === 0 || exportStatuses.length === 0 || (serverFilteredCount !== null && serverFilteredCount === 0)"
+                class="px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl text-sm font-bold transition flex items-center gap-2 disabled:opacity-60 shadow-md shadow-green-200"
               >
                 <svg v-if="isDownloading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
                 <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                {{ isDownloading ? 'Exporting...' : `Export ${serverFilteredCount !== null ? serverFilteredCount : filteredCount} records` }}
+                {{ isDownloading ? 'Exporting...' : `Export${serverFilteredCount !== null ? ' ' + serverFilteredCount : ''} records` }}
               </button>
             </div>
+
+          </div>
           </div>
         </div>
       </div>
@@ -2098,6 +2154,10 @@ export default {
       downloadFormat: 'xlsx',
       downloadPreviewRecords: [],
       serverFilteredCount: null,
+      exportYears: ['1st Year', '2nd Year', '3rd Year', '4th Year'],
+      exportStatuses: ['paid', 'unpaid'],
+      exportProgram: '',
+      isLoadingExportPreview: false,
       isProcessingPaymentGlobal: false,
       processingPaymentId: null,
       showCreateEventModal: false,
@@ -2483,6 +2543,10 @@ export default {
     filterProgram() { this.loadAllContributions(); },
     filterYearLevel() { this.loadAllContributions(); },
     filterCollege() { this.loadAllContributions(); },
+    showDownloadConfirm(v) { if (v) this.refreshExportPreview(); },
+    exportYears: { deep: true, handler() { this._scheduleExportPreview(); } },
+    exportStatuses: { deep: true, handler() { this._scheduleExportPreview(); } },
+    exportProgram() { this._scheduleExportPreview(); },
     filterPaidDate(val) {
       // Keep preset chips in sync: if the picked date matches one of our
       // presets (today/yesterday), keep that chip highlighted; otherwise
@@ -3133,36 +3197,49 @@ export default {
         else { this.isProcessingPaymentGlobal = false; }
       }
     },
-    async downloadPaymentExcel() {
+    downloadPaymentExcel() {
+      this.exportYears = this.filterYearLevel
+        ? [this.filterYearLevel]
+        : ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+      this.exportStatuses = this.filterStatus
+        ? (this.filterStatus === 'unpaid' || this.filterStatus === 'pending' ? ['unpaid'] : ['paid'])
+        : ['paid', 'unpaid'];
+      this.exportProgram = this.filterProgram || '';
+      this.downloadPreviewRecords = [];
+      this.serverFilteredCount = null;
+      this.showDownloadConfirm = true;
+    },
+    async refreshExportPreview() {
+      if (this.exportYears.length === 0 || this.exportStatuses.length === 0) {
+        this.downloadPreviewRecords = [];
+        this.serverFilteredCount = 0;
+        return;
+      }
+      this.isLoadingExportPreview = true;
       try {
         const token = localStorage.getItem('authToken');
         const params = new URLSearchParams();
         params.set('limit', String(this.downloadPreviewLimit));
-        if (this.filterStatus) params.set('status', this.filterStatus);
-        if (this.filterYearLevel) params.set('year_level', this.filterYearLevel);
-        if (this.filterProgram) params.set('program', this.filterProgram);
-        if (this.paymentRecordsQuery) params.set('query', this.paymentRecordsQuery);
+        if (this.exportYears.length < 4) params.set('year_levels', this.exportYears.join(','));
+        if (this.exportStatuses.length === 1) params.set('statuses', this.exportStatuses[0]);
+        if (this.exportProgram) params.set('program', this.exportProgram);
         if (this.activePayment?._id) params.set('payment_id', this.activePayment._id);
-
         const response = await fetch(buildAPIUrl(`/apis/contributions/search?${params.toString()}`), {
           headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-College': getCollege() }
         });
-        if (!response.ok) {
-          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Failed to fetch export preview', type: 'error' } }));
-          return;
-        }
+        if (!response.ok) return;
         const data = await response.json();
         this.downloadPreviewRecords = data.data || [];
         this.serverFilteredCount = data.pagination ? data.pagination.total : (data.data || []).length;
-        if (!this.serverFilteredCount || this.serverFilteredCount === 0) {
-          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'No records match the selected filters', type: 'warning' } }));
-          return;
-        }
-        this.showDownloadConfirm = true;
       } catch (err) {
-        console.error('Error fetching download preview:', err);
-        window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Failed to fetch export preview', type: 'error' } }));
+        console.error('Error fetching export preview:', err);
+      } finally {
+        this.isLoadingExportPreview = false;
       }
+    },
+    _scheduleExportPreview() {
+      if (this._exportPreviewTimer) clearTimeout(this._exportPreviewTimer);
+      this._exportPreviewTimer = setTimeout(() => this.refreshExportPreview(), 300);
     },
     openReportConfig() {
       this.selectedReportEventIds = [];
@@ -3301,12 +3378,15 @@ export default {
       this.isDownloading = true;
       try {
         const params = new URLSearchParams();
-        if (this.filterStatus) params.set('status', this.filterStatus);
-        if (this.filterYearLevel) params.set('year_level', this.filterYearLevel);
-        if (this.filterProgram) params.set('program', this.filterProgram);
+        if (this.exportYears.length < 4) params.set('year_levels', this.exportYears.join(','));
+        if (this.exportStatuses.length === 1) params.set('statuses', this.exportStatuses[0]);
+        if (this.exportProgram) params.set('program', this.exportProgram);
         if (this.activePayment?._id) params.set('payment_id', this.activePayment._id);
 
-        const filtersSafe = `${this.downloadFiltersSummary.status}_${this.downloadFiltersSummary.year}_${this.downloadFiltersSummary.program}`.replace(/\s+/g, '');
+        const yearLabel = this.exportYears.length === 4 ? 'AllYears' : this.exportYears.map(y => y.replace(' Year', 'Y')).join('-');
+        const statusLabel = this.exportStatuses.length === 2 ? 'All' : this.exportStatuses[0];
+        const progLabel = this.exportProgram || 'AllPrograms';
+        const filtersSafe = `${yearLabel}_${statusLabel}_${progLabel}`.replace(/\s+/g, '');
         const dateSuffix = new Date().toISOString().split('T')[0];
         const token = localStorage.getItem('authToken');
         const url = buildAPIUrl(`/apis/contributions/download/excel?${params.toString()}`);
@@ -3314,19 +3394,66 @@ export default {
 
         if (!response.ok) throw new Error('Server export failed');
 
-        const contentType = response.headers.get('content-type') || '';
-        if (this.downloadFormat === 'csv' || contentType.includes('text/csv')) {
-          const blob = await response.blob();
+        const csvText = await response.text();
+
+        if (this.downloadFormat === 'csv') {
+          const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
           const a = document.createElement('a');
           const urlObj = URL.createObjectURL(blob);
           a.href = urlObj; a.download = `Payments_${filtersSafe}_${dateSuffix}.csv`;
           document.body.appendChild(a); a.click(); document.body.removeChild(a);
-          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${this.serverFilteredCount || this.filteredCount} record(s) (CSV)`, type: 'success' } }));
+          URL.revokeObjectURL(urlObj);
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${this.serverFilteredCount ?? 0} record(s) (CSV)`, type: 'success' } }));
         } else {
-          const csvText = await response.text();
-          const workbook = XLSX.read(csvText, { type: 'string' });
-          XLSX.writeFile(workbook, `Payments_${filtersSafe}_${dateSuffix}.xlsx`);
-          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${this.serverFilteredCount || this.filteredCount} record(s)`, type: 'success' } }));
+          const wbRaw = XLSX.read(csvText, { type: 'string' });
+          const wsRaw = wbRaw.Sheets[wbRaw.SheetNames[0]];
+          const rows = XLSX.utils.sheet_to_json(wsRaw);
+
+          const wb = XLSX.utils.book_new();
+
+          const wsMain = XLSX.utils.json_to_sheet(rows);
+          wsMain['!cols'] = [{ wch: 14 }, { wch: 28 }, { wch: 10 }, { wch: 12 }, { wch: 13 }, { wch: 13 }, { wch: 9 }, { wch: 14 }, { wch: 20 }];
+          XLSX.utils.book_append_sheet(wb, wsMain, 'Records');
+
+          const buildSummary = (groupFn) => {
+            const map = {};
+            for (const r of rows) {
+              const key = groupFn(r) || 'Unknown';
+              if (!map[key]) map[key] = { total: 0, paid: 0, unpaid: 0, collected: 0 };
+              map[key].total++;
+              if ((r['Status'] || '').toUpperCase() === 'PAID') {
+                map[key].paid++;
+                map[key].collected += parseFloat(r['Amount Paid'] || 0) || 0;
+              } else { map[key].unpaid++; }
+            }
+            return map;
+          };
+
+          const progMap = buildSummary(r => r['Program']);
+          const progRows = Object.entries(progMap).sort((a, b) => a[0].localeCompare(b[0])).map(([k, s]) => ({
+            'Program': k, 'Total Students': s.total, 'Paid': s.paid, 'Unpaid': s.unpaid,
+            'Collection Rate': s.total ? `${Math.round((s.paid / s.total) * 100)}%` : '0%',
+            'Amount Collected (₱)': s.collected.toFixed(2)
+          }));
+          const wsProg = XLSX.utils.json_to_sheet(progRows);
+          wsProg['!cols'] = [{ wch: 12 }, { wch: 16 }, { wch: 8 }, { wch: 8 }, { wch: 16 }, { wch: 22 }];
+          XLSX.utils.book_append_sheet(wb, wsProg, 'By Program');
+
+          const yearMap = buildSummary(r => r['Year Level']);
+          const yearOrder = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
+          const yearRows = [...yearOrder, ...Object.keys(yearMap).filter(k => !yearOrder.includes(k))]
+            .filter(k => yearMap[k])
+            .map(yl => ({
+              'Year Level': yl, 'Total Students': yearMap[yl].total, 'Paid': yearMap[yl].paid, 'Unpaid': yearMap[yl].unpaid,
+              'Collection Rate': yearMap[yl].total ? `${Math.round((yearMap[yl].paid / yearMap[yl].total) * 100)}%` : '0%',
+              'Amount Collected (₱)': yearMap[yl].collected.toFixed(2)
+            }));
+          const wsYear = XLSX.utils.json_to_sheet(yearRows);
+          wsYear['!cols'] = [{ wch: 12 }, { wch: 16 }, { wch: 8 }, { wch: 8 }, { wch: 16 }, { wch: 22 }];
+          XLSX.utils.book_append_sheet(wb, wsYear, 'By Year Level');
+
+          XLSX.writeFile(wb, `Payments_${filtersSafe}_${dateSuffix}.xlsx`);
+          window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: `Exported ${rows.length} record(s) with summary sheets`, type: 'success' } }));
         }
         this.showDownloadConfirm = false;
       } catch (error) {

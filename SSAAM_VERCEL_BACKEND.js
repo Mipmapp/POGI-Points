@@ -8019,7 +8019,7 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
 // Enhanced search for contributions with RFID support
 app.get('/apis/contributions/search', auth, async (req, res) => {
     try {
-        const { query, year_level, program, status, limit = 1000, page = 1, payment_id } = req.query;
+        const { query, year_level, program, status, limit = 1000, page = 1, payment_id, year_levels = '', statuses = '' } = req.query;
 
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const CollegePaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
@@ -8083,7 +8083,25 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
         let merged = merged_records;
 
         // Apply filters
-        if (status) {
+        const ylArr = year_levels ? year_levels.split(',').map(y => y.trim()).filter(Boolean) : [];
+        const stArr = statuses ? statuses.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+
+        if (ylArr.length) {
+            merged = merged.filter(r => ylArr.includes(r.year_level));
+        } else if (year_level) {
+            merged = merged.filter(r => r.year_level === year_level);
+        }
+
+        if (stArr.length) {
+            const wantPaid   = stArr.includes('paid');
+            const wantUnpaid = stArr.includes('unpaid');
+            if (wantPaid && !wantUnpaid) {
+                merged = merged.filter(r => (r.payment_status || '').toLowerCase() === 'paid');
+            } else if (wantUnpaid && !wantPaid) {
+                merged = merged.filter(r => !r.payment_status || ['unpaid', 'pending'].includes((r.payment_status || '').toLowerCase()));
+            }
+            // both or neither → no filter
+        } else if (status) {
             const s = status.toLowerCase();
             if (s === 'unpaid') {
                 merged = merged.filter(r => !r.payment_status || ['unpaid', 'pending'].includes((r.payment_status || '').toLowerCase()));
@@ -8091,7 +8109,7 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
                 merged = merged.filter(r => (r.payment_status || '').toLowerCase() === s);
             }
         }
-        if (year_level) merged = merged.filter(r => r.year_level === year_level);
+
         if (program) merged = merged.filter(r => r.program === program);
         if (query) {
             const q = query.toLowerCase();
@@ -8125,7 +8143,7 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
 // Download payment records as Excel
 app.get('/apis/contributions/download/excel', auth, async (req, res) => {
     try {
-        const { status, year_level = '', program = '', payment_id } = req.query;
+        const { status, year_level = '', program = '', payment_id, year_levels = '', statuses = '' } = req.query;
 
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const CollegePaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
@@ -8177,8 +8195,25 @@ app.get('/apis/contributions/download/excel', auth, async (req, res) => {
             };
         });
 
-        // Apply filters
-        if (status) {
+        // Apply filters — support both single-value and multi-value params
+        const dlYlArr = year_levels ? year_levels.split(',').map(y => y.trim()).filter(Boolean) : [];
+        const dlStArr = statuses ? statuses.split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : [];
+
+        if (dlYlArr.length) {
+            merged = merged.filter(r => dlYlArr.includes(r.year_level));
+        } else if (year_level) {
+            merged = merged.filter(r => r.year_level === year_level);
+        }
+
+        if (dlStArr.length) {
+            const wantPaid   = dlStArr.includes('paid');
+            const wantUnpaid = dlStArr.includes('unpaid');
+            if (wantPaid && !wantUnpaid) {
+                merged = merged.filter(r => (r.payment_status || '').toLowerCase() === 'paid');
+            } else if (wantUnpaid && !wantPaid) {
+                merged = merged.filter(r => !r.payment_status || ['unpaid', 'pending'].includes((r.payment_status || '').toLowerCase()));
+            }
+        } else if (status) {
             const s = String(status).toLowerCase();
             if (s === 'unpaid') {
                 merged = merged.filter(r => !r.payment_status || ['unpaid', 'pending'].includes((r.payment_status || '').toLowerCase()));
@@ -8186,7 +8221,7 @@ app.get('/apis/contributions/download/excel', auth, async (req, res) => {
                 merged = merged.filter(r => (r.payment_status || '').toLowerCase() === s);
             }
         }
-        if (year_level) merged = merged.filter(r => r.year_level === year_level);
+
         if (program) merged = merged.filter(r => r.program === program);
 
         // Sort: paid first, then alphabetically
