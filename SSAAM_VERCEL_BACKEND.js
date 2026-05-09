@@ -91,7 +91,7 @@ app.use((req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 // Single MongoDB database - all colleges use same DB, separate collections by prefix
-const MONGO_URI = process.env.MONGODB_URL;
+const MONGO_URI = process.env.MONGODB_URI || process.env.MONGODB_URL;
 
 // Helper to determine college from request and get collection prefix
 const VALID_COLLEGES = ['CCS', 'COE', 'SOM', 'CNAHS'];
