@@ -824,6 +824,8 @@ app.post('/apis/payments', auth, async (req, res) => {
 
         await payment.save();
 
+        logAudit(req.college, req.master, 'PAYMENT_CREATED', 'Payment', payment._id, payment.title, { amount_due: payment.amount_due, type: payment.type }).catch(() => {});
+
         // Respond immediately so the UI doesn't hang — student assignment runs in the background
         res.json({ success: true, data: payment, message: 'Payment created and records initialized' });
 
@@ -1198,6 +1200,11 @@ app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
             return res.status(404).json({ message: 'Student not found' });
         }
 
+        // Fetch campaign title for audit log
+        const MarkPaidPaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
+        const markPaidCampaign = await MarkPaidPaymentModel.findById(paymentId).lean().catch(() => null);
+        const payment_campaign_title_paid = markPaidCampaign?.title || paymentId;
+
         // Find or create consolidated payment record (college-aware)
         const CollegePaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
         let paymentRecord = await CollegePaymentRecordModel.findOne({ student_id: student.student_id });
@@ -1266,6 +1273,8 @@ app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
         paymentRecord.updated_at = new Date();
 
         await paymentRecord.save();
+
+        logAudit(req.college, req.master, 'PAYMENT_MARKED_PAID', 'PaymentRecord', paymentId, payment_campaign_title_paid, { student_name: student.full_name || student.student_id, student_id: student.student_id, amount_paid: amount_paid || 0, payment_method: payment_method || null, notes: notes || null }).catch(() => {});
 
         res.json({
             success: true,
@@ -1348,6 +1357,8 @@ app.put('/apis/payments/:paymentId/mark-unpaid', auth, async (req, res) => {
         paymentRecord.updated_at = new Date();
 
         await paymentRecord.save();
+
+        logAudit(req.college, req.master, 'PAYMENT_MARKED_UNPAID', 'PaymentRecord', paymentId, paymentId, { student_name: student.full_name || student.student_id, student_id: student.student_id }).catch(() => {});
 
         res.json({
             success: true,
@@ -1514,6 +1525,8 @@ app.delete('/apis/payments/:paymentId/student/:studentId', auth, async (req, res
 
         await paymentRecord.save();
 
+        logAudit(req.college, req.master, 'PAYMENT_STUDENT_REMOVED', 'PaymentRecord', paymentId, paymentId, { student_name: paymentRecord.student_name, student_id: studentId, amount_removed: amount }).catch(() => {});
+
         res.json({
             success: true,
             message: `Deleted payment campaign for ${paymentRecord.student_name}`,
@@ -1581,6 +1594,8 @@ app.delete('/apis/payments/:paymentId', auth, async (req, res) => {
 
         // Delete the payment campaign itself (college-aware)
         await PaymentModel.deleteOne({ _id: paymentId });
+
+        logAudit(req.college, req.master, 'PAYMENT_DELETED', 'Payment', paymentId, paymentTitle, { deleted_records_count: recordsModified }).catch(() => {});
 
         res.json({
             success: true,
@@ -1656,6 +1671,8 @@ app.put('/apis/payments/:paymentId/status', auth, async (req, res) => {
                 }
             }
         }
+
+        logAudit(req.college, req.master, 'PAYMENT_STATUS_UPDATED', 'Payment', paymentId, payment.title, { new_status: status }).catch(() => {});
 
         res.json({
             success: true,
@@ -2056,6 +2073,60 @@ const CCS_SessionToken = mongoose.model("CCS_SessionToken", sessionTokenSchema, 
 const COE_SessionToken = mongoose.model("COE_SessionToken", sessionTokenSchema, 'coe_sessiontokens');
 const SOM_SessionToken = mongoose.model("SOM_SessionToken", sessionTokenSchema, 'som_sessiontokens');
 const CNAHS_SessionToken = mongoose.model("CNAHS_SessionToken", sessionTokenSchema, 'cnahs_sessiontokens');
+// ─── Audit Trail ──────────────────────────────────────────────────────────
+const auditTrailSchema = new mongoose.Schema({
+    admin_id:    { type: mongoose.Schema.Types.ObjectId, ref: 'Master', required: true },
+    admin_name:  { type: String, default: '' },
+    admin_role:  { type: String, default: '' },
+    action:      { type: String, required: true },
+    target_type: { type: String, default: '' },
+    target_id:   { type: String, default: '' },
+    target_label:{ type: String, default: '' },
+    details:     { type: mongoose.Schema.Types.Mixed, default: {} },
+    timestamp:   { type: Date, default: Date.now }
+});
+auditTrailSchema.index({ timestamp: -1 });
+auditTrailSchema.index({ admin_id: 1, timestamp: -1 });
+
+const AuditTrail      = mongoose.model('AuditTrail',       auditTrailSchema);
+const CCS_AuditTrail  = mongoose.model('CCS_AuditTrail',   auditTrailSchema, 'ccs_audittrails');
+const COE_AuditTrail  = mongoose.model('COE_AuditTrail',   auditTrailSchema, 'coe_audittrails');
+const SOM_AuditTrail  = mongoose.model('SOM_AuditTrail',   auditTrailSchema, 'som_audittrails');
+const CNAHS_AuditTrail= mongoose.model('CNAHS_AuditTrail', auditTrailSchema, 'cnahs_audittrails');
+
+async function logAudit(college, master, action, target_type, target_id, target_label, details = {}) {
+    try {
+        const AuditModel = getCollegeModel(AuditTrail, CCS_AuditTrail, COE_AuditTrail, college);
+        await AuditModel.create({
+            admin_id:     master?._id || master?.id,
+            admin_name:   master?.full_name || master?.username || '',
+            admin_role:   master?.role || '',
+            action,
+            target_type,
+            target_id:    String(target_id || ''),
+            target_label: String(target_label || ''),
+            details
+        });
+    } catch (e) {
+        console.error('[Audit] log error:', e.message);
+    }
+}
+
+// GET /apis/audit-trail — treasurer sees own logs; co-admin sees all college logs
+app.get('/apis/audit-trail', auth, async (req, res) => {
+    try {
+        const AuditModel = getCollegeModel(AuditTrail, CCS_AuditTrail, COE_AuditTrail, req.college);
+        const filter = {};
+        if (req.master.role === 'treasurer') {
+            filter.admin_id = req.master._id;
+        }
+        const logs = await AuditModel.find(filter).sort({ timestamp: -1 }).limit(300).lean();
+        res.json({ success: true, data: logs });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────
 
 const SESSION_INACTIVITY_MS = 12 * 60 * 60 * 1000;
 
