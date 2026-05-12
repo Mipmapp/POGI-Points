@@ -2121,7 +2121,31 @@ app.get('/apis/audit-trail', auth, async (req, res) => {
             filter.admin_id = req.master._id;
         }
         const logs = await AuditModel.find(filter).sort({ timestamp: -1 }).limit(300).lean();
-        res.json({ success: true, data: logs });
+
+        // Enrich logs with admin profile data (photo, student_id/username)
+        const uniqueAdminIds = [...new Set(logs.map(l => String(l.admin_id)).filter(Boolean))];
+        let adminMap = {};
+        if (uniqueAdminIds.length > 0) {
+            const admins = await Master.find(
+                { _id: { $in: uniqueAdminIds } },
+                { _id: 1, photo: 1, username: 1, full_name: 1, role: 1 }
+            ).lean();
+            admins.forEach(a => {
+                adminMap[String(a._id)] = {
+                    admin_photo: a.photo || null,
+                    admin_student_id: a.username || null,
+                    admin_full_name: a.full_name || null,
+                    admin_role: a.role || null,
+                };
+            });
+        }
+
+        const enrichedLogs = logs.map(log => ({
+            ...log,
+            ...(adminMap[String(log.admin_id)] || {}),
+        }));
+
+        res.json({ success: true, data: enrichedLogs });
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

@@ -141,14 +141,30 @@
               </div>
 
               <!-- Admin badge (co-admin view only) -->
-              <div v-if="!isTreasurer && log.admin_name" class="mt-1.5 flex items-center gap-1.5">
-                <div :class="['w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-500']">
-                  {{ initials(log.admin_name) }}
+              <div v-if="!isTreasurer && (log.admin_name || log.admin_full_name)" class="mt-1.5 flex items-center gap-2">
+                <!-- Profile picture or initials fallback -->
+                <div class="flex-shrink-0">
+                  <img
+                    v-if="log.admin_photo"
+                    :src="log.admin_photo"
+                    :alt="log.admin_full_name || log.admin_name"
+                    class="w-7 h-7 rounded-full object-cover border border-gray-200"
+                    @error="e => e.target.style.display='none'"
+                  />
+                  <div v-else :class="['w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-bold', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-500']">
+                    {{ initials(log.admin_full_name || log.admin_name) }}
+                  </div>
                 </div>
-                <span class="text-xs text-gray-500">{{ log.admin_name }}</span>
-                <span :class="['text-[10px] font-medium px-1.5 py-0.5 rounded-full', roleBadge(log.admin_role).bg, roleBadge(log.admin_role).text]">
-                  {{ roleBadge(log.admin_role).label }}
-                </span>
+                <!-- Name + student ID + role badge -->
+                <div class="flex flex-col min-w-0">
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="text-xs font-medium text-gray-700 truncate">{{ log.admin_full_name || log.admin_name }}</span>
+                    <span :class="['text-[10px] font-medium px-1.5 py-0.5 rounded-full flex-shrink-0', roleBadge(log.admin_role).bg, roleBadge(log.admin_role).text]">
+                      {{ roleBadge(log.admin_role).label }}
+                    </span>
+                  </div>
+                  <span v-if="log.admin_student_id" class="text-[10px] text-gray-400 font-mono leading-tight">{{ log.admin_student_id }}</span>
+                </div>
               </div>
 
               <!-- Details chip (method, notes) -->
@@ -348,6 +364,8 @@ function actionStyle(action) {
 function roleBadge(role) {
   if (role === 'treasurer') return { bg: 'bg-amber-100', text: 'text-amber-700', label: 'Treasurer' }
   if (role === 'co-admin') return { bg: 'bg-blue-100', text: 'text-blue-700', label: 'Co-Admin' }
+  if (role === 'admin' || role === 'administrator') return { bg: 'bg-purple-100', text: 'text-purple-700', label: 'Admin' }
+  if (role === 'info') return { bg: 'bg-teal-100', text: 'text-teal-700', label: 'Info' }
   return { bg: 'bg-gray-100', text: 'text-gray-600', label: role || 'Admin' }
 }
 
