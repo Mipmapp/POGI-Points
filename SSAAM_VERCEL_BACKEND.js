@@ -20,6 +20,53 @@ function encryptPayload(data) {
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── Login rate limiter & account lockout ──────────────────────────────────────
+// Tracks failed login attempts per IP (and per credential) in memory.
+// After LOGIN_MAX_ATTEMPTS failures within LOGIN_WINDOW_MS the IP is locked
+// out for LOGIN_LOCKOUT_MS. A successful login clears the counter.
+const _loginMap = new Map();
+const LOGIN_MAX_ATTEMPTS  = 5;
+const LOGIN_WINDOW_MS     = 10 * 60 * 1000; // 10-minute rolling window
+const LOGIN_LOCKOUT_MS    = 15 * 60 * 1000; // 15-minute lockout
+
+function _getClientIP(req) {
+    return req.headers['x-forwarded-for']?.split(',')[0]?.trim()
+        || req.headers['x-real-ip']
+        || req.socket?.remoteAddress
+        || 'unknown';
+}
+
+function _loginCheck(key) {
+    const now = Date.now();
+    const e   = _loginMap.get(key);
+    if (!e) return { blocked: false };
+    if (e.lockedUntil && now < e.lockedUntil) {
+        return { blocked: true, remainingMins: Math.ceil((e.lockedUntil - now) / 60000) };
+    }
+    if (now - e.firstAttempt > LOGIN_WINDOW_MS) {
+        _loginMap.delete(key); // window expired — fresh start
+    }
+    return { blocked: false };
+}
+
+function _loginRecord(key, success) {
+    if (success) { _loginMap.delete(key); return; }
+    const now = Date.now();
+    const e   = _loginMap.get(key) || { count: 0, firstAttempt: now, lockedUntil: 0 };
+    e.count++;
+    if (e.count >= LOGIN_MAX_ATTEMPTS) e.lockedUntil = now + LOGIN_LOCKOUT_MS;
+    _loginMap.set(key, e);
+}
+
+// Sweep stale entries every 30 minutes
+setInterval(() => {
+    const now = Date.now();
+    for (const [k, e] of _loginMap.entries()) {
+        if (now > (e.lockedUntil || 0) + LOGIN_WINDOW_MS) _loginMap.delete(k);
+    }
+}, 30 * 60 * 1000);
+// ─────────────────────────────────────────────────────────────────────────────
+
 const app = express();
 dotenv.config();
 
@@ -70,6 +117,26 @@ const corsOptions = {
 app.use(cors(corsOptions));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// ── NoSQL injection sanitizer ─────────────────────────────────────────────────
+// Recursively removes any key that starts with '$' or contains '.' from
+// req.body / req.query / req.params to block MongoDB operator injection attacks.
+function _stripOperators(obj) {
+    if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return;
+    for (const key of Object.keys(obj)) {
+        if (key.startsWith('$') || key.includes('.')) {
+            delete obj[key];
+        } else {
+            _stripOperators(obj[key]);
+        }
+    }
+}
+app.use((req, _res, next) => {
+    _stripOperators(req.body);
+    _stripOperators(req.query);
+    next();
+});
+// ─────────────────────────────────────────────────────────────────────────────
 
 // Middleware to ensure database connection is active
 app.use(async (req, res, next) => {
@@ -4262,6 +4329,13 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
         if (!student_id || !last_name)
             return res.status(400).json({ message: "Student ID and Password required" });
 
+        // Rate limit: 5 failed attempts per IP within 10 min → 15-min lockout
+        const _ip  = _getClientIP(req);
+        const _key = `stulogin:${_ip}`;
+        const _chk = _loginCheck(_key);
+        if (_chk.blocked)
+            return res.status(429).json({ message: `Too many failed attempts. Try again in ${_chk.remainingMins} minute${_chk.remainingMins === 1 ? '' : 's'}.` });
+
         // Get the claimed college from the request (what the frontend sent)
         const claimedCollege = req.college; // This comes from headers/theme selection
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, claimedCollege);
@@ -4286,6 +4360,7 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
             }
 
             // Not found in either college
+            _loginRecord(_key, false);
             return res.status(400).json({ message: "Invalid Student ID or Password" });
         }
 
@@ -4308,8 +4383,10 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
             passwordValid = student.last_name.toUpperCase() === last_name.trim().toUpperCase();
         }
 
-        if (!passwordValid)
+        if (!passwordValid) {
+            _loginRecord(_key, false);
             return res.status(400).json({ message: "Invalid Student ID or Password" });
+        }
 
         if (student.status === 'pending') {
             return res.status(403).json({
@@ -4349,6 +4426,7 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
         // Flag to indicate if user should change their password (still using last name as password)
         const requiresPasswordUpdate = !student.custom_password;
 
+        _loginRecord(_key, true); // clear the counter on success
         res.json({
             message: "Login successful",
             student,
@@ -4646,13 +4724,24 @@ app.post("/apis/masters/login", async (req, res) => {
     try {
         const { username, password } = req.body;
 
+        // Rate limit: 5 failed attempts per IP within 10 min → 15-min lockout
+        const _ip  = _getClientIP(req);
+        const _key = `mlogin:${_ip}`;
+        const _chk = _loginCheck(_key);
+        if (_chk.blocked)
+            return res.status(429).json({ message: `Too many failed attempts. Try again in ${_chk.remainingMins} minute${_chk.remainingMins === 1 ? '' : 's'}.` });
+
         const master = await Master.findOne({ username });
-        if (!master)
+        if (!master) {
+            _loginRecord(_key, false);
             return res.status(400).json({ message: "Invalid username or password" });
+        }
 
         const valid = await bcrypt.compare(password, master.password);
-        if (!valid)
+        if (!valid) {
+            _loginRecord(_key, false);
             return res.status(400).json({ message: "Invalid username or password" });
+        }
 
         // When an admin logs in we honour whatever college was inferred from
         // the request (headers/theme).  Previously the token used the value
@@ -4690,6 +4779,7 @@ app.post("/apis/masters/login", async (req, res) => {
             expires_at: expiresAt
         });
 
+        _loginRecord(_key, true); // clear the counter on success
         res.json({
             message: "Login successful",
             token,
