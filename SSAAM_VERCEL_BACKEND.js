@@ -9,6 +9,17 @@ import crypto from 'crypto';
 import { MongoClient } from 'mongodb';
 import cloudinary from './config/cloudinary.js';
 
+// ── Response payload encryption ──────────────────────────────────────────────
+// AES-256-CBC. The key must be exactly 32 bytes.
+const _EK = Buffer.from('SSAAM_JRMSU_2026_CCS_KEY_v2_32!!');
+function encryptPayload(data) {
+    const iv  = crypto.randomBytes(16);
+    const c   = crypto.createCipheriv('aes-256-cbc', _EK, iv);
+    const enc = Buffer.concat([c.update(JSON.stringify(data), 'utf8'), c.final()]);
+    return { _ssaam: 1, iv: iv.toString('hex'), d: enc.toString('hex') };
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 const app = express();
 dotenv.config();
 
@@ -3129,12 +3140,12 @@ app.get('/apis/health', (req, res) => {
     const now = new Date();
     res.set('X-SSAAM-Server-Time', now.toISOString());
     res.set('Date', now.toUTCString());
-    res.status(200).json({
+    res.status(200).json(encryptPayload({
         message: "SSAAM API Health Check",
         status: "operational",
         database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
         timestamp: now.toISOString()
-    });
+    }));
 });
 
 
@@ -5597,7 +5608,7 @@ app.post('/apis/admin/verify', auth, async (req, res) => {
 app.get('/apis/settings', studentAuth, async (req, res) => {
     try {
         const settings = await getSettings(req.college);
-        res.json(settings);
+        res.json(encryptPayload(settings));
     } catch (err) {
         res.status(500).json({ message: err.message });
     }

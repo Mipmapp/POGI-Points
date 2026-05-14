@@ -14,6 +14,29 @@
  */
 import { buildAPIUrl, getDefaultHeaders } from '../config/api.js'
 
+// ── Payload decryption (mirrors server-side encryptPayload) ──────────────────
+const _EK = 'SSAAM_JRMSU_2026_CCS_KEY_v2_32!!'
+
+function _hexToBytes(hex) {
+  const b = new Uint8Array(hex.length / 2)
+  for (let i = 0; i < hex.length; i += 2) b[i / 2] = parseInt(hex.slice(i, i + 2), 16)
+  return b
+}
+
+async function _decrypt(payload) {
+  if (!payload || payload._ssaam !== 1) return payload
+  const key = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(_EK),
+    { name: 'AES-CBC' }, false, ['decrypt']
+  )
+  const plain = await crypto.subtle.decrypt(
+    { name: 'AES-CBC', iv: _hexToBytes(payload.iv) },
+    key, _hexToBytes(payload.d)
+  )
+  return JSON.parse(new TextDecoder().decode(plain))
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 /**
  * Build request headers, merging defaults with any caller overrides.
  * Automatically attaches the Authorization token from localStorage if present.
@@ -55,7 +78,8 @@ async function request(endpoint, options = {}) {
 
   const contentType = response.headers.get('content-type') ?? ''
   if (contentType.includes('application/json')) {
-    return response.json()
+    const json = await response.json()
+    return _decrypt(json)
   }
   return response.text()
 }
