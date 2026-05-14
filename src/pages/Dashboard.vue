@@ -5645,7 +5645,7 @@
     <div v-if="showCreateEventModal" class="fixed inset-0 bg-black bg-opacity-50 z-40"></div>
   </transition>
   <transition name="fade-scale">
-    <div v-if="showCreateEventModal" class="fixed inset-0 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" @click.self="showCreateEventModal = false">
+    <div v-if="showCreateEventModal" class="fixed inset-0 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4 overflow-hidden" @click.self="showCreateEventModal = false">
       <div class="bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl w-full sm:max-w-2xl max-h-[95vh] flex flex-col overflow-hidden">
 
         <!-- Sticky Header -->
@@ -5655,7 +5655,7 @@
         </div>
 
         <!-- Scrollable Body -->
-        <div class="modal-body-scroll overflow-y-auto overscroll-contain flex-1 min-h-0 px-4 py-3 sm:px-5 space-y-3" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
+        <div class="modal-body-scroll overscroll-contain flex-1 min-h-0 px-4 py-3 sm:px-5 space-y-3" style="-webkit-overflow-scrolling: touch; touch-action: pan-y;">
 
           <!-- Loading Progress -->
           <div v-if="loadingStudentsForEvent" class="p-3 bg-blue-50 border border-blue-200 rounded-lg">
