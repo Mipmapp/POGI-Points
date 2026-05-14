@@ -528,6 +528,34 @@ input[type="password"]::placeholder {
   }
 }
 
+/* ── Modal Body Scrollbar (visible on mobile) ────────────────────────── */
+.modal-body-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+.modal-body-scroll::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 4px;
+}
+.modal-body-scroll::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 4px;
+}
+.modal-body-scroll::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+.modal-body-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #94a3b8 #f1f5f9;
+}
+@media (max-width: 767px) {
+  .modal-body-scroll::-webkit-scrollbar {
+    width: 5px;
+  }
+  .modal-body-scroll::-webkit-scrollbar-thumb {
+    background: #94a3b8;
+  }
+}
+
 /* ── Developer Modal Scrollbar ───────────────────────────────────────── */
 .dev-modal-scroll::-webkit-scrollbar {
   width: 6px;
