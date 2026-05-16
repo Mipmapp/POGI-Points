@@ -8,23 +8,27 @@ import nodemailer from 'nodemailer';
 import crypto from 'crypto';
 import { MongoClient } from 'mongodb';
 import cloudinary from './config/cloudinary.js';
-
-// ── Response payload encryption ──────────────────────────────────────────────
-// AES-256-CBC. The key must be exactly 32 bytes.
-const _EK = Buffer.from('SSAAM_JRMSU_2026_CCS_KEY_v2_32!!');
-function encryptPayload(data) {
-    const iv  = crypto.randomBytes(16);
-    const c   = crypto.createCipheriv('aes-256-cbc', _EK, iv);
-    const enc = Buffer.concat([c.update(JSON.stringify(data), 'utf8'), c.final()]);
-    return { _ssaam: 1, iv: iv.toString('hex'), d: enc.toString('hex') };
-}
-// ─────────────────────────────────────────────────────────────────────────────
+import cookieParser from 'cookie-parser';
 
 // ── Login rate limiter & account lockout ──────────────────────────────────────
 // Tracks failed login attempts per IP (and per credential) in memory.
 // After LOGIN_MAX_ATTEMPTS failures within LOGIN_WINDOW_MS the IP is locked
 // out for LOGIN_LOCKOUT_MS. A successful login clears the counter.
-const _loginMap = new Map();
+// ── MongoDB-backed Rate Limit model (P12 — persists across restarts) ───────
+const rateLimitSchema = new mongoose.Schema({
+    key:          { type: String, required: true },
+    type:         { type: String, required: true }, // 'login' | 'verif' | 'reg'
+    count:        { type: Number, default: 1 },
+    firstAttempt: { type: Date, default: Date.now },
+    lastAttempt:  { type: Date, default: Date.now },
+    lockedUntil:  { type: Date, default: null },
+    expireAt:     { type: Date, required: true }
+}, { timestamps: false });
+rateLimitSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
+rateLimitSchema.index({ key: 1, type: 1 }, { unique: true });
+const RateLimit = mongoose.model('RateLimit', rateLimitSchema);
+// ─────────────────────────────────────────────────────────────────────────────
+
 const LOGIN_MAX_ATTEMPTS  = 5;
 const LOGIN_WINDOW_MS     = 10 * 60 * 1000; // 10-minute rolling window
 const LOGIN_LOCKOUT_MS    = 15 * 60 * 1000; // 15-minute lockout
@@ -36,35 +40,48 @@ function _getClientIP(req) {
         || 'unknown';
 }
 
-function _loginCheck(key) {
-    const now = Date.now();
-    const e   = _loginMap.get(key);
-    if (!e) return { blocked: false };
-    if (e.lockedUntil && now < e.lockedUntil) {
-        return { blocked: true, remainingMins: Math.ceil((e.lockedUntil - now) / 60000) };
+async function _loginCheck(key) {
+    try {
+        const now = Date.now();
+        const doc = await RateLimit.findOne({ key, type: 'login' }).lean();
+        if (!doc) return { blocked: false };
+        if (doc.lockedUntil && now < doc.lockedUntil.getTime()) {
+            return { blocked: true, remainingMins: Math.ceil((doc.lockedUntil.getTime() - now) / 60000) };
+        }
+        if (now - doc.firstAttempt.getTime() > LOGIN_WINDOW_MS) {
+            await RateLimit.deleteOne({ key, type: 'login' });
+        }
+        return { blocked: false };
+    } catch (err) {
+        console.error('[RateLimit] _loginCheck DB error:', err.message);
+        return { blocked: false }; // fail open — never block legit users on DB error
     }
-    if (now - e.firstAttempt > LOGIN_WINDOW_MS) {
-        _loginMap.delete(key); // window expired — fresh start
-    }
-    return { blocked: false };
 }
 
-function _loginRecord(key, success) {
-    if (success) { _loginMap.delete(key); return; }
-    const now = Date.now();
-    const e   = _loginMap.get(key) || { count: 0, firstAttempt: now, lockedUntil: 0 };
-    e.count++;
-    if (e.count >= LOGIN_MAX_ATTEMPTS) e.lockedUntil = now + LOGIN_LOCKOUT_MS;
-    _loginMap.set(key, e);
-}
-
-// Sweep stale entries every 30 minutes
-setInterval(() => {
-    const now = Date.now();
-    for (const [k, e] of _loginMap.entries()) {
-        if (now > (e.lockedUntil || 0) + LOGIN_WINDOW_MS) _loginMap.delete(k);
+async function _loginRecord(key, success) {
+    try {
+        if (success) { await RateLimit.deleteOne({ key, type: 'login' }); return; }
+        const now = new Date();
+        const expireAt = new Date(Date.now() + LOGIN_WINDOW_MS + LOGIN_LOCKOUT_MS);
+        const doc = await RateLimit.findOneAndUpdate(
+            { key, type: 'login' },
+            {
+                $inc: { count: 1 },
+                $setOnInsert: { firstAttempt: now },
+                $set: { lastAttempt: now, expireAt }
+            },
+            { upsert: true, new: true, setDefaultsOnInsert: true }
+        );
+        if (doc.count >= LOGIN_MAX_ATTEMPTS) {
+            await RateLimit.updateOne(
+                { key, type: 'login' },
+                { $set: { lockedUntil: new Date(Date.now() + LOGIN_LOCKOUT_MS) } }
+            );
+        }
+    } catch (err) {
+        console.error('[RateLimit] _loginRecord DB error:', err.message);
     }
-}, 30 * 60 * 1000);
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 const app = express();
@@ -84,9 +101,16 @@ const isReplitOrigin = (origin) => {
     return origin.endsWith('.replit.dev') || origin.endsWith('.repl.co');
 };
 
+const ALLOWED_LOCALHOST_ORIGINS = [
+    'http://localhost:5000',
+    'http://127.0.0.1:5000',
+    'http://localhost:3001',
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+];
 const isLocalhost = (origin) => {
     if (!origin) return false;
-    return origin.startsWith('http://') || origin.startsWith('http://127.0.0.1');
+    return ALLOWED_LOCALHOST_ORIGINS.includes(origin);
 };
 
 const corsOptions = {
@@ -115,6 +139,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
@@ -196,7 +221,7 @@ function getCollegeFromRequest(req) {
         try {
             const token = extractToken(req);
             if (token) {
-                const decoded = jwt.verify(token, SSAAM_API_KEY);
+                const decoded = jwt.verify(token, JWT_SECRET_KEY);
                 const tokenCollege = normalizeCollege(decoded.college);
                 if (tokenCollege) return tokenCollege;
             }
@@ -282,7 +307,7 @@ app.use('/apis', (req, res, next) => {
     try {
         const token = extractToken(req);
         if (token) {
-            const decoded = jwt.verify(token, SSAAM_API_KEY);
+            const decoded = jwt.verify(token, JWT_SECRET_KEY);
             if (decoded && decoded.isMaster && (decoded.role === 'co-admin' || decoded.role === 'treasurer') && decoded.college) {
                 req.college = decoded.college;
             }
@@ -306,10 +331,7 @@ function extractToken(req) {
     // Custom header
     if (req.headers && req.headers['x-ssaam-token']) return req.headers['x-ssaam-token'];
 
-    // Query param
-    if (req.query && req.query.token) return req.query.token;
-
-    // Cookie (if cookie-parser is used)
+    // Cookie: HttpOnly session cookie (not accessible to XSS)
     if (req.cookies && req.cookies.ssaam_token) return req.cookies.ssaam_token;
 
     return null;
@@ -365,12 +387,16 @@ if (!process.env.SSAAM_API_KEY || !process.env.SSAAM_CRYPTO_KEY || !process.env.
     console.error('CRITICAL: Required security secrets (SSAAM_API_KEY, SSAAM_CRYPTO_KEY, ADMIN_VERIFICATION_SECRET) are not set!');
     // Don't process.exit() on Vercel — it would kill the Lambda cold-start before
     // any response can be sent. Log loudly instead so it shows in Vercel logs.
-    if (process.env.NODE_ENV === 'production' && !process.env.VERCEL) {
+    if (process.env.NODE_ENV === 'production') {
         process.exit(1);
     }
 }
 
 const SSAAM_API_KEY = process.env.SSAAM_API_KEY;
+const JWT_SECRET_KEY = process.env.JWT_SECRET || SSAAM_API_KEY;
+if (!process.env.JWT_SECRET) {
+    console.warn('[Security] JWT_SECRET env var not set — falling back to SSAAM_API_KEY. Set JWT_SECRET for stronger token security.');
+}
 const SSAAM_CRYPTO_KEY = process.env.SSAAM_CRYPTO_KEY;
 const ADMIN_VERIFICATION_SECRET = process.env.ADMIN_VERIFICATION_SECRET;
 const PRIMARY_ADMIN_USERNAME = process.env.PRIMARY_ADMIN_USERNAME || 'ssaam';
@@ -498,74 +524,52 @@ const emailService = {
     }
 };
 
-// Rate limiter for verification code resends (prevents email abuse)
+// Rate limiter for verification code resends — MongoDB-backed (P12)
 const verificationCodeRateLimiter = {
-    attempts: new Map(), // email -> { count, firstAttemptTime, lastAttemptTime }
-    MAX_ATTEMPTS: 4, // Maximum 4 resend attempts (original + 3 resends)
-    WINDOW_MS: 15 * 60 * 1000, // 15 minute window
-    MIN_INTERVAL_MS: 60 * 1000, // Minimum 60 seconds between attempts
+    MAX_ATTEMPTS: 4,
+    WINDOW_MS:    15 * 60 * 1000,
+    MIN_INTERVAL_MS: 60 * 1000,
 
-    checkAndRecord(email) {
+    async checkAndRecord(email) {
         const now = Date.now();
-        const normalizedEmail = email.toLowerCase().trim();
-        let data = this.attempts.get(normalizedEmail);
+        const key = email.toLowerCase().trim();
+        const expireAt = new Date(now + this.WINDOW_MS);
+        try {
+            const doc = await RateLimit.findOne({ key, type: 'verif' }).lean();
 
-        // Cleanup old entries periodically
-        if (Math.random() < 0.05) this.cleanup(now);
-
-        // No previous attempts or window expired - allow and start fresh
-        if (!data || (now - data.firstAttemptTime > this.WINDOW_MS)) {
-            this.attempts.set(normalizedEmail, {
-                count: 1,
-                firstAttemptTime: now,
-                lastAttemptTime: now
-            });
-            return { allowed: true, attemptsRemaining: this.MAX_ATTEMPTS - 1 };
-        }
-
-        // Check minimum interval between attempts
-        const timeSinceLastAttempt = now - data.lastAttemptTime;
-        if (timeSinceLastAttempt < this.MIN_INTERVAL_MS) {
-            const waitSeconds = Math.ceil((this.MIN_INTERVAL_MS - timeSinceLastAttempt) / 1000);
-            return {
-                allowed: false,
-                waitSeconds,
-                message: `Please wait ${waitSeconds} seconds before requesting another code.`
-            };
-        }
-
-        // Check if max attempts reached within window
-        if (data.count >= this.MAX_ATTEMPTS) {
-            const windowRemainingMs = this.WINDOW_MS - (now - data.firstAttemptTime);
-            const waitMinutes = Math.ceil(windowRemainingMs / 60000);
-            return {
-                allowed: false,
-                waitMinutes,
-                message: `Maximum resend attempts reached. Please wait ${waitMinutes} minutes before trying again.`
-            };
-        }
-
-        // Allow and increment
-        data.count++;
-        data.lastAttemptTime = now;
-        this.attempts.set(normalizedEmail, data);
-
-        return {
-            allowed: true,
-            attemptsRemaining: this.MAX_ATTEMPTS - data.count
-        };
-    },
-
-    // Reset attempts for an email (call after successful verification)
-    reset(email) {
-        this.attempts.delete(email.toLowerCase().trim());
-    },
-
-    cleanup(now) {
-        for (const [email, data] of this.attempts.entries()) {
-            if (now - data.firstAttemptTime > this.WINDOW_MS) {
-                this.attempts.delete(email);
+            if (!doc || (now - doc.firstAttempt.getTime() > this.WINDOW_MS)) {
+                await RateLimit.findOneAndUpdate(
+                    { key, type: 'verif' },
+                    { $set: { count: 1, firstAttempt: new Date(now), lastAttempt: new Date(now), expireAt, lockedUntil: null } },
+                    { upsert: true }
+                );
+                return { allowed: true, attemptsRemaining: this.MAX_ATTEMPTS - 1 };
             }
+
+            const timeSinceLastAttempt = now - doc.lastAttempt.getTime();
+            if (timeSinceLastAttempt < this.MIN_INTERVAL_MS) {
+                const waitSeconds = Math.ceil((this.MIN_INTERVAL_MS - timeSinceLastAttempt) / 1000);
+                return { allowed: false, waitSeconds, message: `Please wait ${waitSeconds} seconds before requesting another code.` };
+            }
+
+            if (doc.count >= this.MAX_ATTEMPTS) {
+                const waitMinutes = Math.ceil((this.WINDOW_MS - (now - doc.firstAttempt.getTime())) / 60000);
+                return { allowed: false, waitMinutes, message: `Maximum resend attempts reached. Please wait ${waitMinutes} minutes before trying again.` };
+            }
+
+            await RateLimit.updateOne({ key, type: 'verif' }, { $inc: { count: 1 }, $set: { lastAttempt: new Date(now), expireAt } });
+            return { allowed: true, attemptsRemaining: this.MAX_ATTEMPTS - (doc.count + 1) };
+        } catch (err) {
+            console.error('[RateLimit] verif checkAndRecord error:', err.message);
+            return { allowed: true, attemptsRemaining: this.MAX_ATTEMPTS - 1 }; // fail open
+        }
+    },
+
+    async reset(email) {
+        try {
+            await RateLimit.deleteOne({ key: email.toLowerCase().trim(), type: 'verif' });
+        } catch (err) {
+            console.error('[RateLimit] verif reset error:', err.message);
         }
     }
 };
@@ -596,6 +600,11 @@ function sanitizeHtml(str) {
         .replace(/'/g, '&#x27;');
 }
 
+function internalError(res, err, userMessage = 'An internal server error occurred.') {
+    console.error('[Server Error]', err);
+    return res.status(500).json({ message: userMessage });
+}
+
 async function sendVerificationEmail(toEmail, code, studentName) {
     const mailOptions = {
         from: "SSAAM <ssaamjrmsu@gmail.com>",
@@ -608,7 +617,7 @@ async function sendVerificationEmail(toEmail, code, studentName) {
                         <p style="color: white; opacity: 0.9; margin: 5px 0 0 0;">Student School Activities Attendance Monitoring</p>
                     </div>
                     <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
-                        <h2 style="color: #1f2937; margin-top: 0;">Hello ${studentName}!</h2>
+                        <h2 style="color: #1f2937; margin-top: 0;">Hello ${sanitizeHtml(studentName)}!</h2>
                         <p style="color: #4b5563;">Your email verification code is:</p>
                         <div style="background: white; border: 2px solid #7c3aed; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0;">
                             <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #7c3aed;">${code}</span>
@@ -631,7 +640,7 @@ async function sendApprovalEmail(toEmail, studentName, approved, rejectionReason
     const statusText = approved ? "Approved" : "Not Approved";
     const message = approved
         ? "Congratulations! Your SSAAM account has been approved. You can now login to your account using your Student ID and your Last Name as the temporary password. You may change your password anytime in the Dashboard settings."
-        : `Unfortunately, your account registration was not approved.${rejectionReason ? ` Reason: ${rejectionReason}` : ''}`;
+        : `Unfortunately, your account registration was not approved.${rejectionReason ? ` Reason: ${sanitizeHtml(rejectionReason)}` : ''}`;
 
     const mailOptions = {
         from: "SSAAM <ssaamjrmsu@gmail.com>",
@@ -644,7 +653,7 @@ async function sendApprovalEmail(toEmail, studentName, approved, rejectionReason
                         <p style="color: white; opacity: 0.9; margin: 5px 0 0 0;">Student School Activities Attendance Monitoring</p>
                     </div>
                     <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
-                        <h2 style="color: #1f2937; margin-top: 0;">Hello ${studentName}!</h2>
+                        <h2 style="color: #1f2937; margin-top: 0;">Hello ${sanitizeHtml(studentName)}!</h2>
                         <div style="background: white; border: 2px solid ${statusColor}; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0;">
                             <span style="font-size: 24px; font-weight: bold; color: ${statusColor};">Account ${statusText}</span>
                         </div>
@@ -677,14 +686,14 @@ async function sendRFIDVerificationEmail(toEmail, studentName, rfidCode, verifie
                         <p style="color: white; opacity: 0.9; margin: 5px 0 0 0;">Student School Activities Attendance Monitoring</p>
                     </div>
                     <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
-                        <h2 style="color: #1f2937; margin-top: 0;">Hello ${studentName}!</h2>
+                        <h2 style="color: #1f2937; margin-top: 0;">Hello ${sanitizeHtml(studentName)}!</h2>
                         <div style="background: white; border: 2px solid #10b981; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0;">
                             <span style="font-size: 24px; font-weight: bold; color: #10b981;">RFID Verified!</span>
                         </div>
                         <p style="color: #4b5563;">Great news! Your RFID attendance card has been verified and is now active.</p>
                         <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 15px; margin: 20px 0;">
-                            <p style="color: #6b7280; margin: 5px 0;"><strong>RFID Code:</strong> ${rfidCode}</p>
-                            <p style="color: #6b7280; margin: 5px 0;"><strong>Verified By:</strong> ${verifiedBy}</p>
+                            <p style="color: #6b7280; margin: 5px 0;"><strong>RFID Code:</strong> ${sanitizeHtml(rfidCode)}</p>
+                            <p style="color: #6b7280; margin: 5px 0;"><strong>Verified By:</strong> ${sanitizeHtml(verifiedBy)}</p>
                             <p style="color: #6b7280; margin: 5px 0;"><strong>Date:</strong> ${new Date().toLocaleDateString('en-PH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                         </div>
                         <p style="color: #4b5563;">You can now use your RFID card to log your attendance at school activities.</p>
@@ -699,7 +708,7 @@ async function sendRFIDVerificationEmail(toEmail, studentName, rfidCode, verifie
     return emailService.sendMail(mailOptions);
 }
 
-const KNOWN_CRYPTO_KEYS = ['SSAAM2025CCS'];
+const KNOWN_CRYPTO_KEYS = [];
 
 function decodeTimestampWithKey(encodedString, key) {
     try {
@@ -761,21 +770,9 @@ function timestampAuth(req, res, next) {
     next();
 }
 
-const registrationAttempts = new Map();
 const REGISTRATION_COOLDOWN_MS = 60000;
 
-function cleanupOldAttempts() {
-    const now = Date.now();
-    for (const [key, timestamp] of registrationAttempts.entries()) {
-        if (now - timestamp > REGISTRATION_COOLDOWN_MS) {
-            registrationAttempts.delete(key);
-        }
-    }
-}
-
-setInterval(cleanupOldAttempts, 60000);
-
-function antiBotProtection(req, res, next) {
+async function antiBotProtection(req, res, next) {
     const userAgent = req.headers['user-agent'];
     if (!userAgent || userAgent.length < 10) {
         return res.status(403).json({ message: "Forbidden: Invalid request source" });
@@ -792,19 +789,26 @@ function antiBotProtection(req, res, next) {
         'unknown';
 
     const studentId = req.body?.student_id || 'unknown';
-    const rateLimitKey = `${clientIP}:${studentId}`;
-
-    const lastAttempt = registrationAttempts.get(rateLimitKey);
+    const key = `${clientIP}:${studentId}`;
     const now = Date.now();
 
-    if (lastAttempt && (now - lastAttempt) < REGISTRATION_COOLDOWN_MS) {
-        const remainingSeconds = Math.ceil((REGISTRATION_COOLDOWN_MS - (now - lastAttempt)) / 1000);
-        return res.status(429).json({
-            message: `Too many registration attempts. Please wait ${remainingSeconds} seconds before trying again.`
-        });
+    try {
+        const doc = await RateLimit.findOne({ key, type: 'reg' }).lean();
+        if (doc && (now - doc.lastAttempt.getTime()) < REGISTRATION_COOLDOWN_MS) {
+            const remainingSeconds = Math.ceil((REGISTRATION_COOLDOWN_MS - (now - doc.lastAttempt.getTime())) / 1000);
+            return res.status(429).json({
+                message: `Too many registration attempts. Please wait ${remainingSeconds} seconds before trying again.`
+            });
+        }
+        await RateLimit.findOneAndUpdate(
+            { key, type: 'reg' },
+            { $set: { lastAttempt: new Date(now), count: 1, firstAttempt: new Date(now), expireAt: new Date(now + REGISTRATION_COOLDOWN_MS * 2) } },
+            { upsert: true }
+        );
+    } catch (err) {
+        console.error('[RateLimit] antiBotProtection DB error:', err.message);
+        // fail open — never block legitimate users due to DB errors
     }
-
-    registrationAttempts.set(rateLimitKey, now);
 
     next();
 }
@@ -833,7 +837,7 @@ app.post('/apis/admin/contributions', async (req, res) => {
         await student.save();
         res.json({ success: true, message: "Contribution added successfully", student });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -856,7 +860,7 @@ app.get('/apis/contributions/transparency', async (req, res) => {
 
         res.json({ success: true, data: allContributions });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -966,7 +970,7 @@ app.post('/apis/payments', auth, async (req, res) => {
         });
     } catch (err) {
         console.error('Error creating payment:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -994,7 +998,7 @@ app.patch('/apis/payments/:paymentId', auth, async (req, res) => {
         res.json({ success: true, data: payment, message: 'Payment event updated' });
     } catch (err) {
         console.error('Error updating payment:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1094,7 +1098,7 @@ app.get('/apis/payments', auth, async (req, res) => {
         res.json({ success: true, data: paymentsWithStats });
     } catch (err) {
         console.error('Error fetching payments:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1157,7 +1161,7 @@ app.post('/apis/payments/migrate/fix-student-ids', auth, async (req, res) => {
 
         res.json({ success: true, message: `Fixed ${fixedCount} payment records with correct student IDs` });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 // Get payment details with student records
@@ -1242,7 +1246,7 @@ app.get('/apis/payments/:id', auth, async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1352,7 +1356,7 @@ app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
         });
     } catch (err) {
         console.error('Error marking payment:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1435,7 +1439,7 @@ app.put('/apis/payments/:paymentId/mark-unpaid', auth, async (req, res) => {
             data: paymentRecord
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1457,7 +1461,7 @@ app.get('/apis/payments/:paymentId/student/:studentId', async (req, res) => {
 
         res.json({ success: true, data: paymentRecord });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1526,7 +1530,7 @@ app.put('/apis/payments/:paymentId/apply-discount', auth, async (req, res) => {
         });
     } catch (err) {
         console.error('Error applying discount:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1553,7 +1557,7 @@ app.put('/apis/payments/:id', auth, async (req, res) => {
 
         res.json({ success: true, data: payment });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1607,7 +1611,7 @@ app.delete('/apis/payments/:paymentId/student/:studentId', auth, async (req, res
             }
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1676,7 +1680,7 @@ app.delete('/apis/payments/:paymentId', auth, async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1749,7 +1753,7 @@ app.put('/apis/payments/:paymentId/status', auth, async (req, res) => {
             data: payment
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1824,7 +1828,7 @@ app.post('/apis/payments/:paymentId/sync-students', auth, async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -1933,7 +1937,7 @@ app.get('/apis/my-payments', auth, async (req, res) => {
             data: formattedRecords
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -2216,7 +2220,7 @@ app.get('/apis/audit-trail', auth, async (req, res) => {
 
         res.json({ success: true, data: enrichedLogs });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 // ─────────────────────────────────────────────────────────────────────────
@@ -2809,7 +2813,7 @@ async function sendPasswordResetEmail(toEmail, code, studentName) {
                         <p style="color: white; opacity: 0.9; margin: 5px 0 0 0;">Student School Activities Attendance Monitoring</p>
                     </div>
                     <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
-                        <h2 style="color: #1f2937; margin-top: 0;">Hello ${studentName}!</h2>
+                        <h2 style="color: #1f2937; margin-top: 0;">Hello ${sanitizeHtml(studentName)}!</h2>
                         <p style="color: #4b5563;">You requested a password reset. Your verification code is:</p>
                         <div style="background: white; border: 2px solid #ef4444; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0;">
                             <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #ef4444;">${code}</span>
@@ -2922,7 +2926,7 @@ async function auth(req, res, next) {
         return res.status(401).json({ message: "Access denied. No token provided." });
 
     try {
-        const decoded = jwt.verify(token, SSAAM_API_KEY);
+        const decoded = jwt.verify(token, JWT_SECRET_KEY);
         const tokenHash = hashToken(token);
 
         // For the session lookup, prefer the college in the token first, then the header.
@@ -2954,7 +2958,7 @@ async function studentAuthWithToken(req, res, next) {
     }
 
     try {
-        const decoded = jwt.verify(token, SSAAM_API_KEY);
+        const decoded = jwt.verify(token, JWT_SECRET_KEY);
 
         const tokenHash = hashToken(token);
         const preferredCollege = normalizeCollege(decoded.college) || req.college || 'CCS';
@@ -3070,7 +3074,7 @@ async function studentSearchAuth(req, res, next) {
     }
 
     try {
-        const decoded = jwt.verify(token, SSAAM_API_KEY);
+        const decoded = jwt.verify(token, JWT_SECRET_KEY);
 
         const tokenHash = hashToken(token);
         const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, req.college);
@@ -3198,16 +3202,15 @@ app.get('/apis/health', (req, res) => {
     const now = new Date();
     res.set('X-SSAAM-Server-Time', now.toISOString());
     res.set('Date', now.toUTCString());
-    res.status(200).json(encryptPayload({
+    res.status(200).json({
         message: "SSAAM API Health Check",
         status: "operational",
-        database: mongoose.connection.readyState === 1 ? "connected" : "disconnected",
         timestamp: now.toISOString()
-    }));
+    });
 });
 
 
-app.get('/apis/students', studentAuth, async (req, res) => {
+app.get('/apis/students', auth, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -3238,11 +3241,11 @@ app.get('/apis/students', studentAuth, async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
-app.get('/apis/students/stats', studentAuth, async (req, res) => {
+app.get('/apis/students/stats', auth, async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
@@ -3302,7 +3305,7 @@ app.get('/apis/students/stats', studentAuth, async (req, res) => {
             unreadableCount
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -3323,7 +3326,7 @@ app.get('/apis/students/all-colleges', auth, async (req, res) => {
         }
         res.json(allStudents);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -3358,7 +3361,7 @@ app.get('/apis/students/list/all', auth, async (req, res) => {
             total: formattedStudents.length
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -3400,7 +3403,7 @@ app.post('/apis/students/search', auth, async (req, res) => {
         });
     } catch (err) {
         console.error('Error searching student:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -3464,7 +3467,7 @@ app.post('/apis/students/search-multi', auth, async (req, res) => {
         res.json({ message: 'OK', students, count: students.length });
     } catch (err) {
         console.error('Error in students/search-multi:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -3585,11 +3588,11 @@ app.get('/apis/students/search', studentSearchAuth, async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
-app.get('/apis/students/pending', studentAuth, async (req, res) => {
+app.get('/apis/students/pending', auth, async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const page = parseInt(req.query.page) || 1;
@@ -3628,7 +3631,7 @@ app.get('/apis/students/pending', studentAuth, async (req, res) => {
     } catch (err) {
         console.error('Error fetching pending students:', err.message);
         console.error('Connection state when error occurred:', mongoose.connection.readyState);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -3710,7 +3713,7 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
         }
 
         // Check rate limit for verification code requests
-        const rateLimitCheck = verificationCodeRateLimiter.checkAndRecord(data.email);
+        const rateLimitCheck = await verificationCodeRateLimiter.checkAndRecord(data.email);
         if (!rateLimitCheck.allowed) {
             return res.status(429).json({
                 message: rateLimitCheck.message,
@@ -3815,7 +3818,7 @@ app.post('/apis/students/verify-and-register', studentAuth, timestampAuth, async
         await VerificationCode.deleteOne({ _id: verification._id });
 
         // Reset the rate limiter for this email after successful registration
-        verificationCodeRateLimiter.reset(email);
+        await verificationCodeRateLimiter.reset(email);
 
         res.status(201).json({
             message: "Registration successful! Your account is pending admin approval. You will receive an email when approved.",
@@ -3858,7 +3861,7 @@ app.put('/apis/students/:student_id/approve', auth, requireCoAdminOrAbove, times
             student
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -3904,7 +3907,7 @@ app.put('/apis/students/:student_id/reject', auth, requireCoAdminOrAbove, timest
             rejection_reason: reason || ''
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -3977,7 +3980,7 @@ app.put('/apis/students/:student_id/rfid', auth, requireCoAdminOrAbove, timestam
             emailSent
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -3994,7 +3997,7 @@ app.get('/apis/students/role-members', auth, requireCoAdminOrAbove, async (req, 
         res.json({ members, college });
     } catch (err) {
         console.error('Error fetching role members:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -4035,7 +4038,7 @@ app.put('/apis/students/:student_id/role', auth, requireCoAdminOrAbove, timestam
             student: updated
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -4090,12 +4093,12 @@ app.put('/apis/students/:student_id/photo', studentAuthWithToken, async (req, re
         });
     } catch (err) {
         console.error('Photo update error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
 // Upload image to Cloudinary
-app.post('/apis/upload-image', async (req, res) => {
+app.post('/apis/upload-image', auth, async (req, res) => {
     try {
         const { image } = req.body;
 
@@ -4286,7 +4289,7 @@ app.delete('/apis/students/:student_id', auth, requireCoAdminOrAbove, async (req
 
         res.json({ message: "Student deleted successfully." });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -4323,7 +4326,7 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
         // Rate limit: 5 failed attempts per IP within 10 min → 15-min lockout
         const _ip  = _getClientIP(req);
         const _key = `stulogin:${_ip}`;
-        const _chk = _loginCheck(_key);
+        const _chk = await _loginCheck(_key);
         if (_chk.blocked)
             return res.status(429).json({ message: `Too many failed attempts. Try again in ${_chk.remainingMins} minute${_chk.remainingMins === 1 ? '' : 's'}.` });
 
@@ -4351,7 +4354,7 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
             }
 
             // Not found in either college
-            _loginRecord(_key, false);
+            await _loginRecord(_key, false);
             return res.status(400).json({ message: "Invalid Student ID or Password" });
         }
 
@@ -4375,7 +4378,7 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
         }
 
         if (!passwordValid) {
-            _loginRecord(_key, false);
+            await _loginRecord(_key, false);
             return res.status(400).json({ message: "Invalid Student ID or Password" });
         }
 
@@ -4397,7 +4400,7 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
 
         const token = jwt.sign(
             { id: student._id, student_id: student.student_id, role: student.role, college: claimedCollege },
-            SSAAM_API_KEY,
+            JWT_SECRET_KEY,
             { expiresIn: "7d" }
         );
 
@@ -4417,7 +4420,13 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
         // Flag to indicate if user should change their password (still using last name as password)
         const requiresPasswordUpdate = !student.custom_password;
 
-        _loginRecord(_key, true); // clear the counter on success
+        await _loginRecord(_key, true); // clear the counter on success
+        res.cookie('ssaam_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
         res.json({
             message: "Login successful",
             student,
@@ -4426,7 +4435,7 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
         });
 
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -4440,7 +4449,7 @@ app.post('/apis/students/logout', studentAuthWithToken, async (req, res) => {
 
         res.json({ message: "Logged out successfully" });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -4455,7 +4464,7 @@ app.post('/apis/students/change-password', async (req, res) => {
         // Verify JWT token and session
         let decoded;
         try {
-            decoded = jwt.verify(token, SSAAM_API_KEY);
+            decoded = jwt.verify(token, JWT_SECRET_KEY);
             const tokenHash = hashToken(token);
             const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, req.college);
             const sessionToken = await SessionTokenModel.findOne({
@@ -4572,7 +4581,7 @@ app.post('/apis/masters', auth, async (req, res) => {
         });
 
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -4673,7 +4682,7 @@ app.post("/apis/admin/create-secret", async (req, res) => {
                 email: master.email,
                 isMaster: true
             },
-            SSAAM_API_KEY,
+            JWT_SECRET_KEY,
             { expiresIn: "7d" }
         );
 
@@ -4689,6 +4698,12 @@ app.post("/apis/admin/create-secret", async (req, res) => {
             expires_at: expiresAt
         });
 
+        res.cookie('ssaam_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
         res.status(201).json({
             message: `Admin created successfully in ${type} database`,
             code: 'ADMIN_CREATED',
@@ -4705,7 +4720,7 @@ app.post("/apis/admin/create-secret", async (req, res) => {
     } catch (err) {
         console.error('Admin secret creation error:', err);
         res.status(500).json({
-            message: err.message,
+            message: 'An internal server error occurred.',
             code: 'SERVER_ERROR'
         });
     }
@@ -4718,19 +4733,19 @@ app.post("/apis/masters/login", async (req, res) => {
         // Rate limit: 5 failed attempts per IP within 10 min → 15-min lockout
         const _ip  = _getClientIP(req);
         const _key = `mlogin:${_ip}`;
-        const _chk = _loginCheck(_key);
+        const _chk = await _loginCheck(_key);
         if (_chk.blocked)
             return res.status(429).json({ message: `Too many failed attempts. Try again in ${_chk.remainingMins} minute${_chk.remainingMins === 1 ? '' : 's'}.` });
 
         const master = await Master.findOne({ username });
         if (!master) {
-            _loginRecord(_key, false);
+            await _loginRecord(_key, false);
             return res.status(400).json({ message: "Invalid username or password" });
         }
 
         const valid = await bcrypt.compare(password, master.password);
         if (!valid) {
-            _loginRecord(_key, false);
+            await _loginRecord(_key, false);
             return res.status(400).json({ message: "Invalid username or password" });
         }
 
@@ -4744,7 +4759,7 @@ app.post("/apis/masters/login", async (req, res) => {
         const tokenCollege = req.college || master.college || 'CCS';
         const token = jwt.sign(
             { id: master._id, username: master.username, isMaster: true, role: master.role || 'admin', college: tokenCollege },
-            SSAAM_API_KEY,
+            JWT_SECRET_KEY,
             { expiresIn: "7d" }
         );
 
@@ -4770,7 +4785,13 @@ app.post("/apis/masters/login", async (req, res) => {
             expires_at: expiresAt
         });
 
-        _loginRecord(_key, true); // clear the counter on success
+        await _loginRecord(_key, true); // clear the counter on success
+        res.cookie('ssaam_token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 7 * 24 * 60 * 60 * 1000
+        });
         res.json({
             message: "Login successful",
             token,
@@ -4778,7 +4799,7 @@ app.post("/apis/masters/login", async (req, res) => {
         });
 
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -4792,7 +4813,7 @@ app.post('/apis/masters/logout', auth, async (req, res) => {
 
         res.json({ message: "Logged out successfully" });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -4824,7 +4845,7 @@ app.get('/apis/masters/face', auth, requireMaster, async (req, res) => {
         res.json({ faces, count: faces.length });
     } catch (err) {
         console.error('Face list error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -4886,7 +4907,7 @@ app.post('/apis/masters/face', auth, requireMaster, async (req, res) => {
         });
     } catch (err) {
         console.error('Face enroll error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -4915,7 +4936,7 @@ app.patch('/apis/masters/face/:faceId', auth, requireMaster, async (req, res) =>
         });
     } catch (err) {
         console.error('Face rename error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -4942,7 +4963,7 @@ app.delete('/apis/masters/face/:faceId', auth, requireMaster, async (req, res) =
         res.json({ message: 'Face removed', count: remaining.length });
     } catch (err) {
         console.error('Face delete error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5003,7 +5024,7 @@ app.get('/apis/students/face', studentAuthWithToken, async (req, res) => {
         });
     } catch (err) {
         console.error('Student face list error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5091,7 +5112,7 @@ app.post('/apis/students/face', studentAuthWithToken, async (req, res) => {
         });
     } catch (err) {
         console.error('Student face enroll error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5122,7 +5143,7 @@ app.delete('/apis/students/face/:faceId', studentAuthWithToken, async (req, res)
         });
     } catch (err) {
         console.error('Student face delete error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5173,7 +5194,7 @@ function _signFaceChallengeToken({ student_id, session_id, college, challenges }
             challenges,
             jti
         },
-        SSAAM_API_KEY,
+        JWT_SECRET_KEY,
         { expiresIn: FACE_CHALLENGE_TOKEN_TTL_SECONDS }
     );
     return { token, jti, expires_at: new Date(Date.now() + FACE_CHALLENGE_TOKEN_TTL_SECONDS * 1000) };
@@ -5182,7 +5203,7 @@ function _signFaceChallengeToken({ student_id, session_id, college, challenges }
 function _verifyFaceChallengeToken(token, { expected_student_id, expected_session_id }) {
     let decoded;
     try {
-        decoded = jwt.verify(token, SSAAM_API_KEY);
+        decoded = jwt.verify(token, JWT_SECRET_KEY);
     } catch (_) {
         return { ok: false, reason: 'invalid_or_expired' };
     }
@@ -5219,7 +5240,7 @@ app.post('/apis/attendance/sessions/:sessionId/face-challenge', studentAuthWithT
         res.json({ challenge_token: token, challenges, expires_at, ttl_seconds: FACE_CHALLENGE_TOKEN_TTL_SECONDS });
     } catch (err) {
         console.error('face-challenge error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5300,7 +5321,7 @@ app.post('/apis/attendance/sessions/:sessionId/check-face-student', studentAuthW
         return sessionAttendanceCheck(req, res);
     } catch (err) {
         console.error('check-face-student error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5309,7 +5330,7 @@ app.get('/apis/masters', auth, requireMaster, requireSuperAdmin, async (req, res
         const masters = await Master.find({ role: { $in: ['admin', null] } }).select('-password');
         res.json(masters);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5366,7 +5387,7 @@ app.post('/apis/co-admin', auth, requireMaster, requireSuperAdmin, async (req, r
             co_admin: coAdmin
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5377,7 +5398,7 @@ app.get('/apis/co-admin', auth, requireMaster, requireSuperAdmin, async (req, re
         const treasurers = await Master.find({ role: 'treasurer' }).select('-password');
         res.json({ co_admins: coAdmins, treasurers });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5388,7 +5409,7 @@ app.get('/apis/co-admin/:id', auth, requireMaster, requireSuperAdmin, async (req
         if (!coAdmin) return res.status(404).json({ message: "Co-admin not found" });
         res.json({ co_admin: coAdmin });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5437,7 +5458,7 @@ app.put('/apis/co-admin/:id', auth, requireMaster, requireSuperAdmin, async (req
             co_admin: coAdmin
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5471,7 +5492,7 @@ app.post('/apis/co-admin/assign', auth, requireMaster, requireSuperAdmin, async 
         const roleName = targetRole === 'treasurer' ? 'treasurer' : 'co-admin';
         res.json({ message: `${master.username} assigned as ${roleName} for ${college}`, co_admin: master });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5486,7 +5507,7 @@ app.delete('/apis/co-admin/:id', auth, requireMaster, requireSuperAdmin, async (
         const roleName = target.role === 'treasurer' ? 'Treasurer' : 'Co-admin';
         res.json({ message: `${roleName} ${target.username} deleted successfully` });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5527,7 +5548,7 @@ app.post('/apis/co-admin/:id/transfer', auth, requireMaster, requireSuperAdmin, 
             co_admin: targetMaster
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5562,7 +5583,7 @@ app.post('/apis/co-admin/me/transfer', auth, requireMaster, async (req, res) => 
 
         res.json({ message: `Co-admin role for ${college} transferred to ${target.username}` });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5575,7 +5596,7 @@ app.get('/apis/admin/me', auth, requireMaster, async (req, res) => {
         if (!master) return res.status(404).json({ message: "Admin account not found" });
         res.json(master);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5614,7 +5635,7 @@ app.put('/apis/admin/me', auth, requireMaster, async (req, res) => {
             profile: master
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5626,7 +5647,7 @@ app.post('/apis/validate-token', async (req, res) => {
             return res.status(401).json({ valid: false, message: "No token provided" });
         }
 
-        const decoded = jwt.verify(token, SSAAM_API_KEY);
+        const decoded = jwt.verify(token, JWT_SECRET_KEY);
 
         const tokenHash = hashToken(token);
         const SessionTokenModel = getCollegeModel(SessionToken, CCS_SessionToken, COE_SessionToken, req.college);
@@ -5689,9 +5710,9 @@ app.post('/apis/admin/verify', auth, async (req, res) => {
 app.get('/apis/settings', studentAuth, async (req, res) => {
     try {
         const settings = await getSettings(req.college);
-        res.json(encryptPayload(settings));
+        res.json(settings);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5742,7 +5763,7 @@ app.put('/apis/settings', auth, requireCoAdminOrAbove, async (req, res) => {
             settings
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -5773,7 +5794,7 @@ app.post('/apis/admin/cleanup-unused-fields', auth, async (req, res) => {
 
     } catch (err) {
         console.error('Cleanup error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -6467,7 +6488,7 @@ app.get('/apis/attendance/events', auth, async (req, res) => {
         });
     } catch (err) {
         console.error('[Attendance Events] Error:', err.message);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -6500,7 +6521,7 @@ app.get('/apis/attendance/events/active', studentAuthWithToken, async (req, res)
 
         res.json({ data: events });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -6590,7 +6611,7 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
 
         res.json({ data: events });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -6656,7 +6677,7 @@ app.get('/apis/attendance/events/:id', auth, async (req, res) => {
 
         res.json(event);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -6710,7 +6731,7 @@ app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res
         const saved = await event.save();
         res.status(201).json({ message: "Event created successfully", event: saved });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -6801,7 +6822,7 @@ app.put('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (req, 
         res.json({ message: "Event updated successfully", event: updated });
     } catch (err) {
         console.error(`[Event Update] Error:`, err.message);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -6824,7 +6845,7 @@ app.delete('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (re
 
         res.json({ message: "Event, sessions, and all related attendance logs deleted successfully" });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -6881,7 +6902,7 @@ app.post('/apis/attendance/events/custom/create', auth, requireCoAdminOrAbove, a
             data: customEvent
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -6923,7 +6944,7 @@ app.put('/apis/attendance/events/custom/:id', auth, requireCoAdminOrAbove, async
             data: event
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -6949,7 +6970,7 @@ app.get('/apis/events/:id/stats', auth, async (req, res) => {
         });
     } catch (err) {
         console.error('[Event Stats] Error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -6976,7 +6997,7 @@ app.get('/apis/attendance/events/:eventId/export-excel', auth, async (req, res) 
         res.setHeader('Content-Disposition', `attachment; filename="attendance-${new Date().toISOString().split('T')[0]}.csv"`);
         res.send(csv);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -7021,7 +7042,7 @@ app.post('/apis/attendance/events/:eventId/sessions', auth, requireCoAdminOrAbov
         const saved = await session.save();
         res.status(201).json({ message: "Session created successfully", session: saved });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -7043,7 +7064,7 @@ app.get('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
             .sort({ start_time: 1 });
         res.json({ data: sessions });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -7093,7 +7114,7 @@ app.put('/apis/attendance/sessions/:id', auth, requireCoAdminOrAbove, async (req
 
         res.json({ message: "Session updated successfully", session: updated });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -7113,7 +7134,7 @@ app.delete('/apis/attendance/sessions/:id', auth, requireCoAdminOrAbove, async (
 
         res.json({ message: "Session and related attendance logs deleted successfully" });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -7216,7 +7237,7 @@ app.get('/apis/attendance/sessions/:id/logs', auth, async (req, res) => {
         res.json(responseData);
     } catch (err) {
         console.error(`[Session Logs] ERROR:`, err)
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -7497,7 +7518,7 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
             aggregated: true
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -7563,7 +7584,7 @@ app.patch('/apis/attendance/logs/:id', auth, requireCoAdminOrAbove, async (req, 
             data: log
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -7969,7 +7990,7 @@ const sessionAttendanceCheck = async (req, res) => {
                 error_type: 'index_conflict'
             });
         }
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 };
 
@@ -8036,7 +8057,7 @@ app.post('/apis/attendance/sessions/:sessionId/check-face', auth, async (req, re
         };
         return sessionAttendanceCheck(req, res);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8244,7 +8265,7 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
 
         res.json({ data: filteredRecords });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8370,7 +8391,7 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
             }
         });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8389,7 +8410,7 @@ app.post('/apis/export-logs', auth, async (req, res) => {
         await log.save();
         res.json({ message: 'Logged', log });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8400,7 +8421,7 @@ app.get('/apis/export-logs', auth, async (req, res) => {
         const logs = await LogModel.find({}).sort({ exported_at: -1 }).limit(50).lean();
         res.json({ logs });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8530,7 +8551,7 @@ app.get('/apis/contributions/download/excel', auth, async (req, res) => {
         res.send(exportCsv);
     } catch (err) {
         console.error('[CONTRIB DOWNLOAD] error:', err);
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8581,7 +8602,7 @@ app.post('/apis/admin/raffle-tickets', auth, async (req, res) => {
         await entry.save();
         res.json({ success: true, message: 'Raffle ticket entry recorded', entry, category });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8592,7 +8613,7 @@ app.get('/apis/admin/raffle-tickets', auth, async (req, res) => {
         const entries = await RaffleTicketModel.find({}).sort({ submitted_at: -1 });
         res.json({ success: true, data: entries });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8604,7 +8625,7 @@ app.delete('/apis/admin/raffle-tickets/:id', auth, async (req, res) => {
         if (!deleted) return res.status(404).json({ message: 'Entry not found' });
         res.json({ success: true, message: 'Raffle ticket entry deleted' });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8617,7 +8638,7 @@ app.get('/apis/student/raffle-ticket', studentAuthWithToken, async (req, res) =>
         }).sort({ submitted_at: -1 });
         res.json({ success: true, data: entries });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8658,7 +8679,7 @@ app.post('/apis/requests', studentAuthWithToken, async (req, res) => {
         await request.save();
         res.status(201).json({ message: 'Request submitted successfully.', request });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8670,7 +8691,7 @@ app.get('/apis/requests/my', studentAuthWithToken, async (req, res) => {
             .limit(50);
         res.json(requests);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8700,7 +8721,7 @@ app.get('/apis/requests', auth, requireCoAdminOrAbove, async (req, res) => {
 
         res.json({ requests, pending_count });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8735,7 +8756,7 @@ app.put('/apis/requests/:id/approve', auth, requireCoAdminOrAbove, async (req, r
 
         res.json({ message: 'Request approved.', request });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 
@@ -8756,7 +8777,7 @@ app.put('/apis/requests/:id/reject', auth, requireCoAdminOrAbove, async (req, re
 
         res.json({ message: 'Request rejected.', request });
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        internalError(res, err);
     }
 });
 

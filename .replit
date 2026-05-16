@@ -77,6 +77,7 @@ SSAAM_API_KEY = "SSAAMRegJRMSU"
 SSAAM_CRYPTO_KEY = "SSAAM2025CCS"
 ADMIN_VERIFICATION_SECRET = "SSAAMAdminVerify"
 GMAIL_ACCOUNTS = "[     { user: \"pabbly.bot.1@gmail.com\", pass: \"ofmuqxxtxktmflpe\" },     { user: \"acchelp283@gmail.com\", pass: \"lpnkmuszdpstqfkj\" },     { user: \"holdacc31@gmail.com\", pass: \"akirzhsqplridphz\" },     { user: \"ssaamjrmsu@gmail.com\", pass: \"cwkqguvsgyrzrnba\" },     { user: \"keny46514@gmail.com\", pass: \"lcketsitjhuxekqd\" },     { user: \"pabbly.bot.2@gmail.com\", pass: \"yjmglrbnftmvxkov\" },     { user: \"kencath0@gmail.com\", pass: \"rflwxmdmopcsskks\" },     { user: \"kencath139@gmail.com\", pass: \"uxoxmbddqvlsatim\" } ]"
+JWT_SECRET = "fe988d514cc5afc70177ddb9628a24cc638f436eeebf6bce2ec63e1cf7d54df79e82811e50c0e5a518764cdb75e3cb026ac15fabb2ba75ee4620ce28a7bc18a3"
 
 [userenv.development]
 VITE_API_URL = ""
