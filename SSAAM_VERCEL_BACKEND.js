@@ -384,16 +384,7 @@ const VALID_RFID_STATUS = ['verified', 'unverified', 'Unreadable'];
 
 
 // Gmail accounts array with fallback support (server-side only, never exposed to clients)
-const GMAIL_ACCOUNTS = [
-    { user: "pabbly.bot.1@gmail.com", pass: "ofmuqxxtxktmflpe" },
-    { user: "acchelp283@gmail.com", pass: "lpnkmuszdpstqfkj" },
-    { user: "holdacc31@gmail.com", pass: "akirzhsqplridphz" },
-    { user: "ssaamjrmsu@gmail.com", pass: "cwkqguvsgyrzrnba" },
-    { user: "keny46514@gmail.com", pass: "lcketsitjhuxekqd" },
-    { user: "pabbly.bot.2@gmail.com", pass: "yjmglrbnftmvxkov" },
-    { user: "kencath0@gmail.com", pass: "rflwxmdmopcsskks" },
-    { user: "kencath139@gmail.com", pass: "uxoxmbddqvlsatim" }
-];
+const GMAIL_ACCOUNTS = process.env.GMAIL_ACCOUNTS;
 
 // Email service with automatic fallback/rotation
 const emailService = {
