@@ -15160,7 +15160,8 @@ const updateAttendanceEvent = async () => {
       // Face ID Recognition toggle
       face_id_enabled: selectedEvent.value.face_id_enabled !== false
     }
-    
+
+    Object.assign(selectedEvent.value, {
       id: selectedEvent.value._id,
       is_custom: eventPayload.is_custom,
       assigned_users: eventPayload.assigned_users,
@@ -15179,6 +15180,7 @@ const updateAttendanceEvent = async () => {
     
     if (response.ok) {
       const responseData = await response.json()
+      Object.assign(selectedEvent.value, {
         is_custom: responseData.event?.is_custom,
         assigned_users: responseData.event?.assigned_users,
         assigned_users_count: (responseData.event?.assigned_users || []).length
