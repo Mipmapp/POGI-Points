@@ -98,7 +98,9 @@ const ALLOWED_ORIGINS = [
 
 const isReplitOrigin = (origin) => {
     if (!origin) return false;
-    return origin.endsWith('.replit.dev') || origin.endsWith('.repl.co');
+    // Strip port (e.g. https://foo.replit.dev:5000 → https://foo.replit.dev)
+    const bare = origin.replace(/:\d+$/, '');
+    return bare.endsWith('.replit.dev') || bare.endsWith('.repl.co');
 };
 
 const ALLOWED_LOCALHOST_ORIGINS = [
