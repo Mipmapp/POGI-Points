@@ -57,13 +57,31 @@
       <select v-model="filterAction"
         class="text-sm border border-gray-200 rounded-xl px-3 py-2 bg-green-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition min-w-0 sm:min-w-[160px]">
         <option value="">All Actions</option>
-        <option value="PAYMENT_MARKED_PAID">Marked Paid</option>
-        <option value="PAYMENT_MARKED_UNPAID">Marked Unpaid</option>
-        <option value="PAYMENT_CREATED">Payment Created</option>
-        <option value="PAYMENT_DELETED">Payment Deleted</option>
-        <option value="PAYMENT_STATUS_UPDATED">Status Updated</option>
-        <option value="PAYMENT_UPDATED">Payment Updated</option>
-        <option value="PAYMENT_STUDENT_REMOVED">Student Removed</option>
+        <optgroup label="Payments">
+          <option value="PAYMENT_MARKED_PAID">Marked Paid</option>
+          <option value="PAYMENT_MARKED_UNPAID">Marked Unpaid</option>
+          <option value="PAYMENT_CREATED">Payment Created</option>
+          <option value="PAYMENT_DELETED">Payment Deleted</option>
+          <option value="PAYMENT_STATUS_UPDATED">Status Updated</option>
+          <option value="PAYMENT_UPDATED">Payment Updated</option>
+          <option value="PAYMENT_STUDENT_REMOVED">Student Removed from Payment</option>
+        </optgroup>
+        <optgroup label="Student Management">
+          <option value="STUDENT_APPROVED">Student Approved</option>
+          <option value="STUDENT_REJECTED">Student Rejected</option>
+          <option value="STUDENT_UPDATED">Student Profile Updated</option>
+          <option value="STUDENT_DELETED">Student Deleted</option>
+          <option value="STUDENT_RFID_UPDATED">RFID Assigned</option>
+          <option value="STUDENT_ROLE_UPDATED">Role Changed</option>
+        </optgroup>
+        <optgroup label="Attendance">
+          <option value="EVENT_CREATED">Event Created</option>
+          <option value="EVENT_UPDATED">Event Updated</option>
+          <option value="EVENT_DELETED">Event Deleted</option>
+          <option value="SESSION_CREATED">Session Added</option>
+          <option value="SESSION_UPDATED">Session Updated</option>
+          <option value="SESSION_DELETED">Session Deleted</option>
+        </optgroup>
       </select>
       <select v-model="filterDate"
         class="text-sm border border-gray-200 rounded-xl px-3 py-2 bg-green-50 focus:outline-none focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition min-w-0 sm:min-w-[130px]">
@@ -323,6 +341,18 @@ function actionLabel(action) {
     PAYMENT_STATUS_UPDATED: 'Campaign Status Updated',
     PAYMENT_UPDATED: 'Payment Campaign Updated',
     PAYMENT_STUDENT_REMOVED: 'Student Removed from Payment',
+    STUDENT_APPROVED: 'Student Approved',
+    STUDENT_REJECTED: 'Student Rejected',
+    STUDENT_UPDATED: 'Student Profile Updated',
+    STUDENT_DELETED: 'Student Deleted',
+    STUDENT_RFID_UPDATED: 'RFID Assigned',
+    STUDENT_ROLE_UPDATED: 'Student Role Changed',
+    EVENT_CREATED: 'Attendance Event Created',
+    EVENT_UPDATED: 'Attendance Event Updated',
+    EVENT_DELETED: 'Attendance Event Deleted',
+    SESSION_CREATED: 'Session Added',
+    SESSION_UPDATED: 'Session Updated',
+    SESSION_DELETED: 'Session Deleted',
   }
   return labels[action] || action
 }
@@ -356,6 +386,54 @@ function actionStyle(action) {
     PAYMENT_STUDENT_REMOVED: {
       bg: 'bg-gray-100', icon: 'text-gray-500',
       path: 'M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6'
+    },
+    STUDENT_APPROVED: {
+      bg: 'bg-green-100', icon: 'text-green-600',
+      path: 'M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z'
+    },
+    STUDENT_REJECTED: {
+      bg: 'bg-red-100', icon: 'text-red-500',
+      path: 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'
+    },
+    STUDENT_UPDATED: {
+      bg: 'bg-yellow-100', icon: 'text-yellow-600',
+      path: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
+    },
+    STUDENT_DELETED: {
+      bg: 'bg-red-100', icon: 'text-red-600',
+      path: 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+    },
+    STUDENT_RFID_UPDATED: {
+      bg: 'bg-indigo-100', icon: 'text-indigo-600',
+      path: 'M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z'
+    },
+    STUDENT_ROLE_UPDATED: {
+      bg: 'bg-purple-100', icon: 'text-purple-600',
+      path: 'M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z'
+    },
+    EVENT_CREATED: {
+      bg: 'bg-blue-100', icon: 'text-blue-600',
+      path: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+    },
+    EVENT_UPDATED: {
+      bg: 'bg-cyan-100', icon: 'text-cyan-600',
+      path: 'M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+    },
+    EVENT_DELETED: {
+      bg: 'bg-orange-100', icon: 'text-orange-600',
+      path: 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
+    },
+    SESSION_CREATED: {
+      bg: 'bg-teal-100', icon: 'text-teal-600',
+      path: 'M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z'
+    },
+    SESSION_UPDATED: {
+      bg: 'bg-teal-50', icon: 'text-teal-500',
+      path: 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'
+    },
+    SESSION_DELETED: {
+      bg: 'bg-orange-50', icon: 'text-orange-500',
+      path: 'M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16'
     },
   }
   return styles[action] || { bg: 'bg-gray-100', icon: 'text-gray-500', path: 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z' }

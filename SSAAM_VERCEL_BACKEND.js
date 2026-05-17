@@ -3856,6 +3856,9 @@ app.put('/apis/students/:student_id/approve', auth, requireCoAdminOrAbove, times
             }
         }
 
+        await logAudit(req.college, req.master, 'STUDENT_APPROVED', 'Student', student.student_id,
+            `${student.first_name} ${student.last_name}`.trim(),
+            { program: student.program, year_level: student.year_level });
         res.json({
             message: "Student approved successfully",
             student
@@ -3901,6 +3904,9 @@ app.put('/apis/students/:student_id/reject', auth, requireCoAdminOrAbove, timest
         await SessionTokenModel.deleteMany({ user_id: student._id });
         await StudentModel.deleteOne({ _id: student._id });
 
+        await logAudit(req.college, req.master, 'STUDENT_REJECTED', 'Student', studentInfo.student_id,
+            `${studentInfo.first_name} ${studentInfo.last_name}`.trim(),
+            { program: studentInfo.program, year_level: studentInfo.year_level, reason: reason || '' });
         res.json({
             message: "Student rejected and removed from database",
             removed_student: studentInfo,
@@ -3974,6 +3980,9 @@ app.put('/apis/students/:student_id/rfid', auth, requireCoAdminOrAbove, timestam
             }
         }
 
+        await logAudit(req.college, req.master, 'STUDENT_RFID_UPDATED', 'Student', updated.student_id,
+            `${updated.first_name} ${updated.last_name}`.trim(),
+            { rfid_code: rfid_code.trim() });
         res.json({
             message: "RFID code assigned and verified successfully",
             student: updated,
@@ -4033,6 +4042,9 @@ app.put('/apis/students/:student_id/role', auth, requireCoAdminOrAbove, timestam
             return res.status(404).json({ message: "Student not found" });
         }
 
+        await logAudit(req.college, req.master, 'STUDENT_ROLE_UPDATED', 'Student', updated.student_id,
+            updated.full_name || `${updated.first_name} ${updated.last_name}`.trim(),
+            { new_role: role });
         res.json({
             message: `Role updated to ${role} successfully`,
             student: updated
@@ -4254,6 +4266,9 @@ app.put('/apis/students/:student_id', auth, requireCoAdminOrAbove, timestampAuth
 
         if (!updated) return res.status(404).json({ message: "Student not found" });
 
+        await logAudit(req.college, req.master, 'STUDENT_UPDATED', 'Student', updated.student_id,
+            updated.full_name || `${updated.first_name} ${updated.last_name}`.trim(),
+            { fields_changed: Object.keys(updates).join(', ') });
         res.json(updated);
     } catch (err) {
         res.status(400).json({ message: err.message });
@@ -4287,6 +4302,9 @@ app.delete('/apis/students/:student_id', auth, requireCoAdminOrAbove, async (req
             { is_revoked: true }
         );
 
+        await logAudit(foundCollege, req.master, 'STUDENT_DELETED', 'Student', deleted.student_id,
+            deleted.full_name || `${deleted.first_name} ${deleted.last_name}`.trim(),
+            { program: deleted.program, year_level: deleted.year_level });
         res.json({ message: "Student deleted successfully." });
     } catch (err) {
         internalError(res, err);
@@ -6729,6 +6747,8 @@ app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res
         });
 
         const saved = await event.save();
+        await logAudit(req.college, req.master, 'EVENT_CREATED', 'AttendanceEvent', String(saved._id),
+            saved.title, { event_date: saved.event_date, location: saved.location || '' });
         res.status(201).json({ message: "Event created successfully", event: saved });
     } catch (err) {
         internalError(res, err);
@@ -6819,6 +6839,8 @@ app.put('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (req, 
 
         console.log(`[Event Update] After populate - assigned_users:`, updated.assigned_users);
 
+        await logAudit(req.college, req.master, 'EVENT_UPDATED', 'AttendanceEvent', String(updated._id),
+            updated.title, { status: updated.status });
         res.json({ message: "Event updated successfully", event: updated });
     } catch (err) {
         console.error(`[Event Update] Error:`, err.message);
@@ -6843,6 +6865,8 @@ app.delete('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (re
         await SessionModel.deleteMany({ event_id: req.params.id });
         await EventModel.deleteOne({ _id: req.params.id });
 
+        await logAudit(req.college, req.master, 'EVENT_DELETED', 'AttendanceEvent', req.params.id,
+            event.title, {});
         res.json({ message: "Event, sessions, and all related attendance logs deleted successfully" });
     } catch (err) {
         internalError(res, err);
@@ -7040,6 +7064,8 @@ app.post('/apis/attendance/events/:eventId/sessions', auth, requireCoAdminOrAbov
         });
 
         const saved = await session.save();
+        await logAudit(req.college, req.master, 'SESSION_CREATED', 'AttendanceSession', String(saved._id),
+            `${label} — ${event.title}`, { event_id: req.params.eventId });
         res.status(201).json({ message: "Session created successfully", session: saved });
     } catch (err) {
         internalError(res, err);
@@ -7112,6 +7138,8 @@ app.put('/apis/attendance/sessions/:id', auth, requireCoAdminOrAbove, async (req
 
         console.log('[SESSION UPDATE] saved session', updated._id ? updated._id.toString() : 'unknown', 'rfidScanner=', updated.rfidScanner);
 
+        await logAudit(req.college, req.master, 'SESSION_UPDATED', 'AttendanceSession', req.params.id,
+            updated.label, { status: updated.status });
         res.json({ message: "Session updated successfully", session: updated });
     } catch (err) {
         internalError(res, err);
@@ -7132,6 +7160,8 @@ app.delete('/apis/attendance/sessions/:id', auth, requireCoAdminOrAbove, async (
         await LogModel.deleteMany({ session_id: req.params.id });
         await SessionModel.deleteOne({ _id: req.params.id });
 
+        await logAudit(req.college, req.master, 'SESSION_DELETED', 'AttendanceSession', req.params.id,
+            session.label, {});
         res.json({ message: "Session and related attendance logs deleted successfully" });
     } catch (err) {
         internalError(res, err);
