@@ -1,5 +1,4 @@
 # SSAAM - Student School Activities Attendance Monitoring
-
 ## Overview
 SSAAM is a Vue 3 + Vite SPA for JRMSU that monitors student attendance at school activities. It supports dual-role authentication (Students and Masters/Teachers), full CRUD student management, RFID check-in, face-recognition enrolment/check-in, contribution/raffle tracking, GPS geofencing, and a POS receipt panel. The backend is an Express.js API backed by MongoDB Atlas.
 
