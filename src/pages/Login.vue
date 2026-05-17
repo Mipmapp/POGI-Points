@@ -764,7 +764,7 @@ function pruneExpiredPhotoCache() {
       } catch { toDelete.push(key) }
     }
     toDelete.forEach(k => localStorage.removeItem(k))
-    if (toDelete.length) console.log(`[PhotoCache] Pruned ${toDelete.length} expired entries`)
+    // pruned expired photo cache entries silently
   } catch (e) {
     console.warn('[PhotoCache] Prune failed:', e)
   }
@@ -1085,7 +1085,6 @@ const handleLogin = async () => {
         })
       });
       const data = await response.json();
-      console.log("API MASTERS LOGIN RESPONSE:", data);
       
       // Extract master object from response
       if (data.master && data.message === "Login successful") {
@@ -1126,7 +1125,6 @@ const handleLogin = async () => {
           // Keep server clock updated on every response.
           updateServerOffsetFromHeaders(resp.clone ? resp.clone() : resp)
           const d = await resp.json()
-          console.log(`API STUDENT LOGIN RESPONSE (${college}):`, d)
 
           if (d.student && d.message === 'Login successful') {
             _finalResponse = resp
@@ -1189,7 +1187,6 @@ const handleLogin = async () => {
     }
 
     if (user) {
-      console.log("LOGIN SUCCESS:", user);
       const normalizedUser = {
         ...user,
         studentId: user.student_id || user.username || enteredId,
@@ -1245,7 +1242,6 @@ const handleLogin = async () => {
       try { localStorage.removeItem('loginChosenDepartment') } catch (e) {}
       try { localStorage.removeItem('loginChosenProgram') } catch (e) {}
       pruneExpiredPhotoCache()
-      console.log("Navigating to dashboard...");
       // Navigate immediately — authentication is complete. The loading overlay
       // (isLoading) will be cleared by the finally block after we return.
       router.push('/dashboard');

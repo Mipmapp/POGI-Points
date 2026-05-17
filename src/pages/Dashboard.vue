@@ -8598,7 +8598,6 @@ const autoFixStudentIds = async () => {
     if (response.ok) {
       // Silent success - don't show notification for automatic fix
       if (result.fixed > 0) {
-        console.log(`Fixed ${result.fixed} student IDs automatically`)
       }
     } else {
       console.error('Error auto-fixing student IDs:', result.message)
@@ -8733,7 +8732,6 @@ const recordContribution = async () => {
 
 const handlePaymentUpdated = (data) => {
   // Refresh the current view if needed
-  console.log('Payment updated:', data)
 }
 
 const profileImageLoading = ref(false)
@@ -10176,7 +10174,6 @@ const handleDownloadClickForSelectedPayment = async () => {
 
   // Immediate feedback and start export (defaults to XLSX)
   showNotification('Starting download (XLSX)...', 'info')
-  console.log('[Export] Fast export triggered for payment:', selectedPayment.value && selectedPayment.value._id)
 
   // Prepare and call the exporter directly
   paymentToExport.value = selectedPayment.value
@@ -14860,23 +14857,17 @@ const fetchAttendanceData = async () => {
     }
 
     if (isAdmin) {
-      console.log('Fetching admin attendance events...')
       const response = await fetch(buildAPIUrl('/apis/attendance/events'), {
         method: 'GET',
         headers: getFetchHeaders({ 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() })
       })
-      console.log('Admin attendance events response status:', response.status)
       if (response.status === 401) {
         showSessionExpiredModal.value = true
         return
       }
       if (response.ok) {
         const result = await response.json()
-        console.log('Admin attendance events data:', result)
-        console.log('Events breakdown - custom:', result.data?.filter(e => e.is_custom).length, '| regular:', result.data?.filter(e => !e.is_custom).length)
-        console.log('Sample events:', result.data?.slice(0, 3).map(e => ({ title: e.title, is_custom: e.is_custom, status: e.status })))
         attendanceEvents.value = result.data || result || []
-        console.log('Attendance events loaded:', attendanceEvents.value.length)
         
         // Mark section as cached
         markSectionAsCached('attendance')
@@ -14886,7 +14877,6 @@ const fetchAttendanceData = async () => {
         showNotification(`Failed to load attendance events: ${response.status}`, 'error')
       }
     } else {
-      console.log('Fetching student attendance records on first click...')
       // Fetch all three sections on initial load
       await fetchActiveEvents()
       await fetchUpcomingEvents()
@@ -14923,7 +14913,6 @@ const fetchActiveEvents = async () => {
     if (response.ok) {
       const result = await response.json()
       attendanceEvents.value = result.data || result || []
-      console.log('Active events refreshed:', attendanceEvents.value.length)
     }
   } catch (error) {
     console.error('Failed to fetch active events:', error)
@@ -14944,7 +14933,6 @@ const fetchUpcomingEvents = async () => {
     if (response.ok) {
       const result = await response.json()
       upcomingEventsData.value = result.data || result || []
-      console.log('Upcoming events refreshed:', upcomingEventsData.value.length)
     }
   } catch (error) {
     console.error('Failed to fetch upcoming events:', error)
@@ -14968,7 +14956,6 @@ const fetchMyRecords = async () => {
     if (response.ok) {
       const result = await response.json()
       const records = result.data || result || []
-      console.log('My records refreshed:', records.length)
       myAttendanceRecords.value = records.map((r, idx) => {
         const eventId = r.event?._id || r.event_id || `record-${idx}`
         return {
@@ -15174,7 +15161,6 @@ const updateAttendanceEvent = async () => {
       face_id_enabled: selectedEvent.value.face_id_enabled !== false
     }
     
-    console.log('[Frontend Update] Sending event payload:', {
       id: selectedEvent.value._id,
       is_custom: eventPayload.is_custom,
       assigned_users: eventPayload.assigned_users,
@@ -15193,7 +15179,6 @@ const updateAttendanceEvent = async () => {
     
     if (response.ok) {
       const responseData = await response.json()
-      console.log('[Frontend Update] Response received:', {
         is_custom: responseData.event?.is_custom,
         assigned_users: responseData.event?.assigned_users,
         assigned_users_count: (responseData.event?.assigned_users || []).length
@@ -15363,9 +15348,7 @@ const fetchEventSessions = async (eventId) => {
     })
     if (response.ok) {
       const result = await response.json()
-      console.log('Fetched sessions for event:', eventId, 'Response:', result)
       eventSessions.value = result.data || result.sessions || []
-      console.log('eventSessions.value set to:', eventSessions.value)
         // Auto-select session logic: if multiple active sessions, ask user; if 1, select it
         if (!selectedSession.value && Array.isArray(eventSessions.value) && eventSessions.value.length > 0) {
           const activeSessions = eventSessions.value.filter(s => getSessionDisplayStatus(s, selectedEvent.value) === 'active')
@@ -15842,7 +15825,6 @@ const applyLateThreshold = async () => {
 }
 
 const fetchSessionLogs = async (sessionId, loadMore = false) => {
-  console.log('[fetchSessionLogs] START - sessionId:', sessionId, 'loadMore:', loadMore)
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   
   if (!loadMore) {
@@ -15850,7 +15832,6 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
     attendanceLogs.value = []
     allSessionLogs.value = []
     attendanceLogsPagination.value.page = 1
-    console.log('[fetchSessionLogs] Reset loading=true, logs=[]')
   } else {
     loadingMoreLogs.value = true
   }
@@ -15865,7 +15846,6 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
     if (eventLogsFilter.value?.search) params.append('search', eventLogsFilter.value.search)
 
     const url = buildAPIUrl(`/apis/attendance/sessions/${sessionId}/logs?${params.toString()}`)
-    console.log('[fetchSessionLogs] Fetching URL:', url)
 
     // SINGLE FETCH - get the logs
     const response = await fetch(url, {
@@ -15876,21 +15856,17 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
       }
     })
 
-    console.log('[fetchSessionLogs] Response status:', response.status)
     if (!response.ok) {
       console.error('[fetchSessionLogs] Failed. Status:', response.status)
       return
     }
 
     const result = await response.json()
-    console.log('[fetchSessionLogs] Got result:', result)
     const logs = result.data || []
-    console.log('[fetchSessionLogs] Logs array:', logs, 'Length:', logs.length)
     
     // ASSIGN DATA TO VIEW
     if (loadMore) {
       attendanceLogs.value.push(...logs)
-      console.log('[fetchSessionLogs] Pushed logs, now total:', attendanceLogs.value.length)
     } else {
       // Enrich logs with absent entries if event has ended
       let mergedLogs = logs
@@ -16001,7 +15977,6 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
       // Cache logs for exports and other global operations
       allSessionLogs.value = mergedLogs
       attendanceLogs.value = mergedLogs
-      console.log('[fetchSessionLogs] Assigned logs to attendanceLogs (and allSessionLogs):', mergedLogs.length, 'items')
 
       // Calculate stats from merged logs
       let present = 0, incomplete = 0, late = 0, absent = 0
@@ -16048,23 +16023,18 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
             }
           }
         } catch (err) {
-          console.log('[fetchSessionLogs] Could not fetch total students:', err.message)
         }
       }
 
       sessionStats.value = { present, incomplete, late, absent, total: totalAttended, totalStudents: totalStudents }
-      console.log('[fetchSessionLogs] Stats calculated:', sessionStats.value)
     }
 
-    console.log('[fetchSessionLogs] SUCCESS! Loaded', logs.length, 'logs. Total in view:', attendanceLogs.value.length)
   } catch (error) {
     console.error('[fetchSessionLogs] EXCEPTION:', error)
   } finally {
     // ALWAYS execute: stop loading
-    console.log('[fetchSessionLogs] Finally block - setting loading=false')
     attendanceLoading.value = false
     loadingMoreLogs.value = false
-    console.log('[fetchSessionLogs] COMPLETE - loading is now:', attendanceLoading.value)
   }
 }
 
@@ -16695,7 +16665,6 @@ const selectSession = (session, event, ev) => {
   } catch (ex) {
     console.warn('Failed to apply session-level RFID operation in selectSession', ex)
   }
-  console.log('[UI] selectSession invoked', session._id, 'for event', event?._id)
   // brief UI notification so selection is obvious
   showNotification(`Selected session: ${session.label}`, 'info')
   // Focus the RFID input for quick scanning
