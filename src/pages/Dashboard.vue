@@ -7386,9 +7386,11 @@ const markSectionAsCached = (sectionName) => {
 // Helper function to get fetch headers with college information
 const getFetchHeaders = (additionalHeaders = {}) => {
   const college = getCollege()
+  const token = localStorage.getItem('authToken')
   return {
     'Content-Type': 'application/json',
     'X-SSAAM-College': college,
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...additionalHeaders
   }
 }
@@ -12504,7 +12506,7 @@ const fetchStats = async () => {
   try {
     const response = await fetch(buildAPIUrl(`/apis/students/stats`), {
       method: 'GET',
-      headers: getFetchHeaders({ 'Authorization': `Bearer SSAAMStudents` })
+      headers: getFetchHeaders()
     })
     if (!response.ok) {
       throw new Error('Failed to fetch statistics')
@@ -12545,7 +12547,7 @@ const fetchAllCollegesStats = async () => {
     const results = await Promise.allSettled(colleges.map(college =>
       fetch(buildAPIUrl('/apis/students/stats'), {
         method: 'GET',
-        headers: { ...getFetchHeaders({ 'Authorization': 'Bearer SSAAMStudents' }), 'X-SSAAM-College': college }
+        headers: { ...getFetchHeaders(), 'X-SSAAM-College': college }
       }).then(r => r.ok ? r.json() : null)
     ))
     const newStats = {}
@@ -16033,7 +16035,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
           } else {
             const studentStatsResponse = await fetch(buildAPIUrl('/apis/students/stats'), {
               method: 'GET',
-              headers: getFetchHeaders({ 'Authorization': 'Bearer SSAAMStudents', 'X-SSAAM-TS': encodeTimestamp() })
+              headers: getFetchHeaders({ 'X-SSAAM-TS': encodeTimestamp() })
             })
             if (studentStatsResponse.ok) {
               const studentStatsData = await studentStatsResponse.json()
