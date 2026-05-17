@@ -10323,6 +10323,11 @@ const duplicateSearchDebounceTimer = ref(null)
 // Auto scan for all duplicates
 const autoScanLoading = ref(false)
 const autoScanResults = ref([])
+
+// Duplicate student deletion confirmation
+const showDeleteDuplicateConfirm = ref(false)
+const duplicateStudentToDelete = ref(null)
+const deletingDuplicateStudent = ref(false)
 const autoScanPerformed = ref(false)
 
 // Auto-search for duplicates as user types (with 500ms debounce)
