@@ -183,8 +183,8 @@
                 </span>
               </div>
 
-              <!-- Admin badge (co-admin view only) -->
-              <div v-if="!isTreasurer && (log.admin_name || log.admin_full_name)" class="mt-1.5 flex items-center gap-2">
+              <!-- Admin who performed the action (shown for all roles) -->
+              <div v-if="log.admin_name || log.admin_full_name" class="mt-1.5 flex items-center gap-2">
                 <img
                   v-if="log.admin_photo"
                   :src="log.admin_photo"
@@ -196,8 +196,8 @@
                   {{ initials(log.admin_full_name || log.admin_name) }}
                 </div>
                 <div class="flex items-center gap-1.5 flex-wrap min-w-0">
-                  <span class="text-[11px] font-medium text-gray-600 truncate">{{ log.admin_full_name || log.admin_name }}</span>
-                  <span v-if="log.admin_student_id" class="text-[10px] font-mono text-gray-400">{{ log.admin_student_id }}</span>
+                  <span class="text-[11px] font-semibold text-gray-700 truncate">{{ log.admin_full_name || log.admin_name }}</span>
+                  <span v-if="log.admin_student_id" class="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">{{ log.admin_student_id }}</span>
                   <span :class="['text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0', roleBadge(log.admin_role).bg, roleBadge(log.admin_role).text]">
                     {{ roleBadge(log.admin_role).label }}
                   </span>
