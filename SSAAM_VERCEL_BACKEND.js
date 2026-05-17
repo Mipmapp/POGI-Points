@@ -2187,15 +2187,11 @@ async function logAudit(college, master, action, target_type, target_id, target_
     }
 }
 
-// GET /apis/audit-trail — treasurer sees own logs; co-admin sees all college logs
+// GET /apis/audit-trail — both co-admin and treasurer see all college logs
 app.get('/apis/audit-trail', auth, async (req, res) => {
     try {
         const AuditModel = getCollegeModel(AuditTrail, CCS_AuditTrail, COE_AuditTrail, req.college);
-        const filter = {};
-        if (req.master.role === 'treasurer') {
-            filter.admin_id = req.master._id;
-        }
-        const logs = await AuditModel.find(filter).sort({ timestamp: -1 }).limit(300).lean();
+        const logs = await AuditModel.find({}).sort({ timestamp: -1 }).limit(300).lean();
 
         // Enrich logs with admin profile data (photo, student_id/username)
         const uniqueAdminIds = [...new Set(logs.map(l => String(l.admin_id)).filter(Boolean))];

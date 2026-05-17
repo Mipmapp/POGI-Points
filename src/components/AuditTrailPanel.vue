@@ -11,12 +11,8 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-white font-bold text-base leading-tight">
-              {{ isTreasurer ? 'My Audit Trail' : 'College Audit Trail' }}
-            </h2>
-            <p class="text-white/70 text-xs mt-0.5">
-              {{ isTreasurer ? 'Your recorded actions in the system' : 'All admin actions for ' + collegeName }}
-            </p>
+            <h2 class="text-white font-bold text-base leading-tight">College Audit Trail</h2>
+            <p class="text-white/70 text-xs mt-0.5">All admin actions for {{ collegeName }}</p>
           </div>
         </div>
         <button @click="fetchLogs" :disabled="loading"
@@ -40,7 +36,7 @@
         </div>
         <div class="px-4 py-3 text-center">
           <p class="text-lg font-bold" :class="themeText">{{ uniqueAdmins }}</p>
-          <p class="text-xs text-gray-500">{{ isTreasurer ? 'Actions This Week' : 'Admins Active' }}</p>
+          <p class="text-xs text-gray-500">Admins Active</p>
         </div>
       </div>
     </div>
@@ -326,14 +322,7 @@ const todayLogs = computed(() => {
   return logs.value.filter(l => new Date(l.timestamp).toDateString() === today).length
 })
 
-const uniqueAdmins = computed(() => {
-  if (isTreasurer.value) {
-    const now = new Date()
-    const weekAgo = new Date(now); weekAgo.setDate(now.getDate() - 7)
-    return logs.value.filter(l => new Date(l.timestamp) >= weekAgo).length
-  }
-  return new Set(logs.value.map(l => l.admin_id)).size
-})
+const uniqueAdmins = computed(() => new Set(logs.value.map(l => l.admin_id)).size)
 
 const totalPages = computed(() => Math.max(1, Math.ceil(filteredLogs.value.length / PAGE_SIZE)))
 
