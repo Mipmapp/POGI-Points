@@ -153,27 +153,53 @@
             <!-- Content -->
             <div class="flex-1 min-w-0">
 
-              <!-- Top row: action label + timestamp -->
+              <!-- Top row: action label + role badge + timestamp -->
               <div class="flex items-start justify-between gap-2">
-                <p class="text-sm font-semibold text-gray-800 leading-tight">{{ actionLabel(log.action) }}</p>
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <p class="text-sm font-semibold text-gray-800 leading-tight">{{ actionLabel(log.action) }}</p>
+                  <span v-if="log.admin_role" :class="['text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0', roleBadge(log.admin_role).bg, roleBadge(log.admin_role).text]">
+                    {{ roleBadge(log.admin_role).label }}
+                  </span>
+                </div>
                 <div class="flex-shrink-0 text-right">
                   <p class="text-xs text-gray-400 whitespace-nowrap">{{ formatRelative(log.timestamp) }}</p>
                   <p class="text-xs text-gray-300 whitespace-nowrap">{{ formatFull(log.timestamp) }}</p>
                 </div>
               </div>
 
+              <!-- Who performed the action — shown prominently under the action label -->
+              <div v-if="log.admin_name || log.admin_full_name || log.admin_student_id" class="mt-1 flex items-center gap-1.5">
+                <img
+                  v-if="log.admin_photo"
+                  :src="log.admin_photo"
+                  :alt="log.admin_full_name || log.admin_name"
+                  class="w-5 h-5 rounded-full object-cover border border-gray-200 flex-shrink-0"
+                  @error="e => e.target.style.display='none'"
+                />
+                <div v-else :class="['w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px] font-bold flex-shrink-0', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-500']">
+                  {{ initials(log.admin_full_name || log.admin_name) }}
+                </div>
+                <span class="text-xs font-semibold text-gray-700 truncate">
+                  {{ log.admin_full_name || log.admin_name || log.admin_student_id }}
+                </span>
+                <span v-if="log.admin_student_id && log.admin_student_id !== (log.admin_full_name || log.admin_name)"
+                  class="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md flex-shrink-0">
+                  {{ log.admin_student_id }}
+                </span>
+              </div>
+
               <!-- Campaign / target -->
-              <p v-if="log.target_label || log.target_id" class="text-xs font-medium text-gray-600 truncate mt-0.5">
+              <p v-if="log.target_label || log.target_id" class="text-xs font-medium text-gray-500 truncate mt-1">
                 {{ log.target_label || log.target_id }}
                 <span v-if="log.details?.amount_paid" class="font-semibold text-gray-700"> · ₱{{ formatAmount(log.details.amount_paid) }}</span>
               </p>
 
               <!-- Student info row (name + ID) for payment actions -->
-              <div v-if="log.details?.student_name || log.details?.student_id" class="mt-1.5 flex items-center gap-1.5 flex-wrap">
+              <div v-if="log.details?.student_name || log.details?.student_id" class="mt-1 flex items-center gap-1.5 flex-wrap">
                 <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                 </svg>
-                <span class="text-xs font-semibold text-gray-700">{{ log.details.student_name || log.details.student_id }}</span>
+                <span class="text-xs text-gray-600">{{ log.details.student_name || log.details.student_id }}</span>
                 <span v-if="log.details.student_id && log.details.student_name && log.details.student_id !== log.details.student_name"
                   class="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">
                   {{ log.details.student_id }}
@@ -190,32 +216,6 @@
                   class="text-[10px] bg-gray-100 text-gray-500 rounded-full px-2 py-0.5 max-w-[200px] truncate">
                   "{{ log.details.notes }}"
                 </span>
-              </div>
-
-              <!-- Admin who performed the action (shown for all roles) -->
-              <div v-if="log.admin_name || log.admin_full_name || log.admin_student_id" class="mt-1.5 flex items-center gap-2">
-                <img
-                  v-if="log.admin_photo"
-                  :src="log.admin_photo"
-                  :alt="log.admin_full_name || log.admin_name"
-                  class="w-6 h-6 rounded-full object-cover border border-gray-200 flex-shrink-0"
-                  @error="e => e.target.style.display='none'"
-                />
-                <div v-else :class="['w-6 h-6 rounded-full flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-500']">
-                  {{ initials(log.admin_full_name || log.admin_name) }}
-                </div>
-                <div class="flex items-center gap-1.5 flex-wrap min-w-0">
-                  <span class="text-[11px] font-semibold text-gray-700 truncate">
-                    {{ log.admin_full_name || log.admin_name || log.admin_student_id || 'Admin' }}
-                  </span>
-                  <span v-if="log.admin_student_id && log.admin_student_id !== (log.admin_full_name || log.admin_name)"
-                    class="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">
-                    {{ log.admin_student_id }}
-                  </span>
-                  <span :class="['text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0', roleBadge(log.admin_role).bg, roleBadge(log.admin_role).text]">
-                    {{ roleBadge(log.admin_role).label }}
-                  </span>
-                </div>
               </div>
 
             </div>

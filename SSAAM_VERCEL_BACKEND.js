@@ -2173,11 +2173,26 @@ const CNAHS_AuditTrail= mongoose.model('CNAHS_AuditTrail', auditTrailSchema, 'cn
 
 async function logAudit(college, master, action, target_type, target_id, target_label, details = {}) {
     try {
+        // The auth middleware often sets req.master to the decoded JWT payload,
+        // which only carries { id, username, email, isMaster } — no full_name or role.
+        // Do a lightweight DB lookup so we always store accurate display data.
+        let adminName = master?.full_name || master?.username || '';
+        let adminRole = master?.role || '';
+        const adminDbId = master?._id || master?.id;
+        if (adminDbId && (!master?.full_name || !master?.role)) {
+            try {
+                const freshMaster = await Master.findById(adminDbId).select('full_name username role').lean();
+                if (freshMaster) {
+                    adminName = freshMaster.full_name || freshMaster.username || adminName;
+                    adminRole = freshMaster.role || adminRole;
+                }
+            } catch (_) { /* non-fatal — fall back to what we already have */ }
+        }
         const AuditModel = getCollegeModel(AuditTrail, CCS_AuditTrail, COE_AuditTrail, college);
         await AuditModel.create({
-            admin_id:     master?._id || master?.id,
-            admin_name:   master?.full_name || master?.username || '',
-            admin_role:   master?.role || '',
+            admin_id:     adminDbId,
+            admin_name:   adminName,
+            admin_role:   adminRole,
             action,
             target_type,
             target_id:    String(target_id || ''),
