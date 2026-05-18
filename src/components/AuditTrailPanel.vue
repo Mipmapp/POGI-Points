@@ -121,8 +121,21 @@
 
     <!-- Log list -->
     <div v-else class="space-y-2">
-      <!-- Result count -->
-      <p class="text-xs text-gray-400 px-1">Showing {{ filteredLogs.length }} of {{ totalLogs }} entries</p>
+      <!-- Top: result count + pagination -->
+      <div class="flex items-center justify-between px-1">
+        <p class="text-xs text-gray-400">Showing {{ filteredLogs.length }} of {{ totalLogs }} entries</p>
+        <div v-if="totalPages > 1" class="flex items-center gap-2">
+          <button @click="page = Math.max(1, page - 1)" :disabled="page === 1"
+            class="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+            ← Prev
+          </button>
+          <p class="text-xs text-gray-400">{{ page }} / {{ totalPages }}</p>
+          <button @click="page = Math.min(totalPages, page + 1)" :disabled="page === totalPages"
+            class="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+            Next →
+          </button>
+        </div>
+      </div>
 
       <!-- Timeline entries -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
@@ -180,7 +193,7 @@
               </div>
 
               <!-- Admin who performed the action (shown for all roles) -->
-              <div v-if="log.admin_name || log.admin_full_name" class="mt-1.5 flex items-center gap-2">
+              <div v-if="log.admin_name || log.admin_full_name || log.admin_student_id" class="mt-1.5 flex items-center gap-2">
                 <img
                   v-if="log.admin_photo"
                   :src="log.admin_photo"
@@ -192,8 +205,13 @@
                   {{ initials(log.admin_full_name || log.admin_name) }}
                 </div>
                 <div class="flex items-center gap-1.5 flex-wrap min-w-0">
-                  <span class="text-[11px] font-semibold text-gray-700 truncate">{{ log.admin_full_name || log.admin_name }}</span>
-                  <span v-if="log.admin_student_id" class="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">{{ log.admin_student_id }}</span>
+                  <span class="text-[11px] font-semibold text-gray-700 truncate">
+                    {{ log.admin_full_name || log.admin_name || log.admin_student_id || 'Admin' }}
+                  </span>
+                  <span v-if="log.admin_student_id && log.admin_student_id !== (log.admin_full_name || log.admin_name)"
+                    class="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md">
+                    {{ log.admin_student_id }}
+                  </span>
                   <span :class="['text-[9px] font-bold px-1.5 py-0.5 rounded-full flex-shrink-0', roleBadge(log.admin_role).bg, roleBadge(log.admin_role).text]">
                     {{ roleBadge(log.admin_role).label }}
                   </span>
@@ -205,17 +223,20 @@
         </div>
       </div>
 
-      <!-- Pagination -->
-      <div v-if="totalPages > 1" class="flex items-center justify-between pt-1 px-1">
-        <button @click="page = Math.max(1, page - 1)" :disabled="page === 1"
-          class="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
-          ← Prev
-        </button>
-        <p class="text-xs text-gray-400">Page {{ page }} of {{ totalPages }}</p>
-        <button @click="page = Math.min(totalPages, page + 1)" :disabled="page === totalPages"
-          class="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
-          Next →
-        </button>
+      <!-- Bottom pagination (mirrors top) -->
+      <div v-if="totalPages > 1" class="flex items-center justify-between px-1">
+        <p class="text-xs text-gray-400">Showing {{ filteredLogs.length }} of {{ totalLogs }} entries</p>
+        <div class="flex items-center gap-2">
+          <button @click="page = Math.max(1, page - 1)" :disabled="page === 1"
+            class="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+            ← Prev
+          </button>
+          <p class="text-xs text-gray-400">{{ page }} / {{ totalPages }}</p>
+          <button @click="page = Math.min(totalPages, page + 1)" :disabled="page === totalPages"
+            class="text-xs px-3 py-1.5 rounded-full border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+            Next →
+          </button>
+        </div>
       </div>
     </div>
 
@@ -240,7 +261,7 @@ const searchQuery = ref('')
 const filterAction = ref('')
 const filterDate = ref('')
 const page = ref(1)
-const PAGE_SIZE = 20
+const PAGE_SIZE = 10
 
 const isTreasurer = computed(() => props.currentUser?.role === 'treasurer')
 

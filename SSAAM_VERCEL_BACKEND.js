@@ -7136,8 +7136,14 @@ app.put('/apis/attendance/sessions/:id', auth, requireCoAdminOrAbove, async (req
 
         console.log('[SESSION UPDATE] saved session', updated._id ? updated._id.toString() : 'unknown', 'rfidScanner=', updated.rfidScanner);
 
-        await logAudit(req.college, req.master, 'SESSION_UPDATED', 'AttendanceSession', req.params.id,
-            updated.label, { status: updated.status });
+        // Only audit meaningful session edits — skip pure RFID-scanner toggle
+        // updates (which fire on every check-in/check-out toggle and flood the
+        // audit trail with duplicates).
+        const isRfidOnlyUpdate = Object.keys(req.body).length === 1 && req.body.rfidScanner !== undefined;
+        if (!isRfidOnlyUpdate) {
+            await logAudit(req.college, req.master, 'SESSION_UPDATED', 'AttendanceSession', req.params.id,
+                updated.label, { status: updated.status });
+        }
         res.json({ message: "Session updated successfully", session: updated });
     } catch (err) {
         internalError(res, err);
