@@ -2162,6 +2162,8 @@ const auditTrailSchema = new mongoose.Schema({
 });
 auditTrailSchema.index({ timestamp: -1 });
 auditTrailSchema.index({ admin_id: 1, timestamp: -1 });
+// Auto-delete audit trail documents older than 30 days
+auditTrailSchema.index({ timestamp: 1 }, { expireAfterSeconds: 60 * 60 * 24 * 30 });
 
 const AuditTrail      = mongoose.model('AuditTrail',       auditTrailSchema);
 const CCS_AuditTrail  = mongoose.model('CCS_AuditTrail',   auditTrailSchema, 'ccs_audittrails');
