@@ -7898,19 +7898,15 @@ const sessionAttendanceCheck = async (req, res) => {
             });
             action = 'check_in';
         } else if (!log.check_out_at) {
-            // Already checked in - user scanned again while in check-in mode
-            const timeSinceCheckIn = now - new Date(log.check_in_at);
-
-            // Duplicate check-in attempt within cooldown period
-            if (timeSinceCheckIn < DUPLICATE_PREVENTION_MS) {
-                const remainingSeconds = Math.ceil((DUPLICATE_PREVENTION_MS - timeSinceCheckIn) / 1000);
+            // Block check-out if session is check-in only — check FIRST before
+            // any cooldown logic so the student always gets the right message.
+            if (session.check_in_only) {
                 return res.status(200).json({
-                    message: `You have already checked in. Please check out first. Wait ${Math.floor(remainingSeconds / 60)}m ${remainingSeconds % 60}s before checking out.`,
+                    message: `${studentFullName} is already checked in. This session is check-in only — no check-out required.`,
                     action: 'already_checked_in',
                     success: true,
+                    check_in_only: true,
                     student_name: log.student_name,
-                    cooldown_remaining: remainingSeconds,
-                    warning: 'duplicate_check_in_attempt',
                     student: {
                         full_name: log.student_name,
                         photo: student.photo,
@@ -7921,14 +7917,19 @@ const sessionAttendanceCheck = async (req, res) => {
                 });
             }
 
-            // Block check-out if session is check-in only
-            if (session.check_in_only) {
+            // Already checked in - user scanned again while in check-in mode
+            const timeSinceCheckIn = now - new Date(log.check_in_at);
+
+            // Duplicate check-in attempt within cooldown period
+            if (timeSinceCheckIn < DUPLICATE_PREVENTION_MS) {
+                const remainingSeconds = Math.ceil((DUPLICATE_PREVENTION_MS - timeSinceCheckIn) / 1000);
                 return res.status(200).json({
-                    message: `${studentFullName} is already checked in. This session is check-in only — no check-out required.`,
+                    message: `You have already checked in. Please wait ${Math.floor(remainingSeconds / 60)}m ${remainingSeconds % 60}s before checking out.`,
                     action: 'already_checked_in',
                     success: true,
-                    check_in_only: true,
                     student_name: log.student_name,
+                    cooldown_remaining: remainingSeconds,
+                    warning: 'duplicate_check_in_attempt',
                     student: {
                         full_name: log.student_name,
                         photo: student.photo,
@@ -8204,7 +8205,8 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                 if (log) {
                     if (log.excused) {
                         status = 'excused';
-                    } else if (log.check_in_at && log.check_out_at) {
+                    } else if (log.check_in_at && (log.check_out_at || session.check_in_only)) {
+                        // Check-in only sessions: having checked in is enough for 'present'
                         status = log.is_late ? 'late' : 'present';
                     } else if (log.check_in_at) {
                         status = 'incomplete';
@@ -8224,6 +8226,7 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                         start_time: session.start_time,
                         end_time: session.end_time,
                         status: sessionStatus,
+                        check_in_only: session.check_in_only || false,
                         late_timer_minutes: session.late_timer_minutes || 0
                     },
                     attendance: log ? {

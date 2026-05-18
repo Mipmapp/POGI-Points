@@ -2502,17 +2502,18 @@
                               </div>
                               
                               <!-- Check-in/Check-out Times Grid -->
-                              <div class="grid grid-cols-2 gap-3 text-sm">
+                              <div :class="['gap-3 text-sm', sessionData.session?.check_in_only ? 'grid grid-cols-1' : 'grid grid-cols-2']">
                                 <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-3 border border-green-100">
                                   <div class="flex items-center gap-2 text-green-700 mb-2">
                                     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
                                     <span class="font-semibold text-xs">Check-in</span>
+                                    <span v-if="sessionData.session?.check_in_only" class="text-[10px] bg-blue-100 text-blue-700 rounded-full px-1.5 py-0.5 font-medium">Check-in Only</span>
                                   </div>
                                   <p class="font-bold text-lg text-green-800 tabular-nums">
                                     {{ sessionData.attendance?.check_in_at ? new Date(sessionData.attendance.check_in_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
                                   </p>
                                 </div>
-                                <div class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-3 border border-blue-100">
+                                <div v-if="!sessionData.session?.check_in_only" class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-3 border border-blue-100">
                                   <div class="flex items-center gap-2 text-blue-700 mb-2">
                                     <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                                     <span class="font-semibold text-xs">Check-out</span>
@@ -9566,16 +9567,19 @@ const getLogCountByYear = (yearLevel) => {
 }
 
 // Helper to compute status for a log based on check-in/check-out
-const computeLogStatus = (log) => {
+const computeLogStatus = (log, sessionObj = null) => {
   const hasCheckIn = log.check_in_at || log.check_in_time
   const hasCheckOut = log.check_out_at || log.check_out_time
   const isLate = log.is_late
-  
+  // Use passed session, fall back to the currently selected session in admin view
+  const isCheckInOnly = sessionObj?.check_in_only ?? selectedSession.value?.check_in_only ?? false
+
   if (hasCheckIn && hasCheckOut) {
     return isLate ? 'late' : 'present'
   }
   if (hasCheckIn && !hasCheckOut) {
-    return isLate ? 'late' : 'incomplete'
+    // For check-in only sessions, a single check-in is a full attendance
+    return isCheckInOnly ? (isLate ? 'late' : 'present') : (isLate ? 'late' : 'incomplete')
   }
   return 'absent'
 }
@@ -17233,18 +17237,22 @@ const getSmartRecordStatus = (record) => {
 }
 
 const getSessionAttendanceLabel = (attendance, session = null, event = null) => {
+  const isCheckInOnly = session?.check_in_only || false
+
   // PRIORITY: If event is closed, show the actual status from attendance data
   if (event && event.status === 'closed') {
     if (!attendance || (!attendance.check_in_at && !attendance.check_in_time)) {
-      return 'Absent'  // No check-in/out and event is closed = Absent
+      return 'Absent'
     }
-    
     const status = attendance.status
+    // Check-in only: check_in_at alone = present
+    if (isCheckInOnly && (attendance.check_in_at || attendance.check_in_time)) {
+      return attendance.is_late ? 'Present (Late)' : 'Present'
+    }
     if (status === 'present') return 'Present'
     if (status === 'late') return 'Present (Late)'
     if (status === 'incomplete') return attendance.is_late ? 'Incomplete (Late)' : 'Incomplete'
     if (status === 'absent') return 'Absent'
-    
     if (attendance.check_in_at && attendance.check_out_at) {
       return attendance.is_late ? 'Present (Late)' : 'Present'
     }
@@ -17253,33 +17261,34 @@ const getSessionAttendanceLabel = (attendance, session = null, event = null) => 
     }
     return 'Absent'
   }
-  
+
   // Check if the session/event hasn't started yet
   if (event && !hasEventStartedPH(event)) {
     return 'Upcoming'
   }
-  
+
   // Check if event is ongoing (started but not ended)
   if (event && hasEventStartedPH(event) && !hasEventEndedPH(event)) {
     if (!attendance || (!attendance.check_in_at && !attendance.check_in_time)) {
       return 'Ongoing'
     }
   }
-  
+
   if (!attendance) {
-    // Only show Absent if event has ended
-    if (event && hasEventEndedPH(event)) {
-      return 'Absent'
-    }
+    if (event && hasEventEndedPH(event)) return 'Absent'
     return 'Upcoming'
   }
-  
+
+  // Check-in only: having a check-in is a full attendance regardless of check-out
+  if (isCheckInOnly && (attendance.check_in_at || attendance.check_in_time)) {
+    return attendance.is_late ? 'Present (Late)' : 'Present'
+  }
+
   const status = attendance.status
   if (status === 'present') return 'Present'
   if (status === 'late') return 'Present (Late)'
   if (status === 'incomplete') return attendance.is_late ? 'Incomplete (Late)' : 'Incomplete'
   if (status === 'absent') {
-    // Double-check if event has actually ended
     if (event && !hasEventEndedPH(event)) {
       return hasEventStartedPH(event) ? 'Ongoing' : 'Upcoming'
     }
