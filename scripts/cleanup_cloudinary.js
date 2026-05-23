@@ -38,16 +38,10 @@ if (process.env.CLOUDINARY_URL) {
         api_key:    url.username,
         api_secret: decodeURIComponent(url.password),
     });
-} else if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-    cloudinary.config({
-        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-        api_key:    process.env.CLOUDINARY_API_KEY,
-        api_secret: process.env.CLOUDINARY_API_SECRET,
-    });
 } else {
     console.error(
         '❌  Missing Cloudinary credentials.\n' +
-        '    Set CLOUDINARY_URL  — or —  CLOUDINARY_CLOUD_NAME + CLOUDINARY_API_KEY + CLOUDINARY_API_SECRET.'
+        '    Set CLOUDINARY_URL in your .env file.'
     );
     process.exit(1);
 }
