@@ -7458,7 +7458,7 @@ const refreshAllData = async () => {
       const studentsResponse = await Promise.race([
         fetch(buildAPIUrl(`/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`), {
           method: 'GET',
-          headers: getFetchHeaders({ 'Authorization': `Bearer SSAAMStudents` })
+          headers: getFetchHeaders({ 'Authorization': `Bearer ${localStorage.getItem('authToken')}` })
         }),
         new Promise((_, reject) => 
           setTimeout(() => reject(new Error('Students fetch timeout')), 8000)
@@ -11969,7 +11969,7 @@ onMounted(async () => {
       // Fetch only current page (10-20 students)
       const response = await fetch(buildAPIUrl(`/apis/students?page=${currentPageNum.value}&limit=${itemsPerPage.value}`), {
         method: 'GET',
-        headers: getFetchHeaders({ 'Authorization': `Bearer SSAAMStudents` })
+        headers: getFetchHeaders({ 'Authorization': `Bearer ${localStorage.getItem('authToken')}` })
       })
       const result = await response.json()
       const pageData = result.data || result
@@ -12286,7 +12286,7 @@ const toggleRfidList = async (type) => {
     const response = await fetch(buildAPIUrl(`/apis/students?limit=1000`), {
       method: 'GET',
       headers: getFetchHeaders({
-        'Authorization': `Bearer SSAAMStudents`
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
       })
     })
     
@@ -13525,12 +13525,12 @@ const scanAllForDuplicates = async () => {
   autoScanResults.value = []
   
   try {
-    // Fetch all students using the student API key
+    // Fetch all students using admin auth token
     const response = await fetch(buildAPIUrl('/apis/students?limit=10000'), {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer SSAAMStudents'
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
       }
     })
     
@@ -15439,7 +15439,7 @@ const fetchSessionLogs = async (sessionId, loadMore = false) => {
             const studentsResponse = await fetch(buildAPIUrl(`/apis/students?limit=10000`), {
               method: 'GET',
               headers: {
-                'Authorization': 'Bearer SSAAMStudents',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
                 'X-SSAAM-TS': encodeTimestamp()
               }
             })
@@ -15688,7 +15688,7 @@ const fetchEventLogs = async (eventId) => {
           const studentsResponse = await fetch(buildAPIUrl(`/apis/students?limit=10000`), {
             method: 'GET',
             headers: {
-              'Authorization': 'Bearer SSAAMStudents',
+              'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
               'X-SSAAM-TS': encodeTimestamp()
             }
           })

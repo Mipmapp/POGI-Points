@@ -3280,7 +3280,7 @@ app.get('/apis/health', (req, res) => {
 });
 
 
-app.get('/apis/students', studentAuth, async (req, res) => {
+app.get('/apis/students', auth, async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
