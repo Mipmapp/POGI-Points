@@ -4125,6 +4125,21 @@ app.put('/apis/students/:student_id/photo', studentAuthWithToken, async (req, re
     }
 });
 
+// Upload a base64 image string to Cloudinary and return { url, public_id }
+async function uploadToCloudinary(base64Image) {
+    // Strip data-URL prefix if present
+    const dataUri = base64Image.startsWith('data:')
+        ? base64Image
+        : `data:image/jpeg;base64,${base64Image}`;
+
+    const result = await cloudinary.uploader.upload(dataUri, {
+        folder: 'app_uploads',
+        resource_type: 'image',
+    });
+
+    return { url: result.secure_url, public_id: result.public_id };
+}
+
 // Upload image to Cloudinary
 app.post('/apis/upload-image', auth, async (req, res) => {
     try {
