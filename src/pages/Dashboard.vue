@@ -13935,7 +13935,7 @@ const handleEditImageUpload = async (event) => {
     
     showNotification('Uploading image...', 'info')
 
-    const res = await fetch('https://ssaam-api.vercel.app/apis/upload-image', {
+    const res = await fetch(buildAPIUrl('/apis/upload-image'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -14026,7 +14026,7 @@ const handleStudentPhotoUpload = async (event) => {
     
     for (let attempt = 1; attempt <= maxUploadRetries; attempt++) {
       try {
-        const res = await fetch('https://ssaam-api.vercel.app/apis/upload-image', {
+        const res = await fetch(buildAPIUrl('/apis/upload-image'), {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
