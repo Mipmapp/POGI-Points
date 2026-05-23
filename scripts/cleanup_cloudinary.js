@@ -24,30 +24,33 @@ import { v2 as cloudinary } from 'cloudinary';
 
 dotenv.config();
 
-const {
-    MONGODB_URL,
-    CLOUDINARY_CLOUD_NAME,
-    CLOUDINARY_API_KEY,
-    CLOUDINARY_API_SECRET,
-} = process.env;
+const { MONGODB_URL } = process.env;
 
 if (!MONGODB_URL) {
     console.error('❌  MONGODB_URL environment variable is not set.');
     process.exit(1);
 }
-if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_API_KEY || !CLOUDINARY_API_SECRET) {
+
+if (process.env.CLOUDINARY_URL) {
+    const url = new URL(process.env.CLOUDINARY_URL);
+    cloudinary.config({
+        cloud_name: url.hostname,
+        api_key:    url.username,
+        api_secret: decodeURIComponent(url.password),
+    });
+} else if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+    cloudinary.config({
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key:    process.env.CLOUDINARY_API_KEY,
+        api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+} else {
     console.error(
         '❌  Missing Cloudinary credentials.\n' +
-        '    Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.'
+        '    Set CLOUDINARY_URL  — or —  CLOUDINARY_CLOUD_NAME + CLOUDINARY_API_KEY + CLOUDINARY_API_SECRET.'
     );
     process.exit(1);
 }
-
-cloudinary.config({
-    cloud_name: CLOUDINARY_CLOUD_NAME,
-    api_key:    CLOUDINARY_API_KEY,
-    api_secret: CLOUDINARY_API_SECRET,
-});
 
 const DRY_RUN = !process.argv.includes('--delete');
 const CLOUDINARY_FOLDER = 'app_uploads';
