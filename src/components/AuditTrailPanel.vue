@@ -168,7 +168,7 @@
               </div>
 
               <!-- Who performed the action — shown prominently under the action label -->
-              <div v-if="log.admin_name || log.admin_full_name || log.admin_student_id" class="mt-1 flex items-center gap-1.5">
+              <div class="mt-1 flex items-center gap-1.5">
                 <img
                   v-if="log.admin_photo"
                   :src="log.admin_photo"
@@ -177,10 +177,10 @@
                   @error="e => e.target.style.display='none'"
                 />
                 <div v-else :class="['w-5 h-5 rounded-full flex items-center justify-center text-white text-[8px] font-bold flex-shrink-0', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-500']">
-                  {{ initials(log.admin_full_name || log.admin_name) }}
+                  {{ initials(log.admin_full_name || log.admin_name || 'Unknown') }}
                 </div>
                 <span class="text-xs font-semibold text-gray-700 truncate">
-                  {{ log.admin_full_name || log.admin_name || log.admin_student_id }}
+                  {{ log.admin_full_name || log.admin_name || log.admin_student_id || 'Unknown Admin' }}
                 </span>
                 <span v-if="log.admin_student_id && log.admin_student_id !== (log.admin_full_name || log.admin_name)"
                   class="text-[10px] font-mono bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-md flex-shrink-0">
@@ -283,7 +283,7 @@ async function fetchLogs() {
   loading.value = true
   error.value = ''
   try {
-    const token = localStorage.getItem('authToken') || localStorage.getItem('token')
+    const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken') || localStorage.getItem('token')
     const headers = { ...getDefaultHeaders(), 'Authorization': `Bearer ${token}` }
     const res = await fetch(buildAPIUrl('/apis/audit-trail'), { headers })
     if (!res.ok) {

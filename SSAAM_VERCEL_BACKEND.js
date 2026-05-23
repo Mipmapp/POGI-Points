@@ -2173,20 +2173,19 @@ const CNAHS_AuditTrail= mongoose.model('CNAHS_AuditTrail', auditTrailSchema, 'cn
 
 async function logAudit(college, master, action, target_type, target_id, target_label, details = {}) {
     try {
-        // The auth middleware often sets req.master to the decoded JWT payload,
-        // which only carries { id, username, email, isMaster } — no full_name or role.
-        // Do a lightweight DB lookup so we always store accurate display data.
-        let adminName = master?.full_name || master?.username || '';
+        // Always do a fresh DB lookup so audit logs always show the real full
+        // name and role — not just the minimal fields from the JWT payload.
+        let adminName = master?.username || '';
         let adminRole = master?.role || '';
         const adminDbId = master?._id || master?.id;
-        if (adminDbId && (!master?.full_name || !master?.role)) {
+        if (adminDbId) {
             try {
                 const freshMaster = await Master.findById(adminDbId).select('full_name username role').lean();
                 if (freshMaster) {
                     adminName = freshMaster.full_name || freshMaster.username || adminName;
                     adminRole = freshMaster.role || adminRole;
                 }
-            } catch (_) { /* non-fatal — fall back to what we already have */ }
+            } catch (lookupErr) { console.error('[Audit] name lookup error:', lookupErr.message); }
         }
         const AuditModel = getCollegeModel(AuditTrail, CCS_AuditTrail, COE_AuditTrail, college);
         await AuditModel.create({
@@ -2537,28 +2536,6 @@ const PasswordReset = mongoose.model("PasswordReset", passwordResetSchema);
 
 
 
-// ── Student Change Requests ──────────────────────────────────────────────────
-// Single global collection with a `college` field so super-admin can query
-// across all colleges and co-admins can filter to their own.
-const changeRequestSchema = new mongoose.Schema({
-    student_id:   { type: String, required: true },
-    student_name: { type: String, default: '' },
-    college:      { type: String, required: true },
-    type:         { type: String, enum: ['name', 'department'], required: true },
-    new_value:    { type: String, required: true },
-    first_name:   { type: String, default: '' },
-    middle_name:  { type: String, default: '' },
-    last_name:    { type: String, default: '' },
-    suffix:       { type: String, default: '' },
-    reason:       { type: String, required: true, maxlength: 500 },
-    status:       { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-    admin_note:   { type: String, default: '' },
-    reviewed_by:  { type: String, default: '' },
-    reviewed_at:  { type: Date, default: null },
-    created_at:   { type: Date, default: Date.now }
-});
-const ChangeRequest = mongoose.model('ChangeRequest', changeRequestSchema, 'change_requests');
-// ────────────────────────────────────────────────────────────────────────────
 
 
 // ==================== ATTENDANCE SCHEMAS ====================
@@ -8708,145 +8685,6 @@ app.get('/apis/student/raffle-ticket', studentAuthWithToken, async (req, res) =>
             student_id_number: req.student.student_id
         }).sort({ submitted_at: -1 });
         res.json({ success: true, data: entries });
-    } catch (err) {
-        internalError(res, err);
-    }
-});
-
-// ════════════════════════════════════════════════════════════════════════════
-// STUDENT CHANGE REQUESTS
-// ════════════════════════════════════════════════════════════════════════════
-
-// Student: submit a new change request
-app.post('/apis/requests', studentAuthWithToken, async (req, res) => {
-    try {
-        const student = req.student;
-        const { type, new_value, first_name, middle_name, last_name, suffix, reason } = req.body;
-
-        if (!type || !['name', 'department'].includes(type))
-            return res.status(400).json({ message: 'Invalid request type.' });
-        if (!reason || !reason.trim())
-            return res.status(400).json({ message: 'Reason is required.' });
-        if (!new_value || !new_value.trim())
-            return res.status(400).json({ message: 'New value is required.' });
-
-        // Block duplicate pending requests of the same type
-        const existing = await ChangeRequest.findOne({ student_id: student.student_id, type, status: 'pending' });
-        if (existing)
-            return res.status(409).json({ message: 'You already have a pending request of this type. Wait for it to be reviewed first.' });
-
-        const request = new ChangeRequest({
-            student_id:   student.student_id,
-            student_name: `${student.first_name || ''} ${student.last_name || ''}`.trim().toUpperCase(),
-            college:      req.college || student.college || 'CCS',
-            type,
-            new_value:    new_value.trim(),
-            first_name:   (first_name || '').trim(),
-            middle_name:  (middle_name || '').trim(),
-            last_name:    (last_name || '').trim(),
-            suffix:       (suffix || '').trim(),
-            reason:       reason.trim().slice(0, 500)
-        });
-        await request.save();
-        res.status(201).json({ message: 'Request submitted successfully.', request });
-    } catch (err) {
-        internalError(res, err);
-    }
-});
-
-// Student: view their own requests
-app.get('/apis/requests/my', studentAuthWithToken, async (req, res) => {
-    try {
-        const requests = await ChangeRequest.find({ student_id: req.student.student_id })
-            .sort({ created_at: -1 })
-            .limit(50);
-        res.json(requests);
-    } catch (err) {
-        internalError(res, err);
-    }
-});
-
-// Admin / Co-admin: list requests
-// - Co-admin sees only their own college
-// - Super-admin sees all (or filtered by ?college=)
-app.get('/apis/requests', auth, requireCoAdminOrAbove, async (req, res) => {
-    try {
-        const { status, college } = req.query;
-        const filter = {};
-
-        const isSuperAdminRole = req.master && req.master.role === 'admin';
-        if (!isSuperAdminRole) {
-            filter.college = req.college;
-        } else if (college && VALID_COLLEGES.includes(college.toUpperCase())) {
-            filter.college = college.toUpperCase();
-        }
-
-        if (status && ['pending', 'approved', 'rejected'].includes(status))
-            filter.status = status;
-
-        const requests = await ChangeRequest.find(filter).sort({ created_at: -1 }).limit(300);
-        const pendingFilter = { ...filter, status: 'pending' };
-        delete pendingFilter.status; // re-count all pending (regardless of the status filter)
-        if (!isSuperAdminRole) pendingFilter.college = req.college;
-        const pending_count = await ChangeRequest.countDocuments({ ...pendingFilter, status: 'pending' });
-
-        res.json({ requests, pending_count });
-    } catch (err) {
-        internalError(res, err);
-    }
-});
-
-// Admin: approve a request — auto-applies name changes to the student record
-app.put('/apis/requests/:id/approve', auth, requireCoAdminOrAbove, async (req, res) => {
-    try {
-        const request = await ChangeRequest.findById(req.params.id);
-        if (!request) return res.status(404).json({ message: 'Request not found.' });
-        if (request.status !== 'pending')
-            return res.status(409).json({ message: 'This request has already been reviewed.' });
-
-        if (request.type === 'name') {
-            const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, request.college);
-            const student = await StudentModel.findOne({ student_id: request.student_id });
-            if (student) {
-                if (request.first_name)  student.first_name  = request.first_name;
-                if (request.last_name)   student.last_name   = request.last_name;
-                student.middle_name = request.middle_name;
-                student.suffix      = request.suffix;
-                student.full_name   = [student.first_name, student.middle_name, student.last_name, student.suffix]
-                    .filter(Boolean).join(' ').toUpperCase();
-                await student.save();
-            }
-        }
-        // Department changes: approved status is recorded but the admin must
-        // manually reassign the student via Manage — cross-collection moves are complex.
-
-        request.status      = 'approved';
-        request.reviewed_by = req.master ? (req.master.name || req.master.username || 'Admin') : 'Admin';
-        request.reviewed_at = new Date();
-        await request.save();
-
-        res.json({ message: 'Request approved.', request });
-    } catch (err) {
-        internalError(res, err);
-    }
-});
-
-// Admin: reject a request with an optional note
-app.put('/apis/requests/:id/reject', auth, requireCoAdminOrAbove, async (req, res) => {
-    try {
-        const { admin_note } = req.body;
-        const request = await ChangeRequest.findById(req.params.id);
-        if (!request) return res.status(404).json({ message: 'Request not found.' });
-        if (request.status !== 'pending')
-            return res.status(409).json({ message: 'This request has already been reviewed.' });
-
-        request.status      = 'rejected';
-        request.admin_note  = (admin_note || '').trim().slice(0, 300);
-        request.reviewed_by = req.master ? (req.master.name || req.master.username || 'Admin') : 'Admin';
-        request.reviewed_at = new Date();
-        await request.save();
-
-        res.json({ message: 'Request rejected.', request });
     } catch (err) {
         internalError(res, err);
     }

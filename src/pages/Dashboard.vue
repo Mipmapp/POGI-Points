@@ -720,10 +720,6 @@
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
           <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
         </button>
-        <button v-if="(isAdminLike) && !isTreasurer && inRoleView" @click="currentPage = 'admin-requests'; fetchAdminRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'admin-requests' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          <span class="flex items-center gap-2">Requests <span v-if="pendingRequestsCount > 0" class="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingRequestsCount }}</span></span>
-        </button>
         <button v-if="(isAdminLike) && !isTreasurer && !isCoAdmin && inRoleView" @click="currentPage = 'settings'; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
           <span>Settings</span>
@@ -747,10 +743,6 @@
         <button v-if="(isTreasurer || isCoAdmin) && inRoleView" @click="currentPage = 'audit-trail'" :class="[sidebarItemBase, 'mt-2', currentPage === 'audit-trail' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
           <span>Audit Trail</span>
-        </button>
-        <button v-if="inUserView || (!isAdminLike && !canSwitchView)" @click="currentPage = 'request'; fetchStudentRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'request' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-          <span>Request</span>
         </button>
         <button v-if="!isAdminLike || inUserView" @click="currentPage = 'my-contributions'; fetchMyPayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-contributions' ? sidebarItemActive : sidebarItemHover]">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -867,10 +859,6 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
           </button>
-          <button v-if="(isAdminLike) && !isTreasurer && inRoleView" @click="currentPage = 'admin-requests'; showMobileMenu = false; fetchAdminRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'admin-requests' ? sidebarItemActive : sidebarItemHover]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            <span class="flex items-center gap-2">Requests <span v-if="pendingRequestsCount > 0" class="bg-amber-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingRequestsCount }}</span></span>
-          </button>
           <button v-if="(currentUser.role === 'admin' || isSuperAdmin) && inRoleView" @click="currentPage = 'settings'; showMobileMenu = false; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
             <span>Settings</span>
@@ -894,10 +882,6 @@
           <button v-if="(isTreasurer || isCoAdmin) && inRoleView" @click="currentPage = 'audit-trail'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'audit-trail' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
             <span>Audit Trail</span>
-          </button>
-          <button v-if="inUserView || (!isAdminLike && !canSwitchView)" @click="currentPage = 'request'; showMobileMenu = false; fetchStudentRequests()" :class="[sidebarItemBase, 'mt-2', currentPage === 'request' ? sidebarItemActive : sidebarItemHover]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            <span>Request</span>
           </button>
           <button v-if="!isAdminLike || inUserView" @click="currentPage = 'my-contributions'; showMobileMenu = false; fetchMyPayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-contributions' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -975,7 +959,7 @@
 
       <Transition name="section-fade" mode="out-in">
       <div :key="currentPage" class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'admin-requests' ? 'Student Requests' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'raffle-tickets' ? 'Raffle Ticket' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'my-raffle' ? 'My Raffle Results' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'request' ? 'Request' : currentPage === 'location' ? 'Location' : currentPage === 'audit-trail' ? (isTreasurer ? 'My Audit Trail' : 'College Audit Trail') : currentPage === 'dashboard' && (isAdminLike) && inRoleView ? 'Statistics' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'raffle-tickets' ? 'Raffle Ticket' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'my-raffle' ? 'My Raffle Results' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'location' ? 'Location' : currentPage === 'audit-trail' ? (isTreasurer ? 'My Audit Trail' : 'College Audit Trail') : currentPage === 'dashboard' && (isAdminLike) && inRoleView ? 'Statistics' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-4 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
@@ -3446,300 +3430,6 @@
                     :isSOM="isSOM"
                   />
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Admin: Student Requests Section -->
-        <div v-if="currentPage === 'admin-requests' && isAdminLike" class="space-y-6">
-          <!-- Header -->
-          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
-              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-              <div class="light-sweep"></div>
-              <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                </div>
-                <div class="min-w-0">
-                  <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Student Requests</h2>
-                  <p class="text-white/70 text-xs sm:text-sm mt-0.5">Review name and college change requests from students.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Filters -->
-          <div class="bg-white rounded-2xl shadow border border-gray-100 p-4 md:p-5 flex flex-wrap gap-3 items-end">
-            <!-- College filter (super-admin only) -->
-            <div v-if="isSuperAdmin" class="flex flex-col gap-1 min-w-[140px]">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">College</label>
-              <select v-model="adminRequestCollegeFilter" @change="fetchAdminRequests()" class="px-3 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 bg-gray-50">
-                <option value="">All Colleges</option>
-                <option value="CCS">CCS</option>
-                <option value="COE">COE</option>
-                <option value="SOM">SOM</option>
-                <option value="CNAHS">CNAHS</option>
-              </select>
-            </div>
-            <!-- Status filter -->
-            <div class="flex flex-col gap-1 min-w-[140px]">
-              <label class="text-xs font-bold text-gray-500 uppercase tracking-widest">Status</label>
-              <select v-model="adminRequestStatusFilter" @change="fetchAdminRequests()" class="px-3 py-2 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-blue-400 bg-gray-50">
-                <option value="">All Statuses</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
-            </div>
-            <!-- Refresh -->
-            <button @click="fetchAdminRequests()" :disabled="adminRequestsLoading" :class="['px-4 py-2 rounded-xl text-white text-sm font-bold transition flex items-center gap-2 bg-gradient-to-r', primaryButtonGradient, primaryButtonHover, 'disabled:opacity-60 disabled:cursor-not-allowed']">
-              <svg :class="{'animate-spin': adminRequestsLoading}" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              Refresh
-            </button>
-          </div>
-
-          <!-- Loading -->
-          <div v-if="adminRequestsLoading" class="flex items-center justify-center py-16">
-            <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-          </div>
-
-          <!-- Empty state -->
-          <div v-else-if="adminRequests.length === 0" class="bg-white rounded-3xl shadow border border-gray-100 flex flex-col items-center justify-center py-16 gap-3">
-            <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center">
-              <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-            </div>
-            <p class="text-gray-500 font-medium">No requests found.</p>
-          </div>
-
-          <!-- Request cards -->
-          <div v-else class="space-y-3">
-            <div v-for="req in adminRequests" :key="req._id" :class="['bg-white rounded-2xl shadow-sm border overflow-hidden transition hover:shadow-md', req.status === 'pending' ? 'border-amber-200' : req.status === 'approved' ? 'border-green-200' : 'border-red-200']">
-              <!-- Card top color strip -->
-              <div :class="['h-1 w-full', req.status === 'pending' ? 'bg-amber-400' : req.status === 'approved' ? 'bg-green-400' : 'bg-red-400']"></div>
-              <div class="p-4 sm:p-5">
-                <!-- Top row: student name + status badges -->
-                <div class="flex flex-wrap items-start justify-between gap-2 mb-3">
-                  <div class="flex-1 min-w-0">
-                    <p class="font-bold text-gray-900 text-sm leading-tight">{{ req.student_name || req.student_id }}</p>
-                    <p class="text-[11px] text-gray-400 font-mono mt-0.5">{{ req.student_id }}</p>
-                  </div>
-                  <div class="flex flex-wrap gap-1.5 flex-shrink-0">
-                    <span :class="['px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap', req.type === 'name' ? 'bg-blue-100 text-blue-700' : 'bg-purple-100 text-purple-700']">
-                      {{ req.type === 'name' ? '✏️ Name Change' : '🏫 College Change' }}
-                    </span>
-                    <span :class="['px-2.5 py-1 rounded-full text-[11px] font-bold whitespace-nowrap', req.status === 'pending' ? 'bg-amber-100 text-amber-700' : req.status === 'approved' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
-                      {{ req.status === 'pending' ? '⏳ Pending' : req.status === 'approved' ? '✓ Approved' : '✕ Rejected' }}
-                    </span>
-                    <span v-if="isSuperAdmin && req.college" class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-gray-100 text-gray-600">{{ req.college }}</span>
-                  </div>
-                </div>
-
-                <!-- Detail grid -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
-                  <div class="bg-gray-50 rounded-xl px-3 py-2.5">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Requested Value</p>
-                    <p class="text-sm font-bold text-gray-800 break-words">{{ req.new_value }}</p>
-                  </div>
-                  <div class="bg-gray-50 rounded-xl px-3 py-2.5">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Submitted</p>
-                    <p class="text-xs text-gray-700 font-medium">{{ new Date(req.created_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}</p>
-                  </div>
-                </div>
-
-                <!-- Reason -->
-                <div class="mb-3 bg-gray-50 rounded-xl px-3 py-2.5">
-                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">Reason</p>
-                  <p class="text-xs text-gray-700 leading-relaxed">{{ req.reason }}</p>
-                </div>
-
-                <div v-if="req.admin_note" class="mb-3 bg-red-50 border border-red-100 rounded-xl px-3 py-2.5">
-                  <p class="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-0.5">Admin Note</p>
-                  <p class="text-xs text-red-700 italic">{{ req.admin_note }}</p>
-                </div>
-                <div v-if="req.reviewed_by" class="text-[10px] text-gray-400 mb-3">
-                  Reviewed by <span class="font-semibold">{{ req.reviewed_by }}</span> · {{ new Date(req.reviewed_at).toLocaleString('en-PH', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
-                </div>
-                <div v-if="req.status === 'approved' && req.type === 'department'" class="mb-3 text-xs text-amber-700 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
-                  ⚠️ Department changes require manually reassigning the student via Manage.
-                </div>
-
-                <!-- Action buttons (pending only) — full-width on mobile -->
-                <div v-if="req.status === 'pending'" class="flex flex-col sm:flex-row gap-2 pt-1">
-                  <button @click="approveAdminRequest(req._id)" :disabled="adminRequestActing === req._id" class="flex-1 py-2.5 px-4 rounded-xl text-white text-sm font-bold transition flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed shadow-sm shadow-green-100">
-                    <svg v-if="adminRequestActing === req._id" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"></path></svg>
-                    Approve
-                  </button>
-                  <button @click="openRejectAdminRequest(req)" :disabled="adminRequestActing === req._id" class="flex-1 py-2.5 px-4 rounded-xl text-white text-sm font-bold transition flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed shadow-sm shadow-red-100">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path></svg>
-                    Reject
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Reject Request Modal -->
-        <div v-if="rejectAdminRequestModal.open" class="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" @click.self="rejectAdminRequestModal.open = false">
-          <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-4">
-            <h3 class="text-lg font-bold text-gray-900">Reject Request</h3>
-            <p class="text-sm text-gray-600">Optionally add a note explaining why this request is being rejected. The student will see this note.</p>
-            <textarea v-model="rejectAdminRequestModal.note" rows="3" placeholder="Reason for rejection (optional)..." class="w-full px-4 py-3 border-2 border-gray-200 rounded-2xl outline-none text-sm resize-none focus:border-red-400 bg-gray-50 focus:bg-white transition"></textarea>
-            <div class="flex gap-3">
-              <button @click="rejectAdminRequestModal.open = false" class="flex-1 py-2.5 rounded-xl border-2 border-gray-200 text-gray-700 font-bold text-sm hover:bg-gray-50 transition">Cancel</button>
-              <button @click="confirmRejectAdminRequest()" :disabled="adminRequestActing === rejectAdminRequestModal.id" class="flex-1 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-sm transition disabled:opacity-60">
-                {{ adminRequestActing === rejectAdminRequestModal.id ? 'Rejecting...' : 'Confirm Reject' }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Student Request Section -->
-        <div v-if="currentPage === 'request' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-6">
-          <!-- Header Banner -->
-          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
-              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-              <div class="light-sweep"></div>
-              <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/20">
-                  <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                </div>
-                <div class="min-w-0">
-                  <h2 class="text-base sm:text-xl md:text-2xl font-extrabold text-white tracking-tight leading-tight">Submit a Request</h2>
-                  <p class="text-white/70 text-xs sm:text-sm mt-0.5 line-clamp-1">Request changes to your name or college/department.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Past Requests -->
-          <div v-if="studentRequests.length > 0" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <div class="px-4 sm:px-6 md:px-8 py-3.5 sm:py-5 border-b border-gray-100 flex items-center gap-2">
-              <div :class="['w-1 h-5 rounded-full flex-shrink-0', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : isCNAHS ? 'bg-emerald-500' : 'bg-blue-600']"></div>
-              <h3 :class="['text-xs sm:text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-blue-800']">Your Past Requests</h3>
-            </div>
-            <div class="p-3 sm:p-4 md:p-6 space-y-2.5 sm:space-y-3">
-              <div v-for="req in studentRequests" :key="req._id" :class="['rounded-2xl border p-4 text-sm transition hover:shadow-sm', req.status === 'approved' ? 'bg-green-50 border-green-200' : req.status === 'rejected' ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200']">
-                <div class="flex items-start justify-between gap-3 flex-wrap">
-                  <div class="flex-1">
-                    <div class="flex items-center gap-2 mb-1">
-                      <svg v-if="req.type === 'name'" class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                      <svg v-else class="w-4 h-4 text-gray-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                      <span class="font-semibold text-gray-800">{{ req.type === 'name' ? 'Name Change' : 'Department Change' }}</span>
-                    </div>
-                    <p class="text-gray-500 text-xs leading-relaxed">{{ req.reason }}</p>
-                    <p v-if="req.new_value" class="text-gray-500 text-xs mt-1.5">New value: <span class="font-semibold text-gray-700">{{ req.new_value }}</span></p>
-                    <p v-if="req.admin_note" class="mt-1.5 text-xs text-gray-500 italic">Admin note: {{ req.admin_note }}</p>
-                    <p class="text-[10px] text-gray-400 mt-2">{{ new Date(req.created_at).toLocaleString() }}</p>
-                  </div>
-                  <span :class="['px-3 py-1 rounded-full text-[11px] font-bold whitespace-nowrap flex-shrink-0', req.status === 'approved' ? 'bg-green-100 text-green-700' : req.status === 'rejected' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700']">
-                    {{ req.status === 'approved' ? '✓ Approved' : req.status === 'rejected' ? '✕ Rejected' : '⏳ Pending' }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- New Request Form -->
-          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <div class="px-4 sm:px-6 md:px-8 py-3.5 sm:py-5 border-b border-gray-100 flex items-center gap-2">
-              <div :class="['w-1 h-5 rounded-full flex-shrink-0', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-500' : isCNAHS ? 'bg-emerald-500' : 'bg-blue-600']"></div>
-              <h3 :class="['text-xs sm:text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-blue-800']">New Request</h3>
-            </div>
-
-            <div class="p-4 sm:p-6 md:p-8 space-y-4 sm:space-y-6">
-              <!-- Request Type Toggle -->
-              <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Request Type</label>
-                <div class="grid grid-cols-2 gap-3">
-                  <button @click="newRequest.type = 'name'" :class="['flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all text-sm font-semibold', newRequest.type === 'name' ? (isCOE ? 'bg-orange-50 border-orange-400 text-orange-700' : isSOM ? 'bg-green-50 border-green-400 text-green-700' : isCNAHS ? 'bg-emerald-50 border-emerald-400 text-emerald-700' : 'bg-blue-50 border-blue-500 text-blue-700') : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300']">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                    <span>Name Change</span>
-                  </button>
-                  <button @click="newRequest.type = 'department'" :class="['flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all text-sm font-semibold', newRequest.type === 'department' ? (isCOE ? 'bg-orange-50 border-orange-400 text-orange-700' : isSOM ? 'bg-green-50 border-green-400 text-green-700' : isCNAHS ? 'bg-emerald-50 border-emerald-400 text-emerald-700' : 'bg-blue-50 border-blue-500 text-blue-700') : 'bg-gray-50 border-gray-200 text-gray-500 hover:border-gray-300']">
-                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                    <span>College Change</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Name Change Fields -->
-              <div v-if="newRequest.type === 'name'" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label :class="['block text-xs font-bold mb-1.5', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-blue-700']">First Name <span class="text-red-500">*</span></label>
-                    <input v-model="newRequest.first_name" type="text" placeholder="e.g. Juan" :class="['w-full px-4 py-3 border-2 rounded-2xl outline-none text-sm font-medium transition bg-gray-50 focus:bg-white', isCOE ? 'focus:ring-0 focus:border-orange-400 border-gray-200' : isSOM ? 'focus:ring-0 focus:border-green-400 border-gray-200' : isCNAHS ? 'focus:ring-0 focus:border-emerald-400 border-gray-200' : 'focus:ring-0 focus:border-blue-400 border-gray-200']" />
-                  </div>
-                  <div>
-                    <label class="block text-xs font-bold mb-1.5 text-gray-400">Middle Name <span class="font-normal">(optional)</span></label>
-                    <input v-model="newRequest.middle_name" type="text" placeholder="e.g. Dela Cruz" :class="['w-full px-4 py-3 border-2 rounded-2xl outline-none text-sm font-medium transition bg-gray-50 focus:bg-white', isCOE ? 'focus:ring-0 focus:border-orange-400 border-gray-200' : isSOM ? 'focus:ring-0 focus:border-green-400 border-gray-200' : isCNAHS ? 'focus:ring-0 focus:border-emerald-400 border-gray-200' : 'focus:ring-0 focus:border-blue-400 border-gray-200']" />
-                  </div>
-                  <div>
-                    <label :class="['block text-xs font-bold mb-1.5', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-blue-700']">Last Name <span class="text-red-500">*</span></label>
-                    <input v-model="newRequest.last_name" type="text" placeholder="e.g. Santos" :class="['w-full px-4 py-3 border-2 rounded-2xl outline-none text-sm font-medium transition bg-gray-50 focus:bg-white', isCOE ? 'focus:ring-0 focus:border-orange-400 border-gray-200' : isSOM ? 'focus:ring-0 focus:border-green-400 border-gray-200' : isCNAHS ? 'focus:ring-0 focus:border-emerald-400 border-gray-200' : 'focus:ring-0 focus:border-blue-400 border-gray-200']" />
-                  </div>
-                  <div>
-                    <label class="block text-xs font-bold mb-1.5 text-gray-400">Suffix <span class="font-normal">(optional)</span></label>
-                    <select v-model="newRequest.suffix" :class="['w-full px-4 py-3 border-2 rounded-2xl outline-none text-sm font-medium transition bg-gray-50 focus:bg-white', isCOE ? 'focus:ring-0 focus:border-orange-400 border-gray-200' : isSOM ? 'focus:ring-0 focus:border-green-400 border-gray-200' : isCNAHS ? 'focus:ring-0 focus:border-emerald-400 border-gray-200' : 'focus:ring-0 focus:border-blue-400 border-gray-200']">
-                      <option value="">None</option>
-                      <option>Jr.</option>
-                      <option>Sr.</option>
-                      <option>II</option>
-                      <option>III</option>
-                      <option>IV</option>
-                      <option>V</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- Live Preview -->
-                <div v-if="newRequest.first_name || newRequest.last_name" :class="['p-4 rounded-2xl border-2 border-dashed', isCOE ? 'border-orange-200 bg-orange-50/50' : isSOM ? 'border-green-200 bg-green-50/50' : isCNAHS ? 'border-emerald-200 bg-emerald-50/50' : 'border-blue-200 bg-blue-50/50']">
-                  <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Live Preview</p>
-                  <p :class="['text-base font-bold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-blue-700']">
-                    {{ [newRequest.first_name, newRequest.middle_name, newRequest.last_name, newRequest.suffix].filter(v => v && v.trim()).join(' ') }}
-                  </p>
-                  <p class="text-[10px] text-gray-400 mt-1">This is how your name will appear after the request is approved.</p>
-                </div>
-                <p class="text-xs text-gray-400">This request will be sent to your college admin for review.</p>
-              </div>
-
-              <!-- Department Change Field -->
-              <div v-if="newRequest.type === 'department'" class="space-y-3">
-                <label :class="['block text-xs font-bold mb-1.5 uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-blue-700']">Select New College / Department</label>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <button v-for="col in [{v:'CCS',label:'College of Computing Studies',color:'blue'},{v:'COE',label:'College of Engineering',color:'orange'},{v:'SOM',label:'School of Midwifery',color:'green'},{v:'CNAHS',label:'College of Nursing and Allied Health Sciences',color:'emerald'}]" :key="col.v" @click="newRequest.new_value = col.v" :class="['flex items-center gap-3 p-3 rounded-2xl border-2 transition-all text-left', newRequest.new_value === col.v ? `bg-${col.color}-50 border-${col.color}-400` : 'bg-gray-50 border-gray-200 hover:border-gray-300']">
-                    <img :src="`/icons/${col.v.toLowerCase()}.svg`" :alt="col.v" class="w-9 h-9 object-contain flex-shrink-0" />
-                    <div>
-                      <p :class="['text-sm font-bold', newRequest.new_value === col.v ? `text-${col.color}-700` : 'text-gray-700']">{{ col.v }}</p>
-                      <p :class="['text-[10px] leading-tight', newRequest.new_value === col.v ? `text-${col.color}-500` : 'text-gray-400']">{{ col.label }}</p>
-                    </div>
-                    <svg v-if="newRequest.new_value === col.v" :class="[`text-${col.color}-500`, 'w-5 h-5 ml-auto flex-shrink-0']" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
-                  </button>
-                </div>
-                <p class="text-xs text-gray-400">Department change requests are reviewed by the co-admin of the target college.</p>
-              </div>
-
-              <!-- Reason -->
-              <div>
-                <label :class="['block text-xs font-bold mb-1.5 uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-blue-700']">Reason <span class="text-red-500">*</span></label>
-                <textarea v-model="newRequest.reason" rows="4" placeholder="Briefly explain why you are requesting this change..." :class="['w-full px-4 py-3 border-2 rounded-2xl outline-none text-sm resize-none transition bg-gray-50 focus:bg-white', isCOE ? 'focus:border-orange-400 border-gray-200' : isSOM ? 'focus:border-green-400 border-gray-200' : isCNAHS ? 'focus:border-emerald-400 border-gray-200' : 'focus:border-blue-400 border-gray-200']"></textarea>
-                <p class="text-[10px] text-gray-400 mt-1">{{ (newRequest.reason || '').length }}/500 characters</p>
-              </div>
-
-              <!-- Submit Button -->
-              <div class="flex flex-col sm:flex-row gap-3 pt-2">
-                <button @click="submitStudentRequest" :disabled="requestSubmitting || !newRequest.type || !newRequest.reason.trim() || (newRequest.type === 'name' ? (!newRequest.first_name.trim() || !newRequest.last_name.trim()) : !newRequest.new_value.trim())" :class="['flex-1 py-3 px-6 rounded-2xl text-white font-bold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100 shadow-lg', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-600 shadow-orange-200' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-600 shadow-green-200' : isCNAHS ? 'bg-gradient-to-r from-emerald-500 to-green-700 shadow-emerald-200' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light shadow-blue-200']">
-                  <svg v-if="requestSubmitting" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                  {{ requestSubmitting ? 'Submitting...' : 'Submit Request' }}
-                </button>
               </div>
             </div>
           </div>
@@ -7314,14 +7004,9 @@ const adminProfileForm = ref({ full_name: '', phone: '', bio: '', photo: '', cur
 const transferTargetUsername = ref('')
 const transferringRole = ref(false)
 
-// Student Request System
-const studentRequests = ref([])
-const newRequest = ref({ type: '', new_value: '', first_name: '', middle_name: '', last_name: '', suffix: '', reason: '' })
 const allCollegesStats = ref({ CCS: null, COE: null, SOM: null, CNAHS: null })
 const allCollegesLoading = ref(false)
 const statsViewCollege = ref(null)
-const requestSubmitting = ref(false)
-
 // Co-Admin Management (isMaster only)
 const coAdmins = ref([])
 const treasurers = ref([])
@@ -12362,7 +12047,7 @@ onMounted(async () => {
     const isAdmin = currentUser.value.isMaster || currentUser.value.role === 'admin'
     // Only restore pages the current role can actually access
     const adminPages = ['manage', 'pending', 'attendance', 'contributions', 'settings', 'co-admins', 'raffle-tickets']
-    const studentPages = ['attendance', 'my-contributions', 'my-raffle', 'request']
+    const studentPages = ['attendance', 'my-contributions', 'my-raffle']
     const allowed = isAdmin ? adminPages : studentPages
     if (allowed.includes(savedPage)) {
       currentPage.value = savedPage
@@ -12370,7 +12055,6 @@ onMounted(async () => {
       if (savedPage === 'attendance') fetchAttendanceData()
       else if (savedPage === 'manage') handleManageClick()
       else if (savedPage === 'co-admins') fetchCoAdmins()
-      else if (savedPage === 'request') fetchStudentRequests()
     }
   }
 
@@ -13157,151 +12841,6 @@ const requestTransferRole = async () => {
     showNotification('Network error during transfer', 'error')
   } finally {
     transferringRole.value = false
-  }
-}
-
-// ============================================
-// ADMIN: STUDENT CHANGE REQUESTS
-// ============================================
-const adminRequests = ref([])
-const adminRequestsLoading = ref(false)
-const pendingRequestsCount = ref(0)
-const adminRequestStatusFilter = ref('pending')
-const adminRequestCollegeFilter = ref('')
-const adminRequestActing = ref(null)
-const rejectAdminRequestModal = ref({ open: false, id: null, note: '' })
-
-const fetchAdminRequests = async () => {
-  adminRequestsLoading.value = true
-  try {
-    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
-    const params = new URLSearchParams()
-    if (adminRequestStatusFilter.value) params.set('status', adminRequestStatusFilter.value)
-    if (adminRequestCollegeFilter.value) params.set('college', adminRequestCollegeFilter.value)
-    const res = await fetch(buildAPIUrl(`/apis/requests?${params.toString()}`), {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    if (res.ok) {
-      const data = await res.json()
-      adminRequests.value = data.requests || []
-      pendingRequestsCount.value = data.pending_count || 0
-    }
-  } catch {
-    // silent
-  } finally {
-    adminRequestsLoading.value = false
-  }
-}
-
-const approveAdminRequest = async (id) => {
-  adminRequestActing.value = id
-  try {
-    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
-    const res = await fetch(buildAPIUrl(`/apis/requests/${id}/approve`), {
-      method: 'PUT',
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    const data = await res.json()
-    if (res.ok) {
-      showNotification('Request approved and changes applied.', 'success')
-      await fetchAdminRequests()
-    } else {
-      showNotification(data.message || 'Failed to approve request', 'error')
-    }
-  } catch {
-    showNotification('Network error. Please try again.', 'error')
-  } finally {
-    adminRequestActing.value = null
-  }
-}
-
-const openRejectAdminRequest = (req) => {
-  rejectAdminRequestModal.value = { open: true, id: req._id, note: '' }
-}
-
-const confirmRejectAdminRequest = async () => {
-  const id = rejectAdminRequestModal.value.id
-  adminRequestActing.value = id
-  try {
-    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
-    const res = await fetch(buildAPIUrl(`/apis/requests/${id}/reject`), {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({ admin_note: rejectAdminRequestModal.value.note })
-    })
-    const data = await res.json()
-    if (res.ok) {
-      rejectAdminRequestModal.value.open = false
-      showNotification('Request rejected.', 'success')
-      await fetchAdminRequests()
-    } else {
-      showNotification(data.message || 'Failed to reject request', 'error')
-    }
-  } catch {
-    showNotification('Network error. Please try again.', 'error')
-  } finally {
-    adminRequestActing.value = null
-  }
-}
-
-// ============================================
-// STUDENT REQUEST SYSTEM
-// ============================================
-const fetchStudentRequests = async () => {
-  try {
-    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
-    const res = await fetch(buildAPIUrl('/apis/requests/my'), {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-    if (res.ok) {
-      const data = await res.json()
-      studentRequests.value = Array.isArray(data) ? data : (data.requests || [])
-    }
-  } catch {
-    // silent fail
-  }
-}
-
-const submitStudentRequest = async () => {
-  if (newRequest.value.type === 'name') {
-    if (!newRequest.value.first_name.trim() || !newRequest.value.last_name.trim() || !newRequest.value.reason.trim()) {
-      showNotification('Please fill in at least first name, last name, and reason.', 'error')
-      return
-    }
-    const parts = [newRequest.value.first_name.trim(), newRequest.value.middle_name.trim(), newRequest.value.last_name.trim(), newRequest.value.suffix.trim()].filter(Boolean)
-    newRequest.value.new_value = parts.join(' ')
-  } else if (!newRequest.value.type || !newRequest.value.reason.trim() || !newRequest.value.new_value.trim()) {
-    showNotification('Please fill in all fields before submitting.', 'error')
-    return
-  }
-  requestSubmitting.value = true
-  try {
-    const token = localStorage.getItem('adminToken') || localStorage.getItem('token')
-    const res = await fetch(buildAPIUrl('/apis/requests'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-      body: JSON.stringify({
-        type: newRequest.value.type,
-        new_value: newRequest.value.new_value.trim(),
-        first_name: newRequest.value.first_name.trim(),
-        middle_name: newRequest.value.middle_name.trim(),
-        last_name: newRequest.value.last_name.trim(),
-        suffix: newRequest.value.suffix.trim(),
-        reason: newRequest.value.reason.trim()
-      })
-    })
-    const data = await res.json()
-    if (res.ok) {
-      showNotification('Request submitted successfully! An admin will review it shortly.', 'success')
-      newRequest.value = { type: '', new_value: '', first_name: '', middle_name: '', last_name: '', suffix: '', reason: '' }
-      await fetchStudentRequests()
-    } else {
-      showNotification(data.message || 'Failed to submit request', 'error')
-    }
-  } catch {
-    showNotification('Network error. Please try again.', 'error')
-  } finally {
-    requestSubmitting.value = false
   }
 }
 
@@ -15535,6 +15074,7 @@ const closeCreateEventModal = () => {
 }
 
 const saveSession = async () => {
+  if (savingSession.value) return
   if (sessionTimeError.value) {
     showNotification(sessionTimeError.value, 'error')
     return
