@@ -412,7 +412,24 @@ const VALID_RFID_STATUS = ['verified', 'unverified', 'Unreadable'];
 
 
 // Gmail accounts array with fallback support (server-side only, never exposed to clients)
-const GMAIL_ACCOUNTS = process.env.GMAIL_ACCOUNTS;
+// GMAIL_ACCOUNTS env var must be a JSON-encoded array: [{"user":"x@gmail.com","pass":"app-pass"}, ...]
+let GMAIL_ACCOUNTS = [];
+try {
+    const _raw = process.env.GMAIL_ACCOUNTS;
+    if (_raw) {
+        const _parsed = JSON.parse(_raw);
+        GMAIL_ACCOUNTS = Array.isArray(_parsed)
+            ? _parsed.filter(a => a && typeof a.user === 'string' && typeof a.pass === 'string')
+            : [];
+        if (GMAIL_ACCOUNTS.length === 0) {
+            console.warn('[EmailService] GMAIL_ACCOUNTS parsed but contained no valid {user,pass} entries');
+        }
+    } else {
+        console.warn('[EmailService] GMAIL_ACCOUNTS env var is not set — email sending will be disabled');
+    }
+} catch (e) {
+    console.warn('[EmailService] Failed to parse GMAIL_ACCOUNTS env var:', e.message);
+}
 
 // Email service with automatic fallback/rotation
 const emailService = {
@@ -463,6 +480,9 @@ const emailService = {
     },
 
     async sendMail(mailOptions) {
+        if (GMAIL_ACCOUNTS.length === 0) {
+            throw new Error('Email sending is disabled — no Gmail accounts configured (set GMAIL_ACCOUNTS env var)');
+        }
         this.resetFailedAccountsIfNeeded();
 
         let attempts = 0;
