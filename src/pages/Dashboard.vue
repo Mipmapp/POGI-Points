@@ -12354,9 +12354,10 @@ const fetchPendingStudents = async () => {
   
   pendingLoading.value = true
   try {
+    const token = localStorage.getItem('authToken')
     const response = await fetch(buildAPIUrl(`/apis/students/pending?limit=1000`), {
       method: 'GET',
-      headers: getFetchHeaders({ 'Authorization': `Bearer SSAAMStudents` })
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` })
     })
     const result = await response.json()
     if (response.ok) {
