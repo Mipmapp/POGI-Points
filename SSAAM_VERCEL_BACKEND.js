@@ -2214,17 +2214,28 @@ const CNAHS_AuditTrail= mongoose.model('CNAHS_AuditTrail', auditTrailSchema, 'cn
 
 async function logAudit(college, master, action, target_type, target_id, target_label, details = {}) {
     try {
-        // Always do a fresh DB lookup so audit logs always show the real full
-        // name and role — not just the minimal fields from the JWT payload.
-        let adminName = master?.username || '';
+        // Fallback display name from JWT payload — covers both master tokens
+        // (username field) and student co-admin/treasurer tokens (student_id field).
+        let adminName = master?.username || master?.student_id || '';
         let adminRole = master?.role || '';
         const adminDbId = master?._id || master?.id;
         if (adminDbId) {
             try {
-                const freshMaster = await Master.findById(adminDbId).select('full_name username role').lean();
-                if (freshMaster) {
-                    adminName = freshMaster.full_name || freshMaster.username || adminName;
-                    adminRole = freshMaster.role || adminRole;
+                if (master?.isMaster) {
+                    // Full master account — look up in the Masters collection
+                    const freshMaster = await Master.findById(adminDbId).select('full_name username role').lean();
+                    if (freshMaster) {
+                        adminName = freshMaster.full_name || freshMaster.username || adminName;
+                        adminRole = freshMaster.role || adminRole;
+                    }
+                } else {
+                    // Student acting as co-admin / treasurer — look up in the student collection
+                    const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
+                    const freshStudent = await StudentModel.findById(adminDbId).select('full_name student_id role').lean();
+                    if (freshStudent) {
+                        adminName = freshStudent.full_name || freshStudent.student_id || adminName;
+                        adminRole = freshStudent.role || adminRole;
+                    }
                 }
             } catch (lookupErr) { console.error('[Audit] name lookup error:', lookupErr.message); }
         }
@@ -2250,15 +2261,18 @@ app.get('/apis/audit-trail', auth, async (req, res) => {
         const AuditModel = getCollegeModel(AuditTrail, CCS_AuditTrail, COE_AuditTrail, req.college);
         const logs = await AuditModel.find({}).sort({ timestamp: -1 }).limit(300).lean();
 
-        // Enrich logs with admin profile data (photo, student_id/username)
-        const uniqueAdminIds = [...new Set(logs.map(l => String(l.admin_id)).filter(Boolean))];
+        // Enrich logs with admin profile data (photo, name, username).
+        // Logs can be from master accounts OR student co-admins/treasurers,
+        // so we search both collections.
+        const uniqueAdminIds = [...new Set(logs.map(l => String(l.admin_id)).filter(id => id && id !== 'undefined'))];
         let adminMap = {};
         if (uniqueAdminIds.length > 0) {
-            const admins = await Master.find(
+            // 1. Try the Masters collection first
+            const masters = await Master.find(
                 { _id: { $in: uniqueAdminIds } },
                 { _id: 1, photo: 1, username: 1, full_name: 1, role: 1 }
             ).lean();
-            admins.forEach(a => {
+            masters.forEach(a => {
                 adminMap[String(a._id)] = {
                     admin_photo: a.photo || null,
                     admin_student_id: a.username || null,
@@ -2266,6 +2280,25 @@ app.get('/apis/audit-trail', auth, async (req, res) => {
                     admin_role: a.role || null,
                 };
             });
+            // 2. For any IDs not found in Masters, try the college Student collection
+            //    (student-level co-admins and treasurers are stored there)
+            const foundMasterIds = new Set(masters.map(a => String(a._id)));
+            const missingIds = uniqueAdminIds.filter(id => !foundMasterIds.has(id));
+            if (missingIds.length > 0) {
+                const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+                const studentAdmins = await StudentModel.find(
+                    { _id: { $in: missingIds } },
+                    { _id: 1, photo: 1, student_id: 1, full_name: 1, role: 1 }
+                ).lean();
+                studentAdmins.forEach(a => {
+                    adminMap[String(a._id)] = {
+                        admin_photo: a.photo || null,
+                        admin_student_id: a.student_id || null,
+                        admin_full_name: a.full_name || null,
+                        admin_role: a.role || null,
+                    };
+                });
+            }
         }
 
         const enrichedLogs = logs.map(log => ({
@@ -7149,7 +7182,7 @@ app.get('/apis/attendance/events/:eventId/sessions', auth, async (req, res) => {
 // Update session (admin only)
 app.put('/apis/attendance/sessions/:id', auth, requireCoAdminOrAbove, async (req, res) => {
     try {
-        const { label, start_time, end_time, status, check_in_locked, check_out_locked, late_timer_minutes, rfidScanner } = req.body;
+        const { label, start_time, end_time, status, check_in_locked, check_out_locked, late_timer_minutes, rfidScanner, check_in_only } = req.body;
 
         const SessionModel = getCollegeModel(AttendanceSession, CCS_AttendanceSession, COE_AttendanceSession, req.college);
         const session = await SessionModel.findById(req.params.id);
@@ -7175,6 +7208,7 @@ app.put('/apis/attendance/sessions/:id', auth, requireCoAdminOrAbove, async (req
         if (check_in_locked !== undefined) session.check_in_locked = check_in_locked;
         if (check_out_locked !== undefined) session.check_out_locked = check_out_locked;
         if (late_timer_minutes !== undefined) session.late_timer_minutes = late_timer_minutes;
+        if (check_in_only !== undefined) session.check_in_only = check_in_only;
         // rfidScanner is a Mongoose Mixed type, so we must merge (not replace)
         // and explicitly call markModified — otherwise Mongoose silently drops
         // the change on save, which makes the admin's check-in/check-out

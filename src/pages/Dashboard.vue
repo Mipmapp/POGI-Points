@@ -5826,7 +5826,7 @@
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
             </svg>
-            <span>{{ savingSession ? 'Saving...' : ((editingSession || editingNewEventSessionIdx !== null) ? 'Update' : 'Add') + ' Session' }}</span>
+            <span>{{ savingSession ? 'Saving...' : (editingSession ? 'Confirm' : (editingNewEventSessionIdx !== null ? 'Update' : 'Add') + ' Session') }}</span>
           </button>
         </div>
       </div>
@@ -10380,7 +10380,13 @@ watch(showCreateEventModal, (open) => {
 })
 watch(showEditEventModal, (open) => {
   if (open) document.body.classList.add('modal-scroll-lock')
-  else document.body.classList.remove('modal-scroll-lock')
+  else {
+    document.body.classList.remove('modal-scroll-lock')
+    if (pendingSessionUpdates.value.size > 0) {
+      pendingSessionUpdates.value.clear()
+      if (selectedEvent.value?._id) fetchEventSessions(selectedEvent.value._id)
+    }
+  }
 })
 const loadingStudentsForEvent = ref(false)
 const loadedStudentCount = ref(0)
@@ -10467,6 +10473,7 @@ const expandedEventSessions = ref({})
 const newSession = ref({ label: 'Morning', start_time: '', end_time: '', status: 'active', late_timer_minutes: 60, check_in_only: false })
 const savingSession = ref(false)
 const editingSession = ref(null)
+const pendingSessionUpdates = ref(new Map())
 const addSessionButtonAnimating = ref(false)
 const sessionLabels = ['Whole Day', 'Morning', 'Afternoon', 'Noon', 'Night', 'Dawn']
 
@@ -14728,6 +14735,18 @@ const updateAttendanceEvent = async () => {
         assigned_users: responseData.event?.assigned_users,
         assigned_users_count: (responseData.event?.assigned_users || []).length
       })
+      // Flush any staged session edits (confirmed but not yet saved)
+      if (pendingSessionUpdates.value.size > 0) {
+        const flushPromises = [...pendingSessionUpdates.value.entries()].map(([sid, updates]) =>
+          fetch(buildAPIUrl(`/apis/attendance/sessions/${sid}`), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() },
+            body: JSON.stringify(updates)
+          }).catch(e => console.error('Session flush error:', e))
+        )
+        await Promise.all(flushPromises)
+        pendingSessionUpdates.value.clear()
+      }
       showNotification('Event updated successfully', 'success')
       showEditEventModal.value = false
       // Clear the section cache before refetching so the edited values
@@ -15098,37 +15117,32 @@ const saveSession = async () => {
     return
   }
 
+  // Stage-only path — editing an existing session; PUT fires when "Save Changes" is clicked
+  if (editingSession.value) {
+    pendingSessionUpdates.value.set(String(editingSession.value._id), { ...newSession.value })
+    const idx = eventSessions.value.findIndex(s => String(s._id) === String(editingSession.value._id))
+    if (idx !== -1) eventSessions.value[idx] = { ...eventSessions.value[idx], ...newSession.value }
+    showNotification('Session confirmed — click "Save Changes" to apply', 'success')
+    showSessionModal.value = false
+    editingSession.value = null
+    return
+  }
+
   savingSession.value = true
   const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
   try {
-    if (editingSession.value) {
-    const response = await fetch(buildAPIUrl(`/apis/attendance/sessions/${editingSession.value._id}`), {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() },
-        body: JSON.stringify(newSession.value)
-      })
-      if (response.ok) {
-        showNotification('Session updated successfully', 'success')
-        showSessionModal.value = false
-        fetchEventSessions(selectedEvent.value._id)
-      } else {
-        const errorData = await response.json()
-        showNotification(errorData.message || 'Failed to update session', 'error')
-      }
+    const response = await fetch(buildAPIUrl(`/apis/attendance/events/${selectedEvent.value._id}/sessions`), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() },
+      body: JSON.stringify(newSession.value)
+    })
+    if (response.ok) {
+      showNotification('Session added successfully', 'success')
+      showSessionModal.value = false
+      fetchEventSessions(selectedEvent.value._id)
     } else {
-      const response = await fetch(buildAPIUrl(`/apis/attendance/events/${selectedEvent.value._id}/sessions`), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() },
-        body: JSON.stringify(newSession.value)
-      })
-      if (response.ok) {
-        showNotification('Session added successfully', 'success')
-        showSessionModal.value = false
-        fetchEventSessions(selectedEvent.value._id)
-      } else {
-        const errorData = await response.json()
-        showNotification(errorData.message || 'Failed to add session', 'error')
-      }
+      const errorData = await response.json()
+      showNotification(errorData.message || 'Failed to add session', 'error')
     }
   } catch (error) {
     console.error('Error saving session:', error)
