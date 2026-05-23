@@ -416,19 +416,40 @@ const VALID_RFID_STATUS = ['verified', 'unverified', 'Unreadable'];
 let GMAIL_ACCOUNTS = [];
 try {
     const _raw = process.env.GMAIL_ACCOUNTS;
-    if (_raw) {
-        const _parsed = JSON.parse(_raw);
-        GMAIL_ACCOUNTS = Array.isArray(_parsed)
-            ? _parsed.filter(a => a && typeof a.user === 'string' && typeof a.pass === 'string')
-            : [];
+    if (_raw && _raw.trim()) {
+        let _parsed = null;
+
+        // Attempt 1: standard JSON
+        try { _parsed = JSON.parse(_raw); } catch (_) {}
+
+        // Attempt 2: fix unquoted keys (e.g. {user:"x",pass:"y"})
+        if (_parsed === null) {
+            try {
+                _parsed = JSON.parse(_raw.replace(/([{,]\s*)([a-zA-Z_]\w*)(\s*:)/g, '$1"$2"$3'));
+            } catch (_) {}
+        }
+
+        // Attempt 3: newline-delimited "email:password" pairs
+        if (_parsed === null) {
+            const lines = _raw.split(/[\n,]+/).map(l => l.trim()).filter(Boolean);
+            const pairs = lines.map(l => { const i = l.indexOf(':'); return i > 0 ? { user: l.slice(0, i).trim(), pass: l.slice(i + 1).trim() } : null; }).filter(Boolean);
+            if (pairs.length) _parsed = pairs;
+        }
+
+        if (Array.isArray(_parsed)) {
+            GMAIL_ACCOUNTS = _parsed.filter(a => a && typeof a.user === 'string' && a.user.includes('@') && typeof a.pass === 'string' && a.pass.length > 0);
+        }
+
         if (GMAIL_ACCOUNTS.length === 0) {
-            console.warn('[EmailService] GMAIL_ACCOUNTS parsed but contained no valid {user,pass} entries');
+            console.warn('[EmailService] GMAIL_ACCOUNTS is set but no valid {user, pass} entries found. Expected JSON: [{"user":"x@gmail.com","pass":"app-password"}]');
+        } else {
+            console.log(`[EmailService] Loaded ${GMAIL_ACCOUNTS.length} Gmail account(s)`);
         }
     } else {
-        console.warn('[EmailService] GMAIL_ACCOUNTS env var is not set — email sending will be disabled');
+        console.warn('[EmailService] GMAIL_ACCOUNTS env var not set — email sending disabled');
     }
 } catch (e) {
-    console.warn('[EmailService] Failed to parse GMAIL_ACCOUNTS env var:', e.message);
+    console.warn('[EmailService] Unexpected error loading GMAIL_ACCOUNTS:', e.message);
 }
 
 // Email service with automatic fallback/rotation
