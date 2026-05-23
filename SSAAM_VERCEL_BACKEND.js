@@ -1570,7 +1570,7 @@ app.put('/apis/payments/:id', auth, async (req, res) => {
         const payment = await PaymentModel.findByIdAndUpdate(
             req.params.id,
             update,
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!payment) {
@@ -1726,7 +1726,7 @@ app.put('/apis/payments/:paymentId/status', auth, async (req, res) => {
                 status: status,
                 updated_at: new Date()
             },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!payment) {
@@ -2923,7 +2923,7 @@ async function getSettings(college = 'CCS') {
 async function findSessionTokenAcrossColleges(tokenHash, preferredCollege) {
     const query = { token_hash: tokenHash, is_revoked: false, expires_at: { $gt: new Date() } };
     const update = { last_used_at: new Date() };
-    const opts = { new: true };
+    const opts = { returnDocument: 'after' };
 
     // Try preferred college first, then all others
     const order = [preferredCollege, ...VALID_COLLEGES.filter(c => c !== preferredCollege)];
@@ -3101,7 +3101,7 @@ async function studentSearchAuth(req, res, next) {
                 expires_at: { $gt: new Date() }
             },
             { last_used_at: new Date() },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!sessionToken) {
@@ -3856,7 +3856,7 @@ app.put('/apis/students/:student_id/approve', auth, requireCoAdminOrAbove, times
         const student = await StudentModel.findOneAndUpdate(
             { student_id: req.params.student_id, status: 'pending' },
             { status: 'approved' },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!student) {
@@ -3973,7 +3973,7 @@ app.put('/apis/students/:student_id/rfid', auth, requireCoAdminOrAbove, timestam
                 rfid_verified_at: new Date(),
                 admin_verification_token: hashToken(adminVerifyToken)
             },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!updated) {
@@ -4105,7 +4105,7 @@ app.put('/apis/students/:student_id/photo', studentAuthWithToken, async (req, re
         const student = await StudentModel.findOneAndUpdate(
             { student_id: requestedStudentId },
             { photo: photo },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!student) {
@@ -6074,7 +6074,7 @@ app.post('/apis/password-reset/verify', studentAuth, timestampAuth, async (req, 
                 attempts: { $lt: 5 } // Max 5 verification attempts
             },
             { $inc: { attempts: 1 } },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!resetRecord) {
@@ -6142,7 +6142,7 @@ app.post('/apis/password-reset/complete', studentAuth, timestampAuth, async (req
                 expires_at: { $gt: new Date() }
             },
             { used: true, used_at: new Date() },
-            { new: true }
+            { returnDocument: 'after' }
         );
 
         if (!resetRecord) {
@@ -6967,7 +6967,7 @@ app.put('/apis/attendance/events/custom/:id', auth, requireCoAdminOrAbove, async
                 assigned_users: assigned_users.map(u => u._id || u.id),
                 updated_at: new Date()
             },
-            { new: true }
+            { returnDocument: 'after' }
         ).populate('assigned_users', 'full_name name student_id program year_level');
 
         // Also update the default session if it exists
