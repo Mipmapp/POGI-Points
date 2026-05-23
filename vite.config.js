@@ -76,11 +76,11 @@ export default defineConfig({
     allowedHosts: true,
     proxy: {
       '/apis': {
-        target: 'https://ssaam-api.vercel.app',
+        target: 'http://localhost:3001',
         changeOrigin: true,
-        secure: true,
+        secure: false,
         rewrite: (path) => {
-          console.log(`[Proxy] Routing ${path} → https://ssaam-api.vercel.app${path}`)
+          console.log(`[Proxy] Routing ${path} → localhost:3001`)
           return path
         }
       }
