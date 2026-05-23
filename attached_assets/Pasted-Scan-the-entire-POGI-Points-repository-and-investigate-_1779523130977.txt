@@ -1,0 +1,156 @@
+Scan the entire POGI-Points repository and investigate the following issues deeply before making changes.
+
+1. POS Mobile Cannot Connect to Admin > Contribution
+
+Find why the POS mobile interface cannot properly connect or sync with Admin > Contribution.
+
+Check:
+
+API endpoints
+fetch/axios requests
+websocket/socket connections if any
+CORS issues
+authentication/session/token problems
+environment variables
+route mismatches
+mobile-specific networking issues
+database write failures
+realtime sync logic
+
+Verify:
+
+contribution records are successfully created
+mobile requests reach backend correctly
+admin dashboard receives updated data
+responses are not failing silently
+
+Add proper:
+
+error handling
+toast/logging/debug messages
+retry handling for unstable mobile connections
+2. Check-In Only Mode Does Not Properly Record Event Attendance
+
+Problem:
+When using “Check-in Only” mode, attendance is not properly linked to the event.
+
+Effects:
+
+user dashboard still marks attendees as absent
+event attendance status becomes inconsistent
+attendance records may not save correctly
+
+Deeply inspect:
+
+attendance schema
+event relationship mapping
+check-in/check-out logic
+attendance status generation
+user dashboard attendance queries
+event ID propagation
+backend attendance services/controllers
+frontend attendance state handling
+
+Verify:
+
+check-in creates valid attendance records
+records are tied to the correct event
+dashboard status updates instantly
+absent status only applies to users without valid attendance
+
+Look for:
+
+null event IDs
+incorrect status enums
+timezone/date comparison bugs
+duplicate attendance rows
+frontend cache/state desync
+
+Fix all related logic safely without breaking existing attendance history.
+
+3. Investigate WebSocket / Realtime System Opportunities
+
+Analyze whether websocket implementation would improve the system.
+
+Specifically evaluate:
+
+Admin > Attendance > Fullscreen live updates
+real-time check-in/check-out
+POS synchronization
+live contribution updates
+dashboard counters/statistics
+event monitoring
+notifications/toasts
+queue systems
+
+If beneficial:
+
+recommend architecture using Socket.IO or native WebSockets
+identify where realtime is actually needed
+avoid unnecessary websocket overuse
+maintain scalability and low latency
+
+Potential websocket areas:
+
+attendance updates
+live event participation
+contribution tracking
+admin monitoring
+active users
+notifications
+audit logs
+4. Full Repository Scan
+
+Perform a full repository audit and detect:
+
+broken API routes
+duplicated logic
+unused files/components
+inefficient queries
+unsafe async handling
+missing loading/error states
+race conditions
+mobile responsiveness issues
+state management problems
+database inconsistencies
+possible memory leaks
+unnecessary rerenders
+hydration issues
+missing indexes for attendance/contributions
+5. Requirements Before Editing
+
+Before modifying:
+
+trace full flow frontend → backend → database
+identify root causes first
+avoid temporary fixes
+preserve existing data
+avoid breaking production features
+
+After fixing:
+
+summarize all root causes
+summarize all modified files
+explain architectural improvements made
+recommend additional optimizations if needed
+
+About WebSockets specifically:
+Yes — for your system, websockets are actually very useful.
+
+Especially for:
+
+live attendance fullscreen
+instant check-in/check-out updates
+POS sync
+live dashboard statistics
+admin monitoring
+contribution updates
+
+Your project is starting to resemble a realtime event management platform, where polling repeatedly becomes inefficient.
+
+Recommended:
+
+REST API for normal CRUD
+WebSockets only for realtime events/live updates
+
+That hybrid architecture is what most modern dashboard systems use.

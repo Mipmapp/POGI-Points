@@ -873,6 +873,7 @@
       :student="selectedStudent"
       :suggested-amount="targetPayment"
       :active-payment="activePayment"
+      @printed="onReceiptPrinted"
     />
 
     <!-- Contributions List — hidden while a student is selected so the
@@ -3220,6 +3221,19 @@ export default {
           window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
         }
       });
+    },
+    onReceiptPrinted({ customer } = {}) {
+      const name = customer || (this.selectedStudent && (this.selectedStudent.full_name || this.selectedStudent.first_name)) || 'student';
+      if (this.selectedStudentAlreadyPaid) {
+        window.dispatchEvent(new CustomEvent('app-notification', {
+          detail: { message: `Receipt printed for ${name} — already recorded as paid`, type: 'info' }
+        }));
+        return;
+      }
+      window.dispatchEvent(new CustomEvent('app-notification', {
+        detail: { message: `Receipt printed — recording payment for ${name}…`, type: 'info' }
+      }));
+      this.markAsPayment();
     },
     async markAsPayment(contribution) {
       if (!this.selectedStudent && !contribution) return;

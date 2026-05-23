@@ -2666,6 +2666,10 @@ const attendanceLogSchema = new mongoose.Schema({
     excused_by_model: { type: String, enum: ['Student', 'Master', null], default: null },
     source: { type: String, enum: ['rfid', 'manual', 'face'], default: 'rfid' },
     input_method: { type: String, enum: ['rfid', 'manual_student_id'], default: 'rfid' },
+    // Snapshot of the session's check_in_only flag at the time of check-in.
+    // Stored here so aggregation pipelines can determine attendance status
+    // without needing a $lookup join back to the sessions collection.
+    check_in_only: { type: Boolean, default: false },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
 });
@@ -2675,11 +2679,11 @@ attendanceLogSchema.index({ event_id: 1, student_id: 1 });
 attendanceLogSchema.index({ session_id: 1, rfid_code: 1 });
 attendanceLogSchema.index({ session_id: 1, check_in_at: -1 });
 
-// Virtual for attendance status (present, late, incomplete, absent)
+// Virtual for attendance status (present, late, incomplete, absent).
+// For check-in-only sessions a single check-in counts as present/late.
 attendanceLogSchema.virtual('attendance_status').get(function () {
-    // Excused has priority over other statuses
     if (this.excused) return 'excused';
-    if (this.check_in_at && this.check_out_at) {
+    if (this.check_in_at && (this.check_out_at || this.check_in_only)) {
         return this.is_late ? 'late' : 'present';
     }
     if (this.check_in_at && !this.check_out_at) return 'incomplete';
@@ -7265,9 +7269,9 @@ app.get('/apis/attendance/sessions/:id/logs', auth, async (req, res) => {
                 $group: {
                     _id: null,
                     total: { $sum: 1 },
-                    present: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", false] }] }, 1, 0] } },
-                    late: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", true] }] }, 1, 0] } },
-                    incomplete: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $eq: ["$check_out_at", null] }] }, 1, 0] } }
+                    present: { $sum: { $cond: [{ $or: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", false] }] }, { $and: [{ $ne: ["$check_in_at", null] }, { $eq: ["$check_in_only", true] }, { $eq: ["$is_late", false] }] }] }, 1, 0] } },
+                    late: { $sum: { $cond: [{ $or: [{ $and: [{ $ne: ["$check_in_at", null] }, { $ne: ["$check_out_at", null] }, { $eq: ["$is_late", true] }] }, { $and: [{ $ne: ["$check_in_at", null] }, { $eq: ["$check_in_only", true] }, { $eq: ["$is_late", true] }] }] }, 1, 0] } },
+                    incomplete: { $sum: { $cond: [{ $and: [{ $ne: ["$check_in_at", null] }, { $eq: ["$check_out_at", null] }, { $ne: ["$check_in_only", true] }] }, 1, 0] } }
                 }
             }
         ]);
@@ -7402,7 +7406,10 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
                     has_present: {
                         $max: {
                             $cond: [
-                                { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', false] }] },
+                                { $or: [
+                                    { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', false] }] },
+                                    { $and: [{ $ne: ['$check_in_at', null] }, { $eq: ['$check_in_only', true] }, { $eq: ['$is_late', false] }] }
+                                ] },
                                 1,
                                 0
                             ]
@@ -7411,7 +7418,10 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
                     has_late: {
                         $max: {
                             $cond: [
-                                { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', true] }] },
+                                { $or: [
+                                    { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', true] }] },
+                                    { $and: [{ $ne: ['$check_in_at', null] }, { $eq: ['$check_in_only', true] }, { $eq: ['$is_late', true] }] }
+                                ] },
                                 1,
                                 0
                             ]
@@ -7420,7 +7430,7 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
                     has_incomplete: {
                         $max: {
                             $cond: [
-                                { $and: [{ $ne: ['$check_in_at', null] }, { $eq: ['$check_out_at', null] }] },
+                                { $and: [{ $ne: ['$check_in_at', null] }, { $eq: ['$check_out_at', null] }, { $ne: ['$check_in_only', true] }] },
                                 1,
                                 0
                             ]
@@ -7501,7 +7511,10 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
                     has_present: {
                         $max: {
                             $cond: [
-                                { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', false] }] },
+                                { $or: [
+                                    { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', false] }] },
+                                    { $and: [{ $ne: ['$check_in_at', null] }, { $eq: ['$check_in_only', true] }, { $eq: ['$is_late', false] }] }
+                                ] },
                                 1,
                                 0
                             ]
@@ -7510,7 +7523,10 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
                     has_late: {
                         $max: {
                             $cond: [
-                                { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', true] }] },
+                                { $or: [
+                                    { $and: [{ $ne: ['$check_in_at', null] }, { $ne: ['$check_out_at', null] }, { $eq: ['$is_late', true] }] },
+                                    { $and: [{ $ne: ['$check_in_at', null] }, { $eq: ['$check_in_only', true] }, { $eq: ['$is_late', true] }] }
+                                ] },
                                 1,
                                 0
                             ]
@@ -7519,7 +7535,7 @@ app.get('/apis/attendance/events/:id/logs', auth, async (req, res) => {
                     has_incomplete: {
                         $max: {
                             $cond: [
-                                { $and: [{ $ne: ['$check_in_at', null] }, { $eq: ['$check_out_at', null] }] },
+                                { $and: [{ $ne: ['$check_in_at', null] }, { $eq: ['$check_out_at', null] }, { $ne: ['$check_in_only', true] }] },
                                 1,
                                 0
                             ]
@@ -7910,6 +7926,7 @@ const sessionAttendanceCheck = async (req, res) => {
                 year_level: student.year_level,
                 check_in_at: now,
                 is_late: isLate,
+                check_in_only: session.check_in_only || false,
                 source,
                 input_method: isManualStudentId ? 'manual_student_id' : 'rfid'
             });
