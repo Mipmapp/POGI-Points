@@ -70,7 +70,7 @@ async function _loginRecord(key, success) {
                 $setOnInsert: { firstAttempt: now },
                 $set: { lastAttempt: now, expireAt }
             },
-            { upsert: true, new: true, setDefaultsOnInsert: true }
+            { upsert: true, returnDocument: 'after', setDefaultsOnInsert: true }
         );
         if (doc.count >= LOGIN_MAX_ATTEMPTS) {
             await RateLimit.updateOne(
@@ -4092,7 +4092,7 @@ app.put('/apis/students/:student_id/role', auth, requireCoAdminOrAbove, timestam
         let updated = await StudentModel.findOneAndUpdate(
             { student_id: req.params.student_id },
             { role },
-            { new: true, returnDocument: 'after' }
+            { returnDocument: 'after' }
         );
 
         if (!updated && req.master?.isMaster) {
@@ -4102,7 +4102,7 @@ app.put('/apis/students/:student_id/role', auth, requireCoAdminOrAbove, timestam
                 updated = await AltModel.findOneAndUpdate(
                     { student_id: req.params.student_id },
                     { role },
-                    { new: true, returnDocument: 'after' }
+                    { returnDocument: 'after' }
                 );
                 if (updated) break;
             }
@@ -4335,7 +4335,7 @@ app.put('/apis/students/:student_id', auth, requireCoAdminOrAbove, timestampAuth
         let updated = await StudentModel.findOneAndUpdate(
             { student_id: lookupId },
             updates,
-            { new: true, runValidators: true, validateModifiedOnly: true }
+            { returnDocument: 'after', runValidators: true, validateModifiedOnly: true }
         );
 
         // If not found, attempt to find/update in the other college's collection
@@ -4345,7 +4345,7 @@ app.put('/apis/students/:student_id', auth, requireCoAdminOrAbove, timestampAuth
             updated = await OtherStudentModel.findOneAndUpdate(
                 { student_id: lookupId },
                 updates,
-                { new: true, runValidators: true, validateModifiedOnly: true }
+                { returnDocument: 'after', runValidators: true, validateModifiedOnly: true }
             );
         }
 
