@@ -25,7 +25,7 @@
     <div class="px-4 sm:px-6 py-3 bg-gray-50 border-b border-gray-100 flex flex-wrap gap-2">
       <button @click="connectBT" :disabled="connectingBT"
         :class="['flex-1 sm:flex-none px-3 py-2 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 border', btConnected ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-white text-gray-700 border-gray-200 hover:border-blue-500 hover:text-blue-600']">
-        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l5-7-5-7v14zM7 19l5-7-5-7"/></svg>
+        <img src="/bluetooth.svg" class="w-3.5 h-3.5 flex-shrink-0" alt="Bluetooth" />
         {{ btConnected ? 'BT Connected' : (connectingBT ? 'Connecting...' : 'Connect Bluetooth Printer') }}
       </button>
       <button v-if="btConnected" @click="disconnectAll" class="px-3 py-2 rounded-xl text-xs font-bold border border-gray-200 text-gray-500 hover:bg-gray-100 transition">

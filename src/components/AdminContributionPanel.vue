@@ -854,23 +854,23 @@
     <!-- Selected Student Payment Card -->
     <Transition name="contrib-slide">
     <div v-if="activePayment && selectedStudent" class="bg-white rounded-3xl shadow-xl border border-blue-200 overflow-hidden">
-      <div class="px-5 sm:px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 flex items-center justify-between gap-3">
+      <div class="px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 flex items-center justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
-          <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white font-bold text-lg flex-shrink-0 overflow-hidden">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white font-bold text-lg flex-shrink-0 overflow-hidden shadow-md">
             <img v-if="selectedStudent.photo && !photoFailed['sel-' + (selectedStudent._id || selectedStudent.student_id)]" :src="selectedStudent.photo" :alt="selectedStudent.full_name" class="w-full h-full object-cover" @error="markPhotoFailed('sel-' + (selectedStudent._id || selectedStudent.student_id))" referrerpolicy="no-referrer" />
             <span v-else>{{ (selectedStudent.full_name || selectedStudent.first_name || '?').charAt(0).toUpperCase() }}</span>
           </div>
           <div class="min-w-0">
-            <h3 class="font-extrabold text-gray-900 text-sm sm:text-base truncate">{{ selectedStudent.full_name || (selectedStudent.first_name + ' ' + selectedStudent.last_name) }}</h3>
-            <p class="text-gray-500 text-xs truncate">{{ selectedStudent.student_id }} · {{ selectedStudent.program }} – {{ selectedStudent.year_level }}</p>
+            <h3 class="font-extrabold text-gray-900 text-sm sm:text-base leading-tight truncate">{{ selectedStudent.full_name || (selectedStudent.first_name + ' ' + selectedStudent.last_name) }}</h3>
+            <p class="text-gray-500 text-[11px] mt-0.5 truncate">{{ selectedStudent.student_id }} · {{ selectedStudent.program }} – {{ selectedStudent.year_level }}</p>
           </div>
         </div>
-        <button @click="selectedStudent = null" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-white rounded-xl transition flex-shrink-0">
+        <button @click="selectedStudent = null" class="p-2 text-gray-400 hover:text-gray-700 hover:bg-white rounded-xl transition flex-shrink-0" title="Deselect student">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
         </button>
       </div>
 
-      <div class="p-5 sm:p-6 space-y-4">
+      <div class="p-4 sm:p-6 space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 contrib-s1">
           <!-- Campaign Fee -->
           <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200">
@@ -899,36 +899,37 @@
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
             Add-ons
           </p>
-          <div class="space-y-2">
-            <div v-for="addon in activePayment.addons" :key="String(addon._id)" class="flex items-center gap-3">
-              <div class="flex-1 min-w-0">
+          <div class="space-y-3">
+            <div v-for="addon in activePayment.addons" :key="String(addon._id)"
+              class="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 p-3 bg-white rounded-xl border border-amber-100">
+              <!-- Name + price (full width on mobile, flex-1 on desktop) -->
+              <div class="flex-1 min-w-0 w-full sm:w-auto">
                 <p class="text-sm font-semibold text-gray-800 truncate">{{ addon.name }}</p>
-                <p class="text-[10px] text-gray-400 truncate">₱{{ Number(addon.price || 0).toFixed(2) }} / {{ addon.unit || 'piece' }}
-                  <span v-if="addon.max_qty"> · max {{ addon.max_qty }}</span>
-                </p>
+                <p class="text-[10px] text-gray-400 mt-0.5">₱{{ Number(addon.price || 0).toFixed(2) }} / {{ addon.unit || 'piece' }}<span v-if="addon.max_qty"> · max {{ addon.max_qty }}</span></p>
               </div>
-              <div class="flex items-center gap-1.5 flex-shrink-0">
+              <!-- Qty controls + subtotal on same row (below name on mobile) -->
+              <div class="flex items-center gap-2 ml-auto sm:ml-0 flex-shrink-0">
                 <button
                   @click="setAddonQty(addon._id, (addonCart[String(addon._id)] || 0) - 1)"
-                  class="w-7 h-7 rounded-lg bg-white border border-amber-300 text-amber-700 font-bold text-lg flex items-center justify-center hover:bg-amber-100 transition disabled:opacity-40"
+                  class="w-8 h-8 rounded-lg bg-white border border-amber-300 text-amber-700 font-bold text-lg flex items-center justify-center hover:bg-amber-100 transition disabled:opacity-40 active:scale-95"
                   :disabled="!(addonCart[String(addon._id)] > 0)"
                 >–</button>
                 <input
                   :value="addonCart[String(addon._id)] || 0"
                   @change="setAddonQty(addon._id, $event.target.value)"
                   type="number" min="0" :max="addon.max_qty || 9999"
-                  class="w-12 text-center text-sm font-bold border border-amber-300 rounded-lg px-1 py-1 bg-white outline-none focus:ring-2 focus:ring-amber-300"
+                  class="w-12 text-center text-sm font-bold border border-amber-300 rounded-lg px-1 py-1.5 bg-white outline-none focus:ring-2 focus:ring-amber-300"
                 />
                 <button
                   @click="setAddonQty(addon._id, (addonCart[String(addon._id)] || 0) + 1)"
-                  class="w-7 h-7 rounded-lg bg-amber-500 text-white font-bold text-lg flex items-center justify-center hover:bg-amber-600 transition disabled:opacity-40"
+                  class="w-8 h-8 rounded-lg bg-amber-500 text-white font-bold text-lg flex items-center justify-center hover:bg-amber-600 transition disabled:opacity-40 active:scale-95"
                   :disabled="addon.max_qty && (addonCart[String(addon._id)] || 0) >= addon.max_qty"
                 >+</button>
+                <span class="text-sm font-bold text-amber-700 w-16 text-right">
+                  <template v-if="(addonCart[String(addon._id)] || 0) > 0">₱{{ ((addonCart[String(addon._id)] || 0) * Number(addon.price || 0)).toFixed(2) }}</template>
+                  <span v-else class="text-gray-300">—</span>
+                </span>
               </div>
-              <span class="text-sm font-bold text-amber-700 w-20 text-right flex-shrink-0">
-                <template v-if="(addonCart[String(addon._id)] || 0) > 0">₱{{ ((addonCart[String(addon._id)] || 0) * Number(addon.price || 0)).toFixed(2) }}</template>
-                <template v-else class="text-gray-400">—</template>
-              </span>
             </div>
           </div>
         </div>
@@ -3372,6 +3373,7 @@ export default {
       // active selection used by the payment card and POS panel.
       this.selectedStudent = student;
       this.discountValue = 0;
+      this.addonCart = {};
       this.searchResults = [];
       this.hasSearched = false;
       // Show the loading skeleton while we fetch the latest paid/unpaid status
@@ -3379,6 +3381,20 @@ export default {
       this.isLoadingPaymentStatus = true;
       try {
         await this.loadAllContributions();
+        // Pre-populate addonCart from any previously recorded addon_purchases
+        // so the Loyverse panel shows the correct items after a page refresh.
+        const contrib = this.contributions.find(c =>
+          (c.student_id_number || c.student_id) === student.student_id
+        );
+        if (contrib && Array.isArray(contrib.addon_purchases) && contrib.addon_purchases.length > 0) {
+          const cart = {};
+          for (const ap of contrib.addon_purchases) {
+            if (ap.addon_id && Number(ap.quantity) > 0) {
+              cart[String(ap.addon_id)] = Number(ap.quantity);
+            }
+          }
+          this.addonCart = cart;
+        }
       } finally {
         this.isLoadingPaymentStatus = false;
       }
