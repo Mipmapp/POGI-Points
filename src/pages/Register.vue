@@ -860,7 +860,8 @@ onMounted(async () => {
         'Authorization': 'Bearer SSAAMStudents'
       }
     })
-    const data = await response.json()
+    let data
+    try { data = await response.json() } catch { data = {} }
     if (response.ok && data.userRegister) {
       registerDisabled.value = !data.userRegister.register
       registerDisabledMessage.value = data.userRegister.message || 'Registration is currently disabled. Please try again later.'

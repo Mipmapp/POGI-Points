@@ -1041,7 +1041,8 @@ onMounted(async () => {
         'Authorization': 'Bearer SSAAMStudents'
       }
     })
-    const data = await response.json()
+    let data
+    try { data = await response.json() } catch { data = {} }
     if (response.ok && data.userLogin) {
       loginDisabled.value = !data.userLogin.login
       loginDisabledMessage.value = data.userLogin.message || 'Login is currently disabled. Please try again later.'
