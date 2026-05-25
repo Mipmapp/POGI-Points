@@ -888,7 +888,31 @@
             </div>
             <div class="min-w-0 flex-1">
               <p class="text-sm font-bold text-green-800">Already Paid</p>
-              <p class="text-xs text-green-600 truncate">This student has already paid for the active campaign.</p>
+              <p class="text-xs text-green-600 truncate">
+                {{ selectedStudentContribution && selectedStudentContribution.paid_at
+                  ? 'Paid on ' + new Date(selectedStudentContribution.paid_at).toLocaleString()
+                  : 'This student has already paid for the active campaign.' }}
+              </p>
+            </div>
+          </div>
+          <!-- Show previously recorded add-on purchases if any -->
+          <div
+            v-if="selectedStudentContribution && Array.isArray(selectedStudentContribution.addon_purchases) && selectedStudentContribution.addon_purchases.length > 0"
+            class="p-4 bg-amber-50 rounded-2xl border border-amber-200"
+          >
+            <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+              Add-ons Purchased
+            </p>
+            <div class="space-y-1.5">
+              <div
+                v-for="ap in selectedStudentContribution.addon_purchases"
+                :key="ap.addon_id || ap.addon_name"
+                class="flex items-center justify-between text-xs"
+              >
+                <span class="text-gray-700 font-medium truncate flex-1 mr-2">{{ ap.addon_name }} × {{ ap.quantity }}</span>
+                <span class="font-bold text-amber-700 whitespace-nowrap">₱{{ Number(ap.subtotal || 0).toFixed(2) }}</span>
+              </div>
             </div>
           </div>
           <button
@@ -992,6 +1016,14 @@
             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           </button>
         </div>
+      </div>
+
+      <!-- Mobile column header — always visible above loading skeleton and card list -->
+      <div class="md:hidden flex items-center gap-3 px-4 py-2 bg-gradient-to-r from-ssaam-dark to-ssaam-light">
+        <div class="w-9 h-9 flex-shrink-0"></div>
+        <div class="flex-1 min-w-0 text-[10px] font-bold text-white/80 uppercase tracking-wider">Name / Student ID</div>
+        <div class="text-[10px] font-bold text-white/80 uppercase tracking-wider text-right w-20 flex-shrink-0">Target</div>
+        <div class="text-[10px] font-bold text-white/80 uppercase tracking-wider text-center w-16 flex-shrink-0">Status</div>
       </div>
 
       <!-- Loading Skeleton (mobile cards only — desktop uses in-table skeleton rows below) -->
@@ -2643,6 +2675,41 @@ export default {
     filteredCount() {
       return this.filteredContributions.length;
     },
+    // Stats-only base: applies audience + dropdown + date filters but NOT
+    // the text search (paymentRecordsQuery). This keeps event totals stable
+    // while the admin is typing in the table search box.
+    baseFilteredContributions() {
+      const fs = (this.filterStatus || '').toString().toLowerCase();
+      const fy = this.filterYearLevel;
+      const fp = this.filterProgram;
+      const fc = (this.filterCollege || '').toUpperCase();
+      const fdate = (this.filterPaidDate || '').toString();
+      const audienceLevels = (this.activePayment && Array.isArray(this.activePayment.target_year_levels))
+        ? this.activePayment.target_year_levels.filter(Boolean) : [];
+      const audiencePrograms = (this.activePayment && Array.isArray(this.activePayment.target_programs))
+        ? this.activePayment.target_programs.filter(Boolean) : [];
+
+      return this.contributions.filter(c => {
+        if (audienceLevels.length > 0 && !audienceLevels.includes(c.year_level)) return false;
+        if (audiencePrograms.length > 0 && !audiencePrograms.includes(c.program)) return false;
+        const cStatus = (c.payment_status || '').toString().toLowerCase();
+        if (!(!fy || c.year_level === fy)) return false;
+        if (!(!fp || (c.program || '').toString() === fp)) return false;
+        if (!(!fc || (c.college || '').toUpperCase() === fc)) return false;
+        if (fs) {
+          if (fs === 'unpaid') { if (!((!cStatus) || cStatus !== 'paid')) return false; }
+          else { if (cStatus !== fs) return false; }
+        }
+        if (fdate) {
+          if (!c.paid_at) return false;
+          const d = new Date(c.paid_at);
+          if (isNaN(d.getTime())) return false;
+          const localDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+          if (localDate !== fdate) return false;
+        }
+        return true;
+      });
+    },
     downloadFiltersSummary() {
       return {
         status: this.filterStatus || 'All',
@@ -2681,7 +2748,7 @@ export default {
     statsByYearLevel() {
       const order = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
       const map = {};
-      for (const c of this.filteredContributions) {
+      for (const c of this.baseFilteredContributions) {
         const yl = c.year_level || 'Unknown';
         if (!map[yl]) map[yl] = { year_level: yl, total: 0, paid: 0, unpaid: 0 };
         map[yl].total++;
@@ -2697,7 +2764,7 @@ export default {
     },
     statsByProgram() {
       const map = {};
-      for (const c of this.filteredContributions) {
+      for (const c of this.baseFilteredContributions) {
         const prog = c.program || 'Unknown';
         if (!map[prog]) map[prog] = { program: prog, total: 0, paid: 0, unpaid: 0 };
         map[prog].total++;
@@ -2707,12 +2774,12 @@ export default {
       return Object.values(map).sort((a, b) => b.total - a.total);
     },
     statsOverall() {
-      const total = this.filteredContributions.length;
-      const paid = this.filteredContributions.filter(c => c.payment_status === 'paid').length;
-      const totalCollected = this.filteredContributions
+      const total = this.baseFilteredContributions.length;
+      const paid = this.baseFilteredContributions.filter(c => c.payment_status === 'paid').length;
+      const totalCollected = this.baseFilteredContributions
         .filter(c => c.payment_status === 'paid')
         .reduce((sum, c) => sum + Number(c.amount_paid || c.original_amount || 0), 0);
-      const expected = this.filteredContributions
+      const expected = this.baseFilteredContributions
         .reduce((sum, c) => sum + Number(c.original_amount || (this.activePayment && this.activePayment.amount_due) || 0), 0);
       return {
         total,
@@ -2739,9 +2806,10 @@ export default {
       const map = {};
       for (const ev of (this.paymentEvents || [])) {
         if (this.activePayment && ev._id === this.activePayment._id) {
-          // Active event: sum from filteredContributions — SAME source and field priority
-          // as statsOverall.totalCollected so both numbers always match exactly.
-          map[ev._id] = this.filteredContributions
+          // Active event: sum from baseFilteredContributions (no text search) so
+          // the collected amount on the event card doesn't change while the admin
+          // is typing in the table search box.
+          map[ev._id] = this.baseFilteredContributions
             .filter(c => c.payment_status === 'paid')
             .reduce((sum, c) => sum + Number(c.amount_paid || c.original_amount || 0), 0);
         } else {
@@ -3146,8 +3214,18 @@ export default {
         if (response.ok) {
           const data = await response.json();
           let list = Array.isArray(data.students) ? data.students : [];
+          // Dropdown filter narrowing
           if (this.filterYearLevel) list = list.filter(s => s.year_level === this.filterYearLevel);
           if (this.filterProgram) list = list.filter(s => s.program === this.filterProgram);
+          // Event audience gate: if the active event targets specific year levels
+          // or programs, searching should only return students in that audience so
+          // the admin cannot record a payment for an out-of-scope student.
+          if (this.activePayment) {
+            const evLevels = (Array.isArray(this.activePayment.target_year_levels) ? this.activePayment.target_year_levels : []).filter(Boolean);
+            const evPrograms = (Array.isArray(this.activePayment.target_programs) ? this.activePayment.target_programs : []).filter(Boolean);
+            if (evLevels.length > 0) list = list.filter(s => evLevels.includes(s.year_level));
+            if (evPrograms.length > 0) list = list.filter(s => evPrograms.includes(s.program));
+          }
           this.searchResults = list;
           if (list.length === 0) {
             window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'No matching students found', type: 'warning' } }));
