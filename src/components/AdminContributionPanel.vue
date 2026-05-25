@@ -3049,6 +3049,13 @@ export default {
       this.carouselIndex = (this.carouselIndex + 1) % this.displayedEvents.length;
     },
     handleCarouselKeydown(e) {
+      // Do not intercept keyboard shortcuts when the user is typing in any
+      // input, textarea, or contenteditable — otherwise Enter would block
+      // the search form submit and arrows would fight with text editing.
+      const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+      const isEditable = tag === 'input' || tag === 'textarea' || tag === 'select' || e.target.isContentEditable;
+      if (isEditable) return;
+
       if (e.key === 'ArrowLeft') { e.preventDefault(); this.prevCarousel(); }
       else if (e.key === 'ArrowRight') { e.preventDefault(); this.nextCarousel(); }
       else if (e.key === 'Enter' && this.displayedEvents.length > 0) {
