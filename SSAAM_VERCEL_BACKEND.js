@@ -919,7 +919,7 @@ app.get('/apis/contributions/transparency', async (req, res) => {
 // Create new payment
 app.post('/apis/payments', auth, async (req, res) => {
     try {
-        const { title, description, type, amount_due, deadline, target_year_levels, target_programs } = req.body;
+        const { title, description, type, amount_due, deadline, target_year_levels, target_programs, addons } = req.body;
 
         if (!title || !title.trim()) {
             return res.status(400).json({ message: 'Payment title is required' });
@@ -943,6 +943,15 @@ app.post('/apis/payments', auth, async (req, res) => {
             created_by: createdBy,
             target_year_levels: Array.isArray(target_year_levels) ? target_year_levels : [],
             target_programs:    Array.isArray(target_programs)    ? target_programs    : [],
+            addons: Array.isArray(addons) ? addons
+                .filter(a => a && a.name && String(a.name).trim())
+                .map(a => ({
+                    name:        String(a.name).trim(),
+                    description: a.description ? String(a.description).trim() : '',
+                    price:       Math.max(0, Number(a.price) || 0),
+                    unit:        a.unit || 'piece',
+                    max_qty:     (a.max_qty != null && a.max_qty !== '') ? Math.max(1, Number(a.max_qty)) : null,
+                })) : [],
         });
 
         await payment.save();
@@ -1028,7 +1037,7 @@ app.post('/apis/payments', auth, async (req, res) => {
 app.patch('/apis/payments/:paymentId', auth, async (req, res) => {
     try {
         const { paymentId } = req.params;
-        const { title, description, type, amount_due, deadline, status, target_year_levels, target_programs } = req.body;
+        const { title, description, type, amount_due, deadline, status, target_year_levels, target_programs, addons } = req.body;
 
         const PaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
         const payment = await PaymentModel.findById(paymentId);
@@ -1042,6 +1051,16 @@ app.patch('/apis/payments/:paymentId', auth, async (req, res) => {
         if (status     !== undefined) payment.status      = status;
         if (target_year_levels !== undefined) payment.target_year_levels = Array.isArray(target_year_levels) ? target_year_levels : [];
         if (target_programs    !== undefined) payment.target_programs    = Array.isArray(target_programs)    ? target_programs    : [];
+        if (addons !== undefined) payment.addons = Array.isArray(addons) ? addons
+            .filter(a => a && a.name && String(a.name).trim())
+            .map(a => ({
+                _id:         a._id || undefined,
+                name:        String(a.name).trim(),
+                description: a.description ? String(a.description).trim() : '',
+                price:       Math.max(0, Number(a.price) || 0),
+                unit:        a.unit || 'piece',
+                max_qty:     (a.max_qty != null && a.max_qty !== '') ? Math.max(1, Number(a.max_qty)) : null,
+            })) : [];
         payment.updated_at = new Date();
 
         await payment.save();
@@ -1050,6 +1069,64 @@ app.patch('/apis/payments/:paymentId', auth, async (req, res) => {
         console.error('Error updating payment:', err);
         internalError(res, err);
     }
+});
+
+// ── Addon management routes ────────────────────────────────────────────────────
+// POST /apis/payments/:paymentId/addons  — add a single add-on to an event
+app.post('/apis/payments/:paymentId/addons', auth, async (req, res) => {
+    try {
+        const { paymentId } = req.params;
+        const { name, description, price, unit, max_qty } = req.body;
+        if (!name || !String(name).trim()) return res.status(400).json({ message: 'Add-on name is required' });
+        const PaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
+        const payment = await PaymentModel.findById(paymentId);
+        if (!payment) return res.status(404).json({ message: 'Payment event not found' });
+        payment.addons.push({
+            name:        String(name).trim(),
+            description: description ? String(description).trim() : '',
+            price:       Math.max(0, Number(price) || 0),
+            unit:        unit || 'piece',
+            max_qty:     (max_qty != null && max_qty !== '') ? Math.max(1, Number(max_qty)) : null,
+        });
+        payment.updated_at = new Date();
+        await payment.save();
+        res.json({ success: true, data: payment, message: 'Add-on added' });
+    } catch (err) { internalError(res, err); }
+});
+
+// PUT /apis/payments/:paymentId/addons/:addonId  — update a single add-on
+app.put('/apis/payments/:paymentId/addons/:addonId', auth, async (req, res) => {
+    try {
+        const { paymentId, addonId } = req.params;
+        const { name, description, price, unit, max_qty } = req.body;
+        const PaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
+        const payment = await PaymentModel.findById(paymentId);
+        if (!payment) return res.status(404).json({ message: 'Payment event not found' });
+        const addon = payment.addons.id(addonId);
+        if (!addon) return res.status(404).json({ message: 'Add-on not found' });
+        if (name        !== undefined) addon.name        = String(name).trim();
+        if (description !== undefined) addon.description = String(description).trim();
+        if (price       !== undefined) addon.price       = Math.max(0, Number(price) || 0);
+        if (unit        !== undefined) addon.unit        = unit || 'piece';
+        if (max_qty     !== undefined) addon.max_qty     = (max_qty != null && max_qty !== '') ? Math.max(1, Number(max_qty)) : null;
+        payment.updated_at = new Date();
+        await payment.save();
+        res.json({ success: true, data: payment, message: 'Add-on updated' });
+    } catch (err) { internalError(res, err); }
+});
+
+// DELETE /apis/payments/:paymentId/addons/:addonId  — remove a single add-on
+app.delete('/apis/payments/:paymentId/addons/:addonId', auth, async (req, res) => {
+    try {
+        const { paymentId, addonId } = req.params;
+        const PaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
+        const payment = await PaymentModel.findById(paymentId);
+        if (!payment) return res.status(404).json({ message: 'Payment event not found' });
+        payment.addons = payment.addons.filter(a => a._id.toString() !== addonId);
+        payment.updated_at = new Date();
+        await payment.save();
+        res.json({ success: true, data: payment, message: 'Add-on removed' });
+    } catch (err) { internalError(res, err); }
 });
 
 // Get all payments
@@ -1303,7 +1380,7 @@ app.get('/apis/payments/:id', auth, async (req, res) => {
 // Mark student as paid using RFID or Student ID
 app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
     try {
-        const { student_id_input, amount_paid, notes, payment_method } = req.body;
+        const { student_id_input, amount_paid, notes, payment_method, addon_purchases } = req.body;
         const { paymentId } = req.params;
 
         if (!student_id_input) {
@@ -1369,6 +1446,13 @@ app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
             paid_by_treasurer: req.master?.username || req.student?.student_id || 'admin',
             notes: notes || '',
             payment_method: payment_method || null,
+            addon_purchases: Array.isArray(addon_purchases) ? addon_purchases.map(ap => ({
+                addon_id:   ap.addon_id,
+                addon_name: ap.addon_name || '',
+                quantity:   Math.max(1, Number(ap.quantity) || 1),
+                price_each: Math.max(0, Number(ap.price_each) || 0),
+                subtotal:   Math.max(0, Number(ap.subtotal) || 0),
+            })) : [],
             created_at: campaignIndex >= 0 ? paymentRecord.campaigns[campaignIndex].created_at : new Date(),
             updated_at: new Date()
         };
@@ -2800,6 +2884,14 @@ const paymentSchema = new mongoose.Schema({
     // Targeting: empty array = applies to ALL; non-empty = only matching students
     target_year_levels: { type: [String], default: [] },
     target_programs:    { type: [String], default: [] },
+    // Optional add-ons: items/tickets students can purchase alongside the base fee
+    addons: [{
+        name:        { type: String, required: true },
+        description: { type: String, default: '' },
+        price:       { type: Number, required: true, default: 0 },
+        unit:        { type: String, default: 'piece' }, // e.g. "ticket", "piece", "plate", "shirt"
+        max_qty:     { type: Number, default: null },    // null = unlimited per student
+    }],
 });
 
 paymentSchema.index({ status: 1, created_at: -1 });
@@ -2839,6 +2931,14 @@ const paymentRecordSchema = new mongoose.Schema({
         discount_reason: { type: String, default: "" },
         discount_applied_at: { type: Date, default: null },
         discount_applied_by: { type: String, default: null }, // Admin username who applied discount
+        // Add-on purchases selected when the admin recorded this payment
+        addon_purchases: [{
+            addon_id:   { type: mongoose.Schema.Types.ObjectId },
+            addon_name: { type: String, default: '' },
+            quantity:   { type: Number, default: 1 },
+            price_each: { type: Number, default: 0 },
+            subtotal:   { type: Number, default: 0 },
+        }],
         created_at: { type: Date, default: Date.now },
         updated_at: { type: Date, default: Date.now }
     }],

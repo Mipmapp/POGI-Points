@@ -302,6 +302,12 @@
                     <span v-else class="text-[11px] text-gray-400 italic">All students</span>
                   </div>
 
+                  <!-- Add-ons badge -->
+                  <div v-if="event.addons && event.addons.length > 0" class="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5">
+                    <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+                    <span class="text-[11px] font-bold text-amber-700">{{ event.addons.length }} add-on{{ event.addons.length === 1 ? '' : 's' }} available</span>
+                  </div>
+
                   <!-- Select button — only on center card -->
                   <button
                     v-if="idx === carouselIndex"
@@ -798,6 +804,46 @@
           </div>
         </div>
 
+        <!-- Add-ons Picker (shown only when the event has add-ons) -->
+        <div v-if="activePayment && activePayment.addons && activePayment.addons.length > 0" class="p-4 bg-amber-50 rounded-2xl border border-amber-200">
+          <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            Add-ons
+          </p>
+          <div class="space-y-2">
+            <div v-for="addon in activePayment.addons" :key="String(addon._id)" class="flex items-center gap-3">
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-800 truncate">{{ addon.name }}</p>
+                <p class="text-[10px] text-gray-400 truncate">₱{{ Number(addon.price || 0).toFixed(2) }} / {{ addon.unit || 'piece' }}
+                  <span v-if="addon.max_qty"> · max {{ addon.max_qty }}</span>
+                </p>
+              </div>
+              <div class="flex items-center gap-1.5 flex-shrink-0">
+                <button
+                  @click="setAddonQty(addon._id, (addonCart[String(addon._id)] || 0) - 1)"
+                  class="w-7 h-7 rounded-lg bg-white border border-amber-300 text-amber-700 font-bold text-lg flex items-center justify-center hover:bg-amber-100 transition disabled:opacity-40"
+                  :disabled="!(addonCart[String(addon._id)] > 0)"
+                >–</button>
+                <input
+                  :value="addonCart[String(addon._id)] || 0"
+                  @change="setAddonQty(addon._id, $event.target.value)"
+                  type="number" min="0" :max="addon.max_qty || 9999"
+                  class="w-12 text-center text-sm font-bold border border-amber-300 rounded-lg px-1 py-1 bg-white outline-none focus:ring-2 focus:ring-amber-300"
+                />
+                <button
+                  @click="setAddonQty(addon._id, (addonCart[String(addon._id)] || 0) + 1)"
+                  class="w-7 h-7 rounded-lg bg-amber-500 text-white font-bold text-lg flex items-center justify-center hover:bg-amber-600 transition disabled:opacity-40"
+                  :disabled="addon.max_qty && (addonCart[String(addon._id)] || 0) >= addon.max_qty"
+                >+</button>
+              </div>
+              <span class="text-sm font-bold text-amber-700 w-20 text-right flex-shrink-0">
+                <template v-if="(addonCart[String(addon._id)] || 0) > 0">₱{{ ((addonCart[String(addon._id)] || 0) * Number(addon.price || 0)).toFixed(2) }}</template>
+                <template v-else class="text-gray-400">—</template>
+              </span>
+            </div>
+          </div>
+        </div>
+
         <!-- Payment Summary -->
         <div class="p-4 bg-blue-50 rounded-2xl border border-blue-200">
           <p class="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-3">Payment Summary</p>
@@ -810,9 +856,13 @@
               <span>Discount {{ discountType === 'percentage' ? `(${discountValue}%)` : '' }}</span>
               <span class="font-bold">–₱{{ calculatedDiscount.toFixed(2) }}</span>
             </div>
+            <div v-if="addonCartTotal > 0" class="flex justify-between items-center text-amber-700">
+              <span>Add-ons</span>
+              <span class="font-bold">+₱{{ addonCartTotal.toFixed(2) }}</span>
+            </div>
             <div class="flex justify-between items-center pt-2 border-t border-blue-200">
-              <span class="font-bold text-blue-900">Target Payment</span>
-              <span class="font-extrabold text-blue-700 text-lg">₱{{ targetPayment.toFixed(2) }}</span>
+              <span class="font-bold text-blue-900">{{ addonCartTotal > 0 ? 'Grand Total' : 'Target Payment' }}</span>
+              <span class="font-extrabold text-blue-700 text-lg">₱{{ grandTotal.toFixed(2) }}</span>
             </div>
           </div>
         </div>
@@ -1456,6 +1506,48 @@
               </div>
             </div>
 
+            <!-- Add-ons Section -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Add-ons <span class="text-gray-400 font-normal">(optional)</span></label>
+                <button type="button" @click="addAddonRow(newEventForm)"
+                  class="flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg text-amber-700 text-[11px] font-bold transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                  Add Item
+                </button>
+              </div>
+              <div v-if="newEventForm.addons.length === 0" class="text-[11px] text-gray-400 italic px-1">No add-ons yet. Add tickets, T-shirts, meals, etc.</div>
+              <div v-else class="space-y-2">
+                <div v-for="(addon, idx) in newEventForm.addons" :key="idx" class="flex flex-col gap-2 p-3 bg-amber-50 border border-amber-200 rounded-2xl">
+                  <div class="flex gap-2">
+                    <input v-model="addon.name" type="text" placeholder="Item name *" class="flex-1 px-3 py-2 border border-amber-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none" />
+                    <div class="relative w-28">
+                      <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">₱</span>
+                      <input v-model.number="addon.price" type="number" min="0" step="0.01" placeholder="0.00" class="w-full pl-6 pr-2 py-2 border border-amber-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none" />
+                    </div>
+                    <button @click="removeAddonRow(newEventForm, idx)" class="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50 transition">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                  <div class="flex gap-2">
+                    <input v-model="addon.description" type="text" placeholder="Description (optional)" class="flex-1 px-3 py-1.5 border border-amber-200 rounded-xl text-xs bg-white/80 focus:ring-1 focus:ring-amber-300 focus:border-amber-400 outline-none" />
+                    <select v-model="addon.unit" class="w-24 px-2 py-1.5 border border-amber-200 rounded-xl text-xs bg-white/80 focus:ring-1 focus:ring-amber-300 focus:border-amber-400 outline-none">
+                      <option value="piece">piece</option>
+                      <option value="ticket">ticket</option>
+                      <option value="shirt">shirt</option>
+                      <option value="plate">plate</option>
+                      <option value="set">set</option>
+                      <option value="slot">slot</option>
+                    </select>
+                    <div class="relative w-20">
+                      <input v-model.number="addon.max_qty" type="number" min="1" placeholder="Max" class="w-full px-2 py-1.5 border border-amber-200 rounded-xl text-xs bg-white/80 focus:ring-1 focus:ring-amber-300 focus:border-amber-400 outline-none" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p v-if="newEventForm.addons.length > 0" class="text-[10px] text-gray-400 mt-1 px-1">Max qty: blank = unlimited per student</p>
+            </div>
+
             <!-- Info Banner -->
             <div class="flex items-start gap-3 bg-blue-50 border border-blue-200 rounded-2xl p-4">
               <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -1589,6 +1681,48 @@
                   <span class="text-sm text-gray-700">{{ prog }}</span>
                 </label>
               </div>
+            </div>
+
+            <!-- Add-ons Section -->
+            <div>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider">Add-ons <span class="text-gray-400 font-normal">(optional)</span></label>
+                <button type="button" @click="addAddonRow(editEventForm)"
+                  class="flex items-center gap-1 px-2.5 py-1 bg-amber-50 hover:bg-amber-100 border border-amber-300 rounded-lg text-amber-700 text-[11px] font-bold transition">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                  Add Item
+                </button>
+              </div>
+              <div v-if="editEventForm.addons.length === 0" class="text-[11px] text-gray-400 italic px-1">No add-ons yet. Add tickets, T-shirts, meals, etc.</div>
+              <div v-else class="space-y-2">
+                <div v-for="(addon, idx) in editEventForm.addons" :key="addon._id || idx" class="flex flex-col gap-2 p-3 bg-amber-50 border border-amber-200 rounded-2xl">
+                  <div class="flex gap-2">
+                    <input v-model="addon.name" type="text" placeholder="Item name *" class="flex-1 px-3 py-2 border border-amber-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none" />
+                    <div class="relative w-28">
+                      <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-semibold">₱</span>
+                      <input v-model.number="addon.price" type="number" min="0" step="0.01" placeholder="0.00" class="w-full pl-6 pr-2 py-2 border border-amber-300 rounded-xl text-sm bg-white focus:ring-2 focus:ring-amber-300 focus:border-amber-400 outline-none" />
+                    </div>
+                    <button @click="removeAddonRow(editEventForm, idx)" class="w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-xl text-red-400 hover:text-red-600 hover:bg-red-50 transition">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+                  <div class="flex gap-2">
+                    <input v-model="addon.description" type="text" placeholder="Description (optional)" class="flex-1 px-3 py-1.5 border border-amber-200 rounded-xl text-xs bg-white/80 focus:ring-1 focus:ring-amber-300 focus:border-amber-400 outline-none" />
+                    <select v-model="addon.unit" class="w-24 px-2 py-1.5 border border-amber-200 rounded-xl text-xs bg-white/80 focus:ring-1 focus:ring-amber-300 focus:border-amber-400 outline-none">
+                      <option value="piece">piece</option>
+                      <option value="ticket">ticket</option>
+                      <option value="shirt">shirt</option>
+                      <option value="plate">plate</option>
+                      <option value="set">set</option>
+                      <option value="slot">slot</option>
+                    </select>
+                    <div class="relative w-20">
+                      <input v-model.number="addon.max_qty" type="number" min="1" placeholder="Max" class="w-full px-2 py-1.5 border border-amber-200 rounded-xl text-xs bg-white/80 focus:ring-1 focus:ring-amber-300 focus:border-amber-400 outline-none" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <p v-if="editEventForm.addons.length > 0" class="text-[10px] text-gray-400 mt-1 px-1">Max qty: blank = unlimited per student</p>
             </div>
 
             <!-- Error message -->
@@ -2332,7 +2466,7 @@ export default {
       editEventError: '',
       editEventForm: {
         _id: '', title: '', description: '', amount_due: '', type: 'fee',
-        deadline: '', status: 'active', target_year_levels: [], target_programs: []
+        deadline: '', status: 'active', target_year_levels: [], target_programs: [], addons: []
       },
       showStatsPanel: false,
       newEventForm: {
@@ -2342,8 +2476,11 @@ export default {
         type: 'fee',
         deadline: '',
         target_year_levels: [],
-        target_programs: []
+        target_programs: [],
+        addons: []
       },
+      // addonCart: { addonId -> quantity } for the currently-selected student
+      addonCart: {},
       paymentsPage: 1,
       paymentsPerPage: 10,
       // Manual / auto refresh state for the "Paid On" panel. We pulse the
@@ -2378,6 +2515,16 @@ export default {
     },
     targetPayment() {
       return Math.max(0, this.campaignFee - this.calculatedDiscount);
+    },
+    addonCartTotal() {
+      if (!this.activePayment || !Array.isArray(this.activePayment.addons)) return 0;
+      return this.activePayment.addons.reduce((sum, addon) => {
+        const qty = Number(this.addonCart[String(addon._id)] || 0);
+        return sum + (qty > 0 ? qty * Number(addon.price || 0) : 0);
+      }, 0);
+    },
+    grandTotal() {
+      return this.targetPayment + this.addonCartTotal;
     },
     // The contribution row that matches the currently-selected student for the
     // active campaign. Used to detect whether they've already paid so the
@@ -2750,6 +2897,7 @@ export default {
       this.campaignFee = event.amount_due || 0;
       this.selectedStudent = null;
       this.discountValue = 0;
+      this.addonCart = {};
       this.loadAllContributions();
     },
     async confirmDeleteEvent(event) {
@@ -2835,6 +2983,11 @@ export default {
     handleCarouselKeydown(e) {
       if (e.key === 'ArrowLeft') { e.preventDefault(); this.prevCarousel(); }
       else if (e.key === 'ArrowRight') { e.preventDefault(); this.nextCarousel(); }
+      else if (e.key === 'Enter' && this.displayedEvents.length > 0) {
+        e.preventDefault();
+        const event = this.displayedEvents[this.carouselIndex];
+        if (event) this.selectEvent(event);
+      }
     },
     handleSwipeStart(e) {
       this._swipeStartX = e.touches[0].clientX;
@@ -3083,7 +3236,7 @@ export default {
     closeCreateEventModal() {
       this.showCreateEventModal = false;
       this.createEventError = '';
-      this.newEventForm = { title: '', description: '', amount_due: '', type: 'fee', deadline: '', target_year_levels: [], target_programs: [] };
+      this.newEventForm = { title: '', description: '', amount_due: '', type: 'fee', deadline: '', target_year_levels: [], target_programs: [], addons: [] };
     },
     openEditEvent(event) {
       this.editEventForm = {
@@ -3096,6 +3249,14 @@ export default {
         status: event.status || 'active',
         target_year_levels: Array.isArray(event.target_year_levels) ? [...event.target_year_levels] : [],
         target_programs: Array.isArray(event.target_programs) ? [...event.target_programs] : [],
+        addons: Array.isArray(event.addons) ? event.addons.map(a => ({
+          _id: a._id,
+          name: a.name || '',
+          description: a.description || '',
+          price: a.price ?? 0,
+          unit: a.unit || 'piece',
+          max_qty: a.max_qty ?? null,
+        })) : [],
       };
       this.editEventError = '';
       this.showEditEventModal = true;
@@ -3103,7 +3264,7 @@ export default {
     closeEditEventModal() {
       this.showEditEventModal = false;
       this.editEventError = '';
-      this.editEventForm = { _id: '', title: '', description: '', amount_due: '', type: 'fee', deadline: '', status: 'active', target_year_levels: [], target_programs: [] };
+      this.editEventForm = { _id: '', title: '', description: '', amount_due: '', type: 'fee', deadline: '', status: 'active', target_year_levels: [], target_programs: [], addons: [] };
     },
     async saveEditEvent() {
       this.editEventError = '';
@@ -3124,6 +3285,7 @@ export default {
             status: this.editEventForm.status,
             target_year_levels: this.editEventForm.target_year_levels,
             target_programs: this.editEventForm.target_programs,
+            addons: this.editEventForm.addons.filter(a => a.name && a.name.trim()),
           })
         });
         const data = await response.json();
@@ -3165,6 +3327,7 @@ export default {
           deadline: this.newEventForm.deadline || null,
           target_year_levels: this.newEventForm.target_year_levels,
           target_programs: this.newEventForm.target_programs,
+          addons: this.newEventForm.addons.filter(a => a.name && a.name.trim()),
         };
         const response = await fetch(buildAPIUrl('/apis/payments'), {
           method: 'POST',
@@ -3255,7 +3418,25 @@ export default {
           : this.selectedStudent.student_id;
 
         const paymentId = this.activePayment._id;
-        const amountPaid = isRow ? (this.activePayment.amount_due || 0) : this.targetPayment;
+
+        // Build addon purchase list (only for the payment card, not row quick-pay)
+        const addon_purchases = [];
+        if (!isRow && Array.isArray(this.activePayment.addons)) {
+          for (const addon of this.activePayment.addons) {
+            const qty = Number(this.addonCart[String(addon._id)] || 0);
+            if (qty > 0) {
+              addon_purchases.push({
+                addon_id:   addon._id,
+                addon_name: addon.name,
+                quantity:   qty,
+                price_each: Number(addon.price || 0),
+                subtotal:   qty * Number(addon.price || 0),
+              });
+            }
+          }
+        }
+
+        const amountPaid = isRow ? (this.activePayment.amount_due || 0) : this.grandTotal;
 
         const response = await fetch(buildAPIUrl(`/apis/payments/${paymentId}/mark-paid`), {
           method: 'PUT',
@@ -3267,7 +3448,8 @@ export default {
           body: JSON.stringify({
             student_id_input: studentIdInput,
             amount_paid: amountPaid,
-            notes: 'Payment recorded via admin panel'
+            notes: 'Payment recorded via admin panel',
+            addon_purchases,
           })
         });
 
@@ -3275,6 +3457,7 @@ export default {
         if (response.ok) {
           window.dispatchEvent(new CustomEvent('app-notification', { detail: { message: 'Payment recorded successfully', type: 'success' } }));
           this.discountValue = 0;
+          this.addonCart = {};
           // Preserve scroll position so the page doesn't jump while the list refreshes.
           const _scrollY = (typeof window !== 'undefined') ? window.scrollY : 0;
           // Use the Paid-On refresh wrapper so the indicator pulses + the
@@ -3293,6 +3476,22 @@ export default {
       } finally {
         if (isRow) { this.processingPaymentId = null; }
         else { this.isProcessingPaymentGlobal = false; }
+      }
+    },
+    addAddonRow(form) {
+      form.addons.push({ name: '', description: '', price: 0, unit: 'piece', max_qty: null });
+    },
+    removeAddonRow(form, idx) {
+      form.addons.splice(idx, 1);
+    },
+    setAddonQty(addonId, qty) {
+      const n = Math.max(0, parseInt(qty) || 0);
+      if (n === 0) {
+        const cart = { ...this.addonCart };
+        delete cart[String(addonId)];
+        this.addonCart = cart;
+      } else {
+        this.addonCart = { ...this.addonCart, [String(addonId)]: n };
       }
     },
     confirmMarkUnpaid(contribution) {
