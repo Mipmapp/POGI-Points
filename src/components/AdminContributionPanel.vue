@@ -871,7 +871,7 @@
       </div>
 
       <div class="p-5 sm:p-6 space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 contrib-s1">
           <!-- Campaign Fee -->
           <div class="p-4 bg-gray-50 rounded-2xl border border-gray-200">
             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Campaign Fee</p>
@@ -894,7 +894,7 @@
         </div>
 
         <!-- Add-ons Picker (shown only when the event has add-ons) -->
-        <div v-if="activePayment && activePayment.addons && activePayment.addons.length > 0" class="p-4 bg-amber-50 rounded-2xl border border-amber-200">
+        <div v-if="activePayment && activePayment.addons && activePayment.addons.length > 0" class="p-4 bg-amber-50 rounded-2xl border border-amber-200 contrib-s2">
           <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wider mb-3 flex items-center gap-1.5">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
             Add-ons
@@ -934,7 +934,7 @@
         </div>
 
         <!-- Payment Summary -->
-        <div class="p-4 bg-blue-50 rounded-2xl border border-blue-200">
+        <div class="p-4 bg-blue-50 rounded-2xl border border-blue-200 contrib-s3">
           <p class="text-[10px] font-bold text-blue-400 uppercase tracking-wider mb-3">Payment Summary</p>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between items-center">
@@ -957,7 +957,7 @@
         </div>
 
         <!-- Loading skeleton while payment status is being fetched from server -->
-        <div v-if="isLoadingPaymentStatus" class="space-y-3 animate-pulse">
+        <div v-if="isLoadingPaymentStatus" class="space-y-3 animate-pulse contrib-s4">
           <div class="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-2xl">
             <div class="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0"></div>
             <div class="flex-1 space-y-2">
@@ -970,7 +970,7 @@
         </div>
 
         <!-- Already Paid State (Mark as Unpaid) -->
-        <div v-else-if="selectedStudentAlreadyPaid" class="space-y-3">
+        <div v-else-if="selectedStudentAlreadyPaid" class="space-y-3 contrib-s4">
           <div class="flex items-center gap-3 p-4 bg-green-50 border border-green-200 rounded-2xl">
             <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
               <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -1020,7 +1020,7 @@
           v-else
           @click="markAsPayment()"
           :disabled="!selectedStudent || isProcessingPaymentGlobal"
-          class="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-2xl font-bold text-sm transition-all hover:from-green-700 hover:to-green-800 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-green-200 active:scale-[0.99]"
+          class="w-full py-3 px-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-2xl font-bold text-sm transition-all hover:from-green-700 hover:to-green-800 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-green-200 active:scale-[0.99] contrib-s4"
         >
           <svg v-if="isProcessingPaymentGlobal" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
           <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -1385,10 +1385,10 @@
 
     <!-- Delete Event Confirmation Modal -->
     <Teleport to="body">
-    <transition name="fade">
+    <transition name="modal-pop">
       <div v-if="showDeleteEventConfirm" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="cancelDeleteEvent"></div>
-        <div class="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div class="modal-pop-card relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
           <div class="p-6 text-center">
             <!-- Icon with countdown ring -->
             <div class="relative w-16 h-16 mx-auto mb-4">
@@ -1473,10 +1473,10 @@
 
     <!-- Mark as Unpaid Confirmation Modal -->
     <Teleport to="body">
-    <transition name="fade">
+    <transition name="modal-pop">
       <div v-if="showUnpaidConfirm" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="cancelMarkUnpaid"></div>
-        <div class="relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
+        <div class="modal-pop-card relative z-10 w-full max-w-sm bg-white rounded-3xl shadow-2xl overflow-hidden">
           <div class="p-6 text-center">
             <div class="relative w-16 h-16 mx-auto mb-4">
               <svg class="absolute inset-0 w-16 h-16 -rotate-90" viewBox="0 0 56 56">
@@ -1715,10 +1715,10 @@
 
     <!-- Edit Event Modal -->
     <Teleport to="body">
-    <transition name="fade">
+    <transition name="modal-pop">
       <div v-if="showEditEventModal" class="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div class="absolute inset-0 bg-black/50 backdrop-blur-sm" @click="closeEditEventModal"></div>
-        <div class="relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="modal-pop-card relative z-10 w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
           <!-- Modal Header -->
           <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-5 flex items-center justify-between flex-shrink-0">
             <div class="flex items-center gap-3">
@@ -4160,6 +4160,54 @@ export default {
 .contrib-slide-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+/* ── modal-pop: backdrop fade + card spring scale ── */
+.modal-pop-enter-active {
+  transition: opacity 0.22s ease;
+}
+.modal-pop-leave-active {
+  transition: opacity 0.18s ease;
+}
+.modal-pop-enter-from,
+.modal-pop-leave-to {
+  opacity: 0;
+}
+.modal-pop-enter-active .modal-pop-card {
+  animation: modal-spring-in 0.32s cubic-bezier(0.34, 1.48, 0.64, 1) both;
+}
+.modal-pop-leave-active .modal-pop-card {
+  animation: modal-spring-out 0.18s ease-in both;
+}
+@keyframes modal-spring-in {
+  from { opacity: 0; transform: scale(0.88) translateY(16px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes modal-spring-out {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to   { opacity: 0; transform: scale(0.92) translateY(8px); }
+}
+
+/* ── contrib-sN: staggered section entrance inside the payment card ── */
+@keyframes contrib-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.contrib-s1 {
+  animation: contrib-fade-up 0.32s ease both;
+  animation-delay: 0.08s;
+}
+.contrib-s2 {
+  animation: contrib-fade-up 0.32s ease both;
+  animation-delay: 0.16s;
+}
+.contrib-s3 {
+  animation: contrib-fade-up 0.32s ease both;
+  animation-delay: 0.24s;
+}
+.contrib-s4 {
+  animation: contrib-fade-up 0.32s ease both;
+  animation-delay: 0.32s;
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
