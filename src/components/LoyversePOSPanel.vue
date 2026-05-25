@@ -119,15 +119,25 @@
               </div>
               <p class="mt-1">1 x ₱{{ amount.toFixed(2) }}</p>
 
+              <template v-if="addonItems && addonItems.length > 0">
+                <div v-for="addon in addonItems" :key="addon.name" class="mt-1">
+                  <div class="flex justify-between">
+                    <span class="uppercase truncate pr-1" style="max-width:65%">{{ addon.name }}</span>
+                    <span>₱{{ addon.subtotal.toFixed(2) }}</span>
+                  </div>
+                  <p class="text-[10px]">{{ addon.qty }} x ₱{{ addon.price.toFixed(2) }}</p>
+                </div>
+              </template>
+
               <div class="border-t border-dashed border-black/60 my-2"></div>
 
               <div class="flex justify-between font-extrabold text-[13px]">
                 <span>Total</span>
-                <span>₱{{ amount.toFixed(2) }}</span>
+                <span>₱{{ receiptTotal.toFixed(2) }}</span>
               </div>
               <div class="flex justify-between mt-1">
                 <span>Cash</span>
-                <span>₱{{ amount.toFixed(2) }}</span>
+                <span>₱{{ receiptTotal.toFixed(2) }}</span>
               </div>
 
               <div class="border-t border-dashed border-black/60 my-3"></div>
@@ -287,6 +297,7 @@ export default {
     student: { type: Object, default: null },
     suggestedAmount: { type: Number, default: 0 },
     activePayment: { type: Object, default: null },
+    addonItems: { type: Array, default: () => [] },
   },
   data() {
     return {
@@ -326,8 +337,14 @@ export default {
       const a = Number(this.suggestedAmount || (this.activePayment && this.activePayment.amount_due) || 0);
       return a > 0 ? a : 0;
     },
+    addonTotal() {
+      return (this.addonItems || []).reduce((s, i) => s + Number(i.subtotal || 0), 0);
+    },
+    receiptTotal() {
+      return this.amount + this.addonTotal;
+    },
     hasSale() {
-      return !!this.student && !!this.activePayment && this.amount > 0;
+      return !!this.student && !!this.activePayment && this.receiptTotal > 0;
     },
   },
   mounted() {
@@ -513,18 +530,34 @@ export default {
         .forEach(line => parts.push(enc.encode(line + '\n')));
       parts.push(new Uint8Array([0x1b, 0x45, 0x00]));
       parts.push(enc.encode(`1 x ${priceText}\n`));
+
+      // Add-on lines
+      if (this.addonItems && this.addonItems.length > 0) {
+        for (const addon of this.addonItems) {
+          const addonPrice = 'P' + Number(addon.subtotal || 0).toFixed(2);
+          const addonName = String(addon.name || 'ADD-ON').toUpperCase();
+          parts.push(new Uint8Array([0x1b, 0x45, 0x01]));
+          this.itemRow(addonName, addonPrice, W)
+            .forEach(line => parts.push(enc.encode(line + '\n')));
+          parts.push(new Uint8Array([0x1b, 0x45, 0x00]));
+          parts.push(enc.encode(`${addon.qty} x P${Number(addon.price || 0).toFixed(2)}\n`));
+        }
+      }
+
       parts.push(enc.encode('\n'));
       parts.push(enc.encode(this.dashed(W) + '\n'));
+
+      const totalText = 'P' + this.receiptTotal.toFixed(2);
 
       // Total — bold AND double-height so it stands out the most
       parts.push(new Uint8Array([0x1b, 0x45, 0x01])); // bold ON
       parts.push(new Uint8Array([0x1b, 0x21, 0x10])); // double height
-      parts.push(enc.encode(this.row('Total', priceText, W) + '\n'));
+      parts.push(enc.encode(this.row('Total', totalText, W) + '\n'));
       parts.push(new Uint8Array([0x1b, 0x21, 0x00])); // size reset
       parts.push(new Uint8Array([0x1b, 0x45, 0x00])); // bold OFF
 
       // Cash
-      parts.push(enc.encode(this.row('Cash', priceText, W) + '\n'));
+      parts.push(enc.encode(this.row('Cash', totalText, W) + '\n'));
       parts.push(enc.encode('\n'));
 
       // Footer (centered, with proper word-wrapping so we don't split words)

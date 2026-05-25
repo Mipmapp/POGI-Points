@@ -1035,6 +1035,7 @@
       v-if="activePayment && selectedStudent"
       :student="selectedStudent"
       :suggested-amount="targetPayment"
+      :addon-items="addonLineItems"
       :active-payment="activePayment"
       @printed="onReceiptPrinted"
     />
@@ -2652,6 +2653,21 @@ export default {
     },
     grandTotal() {
       return this.targetPayment + this.addonCartTotal;
+    },
+    addonLineItems() {
+      if (!this.activePayment || !Array.isArray(this.activePayment.addons)) return [];
+      return this.activePayment.addons.reduce((acc, addon) => {
+        const qty = Number(this.addonCart[String(addon._id)] || 0);
+        if (qty > 0) {
+          acc.push({
+            name: addon.name,
+            qty,
+            price: Number(addon.price || 0),
+            subtotal: qty * Number(addon.price || 0),
+          });
+        }
+        return acc;
+      }, []);
     },
     // The contribution row that matches the currently-selected student for the
     // active campaign. Used to detect whether they've already paid so the
