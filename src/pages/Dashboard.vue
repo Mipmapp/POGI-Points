@@ -4661,7 +4661,7 @@
                       class="flex gap-2.5 text-xs text-gray-600 leading-relaxed"
                     >
                       <span :class="['flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full', section.dot]"></span>
-                      <span>{{ point }}</span>
+                      <span v-html="point"></span>
                     </li>
                   </ul>
                 </div>
@@ -4791,7 +4791,7 @@
                       class="flex gap-2.5 text-xs text-gray-600 leading-relaxed"
                     >
                       <span :class="['flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full', section.dot]"></span>
-                      <span>{{ point }}</span>
+                      <span v-html="point"></span>
                     </li>
                   </ul>
                 </div>
