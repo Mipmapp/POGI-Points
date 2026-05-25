@@ -524,8 +524,8 @@
             </div>
 
             <div class="flex items-center justify-center text-sm pt-1">
-              <button type="button" @click="showContactModal = true" class="text-gray-400 hover:text-gray-600 inline-flex items-center gap-1 text-xs">
-                <img src="/help.svg" alt="Help" class="w-4 h-4 opacity-50" />
+              <button type="button" @click="showContactModal = true" class="text-gray-500 hover:text-gray-700 inline-flex items-center gap-1.5 text-xs transition-colors">
+                <img src="/help.svg" alt="Help" class="w-4 h-4 opacity-70" />
                 Need help?
               </button>
             </div>
@@ -593,8 +593,8 @@
           </div>
 
           <div class="flex items-center justify-center text-sm">
-            <button type="button" @click="showContactModal = true" class="text-gray-400 hover:text-gray-600 inline-flex items-center gap-1 text-xs">
-              <img src="/help.svg" alt="Help" class="w-4 h-4 opacity-50" />
+            <button type="button" @click="showContactModal = true" class="text-gray-500 hover:text-gray-700 inline-flex items-center gap-1.5 text-xs transition-colors">
+              <img src="/help.svg" alt="Help" class="w-4 h-4 opacity-70" />
               Need help?
             </button>
           </div>
@@ -1129,7 +1129,12 @@ const handleLogin = async () => {
           password: enteredPass
         })
       });
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        throw new SyntaxError('Server returned a non-JSON response. The server may be temporarily unavailable.');
+      }
       
       // Extract master object from response
       if (data.master && data.message === "Login successful") {
@@ -1169,7 +1174,13 @@ const handleLogin = async () => {
           })
           // Keep server clock updated on every response.
           updateServerOffsetFromHeaders(resp.clone ? resp.clone() : resp)
-          const d = await resp.json()
+          let d
+          try {
+            d = await resp.json()
+          } catch {
+            // Non-JSON response (proxy error, server down) — try next college
+            continue
+          }
 
           if (d.student && d.message === 'Login successful') {
             _finalResponse = resp
@@ -1211,6 +1222,14 @@ const handleLogin = async () => {
       finalResponse = attempt.response
       finalData = attempt.data
       detectedCollege = attempt.college
+
+      // If every college returned a non-JSON response the server is unreachable
+      if (!finalResponse && !finalData) {
+        errorMessage.value = 'Cannot reach the server. Please check your internet connection or try again later.'
+        showErrorNotification.value = true
+        isLoading.value = false
+        return
+      }
 
       const data = finalData || {}
       if (data.student && data.message === 'Login successful') {
