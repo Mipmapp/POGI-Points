@@ -186,10 +186,10 @@
         <!-- Carousel — 3 cards visible -->
         <div v-else class="flex flex-col items-center gap-3">
 
-          <!-- Viewport: overflow-hidden clips side cards cleanly, no fades needed -->
+          <!-- Viewport: overflow-x-clip clips side cards without clamping card height vertically -->
           <div
-            class="relative w-full overflow-hidden rounded-3xl"
-            style="min-height: 310px;"
+            class="relative w-full rounded-3xl"
+            style="min-height: 340px; overflow-x: clip;"
             @touchstart.passive="handleSwipeStart"
             @touchend.passive="handleSwipeEnd"
           >
@@ -293,15 +293,6 @@
                     </div>
                   </div>
 
-                  <!-- Target badges -->
-                  <div class="flex flex-wrap gap-1 min-h-[18px]">
-                    <template v-if="(event.target_year_levels && event.target_year_levels.length > 0) || (event.target_programs && event.target_programs.length > 0)">
-                      <span v-for="yl in (event.target_year_levels || [])" :key="'yl-'+yl" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-700">{{ yl }}</span>
-                      <span v-for="prog in (event.target_programs || [])" :key="'prog-'+prog" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">{{ prog }}</span>
-                    </template>
-                    <span v-else class="text-[11px] text-gray-400 italic">All students</span>
-                  </div>
-
                   <!-- Add-ons badge -->
                   <div v-if="event.addons && event.addons.length > 0" class="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5">
                     <svg class="w-3.5 h-3.5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
@@ -324,6 +315,15 @@
                     </span>
                     <span v-else>Select This Event</span>
                   </button>
+
+                  <!-- Target badges — audience filter, shown at the bottom -->
+                  <div class="flex flex-wrap gap-1 pt-0.5">
+                    <template v-if="(event.target_year_levels && event.target_year_levels.length > 0) || (event.target_programs && event.target_programs.length > 0)">
+                      <span v-for="yl in (event.target_year_levels || [])" :key="'yl-'+yl" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-700">{{ yl }}</span>
+                      <span v-for="prog in (event.target_programs || [])" :key="'prog-'+prog" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-700">{{ prog }}</span>
+                    </template>
+                    <span v-else class="text-[11px] text-gray-400 italic">All students</span>
+                  </div>
                 </div>
               </div>
             </div>
