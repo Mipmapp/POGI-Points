@@ -5872,10 +5872,10 @@ app.post('/apis/password-reset/request', studentAuth, timestampAuth, async (req,
             email: { $regex: `^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, $options: 'i' }
         });
 
-        // Always return same message to prevent enumeration
+        // Return 404 when student not found so the frontend can show an error.
         if (!student || student.status !== 'approved') {
             passwordResetAttempts.set(rateLimitKey, { count: attemptData.count + 1, lastAttempt: now });
-            return res.status(200).json({ message: "If an account exists with this Student ID and email, a reset code has been sent." });
+            return res.status(404).json({ message: "No account found with that Student ID and email combination." });
         }
 
         // Delete any existing reset codes for this student
