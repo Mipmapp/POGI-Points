@@ -637,46 +637,53 @@
           <!-- Scrollable Content -->
           <div class="p-6 space-y-4 overflow-y-auto">
 
-            <!-- Step 1a: Enter Student ID -->
-            <div v-if="resetStep === 1 && !resetEmailStep" class="space-y-4">
-              <div class="bg-green-50 rounded-2xl p-4">
-                <p class="text-sm text-gray-600">Enter your Student ID to get started with the password reset.</p>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
-                <input v-model="resetStudentId" type="text" placeholder="25-A-12345"
-                  @keyup.enter="resetStudentId.trim() && (resetEmailStep = true)"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
-              </div>
-              <button @click="resetEmailStep = true" :disabled="!resetStudentId.trim()"
-                class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">
-                Next →
-              </button>
-            </div>
+            <!-- Step 1: Student ID → Email (animated) -->
+            <div v-if="resetStep === 1" class="relative overflow-hidden">
+              <transition :name="resetDirection === 'forward' ? 'step-slide-left' : 'step-slide-right'">
 
-            <!-- Step 1b: Enter Email -->
-            <div v-if="resetStep === 1 && resetEmailStep" class="space-y-4">
-              <div class="bg-green-50 rounded-2xl p-4">
-                <p class="text-sm text-gray-600">Enter the email address registered to your account to receive a verification code.</p>
-              </div>
-              <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
-                <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                <span class="text-sm text-gray-500 truncate">{{ resetStudentId }}</span>
-                <button @click="resetEmailStep = false; resetMessage = ''" class="ml-auto text-xs text-blue-500 hover:text-blue-700 font-medium flex-shrink-0">Change</button>
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
-                <input v-model="resetEmail" type="email" placeholder="your.email@example.com"
-                  @keyup.enter="!resetLoading && resetEmail.trim() && requestResetCode()"
-                  class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
-              </div>
-              <button @click="requestResetCode" :disabled="resetLoading || !resetEmail.trim()"
-                class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
-                <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                {{ resetLoading ? 'Sending...' : 'Send Code' }}
-              </button>
-              <button @click="resetEmailStep = false; resetMessage = ''" class="w-full text-sm font-medium text-blue-600 hover:text-blue-800 transition">← Back</button>
-              <p v-if="resetMessage" :class="['text-sm text-center font-medium', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
+                <!-- Step 1a: Student ID -->
+                <div v-if="!resetEmailStep" key="id-step" class="space-y-4">
+                  <div class="bg-green-50 rounded-2xl p-4">
+                    <p class="text-sm text-gray-600">Enter your Student ID to get started with the password reset.</p>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
+                    <input v-model="resetStudentId" type="text" placeholder="25-A-12345"
+                      @keyup.enter="resetStudentId.trim() && (resetDirection = 'forward', resetEmailStep = true)"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                  </div>
+                  <button @click="resetDirection = 'forward'; resetEmailStep = true" :disabled="!resetStudentId.trim()"
+                    class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    Next →
+                  </button>
+                </div>
+
+                <!-- Step 1b: Email -->
+                <div v-else key="email-step" class="space-y-4">
+                  <div class="bg-green-50 rounded-2xl p-4">
+                    <p class="text-sm text-gray-600">Enter the email address registered to your account to receive a verification code.</p>
+                  </div>
+                  <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5">
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    <span class="text-sm text-gray-500 truncate">{{ resetStudentId }}</span>
+                    <button @click="resetDirection = 'backward'; resetEmailStep = false; resetMessage = ''" class="ml-auto text-xs text-blue-500 hover:text-blue-700 font-medium flex-shrink-0">Change</button>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <input v-model="resetEmail" type="email" placeholder="your.email@example.com"
+                      @keyup.enter="!resetLoading && resetEmail.trim() && requestResetCode()"
+                      class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition" />
+                  </div>
+                  <button @click="requestResetCode" :disabled="resetLoading || !resetEmail.trim()"
+                    class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center">
+                    <svg v-if="resetLoading" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                    {{ resetLoading ? 'Sending...' : 'Send Code' }}
+                  </button>
+                  <button @click="resetDirection = 'backward'; resetEmailStep = false; resetMessage = ''" class="w-full text-sm font-medium text-blue-600 hover:text-blue-800 transition">← Back</button>
+                  <p v-if="resetMessage" :class="['text-sm text-center font-medium', resetSuccess ? 'text-green-600' : 'text-red-600']">{{ resetMessage }}</p>
+                </div>
+
+              </transition>
             </div>
 
             <!-- Step 2: Enter Verification Code -->
@@ -828,6 +835,7 @@ const handleDigitDelete = (index, event) => {
 const showForgotPasswordModal = ref(false)
 const resetStep = ref(1)
 const resetEmailStep = ref(false)
+const resetDirection = ref('forward')
 const resetStudentId = ref('')
 const resetEmail = ref('')
 const resetCode = ref('')
@@ -844,6 +852,7 @@ const closeForgotPasswordModal = () => {
   showForgotPasswordModal.value = false
   resetStep.value = 1
   resetEmailStep.value = false
+  resetDirection.value = 'forward'
   resetStudentId.value = ''
   resetEmail.value = ''
   resetCode.value = ''
@@ -1678,6 +1687,28 @@ function manualRetryFace() {
 .modal-bounce-leave-active {
   animation: bounce-in 0.3s reverse;
 }
+
+/* ---------- reset-password step slide (forward: left, backward: right) ---------- */
+.step-slide-left-enter-active,
+.step-slide-left-leave-active,
+.step-slide-right-enter-active,
+.step-slide-right-leave-active {
+  transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1),
+              opacity   0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.step-slide-left-leave-active,
+.step-slide-right-leave-active {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+/* forward: new slides in from right, old exits left */
+.step-slide-left-enter-from { transform: translateX(48px);  opacity: 0; }
+.step-slide-left-leave-to   { transform: translateX(-48px); opacity: 0; }
+/* backward: new slides in from left, old exits right */
+.step-slide-right-enter-from { transform: translateX(-48px); opacity: 0; }
+.step-slide-right-leave-to   { transform: translateX(48px);  opacity: 0; }
 @keyframes scan {
   0%   { transform: translateY(0); }
   50%  { transform: translateY(280px); }
