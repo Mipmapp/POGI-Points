@@ -8361,7 +8361,7 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
                 payment_status: pr.payment_status || 'unpaid',
                 original_amount: latestPayment?.amount_due || 0,
                 discount_value: 0,
-                target_amount: latestPayment?.amount_due || 0,
+                target_amount: (latestPayment?.amount_due || 0) + (Array.isArray(pr.addon_purchases) ? pr.addon_purchases.reduce((s, ap) => s + (Number(ap.price_each || 0) * Number(ap.quantity || 0)), 0) : 0),
                 amount_paid: pr.amount_paid || 0,
                 paid_at: pr.paid_at || null,
                 paid_by_treasurer: pr.paid_by_treasurer || null,

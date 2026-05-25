@@ -1290,7 +1290,13 @@
               <td v-if="anyRowHasDiscount" class="hidden xl:table-cell px-3 py-2 text-xs text-right font-semibold text-orange-600 whitespace-nowrap">
                 {{ c.discount_value > 0 ? `–₱${c.discount_value.toFixed(2)}` : '—' }}
               </td>
-              <td class="px-3 py-2 text-sm text-right font-extrabold text-blue-700 whitespace-nowrap">₱{{ c.target_amount?.toFixed(2) || '0.00' }}</td>
+              <td class="px-3 py-2 text-right whitespace-nowrap">
+                <span class="font-extrabold text-sm text-blue-700">₱{{ c.target_amount?.toFixed(2) || '0.00' }}</span>
+                <span v-if="c.addon_purchases && c.addon_purchases.length > 0"
+                  class="block text-[10px] text-amber-600 font-semibold leading-tight"
+                  :title="c.addon_purchases.map(ap => ap.addon_name + ' ×' + ap.quantity).join(', ')"
+                >+ {{ c.addon_purchases.length }} add-on{{ c.addon_purchases.length === 1 ? '' : 's' }}</span>
+              </td>
               <td class="px-3 py-2 text-center">
                 <span :class="['inline-flex px-2 py-0.5 rounded-full text-[10px] font-bold', c.payment_status === 'paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600']">
                   {{ c.payment_status === 'paid' ? 'PAID' : 'UNPAID' }}
