@@ -498,7 +498,7 @@
       ══════════════════════════════════════════════════════════════ -->
       <div v-if="activePayment" class="border-b border-gray-100">
         <!-- Card header band -->
-        <div class="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 px-4 sm:px-6 md:px-8 py-4 sm:py-5">
+        <div class="relative overflow-hidden bg-gradient-to-r from-ssaam-dark via-blue-700 to-ssaam-light px-4 sm:px-6 md:px-8 py-4 sm:py-5">
           <!-- Subtle texture overlays -->
           <div class="absolute inset-0 opacity-10 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
           <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10 blur-2xl"></div>
@@ -521,7 +521,7 @@
             <!-- Active event pill (right side on desktop, below on mobile) -->
             <div class="sm:ml-auto flex-shrink-0">
               <div class="inline-flex items-center gap-1.5 bg-white/15 border border-white/25 rounded-xl px-3 py-1.5 max-w-[220px] sm:max-w-xs">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse flex-shrink-0"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-blue-300 animate-pulse flex-shrink-0"></span>
                 <span class="text-white/90 text-xs font-semibold truncate">{{ activePayment.title }}</span>
                 <span class="text-white/50 text-xs flex-shrink-0">· ₱{{ Number(activePayment.amount_due || 0).toFixed(2) }}</span>
               </div>
@@ -567,7 +567,7 @@
               <button
                 type="submit"
                 :disabled="isSearchingStudent || !searchQuery.trim()"
-                class="flex-shrink-0 inline-flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-3.5 bg-white text-emerald-700 rounded-2xl font-bold text-sm transition-all hover:bg-emerald-50 active:scale-95 shadow-lg shadow-black/20 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                class="flex-shrink-0 inline-flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-3.5 bg-white text-blue-700 rounded-2xl font-bold text-sm transition-all hover:bg-blue-50 active:scale-95 shadow-lg shadow-black/20 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
               >
                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                 <span class="hidden xs:inline sm:inline">{{ isSearchingStudent ? 'Searching…' : 'Search' }}</span>
@@ -582,14 +582,14 @@
           </form>
         </div>
 
-        <!-- Results panel — drops below the green band -->
+        <!-- Results panel — drops below the blue band -->
         <div class="px-4 sm:px-6 md:px-8">
           <!-- Multi-match results -->
-          <div v-if="hasSearched && searchResults.length > 0" class="border-x border-b border-emerald-200 rounded-b-2xl shadow-lg overflow-hidden">
-            <div class="px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-green-50 border-b border-emerald-200 flex items-center justify-between">
+          <div v-if="hasSearched && searchResults.length > 0" class="border-x border-b border-blue-200 rounded-b-2xl shadow-lg overflow-hidden">
+            <div class="px-4 py-2.5 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-200 flex items-center justify-between">
               <div class="flex items-center gap-2">
-                <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                <p class="text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <p class="text-xs font-bold text-blue-700 uppercase tracking-wider">
                   {{ searchResults.length }} {{ searchResults.length === 1 ? 'match' : 'matches' }} found — tap to select
                 </p>
               </div>
@@ -602,9 +602,9 @@
                 v-for="s in searchResults"
                 :key="s._id || s.student_id"
                 @click="selectStudentFromSearch(s)"
-                class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-emerald-50 active:bg-emerald-100 transition group"
+                class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-blue-50 active:bg-blue-100 transition group"
               >
-                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden shadow-sm">
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden shadow-sm">
                   <img
                     v-if="s.photo && !photoFailed['res-' + (s._id || s.student_id)]"
                     :src="s.photo"
@@ -619,7 +619,7 @@
                   <p class="font-bold text-gray-900 text-sm truncate">{{ s.full_name || ((s.first_name || '') + ' ' + (s.last_name || '')).trim() }}</p>
                   <p class="text-xs text-gray-500 truncate">{{ s.student_id }} · {{ s.program || '—' }} · {{ s.year_level || '—' }}<span v-if="s.college"> · {{ s.college }}</span></p>
                 </div>
-                <span class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 group-hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition shadow-sm">
+                <span class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 group-hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition shadow-sm">
                   <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                   Select
                 </span>
