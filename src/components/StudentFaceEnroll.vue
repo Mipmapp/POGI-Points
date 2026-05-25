@@ -124,21 +124,23 @@
                     </div>
                   </Transition>
 
-                  <!-- Face oval + scan line -->
+                  <!-- Face outline + scan line -->
                   <div v-if="cameraReady" class="absolute inset-0 pointer-events-none">
                     <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
-                      <!-- outer dim mask -->
-                      <ellipse cx="50" cy="48" rx="22" ry="30" fill="rgba(4,8,32,0.0)" />
-                      <!-- animated oval guide -->
-                      <ellipse cx="50" cy="48" rx="22" ry="30" fill="none"
+                      <!-- Animated face-shape guide (wider cranium, tapered chin) -->
+                      <path
+                        d="M50,17 C61,17 71,24 72.5,37 C74,50 68,63 62,69 C58,73 54,77 50,79 C46,77 42,73 38,69 C32,63 26,50 27.5,37 C29,24 39,17 50,17 Z"
+                        fill="none"
                         :stroke="faceLocked ? '#34d399' : (faceDetected ? '#fbbf24' : 'rgba(255,255,255,0.5)')"
                         :stroke-width="faceLocked ? '0.7' : '0.5'"
-                        stroke-dasharray="2.5 1.5">
-                        <animate attributeName="stroke-dashoffset" from="0" to="16" dur="2.5s" repeatCount="indefinite"/>
-                      </ellipse>
-                      <!-- glow ellipse when locked -->
-                      <ellipse v-if="faceLocked" cx="50" cy="48" rx="22" ry="30" fill="none"
-                        stroke="#34d399" stroke-width="0.3" opacity="0.35"/>
+                        stroke-dasharray="2.5 1.5"
+                        stroke-linecap="round">
+                        <animate attributeName="stroke-dashoffset" from="0" to="18" dur="2.5s" repeatCount="indefinite"/>
+                      </path>
+                      <!-- Glow halo when locked -->
+                      <path v-if="faceLocked"
+                        d="M50,17 C61,17 71,24 72.5,37 C74,50 68,63 62,69 C58,73 54,77 50,79 C46,77 42,73 38,69 C32,63 26,50 27.5,37 C29,24 39,17 50,17 Z"
+                        fill="none" stroke="#34d399" stroke-width="0.4" opacity="0.3"/>
                     </svg>
 
                     <!-- Scanning line animation when capturing -->
