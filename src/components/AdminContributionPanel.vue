@@ -492,68 +492,157 @@
       </div>
       </Transition>
 
-      <!-- Search & Filters -->
-      <div v-if="activePayment" class="px-4 sm:px-6 md:px-8 py-5 space-y-4">
-        <!-- Search Row -->
-        <form @submit.prevent="searchStudent" class="flex gap-2">
-          <div class="flex-1 relative">
-            <input
-              v-model="searchQuery"
-              type="text"
-              placeholder="Search by Name, Student ID, or RFID..."
-              class="w-full pl-10 pr-4 py-2.5 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-300 focus:border-blue-400 outline-none text-sm bg-gray-50 focus:bg-white transition"
-            />
-            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          </div>
-          <button
-            type="submit"
-            :disabled="isSearchingStudent"
-            class="px-5 py-2.5 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-xl font-semibold text-sm transition-all hover:scale-[1.02] active:scale-95 shadow-md shadow-blue-200 whitespace-nowrap disabled:opacity-60 disabled:cursor-not-allowed"
-          >
-            {{ isSearchingStudent ? 'Searching...' : 'Search' }}
-          </button>
-        </form>
+      <!-- ══════════════════════════════════════════════════════════════
+           RECORD PAYMENT — prominent station card, clearly separate
+           from the filter row that follows below.
+      ══════════════════════════════════════════════════════════════ -->
+      <div v-if="activePayment" class="border-b border-gray-100">
+        <!-- Card header band -->
+        <div class="relative overflow-hidden bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 px-4 sm:px-6 md:px-8 py-4 sm:py-5">
+          <!-- Subtle texture overlays -->
+          <div class="absolute inset-0 opacity-10 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+          <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-white/10 blur-2xl"></div>
+          <div class="absolute -bottom-10 -left-10 w-40 h-40 rounded-full bg-white/10 blur-2xl"></div>
 
-        <!-- Multi-result search dropdown: shows up to 10 close matches.
-             User clicks a row to set selectedStudent before recording payment. -->
-        <div v-if="hasSearched && searchResults.length > 0" class="bg-white border-2 border-blue-200 rounded-2xl shadow-lg overflow-hidden">
-          <div class="px-4 py-2.5 bg-gradient-to-r from-blue-50 to-blue-100 border-b border-blue-200 flex items-center justify-between">
-            <p class="text-xs font-bold text-blue-700 uppercase tracking-wider">{{ searchResults.length }} {{ searchResults.length === 1 ? 'match' : 'matches' }} — click to select</p>
-            <button @click="clearSearchResults" class="p-1 text-gray-400 hover:text-gray-700 hover:bg-white rounded-lg transition" title="Clear results">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+          <div class="relative flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+            <!-- Icon + label -->
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-white/20 border border-white/30 flex items-center justify-center flex-shrink-0 shadow-inner">
+                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+              </div>
+              <div class="min-w-0">
+                <p class="text-white font-extrabold text-base sm:text-lg leading-tight">Record Payment</p>
+                <p class="text-white/70 text-xs leading-tight truncate">Search student → select → confirm payment</p>
+              </div>
+            </div>
+
+            <!-- Active event pill (right side on desktop, below on mobile) -->
+            <div class="sm:ml-auto flex-shrink-0">
+              <div class="inline-flex items-center gap-1.5 bg-white/15 border border-white/25 rounded-xl px-3 py-1.5 max-w-[220px] sm:max-w-xs">
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse flex-shrink-0"></span>
+                <span class="text-white/90 text-xs font-semibold truncate">{{ activePayment.title }}</span>
+                <span class="text-white/50 text-xs flex-shrink-0">· ₱{{ Number(activePayment.amount_due || 0).toFixed(2) }}</span>
+              </div>
+            </div>
           </div>
-          <ul class="divide-y divide-gray-100 max-h-80 overflow-y-auto">
-            <li
-              v-for="s in searchResults"
-              :key="s._id || s.student_id"
-              @click="selectStudentFromSearch(s)"
-              class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-blue-50 active:bg-blue-100 transition"
-            >
-              <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden">
-                <img
-                  v-if="s.photo && !photoFailed['res-' + (s._id || s.student_id)]"
-                  :src="s.photo"
-                  :alt="s.full_name"
-                  class="w-full h-full object-cover"
-                  @error="markPhotoFailed('res-' + (s._id || s.student_id))"
-                  referrerpolicy="no-referrer"
+
+          <!-- Search form — lives inside the coloured band -->
+          <form @submit.prevent="searchStudent" class="relative mt-4">
+            <div class="flex gap-2 sm:gap-3">
+              <!-- Input wrapper -->
+              <div class="flex-1 relative group">
+                <!-- Magnifier / spinner icon -->
+                <div class="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                  <svg v-if="!isSearchingStudent" class="w-4 h-4 sm:w-5 sm:h-5 text-white/60 group-focus-within:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                  </svg>
+                  <svg v-else class="w-4 h-4 sm:w-5 sm:h-5 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                </div>
+
+                <input
+                  v-model="searchQuery"
+                  type="text"
+                  placeholder="Name, Student ID, or scan RFID…"
+                  autocomplete="off"
+                  class="w-full pl-10 sm:pl-11 pr-9 py-3 sm:py-3.5 bg-white/15 border-2 border-white/30 rounded-2xl text-sm sm:text-base text-white placeholder-white/50 font-medium focus:outline-none focus:bg-white/25 focus:border-white/60 focus:ring-2 focus:ring-white/30 transition-all duration-200"
                 />
-                <span v-else>{{ (s.full_name || s.first_name || '?').charAt(0).toUpperCase() }}</span>
+
+                <!-- Clear X button -->
+                <button
+                  v-if="searchQuery"
+                  type="button"
+                  @click="searchQuery = ''; searchResults = []; hasSearched = false; paymentRecordsQuery = ''; loadAllContributions()"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-white/20 hover:bg-white/40 flex items-center justify-center transition"
+                >
+                  <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
               </div>
-              <div class="min-w-0 flex-1">
-                <p class="font-bold text-gray-900 text-sm truncate">{{ s.full_name || ((s.first_name || '') + ' ' + (s.last_name || '')).trim() }}</p>
-                <p class="text-xs text-gray-500 truncate">{{ s.student_id }} · {{ s.program || '—' }} · {{ s.year_level || '—' }}<span v-if="s.college"> · {{ s.college }}</span></p>
-              </div>
-              <span class="px-2.5 py-1 bg-blue-100 text-blue-700 rounded-lg text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Select</span>
-            </li>
-          </ul>
+
+              <!-- Search button -->
+              <button
+                type="submit"
+                :disabled="isSearchingStudent || !searchQuery.trim()"
+                class="flex-shrink-0 inline-flex items-center gap-2 px-4 sm:px-6 py-3 sm:py-3.5 bg-white text-emerald-700 rounded-2xl font-bold text-sm transition-all hover:bg-emerald-50 active:scale-95 shadow-lg shadow-black/20 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+              >
+                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <span class="hidden xs:inline sm:inline">{{ isSearchingStudent ? 'Searching…' : 'Search' }}</span>
+              </button>
+            </div>
+
+            <!-- Hint row -->
+            <p class="mt-2 text-white/50 text-[11px] leading-tight flex items-center gap-1.5">
+              <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Press <kbd class="mx-0.5 px-1 py-0.5 rounded bg-white/15 border border-white/20 text-white/70 font-mono text-[10px]">Enter</kbd> or tap Search · RFID cards are detected automatically
+            </p>
+          </form>
         </div>
 
-        <!-- Empty-search state -->
-        <div v-else-if="hasSearched && !isSearchingStudent && searchResults.length === 0" class="px-4 py-3 bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl text-center">
-          <p class="text-xs text-gray-500 font-semibold">No students found matching "{{ searchQuery }}"</p>
+        <!-- Results panel — drops below the green band -->
+        <div class="px-4 sm:px-6 md:px-8">
+          <!-- Multi-match results -->
+          <div v-if="hasSearched && searchResults.length > 0" class="border-x border-b border-emerald-200 rounded-b-2xl shadow-lg overflow-hidden">
+            <div class="px-4 py-2.5 bg-gradient-to-r from-emerald-50 to-green-50 border-b border-emerald-200 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <p class="text-xs font-bold text-emerald-700 uppercase tracking-wider">
+                  {{ searchResults.length }} {{ searchResults.length === 1 ? 'match' : 'matches' }} found — tap to select
+                </p>
+              </div>
+              <button @click="clearSearchResults" class="p-1 text-gray-400 hover:text-gray-700 hover:bg-white rounded-lg transition" title="Clear results">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <ul class="divide-y divide-gray-100 max-h-72 overflow-y-auto bg-white">
+              <li
+                v-for="s in searchResults"
+                :key="s._id || s.student_id"
+                @click="selectStudentFromSearch(s)"
+                class="px-4 py-3 flex items-center gap-3 cursor-pointer hover:bg-emerald-50 active:bg-emerald-100 transition group"
+              >
+                <div class="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden shadow-sm">
+                  <img
+                    v-if="s.photo && !photoFailed['res-' + (s._id || s.student_id)]"
+                    :src="s.photo"
+                    :alt="s.full_name"
+                    class="w-full h-full object-cover"
+                    @error="markPhotoFailed('res-' + (s._id || s.student_id))"
+                    referrerpolicy="no-referrer"
+                  />
+                  <span v-else>{{ (s.full_name || s.first_name || '?').charAt(0).toUpperCase() }}</span>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <p class="font-bold text-gray-900 text-sm truncate">{{ s.full_name || ((s.first_name || '') + ' ' + (s.last_name || '')).trim() }}</p>
+                  <p class="text-xs text-gray-500 truncate">{{ s.student_id }} · {{ s.program || '—' }} · {{ s.year_level || '—' }}<span v-if="s.college"> · {{ s.college }}</span></p>
+                </div>
+                <span class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-emerald-600 group-hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition shadow-sm">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                  Select
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          <!-- No-results state -->
+          <div v-else-if="hasSearched && !isSearchingStudent && searchResults.length === 0"
+               class="border-x border-b border-red-200 rounded-b-2xl bg-red-50 px-4 py-4 flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-red-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </div>
+            <div class="min-w-0">
+              <p class="text-sm font-bold text-red-700">No students found</p>
+              <p class="text-xs text-red-500 truncate">No match for "<span class="font-semibold">{{ searchQuery }}</span>"<span v-if="activePayment && (activePayment.target_year_levels?.length || activePayment.target_programs?.length)"> within this event's audience</span></p>
+            </div>
+          </div>
         </div>
+      </div>
+
+      <!-- Filters section (visually separated from the payment recorder above) -->
+      <div v-if="activePayment" class="px-4 sm:px-6 md:px-8 py-4 sm:py-5 space-y-4">
 
         <!-- ============ Date Filter (Paid On) ============ -->
         <Transition name="paid-on-slide">
