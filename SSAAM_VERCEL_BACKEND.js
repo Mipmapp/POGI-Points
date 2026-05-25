@@ -271,18 +271,25 @@ function getPrefixedCollectionName(baseCollectionName, college) {
     return `${getPrefix(college)}${baseCollectionName}`;
 }
 
+// Shared MongoDB connection options — tuned to avoid stale TLS connections
+const MONGO_OPTS = {
+    serverSelectionTimeoutMS: 10000,
+    connectTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+    heartbeatFrequencyMS: 10000,  // detect dead connections every 10s
+    maxPoolSize: 10,
+    minPoolSize: 1,               // keep only 1 idle; Atlas drops many idle connections
+    maxIdleTimeMS: 30000,         // close idle connections before Atlas does (~60s)
+    retryWrites: true,
+    retryReads: true,
+    w: 'majority'
+};
+
 // Single database connection
 async function ensureDatabaseConnection(req, res, next) {
     if (mongoose.connection.readyState !== 1) {
         try {
-            await mongoose.connect(MONGO_URI, {
-                serverSelectionTimeoutMS: 10000,
-                socketTimeoutMS: 45000,
-                maxPoolSize: 10,
-                minPoolSize: 5,
-                retryWrites: true,
-                w: 'majority'
-            });
+            await mongoose.connect(MONGO_URI, MONGO_OPTS);
             console.log('[DB] Connected to main database');
         } catch (err) {
             console.error('[DB] Failed to connect:', err.message);
@@ -1989,23 +1996,11 @@ app.get('/apis/my-payments', auth, async (req, res) => {
 // Function to get connection (simplified to single database)
 // Always uses the main mongoose connection
 async function getConnectionByType(type) {
-    // If main connection is ready, return it
     if (mongoose.connection && mongoose.connection.readyState === 1) {
         return mongoose.connection;
     }
-
-    // Otherwise, attempt to establish the main connection and return it
     try {
-        await mongoose.connect(MONGO_URI, {
-            serverSelectionTimeoutMS: 10000,
-            socketTimeoutMS: 45000,
-            maxPoolSize: 10,
-            minPoolSize: 5,
-            retryWrites: true,
-            w: 'majority',
-            maxIdleTimeMS: 60000,
-            waitQueueTimeoutMS: 10000
-        });
+        await mongoose.connect(MONGO_URI, MONGO_OPTS);
         console.log('Connected to main MongoDB via getConnectionByType');
         return mongoose.connection;
     } catch (err) {
@@ -2016,26 +2011,8 @@ async function getConnectionByType(type) {
 
 const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 5000) => {
     try {
-        await mongoose.connect(MONGO_URI, {
-            serverSelectionTimeoutMS: 10000,
-            socketTimeoutMS: 45000,
-            maxPoolSize: 10,
-            minPoolSize: 5,
-            retryWrites: true,
-            w: 'majority',
-            maxIdleTimeMS: 60000,
-            waitQueueTimeoutMS: 10000
-        });
+        await mongoose.connect(MONGO_URI, MONGO_OPTS);
         console.log('Connected to MongoDB Atlas');
-
-        // Set up main connection error handling
-        mongoose.connection.on('disconnected', () => {
-            console.warn('Main MongoDB connection disconnected');
-        });
-
-        mongoose.connection.on('error', (err) => {
-            console.error('Main MongoDB connection error:', err.message);
-        });
 
         // On Vercel serverless, Vercel owns the HTTP layer — calling app.listen()
         // conflicts with it and causes the function to fail. Only call listen() in
@@ -2068,11 +2045,19 @@ const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 50
 };
 
 mongoose.connection.on('disconnected', () => {
-    console.log('MongoDB disconnected. Attempting to reconnect...');
+    console.warn('[DB] MongoDB disconnected. Scheduling reconnect in 5s...');
+    setTimeout(() => {
+        if (mongoose.connection.readyState === 0) {
+            console.log('[DB] Attempting to reconnect...');
+            mongoose.connect(MONGO_URI, MONGO_OPTS).catch(err =>
+                console.error('[DB] Reconnect attempt failed:', err.message)
+            );
+        }
+    }, 5000);
 });
 
 mongoose.connection.on('error', (err) => {
-    console.error('MongoDB connection error:', err.message);
+    console.error('[DB] MongoDB connection error:', err.message);
 });
 
 // Drop old problematic unique index on event_id + student_id when connection is fully open
