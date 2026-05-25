@@ -86,158 +86,177 @@
               </div>
             </div>
 
-            <!-- Body (no scroll — content is sized to fit; only the T&C section
-                 above uses an internal scroll for the legal text).
-                 On md+ screens we expand into a landscape two-column layout:
-                 the camera lives on the left and the stage banner / tips /
-                 actions stack on the right so the modal isn't a tall square. -->
-            <div v-else class="p-5 face-modal-body md:grid md:grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)] md:gap-5 md:items-stretch space-y-4 md:space-y-0">
-              <!-- Cooldown banner (spans both columns on desktop) -->
+            <!-- Scanner body: two-column on md+, stacked on mobile. No scrollbars. -->
+            <div v-else class="flex-1 min-h-0 p-4 face-modal-body md:grid md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] md:gap-4 md:items-stretch flex flex-col gap-3">
+
+              <!-- Cooldown banner (spans both columns) -->
               <div v-if="cooldownActive"
-                class="md:col-span-2 text-sm rounded-xl p-3 border border-amber-300/40 bg-amber-400/15 text-amber-100">
-                <p class="font-semibold mb-0.5">Face ID is locked until {{ formatDate(nextUpdateAllowedAt) }}</p>
-                <p class="text-xs opacity-90">You can only change your Face ID once every {{ cooldownDays }} days. This protects your account from being changed without your knowledge.</p>
+                class="md:col-span-2 flex items-start gap-3 text-sm rounded-2xl px-4 py-3 border border-amber-300/30 bg-amber-400/10 text-amber-100">
+                <svg class="w-5 h-5 text-amber-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                <div>
+                  <p class="font-semibold text-amber-200 text-sm">Locked until {{ formatDate(nextUpdateAllowedAt) }}</p>
+                  <p class="text-xs text-amber-100/70 mt-0.5">Face ID can only be changed once every {{ cooldownDays }} days.</p>
+                </div>
               </div>
 
-              <!-- LEFT column on desktop: just the camera. On mobile this is
-                   simply the first item in the column flow. -->
-              <div class="md:flex md:flex-col md:min-h-0">
-              <!-- Camera -->
-              <div class="relative bg-black rounded-2xl overflow-hidden aspect-[4/3] md:aspect-auto md:flex-1 md:min-h-[22rem] flex items-center justify-center ring-1 ring-white/10 shadow-inner">
-                <video ref="videoEl" autoplay muted playsinline
-                  :class="['w-full h-full object-cover transition-opacity duration-500', cameraReady ? 'opacity-100' : 'opacity-0']"
-                  style="transform: scaleX(-1);" />
+              <!-- LEFT: Camera -->
+              <div class="md:flex md:flex-col md:min-h-0 flex flex-col min-h-0">
+                <!-- Camera frame with glowing border -->
+                <div :class="['relative bg-black rounded-2xl overflow-hidden flex-1 flex items-center justify-center shadow-2xl transition-all duration-500 face-camera-frame',
+                  faceLocked ? 'ring-2 ring-emerald-400/70 shadow-emerald-500/20' : faceDetected ? 'ring-2 ring-amber-400/60 shadow-amber-500/10' : 'ring-1 ring-white/10',
+                  'aspect-[4/3] md:aspect-auto md:min-h-[20rem]']">
 
-                <!-- Loading overlay -->
-                <Transition name="face-fade">
-                  <div v-if="!cameraReady" class="absolute inset-0 flex flex-col items-center justify-center text-white text-sm bg-[#040820]/60 backdrop-blur-sm">
-                    <svg class="animate-spin w-8 h-8 mb-2" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                  <video ref="videoEl" autoplay muted playsinline
+                    :class="['w-full h-full object-cover transition-opacity duration-500', cameraReady ? 'opacity-100' : 'opacity-0']"
+                    style="transform: scaleX(-1);" />
+
+                  <!-- Vignette for depth -->
+                  <div class="absolute inset-0 pointer-events-none" style="background: radial-gradient(ellipse at center, transparent 40%, rgba(4,8,32,0.55) 100%);"></div>
+
+                  <!-- Loading overlay -->
+                  <Transition name="face-fade">
+                    <div v-if="!cameraReady" class="absolute inset-0 flex flex-col items-center justify-center text-white bg-[#040820]/70 backdrop-blur-sm gap-3">
+                      <div class="relative w-12 h-12">
+                        <svg class="animate-spin w-12 h-12 text-white/20" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/></svg>
+                        <svg class="animate-spin w-12 h-12 text-white absolute inset-0" style="animation-duration:1s" fill="none" viewBox="0 0 24 24"><path fill="currentColor" opacity="0.8" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                      </div>
+                      <span class="text-sm text-white/80 font-medium">{{ camStatus }}</span>
+                    </div>
+                  </Transition>
+
+                  <!-- Face oval + scan line -->
+                  <div v-if="cameraReady" class="absolute inset-0 pointer-events-none">
+                    <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
+                      <!-- outer dim mask -->
+                      <ellipse cx="50" cy="48" rx="22" ry="30" fill="rgba(4,8,32,0.0)" />
+                      <!-- animated oval guide -->
+                      <ellipse cx="50" cy="48" rx="22" ry="30" fill="none"
+                        :stroke="faceLocked ? '#34d399' : (faceDetected ? '#fbbf24' : 'rgba(255,255,255,0.5)')"
+                        :stroke-width="faceLocked ? '0.7' : '0.5'"
+                        stroke-dasharray="2.5 1.5">
+                        <animate attributeName="stroke-dashoffset" from="0" to="16" dur="2.5s" repeatCount="indefinite"/>
+                      </ellipse>
+                      <!-- glow ellipse when locked -->
+                      <ellipse v-if="faceLocked" cx="50" cy="48" rx="22" ry="30" fill="none"
+                        stroke="#34d399" stroke-width="0.3" opacity="0.35"/>
                     </svg>
-                    <span>{{ camStatus }}</span>
+
+                    <!-- Scanning line animation when capturing -->
+                    <div v-if="capturing" class="face-scan-line absolute inset-x-[18%]" style="top:20%; height:60%;"></div>
+
+                    <!-- Corner brackets — larger, more prominent -->
+                    <div class="absolute top-3 left-3 w-6 h-6 border-t-[2.5px] border-l-[2.5px] border-white/70 rounded-tl-lg"></div>
+                    <div class="absolute top-3 right-3 w-6 h-6 border-t-[2.5px] border-r-[2.5px] border-white/70 rounded-tr-lg"></div>
+                    <div class="absolute bottom-3 left-3 w-6 h-6 border-b-[2.5px] border-l-[2.5px] border-white/70 rounded-bl-lg"></div>
+                    <div class="absolute bottom-3 right-3 w-6 h-6 border-b-[2.5px] border-r-[2.5px] border-white/70 rounded-br-lg"></div>
                   </div>
-                </Transition>
 
-                <!-- Face oval overlay -->
-                <div v-if="cameraReady" class="absolute inset-0 pointer-events-none">
-                  <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
-                    <ellipse cx="50" cy="48" rx="22" ry="30" fill="none"
-                      :stroke="faceLocked ? '#34d399' : (faceDetected ? '#fbbf24' : '#ffffff80')"
-                      stroke-width="0.6" stroke-dasharray="2 1.5">
-                      <animate attributeName="stroke-dashoffset" from="0" to="14" dur="2.5s" repeatCount="indefinite"/>
-                    </ellipse>
-                  </svg>
-                  <!-- corner brackets -->
-                  <div class="absolute top-3 left-3 w-5 h-5 border-t-2 border-l-2 border-white/60 rounded-tl-md"></div>
-                  <div class="absolute top-3 right-3 w-5 h-5 border-t-2 border-r-2 border-white/60 rounded-tr-md"></div>
-                  <div class="absolute bottom-3 left-3 w-5 h-5 border-b-2 border-l-2 border-white/60 rounded-bl-md"></div>
-                  <div class="absolute bottom-3 right-3 w-5 h-5 border-b-2 border-r-2 border-white/60 rounded-br-md"></div>
-                </div>
+                  <!-- Status pill -->
+                  <Transition name="face-fade">
+                    <div v-if="cameraReady" class="absolute top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold backdrop-blur-md border"
+                      :class="faceLocked ? 'bg-emerald-500/20 border-emerald-400/40 text-emerald-200' : faceDetected ? 'bg-amber-500/20 border-amber-400/40 text-amber-200' : 'bg-black/50 border-white/15 text-white'">
+                      <span :class="['w-1.5 h-1.5 rounded-full flex-shrink-0', faceLocked ? 'bg-emerald-400 animate-ping-once-slow' : faceDetected ? 'bg-amber-400 animate-pulse' : 'bg-white/50 animate-pulse']"></span>
+                      {{ faceLocked ? 'Face locked' : faceDetected ? 'Face detected' : 'Searching…' }}
+                    </div>
+                  </Transition>
 
-                <!-- Live status pill -->
-                <Transition name="face-fade">
-                  <div v-if="cameraReady" class="absolute top-3 left-1/2 -translate-x-1/2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold bg-black/55 text-white border border-white/15 backdrop-blur-sm">
-                    <span :class="['w-1.5 h-1.5 rounded-full', faceLocked ? 'bg-emerald-400 animate-ping-once-slow' : faceDetected ? 'bg-amber-400 animate-pulse' : 'bg-white/60']"></span>
-                    {{ faceLocked ? 'Face locked' : faceDetected ? 'Face detected' : 'Searching…' }}
+                  <!-- Progress bar (capturing) -->
+                  <div v-if="capturing" class="absolute bottom-0 inset-x-0 h-1.5">
+                    <div class="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-300 transition-all duration-200 shadow-lg shadow-emerald-400/40" :style="{ width: progressPct + '%' }"></div>
                   </div>
-                </Transition>
 
-                <!-- Sample progress -->
-                <div v-if="capturing" class="absolute bottom-0 inset-x-0 h-2 bg-white/20">
-                  <div class="h-full bg-gradient-to-r from-emerald-400 to-teal-300 transition-all duration-200" :style="{ width: progressPct + '%' }"></div>
-                </div>
+                  <!-- Capture flash -->
+                  <Transition name="face-flash">
+                    <div v-if="captureFlash" class="absolute inset-0 bg-white pointer-events-none"></div>
+                  </Transition>
 
-                <!-- Capture flash -->
-                <Transition name="face-flash">
-                  <div v-if="captureFlash" class="absolute inset-0 bg-white pointer-events-none"></div>
-                </Transition>
-
-                <!-- Confirmed-photo preview overlay (review-only — the actual
-                     Retake / Confirm controls live in the action row below so
-                     they aren't duplicated). Lets the user see the captured
-                     shot inside the camera frame while they decide. -->
-                <Transition name="face-confirm">
-                  <div v-if="showConfirmDialog" class="absolute inset-0 bg-[#040820]/85 backdrop-blur-sm flex flex-col items-center justify-center gap-4 p-5">
-                    <div class="w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-emerald-400/60 shadow-2xl shadow-emerald-500/30 flex-shrink-0">
-                      <img v-if="confirmedPhoto" :src="confirmedPhoto" class="w-full h-full object-cover" alt="Captured face" />
-                      <div v-else class="w-full h-full bg-white/10 flex items-center justify-center">
-                        <svg class="w-10 h-10 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                  <!-- Confirm overlay -->
+                  <Transition name="face-confirm">
+                    <div v-if="showConfirmDialog" class="absolute inset-0 bg-[#040820]/90 backdrop-blur-md flex flex-col items-center justify-center gap-4 p-5">
+                      <div class="relative">
+                        <div class="w-28 h-28 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-emerald-400/70 shadow-2xl shadow-emerald-500/40">
+                          <img v-if="confirmedPhoto" :src="confirmedPhoto" class="w-full h-full object-cover" alt="Captured face" />
+                          <div v-else class="w-full h-full bg-white/10 flex items-center justify-center">
+                            <svg class="w-10 h-10 text-white/40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                          </div>
+                        </div>
+                        <!-- checkmark badge -->
+                        <div class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-emerald-500 border-2 border-[#080e2e] flex items-center justify-center shadow-lg">
+                          <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                        </div>
+                      </div>
+                      <div class="text-center">
+                        <p class="text-white font-bold text-sm">Does this look like you?</p>
+                        <p class="text-white/50 text-xs mt-1">Confirm to save or retake.</p>
                       </div>
                     </div>
-                    <div class="text-center">
-                      <p class="text-white font-bold text-base">Does this look like you?</p>
-                      <p class="text-white/60 text-xs mt-1">Use the buttons below to confirm or retake.</p>
+                  </Transition>
+                </div>
+              </div>
+
+              <!-- RIGHT: Status + tips + actions -->
+              <div class="flex flex-col gap-3 md:min-h-0 min-h-0">
+
+                <!-- Stage banner -->
+                <Transition name="face-stage" mode="out-in">
+                  <div v-if="!cooldownActive" :key="stageMessage"
+                    :class="['rounded-2xl px-4 py-3 border backdrop-blur-sm flex items-start gap-3', stageStyle.bg, stageStyle.border, stageStyle.text]">
+                    <span :class="['w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1', stageStyle.dot]"></span>
+                    <div class="min-w-0">
+                      <p class="font-bold text-sm leading-tight">{{ stageMessage }}</p>
+                      <p v-if="stageHint" class="text-xs opacity-70 mt-1 leading-relaxed">{{ stageHint }}</p>
                     </div>
                   </div>
                 </Transition>
-              </div>
-              </div>
 
-              <!-- RIGHT column on desktop: stage banner, tips, error, actions.
-                   On mobile this just continues the column stack. -->
-              <div class="space-y-4 md:flex md:flex-col md:min-h-0">
-              <!-- Stage banner (glass) -->
-              <Transition name="face-stage" mode="out-in">
-                <div v-if="!cooldownActive" :key="stageMessage"
-                  :class="['text-sm rounded-xl p-3 border backdrop-blur-sm', stageStyle.bg, stageStyle.border, stageStyle.text]">
-                  <p class="font-semibold mb-0.5 flex items-center gap-2">
-                    <span class="inline-block w-2 h-2 rounded-full" :class="stageStyle.dot"></span>
-                    {{ stageMessage }}
-                  </p>
-                  <p v-if="stageHint" class="text-xs opacity-80 mt-0.5">{{ stageHint }}</p>
+                <!-- Tips carousel -->
+                <div class="flex-1 min-h-0 relative rounded-2xl bg-white/5 border border-white/10 px-4 py-3 flex flex-col justify-between" :class="['border-l-4', accentBorderL]">
+                  <Transition name="face-tip" mode="out-in">
+                    <div :key="activeTipIndex" class="flex items-start gap-2.5">
+                      <div class="w-5 h-5 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <svg class="w-3 h-3 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                      </div>
+                      <span class="text-xs text-white/80 leading-relaxed">{{ tips[activeTipIndex] }}</span>
+                    </div>
+                  </Transition>
+                  <div class="flex justify-center gap-2 mt-3">
+                    <button
+                      v-for="(_, i) in tips" :key="i"
+                      type="button"
+                      @click="activeTipIndex = i"
+                      :class="['h-1.5 rounded-full transition-all duration-300', i === activeTipIndex ? 'w-6 bg-white/80' : 'w-1.5 bg-white/25 hover:bg-white/45']"
+                      :aria-label="`Tip ${i + 1}`" />
+                  </div>
                 </div>
-              </Transition>
 
-              <!-- Tips carousel — one tip at a time, auto-cycles every 4s.
-                   Compact: keeps the modal short enough to fit without scroll
-                   on most phones. Tap the dots to jump between tips. -->
-              <div class="relative px-3 py-2 rounded-lg bg-white/5 border border-white/10 border-l-4 min-h-[3.25rem]" :class="accentBorderL">
-                <Transition name="face-tip" mode="out-in">
-                  <div :key="activeTipIndex" class="flex items-start gap-2 text-xs text-white/85">
-                    <svg class="w-3.5 h-3.5 mt-0.5 text-emerald-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                    <span>{{ tips[activeTipIndex] }}</span>
+                <!-- Error -->
+                <Transition name="face-stage">
+                  <div v-if="errorMessage" class="flex items-start gap-2.5 text-sm rounded-2xl px-4 py-3 border border-red-300/30 bg-red-500/12 text-red-100">
+                    <svg class="w-4 h-4 text-red-300 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                    <span class="text-xs leading-relaxed">{{ errorMessage }}</span>
                   </div>
                 </Transition>
-                <div class="flex justify-center gap-1.5 mt-2">
-                  <button
-                    v-for="(_, i) in tips" :key="i"
-                    type="button"
-                    @click="activeTipIndex = i"
-                    :class="['h-1.5 rounded-full transition-all', i === activeTipIndex ? 'w-5 bg-white/80' : 'w-1.5 bg-white/30 hover:bg-white/50']"
-                    :aria-label="`Tip ${i + 1}`" />
-                </div>
-              </div>
 
-              <!-- Error -->
-              <Transition name="face-stage">
-                <div v-if="errorMessage" class="text-sm rounded-xl p-3 border border-red-300/40 bg-red-500/15 text-red-100">
-                  {{ errorMessage }}
+                <!-- Actions -->
+                <div v-if="!showConfirmDialog" class="flex gap-2.5 mt-auto">
+                  <button @click="closeIfIdle" :disabled="capturing || submitting"
+                    class="flex-1 py-3 rounded-2xl bg-white/8 border border-white/12 text-white text-sm font-semibold hover:bg-white/14 hover:border-white/22 disabled:opacity-40 transition-all active:scale-[0.98]">
+                    Cancel
+                  </button>
                 </div>
-              </Transition>
-
-              <!-- Actions — auto-capture only. Cancel is the lone manual
-                   action; the camera handles capture once the face is steady
-                   inside the oval. md:mt-auto pins the buttons to the bottom
-                   of the right column on desktop so the layout feels balanced. -->
-              <div v-if="!showConfirmDialog" class="flex gap-3 pt-1 md:mt-auto">
-                <button @click="closeIfIdle" :disabled="capturing || submitting"
-                  class="flex-1 py-2.5 rounded-xl bg-white/10 border border-white/15 text-white font-semibold hover:bg-white/15 hover:border-white/25 disabled:opacity-40 transition-all">
-                  Cancel
-                </button>
-              </div>
-              <div v-else class="flex gap-3 pt-1 md:mt-auto">
-                <button @click="retakeCapture" :disabled="submitting"
-                  class="flex-1 py-2.5 rounded-xl bg-white/10 border border-white/15 text-white font-semibold hover:bg-white/15 hover:border-white/25 disabled:opacity-40 transition-all">
-                  Retake
-                </button>
-                <button @click="confirmEnrollment" :disabled="submitting"
-                  class="face-cta-btn group relative flex-1 py-2.5 rounded-xl font-semibold text-white border border-emerald-400/40 bg-emerald-500/25 hover:bg-emerald-500/40 disabled:opacity-40 overflow-hidden transition-all active:scale-95 shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
-                  <svg v-if="submitting" class="w-4 h-4 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-                  <svg v-else class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                  <span class="relative">{{ submitting ? 'Saving…' : 'Confirm' }}</span>
-                </button>
-              </div>
+                <div v-else class="flex gap-2.5 mt-auto">
+                  <button @click="retakeCapture" :disabled="submitting"
+                    class="flex-1 py-3 rounded-2xl bg-white/8 border border-white/12 text-white text-sm font-semibold hover:bg-white/14 hover:border-white/22 disabled:opacity-40 transition-all active:scale-[0.98]">
+                    Retake
+                  </button>
+                  <button @click="confirmEnrollment" :disabled="submitting"
+                    class="face-cta-btn group relative flex-1 py-3 rounded-2xl text-sm font-bold text-white border border-emerald-400/40 bg-emerald-500/25 hover:bg-emerald-500/40 disabled:opacity-40 overflow-hidden transition-all active:scale-[0.98] shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2">
+                    <span class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none"></span>
+                    <svg v-if="submitting" class="w-4 h-4 animate-spin flex-shrink-0 relative" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    <svg v-else class="w-4 h-4 flex-shrink-0 relative" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    <span class="relative">{{ submitting ? 'Saving…' : 'Confirm' }}</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -782,5 +801,23 @@ onBeforeUnmount(() => { stopTipsCycle(); stopCamera() })
 /* Button micro-interaction */
 .face-cta-btn:active {
   transform: scale(0.98);
+}
+
+/* Scanning line animation when capturing */
+@keyframes face-scan {
+  0%   { top: 20%; opacity: 0.9; }
+  48%  { opacity: 0.6; }
+  50%  { top: 80%; opacity: 0.9; }
+  98%  { opacity: 0.6; }
+  100% { top: 20%; opacity: 0.9; }
+}
+.face-scan-line {
+  position: absolute;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(52, 211, 153, 0.8), transparent);
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.6), 0 0 20px rgba(52, 211, 153, 0.2);
+  border-radius: 999px;
+  animation: face-scan 1.8s ease-in-out infinite;
+  pointer-events: none;
 }
 </style>
