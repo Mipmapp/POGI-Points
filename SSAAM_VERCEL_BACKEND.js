@@ -8334,7 +8334,8 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
                     payment_status: campaign.payment_status || 'unpaid',
                     amount_paid: campaign.amount_paid || 0,
                     paid_at: campaign.paid_at || null,
-                    paid_by_treasurer: campaign.paid_by_treasurer || null
+                    paid_by_treasurer: campaign.paid_by_treasurer || null,
+                    addon_purchases: Array.isArray(campaign.addon_purchases) ? campaign.addon_purchases : []
                 };
             }
         }
@@ -8364,6 +8365,7 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
                 amount_paid: pr.amount_paid || 0,
                 paid_at: pr.paid_at || null,
                 paid_by_treasurer: pr.paid_by_treasurer || null,
+                addon_purchases: pr.addon_purchases || [],
                 created_at: new Date()
             };
         });
