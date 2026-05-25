@@ -1897,10 +1897,17 @@ app.get('/apis/my-payments', auth, async (req, res) => {
             });
         }
 
+        // Resolve college from the JWT token payload first (always accurate), then
+        // fall back to req.college which comes from the X-SSAAM-College header.
+        // The header can be stale if the user previously logged into a different
+        // college and localStorage was not fully cleared, so the token is the
+        // authoritative source for which college's collections to query.
+        const tokenCollege = normalizeCollege(req.master?.college) || req.college || 'CCS';
+
         // Find all payment records for this student (college-aware model)
-        const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
-        const PaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, req.college);
-        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, tokenCollege);
+        const PaymentModel = getCollegeModel(Payment, CCS_Payment, COE_Payment, tokenCollege);
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, tokenCollege);
 
         // Try to find by student_id string (common) or by ObjectId string (legacy)
         const possibleStudentIds = [studentId];
