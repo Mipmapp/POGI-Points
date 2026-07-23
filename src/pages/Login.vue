@@ -465,146 +465,190 @@
   </transition>
 
   <ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" theme="" @complete="handleLoadingComplete" />
+  <!-- Desktop Layout -->
   <div class="hidden md:flex min-h-screen bg-white w-full">
-    <div class="w-2/5 desktop-bg-panel flex-shrink-0">
+    <!-- Left: image panel -->
+    <div class="w-2/5 desktop-bg-panel flex-shrink-0 relative">
       <ParticleBackground />
-      <div class="relative z-10 text-center">
-        <div class="mb-4">
-          <div class="relative w-40 h-40 mx-auto">
-            <!-- Masked container — everything inside is clipped to the CCS logo silhouette -->
-            <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) center/contain no-repeat; -webkit-mask: url(/ccs.png) center/contain no-repeat; mask-mode: alpha; -webkit-mask-mode: alpha;">
-              <!-- Base logo image -->
-              <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain relative z-10" />
-              <!-- Shimmer sweep -->
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-sweep z-30 pointer-events-none" style="mix-blend-mode: overlay;"></div>
-            </div>
-          </div>
-        </div>
-        <h1 class="text-6xl font-extrabold italic mb-2">SSAAM</h1>
-        <p class="text-sm">Student School Activities Attendance Monitoring</p>
+      <!-- Top-left SSAAM branding -->
+      <div class="absolute top-8 left-8 z-20 flex items-center gap-2.5">
+        <img src="/assets/ssaam_icon.png" alt="SSAAM" class="w-9 h-9 rounded-xl object-cover shadow-md" />
+        <span class="text-white font-bold text-xl tracking-wide">SSAAM</span>
       </div>
-      <div class="absolute bottom-4 left-4 right-4 text-center text-xs text-white opacity-75">
+      <!-- Bottom quote -->
+      <div class="absolute bottom-12 left-8 right-8 z-20">
+        <p class="text-white text-2xl font-bold leading-snug mb-4">"Attendance made simple, for every student."</p>
+        <p class="text-white font-semibold text-sm">Jose Rizal Memorial State University</p>
+        <p class="text-white/70 text-xs mt-0.5">College of Computing Studies</p>
+      </div>
+      <div class="absolute bottom-3 left-4 right-4 text-center text-[10px] text-white/40">
         Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
       </div>
     </div>
 
-    <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50" style="border-radius: 2rem 0 0 2rem; overflow: hidden;">
-      <div class="w-full max-w-md">
-        <div class="mb-8 text-center">
-          <h2 class="text-3xl font-bold text-blue-700 mb-2">Welcome</h2>
-          <p class="text-gray-500 text-sm">Login in to your account to continue</p>
+    <!-- Right: login form -->
+    <div class="w-3/5 flex items-center justify-center bg-white">
+      <div class="w-full max-w-sm px-4">
+        <div class="mb-8">
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">Welcome back to SSAAM</h2>
+          <p class="text-gray-500 text-sm">Student School Activities Attendance Monitoring</p>
         </div>
 
-        <div class="bg-white rounded-3xl shadow-xl p-8">
-          <form @submit.prevent="handleLogin" novalidate class="space-y-4">
-            <div class="relative">
-              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
-              <input ref="studentIdInput" v-model="studentId" type="text" placeholder="Student ID (e.g. 25-A-12345)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" @keydown.enter.prevent="focusPassword" required />
-            </div>
-
-            <div class="relative">
-              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/key.svg) center/contain no-repeat; mask: url(/key.svg) center/contain no-repeat; background-color: currentColor;"></div>
-              <input ref="passwordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Password" class="w-full pl-11 pr-12 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" style="-webkit-appearance: none; -moz-appearance: none; appearance: none;" required />
-              <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70 opacity-100', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
-            </div>
-
-            <div class="text-center">
-              <button type="button" @click="showForgotPasswordModal = true" class="text-sm text-blue-500 hover:text-blue-700 font-medium">
-                Forgot your password?
-              </button>
-            </div>
-
-            <button type="submit" :disabled="isLoading" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
-              {{ isLoading ? 'Logging in...' : 'Log In' }}
-            </button>
-
-            <div class="text-center text-sm text-gray-500 pt-1">
-              Don't have an account?
-              <button type="button" @click="goToRegister" class="text-blue-500 hover:text-blue-700 font-semibold ml-1">Sign Up</button>
-            </div>
-
-            <div class="flex items-center justify-center text-sm pt-1">
-              <button type="button" @click="showContactModal = true" class="text-gray-500 hover:text-gray-700 inline-flex items-center gap-1.5 text-xs transition-colors">
-                <img src="/help.svg" alt="Help" class="w-4 h-4 opacity-70" />
-                Need help?
-              </button>
-            </div>
-          </form>
-
-          <div class="mt-5 text-center text-xs text-gray-400">
-            Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer">CCS - Creatives Committee</button>
+        <form @submit.prevent="handleLogin" novalidate class="space-y-4">
+          <!-- Student ID -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Student ID</label>
+            <input ref="studentIdInput" v-model="studentId" type="text" placeholder="e.g. 25-A-12345"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition"
+              @keydown.enter.prevent="focusPassword" required />
           </div>
+
+          <!-- Password -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Password</label>
+            <div class="relative">
+              <input ref="passwordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
+                class="w-full px-4 py-3 border border-indigo-400 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 bg-white transition"
+                style="-webkit-appearance:none;-moz-appearance:none;appearance:none;" required />
+              <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password"
+                :class="['absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 cursor-pointer opacity-40 hover:opacity-70 transition', { 'animate-wipe': visibilityAnimating }]"
+                style="z-index:10;" />
+            </div>
+          </div>
+
+          <!-- Forgot / Help row -->
+          <div class="flex justify-between items-center">
+            <button type="button" @click="showForgotPasswordModal = true" class="text-sm text-indigo-500 hover:text-indigo-700 font-medium transition">
+              Forgot password?
+            </button>
+            <button type="button" @click="showContactModal = true" class="text-xs text-gray-400 hover:text-gray-600 transition">
+              Need help?
+            </button>
+          </div>
+
+          <!-- Log in button -->
+          <button type="submit" :disabled="isLoading"
+            class="w-full bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed text-sm shadow-sm">
+            {{ isLoading ? 'Logging in…' : 'Log in' }}
+          </button>
+        </form>
+
+        <!-- OR divider -->
+        <div class="flex items-center gap-3 my-5">
+          <div class="flex-1 h-px bg-gray-200"></div>
+          <span class="text-xs text-gray-400 font-medium">OR</span>
+          <div class="flex-1 h-px bg-gray-200"></div>
+        </div>
+
+        <!-- Continue with Google -->
+        <button @click="handleGoogleLogin" type="button"
+          class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-200 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition text-sm font-medium text-gray-700 shadow-sm">
+          <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <!-- Sign up -->
+        <p class="text-center text-sm text-gray-500 mt-5">
+          Don't have an account?
+          <button type="button" @click="goToRegister" class="text-indigo-500 hover:text-indigo-700 font-semibold ml-1 transition">Sign up</button>
+        </p>
+
+        <div class="mt-6 text-center text-xs text-gray-400">
+          Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer transition">CCS - Creatives Committee</button>
         </div>
       </div>
     </div>
   </div>
 
+  <!-- Mobile Layout -->
   <div class="mobile-bg-full md:hidden min-h-screen flex flex-col w-full fixed inset-0 overflow-x-hidden overflow-y-auto" style="scrollbar-width:none;-ms-overflow-style:none;">
     <ParticleBackground />
-    <div class="text-center text-white pt-12 pb-8 px-4 relative z-10">
-      <div class="relative w-32 h-32 mx-auto mb-4">
-        <!-- Masked container — everything inside is clipped to the CCS logo silhouette -->
-        <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) center/contain no-repeat; -webkit-mask: url(/ccs.png) center/contain no-repeat; mask-mode: alpha; -webkit-mask-mode: alpha;">
-          <!-- Base logo image -->
-          <img src="/src/assets/ccs-logo.png" alt="JRMSU CCS Logo" class="w-full h-full object-contain relative z-10" />
-          <!-- Shimmer sweep -->
-          <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-sweep z-30 pointer-events-none" style="mix-blend-mode: overlay;"></div>
-        </div>
+    <!-- Branding header -->
+    <div class="text-white pt-12 pb-8 px-6 relative z-10">
+      <div class="flex items-center gap-3 mb-8">
+        <img src="/assets/ssaam_icon.png" alt="SSAAM" class="w-10 h-10 rounded-2xl object-cover shadow-md" />
+        <span class="text-white font-bold text-2xl tracking-wide">SSAAM</span>
       </div>
-      <h1 class="text-6xl font-extrabold italic mb-2">SSAAM</h1>
-      <p class="text-lg mb-8">Let's Get Started!</p>
-      <p class="text-sm opacity-90">You are a few clicks away from your profile.</p>
-      <p class="text-sm opacity-90">Input your JRMSU Student ID to continue.</p>
+      <h1 class="text-3xl font-bold leading-tight mb-2">Welcome back!</h1>
+      <p class="text-white/70 text-sm">Login with your Student ID to continue.</p>
     </div>
 
     <div class="flex-1 bg-white rounded-t-3xl shadow-2xl px-6 py-8 relative z-10">
       <div class="max-w-md mx-auto">
 
-        <div class="mb-6 text-center">
-          <h2 class="text-2xl font-bold text-blue-700 mb-1">Welcome</h2>
-          <p class="text-gray-500 text-sm">Login in to your account to continue</p>
-        </div>
-
         <form @submit.prevent="handleLogin" novalidate class="space-y-4">
-          <div class="relative">
-            <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
-            <input ref="mobileStudentIdInput" v-model="studentId" type="text" placeholder="Student ID (e.g. 25-A-12345)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" @keydown.enter.prevent="focusMobilePassword" required />
+          <!-- Student ID -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Student ID</label>
+            <input ref="mobileStudentIdInput" v-model="studentId" type="text" placeholder="e.g. 25-A-12345"
+              class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition"
+              @keydown.enter.prevent="focusMobilePassword" required />
           </div>
 
-          <div class="relative">
-            <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/key.svg) center/contain no-repeat; mask: url(/key.svg) center/contain no-repeat; background-color: currentColor;"></div>
-            <input ref="mobilePasswordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="Password" class="w-full pl-11 pr-12 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
-            <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password" :class="['absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 cursor-pointer hover:opacity-70 opacity-100', { 'animate-wipe': visibilityAnimating }]" style="pointer-events: auto; z-index: 10;" />
+          <!-- Password -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Password</label>
+            <div class="relative">
+              <input ref="mobilePasswordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
+                class="w-full px-4 py-3 border border-indigo-400 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 bg-white transition"
+                required />
+              <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password"
+                :class="['absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 cursor-pointer opacity-40 hover:opacity-70 transition', { 'animate-wipe': visibilityAnimating }]"
+                style="z-index:10;" />
+            </div>
           </div>
 
-          <div class="text-center">
-            <button type="button" @click="showForgotPasswordModal = true" class="text-sm text-blue-500 hover:text-blue-700 font-medium">
-              Forgot your password?
+          <!-- Forgot / Help row -->
+          <div class="flex justify-between items-center">
+            <button type="button" @click="showForgotPasswordModal = true" class="text-sm text-indigo-500 hover:text-indigo-700 font-medium transition">
+              Forgot password?
             </button>
-          </div>
-
-          <button type="submit" :disabled="isLoading" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed tracking-wide uppercase text-sm shadow-md">
-            {{ isLoading ? 'Logging in...' : 'Log In' }}
-          </button>
-
-          <div class="text-center text-sm text-gray-500 pt-1">
-            Don't have an account?
-            <button type="button" @click="goToRegister" class="text-blue-500 hover:text-blue-700 font-semibold ml-1">Sign Up</button>
-          </div>
-
-          <div class="flex items-center justify-center text-sm">
-            <button type="button" @click="showContactModal = true" class="text-gray-500 hover:text-gray-700 inline-flex items-center gap-1.5 text-xs transition-colors">
-              <img src="/help.svg" alt="Help" class="w-4 h-4 opacity-70" />
+            <button type="button" @click="showContactModal = true" class="text-xs text-gray-400 hover:text-gray-600 transition">
               Need help?
             </button>
           </div>
+
+          <!-- Log in button -->
+          <button type="submit" :disabled="isLoading"
+            class="w-full bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center disabled:opacity-60 disabled:cursor-not-allowed text-sm shadow-sm">
+            {{ isLoading ? 'Logging in…' : 'Log in' }}
+          </button>
         </form>
 
-        <div class="mt-6 text-center text-xs text-gray-400">
-          Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer">CCS - Creatives Committee</button>
+        <!-- OR divider -->
+        <div class="flex items-center gap-3 my-5">
+          <div class="flex-1 h-px bg-gray-200"></div>
+          <span class="text-xs text-gray-400 font-medium">OR</span>
+          <div class="flex-1 h-px bg-gray-200"></div>
         </div>
 
-        <div class="mt-4 text-center text-xs text-gray-400">
+        <!-- Continue with Google -->
+        <button @click="handleGoogleLogin" type="button"
+          class="w-full flex items-center justify-center gap-3 py-3 px-4 border border-gray-200 rounded-xl hover:bg-gray-50 active:bg-gray-100 transition text-sm font-medium text-gray-700 shadow-sm">
+          <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <!-- Sign up -->
+        <p class="text-center text-sm text-gray-500 mt-5">
+          Don't have an account?
+          <button type="button" @click="goToRegister" class="text-indigo-500 hover:text-indigo-700 font-semibold ml-1 transition">Sign up</button>
+        </p>
+
+        <div class="mt-6 text-center text-xs text-gray-400">
+          Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer transition">CCS - Creatives Committee</button>
+        </div>
+        <div class="mt-2 text-center text-xs text-gray-400">
           Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
         </div>
       </div>
@@ -1051,6 +1095,11 @@ onMounted(async () => {
     console.error('Failed to fetch settings:', error)
   }
 })
+
+const handleGoogleLogin = () => {
+  errorMessage.value = 'Google login is coming soon. Please use your Student ID and password for now.'
+  showErrorNotification.value = true
+}
 
 const handleLogin = async () => {
   // Check if login is disabled (for students only)
