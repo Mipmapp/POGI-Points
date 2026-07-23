@@ -412,52 +412,78 @@
   </div>
 
   <transition name="fade">
-    <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
+    <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="showDevelopersPopup = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
-          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl px-6 py-5 text-center relative flex-shrink-0">
-            <h3 class="text-xl font-bold text-white">Meet Our Developers</h3>
-            <p class="text-blue-100 text-xs mt-0.5">CCS - Creatives Committee</p>
-            <button @click="showDevelopersPopup = false" class="absolute right-4 top-4 text-white/70 hover:text-white text-2xl leading-none">&times;</button>
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
+          <!-- Header -->
+          <div class="px-8 pt-7 pb-1 text-center relative">
+            <button @click="showDevelopersPopup = false"
+              class="absolute right-5 top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">
+              &times;
+            </button>
+            <h3 class="text-2xl font-bold text-gray-900">Meet our beautiful team</h3>
+            <p class="text-gray-500 text-sm mt-1">CCS – Creatives Committee</p>
           </div>
 
-          <div class="p-6 space-y-3 overflow-y-auto dev-modal-scroll">
-            <div class="flex justify-center gap-3">
-              <a v-for="(dev, index) in developers.slice(0,2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
-                 class="flex flex-col items-center p-3 bg-green-50 rounded-2xl w-32 hover:bg-blue-50 hover:scale-105 transition-all duration-300 cursor-pointer"
-                 :style="{ transitionDelay: `${index * 50}ms` }">
-                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
-                  <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
-                  <span v-else>{{ dev.initials }}</span>
+          <!-- Carousel -->
+          <div class="relative px-10 pt-5 pb-4 select-none">
+            <div class="flex items-end justify-center gap-3 h-60">
+              <!-- Prev card -->
+              <div @click="prevDev"
+                class="flex-shrink-0 w-28 h-44 rounded-2xl overflow-hidden relative cursor-pointer transition-all duration-500 opacity-55 grayscale hover:opacity-75 hover:grayscale-[60%] shadow-md">
+                <img :src="developers[devIdx(devCarouselIdx - 1)].image"
+                  :alt="developers[devIdx(devCarouselIdx - 1)].name"
+                  class="w-full h-full object-cover object-top" />
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                  <p class="text-white font-semibold text-[10px] text-center leading-tight truncate">{{ developers[devIdx(devCarouselIdx - 1)].name }}</p>
                 </div>
-                <p class="text-xs font-semibold text-blue-700 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
-                <p class="text-xs text-gray-500 text-center">{{ dev.year_level }} - {{ dev.program }}</p>
-                <p class="text-xs text-gray-400 text-center">{{ dev.role }}</p>
-              </a>
-            </div>
+              </div>
 
-            <div class="grid grid-cols-3 gap-3">
-              <a v-for="(dev, idx) in developers.slice(2)" :key="dev.name" :href="dev.facebook" target="_blank" rel="noopener noreferrer"
-                 class="flex flex-col items-center p-3 bg-green-50 rounded-2xl hover:bg-blue-50 hover:scale-105 transition-all duration-300 cursor-pointer"
-                 :style="{ transitionDelay: `${(idx + 2) * 50}ms` }">
-                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-ssaam-dark to-ssaam-light flex items-center justify-center text-white shadow-md mb-2 overflow-hidden ring-2 ring-blue-200">
-                  <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover" />
-                  <span v-else>{{ dev.initials }}</span>
+              <!-- Active (center) card -->
+              <a :href="developers[devIdx(devCarouselIdx)].facebook" target="_blank" rel="noopener noreferrer"
+                class="flex-shrink-0 w-40 h-60 rounded-2xl overflow-hidden relative block cursor-pointer shadow-2xl ring-2 ring-indigo-400/40 transition-all duration-500 z-20">
+                <img :src="developers[devIdx(devCarouselIdx)].image"
+                  :alt="developers[devIdx(devCarouselIdx)].name"
+                  class="w-full h-full object-cover object-top" />
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-4 pt-10">
+                  <p class="text-white font-bold text-sm leading-tight">{{ developers[devIdx(devCarouselIdx)].name }}</p>
+                  <p class="text-white/80 text-xs mt-0.5">{{ developers[devIdx(devCarouselIdx)].role }}</p>
+                  <p class="text-white/55 text-xs">{{ developers[devIdx(devCarouselIdx)].year_level }} · {{ developers[devIdx(devCarouselIdx)].program }}</p>
                 </div>
-                <p class="text-xs font-semibold text-blue-700 text-center line-clamp-2 min-h-[1.75rem]">{{ dev.name }}</p>
-                <p class="text-xs text-gray-500 text-center">{{ dev.year_level }} - {{ dev.program }}</p>
-                <p class="text-xs text-gray-400 text-center">{{ dev.role }}</p>
               </a>
+
+              <!-- Next card -->
+              <div @click="nextDev"
+                class="flex-shrink-0 w-28 h-44 rounded-2xl overflow-hidden relative cursor-pointer transition-all duration-500 opacity-55 grayscale hover:opacity-75 hover:grayscale-[60%] shadow-md">
+                <img :src="developers[devIdx(devCarouselIdx + 1)].image"
+                  :alt="developers[devIdx(devCarouselIdx + 1)].name"
+                  class="w-full h-full object-cover object-top" />
+                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                  <p class="text-white font-semibold text-[10px] text-center leading-tight truncate">{{ developers[devIdx(devCarouselIdx + 1)].name }}</p>
+                </div>
+              </div>
             </div>
 
-            <div class="text-center bg-green-50 rounded-2xl py-3">
-              <p class="text-sm font-semibold text-blue-900">CCS - Creatives Committee</p>
-              <p class="text-xs text-gray-500">Chairperson: Sheen Lee</p>
-            </div>
-
-            <button @click="showDevelopersPopup = false" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition">
-              Close
+            <!-- Nav arrows -->
+            <button @click="prevDev"
+              class="absolute left-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:shadow-lg transition z-30">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
+            <button @click="nextDev"
+              class="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:shadow-lg transition z-30">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+
+            <!-- Dot indicators -->
+            <div class="flex justify-center gap-2 mt-4">
+              <button v-for="(_, i) in developers" :key="i" @click="devCarouselIdx = i"
+                :class="['rounded-full transition-all duration-300', i === devCarouselIdx ? 'w-5 h-2 bg-gray-800' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400']" />
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="px-8 pb-6 text-center">
+            <p class="text-xs text-gray-400">CCS – Creatives Committee · Chairperson: Sheen Lee</p>
           </div>
         </div>
       </transition>
@@ -470,6 +496,10 @@
     <!-- Left: image panel -->
     <div class="w-2/5 desktop-bg-panel flex-shrink-0 relative">
       <ParticleBackground />
+      <!-- Centered CCS logo -->
+      <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
+        <img src="/assets/ccs_logo.png" alt="CCS Logo" class="w-56 h-56 object-contain opacity-80 drop-shadow-2xl" />
+      </div>
       <!-- Top-left SSAAM branding -->
       <div class="absolute top-8 left-8 z-20 flex items-center gap-2.5">
         <img src="/assets/ssaam_icon.png" alt="SSAAM" class="w-9 h-9 rounded-xl object-cover shadow-md" />
@@ -510,9 +540,19 @@
               <input ref="passwordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
                 class="w-full px-4 py-3 border border-indigo-400 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 bg-white transition"
                 style="-webkit-appearance:none;-moz-appearance:none;appearance:none;" required />
-              <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password"
-                :class="['absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 cursor-pointer opacity-40 hover:opacity-70 transition', { 'animate-wipe': visibilityAnimating }]"
-                style="z-index:10;" />
+              <button type="button" @click="togglePasswordVisibility"
+                :class="['absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition', { 'animate-wipe': visibilityAnimating }]"
+                style="z-index:10;">
+                <!-- Eye open -->
+                <svg v-if="showPassword" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                <!-- Eye closed -->
+                <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -597,9 +637,19 @@
               <input ref="mobilePasswordInput" v-model="password" :type="showPassword ? 'text' : 'password'" placeholder="••••••••"
                 class="w-full px-4 py-3 border border-indigo-400 rounded-xl focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 bg-white transition"
                 required />
-              <img @click="togglePasswordVisibility" :src="showPassword ? '/visibility_on.svg' : '/visibility_off.svg'" alt="Toggle password"
-                :class="['absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 cursor-pointer opacity-40 hover:opacity-70 transition', { 'animate-wipe': visibilityAnimating }]"
-                style="z-index:10;" />
+              <button type="button" @click="togglePasswordVisibility"
+                :class="['absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition', { 'animate-wipe': visibilityAnimating }]"
+                style="z-index:10;">
+                <!-- Eye open -->
+                <svg v-if="showPassword" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                <!-- Eye closed -->
+                <svg v-else class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                  <line x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -820,6 +870,23 @@ watch(isNavigationPending, (pending) => {
 const handleLoadingComplete = () => {}
 
 const showDevelopersPopup = ref(false)
+const devCarouselIdx = ref(0)
+let devCarouselTimer = null
+const devIdx = (i) => {
+  const len = 5 // developers.length — declared later but captured at call time
+  return ((i % len) + len) % len
+}
+const prevDev = () => { devCarouselIdx.value = devIdx(devCarouselIdx.value - 1) }
+const nextDev = () => { devCarouselIdx.value = devIdx(devCarouselIdx.value + 1) }
+watch(showDevelopersPopup, (open) => {
+  if (open) {
+    devCarouselIdx.value = 0
+    devCarouselTimer = setInterval(nextDev, 3000)
+  } else {
+    clearInterval(devCarouselTimer)
+    devCarouselTimer = null
+  }
+})
 const showErrorNotification = ref(false)
 const showContactModal = ref(false)
 const errorMessage = ref('')
