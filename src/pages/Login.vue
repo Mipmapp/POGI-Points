@@ -482,7 +482,7 @@
       <ParticleBackground />
       <!-- Centered CCS logo -->
       <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-        <img src="/ccs.png" alt="CCS Logo" class="w-56 h-56 object-contain opacity-80 drop-shadow-2xl" style="filter: brightness(0) invert(1) drop-shadow(0 4px 24px rgba(255,255,255,0.2));" />
+        <img src="/ccs.png" alt="CCS Logo" class="w-56 h-56 object-contain opacity-80 drop-shadow-2xl" style="filter: drop-shadow(0 4px 24px rgba(255,255,255,0.2));" />
       </div>
       <!-- Top-left SSAAM branding -->
       <div class="absolute top-8 left-8 z-20 flex items-center gap-2.5">
