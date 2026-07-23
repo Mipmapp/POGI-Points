@@ -110,7 +110,7 @@
             </div>
 
             <!-- Close button -->
-            <button @click="showContactModal = false" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-2xl font-semibold text-sm active:scale-[0.98] transition-all">
+            <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3.5 rounded-2xl font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-md">
               Close
             </button>
           </div>
@@ -2131,19 +2131,23 @@ function manualRetryFace() {
 /* Ensure modal content doesn't get clipped on very small screens */
 .modal-primary, .modal-secondary { min-height: 44px; }
 
-/* Need Help modal scrollbar styled to match gradient header */
+/* Need Help modal scrollbar */
 .help-modal-scroll::-webkit-scrollbar {
   width: 6px;
 }
 .help-modal-scroll::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f3f4f6;
 }
 .help-modal-scroll::-webkit-scrollbar-thumb {
-  background: #c0c0c0;
+  background: #9ca3af;
   border-radius: 3px;
 }
 .help-modal-scroll::-webkit-scrollbar-thumb:hover {
-  background: #a0a0a0;
+  background: #6b7280;
+}
+.help-modal-scroll {
+  scrollbar-color: #9ca3af #f3f4f6;
+  scrollbar-width: thin;
 }
 
 </style>
