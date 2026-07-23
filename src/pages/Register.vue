@@ -3,10 +3,10 @@
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showDevelopersPopup = false">
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
-          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light rounded-t-3xl px-6 py-5 text-center relative flex-shrink-0">
-            <h3 class="text-xl font-bold text-white">Meet Our Developers</h3>
-            <p class="text-blue-100 text-xs mt-0.5">CCS - Creatives Committee</p>
-            <button @click="showDevelopersPopup = false" class="absolute right-4 top-4 text-white/70 hover:text-white text-2xl leading-none">&times;</button>
+            <div class="px-8 pt-7 pb-2 text-center relative flex-shrink-0">
+            <button @click="showDevelopersPopup = false" class="absolute right-5 top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">&times;</button>
+            <h3 class="text-2xl font-bold text-gray-900">Meet Our Developers</h3>
+            <p class="text-gray-500 text-sm mt-1">CCS – Creatives Committee</p>
           </div>
 
           <div class="p-6 space-y-3 overflow-y-auto dev-modal-scroll">
@@ -83,14 +83,10 @@
   <transition name="fade">
     <div v-if="showErrorNotification" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showErrorNotification = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden">
-          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-4 flex items-center gap-3">
-            <button @click="showErrorNotification = false" class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 hover:bg-white/30 transition cursor-pointer">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-            <h3 class="text-lg font-bold text-white">Oops!</h3>
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden">
+          <div class="px-8 pt-7 pb-2 text-center relative">
+            <button @click="showErrorNotification = false" class="absolute right-5 top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">&times;</button>
+            <h3 class="text-2xl font-bold text-gray-900">Oops!</h3>
           </div>
           <div class="p-6 text-center">
             <p class="text-gray-700 font-medium px-2">{{ errorMessage }}</p>
@@ -113,44 +109,37 @@
   </div>
 
   <div class="hidden md:flex min-h-screen bg-white">
-    <div class="desktop-bg-panel">
+    <div class="desktop-bg-panel relative flex-shrink-0">
       <ParticleBackground />
-      <div class="relative z-10 text-center px-6 py-8">
-        <div class="mb-4">
-          <div class="relative w-40 h-40 mx-auto">
-            <!-- Masked container clipped to CCS logo silhouette -->
-            <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) center/contain no-repeat; -webkit-mask: url(/ccs.png) center/contain no-repeat; mask-mode: alpha; -webkit-mask-mode: alpha;">
-              <img :src="jrmsuLogo" alt="JRMSU CCS Logo" class="w-full h-full object-contain relative z-10" />
-              <!-- Shimmer sweep -->
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-sweep z-30 pointer-events-none" style="mix-blend-mode: overlay;"></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="space-y-1">
-          <h1 class="text-4xl sm:text-6xl font-extrabold italic mb-0">SSAAM</h1>
-          <p class="text-sm text-white/90">Student School Activities Attendance Monitoring</p>
-          <div v-if="programDepartment" class="mt-3 text-sm text-white/90">
-            <div class="font-semibold">{{ programDepartment.departmentName }} <span class="text-xs text-white/80">({{ programDepartment.departmentLabel }})</span></div>
-            <div class="text-xs mt-1">Selected program: <strong>{{ formData.program }}</strong></div>
-          </div>
+      <!-- CCS logo with glow rings -->
+      <div class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+        <div class="relative flex items-center justify-center">
+          <div class="absolute w-64 h-64 rounded-full ccs-glow-ring"></div>
+          <div class="absolute w-56 h-56 rounded-full ccs-glow-ring ccs-glow-ring-delay"></div>
+          <img src="/ccs.png" alt="CCS Logo" class="relative w-56 h-56 object-contain opacity-90 drop-shadow-2xl" />
         </div>
       </div>
-
-      <div class="absolute bottom-4 left-4 right-4 text-center text-xs text-white opacity-75">
+      <!-- Top-left SSAAM branding -->
+      <div class="absolute top-8 left-8 z-20 flex items-center gap-2.5">
+        <img src="/assets/ssaam_icon.png" alt="SSAAM" class="w-9 h-9 rounded-xl object-cover shadow-md" />
+        <span class="text-white font-bold text-xl tracking-wide">SSAAM</span>
+      </div>
+      <!-- Bottom quote -->
+      <div class="absolute bottom-12 left-8 right-8 z-20">
+        <p class="text-white text-2xl font-bold leading-snug mb-4">"Attendance made simple, for every student."</p>
+        <p class="text-white font-semibold text-sm">Jose Rizal Memorial State University</p>
+        <p class="text-white/70 text-xs mt-0.5">College of Computing Studies</p>
+      </div>
+      <div class="absolute bottom-3 left-4 right-4 text-center text-[10px] text-white/40">
         Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
       </div>
     </div>
-    <div class="w-3/5 flex items-center justify-center p-8 bg-gray-50" style="border-radius: 2rem 0 0 2rem; overflow: hidden;">
-      <div class="w-full max-w-md">
-        <div class="text-center mb-6">
-          <h2 class="text-3xl font-bold text-blue-700 mb-2">Create Your Account</h2>
-          <p class="text-gray-500 text-sm">{{ stepTitle }}</p>
-        </div>
-
+    <div class="w-3/5 flex items-center justify-center bg-white">
+      <div class="w-full max-w-md px-6">
         <div class="bg-white rounded-3xl shadow-xl p-8">
-          <div class="text-center mb-5">
-            <h3 class="text-2xl font-bold text-gray-800">Sign Up</h3>
+          <div class="mb-5">
+            <h2 class="text-4xl font-bold text-gray-900 leading-tight mb-1">Create account</h2>
+            <p class="text-gray-400 text-sm">Fill in your details to get started</p>
           </div>
 
           <form @submit.prevent="handleNext" novalidate class="space-y-4">
@@ -1544,16 +1533,27 @@ const goToLogin = () => {
     url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;
   width: 40%;
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   color: white;
-  padding: 2rem;
   position: relative;
   overflow: hidden;
   box-shadow: inset -18px 0 40px rgba(0,0,0,0.25), 8px 0 32px rgba(10,30,130,0.30);
-  transition: all 0.5s ease-in-out;
+}
+
+/* CCS logo white glow pulse */
+.ccs-glow-ring {
+  background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 55%, rgba(255,255,255,0) 75%);
+  animation: ccs-glow-pulse 2.8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+.ccs-glow-ring-delay {
+  animation-delay: 1.4s;
+}
+@keyframes ccs-glow-pulse {
+  0%   { transform: scale(0.88); opacity: 0; }
+  30%  { opacity: 1; }
+  50%  { transform: scale(1.18); opacity: 0.85; }
+  70%  { opacity: 1; }
+  100% { transform: scale(0.88); opacity: 0; }
 }
 
 .mobile-bg-full {
