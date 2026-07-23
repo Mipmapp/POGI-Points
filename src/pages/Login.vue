@@ -5,17 +5,10 @@
         <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md overflow-hidden flex flex-col max-h-[92vh]">
 
           <!-- Header -->
-          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center justify-between flex-shrink-0">
-            <div class="flex items-center gap-3">
-              <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                <div class="w-5 h-5" style="-webkit-mask: url(/help.svg) center/contain no-repeat; mask: url(/help.svg) center/contain no-repeat; background-color: white;"></div>
-              </div>
-              <div>
-                <h3 class="text-xl font-bold text-white leading-tight">Need Help?</h3>
-                <p class="text-blue-100 text-xs mt-0.5">We're here to assist you</p>
-              </div>
-            </div>
-            <button @click="showContactModal = false" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white text-lg transition flex-shrink-0">&times;</button>
+          <div class="px-8 pt-7 pb-2 text-center relative flex-shrink-0">
+            <button @click="showContactModal = false" class="absolute right-5 top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">&times;</button>
+            <h3 class="text-2xl font-bold text-gray-900">Need Help?</h3>
+            <p class="text-gray-500 text-sm mt-1">We're here to assist you</p>
           </div>
 
           <!-- Drag handle on mobile -->
@@ -381,14 +374,10 @@
   <transition name="fade">
     <div v-if="showErrorNotification" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showErrorNotification = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden">
-          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-4 flex items-center gap-3">
-            <button @click="showErrorNotification = false" class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0 hover:bg-white/30 transition cursor-pointer">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </button>
-            <h3 class="text-lg font-bold text-white">Oops!</h3>
+        <div class="bg-white rounded-3xl shadow-2xl max-w-sm w-full mx-4 overflow-hidden">
+          <div class="px-8 pt-7 pb-2 text-center relative">
+            <button @click="showErrorNotification = false" class="absolute right-5 top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">&times;</button>
+            <h3 class="text-2xl font-bold text-gray-900">Oops!</h3>
           </div>
           <div class="p-6 text-center">
             <p class="text-gray-700 font-medium px-2">{{ errorMessage }}</p>
@@ -694,22 +683,11 @@
     <div v-if="showForgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeForgotPasswordModal">
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
-          <!-- Gradient Header -->
-          <div class="bg-gradient-to-r from-ssaam-dark to-ssaam-light px-6 py-5 flex items-center justify-between flex-shrink-0">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 bg-white/20 rounded-full flex items-center justify-center">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                </svg>
-              </div>
-              <div>
-                <h3 class="text-xl font-bold text-white">Reset Password</h3>
-                <p class="text-blue-100 text-xs mt-0.5">
-                  {{ resetStep === 1 && !resetEmailStep ? 'Step 1: Enter your Student ID' : resetStep === 1 && resetEmailStep ? 'Step 1: Enter your email' : resetStep === 2 ? 'Step 2: Enter your code' : 'Step 3: New password' }}
-                </p>
-              </div>
-            </div>
-            <button @click="closeForgotPasswordModal" class="text-white/70 hover:text-white text-2xl leading-none">&times;</button>
+          <!-- Header -->
+          <div class="px-8 pt-7 pb-2 text-center relative flex-shrink-0">
+            <button @click="closeForgotPasswordModal" class="absolute right-5 top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">&times;</button>
+            <h3 class="text-2xl font-bold text-gray-900">Reset Password</h3>
+            <p class="text-gray-500 text-sm mt-1">{{ resetStep === 1 && !resetEmailStep ? 'Step 1: Enter your Student ID' : resetStep === 1 && resetEmailStep ? 'Step 1: Enter your email' : resetStep === 2 ? 'Step 2: Enter your code' : 'Step 3: New password' }}</p>
           </div>
 
           <!-- Scrollable Content -->
