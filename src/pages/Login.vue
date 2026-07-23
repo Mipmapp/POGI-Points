@@ -480,8 +480,14 @@
     <div class="w-2/5 desktop-bg-panel flex-shrink-0 relative">
       <ParticleBackground />
       <!-- Centered CCS logo -->
-      <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-        <img src="/ccs.png" alt="CCS Logo" class="w-56 h-56 object-contain opacity-80 drop-shadow-2xl" style="filter: drop-shadow(0 4px 24px rgba(255,255,255,0.2));" />
+      <div class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+        <div class="relative flex items-center justify-center">
+          <!-- Pulse glow rings -->
+          <div class="absolute w-64 h-64 rounded-full ccs-glow-ring"></div>
+          <div class="absolute w-56 h-56 rounded-full ccs-glow-ring ccs-glow-ring-delay"></div>
+          <!-- Logo -->
+          <img src="/ccs.png" alt="CCS Logo" class="relative w-56 h-56 object-contain opacity-90 drop-shadow-2xl" />
+        </div>
       </div>
       <!-- Top-left SSAAM branding -->
       <div class="absolute top-8 left-8 z-20 flex items-center gap-2.5">
@@ -1993,6 +1999,20 @@ function manualRetryFace() {
   0%   { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0.45); }
   70%  { box-shadow: 0 0 0 14px rgba(34, 211, 238, 0); }
   100% { box-shadow: 0 0 0 0 rgba(34, 211, 238, 0); }
+}
+
+/* CCS logo white glow pulse */
+.ccs-glow-ring {
+  background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 70%);
+  animation: ccs-glow-pulse 2.8s ease-in-out infinite;
+}
+.ccs-glow-ring-delay {
+  animation-delay: 1.4s;
+}
+@keyframes ccs-glow-pulse {
+  0%   { transform: scale(0.92); opacity: 0.5; filter: blur(8px); }
+  50%  { transform: scale(1.12); opacity: 1;   filter: blur(18px); }
+  100% { transform: scale(0.92); opacity: 0.5; filter: blur(8px); }
 }
 
 .burst-enter-active {
