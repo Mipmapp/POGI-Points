@@ -426,51 +426,35 @@
           </div>
 
           <!-- Carousel -->
-          <div class="relative px-10 pt-5 pb-4 select-none">
-            <div class="flex items-end justify-center gap-3 h-60">
-              <!-- Prev card -->
-              <div @click="prevDev"
-                class="flex-shrink-0 w-28 h-44 rounded-2xl overflow-hidden relative cursor-pointer transition-all duration-500 opacity-55 grayscale hover:opacity-75 hover:grayscale-[60%] shadow-md">
-                <img :src="developers[devIdx(devCarouselIdx - 1)].image"
-                  :alt="developers[devIdx(devCarouselIdx - 1)].name"
+          <div class="relative px-6 pt-5 pb-4 select-none">
+            <!-- All 5 cards absolutely positioned; CSS transition animates them smoothly -->
+            <div class="relative overflow-hidden" style="height: 240px;">
+              <div v-for="(dev, i) in developers" :key="dev.name"
+                :style="getDevStyle(i)"
+                @click="handleDevClick(i)">
+                <img :src="dev.image" :alt="dev.name"
                   class="w-full h-full object-cover object-top" />
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                  <p class="text-white font-semibold text-[10px] text-center leading-tight truncate">{{ developers[devIdx(devCarouselIdx - 1)].name }}</p>
+                <!-- Active card overlay -->
+                <div v-if="i === devCarouselIdx"
+                  class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-4 pt-10">
+                  <p class="text-white font-bold text-sm leading-tight">{{ dev.name }}</p>
+                  <p class="text-white/80 text-xs mt-0.5">{{ dev.role }}</p>
+                  <p class="text-white/55 text-xs">{{ dev.year_level }} · {{ dev.program }}</p>
                 </div>
-              </div>
-
-              <!-- Active (center) card -->
-              <a :href="developers[devIdx(devCarouselIdx)].facebook" target="_blank" rel="noopener noreferrer"
-                class="flex-shrink-0 w-40 h-60 rounded-2xl overflow-hidden relative block cursor-pointer shadow-2xl ring-2 ring-indigo-400/40 transition-all duration-500 z-20">
-                <img :src="developers[devIdx(devCarouselIdx)].image"
-                  :alt="developers[devIdx(devCarouselIdx)].name"
-                  class="w-full h-full object-cover object-top" />
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-4 pt-10">
-                  <p class="text-white font-bold text-sm leading-tight">{{ developers[devIdx(devCarouselIdx)].name }}</p>
-                  <p class="text-white/80 text-xs mt-0.5">{{ developers[devIdx(devCarouselIdx)].role }}</p>
-                  <p class="text-white/55 text-xs">{{ developers[devIdx(devCarouselIdx)].year_level }} · {{ developers[devIdx(devCarouselIdx)].program }}</p>
-                </div>
-              </a>
-
-              <!-- Next card -->
-              <div @click="nextDev"
-                class="flex-shrink-0 w-28 h-44 rounded-2xl overflow-hidden relative cursor-pointer transition-all duration-500 opacity-55 grayscale hover:opacity-75 hover:grayscale-[60%] shadow-md">
-                <img :src="developers[devIdx(devCarouselIdx + 1)].image"
-                  :alt="developers[devIdx(devCarouselIdx + 1)].name"
-                  class="w-full h-full object-cover object-top" />
-                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
-                  <p class="text-white font-semibold text-[10px] text-center leading-tight truncate">{{ developers[devIdx(devCarouselIdx + 1)].name }}</p>
+                <!-- Side card name overlay -->
+                <div v-else class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                  <p class="text-white font-semibold text-[10px] text-center leading-tight truncate">{{ dev.name }}</p>
                 </div>
               </div>
             </div>
 
             <!-- Nav arrows -->
             <button @click="prevDev"
-              class="absolute left-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:shadow-lg transition z-30">
+              class="absolute left-1 top-1/2 -translate-y-6 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:shadow-lg transition z-30">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
             <button @click="nextDev"
-              class="absolute right-1 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:shadow-lg transition z-30">
+              class="absolute right-1 top-1/2 -translate-y-6 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:shadow-lg transition z-30">
               <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
             </button>
 
@@ -498,7 +482,7 @@
       <ParticleBackground />
       <!-- Centered CCS logo -->
       <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
-        <img src="/assets/ccs_logo.png" alt="CCS Logo" class="w-56 h-56 object-contain opacity-80 drop-shadow-2xl" />
+        <img src="/assets/ccs_logo.png" alt="CCS Logo" class="w-56 h-56 object-contain opacity-80 drop-shadow-2xl" style="filter: invert(1) drop-shadow(0 4px 24px rgba(255,255,255,0.2));" />
       </div>
       <!-- Top-left SSAAM branding -->
       <div class="absolute top-8 left-8 z-20 flex items-center gap-2.5">
@@ -870,17 +854,54 @@ watch(isNavigationPending, (pending) => {
 const handleLoadingComplete = () => {}
 
 const showDevelopersPopup = ref(false)
-const devCarouselIdx = ref(0)
+const devCarouselIdx = ref(1) // start on Jullan Maglinte (index 1)
 let devCarouselTimer = null
-const devIdx = (i) => {
-  const len = 5 // developers.length — declared later but captured at call time
-  return ((i % len) + len) % len
-}
+const DEV_COUNT = 5
+const devIdx = (i) => ((i % DEV_COUNT) + DEV_COUNT) % DEV_COUNT
 const prevDev = () => { devCarouselIdx.value = devIdx(devCarouselIdx.value - 1) }
 const nextDev = () => { devCarouselIdx.value = devIdx(devCarouselIdx.value + 1) }
+
+// Returns per-card absolute style; CSS transition animates every property smoothly
+const getDevStyle = (i) => {
+  let d = i - devCarouselIdx.value
+  if (d > DEV_COUNT / 2) d -= DEV_COUNT
+  if (d < -DEV_COUNT / 2) d += DEV_COUNT
+  // All cards share left:50% as origin; translateX shifts each to its slot:
+  //   d=0  (active)  : center 160px card  → translateX(-80px)
+  //   d=-1 (prev)    : 112px card left    → translateX(-204px)   [center at -148px]
+  //   d=+1 (next)    : 112px card right   → translateX(+92px)    [center at +148px]
+  //   |d|≥2          : hidden off-screen
+  const t = {
+    position: 'absolute', bottom: '0', left: '50%',
+    borderRadius: '1rem', overflow: 'hidden',
+    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+    cursor: 'pointer',
+  }
+  if (d === 0) {
+    return { ...t, width: '160px', height: '240px', transform: 'translateX(-80px)', opacity: '1', filter: 'none', zIndex: '20' }
+  } else if (d === -1) {
+    return { ...t, width: '112px', height: '176px', transform: 'translateX(-204px)', opacity: '0.55', filter: 'grayscale(1)', zIndex: '10' }
+  } else if (d === 1) {
+    return { ...t, width: '112px', height: '176px', transform: 'translateX(92px)', opacity: '0.55', filter: 'grayscale(1)', zIndex: '10' }
+  } else if (d < -1) {
+    return { ...t, width: '112px', height: '176px', transform: 'translateX(-420px)', opacity: '0', filter: 'grayscale(1)', zIndex: '5', pointerEvents: 'none' }
+  } else {
+    return { ...t, width: '112px', height: '176px', transform: 'translateX(380px)', opacity: '0', filter: 'grayscale(1)', zIndex: '5', pointerEvents: 'none' }
+  }
+}
+
+// Clicking a non-active card navigates the carousel; clicking the active card opens Facebook
+const handleDevClick = (i) => {
+  if (i !== devCarouselIdx.value) {
+    devCarouselIdx.value = i
+  } else {
+    window.open(developers[i].facebook, '_blank', 'noopener,noreferrer')
+  }
+}
+
 watch(showDevelopersPopup, (open) => {
   if (open) {
-    devCarouselIdx.value = 0
+    devCarouselIdx.value = 1 // always open on Jullan
     devCarouselTimer = setInterval(nextDev, 3000)
   } else {
     clearInterval(devCarouselTimer)
