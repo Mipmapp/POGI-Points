@@ -509,8 +509,7 @@
     <div class="w-3/5 flex items-center justify-center bg-white">
       <div class="w-full max-w-sm px-6">
         <div class="mb-8">
-          <h2 class="text-4xl font-bold text-gray-900 leading-tight mb-1">Welcome back</h2>
-          <p class="text-lg font-semibold bg-gradient-to-r from-ssaam-dark to-ssaam-light bg-clip-text text-transparent mb-3">SSAAM</p>
+          <h2 class="text-4xl font-bold text-gray-900 leading-tight mb-3">Welcome back!</h2>
           <p class="text-gray-400 text-sm">Student School Activities Attendance Monitoring</p>
         </div>
 
