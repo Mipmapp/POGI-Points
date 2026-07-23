@@ -509,13 +509,7 @@
     <div class="w-3/5 flex items-center justify-center bg-white">
       <div class="w-full max-w-sm px-6">
         <div class="mb-8">
-          <!-- Badge -->
-          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 border border-indigo-100 mb-5">
-            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
-            <span class="text-xs font-semibold text-indigo-500 tracking-wide uppercase">Student Portal</span>
-          </div>
-          <!-- Heading -->
-          <h2 class="text-4xl font-bold text-gray-900 leading-tight mb-1">Welcome back!</h2>
+          <h2 class="text-4xl font-bold text-gray-900 leading-tight mb-1">Welcome back</h2>
           <p class="text-lg font-semibold bg-gradient-to-r from-ssaam-dark to-ssaam-light bg-clip-text text-transparent mb-3">SSAAM</p>
           <p class="text-gray-400 text-sm">Student School Activities Attendance Monitoring</p>
         </div>
@@ -2010,16 +2004,19 @@ function manualRetryFace() {
 
 /* CCS logo white glow pulse */
 .ccs-glow-ring {
-  background: radial-gradient(circle, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0) 70%);
+  background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0.08) 55%, rgba(255,255,255,0) 75%);
   animation: ccs-glow-pulse 2.8s ease-in-out infinite;
+  will-change: transform, opacity;
 }
 .ccs-glow-ring-delay {
   animation-delay: 1.4s;
 }
 @keyframes ccs-glow-pulse {
-  0%   { transform: scale(0.92); opacity: 0.5; filter: blur(8px); }
-  50%  { transform: scale(1.12); opacity: 1;   filter: blur(18px); }
-  100% { transform: scale(0.92); opacity: 0.5; filter: blur(8px); }
+  0%   { transform: scale(0.88); opacity: 0; }
+  30%  { opacity: 1; }
+  50%  { transform: scale(1.18); opacity: 0.85; }
+  70%  { opacity: 1; }
+  100% { transform: scale(0.88); opacity: 0; }
 }
 
 .burst-enter-active {
