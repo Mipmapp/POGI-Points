@@ -1,12 +1,12 @@
 <template>
   <transition name="fade">
-    <div v-if="showContactModal" class="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-40 p-0 sm:p-4" @click.self="showContactModal = false">
+    <div v-if="showContactModal" class="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-40 p-0 sm:p-6" @click.self="showContactModal = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-md overflow-hidden flex flex-col max-h-[92vh]">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[88vh]">
 
           <!-- Header -->
-          <div class="px-8 pt-7 pb-2 text-center relative flex-shrink-0">
-            <button @click="showContactModal = false" class="absolute right-5 top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">&times;</button>
+          <div class="px-8 pt-8 pb-3 text-center relative flex-shrink-0">
+            <button @click="showContactModal = false" class="absolute right-5 top-5 w-9 h-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">&times;</button>
             <h3 class="text-2xl font-bold text-gray-900">Need Help?</h3>
             <p class="text-gray-500 text-sm mt-1">We're here to assist you</p>
           </div>
@@ -17,90 +17,100 @@
           </div>
 
           <!-- Scrollable content -->
-          <div class="px-5 pb-6 pt-4 space-y-4 overflow-y-auto help-modal-scroll">
+          <div class="px-6 pb-7 pt-4 space-y-5 overflow-y-auto help-modal-scroll">
 
             <!-- Contact cards -->
-            <div class="grid grid-cols-3 gap-3">
-              <div class="flex flex-col items-center text-center p-4 bg-blue-50 rounded-2xl">
-                <div class="w-12 h-12 mb-3 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <div class="w-6 h-6" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: #2563eb;"></div>
+            <div class="grid grid-cols-3 gap-4">
+              <div class="flex flex-col items-center text-center p-5 bg-blue-50 rounded-2xl">
+                <div class="w-14 h-14 mb-3 bg-blue-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <div class="w-7 h-7" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: #2563eb;"></div>
                 </div>
-                <p class="font-semibold text-blue-900 text-xs mb-1 leading-tight">Email Support</p>
-                <p class="text-[10px] text-gray-500 leading-snug">ssaamjrmsu<br>@gmail.com</p>
-                <p class="text-[10px] text-gray-400 mt-1">For inquiries</p>
+                <p class="font-semibold text-blue-900 text-sm mb-1 leading-tight">Email Support</p>
+                <p class="text-xs text-gray-500 leading-snug">ssaamjrmsu@gmail.com</p>
+                <p class="text-xs text-gray-400 mt-1">For inquiries</p>
               </div>
 
-              <div class="flex flex-col items-center text-center p-4 bg-blue-50 rounded-2xl">
-                <div class="w-12 h-12 mb-3 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <div class="w-6 h-6" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat; background-color: #2563eb;"></div>
+              <div class="flex flex-col items-center text-center p-5 bg-blue-50 rounded-2xl">
+                <div class="w-14 h-14 mb-3 bg-blue-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <div class="w-7 h-7" style="-webkit-mask: url(/home.svg) center/contain no-repeat; mask: url(/home.svg) center/contain no-repeat; background-color: #2563eb;"></div>
                 </div>
-                <p class="font-semibold text-blue-900 text-xs mb-1 leading-tight">CCS Office</p>
-                <p class="text-[10px] text-gray-500 leading-snug">College of<br>Computing</p>
-                <p class="text-[10px] text-gray-400 mt-1">Office hours</p>
+                <p class="font-semibold text-blue-900 text-sm mb-1 leading-tight">CCS Office</p>
+                <p class="text-xs text-gray-500 leading-snug">College of Computing</p>
+                <p class="text-xs text-gray-400 mt-1">Office hours</p>
               </div>
 
-              <div class="flex flex-col items-center text-center p-4 bg-blue-50 rounded-2xl cursor-pointer hover:bg-blue-100 active:scale-95 transition-all" @click="showDevelopersPopup = true; showContactModal = false">
-                <div class="w-12 h-12 mb-3 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                  <div class="w-6 h-6" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat; background-color: #2563eb;"></div>
+              <div class="flex flex-col items-center text-center p-5 bg-blue-50 rounded-2xl cursor-pointer hover:bg-blue-100 active:scale-95 transition-all" @click="showDevelopersPopup = true; showContactModal = false">
+                <div class="w-14 h-14 mb-3 bg-blue-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  <div class="w-7 h-7" style="-webkit-mask: url(/register_user.svg) center/contain no-repeat; mask: url(/register_user.svg) center/contain no-repeat; background-color: #2563eb;"></div>
                 </div>
-                <p class="font-semibold text-blue-900 text-xs mb-1 leading-tight">Meet the Team</p>
-                <p class="text-[10px] text-gray-500 leading-snug">CCS<br>Creatives</p>
-                <p class="text-[10px] text-blue-600 mt-1 font-semibold">View →</p>
+                <p class="font-semibold text-blue-900 text-sm mb-1 leading-tight">Meet the Team</p>
+                <p class="text-xs text-gray-500 leading-snug">CCS Creatives</p>
+                <p class="text-xs text-blue-600 mt-1 font-semibold">View →</p>
               </div>
             </div>
 
             <!-- Quick Help -->
-            <div class="bg-blue-50 rounded-2xl p-5">
-              <p class="text-sm font-bold text-blue-900 mb-3">Quick Help</p>
-              <ul class="space-y-3">
-                <li class="flex items-start gap-2.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>
-                  <span class="text-xs text-gray-600 leading-relaxed">Your default password is your Last Name (UPPERCASE)</span>
+            <div class="bg-gray-50 border border-gray-100 rounded-2xl p-5">
+              <p class="text-sm font-bold text-gray-800 mb-4">Quick Help</p>
+              <ul class="space-y-3.5">
+                <li class="flex items-start gap-3">
+                  <span class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 block"></span>
+                  </span>
+                  <span class="text-sm text-gray-600 leading-relaxed">Your default password is your <strong class="text-gray-800 font-semibold">Last Name (UPPERCASE)</strong></span>
                 </li>
-                <li class="flex items-start gap-2.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>
-                  <span class="text-xs text-gray-600 leading-relaxed">Use "Forgot Password" if needed</span>
+                <li class="flex items-start gap-3">
+                  <span class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 block"></span>
+                  </span>
+                  <span class="text-sm text-gray-600 leading-relaxed">Use <strong class="text-gray-800 font-semibold">"Forgot Password"</strong> if you need to reset it</span>
                 </li>
-                <li class="flex items-start gap-2.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>
-                  <span class="text-xs text-gray-600 leading-relaxed">Register your RFID at the CCS office</span>
+                <li class="flex items-start gap-3">
+                  <span class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 block"></span>
+                  </span>
+                  <span class="text-sm text-gray-600 leading-relaxed">Register your RFID at the <strong class="text-gray-800 font-semibold">CCS office</strong></span>
                 </li>
-                <li class="flex items-start gap-2.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-blue-400 mt-1.5 flex-shrink-0"></span>
-                  <span class="text-xs text-gray-600 leading-relaxed">For profile issues, contact the Developers or visit the CCS office</span>
+                <li class="flex items-start gap-3">
+                  <span class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500 block"></span>
+                  </span>
+                  <span class="text-sm text-gray-600 leading-relaxed">For profile issues, contact the <strong class="text-gray-800 font-semibold">Developers</strong> or visit the CCS office</span>
                 </li>
               </ul>
             </div>
 
             <!-- Install SSAAM App -->
             <div class="rounded-2xl overflow-hidden border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
-              <div class="px-5 pt-4 pb-3 flex items-center gap-3 border-b border-green-100">
-                <img src="/assets/app_icon.png" alt="SSAAM" class="w-10 h-10 rounded-xl shadow-sm flex-shrink-0 object-cover" />
-                <div>
-                  <p class="text-sm font-bold text-green-900 leading-tight">Install SSAAM App</p>
-                  <p class="text-[10px] text-green-700 mt-0.5">Get the native experience on your phone</p>
+              <div class="px-6 pt-5 pb-4 flex items-center gap-4">
+                <img src="/assets/app_icon.png" alt="SSAAM" class="w-14 h-14 rounded-2xl shadow-sm flex-shrink-0 object-cover" />
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2 mb-0.5">
+                    <p class="text-sm font-bold text-green-900 leading-tight">Install SSAAM App</p>
+                    <span class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 border border-green-200 text-[10px] font-semibold text-green-700 flex-shrink-0">
+                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 0 0-.83.22l-1.88 3.24a11.46 11.46 0 0 0-8.94 0L5.65 5.67a.643.643 0 0 0-.87-.2c-.28.18-.37.54-.22.83L6.4 9.48A10.78 10.78 0 0 0 1 18h22a10.78 10.78 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
+                      Android only
+                    </span>
+                  </div>
+                  <p class="text-xs text-green-700">Get the native experience on your phone</p>
                 </div>
-                <span class="ml-auto flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 border border-green-200 text-[10px] font-semibold text-green-700 flex-shrink-0">
-                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 0 0-.83.22l-1.88 3.24a11.46 11.46 0 0 0-8.94 0L5.65 5.67a.643.643 0 0 0-.87-.2c-.28.18-.37.54-.22.83L6.4 9.48A10.78 10.78 0 0 0 1 18h22a10.78 10.78 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
-                  Android only
-                </span>
               </div>
-              <div class="px-5 py-3.5 flex items-center justify-between gap-3">
-                <p class="text-[11px] text-gray-500 leading-snug flex-1">Download the APK and install it directly on your Android device for a faster-ready experience.</p>
+              <div class="px-6 pb-5 flex items-center justify-between gap-4 border-t border-green-100 pt-4">
+                <p class="text-xs text-gray-500 leading-relaxed flex-1">Download the APK and install it directly on your Android device for a faster, ready experience.</p>
                 <a
                   href="https://www.mediafire.com/file/g3v17bvzzrot54q/ssaam.apk/file"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="flex-shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold shadow-sm hover:shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition-all"
+                  class="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-bold shadow-sm hover:shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition-all"
                 >
-                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 4v11"/></svg>
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 4v11"/></svg>
                   Download
                 </a>
               </div>
             </div>
 
             <!-- Close button -->
-            <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3.5 rounded-2xl font-semibold text-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-md shadow-blue-200">
+            <button @click="showContactModal = false" class="w-full bg-gray-900 hover:bg-gray-800 text-white py-3.5 rounded-2xl font-semibold text-sm active:scale-[0.98] transition-all">
               Close
             </button>
           </div>
