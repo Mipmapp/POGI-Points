@@ -215,15 +215,34 @@
               </div>
               <div class="space-y-1.5">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Year Level</label>
-                <div class="relative">
-                  <select v-model="formData.year_level" :class="['w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none appearance-none text-sm bg-white transition', formData.year_level ? 'text-gray-800' : 'text-gray-400']" required>
-                    <option value="" disabled>Select Year Level</option>
-                    <option value="1st Year">1st Year</option>
-                    <option value="2nd Year">2nd Year</option>
-                    <option value="3rd Year">3rd Year</option>
-                    <option value="4th Year">4th Year</option>
-                  </select>
-                  <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-50" />
+                <div class="relative" ref="yearDropdownRef">
+                  <button type="button" @click="toggleYearMenu"
+                    :class="['w-full text-left px-4 py-3 border rounded-xl flex items-center justify-between text-sm bg-white transition outline-none',
+                      showYearMenu ? 'border-indigo-400 ring-2 ring-indigo-100' : 'border-gray-200',
+                      formData.year_level ? 'text-gray-800' : 'text-gray-400']">
+                    <span>{{ formData.year_level || 'Select Year Level' }}</span>
+                    <svg :class="['w-4 h-4 text-gray-400 transition-transform duration-200', showYearMenu ? 'rotate-180' : '']"
+                      viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                  </button>
+                  <transition name="dropdown-pop">
+                    <div v-if="showYearMenu"
+                      :class="['absolute z-30 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden',
+                        showYearMenuAbove ? 'bottom-full mb-2' : 'top-full mt-2']">
+                      <ul class="py-1">
+                        <li v-for="yr in ['1st Year','2nd Year','3rd Year','4th Year']" :key="yr"
+                          @click="chooseYearLevel(yr)"
+                          :class="['flex items-center justify-between px-4 py-2.5 text-sm cursor-pointer transition',
+                            formData.year_level === yr ? 'bg-indigo-50 text-indigo-700 font-medium' : 'text-gray-700 hover:bg-gray-50']">
+                          <span>{{ yr }}</span>
+                          <svg v-if="formData.year_level === yr" class="w-4 h-4 text-indigo-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M20 6L9 17l-5-5"/>
+                          </svg>
+                        </li>
+                      </ul>
+                    </div>
+                  </transition>
                 </div>
               </div>
               <div>
@@ -1027,6 +1046,26 @@ const iconGradientClass = computed(() => {
 const registrationIconGradientClass = computed(() => 'bg-gradient-to-br from-ssaam-dark to-ssaam-light')
 
 // Program dropdown state for custom select with logos
+// ── Year Level custom dropdown ──────────────────────────────────────────────
+const showYearMenu = ref(false)
+const showYearMenuAbove = ref(false)
+const yearDropdownRef = ref(null)
+
+const toggleYearMenu = () => {
+  showYearMenu.value = !showYearMenu.value
+  if (showYearMenu.value && yearDropdownRef.value) {
+    const rect = yearDropdownRef.value.getBoundingClientRect()
+    const spaceBelow = window.innerHeight - rect.bottom
+    showYearMenuAbove.value = spaceBelow < 200 && rect.top > 200
+  }
+}
+
+const chooseYearLevel = (yr) => {
+  formData.year_level = yr
+  showYearMenu.value = false
+}
+
+// ── Program dropdown ─────────────────────────────────────────────────────────
 const showProgramMenu = ref(false)
 const programDropdownDesktopRef = ref(null)
 const programDropdownMobileRef = ref(null)
@@ -1053,6 +1092,8 @@ const handleOutsideClick = (e) => {
   const clickedInsideDesktop = desktopEl && desktopEl.contains(e.target)
   const clickedInsideMobile = mobileEl && mobileEl.contains(e.target)
   if (!clickedInsideDesktop && !clickedInsideMobile) showProgramMenu.value = false
+  const yearEl = yearDropdownRef.value
+  if (yearEl && !yearEl.contains(e.target)) showYearMenu.value = false
 }
 
 const updateProgramMenuPlacement = (which) => {
@@ -1636,6 +1677,18 @@ const goToLogin = () => {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+.dropdown-pop-enter-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.dropdown-pop-leave-active {
+  transition: opacity 0.1s ease, transform 0.1s ease;
+}
+.dropdown-pop-enter-from,
+.dropdown-pop-leave-to {
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
 }
 
 .modal-bounce-enter-active {
