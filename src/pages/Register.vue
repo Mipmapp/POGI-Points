@@ -413,7 +413,7 @@
               <!-- ARMS verified summary in Step 2 (desktop) -->
               <div v-if="armsVerified" class="rounded-xl border border-green-200 bg-green-50 px-4 py-2.5 flex items-center gap-3">
                 <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                <p class="text-xs text-green-700 flex-1 truncate">ARMS Verified — <span class="font-semibold">{{ armsData?.studentName }}</span></p>
+                <p class="text-xs text-green-700 flex-1 truncate">ARMS Verified ✓</p>
                 <button type="button" @click="resetArms(); currentStep = 1" class="text-xs text-green-600 underline hover:text-green-800 flex-shrink-0">Change</button>
               </div>
 
@@ -883,7 +883,7 @@
             <!-- ARMS verified summary in Step 2 (mobile) -->
             <div v-if="armsVerified" class="rounded-2xl border border-green-200 bg-green-50 px-4 py-2.5 flex items-center gap-3">
               <svg class="w-4 h-4 text-green-500 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <p class="text-xs text-green-700 flex-1 truncate">ARMS Verified — <span class="font-semibold">{{ armsData?.studentName }}</span></p>
+              <p class="text-xs text-green-700 flex-1 truncate">ARMS Verified ✓</p>
               <button type="button" @click="resetArms(); currentStep = 1" class="text-xs text-green-600 underline hover:text-green-800 flex-shrink-0">Change</button>
             </div>
 
