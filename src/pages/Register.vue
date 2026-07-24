@@ -1432,23 +1432,33 @@ const verifyWithARMS = async () => {
   }
 
   try {
-    let response, data
+    let response, data, firstFailMessage
+
+    // First attempt
     try {
       ;({ response, data } = await doVerify())
+      if (!response.ok) {
+        firstFailMessage = data.message || 'ARMS verification failed. Please try again.'
+        response = null
+      }
     } catch (_) {
-      // First attempt failed — wait 1.5 s then retry once
-      await new Promise(r => setTimeout(r, 1500))
+      firstFailMessage = 'Could not reach JRMSU ARMS portal.'
+      response = null
+    }
+
+    // If first attempt failed, wait 2 s then retry once silently
+    if (!response) {
+      await new Promise(r => setTimeout(r, 2000))
       try {
         ;({ response, data } = await doVerify())
+        if (!response.ok) {
+          armsError.value = data.message || firstFailMessage || 'ARMS verification failed. Please try again.'
+          return
+        }
       } catch (__) {
         armsError.value = 'Could not reach JRMSU ARMS portal. Please try again later.'
         return
       }
-    }
-
-    if (!response.ok) {
-      armsError.value = data.message || 'ARMS verification failed. Please try again.'
-      return
     }
     const s = data.student
     armsData.value      = s
