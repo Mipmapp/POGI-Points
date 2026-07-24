@@ -117,8 +117,8 @@
     </div>
   </div>
 
-  <div class="hidden md:flex min-h-screen bg-white relative">
-    <div class="desktop-bg-panel relative flex-shrink-0">
+  <div class="hidden md:flex min-h-screen relative" style="background: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%), linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 100%), url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;">
+    <div class="desktop-bg-panel relative flex-shrink-0" style="width:calc(40% + 60px);">
       <ParticleBackground />
       <!-- CCS logo with glow rings -->
       <div class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
@@ -156,16 +156,11 @@
     <!-- Gentle S-wave divider -->
     <div class="absolute top-0 bottom-0 z-40 pointer-events-none" style="left:40%;transform:translateX(-50%);width:120px;">
       <svg class="h-full w-full" viewBox="0 0 120 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <filter id="wave-shadow-r" x="-30%" y="0%" width="160%" height="100%">
-            <feDropShadow dx="-5" dy="0" stdDeviation="8" flood-color="rgba(0,0,0,0.22)"/>
-          </filter>
-        </defs>
-        <path d="M60,0 C140,200 -20,600 60,800 L120,800 L120,0 Z" fill="white" filter="url(#wave-shadow-r)"/>
+        <path d="M60,0 C140,200 -20,600 60,800 L120,800 L120,0 Z" fill="white"/>
       </svg>
     </div>
 
-    <div class="w-3/5 flex items-center justify-center bg-white">
+    <div class="flex-1 flex items-center justify-center bg-white">
       <div class="w-full max-w-sm px-6">
         <div class="mb-8">
           <h2 class="text-4xl font-bold text-gray-900 leading-tight mb-3">Create account</h2>
@@ -1932,7 +1927,6 @@ const goToLogin = () => {
   color: white;
   position: relative;
   overflow: hidden;
-  box-shadow: inset -18px 0 40px rgba(0,0,0,0.25), 8px 0 32px rgba(10,30,130,0.30);
 }
 
 /* CCS logo white glow pulse */
