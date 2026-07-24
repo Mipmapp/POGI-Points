@@ -54,7 +54,7 @@
 
           <!-- Footer -->
           <div class="px-8 pb-6 text-center">
-            <p class="text-xs text-gray-400">CCS – Creatives Committee · Chairperson: Sheen Lee</p>
+            <p class="text-xs text-gray-400">CCS – Creatives Committee</p>
           </div>
         </div>
       </transition>
@@ -150,7 +150,7 @@
         <p class="text-white/70 text-xs mt-0.5">College of Computing Studies</p>
       </div>
       <div class="absolute bottom-3 left-4 right-4 text-center text-[10px] text-white/40">
-        Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+        Copyright © 2026 Powered by CCS-Creatives Committee.
       </div>
     </div>
     <div class="w-3/5 flex items-center justify-center bg-white">
@@ -183,10 +183,10 @@
                 <transition name="arms-expand">
                   <div v-if="showArmsInput" class="space-y-2 overflow-hidden">
                     <input v-model="armsStudentIdInput" @input="armsStudentIdInput = armsStudentIdInput.toUpperCase().replace(/[^0-9A-Z-]/g,'')" type="text" placeholder="Student ID (e.g. 25-A-00000)" maxlength="10"
-                      class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800" />
+                      class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-800 transition" />
                     <div class="relative">
                       <input v-model="armsPassword" :type="armsShowPw ? 'text' : 'password'" placeholder="ARMS portal password"
-                        class="w-full px-3 py-2 pr-10 border border-blue-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800"
+                        class="w-full px-3 py-2 pr-10 border border-blue-200 rounded-lg text-sm bg-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-800 transition"
                         @keydown.enter.prevent="verifyWithARMS" />
                       <button type="button" @click="armsShowPw = !armsShowPw" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                         <svg v-if="armsShowPw" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
@@ -256,8 +256,13 @@
               </template>
               <div class="space-y-1.5">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</label>
-                <input ref="emailInput" v-model="formData.email" @keydown.enter.prevent="() => handleNext()" type="email" placeholder="e.g. juan@email.com"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" required />
+                <input ref="emailInput" v-model="formData.email" @keydown.enter.prevent="() => handleNext()" type="email" placeholder="e.g. juan@gmail.com"
+                  pattern="[a-zA-Z0-9._%+\-]+@gmail\.com"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-400/20 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" required />
+                <p class="text-xs text-gray-400 flex items-center gap-1 pl-1">
+                  <svg class="w-3 h-3 text-red-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
+                  Only Gmail addresses are accepted.
+                </p>
               </div>
               <div class="flex items-center justify-center pt-2">
                 <div class="flex space-x-2">
@@ -620,10 +625,10 @@
                 <transition name="arms-expand">
                   <div v-if="showArmsInput" class="space-y-2 overflow-hidden">
                     <input v-model="armsStudentIdInput" @input="armsStudentIdInput = armsStudentIdInput.toUpperCase().replace(/[^0-9A-Z-]/g,'')" type="text" placeholder="Student ID (e.g. 25-A-00000)" maxlength="10"
-                      class="w-full px-4 py-2.5 border border-blue-200 rounded-full text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800" />
+                      class="w-full px-4 py-2.5 border border-blue-200 rounded-full text-sm bg-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-800 transition" />
                     <div class="relative">
                       <input v-model="armsPassword" :type="armsShowPw ? 'text' : 'password'" placeholder="ARMS portal password"
-                        class="w-full px-4 py-2.5 pr-10 border border-blue-200 rounded-full text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800"
+                        class="w-full px-4 py-2.5 pr-10 border border-blue-200 rounded-full text-sm bg-white outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-gray-800 transition"
                         @keydown.enter.prevent="verifyWithARMS" />
                       <button type="button" @click="armsShowPw = !armsShowPw" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
                         <svg v-if="armsShowPw" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
@@ -678,9 +683,17 @@
               <span class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
             </div>
             </template>
-            <div class="relative">
-              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: currentColor;"></div>
-              <input v-model="formData.email" type="email" placeholder="E-mail" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
+            <div>
+              <div class="relative">
+                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: currentColor;"></div>
+                <input v-model="formData.email" type="email" placeholder="Gmail only (e.g. juan@gmail.com)"
+                  pattern="[a-zA-Z0-9._%+\-]+@gmail\.com"
+                  class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-500/20 focus:bg-white outline-none text-sm text-gray-700 placeholder-gray-400 transition" required />
+              </div>
+              <p class="text-xs text-gray-400 flex items-center gap-1 pl-4 pt-1">
+                <svg class="w-3 h-3 text-red-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
+                Only Gmail addresses are accepted.
+              </p>
             </div>
             <div class="flex items-center justify-center pt-1">
               <div class="flex space-x-2">
@@ -962,7 +975,7 @@
         </div>
 
         <div class="mt-2 text-center text-xs text-gray-400">
-          Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+          Copyright © 2026 Powered by CCS-Creatives Committee.
         </div>
       </div>
     </div>
