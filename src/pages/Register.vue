@@ -1346,13 +1346,32 @@ const verifyWithARMS = async () => {
   }
   armsError.value  = ''
   armsLoading.value = true
-  try {
+
+  const doVerify = async () => {
     const response = await fetch(buildAPIUrl('/apis/students/arms-verify'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer SSAAMStudents' },
       body: JSON.stringify({ student_id: sid, password: armsPassword.value })
     })
     const data = await response.json()
+    return { response, data }
+  }
+
+  try {
+    let response, data
+    try {
+      ;({ response, data } = await doVerify())
+    } catch (_) {
+      // First attempt failed — wait 1.5 s then retry once
+      await new Promise(r => setTimeout(r, 1500))
+      try {
+        ;({ response, data } = await doVerify())
+      } catch (__) {
+        armsError.value = 'Could not reach JRMSU ARMS portal. Please try again later.'
+        return
+      }
+    }
+
     if (!response.ok) {
       armsError.value = data.message || 'ARMS verification failed. Please try again.'
       return
@@ -1387,7 +1406,7 @@ const verifyWithARMS = async () => {
       if (!formData.last_name && parsed.last)  formData.last_name = parsed.last
     }
   } catch (_) {
-    armsError.value = 'Network error. Please check your connection and try again.'
+    armsError.value = 'Could not reach JRMSU ARMS portal. Please try again later.'
   } finally {
     armsLoading.value = false
   }
@@ -1851,6 +1870,12 @@ const handleNext = async () => {
   }
   
   if (currentStep.value === 1) {
+    if (!armsVerified.value) {
+      errorMessage.value = "Please verify your JRMSU ARMS account first to auto-fill your details."
+      showErrorNotification.value = true
+      showArmsInput.value = true
+      return
+    }
     if (!formData.full_name || !formData.full_name.trim()) {
       errorMessage.value = "Please provide your full name to continue."
       showErrorNotification.value = true
