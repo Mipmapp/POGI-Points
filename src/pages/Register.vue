@@ -506,20 +506,45 @@
 
             <div v-if="currentStep === 3" class="space-y-4 step-animate">
               <div class="text-center">
-                <div class="w-40 h-40 mx-auto mb-4 bg-green-50 rounded-full flex items-center justify-center overflow-hidden">
-                  <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
-                  <div v-else class="flex flex-col items-center justify-center">
-                    <div class="w-20 h-20 rounded-full bg-gray-300 mb-3"></div>
-                    <div class="w-28 h-16 bg-gray-400 rounded-t-full"></div>
+                <!-- Avatar with camera badge -->
+                <div class="relative w-36 h-36 mx-auto mb-4">
+                  <div class="w-36 h-36 rounded-full overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-100 shadow-md">
+                    <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
+                    <div v-else class="w-full h-full flex items-center justify-center">
+                      <svg class="w-20 h-20 text-indigo-200" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.333 0-10 1.667-10 5v2h20v-2c0-3.333-6.667-5-10-5z"/>
+                      </svg>
+                    </div>
                   </div>
-                </div>
-                <label class="block text-sm font-medium text-gray-600 mb-4">Upload Profile Photo</label>
-                <div class="relative">
-                  <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload" />
-                  <label for="file-upload" class="cursor-pointer inline-flex items-center justify-center px-8 py-3 bg-green-50 rounded-full text-sm font-medium text-gray-600 hover:bg-green-100 transition duration-300">
-                    <img :src="'/change_photo.svg'" alt="Upload" class="w-5 h-5 mr-2 opacity-60" />{{ imagePreview ? 'Change Photo' : 'Choose Photo' }}
+                  <!-- Camera badge -->
+                  <label for="file-upload" class="absolute bottom-1 right-1 w-10 h-10 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 rounded-full flex items-center justify-center cursor-pointer shadow-lg border-2 border-white transition-colors duration-200">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
                   </label>
                 </div>
+
+                <p class="text-sm font-semibold text-gray-800 mb-1">Upload Profile Photo</p>
+                <p class="text-xs text-gray-400 mb-5">JPG, PNG or WEBP · Optional</p>
+
+                <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload" />
+
+                <!-- Upload / uploading state -->
+                <div v-if="isUploading" class="inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-50 rounded-xl text-sm text-indigo-500 font-medium">
+                  <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Uploading…
+                </div>
+                <label v-else for="file-upload" class="cursor-pointer inline-flex items-center gap-2 px-6 py-2.5 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-colors duration-200">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  {{ imagePreview ? 'Change Photo' : 'Choose Photo' }}
+                </label>
               </div>
               <div class="flex items-center justify-center pt-2">
                 <div class="flex space-x-2">
@@ -918,20 +943,45 @@
 
           <div v-if="currentStep === 3" class="space-y-4 step-animate">
             <div class="text-center">
-              <div class="w-36 h-36 sm:w-40 sm:h-40 mx-auto mb-4 bg-green-50 rounded-full flex items-center justify-center overflow-hidden">
-                <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
-                <div v-else class="flex flex-col items-center justify-center">
-                  <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gray-300 mb-3"></div>
-                  <div class="w-24 h-14 sm:w-28 sm:h-16 bg-gray-400 rounded-t-full"></div>
+              <!-- Avatar with camera badge -->
+              <div class="relative w-32 h-32 sm:w-36 sm:h-36 mx-auto mb-4">
+                <div class="w-32 h-32 sm:w-36 sm:h-36 rounded-full overflow-hidden bg-gradient-to-br from-indigo-50 to-purple-50 border-2 border-indigo-100 shadow-md">
+                  <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
+                  <div v-else class="w-full h-full flex items-center justify-center">
+                    <svg class="w-16 h-16 sm:w-20 sm:h-20 text-indigo-200" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.333 0-10 1.667-10 5v2h20v-2c0-3.333-6.667-5-10-5z"/>
+                    </svg>
+                  </div>
                 </div>
-              </div>
-              <label class="block text-sm font-medium text-gray-600 mb-4">Upload Profile Photo</label>
-              <div class="relative">
-                <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload-mobile" />
-                <label for="file-upload-mobile" class="cursor-pointer inline-flex items-center justify-center px-6 py-3 bg-green-50 rounded-full text-sm font-medium text-gray-600 hover:bg-green-100 transition duration-300">
-                  <img :src="'/change_photo.svg'" alt="Upload" class="w-5 h-5 mr-2 opacity-60" />{{ imagePreview ? 'Change Photo' : 'Choose Photo' }}
+                <!-- Camera badge -->
+                <label for="file-upload-mobile" class="absolute bottom-1 right-1 w-9 h-9 sm:w-10 sm:h-10 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 rounded-full flex items-center justify-center cursor-pointer shadow-lg border-2 border-white transition-colors duration-200">
+                  <svg class="w-4 h-4 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
                 </label>
               </div>
+
+              <p class="text-sm font-semibold text-gray-800 mb-1">Upload Profile Photo</p>
+              <p class="text-xs text-gray-400 mb-4">JPG, PNG or WEBP · Optional</p>
+
+              <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload-mobile" />
+
+              <!-- Upload / uploading state -->
+              <div v-if="isUploading" class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-50 rounded-xl text-sm text-indigo-500 font-medium">
+                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Uploading…
+              </div>
+              <label v-else for="file-upload-mobile" class="cursor-pointer inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white rounded-xl text-sm font-semibold shadow-sm transition-colors duration-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                {{ imagePreview ? 'Change Photo' : 'Choose Photo' }}
+              </label>
             </div>
             <div class="flex items-center justify-center pt-1">
               <div class="flex space-x-2">
