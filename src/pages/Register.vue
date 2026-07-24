@@ -15,7 +15,7 @@
 
           <!-- Carousel -->
           <div class="relative px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 select-none overflow-y-auto">
-            <div class="relative overflow-hidden" style="height: clamp(180px, 40vw, 240px);">
+            <div class="relative" style="height: 240px; overflow: visible;">
               <div v-for="(dev, i) in developers" :key="dev.name"
                 :style="getDevStyle(i)"
                 @click="handleDevClick(i)">
