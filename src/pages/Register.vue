@@ -340,28 +340,27 @@
               </div>
               <div class="space-y-1.5">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Suffix <span class="normal-case font-normal text-gray-400">(optional)</span></label>
-                <div class="relative" v-click-outside="() => suffixDropdownOpen = false">
-                  <button type="button" @click="suffixDropdownOpen = !suffixDropdownOpen"
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-left bg-white transition flex items-center justify-between"
-                    :class="formData.suffix ? 'text-gray-800' : 'text-gray-300'">
-                    <span>{{ formData.suffix || 'Select suffix...' }}</span>
-                    <svg class="w-4 h-4 text-gray-400 transition-transform" :class="suffixDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
-                  </button>
+                <div class="relative" v-click-outside="() => { suffixDropdownOpen = false; suffixSearch = '' }">
+                  <div class="relative">
+                    <input
+                      :value="suffixDropdownOpen ? suffixSearch : formData.suffix"
+                      @focus="suffixDropdownOpen = true; suffixSearch = ''"
+                      @input="suffixSearch = $event.target.value; suffixDropdownOpen = true"
+                      type="text" placeholder="Select or type suffix..."
+                      class="w-full px-4 py-3 pr-10 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" />
+                    <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform" :class="suffixDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                  </div>
                   <div v-if="suffixDropdownOpen" class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-                    <div class="p-2 border-b border-gray-100">
-                      <input v-model="suffixSearch" type="text" placeholder="Search suffix..." autofocus
-                        class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:border-indigo-400 outline-none" />
-                    </div>
                     <ul class="max-h-44 overflow-y-auto">
                       <li>
-                        <button type="button" @click="formData.suffix = ''; suffixDropdownOpen = false; suffixSearch = ''"
+                        <button type="button" @mousedown.prevent @click="formData.suffix = ''; suffixDropdownOpen = false; suffixSearch = ''"
                           class="w-full text-left px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 transition"
                           :class="formData.suffix === '' ? 'bg-indigo-50 text-indigo-600 font-medium' : ''">
                           — None —
                         </button>
                       </li>
                       <li v-for="s in filteredSuffixes" :key="s">
-                        <button type="button" @click="formData.suffix = s; suffixDropdownOpen = false; suffixSearch = ''"
+                        <button type="button" @mousedown.prevent @click="formData.suffix = s; suffixDropdownOpen = false; suffixSearch = ''"
                           class="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition"
                           :class="formData.suffix === s ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-gray-700'">
                           {{ s }}
@@ -775,28 +774,27 @@
             </div>
             <div class="space-y-1.5">
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Suffix <span class="normal-case font-normal text-gray-400">(optional)</span></label>
-              <div class="relative" v-click-outside="() => suffixDropdownOpen = false">
-                <button type="button" @click="suffixDropdownOpen = !suffixDropdownOpen"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-left bg-white transition flex items-center justify-between"
-                  :class="formData.suffix ? 'text-gray-800' : 'text-gray-300'">
-                  <span>{{ formData.suffix || 'Select suffix...' }}</span>
-                  <svg class="w-4 h-4 text-gray-400 transition-transform" :class="suffixDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
-                </button>
+              <div class="relative" v-click-outside="() => { suffixDropdownOpen = false; suffixSearch = '' }">
+                <div class="relative">
+                  <input
+                    :value="suffixDropdownOpen ? suffixSearch : formData.suffix"
+                    @focus="suffixDropdownOpen = true; suffixSearch = ''"
+                    @input="suffixSearch = $event.target.value; suffixDropdownOpen = true"
+                    type="text" placeholder="Select or type suffix..."
+                    class="w-full px-4 py-3 pr-10 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" />
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform" :class="suffixDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                </div>
                 <div v-if="suffixDropdownOpen" class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
-                  <div class="p-2 border-b border-gray-100">
-                    <input v-model="suffixSearch" type="text" placeholder="Search suffix..." autofocus
-                      class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:border-indigo-400 outline-none" />
-                  </div>
                   <ul class="max-h-44 overflow-y-auto">
                     <li>
-                      <button type="button" @click="formData.suffix = ''; suffixDropdownOpen = false; suffixSearch = ''"
+                      <button type="button" @mousedown.prevent @click="formData.suffix = ''; suffixDropdownOpen = false; suffixSearch = ''"
                         class="w-full text-left px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 transition"
                         :class="formData.suffix === '' ? 'bg-indigo-50 text-indigo-600 font-medium' : ''">
                         — None —
                       </button>
                     </li>
                     <li v-for="s in filteredSuffixes" :key="s">
-                      <button type="button" @click="formData.suffix = s; suffixDropdownOpen = false; suffixSearch = ''"
+                      <button type="button" @mousedown.prevent @click="formData.suffix = s; suffixDropdownOpen = false; suffixSearch = ''"
                         class="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition"
                         :class="formData.suffix === s ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-gray-700'">
                         {{ s }}
