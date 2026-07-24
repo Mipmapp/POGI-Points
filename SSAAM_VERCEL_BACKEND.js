@@ -4412,6 +4412,21 @@ async function uploadToCloudinary(base64Image) {
     return { url: result.secure_url, public_id: result.public_id };
 }
 
+// Upload image during registration (no JWT required, uses student API key)
+app.post('/apis/students/upload-photo', studentAuth, async (req, res) => {
+    try {
+        const { image } = req.body;
+        if (!image || typeof image !== 'string') {
+            return res.status(400).json({ message: 'Image data is required' });
+        }
+        const result = await uploadToCloudinary(image);
+        res.json({ success: true, url: result.url, public_id: result.public_id });
+    } catch (error) {
+        console.error('Error uploading registration photo:', error);
+        res.status(500).json({ message: 'Failed to upload image' });
+    }
+});
+
 // Upload image to Cloudinary
 app.post('/apis/upload-image', auth, async (req, res) => {
     try {

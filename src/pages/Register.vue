@@ -1697,10 +1697,11 @@ const handleImageUpload = async (event) => {
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        const res = await fetch(buildAPIUrl('/apis/upload-image'), {
+        const res = await fetch(buildAPIUrl('/apis/students/upload-photo'), {
           method: "POST",
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer SSAAMStudents'
           },
           body: JSON.stringify({ image: compressedBase64 })
         });
