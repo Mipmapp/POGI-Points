@@ -213,42 +213,41 @@
                 </div>
               </div>
 
+              <!-- Name fields — only shown after ARMS auto-fills them -->
+              <template v-if="armsVerified">
               <div class="space-y-1.5">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">First Name</label>
-                <input ref="firstNameInput" v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('middleNameInput')" type="text" placeholder="e.g. JUAN"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" required />
+                <div class="relative">
+                  <input ref="firstNameInput" v-model="formData.first_name" type="text" placeholder="e.g. JUAN"
+                    class="w-full px-4 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-800 bg-green-50 transition" readonly required />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+                </div>
               </div>
               <div class="space-y-1.5">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Middle Name <span class="normal-case font-normal text-gray-400">(optional)</span></label>
-                <input ref="middleNameInput" v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('lastNameInput')" type="text" placeholder="e.g. DELA"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" />
+                <div class="relative">
+                  <input ref="middleNameInput" v-model="formData.middle_name" type="text" placeholder="e.g. DELA"
+                    class="w-full px-4 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-800 bg-green-50 transition" readonly />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+                </div>
               </div>
               <div class="space-y-1.5">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Last Name</label>
-                <input ref="lastNameInput" v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" @keydown.enter.prevent="() => focusNext('emailInput')" type="text" placeholder="e.g. CRUZ"
-                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" required />
+                <div class="relative">
+                  <input ref="lastNameInput" v-model="formData.last_name" type="text" placeholder="e.g. CRUZ"
+                    class="w-full px-4 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-800 bg-green-50 transition" readonly required />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+                </div>
               </div>
               <div class="space-y-1.5">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Suffix <span class="normal-case font-normal text-gray-400">(optional)</span></label>
                 <div class="relative">
-                  <select v-model="formData.suffix" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none appearance-none text-sm text-gray-800 bg-white transition">
-                    <option value="">None</option>
-                    <option value="Jr.">Jr.</option>
-                    <option value="Sr.">Sr.</option>
-                    <option value="I">I</option>
-                    <option value="II">II</option>
-                    <option value="III">III</option>
-                    <option value="IV">IV</option>
-                    <option value="V">V</option>
-                    <option value="VI">VI</option>
-                    <option value="VII">VII</option>
-                    <option value="VIII">VIII</option>
-                    <option value="IX">IX</option>
-                    <option value="X">X</option>
-                  </select>
-                  <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-50" />
+                  <input v-model="formData.suffix" type="text"
+                    class="w-full px-4 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-800 bg-green-50 transition" readonly />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
                 </div>
               </div>
+              </template>
               <div class="space-y-1.5">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</label>
                 <input ref="emailInput" v-model="formData.email" @keydown.enter.prevent="() => handleNext()" type="email" placeholder="e.g. juan@email.com"
@@ -645,29 +644,28 @@
                 </div>
               </div>
 
+            <!-- Name fields — only shown after ARMS auto-fills them -->
+            <template v-if="armsVerified">
             <div class="relative">
               <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
-              <input v-model="formData.first_name" @input="formData.first_name = formData.first_name.toUpperCase()" type="text" placeholder="First Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
+              <input v-model="formData.first_name" type="text" placeholder="First Name" class="w-full pl-11 pr-10 py-3 bg-green-100 border-0 rounded-full outline-none text-sm text-gray-700 placeholder-gray-400" readonly required />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
             </div>
             <div class="relative">
               <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
-              <input v-model="formData.middle_name" @input="formData.middle_name = formData.middle_name.toUpperCase()" type="text" placeholder="Middle Name (optional)" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" />
+              <input v-model="formData.middle_name" type="text" placeholder="Middle Name (optional)" class="w-full pl-11 pr-10 py-3 bg-green-100 border-0 rounded-full outline-none text-sm text-gray-700 placeholder-gray-400" readonly />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
             </div>
             <div class="relative">
               <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
-              <input v-model="formData.last_name" @input="formData.last_name = formData.last_name.toUpperCase()" type="text" placeholder="Last Name" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
+              <input v-model="formData.last_name" type="text" placeholder="Last Name" class="w-full pl-11 pr-10 py-3 bg-green-100 border-0 rounded-full outline-none text-sm text-gray-700 placeholder-gray-400" readonly required />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
             </div>
             <div class="relative">
-              <select v-model="formData.suffix" class="w-full pl-4 pr-10 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none appearance-none text-sm text-gray-700">
-                <option value="">Suffix (optional)</option>
-                <option value="Jr.">Jr.</option>
-                <option value="Sr.">Sr.</option>
-                <option value="II">II</option>
-                <option value="III">III</option>
-                <option value="IV">IV</option>
-              </select>
-              <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-65" />
+              <input v-model="formData.suffix" type="text" placeholder="Suffix (optional)" class="w-full pl-4 pr-10 py-3 bg-green-100 border-0 rounded-full outline-none text-sm text-gray-700 placeholder-gray-400" readonly />
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
             </div>
+            </template>
             <div class="relative">
               <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: currentColor;"></div>
               <input v-model="formData.email" type="email" placeholder="E-mail" class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400" required />
