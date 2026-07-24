@@ -9,7 +9,7 @@
               class="absolute right-5 top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">
               &times;
             </button>
-            <h3 class="text-2xl font-bold text-gray-900">Meet our beautiful team</h3>
+            <h3 class="text-2xl font-bold text-gray-900">Meet our team</h3>
             <p class="text-gray-500 text-sm mt-1">CCS – Creatives Committee</p>
           </div>
 
