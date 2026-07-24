@@ -645,141 +645,208 @@
 
   <div class="md:flex md:h-screen md:overflow-hidden">
     <!-- Sidebar (Hidden on mobile, visible on desktop) -->
-    <div :class="[ 'hidden md:flex w-64 bg-gradient-to-b text-white flex-col order-1 border-r border-white/10 h-screen shadow-2xl sticky top-0 self-start', sidebarGradient ]">
-      <div class="px-5 py-5 border-b border-white/15 flex-shrink-0 bg-white/5 backdrop-blur-sm">
-        <div class="flex items-center gap-3">
-          <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU Logo" class="w-11 h-11 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
-          <div class="flex flex-col leading-tight">
-            <h1 class="text-2xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
+    <div :class="[
+      'hidden md:flex bg-gradient-to-b text-white flex-col order-1 border-r border-white/10 h-screen shadow-2xl sticky top-0 self-start transition-all duration-300 ease-in-out overflow-hidden',
+      sidebarCollapsed ? 'w-16' : 'w-64',
+      sidebarGradient
+    ]">
+      <!-- Logo / Header -->
+      <div :class="['border-b border-white/15 flex-shrink-0 bg-white/5 backdrop-blur-sm flex items-center transition-all duration-300', sidebarCollapsed ? 'px-0 py-4 justify-center' : 'px-5 py-5 gap-3']">
+        <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
+        <Transition name="sidebar-label">
+          <div v-if="!sidebarCollapsed" class="flex flex-col leading-tight overflow-hidden">
+            <h1 class="text-2xl font-extrabold italic text-white tracking-wide drop-shadow-sm whitespace-nowrap">SSAAM</h1>
             <p class="text-white/50 text-[9px] uppercase tracking-widest">JRMSU</p>
           </div>
-        </div>
+        </Transition>
       </div>
 
-      <div class="px-3 py-3 border-b border-white/10 flex-shrink-0">
-        <!-- Admin (master) keeps the original centered card -->
-        <div v-if="currentUser.isMaster || currentUser.role === 'admin'" class="flex flex-col items-center bg-white/[0.06] rounded-2xl px-3 py-4 border border-white/10">
-          <p class="text-sm mb-2 opacity-90 text-white">Welcome back,</p>
-          <span class="relative inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-sm font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
-            <img :src="'/crown.svg'" alt="Admin" class="w-5 h-5 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
-            <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
-          </span>
-        </div>
-        <!-- Compact card for co-admin / treasurer / student -->
-        <div v-else class="bg-white/[0.06] rounded-xl px-2.5 py-2.5 border border-white/10">
-          <div class="flex items-center gap-2.5">
-            <div :class="['relative w-10 h-10 aspect-square rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 ring-white/20', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
-              <img v-if="!sidebarImageFailed && (currentUser.image || currentUser.photo)" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @error="sidebarImageFailed = true" />
-              <span v-else class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <p class="text-white text-[13px] font-semibold leading-tight truncate" :title="displayName">{{ displayName }}</p>
-              <div class="mt-1 flex items-center gap-1 flex-wrap">
-                <span v-if="isTreasurer" class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full" :title="userCollegeCode || 'Treasurer'">
-                  <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
-                  <span>Treasurer</span>
-                </span>
-                <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full" :title="userCollegeCode || 'Co-Admin'">
-                  <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
-                  <span>Co-Admin</span>
-                </span>
-                <span v-else class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10" :title="userCollegeCode || 'Student'">
-                  <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
-                  <span>Student</span>
-                </span>
-                <span v-if="currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full" title="Verified">
-                  <img :src="'/verified.svg'" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
-                  Verified
-                </span>
-                <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-500/90 text-white text-[9px] font-bold rounded-full" title="Unreadable">Unreadable</span>
-                <span v-else class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/90 text-white text-[9px] font-bold rounded-full" title="Unverified">Unverified</span>
+      <!-- Profile section (hidden when collapsed) -->
+      <Transition name="sidebar-label">
+        <div v-if="!sidebarCollapsed" class="px-3 py-3 border-b border-white/10 flex-shrink-0">
+          <!-- Admin (master) keeps the original centered card -->
+          <div v-if="currentUser.isMaster || currentUser.role === 'admin'" class="flex flex-col items-center bg-white/[0.06] rounded-2xl px-3 py-4 border border-white/10">
+            <p class="text-sm mb-2 opacity-90 text-white">Welcome back,</p>
+            <span class="relative inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-sm font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden">
+              <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
+              <img :src="'/crown.svg'" alt="Admin" class="w-5 h-5 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
+              <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
+            </span>
+          </div>
+          <!-- Compact card for co-admin / treasurer / student -->
+          <div v-else class="bg-white/[0.06] rounded-xl px-2.5 py-2.5 border border-white/10">
+            <div class="flex items-center gap-2.5">
+              <div :class="['relative w-10 h-10 aspect-square rounded-full flex items-center justify-center overflow-hidden flex-shrink-0 ring-2 ring-white/20', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
+                <img v-if="!sidebarImageFailed && (currentUser.image || currentUser.photo)" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @error="sidebarImageFailed = true" />
+                <span v-else class="text-white font-bold text-sm tracking-wide select-none">{{ getInitials(displayName) }}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-white text-[13px] font-semibold leading-tight truncate" :title="displayName">{{ displayName }}</p>
+                <div class="mt-1 flex items-center gap-1 flex-wrap">
+                  <span v-if="isTreasurer" class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-gradient-to-r from-cyan-500 to-teal-500 text-white text-[9px] font-black uppercase tracking-wider rounded-full" :title="userCollegeCode || 'Treasurer'">
+                    <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
+                    <span>Treasurer</span>
+                  </span>
+                  <span v-else-if="isCoAdmin" class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-gradient-to-r from-violet-500 to-purple-600 text-white text-[9px] font-black uppercase tracking-wider rounded-full" :title="userCollegeCode || 'Co-Admin'">
+                    <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
+                    <span>Co-Admin</span>
+                  </span>
+                  <span v-else class="inline-flex items-center gap-1 pl-0.5 pr-1.5 py-0.5 bg-white/10 text-white/80 text-[9px] font-bold uppercase tracking-wider rounded-full border border-white/10" :title="userCollegeCode || 'Student'">
+                    <span v-if="userCollegeCode" class="inline-flex items-center justify-center w-4 h-4 bg-white rounded-full"><img :src="userCollegeIcon" alt="College" class="w-3 h-3" /></span>
+                    <span>Student</span>
+                  </span>
+                  <span v-if="currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full" title="Verified">
+                    <img :src="'/verified.svg'" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
+                    Verified
+                  </span>
+                  <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-500/90 text-white text-[9px] font-bold rounded-full" title="Unreadable">Unreadable</span>
+                  <span v-else class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/90 text-white text-[9px] font-bold rounded-full" title="Unverified">Unverified</span>
+                </div>
               </div>
             </div>
+            <div v-if="canSwitchView" class="mt-2.5 flex bg-white/10 rounded-full p-0.5 border border-white/15 text-[10px] font-bold">
+              <button @click="roleViewMode = 'role'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'role' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">Tools</button>
+              <button @click="roleViewMode = 'user'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'user' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">User View</button>
+            </div>
           </div>
-          <div v-if="canSwitchView" class="mt-2.5 flex bg-white/10 rounded-full p-0.5 border border-white/15 text-[10px] font-bold">
-            <button @click="roleViewMode = 'role'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'role' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">Tools</button>
-            <button @click="roleViewMode = 'user'" :class="['flex-1 px-2 py-1 rounded-full transition-all', roleViewMode === 'user' ? 'bg-white text-gray-800 shadow' : 'text-white/70 hover:text-white']">User View</button>
-          </div>
+        </div>
+      </Transition>
+
+      <!-- Mini avatar when collapsed -->
+      <div v-if="sidebarCollapsed" class="py-3 border-b border-white/10 flex-shrink-0 flex justify-center">
+        <div :class="['w-9 h-9 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-white/20 flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
+          <img v-if="!sidebarImageFailed && (currentUser.image || currentUser.photo)" :src="currentUser.image || currentUser.photo" alt="Profile" class="w-full h-full object-cover" @error="sidebarImageFailed = true" />
+          <span v-else class="text-white font-bold text-xs select-none">{{ getInitials(displayName).charAt(0) }}</span>
         </div>
       </div>
 
-      <nav class="flex-1 px-3 py-4 overflow-y-auto min-h-0 sidebar-scroll">
-        <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Menu</p>
-        <button @click="currentPage = 'dashboard'" :class="[sidebarItemBase, currentPage === 'dashboard' ? sidebarItemActive : sidebarItemHover]">
-          <svg v-if="(isAdminLike) && inRoleView" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-          <img v-else :src="'/home.svg'" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
-          <span>{{ ((isAdminLike) && inRoleView) ? 'Statistics' : 'Dashboard' }}</span>
+      <!-- Nav -->
+      <nav :class="['flex-1 py-3 overflow-y-auto min-h-0 sidebar-scroll transition-all duration-300', sidebarCollapsed ? 'px-2' : 'px-3 pt-4']">
+        <p v-if="!sidebarCollapsed" class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Menu</p>
+
+        <!-- Dashboard / Statistics -->
+        <button @click="currentPage = 'dashboard'"
+          :title="sidebarCollapsed ? ((isAdminLike && inRoleView) ? 'Statistics' : 'Dashboard') : ''"
+          :class="[dNavBtn, currentPage === 'dashboard' ? dNavBtnActive : dNavBtnHover]">
+          <svg v-if="(isAdminLike) && inRoleView" class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          <img v-else :src="'/home.svg'" alt="Dashboard" class="w-5 h-5 flex-shrink-0" style="filter: brightness(0) invert(1);" />
+          <span v-if="!sidebarCollapsed" class="truncate">{{ ((isAdminLike) && inRoleView) ? 'Statistics' : 'Dashboard' }}</span>
         </button>
 
-        <button v-if="(isAdminLike) && !isTreasurer && inRoleView" @click="currentPage = 'manage'; showMobileMenu = false; handleManageClick()" :class="[sidebarItemBase, 'mt-2', currentPage === 'manage' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
-          <span>Manage</span>
-        </button>
-        <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'pending'; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-          <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
-        </button>
-        <button v-if="(isAdminLike) && !isTreasurer && !isCoAdmin && inRoleView" @click="currentPage = 'settings'; fetchSettings(); fetchAvailablePayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'settings' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-          <span>Settings</span>
-        </button>
-        <button v-if="isSuperAdmin" @click="currentPage = 'co-admins'; fetchCoAdmins()" :class="[sidebarItemBase, 'mt-2', currentPage === 'co-admins' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-          <span>Assign</span>
-        </button>
-        <button v-if="(!currentUser.isMaster || inRoleView) && !isTreasurer" @click="currentPage = 'attendance'; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'attendance' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-          <span>Attendance</span>
-        </button>
-        <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'contributions'" :class="[sidebarItemBase, 'mt-2', currentPage === 'contributions' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-          <span>Contributions</span>
-        </button>
-        <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'raffle-tickets'" :class="[sidebarItemBase, 'mt-2', currentPage === 'raffle-tickets' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
-          <span>Raffle Ticket</span>
-        </button>
-        <button v-if="(isTreasurer || isCoAdmin) && inRoleView" @click="currentPage = 'audit-trail'" :class="[sidebarItemBase, 'mt-2', currentPage === 'audit-trail' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-          <span>Audit Trail</span>
-        </button>
-        <button v-if="!isAdminLike || inUserView" @click="currentPage = 'my-contributions'; fetchMyPayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-contributions' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-          <span>Contributions</span>
-        </button>
-        <button v-if="!isAdminLike || inUserView" @click="currentPage = 'my-raffle'" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-raffle' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
-          <span>My Raffle</span>
-        </button>
-        <!-- Location: live geofence preview for any active event the student can attend -->
-        <button v-if="!isAdminLike || inUserView" @click="currentPage = 'location'; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'location' ? sidebarItemActive : sidebarItemHover]">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-          <span>Location</span>
+        <button v-if="(isAdminLike) && !isTreasurer && inRoleView" @click="currentPage = 'manage'; handleManageClick()"
+          :title="sidebarCollapsed ? 'Manage' : ''"
+          :class="[dNavBtn, 'mt-1', currentPage === 'manage' ? dNavBtnActive : dNavBtnHover]">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+          <span v-if="!sidebarCollapsed" class="truncate">Manage</span>
         </button>
 
+        <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'pending'; fetchPendingStudents()"
+          :title="sidebarCollapsed ? 'Pending' : ''"
+          :class="[dNavBtn, 'mt-1 relative', currentPage === 'pending' ? dNavBtnActive : dNavBtnHover]">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <span v-if="!sidebarCollapsed" class="flex items-center gap-2 truncate">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
+          <span v-if="sidebarCollapsed && pendingCount > 0" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
+
+        <button v-if="(isAdminLike) && !isTreasurer && !isCoAdmin && inRoleView" @click="currentPage = 'settings'; fetchSettings(); fetchAvailablePayments()"
+          :title="sidebarCollapsed ? 'Settings' : ''"
+          :class="[dNavBtn, 'mt-1', currentPage === 'settings' ? dNavBtnActive : dNavBtnHover]">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <span v-if="!sidebarCollapsed" class="truncate">Settings</span>
+        </button>
+
+        <button v-if="isSuperAdmin" @click="currentPage = 'co-admins'; fetchCoAdmins()"
+          :title="sidebarCollapsed ? 'Assign' : ''"
+          :class="[dNavBtn, 'mt-1', currentPage === 'co-admins' ? dNavBtnActive : dNavBtnHover]">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+          <span v-if="!sidebarCollapsed" class="truncate">Assign</span>
+        </button>
+
+        <button v-if="(!currentUser.isMaster || inRoleView) && !isTreasurer" @click="currentPage = 'attendance'; fetchAttendanceData()"
+          :title="sidebarCollapsed ? 'Attendance' : ''"
+          :class="[dNavBtn, 'mt-1', currentPage === 'attendance' ? dNavBtnActive : dNavBtnHover]">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+          <span v-if="!sidebarCollapsed" class="truncate">Attendance</span>
+        </button>
+
+        <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'contributions'"
+          :title="sidebarCollapsed ? 'Contributions' : ''"
+          :class="[dNavBtn, 'mt-1', currentPage === 'contributions' ? dNavBtnActive : dNavBtnHover]">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          <span v-if="!sidebarCollapsed" class="truncate">Contributions</span>
+        </button>
+
+        <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'raffle-tickets'"
+          :title="sidebarCollapsed ? 'Raffle Ticket' : ''"
+          :class="[dNavBtn, 'mt-1', currentPage === 'raffle-tickets' ? dNavBtnActive : dNavBtnHover]">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
+          <span v-if="!sidebarCollapsed" class="truncate">Raffle Ticket</span>
+        </button>
+
+        <button v-if="(isTreasurer || isCoAdmin) && inRoleView" @click="currentPage = 'audit-trail'"
+          :title="sidebarCollapsed ? 'Audit Trail' : ''"
+          :class="[dNavBtn, 'mt-1', currentPage === 'audit-trail' ? dNavBtnActive : dNavBtnHover]">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+          <span v-if="!sidebarCollapsed" class="truncate">Audit Trail</span>
+        </button>
+
+        <button v-if="!isAdminLike || inUserView" @click="currentPage = 'my-contributions'; fetchMyPayments()"
+          :title="sidebarCollapsed ? 'Contributions' : ''"
+          :class="[dNavBtn, 'mt-1', currentPage === 'my-contributions' ? dNavBtnActive : dNavBtnHover]">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+          <span v-if="!sidebarCollapsed" class="truncate">Contributions</span>
+        </button>
+
+        <button v-if="!isAdminLike || inUserView" @click="currentPage = 'my-raffle'"
+          :title="sidebarCollapsed ? 'My Raffle' : ''"
+          :class="[dNavBtn, 'mt-1', currentPage === 'my-raffle' ? dNavBtnActive : dNavBtnHover]">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
+          <span v-if="!sidebarCollapsed" class="truncate">My Raffle</span>
+        </button>
+
+        <button v-if="!isAdminLike || inUserView" @click="currentPage = 'location'; fetchAttendanceData()"
+          :title="sidebarCollapsed ? 'Location' : ''"
+          :class="[dNavBtn, 'mt-1', currentPage === 'location' ? dNavBtnActive : dNavBtnHover]">
+          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+          <span v-if="!sidebarCollapsed" class="truncate">Location</span>
+        </button>
+
+        <!-- Account section -->
         <div class="mt-3 border-t border-white/10 pt-3">
-          <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
-          <button v-if="false" @click="currentPage = 'admin-profile'; fetchAdminProfile()" :class="[sidebarItemBase, 'mb-1', currentPage === 'admin-profile' ? sidebarItemActive : sidebarItemHover]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-            <span>My Profile</span>
-          </button>
-          <button 
-            @click="handleLogoutWithAnimation"
+          <p v-if="!sidebarCollapsed" class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
+          <!-- Logout -->
+          <button @click="handleLogoutWithAnimation"
+            :title="sidebarCollapsed ? (isLoggingOut ? 'Signing out…' : 'Log Out') : ''"
             :class="[
-              'flex items-center space-x-3 px-4 py-2.5 rounded-xl w-full text-left text-sm font-medium transition-all duration-200 border-l-4 border-transparent text-white/80',
-              isLoggingOut ? 'scale-95 opacity-60' : 'hover:bg-red-500/20 hover:border-red-400/60 hover:text-white hover:translate-x-0.5'
+              dNavBtn,
+              'text-white/80',
+              isLoggingOut ? 'scale-95 opacity-60' : 'hover:bg-red-500/20 hover:text-white'
             ]"
           >
-            <img :src="'/logout.svg'" alt="Log Out" :class="['w-4 h-4 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1); opacity:0.85;" />
-            <span>{{ isLoggingOut ? 'Signing out…' : 'Log Out' }}</span>
+            <img :src="'/logout.svg'" alt="Log Out" :class="['w-4 h-4 flex-shrink-0 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1); opacity:0.85;" />
+            <span v-if="!sidebarCollapsed" class="truncate">{{ isLoggingOut ? 'Signing out…' : 'Log Out' }}</span>
           </button>
         </div>
       </nav>
 
-      <div class="px-5 py-3 border-t border-white/10 flex-shrink-0">
-        <p class="text-white/30 text-[10px]">Powered by</p>
-        <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
+      <!-- Footer / Collapse toggle -->
+      <div :class="['border-t border-white/10 flex-shrink-0 transition-all duration-300', sidebarCollapsed ? 'px-2 py-3' : 'px-5 py-3']">
+        <!-- Collapse toggle button -->
+        <button @click="sidebarCollapsed = !sidebarCollapsed"
+          :title="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+          :class="['w-full flex items-center rounded-xl py-2 transition-all duration-200 hover:bg-white/10 text-white/50 hover:text-white mb-2', sidebarCollapsed ? 'justify-center px-0' : 'gap-2 px-2']"
+        >
+          <!-- chevron left when expanded, chevron right when collapsed -->
+          <svg :class="['w-4 h-4 flex-shrink-0 transition-transform duration-300', sidebarCollapsed ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+          </svg>
+          <span v-if="!sidebarCollapsed" class="text-[10px] font-medium whitespace-nowrap">Collapse sidebar</span>
+        </button>
+        <!-- Credits (hidden when collapsed) -->
+        <template v-if="!sidebarCollapsed">
+          <p class="text-white/30 text-[10px]">Powered by</p>
+          <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
+        </template>
       </div>
     </div>
 
@@ -11809,6 +11876,8 @@ const themeColors = computed(() => {
 })
 
 // sidebar item helpers used in nav buttons
+const sidebarCollapsed = ref(false)
+
 const sidebarItemBase = 'flex items-center space-x-3 px-4 py-2.5 rounded-xl w-full text-left transition-all duration-200 ease-in-out text-sm font-medium border-l-4 border-transparent'
 const sidebarItemHover = computed(() => {
   return 'hover:bg-white/10 hover:border-l-4 hover:border-blue-300/60 hover:translate-x-0.5'
@@ -11816,6 +11885,23 @@ const sidebarItemHover = computed(() => {
 const sidebarItemActive = computed(() => {
   return 'bg-white/15 border-l-4 border-blue-300 shadow-sm text-white'
 })
+
+// Desktop-only sidebar nav helpers — adapt when sidebar is collapsed
+const dNavBtn = computed(() =>
+  sidebarCollapsed.value
+    ? 'flex items-center justify-center py-2.5 rounded-xl w-full transition-all duration-200 text-sm font-medium'
+    : 'flex items-center space-x-3 px-4 py-2.5 rounded-xl w-full text-left transition-all duration-200 text-sm font-medium border-l-4 border-transparent'
+)
+const dNavBtnActive = computed(() =>
+  sidebarCollapsed.value
+    ? 'bg-white/15 shadow-sm text-white'
+    : 'bg-white/15 border-l-4 border-blue-300 shadow-sm text-white'
+)
+const dNavBtnHover = computed(() =>
+  sidebarCollapsed.value
+    ? 'hover:bg-white/10'
+    : 'hover:bg-white/10 hover:border-l-4 hover:border-blue-300/60 hover:translate-x-0.5'
+)
 
 const pageLoadingBgClass = computed(() => {
   if (isCOE.value) return 'fixed inset-0 flex items-center justify-center z-50'
