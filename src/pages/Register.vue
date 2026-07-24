@@ -170,12 +170,7 @@
                   <img src="/jrmsu.svg" alt="JRMSU" class="w-5 h-5 object-contain" />
                   <p class="text-xs font-semibold text-blue-800">Sign up with JRMSU ARMS Portal</p>
                 </div>
-                <p class="text-xs text-blue-600 leading-relaxed">Verify your enrollment to auto-fill your details. Enter your Student ID and ARMS portal password.</p>
-                <a href="https://jrmsu-arms.online/student/login.php" target="_blank" rel="noopener noreferrer"
-                  class="inline-flex items-center gap-1 text-xs text-blue-700 font-medium underline underline-offset-2 hover:text-blue-900 transition-colors">
-                  <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                  jrmsu-arms.online/student/login.php
-                </a>
+                <p class="text-xs text-blue-600 leading-relaxed">Verify your enrollment to auto-fill your details. Enter your Student ID and ARMS portal password. <a href="https://jrmsu-arms.online/student/login.php" target="_blank" rel="noopener noreferrer" class="font-medium underline underline-offset-2 hover:text-blue-900 transition-colors">Forgot your password? Visit the ARMS portal.</a></p>
                 <transition name="arms-btn">
                   <div v-if="!showArmsInput">
                     <button type="button" @click="showArmsInput = true; armsError = ''"
@@ -612,12 +607,7 @@
                   <img src="/jrmsu.svg" alt="JRMSU" class="w-5 h-5 object-contain" />
                   <p class="text-xs font-semibold text-blue-800">Sign up with JRMSU ARMS Portal</p>
                 </div>
-                <p class="text-xs text-blue-600 leading-relaxed">Verify your enrollment to auto-fill your details.</p>
-                <a href="https://jrmsu-arms.online/student/login.php" target="_blank" rel="noopener noreferrer"
-                  class="inline-flex items-center gap-1 text-xs text-blue-700 font-medium underline underline-offset-2 hover:text-blue-900 transition-colors">
-                  <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
-                  jrmsu-arms.online/student/login.php
-                </a>
+                <p class="text-xs text-blue-600 leading-relaxed">Verify your enrollment to auto-fill your details. <a href="https://jrmsu-arms.online/student/login.php" target="_blank" rel="noopener noreferrer" class="font-medium underline underline-offset-2 hover:text-blue-900 transition-colors">Forgot your password? Visit the ARMS portal.</a></p>
                 <transition name="arms-btn">
                   <div v-if="!showArmsInput">
                     <button type="button" @click="showArmsInput = true; armsError = ''"
