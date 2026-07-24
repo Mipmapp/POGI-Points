@@ -466,7 +466,7 @@
 
           <!-- Footer -->
           <div class="px-8 pb-6 text-center">
-            <p class="text-xs text-gray-400">CCS – Creatives Committee · Chairperson: Sheen Lee</p>
+            <p class="text-xs text-gray-400">CCS – Creatives Committee</p>
           </div>
         </div>
       </transition>
@@ -511,7 +511,7 @@
         <p class="text-white/70 text-xs mt-0.5">College of Computing Studies</p>
       </div>
       <div class="absolute bottom-3 left-4 right-4 text-center text-[10px] text-white/40">
-        Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+        Copyright © 2026 Powered by CCS-Creatives Committee.
       </div>
     </div>
 
@@ -698,7 +698,7 @@
           Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer transition">CCS - Creatives Committee</button>
         </div>
         <div class="mt-2 text-center text-xs text-gray-400">
-          Copyright © 2026 Powered by CCS-Creatives Committee. Chairperson: Sheen Lee
+          Copyright © 2026 Powered by CCS-Creatives Committee.
         </div>
       </div>
     </div>

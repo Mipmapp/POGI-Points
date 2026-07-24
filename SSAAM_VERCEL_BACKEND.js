@@ -3797,6 +3797,132 @@ app.get('/apis/students/pending', auth, async (req, res) => {
     }
 });
 
+// ─── JRMSU ARMS API ──────────────────────────────────────────────────────────
+const ARMS_TOKEN_URL = 'https://jrmsu-arms.online/api/version-2/services/credential/token/request';
+const ARMS_LOGIN_URL = 'https://jrmsu-arms.online/api/version-2/services/student/account/login';
+const ARMS_BASE_HEADERS = {
+    'User-Agent': 'Coderstation-Protocol',
+    'Referer':    'https://jrmsu-election-system.vercel.app/',
+    'Origin':     'https://jrmsu-election-system.vercel.app',
+};
+
+// POST /apis/students/arms-verify
+// Validates a student's JRMSU ARMS credentials, checks enrollment, and confirms
+// the Student ID (format 25-A-00000) is not already registered in SSAAM.
+app.post('/apis/students/arms-verify', studentAuth, async (req, res) => {
+    try {
+        const { student_id, password } = req.body;
+
+        if (!student_id || !password) {
+            return res.status(400).json({ message: "Student ID and ARMS password are required." });
+        }
+
+        // Validate format: NN-A-NNNNN  (e.g. 25-A-00000)
+        if (!STUDENT_ID_REGEX.test(student_id)) {
+            return res.status(400).json({ message: "Invalid Student ID format. Use 25-A-00000 (2 digits, one letter, 5 digits)." });
+        }
+
+        // Check if Student ID is already registered in SSAAM
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        const existing = await StudentModel.findOne({ student_id });
+        if (existing) {
+            return res.status(409).json({
+                message: "This Student ID is already registered in SSAAM. Please log in instead.",
+                alreadyRegistered: true
+            });
+        }
+
+        const armsApiKey    = process.env.ARMS_API_KEY;
+        const armsApiSecret = process.env.ARMS_API_SECRET;
+
+        if (!armsApiKey || !armsApiSecret) {
+            return res.status(503).json({ message: "ARMS verification is not configured on this server. Please contact your administrator." });
+        }
+
+        // Step 1: Request ARMS bearer token
+        let tokenRes, tokenData;
+        try {
+            tokenRes = await fetch(ARMS_TOKEN_URL, {
+                method:  'POST',
+                headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
+            });
+            tokenData = await tokenRes.json();
+        } catch (e) {
+            return res.status(503).json({ message: "Could not reach JRMSU ARMS portal. Please try again later." });
+        }
+
+        if (!tokenRes.ok) {
+            return res.status(503).json({ message: "ARMS service error. Please try again later." });
+        }
+
+        const secretKey = tokenData.Secret_Key ?? tokenData.SecretKey ?? tokenData.secretKey ?? null;
+        const jwToken   = tokenData.JWToken    ?? tokenData.Token     ?? tokenData.jwToken   ?? null;
+
+        if (!secretKey || !jwToken) {
+            return res.status(503).json({ message: "ARMS token response was invalid. Please try again." });
+        }
+
+        // Step 2: Authenticate the student
+        let loginRes, loginData;
+        try {
+            loginRes = await fetch(ARMS_LOGIN_URL, {
+                method:  'POST',
+                headers: {
+                    ...ARMS_BASE_HEADERS,
+                    'Secret-Key':    secretKey,
+                    'Token':         jwToken,
+                    'Authorization': `Bearer ${jwToken}`,
+                    'Content-Type':  'application/json',
+                },
+                body: JSON.stringify({ Username: student_id, Password: password }),
+            });
+            loginData = await loginRes.json();
+        } catch (e) {
+            return res.status(503).json({ message: "Could not reach JRMSU ARMS portal. Please try again later." });
+        }
+
+        if (!loginRes.ok || !loginData?.Record) {
+            return res.status(401).json({ message: "Incorrect Student ID or ARMS portal password. Please check and try again." });
+        }
+
+        const record = loginData.Record;
+
+        // Step 3: Enrollment check
+        const rawStatus = record.Enrollment_Status ?? record.enrollment_status ?? record.EnrollmentStatus ?? null;
+        const statusStr = rawStatus ? String(rawStatus).toLowerCase().trim() : null;
+        const isEnrolled = !statusStr || statusStr.includes('enroll') || statusStr === 'active';
+
+        if (!isEnrolled) {
+            return res.status(403).json({
+                message: `Your enrollment status is "${rawStatus}". Only currently enrolled students may register.`,
+                enrollmentStatus: rawStatus
+            });
+        }
+
+        return res.json({
+            message: "ARMS verification successful.",
+            student: {
+                studentId:        record.Student_ID       ?? record.student_id   ?? student_id,
+                studentName:      record.Student_Name     ?? record.student_name ?? '',
+                email:            record.Email            ?? '',
+                college:          record.College          ?? '',
+                collegeCode:      record.College_Code     ?? record.college_code ?? '',
+                programEnrolled:  record.Program_Enrolled ?? record.program      ?? '',
+                programCode:      record.Program_Code     ?? record.program_code ?? '',
+                yearLevel:        record.Year_Level       ?? record.year_level   ?? '',
+                semester:         record.Semester         ?? '',
+                schoolYear:       record.School_Year      ?? '',
+                enrollmentStatus: rawStatus ?? '',
+                sex:              record.Sex              ?? record.Gender       ?? '',
+            }
+        });
+
+    } catch (err) {
+        console.error("ARMS verify error:", err);
+        return res.status(500).json({ message: "An error occurred during ARMS verification. Please try again." });
+    }
+});
+
 app.post('/apis/students/send-verification', studentAuth, antiBotProtection, async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
@@ -3825,8 +3951,8 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
         }
 
         const yearPrefix = parseInt(data.student_id.substring(0, 2), 10);
-        if (yearPrefix < 10 || yearPrefix > 25) {
-            return res.status(400).json({ message: "Student ID must start with 10 to 25" });
+        if (yearPrefix < 10 || yearPrefix > 30) {
+            return res.status(400).json({ message: "Student ID must start with 10 to 30" });
         }
 
         const firstNameValidation = validateName(data.first_name, "First name");
