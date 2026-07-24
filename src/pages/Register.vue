@@ -349,9 +349,8 @@
               <div class="space-y-1.5">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Suffix <span class="normal-case font-normal text-gray-400">(optional)</span></label>
                 <div class="relative">
-                  <input v-model="formData.suffix" type="text"
-                    class="w-full px-4 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-800 bg-green-50 transition" readonly />
-                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+                  <input v-model="formData.suffix" type="text" placeholder="e.g. Jr., Sr., III"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" />
                 </div>
               </div>
               </template>
@@ -765,8 +764,7 @@
             <div class="space-y-1.5">
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Suffix</label>
               <div class="relative">
-                <input v-model="formData.suffix" type="text" placeholder="Suffix (optional)" class="w-full px-4 pr-10 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-700 bg-green-50 placeholder-gray-400" readonly />
-                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+                <input v-model="formData.suffix" type="text" placeholder="e.g. Jr., Sr., III" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" />
               </div>
             </div>
             </template>
