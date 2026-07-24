@@ -2,20 +2,20 @@
   <transition name="fade">
     <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="showDevelopersPopup = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
           <!-- Header -->
-          <div class="px-8 pt-7 pb-1 text-center relative">
+          <div class="px-6 sm:px-8 pt-6 sm:pt-7 pb-1 text-center relative flex-shrink-0">
             <button @click="showDevelopersPopup = false"
-              class="absolute right-5 top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">
+              class="absolute right-4 top-4 sm:right-5 sm:top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">
               &times;
             </button>
-            <h3 class="text-2xl font-bold text-gray-900">Meet our team</h3>
-            <p class="text-gray-500 text-sm mt-1">CCS – Creatives Committee</p>
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900">Meet our team</h3>
+            <p class="text-gray-500 text-xs sm:text-sm mt-1">CCS – Creatives Committee</p>
           </div>
 
           <!-- Carousel -->
-          <div class="relative px-6 pt-5 pb-4 select-none">
-            <div class="relative overflow-hidden" style="height: 240px;">
+          <div class="relative px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 select-none overflow-y-auto">
+            <div class="relative overflow-hidden" style="height: clamp(180px, 40vw, 240px);">
               <div v-for="(dev, i) in developers" :key="dev.name"
                 :style="getDevStyle(i)"
                 @click="handleDevClick(i)">
@@ -23,7 +23,7 @@
                   class="w-full h-full object-cover object-top" />
                 <!-- Active card overlay -->
                 <div v-if="i === devCarouselIdx"
-                  class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-4 pt-10">
+                  class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-3 sm:p-4 pt-8 sm:pt-10">
                   <p class="text-white font-bold text-sm leading-tight">{{ dev.name }}</p>
                   <p class="text-white/80 text-xs mt-0.5">{{ dev.role }}</p>
                   <p class="text-white/55 text-xs">{{ dev.year_level }} · {{ dev.program }}</p>
@@ -46,14 +46,14 @@
             </button>
 
             <!-- Dot indicators -->
-            <div class="flex justify-center gap-2 mt-4">
+            <div class="flex justify-center gap-2 mt-3 sm:mt-4">
               <button v-for="(_, i) in developers" :key="i" @click="devCarouselIdx = i"
                 :class="['rounded-full transition-all duration-300', i === devCarouselIdx ? 'w-5 h-2 bg-gray-800' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400']" />
             </div>
           </div>
 
           <!-- Footer -->
-          <div class="px-8 pb-6 text-center">
+          <div class="px-6 sm:px-8 pb-4 sm:pb-6 text-center flex-shrink-0">
             <p class="text-xs text-gray-400">CCS – Creatives Committee</p>
           </div>
         </div>
