@@ -811,23 +811,22 @@
           <span v-if="!sidebarCollapsed" class="truncate">Location</span>
         </button>
 
-        <!-- Account section -->
-        <div class="mt-3 border-t border-white/10 pt-3">
-          <p v-if="!sidebarCollapsed" class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Account</p>
-          <!-- Logout -->
-          <button @click="handleLogoutWithAnimation"
-            :title="sidebarCollapsed ? (isLoggingOut ? 'Signing out…' : 'Log Out') : ''"
-            :class="[
-              dNavBtn,
-              'text-white/80',
-              isLoggingOut ? 'scale-95 opacity-60' : 'hover:bg-red-500/20 hover:text-white'
-            ]"
-          >
-            <img :src="'/logout.svg'" alt="Log Out" :class="['w-4 h-4 flex-shrink-0 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1); opacity:0.85;" />
-            <span v-if="!sidebarCollapsed" class="truncate">{{ isLoggingOut ? 'Signing out…' : 'Log Out' }}</span>
-          </button>
-        </div>
       </nav>
+
+      <!-- Logout button (above footer) -->
+      <div :class="['flex-shrink-0 border-t border-white/10 transition-all duration-300', sidebarCollapsed ? 'px-2 py-2' : 'px-3 py-2']">
+        <button @click="handleLogoutWithAnimation"
+          :title="sidebarCollapsed ? (isLoggingOut ? 'Signing out…' : 'Log Out') : ''"
+          :class="[
+            dNavBtn,
+            'text-white/80',
+            isLoggingOut ? 'scale-95 opacity-60' : 'hover:bg-red-500/20 hover:text-white'
+          ]"
+        >
+          <img :src="'/logout.svg'" alt="Log Out" :class="['w-4 h-4 flex-shrink-0 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1); opacity:0.85;" />
+          <span v-if="!sidebarCollapsed" class="truncate">{{ isLoggingOut ? 'Signing out…' : 'Log Out' }}</span>
+        </button>
+      </div>
 
       <!-- Footer / Collapse toggle -->
       <div :class="['border-t border-white/10 flex-shrink-0 transition-all duration-300', sidebarCollapsed ? 'px-2 py-3' : 'px-5 py-3']">
@@ -4247,9 +4246,8 @@
           <!-- Greeting Row -->
           <div class="flex items-start sm:items-center justify-between gap-4">
             <div>
-              <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-0.5">{{ timeGreeting.label }}</p>
               <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
-                Hi, {{ displayName }}! <em :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'not-italic']">{{ timeGreeting.phrase }}</em>
+                Hi, {{ displayName }}!
               </h2>
               <p class="text-gray-400 text-sm mt-0.5">Here's what's happening in SSAAM today.</p>
             </div>

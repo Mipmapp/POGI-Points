@@ -7,8 +7,21 @@
     >
       <div class="welcome-card bg-white w-full sm:max-w-xl sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl flex flex-col" style="max-height: 92vh;">
 
+        <!-- Banner image -->
+        <div class="flex-shrink-0 relative overflow-hidden" style="height: 130px;">
+          <img src="/img/ssaam_popup.png" alt="SSAAM Banner" class="w-full h-full object-cover object-center" />
+          <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60"></div>
+          <div class="absolute bottom-3 left-4 flex items-center gap-2">
+            <img src="/src/assets/ccs-logo.png" alt="CCS Logo" class="w-8 h-8 object-contain drop-shadow-lg" />
+            <div class="leading-tight">
+              <p class="text-white/80 text-[9px] uppercase tracking-widest font-bold">SSAAM — CCS</p>
+              <p class="text-white text-sm font-extrabold tracking-tight leading-none">Terms &amp; Conditions</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Header -->
-        <div class="flex-shrink-0 bg-gradient-to-br from-[#080e2e] via-[#0f2080] to-[#1a4abf] px-5 py-5">
+        <div class="flex-shrink-0 bg-gradient-to-br from-[#080e2e] via-[#0f2080] to-[#1a4abf] px-5 py-4">
           <div class="flex items-center gap-3 mb-3">
             <div class="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
               <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
