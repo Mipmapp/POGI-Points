@@ -527,8 +527,11 @@
       </svg>
     </div>
 
+    <!-- Spacer: right half of wave (60px), shows outer landscape behind transparent SVG -->
+    <div class="flex-shrink-0" style="width:60px;"></div>
+
     <!-- Right: login form -->
-    <div class="w-3/5 flex items-center justify-center bg-white">
+    <div class="flex-1 flex items-center justify-center bg-white">
       <div class="w-full max-w-sm px-6">
         <div class="mb-8">
           <h2 class="text-4xl font-bold text-gray-900 leading-tight mb-3">Welcome back!</h2>
