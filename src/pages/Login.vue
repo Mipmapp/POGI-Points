@@ -474,8 +474,8 @@
     <div class="desktop-bg-panel flex-shrink-0 relative" style="width:calc(40% + 60px);">
       <ParticleBackground />
       <!-- Centered CCS logo -->
-      <div class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
-        <div class="relative flex items-center justify-center">
+      <div class="absolute inset-0 z-20 flex items-center pointer-events-none" style="padding-right: 120px;">
+        <div class="relative flex items-center justify-center w-full">
           <!-- Pulse glow rings -->
           <div class="absolute w-64 h-64 rounded-full ccs-glow-ring"></div>
           <div class="absolute w-56 h-56 rounded-full ccs-glow-ring ccs-glow-ring-delay"></div>

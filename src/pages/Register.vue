@@ -215,8 +215,8 @@
     <div class="desktop-bg-panel relative flex-shrink-0" style="width:calc(40% + 60px);">
       <ParticleBackground />
       <!-- CCS logo with glow rings -->
-      <div class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
-        <div class="relative flex items-center justify-center">
+      <div class="absolute inset-0 z-20 flex items-center pointer-events-none" style="padding-right: 120px;">
+        <div class="relative flex items-center justify-center w-full">
           <div class="absolute w-64 h-64 rounded-full ccs-glow-ring"></div>
           <div class="absolute w-56 h-56 rounded-full ccs-glow-ring ccs-glow-ring-delay"></div>
           <img :src="'/ccs.png'" alt="CCS Logo" class="relative w-56 h-56 object-contain opacity-90 drop-shadow-2xl" />
@@ -1838,7 +1838,10 @@ const sendVerificationCode = async () => {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer SSAAMStudents'
       },
-      body: JSON.stringify(formData)
+      body: JSON.stringify({
+          ...formData,
+          first_name: formData.full_name
+        })
     })
 
     const data = await response.json()
