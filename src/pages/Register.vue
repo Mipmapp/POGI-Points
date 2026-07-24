@@ -314,8 +314,8 @@
               <div v-if="armsVerified" class="rounded-xl border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3">
                 <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <div class="min-w-0 flex-1">
-                  <p class="text-xs font-semibold text-green-800">ARMS Verified ✓ — {{ armsData?.studentId }}</p>
-                  <p class="text-xs text-green-700 mt-0.5 truncate">{{ armsData?.studentName }} · {{ armsData?.programCode }} · {{ armsData?.yearLevel }}</p>
+                  <p class="text-xs font-semibold text-green-800">ARMS Verified ✓</p>
+                  <p class="text-xs text-green-700 mt-0.5 truncate">{{ armsData?.studentName }}</p>
                   <button type="button" @click="resetArms()" class="text-xs text-green-600 underline mt-1 hover:text-green-800">Use a different account</button>
                 </div>
               </div>
@@ -750,8 +750,8 @@
               <div v-if="armsVerified" class="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 flex items-start gap-3">
                 <svg class="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <div class="min-w-0 flex-1">
-                  <p class="text-xs font-semibold text-green-800">ARMS Verified ✓ — {{ armsData?.studentId }}</p>
-                  <p class="text-xs text-green-700 mt-0.5 truncate">{{ armsData?.studentName }} · {{ armsData?.programCode }} · {{ armsData?.yearLevel }}</p>
+                  <p class="text-xs font-semibold text-green-800">ARMS Verified ✓</p>
+                  <p class="text-xs text-green-700 mt-0.5 truncate">{{ armsData?.studentName }}</p>
                   <button type="button" @click="resetArms()" class="text-xs text-green-600 underline mt-1 hover:text-green-800">Use a different account</button>
                 </div>
               </div>
