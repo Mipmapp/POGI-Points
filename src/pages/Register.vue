@@ -202,8 +202,8 @@
                   <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
                 </div>
               </div>
-              <button type="submit" class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
-                Next <span class="ml-2">&rarr;</span>
+              <button type="submit" class="w-full bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm shadow-sm">
+                Next →
               </button>
             </div>
 
@@ -269,11 +269,11 @@
                 </div>
               </div>
               <div class="flex gap-3">
-                <button type="button" @click="currentStep--" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
-                  <span class="mr-2">&larr;</span>Back
+                <button type="button" @click="currentStep--" class="flex-1 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm">
+                  ← Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
-                  Next <span class="ml-2">&rarr;</span>
+                <button type="submit" class="flex-1 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm shadow-sm">
+                  Next →
                 </button>
               </div>
             </div>
@@ -304,11 +304,11 @@
                 </div>
               </div>
               <div class="flex gap-3">
-                <button type="button" @click="currentStep--" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
-                  <span class="mr-2">&larr;</span>Back
+                <button type="button" @click="currentStep--" class="flex-1 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm">
+                  ← Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
-                  Next <span class="ml-2">&rarr;</span>
+                <button type="submit" class="flex-1 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm shadow-sm">
+                  Next →
                 </button>
               </div>
             </div>
@@ -370,11 +370,11 @@
                 </div>
               </div>
               <div class="flex gap-3">
-                <button type="button" @click="currentStep = 3" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
-                  <span class="mr-2">&larr;</span>Back
+                <button type="button" @click="currentStep = 3" class="flex-1 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm">
+                  ← Back
                 </button>
-                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-full font-semibold transition duration-300 flex items-center justify-center text-sm uppercase tracking-wide shadow-md', reviewCountdown > 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white hover:from-ssaam-dark hover:to-ssaam-light']">
-                  {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-2">&rarr;</span>
+                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm shadow-sm', reviewCountdown > 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white']">
+                  {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm →' }}
                 </button>
               </div>
             </div>
@@ -436,11 +436,11 @@
                 </div>
               </div>
               <div class="flex gap-3">
-                <button type="button" @click="currentStep = 3.5" class="flex-1 bg-green-50 text-blue-600 py-3 px-6 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
-                  <span class="mr-2">&larr;</span>Back
+                <button type="button" @click="currentStep = 3.5" class="flex-1 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm">
+                  ← Back
                 </button>
-                <button type="submit" class="flex-1 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-full font-semibold hover:from-ssaam-dark hover:to-ssaam-light transition duration-300 flex items-center justify-center tracking-wide uppercase text-sm shadow-md">
-                  Sign Up <span class="ml-2">&rarr;</span>
+                <button type="submit" class="flex-1 bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm shadow-sm">
+                  Sign Up →
                 </button>
               </div>
             </div>
