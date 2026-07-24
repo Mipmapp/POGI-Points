@@ -323,18 +323,10 @@
               <!-- Name fields — only shown after ARMS auto-fills them -->
               <template v-if="armsVerified">
               <div class="space-y-1.5">
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">First Name</label>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Full Name <span class="normal-case font-normal text-gray-400">(First &amp; Middle)</span></label>
                 <div class="relative">
-                  <input ref="firstNameInput" v-model="formData.first_name" type="text" placeholder="e.g. JUAN"
+                  <input ref="fullNameInput" v-model="formData.full_name" type="text" placeholder="e.g. JUAN DELA"
                     class="w-full px-4 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-800 bg-green-50 transition" readonly required />
-                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-                </div>
-              </div>
-              <div class="space-y-1.5">
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Middle Name <span class="normal-case font-normal text-gray-400">(optional)</span></label>
-                <div class="relative">
-                  <input ref="middleNameInput" v-model="formData.middle_name" type="text" placeholder="e.g. DELA"
-                    class="w-full px-4 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-800 bg-green-50 transition" readonly />
                   <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
                 </div>
               </div>
@@ -348,9 +340,36 @@
               </div>
               <div class="space-y-1.5">
                 <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Suffix <span class="normal-case font-normal text-gray-400">(optional)</span></label>
-                <div class="relative">
-                  <input v-model="formData.suffix" type="text" placeholder="e.g. Jr., Sr., III"
-                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" />
+                <div class="relative" v-click-outside="() => suffixDropdownOpen = false">
+                  <button type="button" @click="suffixDropdownOpen = !suffixDropdownOpen"
+                    class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-left bg-white transition flex items-center justify-between"
+                    :class="formData.suffix ? 'text-gray-800' : 'text-gray-300'">
+                    <span>{{ formData.suffix || 'Select suffix...' }}</span>
+                    <svg class="w-4 h-4 text-gray-400 transition-transform" :class="suffixDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                  </button>
+                  <div v-if="suffixDropdownOpen" class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                    <div class="p-2 border-b border-gray-100">
+                      <input v-model="suffixSearch" type="text" placeholder="Search suffix..." autofocus
+                        class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:border-indigo-400 outline-none" />
+                    </div>
+                    <ul class="max-h-44 overflow-y-auto">
+                      <li>
+                        <button type="button" @click="formData.suffix = ''; suffixDropdownOpen = false; suffixSearch = ''"
+                          class="w-full text-left px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 transition"
+                          :class="formData.suffix === '' ? 'bg-indigo-50 text-indigo-600 font-medium' : ''">
+                          — None —
+                        </button>
+                      </li>
+                      <li v-for="s in filteredSuffixes" :key="s">
+                        <button type="button" @click="formData.suffix = s; suffixDropdownOpen = false; suffixSearch = ''"
+                          class="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition"
+                          :class="formData.suffix === s ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-gray-700'">
+                          {{ s }}
+                        </button>
+                      </li>
+                      <li v-if="filteredSuffixes.length === 0" class="px-4 py-3 text-xs text-gray-400 text-center">No match found</li>
+                    </ul>
+                  </div>
                 </div>
               </div>
               </template>
@@ -539,7 +558,7 @@
                     </div>
                   </div>
                   <div>
-                    <p class="font-bold text-blue-900">{{ formData.first_name }} {{ formData.middle_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
+                    <p class="font-bold text-blue-900">{{ formData.full_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
                     <p class="text-sm text-gray-600">{{ formData.student_id }}</p>
                   </div>
                 </div>
@@ -741,16 +760,9 @@
             <!-- Name fields — only shown after ARMS auto-fills them -->
             <template v-if="armsVerified">
             <div class="space-y-1.5">
-              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">First Name</label>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Full Name <span class="normal-case font-normal text-gray-400">(First &amp; Middle)</span></label>
               <div class="relative">
-                <input v-model="formData.first_name" type="text" placeholder="First Name" class="w-full px-4 pr-10 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-700 bg-green-50 placeholder-gray-400" readonly required />
-                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
-              </div>
-            </div>
-            <div class="space-y-1.5">
-              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Middle Name</label>
-              <div class="relative">
-                <input v-model="formData.middle_name" type="text" placeholder="Middle Name (optional)" class="w-full px-4 pr-10 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-700 bg-green-50 placeholder-gray-400" readonly />
+                <input v-model="formData.full_name" type="text" placeholder="e.g. JUAN DELA" class="w-full px-4 pr-10 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-700 bg-green-50 placeholder-gray-400" readonly required />
                 <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
               </div>
             </div>
@@ -762,9 +774,37 @@
               </div>
             </div>
             <div class="space-y-1.5">
-              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Suffix</label>
-              <div class="relative">
-                <input v-model="formData.suffix" type="text" placeholder="e.g. Jr., Sr., III" class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" />
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Suffix <span class="normal-case font-normal text-gray-400">(optional)</span></label>
+              <div class="relative" v-click-outside="() => suffixDropdownOpen = false">
+                <button type="button" @click="suffixDropdownOpen = !suffixDropdownOpen"
+                  class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-left bg-white transition flex items-center justify-between"
+                  :class="formData.suffix ? 'text-gray-800' : 'text-gray-300'">
+                  <span>{{ formData.suffix || 'Select suffix...' }}</span>
+                  <svg class="w-4 h-4 text-gray-400 transition-transform" :class="suffixDropdownOpen ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                </button>
+                <div v-if="suffixDropdownOpen" class="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden">
+                  <div class="p-2 border-b border-gray-100">
+                    <input v-model="suffixSearch" type="text" placeholder="Search suffix..." autofocus
+                      class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:border-indigo-400 outline-none" />
+                  </div>
+                  <ul class="max-h-44 overflow-y-auto">
+                    <li>
+                      <button type="button" @click="formData.suffix = ''; suffixDropdownOpen = false; suffixSearch = ''"
+                        class="w-full text-left px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 transition"
+                        :class="formData.suffix === '' ? 'bg-indigo-50 text-indigo-600 font-medium' : ''">
+                        — None —
+                      </button>
+                    </li>
+                    <li v-for="s in filteredSuffixes" :key="s">
+                      <button type="button" @click="formData.suffix = s; suffixDropdownOpen = false; suffixSearch = ''"
+                        class="w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition"
+                        :class="formData.suffix === s ? 'bg-indigo-50 text-indigo-600 font-medium' : 'text-gray-700'">
+                        {{ s }}
+                      </button>
+                    </li>
+                    <li v-if="filteredSuffixes.length === 0" class="px-4 py-3 text-xs text-gray-400 text-center">No match found</li>
+                  </ul>
+                </div>
               </div>
             </div>
             </template>
@@ -931,7 +971,7 @@
                   </div>
                 </div>
                 <div class="min-w-0">
-                  <p class="font-bold text-blue-900 text-sm">{{ formData.first_name }} {{ formData.middle_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
+                  <p class="font-bold text-blue-900 text-sm">{{ formData.full_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
                   <p class="text-xs text-gray-600">{{ formData.student_id }}</p>
                 </div>
               </div>
@@ -1079,6 +1119,17 @@ import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
 import departments from '../config/departments.js'
 
+// Custom v-click-outside directive
+const vClickOutside = {
+  mounted(el, binding) {
+    el._clickOutsideHandler = (e) => { if (!el.contains(e.target)) binding.value(e) }
+    document.addEventListener('click', el._clickOutsideHandler, true)
+  },
+  unmounted(el) {
+    document.removeEventListener('click', el._clickOutsideHandler, true)
+  }
+}
+
 const router = useRouter()
 const currentStep = ref(1)
 const imagePreview = ref('')
@@ -1131,15 +1182,22 @@ watch(showDevelopersPopup, (open) => {
     devCarouselTimer = null
   }
 })
-const firstNameInput = ref(null)
-const middleNameInput = ref(null)
+const fullNameInput = ref(null)
 const lastNameInput = ref(null)
 const emailInput = ref(null)
 
+const suffixDropdownOpen = ref(false)
+const suffixSearch = ref('')
+const SUFFIX_OPTIONS = ['Jr.', 'Sr.', 'II', 'III', 'IV', 'V']
+const filteredSuffixes = computed(() =>
+  suffixSearch.value
+    ? SUFFIX_OPTIONS.filter(s => s.toLowerCase().includes(suffixSearch.value.toLowerCase()))
+    : SUFFIX_OPTIONS
+)
+
 const focusNext = (refName) => {
   const target = {
-    firstNameInput,
-    middleNameInput,
+    fullNameInput,
     lastNameInput,
     emailInput
   }[refName]
@@ -1214,8 +1272,7 @@ const developers = [
 
 const formData = reactive({
   student_id: '',
-  first_name: '',
-  middle_name: '',
+  full_name: '',
   last_name: '',
   year_level: '',
   suffix: '',
@@ -1318,11 +1375,11 @@ const verifyWithARMS = async () => {
     if (s.schoolYear) formData.school_year = s.schoolYear
 
     // Auto-fill name fields from ARMS only if the student left them blank in Step 1
-    if (s.studentName && (!formData.first_name || !formData.last_name)) {
+    if (s.studentName && (!formData.full_name || !formData.last_name)) {
       const parsed = parseArmsName(s.studentName)
-      if (!formData.first_name  && parsed.first)  formData.first_name  = parsed.first
-      if (!formData.middle_name && parsed.middle)  formData.middle_name = parsed.middle
-      if (!formData.last_name   && parsed.last)    formData.last_name   = parsed.last
+      const firstMiddle = [parsed.first, parsed.middle].filter(Boolean).join(' ')
+      if (!formData.full_name && firstMiddle) formData.full_name = firstMiddle
+      if (!formData.last_name && parsed.last)  formData.last_name = parsed.last
     }
   } catch (_) {
     armsError.value = 'Network error. Please check your connection and try again.'
@@ -1788,23 +1845,13 @@ const handleNext = async () => {
   }
   
   if (currentStep.value === 1) {
-    if (!formData.first_name || !formData.first_name.trim()) {
-      errorMessage.value = "Please provide your first name to continue."
+    if (!formData.full_name || !formData.full_name.trim()) {
+      errorMessage.value = "Please provide your full name to continue."
       showErrorNotification.value = true
       return
     }
-    if (!/^[\p{L}\s'-]+$/u.test(formData.first_name)) {
-      errorMessage.value = "First name can only contain letters and spaces."
-      showErrorNotification.value = true
-      return
-    }
-    if (formData.middle_name && !/^[\p{L}\s'-]+$/u.test(formData.middle_name)) {
-      errorMessage.value = "Middle name can only contain letters and spaces."
-      showErrorNotification.value = true
-      return
-    }
-    if (formData.middle_name && formData.middle_name.trim().length < 3) {
-      errorMessage.value = "Middle name must be at least 3 characters long."
+    if (!/^[\p{L}\s'-]+$/u.test(formData.full_name)) {
+      errorMessage.value = "Full name can only contain letters and spaces."
       showErrorNotification.value = true
       return
     }
