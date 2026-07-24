@@ -83,15 +83,15 @@
             <!-- Install SSAAM App -->
             <div class="rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 px-3 py-2.5 flex items-center gap-2.5">
               <img :src="'/img/app_icon.png'" alt="SSAAM" class="w-9 h-9 rounded-xl shadow-sm flex-shrink-0 object-cover" />
-              <div class="flex-1 min-w-0 overflow-hidden">
-                <div class="flex items-center gap-1 min-w-0">
-                  <p class="text-xs font-bold text-green-900 leading-tight truncate">Install SSAAM App</p>
-                  <span class="flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-green-100 border border-green-200 text-[9px] font-semibold text-green-700 flex-shrink-0 whitespace-nowrap">
-                    <svg class="w-2 h-2" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 0 0-.83.22l-1.88 3.24a11.46 11.46 0 0 0-8.94 0L5.65 5.67a.643.643 0 0 0-.87-.2c-.28.18-.37.54-.22.83L6.4 9.48A10.78 10.78 0 0 0 1 18h22a10.78 10.78 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center flex-wrap gap-x-1 gap-y-0.5">
+                  <p class="text-xs font-bold text-green-900 leading-tight">Install SSAAM App</p>
+                  <span class="flex items-center gap-0.5 px-1 py-0.5 rounded-full bg-green-100 border border-green-200 text-[9px] font-semibold text-green-700 whitespace-nowrap">
+                    <svg class="w-2 h-2 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 0 0-.83.22l-1.88 3.24a11.46 11.46 0 0 0-8.94 0L5.65 5.67a.643.643 0 0 0-.87-.2c-.28.18-.37.54-.22.83L6.4 9.48A10.78 10.78 0 0 0 1 18h22a10.78 10.78 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
                     Android only
                   </span>
                 </div>
-                <p class="text-[10px] text-green-700 mt-0.5 truncate">Get the native experience on your phone</p>
+                <p class="text-[10px] text-green-700 mt-0.5 leading-snug">Get the native experience on your phone</p>
               </div>
               <a
                 href="https://www.mediafire.com/file/g3v17bvzzrot54q/ssaam.apk/file"
