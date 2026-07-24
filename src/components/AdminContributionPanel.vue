@@ -1205,7 +1205,7 @@
               {{ processingPaymentId === (c._id || c.student_id) ? 'Processing...' : 'Mark as Unpaid' }}
             </button>
             <button @click="applyDiscount(c)" class="px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-xl text-xs font-bold transition hover:bg-blue-100 inline-flex items-center justify-center" title="Apply discount">
-              <img src="/discount.svg" alt="Discount" class="w-4 h-4" />
+              <img :src="'/discount.svg'" alt="Discount" class="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -1335,7 +1335,7 @@
                     <span>{{ processingPaymentId === (c._id || c.student_id) ? '...' : 'Unpaid' }}</span>
                   </button>
                   <button @click="applyDiscount(c)" class="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-md text-[11px] font-bold transition whitespace-nowrap inline-flex items-center justify-center" title="Apply / change discount">
-                    <img src="/discount.svg" alt="Discount" class="w-3.5 h-3.5" />
+                    <img :src="'/discount.svg'" alt="Discount" class="w-3.5 h-3.5" />
                   </button>
                 </div>
               </td>

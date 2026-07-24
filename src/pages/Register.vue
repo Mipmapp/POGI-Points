@@ -125,12 +125,12 @@
         <div class="relative flex items-center justify-center">
           <div class="absolute w-64 h-64 rounded-full ccs-glow-ring"></div>
           <div class="absolute w-56 h-56 rounded-full ccs-glow-ring ccs-glow-ring-delay"></div>
-          <img src="/ccs.png" alt="CCS Logo" class="relative w-56 h-56 object-contain opacity-90 drop-shadow-2xl" />
+          <img :src="'/ccs.png'" alt="CCS Logo" class="relative w-56 h-56 object-contain opacity-90 drop-shadow-2xl" />
         </div>
       </div>
       <!-- Top-left SSAAM branding -->
       <div class="absolute top-8 left-8 z-20 flex items-center gap-2.5">
-        <img src="/assets/ssaam_icon.png" alt="SSAAM" class="w-9 h-9 rounded-xl object-cover shadow-md" />
+        <img :src="'/assets/ssaam_icon.png'" alt="SSAAM" class="w-9 h-9 rounded-xl object-cover shadow-md" />
         <span class="text-white font-bold text-xl tracking-wide">SSAAM</span>
       </div>
       <!-- Bottom quote -->
@@ -179,7 +179,7 @@
               <!-- ── ARMS Verification panel (desktop Step 1) ── -->
               <div v-if="!armsVerified" class="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 space-y-2">
                 <div class="flex items-center gap-2">
-                  <img src="/jrmsu.svg" alt="JRMSU" class="w-5 h-5 object-contain" />
+                  <img :src="'/jrmsu.svg'" alt="JRMSU" class="w-5 h-5 object-contain" />
                   <p class="text-xs font-semibold text-blue-800">Sign up with JRMSU ARMS Portal</p>
                 </div>
                 <p class="text-xs text-blue-600 leading-relaxed">Verify your enrollment to auto-fill your details. Enter your Student ID and ARMS portal password. Forgot your password? Visit the <a href="https://jrmsu-arms.online/student/login.php" target="_blank" rel="noopener noreferrer" class="font-medium underline underline-offset-2 hover:text-blue-900 transition-colors">JRMSU-ARMS</a> portal.</p>
@@ -355,7 +355,7 @@
                       <template v-if="selectedProgramItem">{{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}</template>
                       <template v-else><span class="text-gray-400">Select Program</span></template>
                     </span>
-                    <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-65 flex-shrink-0" />
+                    <img :src="'/arrow_down.svg'" alt="Dropdown" class="w-4 h-4 opacity-65 flex-shrink-0" />
                   </button>
                   <div v-if="showProgramMenu" :class="showMenuAboveDesktop ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg'">
                     <div class="px-2 pt-2 pb-1">
@@ -411,7 +411,7 @@
                 <div class="relative">
                   <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload" />
                   <label for="file-upload" class="cursor-pointer inline-flex items-center justify-center px-8 py-3 bg-green-50 rounded-full text-sm font-medium text-gray-600 hover:bg-green-100 transition duration-300">
-                    <img src="/change_photo.svg" alt="Upload" class="w-5 h-5 mr-2 opacity-60" />{{ imagePreview ? 'Change Photo' : 'Choose Photo' }}
+                    <img :src="'/change_photo.svg'" alt="Upload" class="w-5 h-5 mr-2 opacity-60" />{{ imagePreview ? 'Change Photo' : 'Choose Photo' }}
                   </label>
                 </div>
               </div>
@@ -502,7 +502,7 @@
             <div v-if="currentStep === 4" class="space-y-4 step-animate">
               <div class="text-center mb-4">
                 <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                  <img src="/mail-gradient.svg" alt="Email" class="w-8 h-8" />
+                  <img :src="'/mail-gradient.svg'" alt="Email" class="w-8 h-8" />
                 </div>
                 <h3 class="text-lg font-semibold text-blue-900 mb-2">Verify Your Email</h3>
                 <p class="text-sm text-gray-600">We've sent a 6-digit verification code to:</p>
@@ -585,14 +585,14 @@
         <div class="absolute -inset-6 rounded-full pointer-events-none z-0" style="background: radial-gradient(ellipse at center, rgba(255,200,50,0.55) 0%, rgba(255,160,0,0.28) 45%, transparent 72%); filter: blur(10px); animation: golden-pulse 3s ease-in-out infinite;"></div>
         <!-- Masked container clipped to CCS logo silhouette -->
         <div class="absolute inset-0 z-10" style="mask: url(/ccs.png) center/contain no-repeat; -webkit-mask: url(/ccs.png) center/contain no-repeat; mask-mode: alpha; -webkit-mask-mode: alpha;">
-          <img src="/src/assets/ccs-logo.png" alt="JRMSU CCS Logo" class="w-full h-full object-contain relative z-10" />
+          <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU CCS Logo" class="w-full h-full object-contain relative z-10" />
           <!-- Golden light: spins slowly + pulses -->
           <div class="absolute inset-0 pointer-events-none z-20" style="animation: golden-spin 8s linear infinite, golden-pulse 3s ease-in-out infinite; background: conic-gradient(from 0deg, transparent 0%, rgba(255,200,0,0) 32%, rgba(255,175,0,0.55) 50%, rgba(255,230,60,1) 62%, rgba(255,175,0,0.55) 74%, transparent 100%); mix-blend-mode: screen;"></div>
           <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full animate-sweep z-30 pointer-events-none" style="mix-blend-mode: overlay;"></div>
         </div>
       </div>
       <div v-if="currentStep !== 3 && currentStep !== 3.5 && currentStep !== 4" class="hidden sm:w-16 sm:h-16 mx-auto mb-4 rounded-full flex items-center justify-center shadow-lg" :class="registrationIconGradientClass">
-        <img src="/user_plus.svg" alt="Register" class="w-10 h-10" style="filter: brightness(0) invert(1);" />
+        <img :src="'/user_plus.svg'" alt="Register" class="w-10 h-10" style="filter: brightness(0) invert(1);" />
       </div>
       <h1 class="text-2xl sm:text-3xl font-bold mb-1 sm:mb-2">Let's Create</h1>
       <h2 class="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4">Your Profile!</h2>
@@ -621,7 +621,7 @@
               <!-- ── ARMS Verification panel (mobile Step 1) ── -->
               <div v-if="!armsVerified" class="rounded-2xl border border-blue-200 bg-blue-50 px-4 py-3 space-y-2">
                 <div class="flex items-center gap-2">
-                  <img src="/jrmsu.svg" alt="JRMSU" class="w-5 h-5 object-contain" />
+                  <img :src="'/jrmsu.svg'" alt="JRMSU" class="w-5 h-5 object-contain" />
                   <p class="text-xs font-semibold text-blue-800">Sign up with JRMSU ARMS Portal</p>
                 </div>
                 <p class="text-xs text-blue-600 leading-relaxed">Verify your enrollment to auto-fill your details. Forgot your password? Visit the <a href="https://jrmsu-arms.online/student/login.php" target="_blank" rel="noopener noreferrer" class="font-medium underline underline-offset-2 hover:text-blue-900 transition-colors">JRMSU-ARMS</a> portal.</p>
@@ -750,7 +750,7 @@
                 <option value="3rd Year">3rd Year</option>
                 <option value="4th Year">4th Year</option>
               </select>
-              <img src="/arrow_down.svg" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-65" />
+              <img :src="'/arrow_down.svg'" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-65" />
             </div>
 
             <!-- Program -->
@@ -762,7 +762,7 @@
                     <template v-if="selectedProgramItem">{{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}</template>
                     <template v-else><span class="text-gray-400">Select Program</span></template>
                   </span>
-                  <img src="/arrow_down.svg" alt="Dropdown" class="w-4 h-4 opacity-65 flex-shrink-0" />
+                  <img :src="'/arrow_down.svg'" alt="Dropdown" class="w-4 h-4 opacity-65 flex-shrink-0" />
                 </button>
                 <div v-if="showProgramMenu" :class="showMenuAboveMobile ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg'">
                   <div class="px-2 pt-2 pb-1">
@@ -816,7 +816,7 @@
               <div class="relative">
                 <input type="file" @change="handleImageUpload" accept="image/*" class="hidden" id="file-upload-mobile" />
                 <label for="file-upload-mobile" class="cursor-pointer inline-flex items-center justify-center px-6 py-3 bg-green-50 rounded-full text-sm font-medium text-gray-600 hover:bg-green-100 transition duration-300">
-                  <img src="/change_photo.svg" alt="Upload" class="w-5 h-5 mr-2 opacity-60" />{{ imagePreview ? 'Change Photo' : 'Choose Photo' }}
+                  <img :src="'/change_photo.svg'" alt="Upload" class="w-5 h-5 mr-2 opacity-60" />{{ imagePreview ? 'Change Photo' : 'Choose Photo' }}
                 </label>
               </div>
             </div>
@@ -913,7 +913,7 @@
           <div v-if="currentStep === 4" class="space-y-4 step-animate">
             <div class="text-center mb-3 sm:mb-4">
               <div class="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-3 sm:mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                <img src="/mail-gradient.svg" alt="Email" class="w-7 h-7 sm:w-8 sm:h-8" />
+                <img :src="'/mail-gradient.svg'" alt="Email" class="w-7 h-7 sm:w-8 sm:h-8" />
               </div>
               <h3 class="text-base sm:text-lg font-semibold text-blue-900 mb-1 sm:mb-2">Verify Your Email</h3>
               <p class="text-xs sm:text-sm text-gray-600">We've sent a 6-digit verification code to:</p>

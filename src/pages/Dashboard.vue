@@ -582,7 +582,7 @@
       </div>
       <div class="text-center text-white flex flex-col items-center gap-4 relative z-10">
         <div class="flex items-center gap-4">
-          <img src="/ccs.png" alt="JRMSU Logo" class="w-20 h-20 object-contain drop-shadow-2xl flex-shrink-0" />
+          <img :src="'/ccs.png'" alt="JRMSU Logo" class="w-20 h-20 object-contain drop-shadow-2xl flex-shrink-0" />
           <div class="leading-tight text-left">
             <h1 class="text-6xl font-extrabold italic tracking-wide drop-shadow-lg">SSAAM</h1>
           </div>
@@ -648,7 +648,7 @@
     <div :class="[ 'hidden md:flex w-64 bg-gradient-to-b text-white flex-col order-1 border-r border-white/10 h-screen shadow-2xl sticky top-0 self-start', sidebarGradient ]">
       <div class="px-5 py-5 border-b border-white/15 flex-shrink-0 bg-white/5 backdrop-blur-sm">
         <div class="flex items-center gap-3">
-          <img src="/src/assets/ccs-logo.png" alt="JRMSU Logo" class="w-11 h-11 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
+          <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU Logo" class="w-11 h-11 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
           <div class="flex flex-col leading-tight">
             <h1 class="text-2xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
             <p class="text-white/50 text-[9px] uppercase tracking-widest">JRMSU</p>
@@ -662,7 +662,7 @@
           <p class="text-sm mb-2 opacity-90 text-white">Welcome back,</p>
           <span class="relative inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-sm font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden">
             <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
-            <img src="/crown.svg" alt="Admin" class="w-5 h-5 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
+            <img :src="'/crown.svg'" alt="Admin" class="w-5 h-5 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
             <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
           </span>
         </div>
@@ -689,7 +689,7 @@
                   <span>Student</span>
                 </span>
                 <span v-if="currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full" title="Verified">
-                  <img src="/verified.svg" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
+                  <img :src="'/verified.svg'" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
                   Verified
                 </span>
                 <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-500/90 text-white text-[9px] font-bold rounded-full" title="Unreadable">Unreadable</span>
@@ -708,7 +708,7 @@
         <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Menu</p>
         <button @click="currentPage = 'dashboard'" :class="[sidebarItemBase, currentPage === 'dashboard' ? sidebarItemActive : sidebarItemHover]">
           <svg v-if="(isAdminLike) && inRoleView" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-          <img v-else src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
+          <img v-else :src="'/home.svg'" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           <span>{{ ((isAdminLike) && inRoleView) ? 'Statistics' : 'Dashboard' }}</span>
         </button>
 
@@ -771,7 +771,7 @@
               isLoggingOut ? 'scale-95 opacity-60' : 'hover:bg-red-500/20 hover:border-red-400/60 hover:text-white hover:translate-x-0.5'
             ]"
           >
-            <img src="/logout.svg" alt="Log Out" :class="['w-4 h-4 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1); opacity:0.85;" />
+            <img :src="'/logout.svg'" alt="Log Out" :class="['w-4 h-4 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1); opacity:0.85;" />
             <span>{{ isLoggingOut ? 'Signing out…' : 'Log Out' }}</span>
           </button>
         </div>
@@ -788,7 +788,7 @@
       <div v-if="showMobileMenu" :class="[ 'fixed left-0 top-0 h-screen w-72 bg-gradient-to-b text-white flex flex-col z-40 md:hidden shadow-2xl', sidebarGradient ]">
         <div class="flex items-center justify-between px-4 py-4 border-b border-white/15 bg-white/5 flex-shrink-0">
           <div class="flex items-center gap-2.5">
-            <img src="/src/assets/ccs-logo.png" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-lg flex-shrink-0" />
+            <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-lg flex-shrink-0" />
             <div class="flex flex-col leading-tight">
               <h1 class="text-xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
               <p class="text-[9px] uppercase tracking-widest font-semibold text-white/50">JRMSU</p>
@@ -802,7 +802,7 @@
             <p class="text-sm mb-2 opacity-90 text-white">Welcome back,</p>
             <span class="relative inline-flex items-center gap-1.5 px-4 py-1.5 bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-600 text-white text-sm font-black rounded-full shadow-[0_0_25px_rgba(245,158,11,0.8)] border border-yellow-300/40 overflow-hidden">
               <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent skew-x-[-20deg] translate-x-[-150%] animate-sweep-4s"></div>
-              <img src="/crown.svg" alt="Admin" class="w-5 h-5 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
+              <img :src="'/crown.svg'" alt="Admin" class="w-5 h-5 drop-shadow-[0_0_3px_rgba(255,255,255,0.8)] brightness-0 invert" />
               <span class="tracking-widest uppercase text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.3)]">Admin</span>
             </span>
           </div>
@@ -828,7 +828,7 @@
                     <span>Student</span>
                   </span>
                   <span v-if="currentUser.rfid_status === 'verified'" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-500/90 text-white text-[9px] font-bold rounded-full">
-                    <img src="/verified.svg" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
+                    <img :src="'/verified.svg'" alt="Verified" class="w-2 h-2" style="filter: brightness(0) invert(1);" />
                     Verified
                   </span>
                   <span v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-slate-500/90 text-white text-[9px] font-bold rounded-full">Unreadable</span>
@@ -847,7 +847,7 @@
           <p class="text-white/30 text-[9px] uppercase tracking-widest font-semibold px-4 mb-2">Menu</p>
           <button @click="currentPage = 'dashboard'; showMobileMenu = false" :class="[sidebarItemBase, currentPage === 'dashboard' ? sidebarItemActive : sidebarItemHover]">
             <svg v-if="(isAdminLike) && inRoleView" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
-            <img v-else src="/home.svg" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
+            <img v-else :src="'/home.svg'" alt="Dashboard" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
             <span>{{ ((isAdminLike) && inRoleView) ? 'Statistics' : 'Dashboard' }}</span>
           </button>
 
@@ -918,7 +918,7 @@
                 isLoggingOut ? 'scale-95 opacity-60' : 'hover:bg-red-500/20 hover:border-red-400/60 hover:text-white hover:translate-x-0.5'
               ]"
             >
-              <img src="/logout.svg" alt="Log Out" :class="['w-4 h-4 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1); opacity:0.85;" />
+              <img :src="'/logout.svg'" alt="Log Out" :class="['w-4 h-4 transition-transform duration-300', isLoggingOut ? 'rotate-180' : '']" style="filter: brightness(0) invert(1); opacity:0.85;" />
               <span>{{ isLoggingOut ? 'Signing out…' : 'Log Out' }}</span>
             </button>
           </div>
@@ -936,7 +936,7 @@
       <!-- Mobile Header with Hamburger Menu -->
       <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
-          <img src="/src/assets/ccs-logo.png" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" style="filter: invert(1);" />
+          <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" style="filter: invert(1);" />
           <div class="flex flex-col leading-tight">
             <h1 :class="['text-xl font-extrabold italic', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">SSAAM</h1>
             <p :class="['text-[9px] uppercase tracking-widest font-semibold', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-green-400' : 'text-blue-400']">JRMSU</p>
@@ -944,7 +944,7 @@
         </div>
         <div class="flex items-center gap-2">
           <button @click="showContactModal = true" :class="['p-2 rounded-lg transition', isCOE ? 'hover:bg-orange-100' : isSOM ? 'hover:bg-green-100' : isCNAHS ? 'hover:bg-green-100' : 'hover:bg-blue-100']">
-            <img src="/help.svg" alt="Help" :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" />
+            <img :src="'/help.svg'" alt="Help" :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" />
           </button>
           <button @click="showMobileMenu = true" :class="['text-2xl', isCOE ? 'text-orange-900 hover:text-orange-700' : isSOM ? 'text-green-900 hover:text-green-700' : isCNAHS ? 'text-green-900 hover:text-green-700' : 'text-blue-900 hover:text-blue-700']">☰</button>
         </div>
@@ -953,7 +953,7 @@
       <!-- Floating Help Button (visible on mobile and desktop) -->
       <div class="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-20">
         <button @click="showContactModal = true" :class="['text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-all duration-300 shadow-lg hover:scale-110 active:scale-95 hover:shadow-xl bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600' : isCNAHS ? 'from-green-700 to-green-600 hover:from-green-800 hover:to-green-700' : 'from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light']">
-          <img src="/help.svg" alt="Help" class="w-5 h-5 md:w-6 md:h-6" style="filter: brightness(0) invert(1);" />
+          <img :src="'/help.svg'" alt="Help" class="w-5 h-5 md:w-6 md:h-6" style="filter: brightness(0) invert(1);" />
         </button>
       </div>
 
@@ -1574,7 +1574,7 @@
 
               <!-- Empty -->
               <div v-else-if="paginatedAttendanceEvents.length === 0" class="flex flex-col items-center justify-center py-14 text-center">
-                <img src="/events.svg" alt="No Events" class="w-14 h-14 mb-3 opacity-30" />
+                <img :src="'/events.svg'" alt="No Events" class="w-14 h-14 mb-3 opacity-30" />
                 <p class="text-gray-500 text-sm font-medium">{{ attendanceSearchQuery ? 'No events match your search.' : 'No attendance events yet.' }}</p>
                 <p v-if="!attendanceSearchQuery" class="text-gray-400 text-xs mt-1">Click "Create Event" above to get started.</p>
               </div>
@@ -2387,7 +2387,7 @@
               <!-- My Attendance Records Section - Enhanced with Expandable Event Folders -->
               <div v-if="myAttendanceRecords.length > 0">
                 <h3 class="font-semibold text-gray-700 mb-2 sm:mb-3 flex items-center gap-2 text-xs sm:text-sm uppercase tracking-widest">
-                  <img src="/events.svg" alt="History" class="w-4 h-4 flex-shrink-0" style="filter: invert(0.3) sepia(1) hue-rotate(270deg) saturate(1.5);" />
+                  <img :src="'/events.svg'" alt="History" class="w-4 h-4 flex-shrink-0" style="filter: invert(0.3) sepia(1) hue-rotate(270deg) saturate(1.5);" />
                   My Attendance History
                 </h3>
                 <div class="space-y-3">
@@ -2922,7 +2922,7 @@
                 <div class="flex-shrink-0">
                   <div :class="['w-20 h-20 rounded-full flex items-center justify-center overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-600' : isCNAHS ? 'bg-gradient-to-br from-green-600 to-green-800' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
                     <img v-if="student.photo" :src="student.photo" alt="Student Photo" class="w-full h-full object-cover rounded-full" />
-                    <img v-else src="/user.svg" alt="No Photo" class="w-10 h-10 brightness-0 invert" />
+                    <img v-else :src="'/user.svg'" alt="No Photo" class="w-10 h-10 brightness-0 invert" />
                   </div>
                 </div>
                 <div class="flex-1">
@@ -3091,11 +3091,11 @@
               </div>
               <div class="flex gap-2">
                 <button @click="editUser(user)" :class="['flex-1 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm font-medium text-white', isCOE ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-500 hover:bg-blue-600']">
-                  <img src="/edit.svg" alt="Edit" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
+                  <img :src="'/edit.svg'" alt="Edit" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
                   Edit
                 </button>
                 <button @click="deleteUser(user.studentId || user.student_id)" class="flex-1 bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2 text-sm font-medium">
-                  <img src="/delete.svg" alt="Delete" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
+                  <img :src="'/delete.svg'" alt="Delete" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
                   Delete
                 </button>
               </div>
@@ -3136,10 +3136,10 @@
                   <td class="border border-blue-300 px-4 py-3 text-center">
                     <div class="flex items-center justify-center gap-2 flex-nowrap">
                       <button @click="editUser(user)" class="bg-blue-500 text-white p-2 rounded-lg hover:bg-blue-600 transition-all duration-200 hover:scale-110 active:scale-95 flex-shrink-0" title="Edit User">
-                        <img src="/edit.svg" alt="Edit" class="w-4 h-4 min-w-[16px] min-h-[16px]" style="filter: brightness(0) invert(1);" />
+                        <img :src="'/edit.svg'" alt="Edit" class="w-4 h-4 min-w-[16px] min-h-[16px]" style="filter: brightness(0) invert(1);" />
                       </button>
                       <button @click="deleteUser(user.studentId || user.student_id)" class="bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition-all duration-200 hover:scale-110 active:scale-95 flex-shrink-0" title="Delete User">
-                        <img src="/delete.svg" alt="Delete" class="w-4 h-4 min-w-[16px] min-h-[16px]" style="filter: brightness(0) invert(1);" />
+                        <img :src="'/delete.svg'" alt="Delete" class="w-4 h-4 min-w-[16px] min-h-[16px]" style="filter: brightness(0) invert(1);" />
                       </button>
                     </div>
                   </td>
@@ -3211,7 +3211,7 @@
             <!-- Role badge in banner -->
             <div class="absolute top-4 right-4">
               <span class="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold shadow-lg" :class="currentUser.isMaster ? 'bg-gradient-to-r from-yellow-400 to-amber-500 text-white' : 'bg-white/20 text-white border border-white/30'">
-                <img v-if="currentUser.isMaster" src="/crown.svg" alt="" class="w-3.5 h-3.5 brightness-0 invert" />
+                <img v-if="currentUser.isMaster" :src="'/crown.svg'" alt="" class="w-3.5 h-3.5 brightness-0 invert" />
                 {{ currentUser.role === 'co-admin' ? 'Co-Admin' : 'Admin' }}
                 <span v-if="currentUser.role === 'co-admin' && currentUser.college" class="font-normal opacity-80">({{ currentUser.college }})</span>
               </span>
@@ -3468,7 +3468,7 @@
             <div class="bg-white rounded-3xl border border-blue-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
               <div class="relative h-24 bg-gradient-to-br from-blue-700 to-ssaam-light overflow-hidden">
                 <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-                <img src="/icons/ccs.svg" alt="CCS" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
+                <img :src="'/icons/ccs.svg'" alt="CCS" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
                 <div class="absolute top-4 left-5">
                   <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">CCS</h3>
                   <p class="text-white/70 text-xs">College of Computing Studies</p>
@@ -3532,7 +3532,7 @@
             <div class="bg-white rounded-3xl border border-orange-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
               <div class="relative h-24 bg-gradient-to-br from-orange-600 to-red-600 overflow-hidden">
                 <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-                <img src="/icons/coe.svg" alt="COE" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
+                <img :src="'/icons/coe.svg'" alt="COE" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
                 <div class="absolute top-4 left-5">
                   <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">COE</h3>
                   <p class="text-white/70 text-xs">College of Engineering</p>
@@ -3593,7 +3593,7 @@
             <div class="bg-white rounded-3xl border border-green-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
               <div class="relative h-24 bg-gradient-to-br from-green-600 to-teal-600 overflow-hidden">
                 <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-                <img src="/icons/som.svg" alt="SOM" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
+                <img :src="'/icons/som.svg'" alt="SOM" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
                 <div class="absolute top-4 left-5">
                   <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">SOM</h3>
                   <p class="text-white/70 text-xs">School of Midwifery</p>
@@ -3654,7 +3654,7 @@
             <div class="bg-white rounded-3xl border border-emerald-100 shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
               <div class="relative h-24 bg-gradient-to-br from-emerald-600 to-green-700 overflow-hidden">
                 <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-                <img src="/icons/cnahs.svg" alt="CNAHS" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
+                <img :src="'/icons/cnahs.svg'" alt="CNAHS" class="absolute bottom-0 right-4 h-20 w-20 object-contain opacity-90 drop-shadow-lg" />
                 <div class="absolute top-4 left-5">
                   <h3 class="text-white font-extrabold text-lg tracking-wide drop-shadow">CNAHS</h3>
                   <p class="text-white/70 text-xs">College of Nursing and Allied Health Sciences</p>
@@ -4458,7 +4458,7 @@
                 <!-- CCS -->
                 <div class="rounded-2xl border border-blue-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   <div class="relative h-16 bg-gradient-to-br from-blue-700 to-ssaam-light overflow-hidden flex items-center gap-3 px-4">
-                    <img src="/icons/ccs.svg" alt="CCS" class="h-10 w-10 object-contain opacity-90" />
+                    <img :src="'/icons/ccs.svg'" alt="CCS" class="h-10 w-10 object-contain opacity-90" />
                     <div>
                       <p class="text-white font-extrabold text-base">CCS</p>
                       <p class="text-white/70 text-[10px]">College of Computing Studies</p>
@@ -4483,7 +4483,7 @@
                 <!-- COE -->
                 <div class="rounded-2xl border border-orange-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   <div class="relative h-16 bg-gradient-to-br from-orange-600 to-red-600 overflow-hidden flex items-center gap-3 px-4">
-                    <img src="/icons/coe.svg" alt="COE" class="h-10 w-10 object-contain opacity-90" />
+                    <img :src="'/icons/coe.svg'" alt="COE" class="h-10 w-10 object-contain opacity-90" />
                     <div>
                       <p class="text-white font-extrabold text-base">COE</p>
                       <p class="text-white/70 text-[10px]">College of Engineering</p>
@@ -4508,7 +4508,7 @@
                 <!-- SOM -->
                 <div class="rounded-2xl border border-green-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   <div class="relative h-16 bg-gradient-to-br from-green-600 to-teal-600 overflow-hidden flex items-center gap-3 px-4">
-                    <img src="/icons/som.svg" alt="SOM" class="h-10 w-10 object-contain opacity-90" />
+                    <img :src="'/icons/som.svg'" alt="SOM" class="h-10 w-10 object-contain opacity-90" />
                     <div>
                       <p class="text-white font-extrabold text-base">SOM</p>
                       <p class="text-white/70 text-[10px]">School of Midwifery</p>
@@ -4533,7 +4533,7 @@
                 <!-- CNAHS -->
                 <div class="rounded-2xl border border-emerald-100 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
                   <div class="relative h-16 bg-gradient-to-br from-emerald-600 to-green-700 overflow-hidden flex items-center gap-3 px-4">
-                    <img src="/icons/cnahs.svg" alt="CNAHS" class="h-10 w-10 object-contain opacity-90" />
+                    <img :src="'/icons/cnahs.svg'" alt="CNAHS" class="h-10 w-10 object-contain opacity-90" />
                     <div>
                       <p class="text-white font-extrabold text-base">CNAHS</p>
                       <p class="text-white/70 text-[10px]">College of Nursing and Allied Health Sciences</p>
@@ -4867,14 +4867,14 @@
                 </svg>
               </div>
               <img v-if="editingUser.image || editingUser.photo" :src="editingUser.image || editingUser.photo" alt="User Photo" class="w-full h-full object-cover" @load="editImageLoading = false" @error="editImageLoading = false" />
-              <img v-else src="/user.svg" alt="Profile" class="w-12 h-12" style="filter: brightness(0) invert(1);" />
+              <img v-else :src="'/user.svg'" alt="Profile" class="w-12 h-12" style="filter: brightness(0) invert(1);" />
             </div>
             <button 
               @click="$refs.photoInput.click()" 
               :class="['absolute bottom-0 right-0 w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 hover:scale-110', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light']"
               title="Change Photo"
             >
-              <img src="/change_photo.svg" alt="Change Photo" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
+              <img :src="'/change_photo.svg'" alt="Change Photo" class="w-4 h-4" style="filter: brightness(0) invert(1);" />
             </button>
           </div>
           <input 
@@ -6615,7 +6615,7 @@
           <!-- Install SSAAM App -->
           <div class="rounded-2xl overflow-hidden border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
             <div class="px-4 pt-3.5 pb-2.5 flex items-center gap-3 border-b border-green-100">
-              <img src="/assets/app_icon.png" alt="SSAAM" class="w-9 h-9 rounded-xl shadow-sm flex-shrink-0 object-cover" />
+              <img :src="'/assets/app_icon.png'" alt="SSAAM" class="w-9 h-9 rounded-xl shadow-sm flex-shrink-0 object-cover" />
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-bold text-green-900 leading-tight">Install SSAAM App</p>
                 <p class="text-[10px] text-green-700 mt-0.5">Get the native experience on your phone</p>

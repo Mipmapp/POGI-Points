@@ -10,7 +10,7 @@
         <!-- SSAAM Banner Image -->
         <div class="relative flex-shrink-0 overflow-hidden bg-[#080e2e]" style="aspect-ratio: 16/7; min-height: 140px;">
           <img
-            src="/assets/ssaam_popup.png"
+            :src="'/assets/ssaam_popup.png'"
             alt="SSAAM — Student School Activities Attendance Monitoring"
             class="w-full h-full object-cover"
             draggable="false"

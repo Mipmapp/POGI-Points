@@ -18,7 +18,7 @@
                 <!-- Front of flip -->
                 <div class="absolute inset-0 flex items-center justify-center backface-hidden">
                   <img 
-                    src="/icons/coe.svg" 
+                    :src="'/icons/coe.svg'" 
                     alt="COE Logo" 
                     class="w-full h-full object-contain drop-shadow-2xl"
                   />
@@ -26,7 +26,7 @@
                 <!-- Back of flip -->
                 <div class="absolute inset-0 flex items-center justify-center backface-hidden" style="transform: rotateY(180deg);">
                   <img 
-                    src="/icons/coe.svg" 
+                    :src="'/icons/coe.svg'" 
                     alt="COE Logo" 
                     class="w-full h-full object-contain drop-shadow-2xl"
                   />
