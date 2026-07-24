@@ -763,10 +763,9 @@
             </template>
             <div>
               <div class="relative">
-                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/mail.svg) center/contain no-repeat; mask: url(/mail.svg) center/contain no-repeat; background-color: currentColor;"></div>
                 <input v-model="formData.email" type="email" placeholder="Gmail only (e.g. juan@gmail.com)"
                   pattern="[a-zA-Z0-9._%+\-]+@gmail\.com"
-                  class="w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-500/20 focus:bg-white outline-none text-sm text-gray-700 placeholder-gray-400 transition" required />
+                  class="w-full pl-4 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-500/20 focus:bg-white outline-none text-sm text-gray-700 placeholder-gray-400 transition" required />
               </div>
               <p class="text-xs text-gray-400 flex items-center gap-1 pl-4 pt-1">
                 <svg class="w-3 h-3 text-red-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
@@ -1047,9 +1046,6 @@
           <span>Already have an account?
             <button @click="goToLogin" class="text-indigo-500 hover:text-indigo-700 font-semibold ml-1 transition">Log In</button>
           </span>
-          <button type="button" @click="showContactModal = true" class="text-xs text-gray-400 hover:text-gray-600 transition">
-            Need help?
-          </button>
         </div>
 
         <div class="mt-3 text-center text-xs text-gray-400">

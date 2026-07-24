@@ -707,18 +707,20 @@
 
   <!-- Forgot Password Modal -->
   <transition name="fade">
-    <div v-if="showForgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeForgotPasswordModal">
+    <div v-if="showForgotPasswordModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 px-0 sm:px-4" @click.self="closeForgotPasswordModal">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-md w-full max-h-[92vh] sm:max-h-[90vh] overflow-hidden flex flex-col">
           <!-- Header -->
-          <div class="px-8 pt-7 pb-2 text-center relative flex-shrink-0">
-            <button @click="closeForgotPasswordModal" class="absolute right-5 top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">&times;</button>
-            <h3 class="text-2xl font-bold text-gray-900">Reset Password</h3>
-            <p class="text-gray-500 text-sm mt-1">{{ resetStep === 1 && !resetEmailStep ? 'Step 1: Enter your Student ID' : resetStep === 1 && resetEmailStep ? 'Step 1: Enter your email' : resetStep === 2 ? 'Step 2: Enter your code' : 'Step 3: New password' }}</p>
+          <div class="px-5 sm:px-8 pt-5 sm:pt-7 pb-2 text-center relative flex-shrink-0">
+            <!-- Drag handle (mobile) -->
+            <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-3 sm:hidden"></div>
+            <button @click="closeForgotPasswordModal" class="absolute right-4 top-4 sm:right-5 sm:top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">&times;</button>
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900">Reset Password</h3>
+            <p class="text-gray-500 text-xs sm:text-sm mt-1">{{ resetStep === 1 && !resetEmailStep ? 'Step 1: Enter your Student ID' : resetStep === 1 && resetEmailStep ? 'Step 1: Enter your email' : resetStep === 2 ? 'Step 2: Enter your code' : 'Step 3: New password' }}</p>
           </div>
 
           <!-- Scrollable Content -->
-          <div class="p-6 space-y-5 overflow-y-auto">
+          <div class="px-4 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-5 overflow-y-auto">
 
             <!-- Step 1: Student ID → Email (animated) -->
             <div v-if="resetStep === 1" class="relative overflow-hidden">
