@@ -1,6 +1,6 @@
 <template>
   <transition name="fade">
-    <div v-if="showContactModal" class="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-40 p-0 sm:p-6" @click.self="showContactModal = false">
+    <div v-if="showContactModal" class="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-[200] p-0 sm:p-6" @click.self="showContactModal = false">
       <transition name="modal-bounce" appear>
         <div class="bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl w-full sm:max-w-lg overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[88vh]">
 
