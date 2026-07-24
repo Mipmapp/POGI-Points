@@ -741,33 +741,41 @@
 
             <!-- Name fields — only shown after ARMS auto-fills them -->
             <template v-if="armsVerified">
-            <div class="relative">
-              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
-              <input v-model="formData.first_name" type="text" placeholder="First Name" class="w-full pl-11 pr-10 py-3 bg-green-100 border-0 rounded-full outline-none text-sm text-gray-700 placeholder-gray-400" readonly required />
-              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">First Name</label>
+              <div class="relative">
+                <input v-model="formData.first_name" type="text" placeholder="First Name" class="w-full px-4 pr-10 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-700 bg-green-50 placeholder-gray-400" readonly required />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+              </div>
             </div>
-            <div class="relative">
-              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
-              <input v-model="formData.middle_name" type="text" placeholder="Middle Name (optional)" class="w-full pl-11 pr-10 py-3 bg-green-100 border-0 rounded-full outline-none text-sm text-gray-700 placeholder-gray-400" readonly />
-              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Middle Name</label>
+              <div class="relative">
+                <input v-model="formData.middle_name" type="text" placeholder="Middle Name (optional)" class="w-full px-4 pr-10 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-700 bg-green-50 placeholder-gray-400" readonly />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+              </div>
             </div>
-            <div class="relative">
-              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
-              <input v-model="formData.last_name" type="text" placeholder="Last Name" class="w-full pl-11 pr-10 py-3 bg-green-100 border-0 rounded-full outline-none text-sm text-gray-700 placeholder-gray-400" readonly required />
-              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Last Name</label>
+              <div class="relative">
+                <input v-model="formData.last_name" type="text" placeholder="Last Name" class="w-full px-4 pr-10 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-700 bg-green-50 placeholder-gray-400" readonly required />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+              </div>
             </div>
-            <div class="relative">
-              <input v-model="formData.suffix" type="text" placeholder="Suffix (optional)" class="w-full pl-4 pr-10 py-3 bg-green-100 border-0 rounded-full outline-none text-sm text-gray-700 placeholder-gray-400" readonly />
-              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Suffix</label>
+              <div class="relative">
+                <input v-model="formData.suffix" type="text" placeholder="Suffix (optional)" class="w-full px-4 pr-10 py-3 border border-green-300 rounded-xl outline-none text-sm text-gray-700 bg-green-50 placeholder-gray-400" readonly />
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500"><svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg></span>
+              </div>
             </div>
             </template>
-            <div>
-              <div class="relative">
-                <input v-model="formData.email" type="email" placeholder="Gmail only (e.g. juan@gmail.com)"
-                  pattern="[a-zA-Z0-9._%+\-]+@gmail\.com"
-                  class="w-full pl-4 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-500/20 focus:bg-white outline-none text-sm text-gray-700 placeholder-gray-400 transition" required />
-              </div>
-              <p class="text-xs text-gray-400 flex items-center gap-1 pl-4 pt-1">
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Email</label>
+              <input v-model="formData.email" type="email" placeholder="Gmail only (e.g. juan@gmail.com)"
+                pattern="[a-zA-Z0-9._%+\-]+@gmail\.com"
+                class="w-full px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-300 bg-white transition" required />
+              <p class="text-xs text-gray-400 flex items-center gap-1">
                 <svg class="w-3 h-3 text-red-400 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
                 Only Gmail addresses are accepted.
               </p>
@@ -787,15 +795,17 @@
 
           <div v-if="currentStep === 2" class="space-y-3 step-animate">
             <!-- Student ID -->
-            <div class="relative">
-              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/user.svg) center/contain no-repeat; mask: url(/user.svg) center/contain no-repeat; background-color: currentColor;"></div>
-              <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="Student ID (25-A-00000)" maxlength="10"
-                :class="['w-full pl-11 pr-10 py-3 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none text-sm text-gray-700 placeholder-gray-400',
-                  armsVerified ? 'bg-green-100' : 'bg-green-50']"
-                :readonly="armsVerified" required />
-              <span v-if="armsVerified" class="absolute right-4 top-1/2 -translate-y-1/2 text-green-500">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
-              </span>
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Student ID</label>
+              <div class="relative">
+                <input v-model="formData.student_id" @input="formData.student_id = formatStudentId(formData.student_id)" type="text" placeholder="e.g. 25-A-00000" maxlength="10"
+                  :class="['w-full px-4 pr-10 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-100 focus:border-indigo-400 outline-none text-sm placeholder-gray-300 transition',
+                    armsVerified ? 'bg-green-50 border-green-300 text-gray-700' : 'bg-white border-gray-200 text-gray-800']"
+                  :readonly="armsVerified" required />
+                <span v-if="armsVerified" class="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M20 6L9 17l-5-5"/></svg>
+                </span>
+              </div>
             </div>
 
             <!-- ARMS verified summary in Step 2 (mobile) -->
@@ -806,23 +816,25 @@
             </div>
 
             <!-- Year Level -->
-            <div class="relative">
-              <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65" style="-webkit-mask: url(/book.svg) center/contain no-repeat; mask: url(/book.svg) center/contain no-repeat; background-color: currentColor;"></div>
-              <select v-model="formData.year_level" :class="['w-full pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none appearance-none text-sm', formData.year_level ? 'text-gray-700' : 'text-gray-400']" required>
-                <option value="" disabled>Select Year Level</option>
-                <option value="1st Year">1st Year</option>
-                <option value="2nd Year">2nd Year</option>
-                <option value="3rd Year">3rd Year</option>
-                <option value="4th Year">4th Year</option>
-              </select>
-              <img :src="'/arrow_down.svg'" alt="Dropdown" class="absolute right-4 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-65" />
+            <div class="space-y-1.5">
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Year Level</label>
+              <div class="relative">
+                <select v-model="formData.year_level" :class="['w-full px-4 pr-8 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none appearance-none text-sm bg-white transition', formData.year_level ? 'text-gray-800' : 'text-gray-400']" required>
+                  <option value="" disabled>Select Year Level</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                </select>
+                <img :src="'/arrow_down.svg'" alt="Dropdown" class="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 pointer-events-none opacity-65" />
+              </div>
             </div>
 
             <!-- Program -->
             <div>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Program</label>
               <div class="relative" ref="programDropdownMobileRef">
-                <div class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 opacity-65 z-10" style="-webkit-mask: url(/course.svg) center/contain no-repeat; mask: url(/course.svg) center/contain no-repeat; background-color: currentColor;"></div>
-                <button type="button" @click="toggleProgramMenu('mobile')" class="w-full text-left pl-11 pr-4 py-3 bg-green-50 border-0 rounded-full focus:ring-2 focus:ring-blue-300 outline-none flex items-center justify-between text-sm text-gray-700">
+                <button type="button" @click="toggleProgramMenu('mobile')" class="w-full text-left px-4 pr-8 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none flex items-center justify-between text-sm bg-white transition">
                   <span class="truncate">
                     <template v-if="selectedProgramItem">{{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}</template>
                     <template v-else><span class="text-gray-400">Select Program</span></template>
