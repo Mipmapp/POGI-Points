@@ -4174,143 +4174,124 @@
           </div>
         </div>
 
-        <div v-if="currentPage === 'dashboard' && isAdminLike && inRoleView" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-          <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
-            <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-            <div class="light-sweep"></div>
-            <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
-              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
-              </div>
-              <div class="flex-1 min-w-0">
-                <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Registered Students</h2>
-                <p class="text-white/70 text-xs sm:text-sm mt-0.5">Overview of enrolled students by year level and program</p>
-              </div>
-              <button @click="handleStatsRefresh" :disabled="statsLoading" class="px-3 sm:px-4 py-2 rounded-xl text-white text-sm font-semibold bg-white/20 hover:bg-white/30 border border-white/20 transition flex items-center gap-2 disabled:opacity-60 flex-shrink-0">
-                <svg :class="['w-4 h-4', statsLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="hidden sm:inline">{{ statsLoading ? 'Refreshing...' : 'Refresh' }}</span>
-              </button>
+        <!-- ── Admin Statistics Dashboard (redesigned) ───────────────────────── -->
+        <div v-if="currentPage === 'dashboard' && isAdminLike && inRoleView" class="space-y-5 mb-8">
+
+          <!-- Greeting Row -->
+          <div class="flex items-start sm:items-center justify-between gap-4">
+            <div>
+              <p class="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-0.5">{{ timeGreeting.label }}</p>
+              <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
+                Hi, {{ displayName }}! <em :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'not-italic']">{{ timeGreeting.phrase }}</em>
+              </h2>
+              <p class="text-gray-400 text-sm mt-0.5">Here's what's happening in SSAAM today.</p>
             </div>
-          </div>
-          <div class="p-3 sm:p-4 md:p-6 space-y-4 sm:space-y-6">
-
-          <!-- College Tabs (Master Admin only) -->
-          <div v-if="currentUser.isMaster && !isCoAdmin && !isTreasurer" class="flex flex-wrap gap-2 mb-5">
-            <button @click="statsViewCollege = null" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === null ? 'bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300']">All</button>
-            <button @click="statsViewCollege = 'CCS'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'CCS' ? 'bg-blue-600 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-blue-300']">CCS</button>
-            <button @click="statsViewCollege = 'COE'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'COE' ? 'bg-orange-500 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-orange-300']">COE</button>
-            <button @click="statsViewCollege = 'SOM'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'SOM' ? 'bg-green-600 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-green-300']">SOM</button>
-            <button @click="statsViewCollege = 'CNAHS'" :class="['px-4 py-1.5 rounded-lg text-sm font-semibold transition-all border', statsViewCollege === 'CNAHS' ? 'bg-teal-600 text-white border-transparent shadow-md' : 'bg-white border-gray-200 text-gray-600 hover:border-teal-300']">CNAHS</button>
-          </div>
-
-          <!-- Table: show when not "All" for isMaster, or always for regular admin / co-admin / treasurer -->
-          <div v-if="!currentUser.isMaster || statsViewCollege !== null || isCoAdmin || isTreasurer" class="overflow-x-auto text-sm md:text-base rounded-xl">
-            <p class="sm:hidden text-[10px] text-gray-400 mb-1 flex items-center justify-end gap-1">
-              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-              Swipe to see all columns
-            </p>
-            <table class="w-full border-collapse min-w-[360px]">
-              <thead>
-                <tr :class="themeColors.headerBg">
-                  <th :class="['border px-2 sm:px-4 py-2 sm:py-3 text-left font-semibold text-xs sm:text-sm', themeColors.headerText]"></th>
-                  <th v-for="prog in displayPrograms" :key="prog" :class="['border px-2 sm:px-4 py-2 sm:py-3 text-center font-semibold text-xs sm:text-sm', themeColors.headerText]">{{ prog }}</th>
-                  <th :class="['border px-2 sm:px-4 py-2 sm:py-3 text-center font-semibold text-xs sm:text-sm', themeColors.headerText]">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="year in ['1st Year', '2nd Year', '3rd Year', '4th Year']" :key="year" class="hover:bg-gray-50">
-                  <td :class="['border px-2 sm:px-4 py-2 sm:py-4 font-medium text-gray-700 text-xs sm:text-sm', themeColors.rowBorder]">{{ year.toLowerCase().replace('year', 'years') }}</td>
-                  <td v-for="prog in displayPrograms" :key="prog" :class="['border px-2 sm:px-4 py-2 sm:py-4 text-center text-xs sm:text-sm', themeColors.rowBorder]">{{ displayStats[prog]?.[year] || 0 }}</td>
-                  <td :class="`border px-2 sm:px-4 py-2 sm:py-4 text-center font-bold text-xs sm:text-sm ${themeColors.rowBorder} ${isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700'}`">{{ displayPrograms.reduce((sum, prog) => sum + (displayStats[prog]?.[year] || 0), 0) }}</td>
-                </tr>
-                <tr :class="`font-bold ${themeColors.rowBgAlt}`">
-                  <td :class="['border px-2 sm:px-4 py-2 sm:py-4 font-bold text-gray-900 text-xs sm:text-sm', themeColors.rowBorder]">All year levels</td>
-                  <td v-for="prog in displayPrograms" :key="prog" :class="['border px-2 sm:px-4 py-2 sm:py-4 text-center text-xs sm:text-sm', themeColors.rowBorder]">{{ displayStats[prog]?.total || 0 }}</td>
-                  <td :class="`border px-2 sm:px-4 py-2 sm:py-4 text-center text-xs sm:text-sm ${themeColors.rowBgAltText}`">{{ displayTotal }}</td>
-                </tr>
-              </tbody>
-            </table>
+            <button @click="handleStatsRefresh" :disabled="statsLoading"
+              :class="['hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0',
+                isCOE ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-200' :
+                isSOM ? 'bg-green-600 hover:bg-green-700 shadow-green-200' :
+                isCNAHS ? 'bg-green-700 hover:bg-green-800 shadow-green-200' :
+                'bg-blue-600 hover:bg-blue-700 shadow-blue-200']">
+              <svg :class="['w-4 h-4', statsLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              {{ statsLoading ? 'Refreshing...' : 'Refresh' }}
+            </button>
           </div>
 
-          <div class="mt-6 text-center">
-            <p :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
-              Total Registered Students: <span class="text-2xl">{{ currentUser.isMaster && statsViewCollege ? displayTotal : totalStudents }}</span>
-            </p>
-          </div>
-          
-          <div class="mt-2 grid grid-cols-3 gap-2 sm:gap-4">
+          <!-- Top Metrics Row: Hero + 3 RFID stat cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-[2fr_1fr_1fr_1fr] gap-4">
+
+            <!-- Hero: Total Students -->
+            <div :class="['relative rounded-2xl overflow-hidden p-5 sm:p-6 col-span-1 sm:col-span-3 lg:col-span-1 shadow-lg',
+              isCOE ? 'bg-gradient-to-br from-orange-600 via-orange-500 to-red-500 shadow-orange-200' :
+              isSOM ? 'bg-gradient-to-br from-green-700 via-green-600 to-teal-500 shadow-green-200' :
+              isCNAHS ? 'bg-gradient-to-br from-emerald-700 via-green-600 to-green-500 shadow-green-200' :
+              'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light shadow-blue-200']">
+              <div class="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <div class="light-sweep"></div>
+              <!-- Decorative mini bars -->
+              <div class="absolute bottom-0 right-0 flex items-end gap-[3px] px-4 pb-0 opacity-25 pointer-events-none">
+                <div v-for="h in [28,44,36,62,48,76,58]" :key="h" class="w-4 rounded-t bg-white" :style="{height: h+'px'}"></div>
+              </div>
+              <div class="relative z-10">
+                <div class="flex items-center gap-2 mb-3">
+                  <div class="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  </div>
+                  <span class="text-white/80 text-xs font-semibold uppercase tracking-wider">Total Students</span>
+                </div>
+                <p class="text-5xl sm:text-6xl font-extrabold text-white tracking-tight leading-none">
+                  {{ currentUser.isMaster && statsViewCollege ? displayTotal : totalStudents }}
+                </p>
+                <p class="text-white/60 text-sm mt-2">Registered &amp; enrolled</p>
+              </div>
+            </div>
+
             <!-- RFID Verified -->
-            <div :class="['relative rounded-lg p-3 sm:p-4 text-center cursor-pointer transition',
-                          isCOE ? 'bg-orange-50 border border-orange-200 hover:bg-orange-100' :
-                          isSOM ? 'bg-green-50 border border-green-200 hover:bg-green-100' :
-                          isCNAHS ? 'bg-green-50 border border-green-200 hover:bg-green-100' :
-                          'bg-green-50 border border-green-200 hover:bg-green-100']" @click="toggleRfidList('verified')">
-              <button @click.stop="fetchStats" :class="['absolute top-1.5 right-1.5 p-1 rounded-full transition', isCOE ? 'hover:bg-orange-200' : isSOM ? 'hover:bg-green-200' : isCNAHS ? 'hover:bg-green-200' : 'hover:bg-green-200']" title="Refresh">
-                <svg :class="['w-3 h-3', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-500' : 'text-green-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <div class="relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-5 cursor-pointer group"
+              @click="toggleRfidList('verified')">
+              <button @click.stop="fetchStats" class="absolute top-3 right-3 p-1.5 rounded-lg bg-gray-50 hover:bg-green-50 text-gray-300 hover:text-green-500 transition" title="Refresh">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               </button>
-              <div class="flex flex-col items-center gap-1 mb-2">
-                <svg :class="['w-5 h-5 sm:w-6 sm:h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-green-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span :class="['text-[10px] sm:text-xs font-semibold leading-tight', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-green-700']">RFID Verified</span>
+              <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
-              <p :class="['text-xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-green-600']">{{ verifiedCount }}</p>
-              <p :class="['text-[10px] sm:text-xs mt-1', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-500' : 'text-green-500']">tap to view</p>
+              <p class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">{{ verifiedCount }}</p>
+              <p class="text-sm text-gray-500 mt-2 font-medium">RFID Verified</p>
+              <p class="text-xs text-green-500 mt-2 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">View list →</p>
             </div>
+
             <!-- RFID Unverified -->
-            <div :class="['relative rounded-lg p-3 sm:p-4 text-center cursor-pointer transition',
-                          isCOE ? 'bg-orange-50 border border-orange-200 hover:bg-orange-100' :
-                          isSOM ? 'bg-yellow-50 border border-yellow-200 hover:bg-yellow-100' :
-                          isCNAHS ? 'bg-yellow-50 border border-yellow-200 hover:bg-yellow-100' :
-                          'bg-yellow-50 border border-yellow-200 hover:bg-yellow-100']" @click="toggleRfidList('unverified')">
-              <button @click.stop="fetchStats" :class="['absolute top-1.5 right-1.5 p-1 rounded-full transition', isCOE ? 'hover:bg-orange-200' : isSOM ? 'hover:bg-yellow-200' : isCNAHS ? 'hover:bg-yellow-200' : 'hover:bg-yellow-200']" title="Refresh">
-                <svg :class="['w-3 h-3', isCOE ? 'text-orange-500' : isSOM ? 'text-yellow-500' : isCNAHS ? 'text-yellow-500' : 'text-yellow-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <div class="relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-5 cursor-pointer group"
+              @click="toggleRfidList('unverified')">
+              <button @click.stop="fetchStats" class="absolute top-3 right-3 p-1.5 rounded-lg bg-gray-50 hover:bg-yellow-50 text-gray-300 hover:text-yellow-500 transition" title="Refresh">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               </button>
-              <div class="flex flex-col items-center gap-1 mb-2">
-                <svg :class="['w-5 h-5 sm:w-6 sm:h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-yellow-600' : isCNAHS ? 'text-yellow-600' : 'text-yellow-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span :class="['text-[10px] sm:text-xs font-semibold leading-tight', isCOE ? 'text-orange-700' : isSOM ? 'text-yellow-700' : isCNAHS ? 'text-yellow-700' : 'text-yellow-700']">Unverified</span>
+              <div class="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
-              <p :class="['text-xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-yellow-600' : isCNAHS ? 'text-yellow-600' : 'text-yellow-600']">{{ unverifiedCount }}</p>
-              <p :class="['text-[10px] sm:text-xs mt-1', isCOE ? 'text-orange-500' : isSOM ? 'text-yellow-500' : isCNAHS ? 'text-yellow-500' : 'text-yellow-500']">tap to view</p>
+              <p class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">{{ unverifiedCount }}</p>
+              <p class="text-sm text-gray-500 mt-2 font-medium">Unverified</p>
+              <p class="text-xs text-yellow-500 mt-2 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">View list →</p>
             </div>
+
             <!-- RFID Unreadable -->
-            <div :class="['relative rounded-lg p-3 sm:p-4 text-center cursor-pointer transition',
-                          isCOE ? 'bg-orange-50 border border-orange-200 hover:bg-orange-100' :
-                          isSOM ? 'bg-gray-50 border border-gray-200 hover:bg-gray-100' :
-                          isCNAHS ? 'bg-gray-50 border border-gray-200 hover:bg-gray-100' :
-                          'bg-gray-50 border border-gray-200 hover:bg-gray-100']" @click="toggleRfidList('unreadable')">
-              <button @click.stop="fetchStats" :class="['absolute top-1.5 right-1.5 p-1 rounded-full transition', isCOE ? 'hover:bg-orange-200' : isSOM ? 'hover:bg-gray-200' : isCNAHS ? 'hover:bg-gray-200' : 'hover:bg-gray-200']" title="Refresh">
-                <svg :class="['w-3 h-3', isCOE ? 'text-orange-500' : isSOM ? 'text-gray-500' : isCNAHS ? 'text-gray-500' : 'text-gray-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <div class="relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-5 cursor-pointer group"
+              @click="toggleRfidList('unreadable')">
+              <button @click.stop="fetchStats" class="absolute top-3 right-3 p-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 text-gray-300 hover:text-gray-500 transition" title="Refresh">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
               </button>
-              <div class="flex flex-col items-center gap-1 mb-2">
-                <svg :class="['w-5 h-5 sm:w-6 sm:h-6', isCOE ? 'text-orange-600' : isSOM ? 'text-gray-600' : isCNAHS ? 'text-gray-600' : 'text-gray-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <span :class="['text-[10px] sm:text-xs font-semibold leading-tight', isCOE ? 'text-orange-700' : isSOM ? 'text-gray-700' : isCNAHS ? 'text-gray-700' : 'text-gray-700']">Unreadable</span>
+              <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mb-3">
+                <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
-              <p :class="['text-xl sm:text-3xl font-bold', isCOE ? 'text-orange-600' : isSOM ? 'text-gray-600' : isCNAHS ? 'text-gray-600' : 'text-gray-600']">{{ unreadableCount }}</p>
-              <p :class="['text-[10px] sm:text-xs mt-1', isCOE ? 'text-orange-500' : isSOM ? 'text-gray-500' : isCNAHS ? 'text-gray-500' : 'text-gray-500']">tap to view</p>
+              <p class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">{{ unreadableCount }}</p>
+              <p class="text-sm text-gray-500 mt-2 font-medium">Unreadable</p>
+              <p class="text-xs text-gray-400 mt-2 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">View list →</p>
             </div>
           </div>
-          
+
+          <!-- RFID Detail List (expandable) -->
           <transition name="ssaam-rfid-list">
-          <div v-if="showRfidList" :class="['mt-6 bg-white rounded-lg p-4 border', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-200']">
+          <div v-if="showRfidList" :class="['bg-white rounded-2xl border shadow-sm p-5', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-100']">
             <div class="flex items-center justify-between mb-4">
-              <h4 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
-                {{ rfidListType === 'verified' ? 'Verified Users' : rfidListType === 'unverified' ? 'Unverified Users' : 'Unreadable Status Users' }}
-                <span class="text-sm font-normal text-gray-500 ml-2">({{ rfidListDisplayUsers.length }} of {{ rfidListFilteredUsers.length }})</span>
-              </h4>
-              <button @click="showRfidList = false" class="text-gray-500 hover:text-gray-700">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              <div>
+                <h4 :class="['text-base font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
+                  {{ rfidListType === 'verified' ? 'Verified Students' : rfidListType === 'unverified' ? 'Unverified Students' : 'Unreadable Status Students' }}
+                </h4>
+                <p class="text-xs text-gray-400 mt-0.5">{{ rfidListDisplayUsers.length }} of {{ rfidListFilteredUsers.length }} shown</p>
+              </div>
+              <button @click="showRfidList = false" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
               </button>
             </div>
-            
-            <!-- Filters -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-              <input v-model="rfidListSearch" type="text" placeholder="Search by name..." :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : isCNAHS ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']" />
-              <select v-model="rfidListFilterProgram" :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : isCNAHS ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
+              <input v-model="rfidListSearch" type="text" placeholder="Search by name…" :class="['px-3 py-2 border rounded-xl text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-500' : isCNAHS ? 'border-green-200 focus:ring-green-500' : 'border-gray-200 focus:ring-blue-500']" />
+              <select v-model="rfidListFilterProgram" :class="['px-3 py-2 border rounded-xl text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-500' : isCNAHS ? 'border-green-200 focus:ring-green-500' : 'border-gray-200 focus:ring-blue-500']">
                 <option value="">All Programs</option>
                 <option value="BSCS">BSCS</option>
                 <option value="BSIS">BSIS</option>
                 <option value="BSIT">BSIT</option>
               </select>
-              <select v-model="rfidListFilterYear" :class="['px-3 py-2 border rounded-lg text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-300 focus:ring-orange-600' : isSOM ? 'border-green-300 focus:ring-green-600' : isCNAHS ? 'border-green-300 focus:ring-green-600' : 'border-gray-300 focus:ring-blue-600']">
+              <select v-model="rfidListFilterYear" :class="['px-3 py-2 border rounded-xl text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-500' : isCNAHS ? 'border-green-200 focus:ring-green-500' : 'border-gray-200 focus:ring-blue-500']">
                 <option value="">All Year Levels</option>
                 <option value="1st Year">1st Year</option>
                 <option value="2nd Year">2nd Year</option>
@@ -4318,119 +4299,175 @@
                 <option value="4th Year">4th Year</option>
               </select>
             </div>
-            
-            <div v-if="rfidListLoading" class="flex items-center justify-center py-8">
-              <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
+            <div v-if="rfidListLoading" class="flex items-center justify-center py-10">
+              <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
             </div>
-            <div v-else-if="rfidListFilteredUsers.length === 0" class="text-center text-gray-500 py-8">
-              No users found in this category.
-            </div>
-            <div v-else class="max-h-96 overflow-x-auto overflow-y-auto">
+            <div v-else-if="rfidListFilteredUsers.length === 0" class="text-center text-gray-400 py-10 text-sm">No students found in this category.</div>
+            <div v-else class="max-h-96 overflow-x-auto overflow-y-auto rounded-xl border border-gray-100">
               <table class="w-full text-sm min-w-[560px]">
                 <thead :class="['sticky top-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
                   <tr>
-                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Student ID</th>
-                    <th :class="['text-left px-3 py-2 font-medium cursor-pointer', isCOE ? 'text-orange-900 hover:text-orange-700' : isSOM ? 'text-green-900 hover:text-green-700' : isCNAHS ? 'text-green-900 hover:text-green-700' : 'text-blue-900 hover:text-blue-700']" @click="toggleRfidListSort">
-                      Name
-                      <span v-if="rfidListSortAsc">↑</span>
-                      <span v-else>↓</span>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">Student ID</th>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider cursor-pointer', isCOE ? 'text-orange-700 hover:text-orange-900' : isSOM ? 'text-green-700 hover:text-green-900' : isCNAHS ? 'text-green-700 hover:text-green-900' : 'text-blue-700 hover:text-blue-900']" @click="toggleRfidListSort">
+                      Name <span>{{ rfidListSortAsc ? '↑' : '↓' }}</span>
                     </th>
-                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Program</th>
-                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Year</th>
-                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">RFID Code</th>
-                    <th :class="['text-left px-3 py-2 font-medium', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Status</th>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">Program</th>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">Year</th>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">RFID Code</th>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">Status</th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody class="divide-y divide-gray-50 bg-white">
                   <tr v-for="(user, idx) in rfidListDisplayUsers" :key="user.student_id"
-                    class="hover:bg-gray-50 ssaam-row-anim"
+                    class="hover:bg-gray-50/80 ssaam-row-anim transition-colors"
                     :style="{ animationDelay: Math.min(idx * 30, 600) + 'ms' }">
-                    <td class="px-3 py-2 text-gray-700">{{ user.student_id }}</td>
-                    <td class="px-3 py-2 text-gray-700">{{ user.full_name || `${user.first_name} ${user.last_name}` }}</td>
-                    <td class="px-3 py-2 text-gray-700">{{ user.program }}</td>
-                    <td class="px-3 py-2 text-gray-700">{{ user.year_level }}</td>
-                    <td class="px-3 py-2 text-gray-700">{{ user.rfid_code || 'N/A' }}</td>
-                    <td class="px-3 py-2">
-                      <span :class="['px-2 py-1 rounded-full text-xs font-medium', 
-                        user.rfid_status === 'verified' ? 'bg-green-100 text-green-800' : 
-                        user.rfid_status === 'unverified' ? 'bg-yellow-100 text-yellow-800' : 
-                        'bg-gray-100 text-gray-800']">
+                    <td class="px-4 py-3 text-gray-600 text-xs font-mono">{{ user.student_id }}</td>
+                    <td class="px-4 py-3 text-gray-900 font-medium">{{ user.full_name || `${user.first_name} ${user.last_name}` }}</td>
+                    <td class="px-4 py-3 text-gray-500">{{ user.program }}</td>
+                    <td class="px-4 py-3 text-gray-500">{{ user.year_level }}</td>
+                    <td class="px-4 py-3 text-gray-500 font-mono text-xs">{{ user.rfid_code || 'N/A' }}</td>
+                    <td class="px-4 py-3">
+                      <span :class="['px-2.5 py-1 rounded-full text-xs font-semibold',
+                        user.rfid_status === 'verified' ? 'bg-green-100 text-green-700' :
+                        user.rfid_status === 'unverified' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-gray-100 text-gray-600']">
                         {{ user.rfid_status === 'verified' ? 'Verified' : user.rfid_status === 'unverified' ? 'Unverified' : 'Unreadable' }}
                       </span>
                     </td>
                   </tr>
                 </tbody>
               </table>
-              
-              <!-- Load More Button -->
-              <div v-if="rfidListDisplayUsers.length < rfidListFilteredUsers.length" class="mt-4 text-center">
-                <button @click="loadMoreRfidUsers" :class="['px-6 py-2 rounded-lg transition font-medium text-sm', isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200' : isCNAHS ? 'bg-green-100 text-green-700 hover:bg-green-200' : 'bg-blue-100 text-blue-700 hover:bg-blue-200']">
-                  Load More ({{ rfidListFilteredUsers.length - rfidListDisplayUsers.length }} remaining)
+              <div v-if="rfidListDisplayUsers.length < rfidListFilteredUsers.length" class="p-4 text-center border-t border-gray-100">
+                <button @click="loadMoreRfidUsers" :class="['px-6 py-2 rounded-xl transition font-semibold text-sm', isCOE ? 'bg-orange-50 text-orange-700 hover:bg-orange-100' : isSOM ? 'bg-green-50 text-green-700 hover:bg-green-100' : isCNAHS ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-blue-50 text-blue-700 hover:bg-blue-100']">
+                  Load {{ rfidListFilteredUsers.length - rfidListDisplayUsers.length }} more
                 </button>
               </div>
             </div>
           </div>
           </transition>
+
+          <!-- Enrolled Students by Program -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <!-- Card Header -->
+            <div class="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-50">
+              <div class="flex items-center gap-3">
+                <div :class="['w-9 h-9 rounded-xl flex items-center justify-center',
+                  isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                  <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-gray-900">Registered Students</h3>
+                  <p class="text-xs text-gray-400">By year level and program</p>
+                </div>
+              </div>
+              <!-- College Tabs (Master Admin only) -->
+              <div v-if="currentUser.isMaster && !isCoAdmin && !isTreasurer" class="flex flex-wrap gap-1.5">
+                <button @click="statsViewCollege = null" :class="['px-3 py-1 rounded-lg text-xs font-semibold transition-all', statsViewCollege === null ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-gray-200']">All</button>
+                <button @click="statsViewCollege = 'CCS'" :class="['px-3 py-1 rounded-lg text-xs font-semibold transition-all', statsViewCollege === 'CCS' ? 'bg-blue-600 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-gray-200']">CCS</button>
+                <button @click="statsViewCollege = 'COE'" :class="['px-3 py-1 rounded-lg text-xs font-semibold transition-all', statsViewCollege === 'COE' ? 'bg-orange-500 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-gray-200']">COE</button>
+                <button @click="statsViewCollege = 'SOM'" :class="['px-3 py-1 rounded-lg text-xs font-semibold transition-all', statsViewCollege === 'SOM' ? 'bg-green-600 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-gray-200']">SOM</button>
+                <button @click="statsViewCollege = 'CNAHS'" :class="['px-3 py-1 rounded-lg text-xs font-semibold transition-all', statsViewCollege === 'CNAHS' ? 'bg-teal-600 text-white shadow-sm' : 'bg-gray-100 text-gray-500 hover:bg-gray-200']">CNAHS</button>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div v-if="!currentUser.isMaster || statsViewCollege !== null || isCoAdmin || isTreasurer" class="overflow-x-auto">
+              <p class="sm:hidden text-[10px] text-gray-300 mb-0 flex items-center justify-end gap-1 px-5 pt-3">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                Swipe to see all
+              </p>
+              <table class="w-full min-w-[380px] text-sm">
+                <thead>
+                  <tr :class="['border-b border-gray-100', themeColors.headerBg]">
+                    <th :class="['px-5 py-3 text-left font-semibold text-xs uppercase tracking-wider', themeColors.headerText]">Year Level</th>
+                    <th v-for="prog in displayPrograms" :key="prog" :class="['px-5 py-3 text-center font-semibold text-xs uppercase tracking-wider', themeColors.headerText]">{{ prog }}</th>
+                    <th :class="['px-5 py-3 text-center font-semibold text-xs uppercase tracking-wider', themeColors.headerText]">Total</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                  <tr v-for="year in ['1st Year', '2nd Year', '3rd Year', '4th Year']" :key="year" class="hover:bg-gray-50/60 transition-colors">
+                    <td class="px-5 py-4 font-medium text-gray-700 capitalize">{{ year.toLowerCase().replace('year', 'years') }}</td>
+                    <td v-for="prog in displayPrograms" :key="prog" class="px-5 py-4 text-center text-gray-600">{{ displayStats[prog]?.[year] || 0 }}</td>
+                    <td :class="['px-5 py-4 text-center font-bold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">{{ displayPrograms.reduce((sum, prog) => sum + (displayStats[prog]?.[year] || 0), 0) }}</td>
+                  </tr>
+                  <tr :class="['border-t-2', isCOE ? 'border-orange-100 bg-orange-50/40' : isSOM ? 'border-green-100 bg-green-50/40' : isCNAHS ? 'border-green-100 bg-green-50/40' : 'border-blue-100 bg-blue-50/40']">
+                    <td class="px-5 py-4 font-bold text-gray-900 text-sm">All year levels</td>
+                    <td v-for="prog in displayPrograms" :key="prog" class="px-5 py-4 text-center font-semibold text-gray-700">{{ displayStats[prog]?.total || 0 }}</td>
+                    <td :class="['px-5 py-4 text-center font-extrabold text-base', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">{{ displayTotal }}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- No table state for master admin on "All" tab -->
+            <div v-else class="px-5 py-8 text-center text-sm text-gray-400">
+              Select a college tab above to view its breakdown.
+            </div>
           </div>
 
-          <!-- Quick Actions: Create Event -->
-          <div class="px-4 pb-4 sm:px-6 md:px-8 md:pb-6 border-t border-gray-100 pt-4">
+          <!-- Quick Actions -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
             <div class="flex items-center gap-2 mb-4">
-              <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-6 rounded-full']"></div>
-              <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Quick Actions</h3>
+              <div :class="['w-1 h-5 rounded-full', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']"></div>
+              <h3 class="text-sm font-bold text-gray-900 uppercase tracking-widest">Quick Actions</h3>
             </div>
-            <div class="grid grid-cols-2 lg:grid-cols-3 gap-3">
-              <!-- Create Event Card -->
-              <button @click="openCreateEventModal" :class="['group relative overflow-hidden rounded-2xl border-2 p-5 text-left transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-95',
-                isCOE ? 'border-orange-100 bg-orange-50 hover:border-orange-300' :
-                isSOM ? 'border-green-100 bg-green-50 hover:border-green-300' :
-                isCNAHS ? 'border-green-100 bg-green-50 hover:border-green-300' :
-                'border-blue-100 bg-blue-50 hover:border-blue-300']">
-                <div :class="['absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity', isCOE ? 'bg-gradient-to-br from-orange-100/60 to-transparent' : isSOM ? 'bg-gradient-to-br from-green-100/60 to-transparent' : isCNAHS ? 'bg-gradient-to-br from-green-100/60 to-transparent' : 'bg-gradient-to-br from-blue-100/60 to-transparent']"></div>
-                <div class="relative">
-                  <div :class="['w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-sm', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  </div>
-                  <p :class="['font-bold text-gray-900 mb-0.5']">Create Event</p>
-                  <p class="text-xs text-gray-500">Schedule a new attendance event with sessions</p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <!-- Create Event -->
+              <button @click="openCreateEventModal"
+                :class="['group flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-95',
+                  isCOE ? 'border-orange-100 hover:border-orange-200 bg-orange-50/40 hover:bg-orange-50' :
+                  isSOM ? 'border-green-100 hover:border-green-200 bg-green-50/40 hover:bg-green-50' :
+                  isCNAHS ? 'border-green-100 hover:border-green-200 bg-green-50/40 hover:bg-green-50' :
+                  'border-blue-100 hover:border-blue-200 bg-blue-50/40 hover:bg-blue-50']">
+                <div :class="['w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm',
+                  isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                </div>
+                <div>
+                  <p class="font-bold text-gray-900 text-sm">Create Event</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Schedule attendance event</p>
                 </div>
               </button>
-              <!-- Go to Attendance -->
-              <button @click="currentPage = 'attendance'; fetchAttendanceData()" :class="['group relative overflow-hidden rounded-2xl border-2 p-5 text-left transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-95',
-                isCOE ? 'border-orange-100 bg-orange-50 hover:border-orange-300' :
-                isSOM ? 'border-green-100 bg-green-50 hover:border-green-300' :
-                isCNAHS ? 'border-green-100 bg-green-50 hover:border-green-300' :
-                'border-blue-100 bg-blue-50 hover:border-blue-300']">
-                <div :class="['absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity', isCOE ? 'bg-gradient-to-br from-orange-100/60 to-transparent' : isSOM ? 'bg-gradient-to-br from-green-100/60 to-transparent' : isCNAHS ? 'bg-gradient-to-br from-green-100/60 to-transparent' : 'bg-gradient-to-br from-blue-100/60 to-transparent']"></div>
-                <div class="relative">
-                  <div :class="['w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-sm', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                  </div>
-                  <p class="font-bold text-gray-900 mb-0.5">Manage Attendance</p>
-                  <p class="text-xs text-gray-500">View events, sessions, and attendance logs</p>
+              <!-- Manage Attendance -->
+              <button @click="currentPage = 'attendance'; fetchAttendanceData()"
+                :class="['group flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-95',
+                  isCOE ? 'border-orange-100 hover:border-orange-200 bg-orange-50/40 hover:bg-orange-50' :
+                  isSOM ? 'border-green-100 hover:border-green-200 bg-green-50/40 hover:bg-green-50' :
+                  isCNAHS ? 'border-green-100 hover:border-green-200 bg-green-50/40 hover:bg-green-50' :
+                  'border-blue-100 hover:border-blue-200 bg-blue-50/40 hover:bg-blue-50']">
+                <div :class="['w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm',
+                  isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                </div>
+                <div>
+                  <p class="font-bold text-gray-900 text-sm">Manage Attendance</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Events, sessions &amp; logs</p>
                 </div>
               </button>
-              <!-- Go to Contributions -->
-              <button @click="currentPage = 'contributions'" :class="['group relative overflow-hidden rounded-2xl border-2 p-5 text-left transition-all hover:shadow-lg hover:-translate-y-0.5 active:scale-95',
-                isCOE ? 'border-orange-100 bg-orange-50 hover:border-orange-300' :
-                isSOM ? 'border-green-100 bg-green-50 hover:border-green-300' :
-                isCNAHS ? 'border-green-100 bg-green-50 hover:border-green-300' :
-                'border-blue-100 bg-blue-50 hover:border-blue-300']">
-                <div :class="['absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity', isCOE ? 'bg-gradient-to-br from-orange-100/60 to-transparent' : isSOM ? 'bg-gradient-to-br from-green-100/60 to-transparent' : isCNAHS ? 'bg-gradient-to-br from-green-100/60 to-transparent' : 'bg-gradient-to-br from-blue-100/60 to-transparent']"></div>
-                <div class="relative">
-                  <div :class="['w-10 h-10 rounded-xl flex items-center justify-center mb-3 shadow-sm', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                  </div>
-                  <p class="font-bold text-gray-900 mb-0.5">Contributions</p>
-                  <p class="text-xs text-gray-500">Track and manage student payment records</p>
+              <!-- Contributions -->
+              <button @click="currentPage = 'contributions'"
+                :class="['group flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all hover:shadow-md hover:-translate-y-0.5 active:scale-95',
+                  isCOE ? 'border-orange-100 hover:border-orange-200 bg-orange-50/40 hover:bg-orange-50' :
+                  isSOM ? 'border-green-100 hover:border-green-200 bg-green-50/40 hover:bg-green-50' :
+                  isCNAHS ? 'border-green-100 hover:border-green-200 bg-green-50/40 hover:bg-green-50' :
+                  'border-blue-100 hover:border-blue-200 bg-blue-50/40 hover:bg-blue-50']">
+                <div :class="['w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm',
+                  isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']">
+                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <div>
+                  <p class="font-bold text-gray-900 text-sm">Contributions</p>
+                  <p class="text-xs text-gray-400 mt-0.5">Student payment records</p>
                 </div>
               </button>
             </div>
           </div>
+
         </div>
+        <!-- ── End Admin Statistics Dashboard ─────────────────────────────────── -->
 
         <!-- All Colleges Statistics (Master Admin Only) -->
         <div v-if="currentPage === 'dashboard' && currentUser.isMaster && !isCoAdmin && !isTreasurer" class="mt-6">
@@ -11555,6 +11592,13 @@ const displayName = computed(() => {
     return `${firstName} ${lastName}`
   }
   return currentUser.value.name || 'User'
+})
+
+const timeGreeting = computed(() => {
+  const h = new Date().getHours()
+  if (h < 12) return { label: 'Good morning', phrase: 'Good morning!' }
+  if (h < 17) return { label: 'Good afternoon', phrase: 'Good afternoon!' }
+  return { label: 'Good evening', phrase: 'Good evening!' }
 })
 
 const userDepartmentLogo = computed(() => {
