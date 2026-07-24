@@ -3822,14 +3822,15 @@ app.post('/apis/students/arms-verify', studentAuth, async (req, res) => {
         }
 
         // Check if Student ID is already registered in SSAAM
-        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-        const existing = await StudentModel.findOne({ student_id });
-        if (existing) {
-            return res.status(409).json({
-                message: "This Student ID is already registered in SSAAM. Please log in instead.",
-                alreadyRegistered: true
-            });
-        }
+        // NOTE: temporarily disabled for ARMS testing — re-enable before going live
+        // const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        // const existing = await StudentModel.findOne({ student_id });
+        // if (existing) {
+        //     return res.status(409).json({
+        //         message: "This Student ID is already registered in SSAAM. Please log in instead.",
+        //         alreadyRegistered: true
+        //     });
+        // }
 
         const armsApiKey    = process.env.ARMS_API_KEY;
         const armsApiSecret = process.env.ARMS_API_SECRET;
