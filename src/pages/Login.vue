@@ -477,7 +477,7 @@
   <!-- Desktop Layout -->
   <div class="hidden md:flex min-h-screen w-full relative" style="background: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%), linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 100%), url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;">
     <!-- Left: image panel -->
-    <div class="w-2/5 desktop-bg-panel flex-shrink-0 relative">
+    <div class="desktop-bg-panel flex-shrink-0 relative" style="width:calc(40% + 60px);">
       <ParticleBackground />
       <!-- Centered CCS logo -->
       <div class="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
@@ -526,9 +526,6 @@
         <path d="M60,0 C140,200 -20,600 60,800 L120,800 L120,0 Z" fill="white" filter="url(#wave-shadow)"/>
       </svg>
     </div>
-
-    <!-- Spacer: right half of wave (60px), shows outer landscape behind transparent SVG -->
-    <div class="flex-shrink-0" style="width:60px;"></div>
 
     <!-- Right: login form -->
     <div class="flex-1 flex items-center justify-center bg-white">
