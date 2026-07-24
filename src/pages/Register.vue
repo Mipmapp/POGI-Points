@@ -1042,7 +1042,7 @@
           </div>
         </form>
 
-        <div class="mt-5 flex justify-between items-center text-sm text-gray-500">
+        <div class="mt-5 flex justify-center items-center text-sm text-gray-500">
           <span>Already have an account?
             <button @click="goToLogin" class="text-indigo-500 hover:text-indigo-700 font-semibold ml-1 transition">Log In</button>
           </span>
