@@ -6615,7 +6615,7 @@
           <!-- Install SSAAM App -->
           <div class="rounded-2xl overflow-hidden border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
             <div class="px-4 pt-3.5 pb-2.5 flex items-center gap-3 border-b border-green-100">
-              <img :src="'/assets/app_icon.png'" alt="SSAAM" class="w-9 h-9 rounded-xl shadow-sm flex-shrink-0 object-cover" />
+              <img :src="'/img/app_icon.png'" alt="SSAAM" class="w-9 h-9 rounded-xl shadow-sm flex-shrink-0 object-cover" />
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-bold text-green-900 leading-tight">Install SSAAM App</p>
                 <p class="text-[10px] text-green-700 mt-0.5">Get the native experience on your phone</p>

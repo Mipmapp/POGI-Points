@@ -130,7 +130,7 @@
       </div>
       <!-- Top-left SSAAM branding -->
       <div class="absolute top-8 left-8 z-20 flex items-center gap-2.5">
-        <img :src="'/assets/ssaam_icon.png'" alt="SSAAM" class="w-9 h-9 rounded-xl object-cover shadow-md" />
+        <img :src="'/img/ssaam_icon.png'" alt="SSAAM" class="w-9 h-9 rounded-xl object-cover shadow-md" />
         <span class="text-white font-bold text-xl tracking-wide">SSAAM</span>
       </div>
       <!-- Bottom quote -->

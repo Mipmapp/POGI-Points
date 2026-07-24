@@ -201,7 +201,7 @@
 
 <script>
 // Logo is served by Vite from `public/assets/` at the root URL.
-const CCS_LOGO_URL = '/assets/ccs_logo.png';
+const CCS_LOGO_URL = '/img/ccs_logo.png';
 
 const SETTINGS_KEY = 'ssaam_pos_receipt_v2';
 const BT_LAST_DEVICE_KEY = 'ssaam_pos_bt_last_device';

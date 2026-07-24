@@ -83,7 +83,7 @@
             <!-- Install SSAAM App -->
             <div class="rounded-2xl overflow-hidden border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
               <div class="px-6 pt-5 pb-4 flex items-center gap-4">
-                <img :src="'/assets/app_icon.png'" alt="SSAAM" class="w-14 h-14 rounded-2xl shadow-sm flex-shrink-0 object-cover" />
+                <img :src="'/img/app_icon.png'" alt="SSAAM" class="w-14 h-14 rounded-2xl shadow-sm flex-shrink-0 object-cover" />
                 <div class="flex-1 min-w-0">
                   <div class="flex items-center gap-2 mb-0.5">
                     <p class="text-sm font-bold text-green-900 leading-tight">Install SSAAM App</p>
@@ -491,7 +491,7 @@
       </div>
       <!-- Top-left SSAAM branding -->
       <div class="absolute top-8 left-8 z-20 flex items-center gap-2.5">
-        <img :src="'/assets/ssaam_icon.png'" alt="SSAAM" class="w-9 h-9 rounded-xl object-cover shadow-md" />
+        <img :src="'/img/ssaam_icon.png'" alt="SSAAM" class="w-9 h-9 rounded-xl object-cover shadow-md" />
         <span class="text-white font-bold text-xl tracking-wide">SSAAM</span>
       </div>
       <!-- Bottom quote -->
@@ -585,7 +585,7 @@
         </form>
 
         <!-- OR divider -->
-        <div class="flex items-center gap-3 my-5">
+        <div class="flex items-center gap-3 mt-4 mb-3">
           <div class="flex-1 h-px bg-gray-200"></div>
           <span class="text-xs text-gray-400 font-medium">OR</span>
           <div class="flex-1 h-px bg-gray-200"></div>
@@ -622,7 +622,7 @@
     <!-- Branding header -->
     <div class="text-white pt-12 pb-8 px-6 relative z-10">
       <div class="flex items-center gap-3 mb-8">
-        <img :src="'/assets/ssaam_icon.png'" alt="SSAAM" class="w-10 h-10 rounded-2xl object-cover shadow-md" />
+        <img :src="'/img/ssaam_icon.png'" alt="SSAAM" class="w-10 h-10 rounded-2xl object-cover shadow-md" />
         <span class="text-white font-bold text-2xl tracking-wide">SSAAM</span>
       </div>
       <h1 class="text-3xl font-bold leading-tight mb-2">Welcome back!</h1>
@@ -682,7 +682,7 @@
         </form>
 
         <!-- OR divider -->
-        <div class="flex items-center gap-3 my-5">
+        <div class="flex items-center gap-3 mt-4 mb-3">
           <div class="flex-1 h-px bg-gray-200"></div>
           <span class="text-xs text-gray-400 font-medium">OR</span>
           <div class="flex-1 h-px bg-gray-200"></div>
