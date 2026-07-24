@@ -475,7 +475,7 @@
 
   <ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" theme="" @complete="handleLoadingComplete" />
   <!-- Desktop Layout -->
-  <div class="hidden md:flex min-h-screen w-full relative desktop-bg-panel">
+  <div class="hidden md:flex min-h-screen w-full relative" style="background: radial-gradient(ellipse at center, rgba(0,0,0,0) 40%, rgba(0,0,0,0.65) 100%), linear-gradient(to bottom, rgba(0,0,0,0.28) 0%, rgba(0,0,0,0.55) 100%), url('/jrmsu-landscape.jpg') center 35% / cover no-repeat;">
     <!-- Left: image panel -->
     <div class="w-2/5 desktop-bg-panel flex-shrink-0 relative">
       <ParticleBackground />
