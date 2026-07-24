@@ -475,7 +475,7 @@
 
   <ProgrammerLoadingEffect :visible="isLoading" message="AUTHENTICATING" theme="" @complete="handleLoadingComplete" />
   <!-- Desktop Layout -->
-  <div class="hidden md:flex min-h-screen bg-white w-full relative">
+  <div class="hidden md:flex min-h-screen w-full relative desktop-bg-panel">
     <!-- Left: image panel -->
     <div class="w-2/5 desktop-bg-panel flex-shrink-0 relative">
       <ParticleBackground />
