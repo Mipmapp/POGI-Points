@@ -135,7 +135,17 @@
       </div>
       <!-- Bottom quote -->
       <div class="absolute bottom-12 left-8 right-8 z-20">
-        <p class="text-white text-2xl font-bold leading-snug mb-4">"Attendance made simple, for every student."</p>
+        <!-- Accent label -->
+        <div class="flex items-center gap-2 mb-3">
+          <span class="block w-6 h-px bg-indigo-400 opacity-80"></span>
+          <span class="text-indigo-300 text-[10px] font-semibold uppercase tracking-[0.2em] opacity-90">Official System</span>
+        </div>
+        <!-- Title block -->
+        <div class="border-l-2 border-indigo-400 pl-3.5 mb-4">
+          <p class="text-white/60 text-xs font-medium uppercase tracking-widest leading-none mb-1">Student School Activities</p>
+          <p class="text-white text-3xl font-extrabold leading-tight tracking-tight">Attendance</p>
+          <p class="text-indigo-300 text-3xl font-extrabold leading-tight tracking-tight">Monitoring</p>
+        </div>
         <p class="text-white font-semibold text-sm">Jose Rizal Memorial State University</p>
         <p class="text-white/70 text-xs mt-0.5">College of Computing Studies</p>
       </div>
