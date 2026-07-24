@@ -117,7 +117,7 @@
     </div>
   </div>
 
-  <div class="hidden md:flex min-h-screen bg-white">
+  <div class="hidden md:flex min-h-screen bg-white relative">
     <div class="desktop-bg-panel relative flex-shrink-0">
       <ParticleBackground />
       <!-- CCS logo with glow rings -->
@@ -153,6 +153,18 @@
         Copyright © 2026 Powered by CCS-Creatives Committee.
       </div>
     </div>
+    <!-- Gentle S-wave divider -->
+    <div class="absolute top-0 bottom-0 z-40 pointer-events-none" style="left:40%;transform:translateX(-50%);width:72px;">
+      <svg class="h-full w-full" viewBox="0 0 72 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M36,0 C72,200 0,600 36,800 L72,800 L72,0 Z" fill="white" filter="url(#wave-shadow-r)"/>
+        <defs>
+          <filter id="wave-shadow-r" x="-20%" y="0%" width="140%" height="100%">
+            <feDropShadow dx="-4" dy="0" stdDeviation="6" flood-color="rgba(0,0,0,0.18)"/>
+          </filter>
+        </defs>
+      </svg>
+    </div>
+
     <div class="w-3/5 flex items-center justify-center bg-white">
       <div class="w-full max-w-sm px-6">
         <div class="mb-8">
