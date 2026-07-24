@@ -2985,20 +2985,20 @@ async function sendPasswordResetEmail(toEmail, code, studentName) {
         subject: "SSAAM Password Reset Code",
         html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                    <div style="background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
-                        <h1 style="color: white; margin: 0;">SSAAM</h1>
-                        <p style="color: white; opacity: 0.9; margin: 5px 0 0 0;">Student School Activities Attendance Monitoring</p>
+                    <div style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+                        <h1 style="color: white; margin: 0; font-family: Arial, sans-serif; font-size: 28px; letter-spacing: 2px;">SSAAM</h1>
+                        <p style="color: rgba(255,255,255,0.85); margin: 6px 0 0 0; font-size: 13px;">Student School Activities Attendance Monitoring</p>
                     </div>
-                    <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; border: 1px solid #e5e7eb; border-top: none;">
-                        <h2 style="color: #1f2937; margin-top: 0;">Hello ${sanitizeHtml(studentName)}!</h2>
-                        <p style="color: #4b5563;">You requested a password reset. Your verification code is:</p>
-                        <div style="background: white; border: 2px solid #ef4444; border-radius: 10px; padding: 20px; text-align: center; margin: 20px 0;">
-                            <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #ef4444;">${code}</span>
+                    <div style="background: #ffffff; padding: 32px 30px; border-radius: 0 0 10px 10px; border: 1px solid #dbeafe; border-top: none;">
+                        <h2 style="color: #1e3a8a; margin-top: 0; font-size: 20px;">Hello ${sanitizeHtml(studentName)}!</h2>
+                        <p style="color: #4b5563; margin-bottom: 8px;">You requested a password reset. Your verification code is:</p>
+                        <div style="background: #eff6ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 24px 20px; text-align: center; margin: 20px 0;">
+                            <span style="font-size: 36px; font-weight: bold; letter-spacing: 10px; color: #1d4ed8; font-family: 'Courier New', monospace;">${code}</span>
                         </div>
-                        <p style="color: #4b5563;">This code will expire in <strong>15 minutes</strong>.</p>
-                        <p style="color: #6b7280; font-size: 14px;">If you didn't request this password reset, please ignore this email. Your account remains secure.</p>
-                        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 20px 0;">
-                        <p style="color: #9ca3af; font-size: 12px; text-align: center;">Powered by CCS - Creatives Committee</p>
+                        <p style="color: #4b5563;">This code will expire in <strong style="color: #1d4ed8;">15 minutes</strong>.</p>
+                        <p style="color: #6b7280; font-size: 13px;">If you didn't request this password reset, please ignore this email. Your account remains secure.</p>
+                        <hr style="border: none; border-top: 1px solid #dbeafe; margin: 20px 0;">
+                        <p style="color: #93c5fd; font-size: 12px; text-align: center;">Powered by CCS - Creatives Committee</p>
                     </div>
                 </div>
             `

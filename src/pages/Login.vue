@@ -779,10 +779,24 @@
                 <svg class="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                 <p class="text-sm text-blue-700 leading-relaxed">Enter the 6-digit verification code sent to your email.</p>
               </div>
-              <div class="space-y-1.5">
-                <label class="block text-sm font-semibold text-gray-700">Verification Code</label>
-                <input v-model="resetCode" type="text" placeholder="123456" maxlength="6"
-                  class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none text-center text-2xl tracking-widest transition text-gray-800 placeholder-gray-300" />
+              <div class="space-y-2">
+                <label class="block text-sm font-semibold text-gray-700 text-center">Verification Code</label>
+                <p class="text-xs text-blue-500 font-medium text-center">Copy the code from your email and paste it here</p>
+                <div class="flex justify-center gap-2 sm:gap-3 mt-1">
+                  <input
+                    v-for="(digit, i) in resetCodeDigits"
+                    :key="i"
+                    :ref="el => { if (el) resetCodeInputRefs[i] = el }"
+                    v-model="resetCodeDigits[i]"
+                    @input="handleResetDigitInput(i)"
+                    @keydown="handleResetDigitKeydown($event, i)"
+                    @paste.prevent="handleResetCodePaste($event)"
+                    type="text"
+                    inputmode="numeric"
+                    maxlength="1"
+                    class="w-10 h-12 sm:w-12 sm:h-14 border-2 border-blue-200 rounded-xl text-center text-xl font-bold focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none transition-all bg-white text-gray-800 caret-transparent"
+                  />
+                </div>
               </div>
               <button @click="verifyResetCode" :disabled="resetLoading || resetCode.length !== 6"
                 class="w-full bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white py-3 px-6 rounded-xl font-semibold shadow-sm hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none flex items-center justify-center gap-2">
@@ -990,12 +1004,45 @@ const resetDirection = ref('forward')
 const resetStudentId = ref('')
 const resetEmail = ref('')
 const resetCode = ref('')
+const resetCodeDigits = ref(['', '', '', '', '', ''])
+const resetCodeInputRefs = ref([])
 const resetToken = ref('')
 const newPassword = ref('')
 const confirmNewPassword = ref('')
 const resetLoading = ref(false)
 const resetMessage = ref('')
 const resetSuccess = ref(false)
+
+// Sync digit boxes → resetCode
+watch(resetCodeDigits, (digits) => {
+  resetCode.value = digits.join('')
+}, { deep: true })
+
+const handleResetDigitInput = (i) => {
+  const raw = resetCodeDigits.value[i].replace(/\D/g, '')
+  resetCodeDigits.value[i] = raw ? raw[0] : ''
+  if (raw && i < 5) {
+    nextTick(() => resetCodeInputRefs.value[i + 1]?.focus())
+  }
+  if (resetCodeDigits.value.join('').length === 6 && !resetLoading.value) {
+    verifyResetCode()
+  }
+}
+
+const handleResetDigitKeydown = (e, i) => {
+  if (e.key === 'Backspace' && !resetCodeDigits.value[i] && i > 0) {
+    nextTick(() => resetCodeInputRefs.value[i - 1]?.focus())
+  }
+  if (e.key === 'ArrowLeft' && i > 0) resetCodeInputRefs.value[i - 1]?.focus()
+  if (e.key === 'ArrowRight' && i < 5) resetCodeInputRefs.value[i + 1]?.focus()
+}
+
+const handleResetCodePaste = (e) => {
+  const text = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '').slice(0, 6)
+  text.split('').forEach((ch, idx) => { resetCodeDigits.value[idx] = ch })
+  const next = Math.min(text.length, 5)
+  nextTick(() => resetCodeInputRefs.value[next]?.focus())
+}
 
 const apiFallbackUsed = ref(false)
 
@@ -1007,6 +1054,7 @@ const closeForgotPasswordModal = () => {
   resetStudentId.value = ''
   resetEmail.value = ''
   resetCode.value = ''
+  resetCodeDigits.value = ['', '', '', '', '', '']
   resetToken.value = ''
   newPassword.value = ''
   confirmNewPassword.value = ''
