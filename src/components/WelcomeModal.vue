@@ -5,109 +5,90 @@
       class="fixed inset-0 z-[120] flex items-end sm:items-center justify-center p-0 sm:p-4"
       style="background: rgba(8,14,46,0.82); backdrop-filter: blur(8px);"
     >
-      <div class="welcome-card bg-white w-full sm:max-w-lg sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl flex flex-col" style="max-height: 92vh;">
+      <div class="welcome-card bg-white w-full sm:max-w-xl sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl flex flex-col" style="max-height: 92vh;">
 
-        <!-- SSAAM Banner Image -->
-        <div class="relative flex-shrink-0 overflow-hidden bg-[#080e2e]" style="aspect-ratio: 16/7; min-height: 140px;">
-          <img
-            :src="'/img/ssaam_popup.png'"
-            alt="SSAAM — Student School Activities Attendance Monitoring"
-            class="w-full h-full object-cover"
-            draggable="false"
-          />
-          <div class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#080e2e] to-transparent pointer-events-none"></div>
-          <div class="absolute bottom-0 inset-x-0 px-4 pb-3 flex items-end justify-between">
-            <div>
-              <p class="text-white/60 text-[9px] font-semibold tracking-widest uppercase leading-none mb-0.5">Welcome to</p>
-              <h2 class="text-white text-xl sm:text-2xl font-black leading-none tracking-tight drop-shadow-md">SSAAM</h2>
-              <p class="text-white/60 text-[10px] leading-tight mt-0.5">Student School Activities Attendance Monitoring</p>
+        <!-- Header -->
+        <div class="flex-shrink-0 bg-gradient-to-br from-[#080e2e] via-[#0f2080] to-[#1a4abf] px-5 py-5">
+          <div class="flex items-center gap-3 mb-3">
+            <div class="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+              </svg>
             </div>
-            <span class="text-[9px] bg-white/10 text-white/70 border border-white/20 rounded-full px-2 py-0.5 font-semibold backdrop-blur-sm whitespace-nowrap self-end">CCS</span>
+            <div>
+              <p class="text-white/50 text-[10px] font-bold uppercase tracking-widest leading-none mb-0.5">SSAAM — CCS</p>
+              <h2 class="text-white text-lg font-extrabold leading-tight tracking-tight">Terms &amp; Conditions</h2>
+            </div>
           </div>
-        </div>
-
-        <!-- Sub-header strip -->
-        <div class="flex-shrink-0 bg-gradient-to-r from-[#080e2e] to-[#0f2080] px-4 py-2.5 flex items-center gap-2">
-          <svg class="w-3.5 h-3.5 text-blue-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-          </svg>
-          <p class="text-white/75 text-[11px] leading-relaxed">
-            Please review and agree to our Terms &amp; Conditions before continuing.
+          <p class="text-white/60 text-xs leading-relaxed">
+            Please read through all sections carefully before continuing. Scroll to the bottom to accept.
           </p>
         </div>
 
-        <!-- T&C Accordion (scrollable) -->
+        <!-- Scrollable T&C content -->
         <div
-          ref="accordionRef"
+          ref="scrollRef"
           class="flex-1 overflow-y-auto welcome-scroll bg-gray-50 overscroll-contain"
           @scroll="onScroll"
         >
-          <div class="p-3 space-y-2">
+          <div class="p-5 space-y-6">
+
             <div
               v-for="(section, idx) in tcSections"
               :key="idx"
-              class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition-shadow hover:shadow-md"
+              class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
             >
-              <button
-                @click="openSection = openSection === idx ? null : idx"
-                class="w-full flex items-center gap-3 px-4 py-3 text-left focus:outline-none active:bg-gray-50 transition-colors"
-              >
+              <!-- Section header -->
+              <div :class="['flex items-center gap-3 px-5 py-4 border-b border-gray-100', section.headerBg]">
                 <div :class="['w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-black shadow-sm', section.color]">
                   {{ idx + 1 }}
                 </div>
-                <span class="flex-1 font-bold text-gray-800 text-sm leading-tight">{{ section.title }}</span>
-                <svg
-                  :class="['w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0', openSection === idx ? 'rotate-180 text-blue-600' : '']"
-                  fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                <h3 :class="['font-bold text-sm leading-tight', section.titleColor]">{{ section.title }}</h3>
+              </div>
+
+              <!-- Section body -->
+              <div class="px-5 py-4 space-y-3">
+                <div
+                  v-for="(point, pi) in section.points"
+                  :key="pi"
+                  class="flex gap-3"
                 >
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
-                </svg>
-              </button>
-              <Transition name="welcome-accordion">
-                <div v-if="openSection === idx" class="px-4 pb-4">
-                  <div class="h-px bg-gray-100 mb-3"></div>
-                  <ul class="space-y-2.5">
-                    <li
-                      v-for="(point, pi) in section.points"
-                      :key="pi"
-                      class="flex gap-2.5 text-xs text-gray-600 leading-relaxed"
-                    >
-                      <span :class="['flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full', section.dot]"></span>
-                      <span>{{ point }}</span>
-                    </li>
-                  </ul>
+                  <span :class="['flex-shrink-0 mt-[5px] w-2 h-2 rounded-full', section.dot]"></span>
+                  <p class="text-sm text-gray-700 leading-relaxed">{{ point }}</p>
                 </div>
-              </Transition>
+              </div>
+            </div>
+
+            <!-- End marker -->
+            <div class="text-center py-2">
+              <span class="inline-flex items-center gap-2 text-xs text-gray-400 font-medium">
+                <span class="w-8 h-px bg-gray-200 inline-block"></span>
+                End of Terms &amp; Conditions
+                <span class="w-8 h-px bg-gray-200 inline-block"></span>
+              </span>
             </div>
           </div>
-
-          <!-- Scroll nudge at the bottom of the scroll area -->
-          <p class="text-center text-[10px] text-gray-400 pb-4 px-4">
-            — End of Terms &amp; Conditions —
-          </p>
         </div>
 
-        <!-- Scroll-down hint (fades out once scrolled to bottom) -->
+        <!-- Scroll nudge -->
         <Transition name="hint-fade">
           <div
             v-if="!hasScrolledToBottom"
-            class="flex-shrink-0 flex items-center justify-center gap-1.5 py-1.5 bg-blue-50 border-t border-blue-100 cursor-pointer"
+            class="flex-shrink-0 flex items-center justify-center gap-1.5 py-2 bg-blue-50 border-t border-blue-100 cursor-pointer select-none"
             @click="scrollToBottom"
           >
             <svg class="w-3.5 h-3.5 text-blue-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
             </svg>
-            <p class="text-[10px] text-blue-500 font-medium">Scroll down to read all terms</p>
+            <p class="text-[11px] text-blue-500 font-semibold">Scroll down to read all terms</p>
           </div>
         </Transition>
 
         <!-- Footer -->
-        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-4 pt-3 pb-4 space-y-3">
+        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-5 pt-4 pb-5 space-y-3">
 
-          <!-- Agree checkbox -->
-          <label
-            :class="['flex items-start gap-3 select-none transition-opacity', hasScrolledToBottom ? 'cursor-pointer opacity-100' : 'cursor-not-allowed opacity-50']"
-          >
+          <!-- Checkbox -->
+          <label :class="['flex items-start gap-3 select-none transition-opacity rounded-xl p-3 border', hasScrolledToBottom ? 'cursor-pointer opacity-100 border-gray-200 bg-gray-50 hover:bg-blue-50/40 hover:border-blue-200 transition-colors' : 'cursor-not-allowed opacity-50 border-gray-100 bg-gray-50']">
             <div class="relative flex-shrink-0 mt-0.5">
               <input type="checkbox" v-model="agreed" :disabled="!hasScrolledToBottom" class="sr-only" />
               <div
@@ -126,12 +107,7 @@
               </div>
             </div>
             <span class="text-xs text-gray-600 leading-relaxed">
-              I have read and understood SSAAM's
-              <button
-                type="button"
-                @click.prevent="scrollToBottom"
-                class="font-bold text-[#0f2080] underline underline-offset-2 decoration-dotted hover:text-blue-800 transition-colors focus:outline-none"
-              >Terms &amp; Conditions</button>.
+              I have read and understood SSAAM's <strong class="text-[#0f2080]">Terms &amp; Conditions</strong>.
               I acknowledge that my attendance data and contributions are managed through this system.
             </span>
           </label>
@@ -141,9 +117,9 @@
             @click="handleAgree"
             :disabled="!agreed || !hasScrolledToBottom"
             :class="[
-              'w-full py-3 rounded-2xl font-bold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2',
+              'w-full py-3.5 rounded-2xl font-bold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2',
               agreed && hasScrolledToBottom
-                ? 'bg-gradient-to-r from-[#080e2e] to-[#1a3a8f] text-white shadow-lg hover:-translate-y-0.5 active:scale-[0.98] active:shadow-md'
+                ? 'bg-gradient-to-r from-[#080e2e] to-[#1a3a8f] text-white shadow-lg hover:-translate-y-0.5 active:scale-[0.98]'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             ]"
           >
@@ -153,16 +129,22 @@
             <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
-            <span>{{ agreed && hasScrolledToBottom ? 'I Agree — Continue to SSAAM' : !hasScrolledToBottom ? 'Scroll down to continue' : 'Please check the box above' }}</span>
+            <span>{{
+              agreed && hasScrolledToBottom
+                ? 'I Agree — Continue to SSAAM'
+                : !hasScrolledToBottom
+                ? 'Scroll down to continue'
+                : 'Please check the box above'
+            }}</span>
           </button>
 
           <!-- Welcome message -->
-          <p class="text-center text-[11px] text-gray-500 leading-snug">
+          <p class="text-center text-[11px] text-gray-400 leading-snug">
             <span v-if="userName && userName !== 'User'">
-              Welcome, <strong class="text-gray-700">{{ userName }}</strong>! Glad to have you in SSAAM.
+              Welcome, <strong class="text-gray-600">{{ userName }}</strong>! Glad to have you in SSAAM.
             </span>
             <span v-else>
-              Welcome to <strong class="text-gray-700">SSAAM</strong> — your official CCS attendance platform.
+              Welcome to <strong class="text-gray-600">SSAAM</strong> — your official CCS attendance platform.
             </span>
           </p>
         </div>
@@ -176,33 +158,23 @@
 import { ref, watch, nextTick } from 'vue'
 
 const props = defineProps({
-  visible: {
-    type: Boolean,
-    default: false
-  },
-  userName: {
-    type: String,
-    default: ''
-  }
+  visible: { type: Boolean, default: false },
+  userName: { type: String, default: '' }
 })
 
 const emit = defineEmits(['agreed'])
 
 const agreed = ref(false)
-const openSection = ref(null)
 const hasScrolledToBottom = ref(false)
-const accordionRef = ref(null)
+const scrollRef = ref(null)
 
 watch(() => props.visible, (val) => {
   if (val) {
     document.body.style.overflow = 'hidden'
     agreed.value = false
-    openSection.value = null
     hasScrolledToBottom.value = false
     nextTick(() => {
-      if (accordionRef.value) {
-        accordionRef.value.scrollTop = 0
-      }
+      if (scrollRef.value) scrollRef.value.scrollTop = 0
     })
   } else {
     document.body.style.overflow = ''
@@ -210,15 +182,16 @@ watch(() => props.visible, (val) => {
 }, { immediate: true })
 
 const onScroll = () => {
-  if (!accordionRef.value) return
-  const el = accordionRef.value
-  const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40
-  if (nearBottom) hasScrolledToBottom.value = true
+  if (!scrollRef.value) return
+  const el = scrollRef.value
+  if (el.scrollHeight - el.scrollTop - el.clientHeight < 40) {
+    hasScrolledToBottom.value = true
+  }
 }
 
 const scrollToBottom = () => {
-  if (accordionRef.value) {
-    accordionRef.value.scrollTo({ top: accordionRef.value.scrollHeight, behavior: 'smooth' })
+  if (scrollRef.value) {
+    scrollRef.value.scrollTo({ top: scrollRef.value.scrollHeight, behavior: 'smooth' })
   }
 }
 
@@ -232,6 +205,8 @@ const tcSections = [
     title: 'System Overview & Purpose',
     color: 'bg-blue-600',
     dot: 'bg-blue-400',
+    headerBg: 'bg-blue-50/60',
+    titleColor: 'text-blue-900',
     points: [
       'SSAAM (Student School Activities Attendance Monitoring) is an official digital platform of the College of Computing Studies.',
       'It is designed to record, monitor, and manage student attendance in school activities and events.',
@@ -244,6 +219,8 @@ const tcSections = [
     title: 'Data Collection & Privacy',
     color: 'bg-violet-600',
     dot: 'bg-violet-400',
+    headerBg: 'bg-violet-50/60',
+    titleColor: 'text-violet-900',
     points: [
       'SSAAM collects personal information including your name, student ID, program, year level, and contact details as provided during registration.',
       'Biometric data (facial recognition descriptors) may be collected for identity verification during attendance check-in.',
@@ -257,6 +234,8 @@ const tcSections = [
     title: 'Attendance Policy',
     color: 'bg-emerald-600',
     dot: 'bg-emerald-400',
+    headerBg: 'bg-emerald-50/60',
+    titleColor: 'text-emerald-900',
     points: [
       'Attendance records generated through SSAAM are considered official and may be used for academic or disciplinary purposes.',
       'Students are responsible for ensuring their own check-in/check-out is properly recorded for each event they attend.',
@@ -270,6 +249,8 @@ const tcSections = [
     title: 'Financial Contributions',
     color: 'bg-amber-600',
     dot: 'bg-amber-400',
+    headerBg: 'bg-amber-50/60',
+    titleColor: 'text-amber-900',
     points: [
       'SSAAM tracks student contribution payments for approved school activities as authorized by university administration.',
       'All payment records reflected in the system are considered official receipts and must be settled through approved channels.',
@@ -283,6 +264,8 @@ const tcSections = [
     title: 'User Responsibilities & Account Security',
     color: 'bg-rose-600',
     dot: 'bg-rose-400',
+    headerBg: 'bg-rose-50/60',
+    titleColor: 'text-rose-900',
     points: [
       'You are solely responsible for maintaining the confidentiality of your account credentials (Student ID and password).',
       'Do not share your account access with any other person. Any activity performed under your account is your responsibility.',
@@ -311,26 +294,14 @@ const tcSections = [
 .welcome-fade-enter-from .welcome-card { transform: translateY(48px); opacity: 0; }
 .welcome-fade-leave-to .welcome-card { transform: translateY(24px); opacity: 0; }
 
-.welcome-accordion-enter-active {
-  transition: max-height 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
-  overflow: hidden;
-  max-height: 600px;
-}
-.welcome-accordion-leave-active {
-  transition: max-height 0.22s ease-in, opacity 0.2s ease-in;
-  overflow: hidden;
-}
-.welcome-accordion-enter-from { max-height: 0; opacity: 0; }
-.welcome-accordion-leave-to { max-height: 0; opacity: 0; }
-
 .hint-fade-enter-active { transition: opacity 0.3s ease, max-height 0.3s ease; overflow: hidden; max-height: 40px; }
 .hint-fade-leave-active { transition: opacity 0.25s ease, max-height 0.25s ease; overflow: hidden; }
 .hint-fade-enter-from { opacity: 0; max-height: 0; }
 .hint-fade-leave-to { opacity: 0; max-height: 0; }
 
-.welcome-scroll { scrollbar-width: thin; scrollbar-color: #9ca3af transparent; }
+.welcome-scroll { scrollbar-width: thin; scrollbar-color: #cbd5e1 transparent; }
 .welcome-scroll::-webkit-scrollbar { width: 5px; }
 .welcome-scroll::-webkit-scrollbar-track { background: transparent; }
-.welcome-scroll::-webkit-scrollbar-thumb { background-color: #9ca3af; border-radius: 999px; }
-.welcome-scroll::-webkit-scrollbar-thumb:hover { background-color: #6b7280; }
+.welcome-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 999px; }
+.welcome-scroll::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
 </style>
