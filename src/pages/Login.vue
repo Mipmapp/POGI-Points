@@ -81,32 +81,27 @@
             </div>
 
             <!-- Install SSAAM App -->
-            <div class="rounded-2xl overflow-hidden border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
-              <div class="px-6 pt-5 pb-4 flex items-center gap-4">
-                <img :src="'/img/app_icon.png'" alt="SSAAM" class="w-14 h-14 rounded-2xl shadow-sm flex-shrink-0 object-cover" />
-                <div class="flex-1 min-w-0">
-                  <div class="flex items-center gap-2 mb-0.5">
-                    <p class="text-sm font-bold text-green-900 leading-tight">Install SSAAM App</p>
-                    <span class="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 border border-green-200 text-[10px] font-semibold text-green-700 flex-shrink-0">
-                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 0 0-.83.22l-1.88 3.24a11.46 11.46 0 0 0-8.94 0L5.65 5.67a.643.643 0 0 0-.87-.2c-.28.18-.37.54-.22.83L6.4 9.48A10.78 10.78 0 0 0 1 18h22a10.78 10.78 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
-                      Android only
-                    </span>
-                  </div>
-                  <p class="text-xs text-green-700">Get the native experience on your phone</p>
+            <div class="rounded-xl border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 px-4 py-3 flex items-center gap-3">
+              <img :src="'/img/app_icon.png'" alt="SSAAM" class="w-10 h-10 rounded-xl shadow-sm flex-shrink-0 object-cover" />
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <p class="text-xs font-bold text-green-900 leading-tight">Install SSAAM App</p>
+                  <span class="flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-green-100 border border-green-200 text-[9px] font-semibold text-green-700 flex-shrink-0">
+                    <svg class="w-2.5 h-2.5" viewBox="0 0 24 24" fill="currentColor"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 0 0-.83.22l-1.88 3.24a11.46 11.46 0 0 0-8.94 0L5.65 5.67a.643.643 0 0 0-.87-.2c-.28.18-.37.54-.22.83L6.4 9.48A10.78 10.78 0 0 0 1 18h22a10.78 10.78 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></svg>
+                    Android only
+                  </span>
                 </div>
+                <p class="text-[11px] text-green-700 mt-0.5">Get the native experience on your phone</p>
               </div>
-              <div class="px-6 pb-5 flex items-center justify-between gap-4 border-t border-green-100 pt-4">
-                <p class="text-xs text-gray-500 leading-relaxed flex-1">Download the APK and install it directly on your Android device for a faster, ready experience.</p>
-                <a
-                  href="https://www.mediafire.com/file/g3v17bvzzrot54q/ssaam.apk/file"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="flex-shrink-0 flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-green-500 to-emerald-600 text-white text-sm font-bold shadow-sm hover:shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition-all"
-                >
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 4v11"/></svg>
-                  Download
-                </a>
-              </div>
+              <a
+                href="https://www.mediafire.com/file/g3v17bvzzrot54q/ssaam.apk/file"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs font-bold shadow-sm hover:shadow-md hover:from-green-600 hover:to-emerald-700 active:scale-95 transition-all"
+              >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 4v11"/></svg>
+                Download
+              </a>
             </div>
 
             <!-- Close button -->
