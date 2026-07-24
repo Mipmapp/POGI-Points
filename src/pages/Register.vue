@@ -565,58 +565,68 @@
             </div>
 
             <div v-if="currentStep === 3.5" class="space-y-4 step-animate">
-              <div class="text-center mb-4">
-                <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
-                  <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              <!-- Header -->
+              <div class="text-center mb-2">
+                <div class="w-14 h-14 mx-auto mb-3 rounded-full bg-indigo-100 flex items-center justify-center">
+                  <svg class="w-7 h-7 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
                 </div>
-                <h3 class="text-lg font-semibold text-blue-900 mb-2">Review Your Information</h3>
-                <p class="text-sm text-gray-600">Please verify all details are correct before proceeding.</p>
+                <h3 class="text-lg font-bold text-gray-900 mb-1">Review Your Information</h3>
+                <p class="text-xs text-gray-400">Please verify all details are correct before proceeding.</p>
               </div>
-              
-              <div class="bg-gray-50 rounded-xl p-4 space-y-3">
-                <div class="flex flex-col items-center text-center gap-2">
-                  <div class="w-16 h-16 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+
+              <!-- Info card -->
+              <div class="rounded-2xl border border-indigo-100 bg-gradient-to-b from-indigo-50/60 to-white overflow-hidden">
+                <!-- Avatar + name -->
+                <div class="flex flex-col items-center pt-5 pb-4 px-4 text-center">
+                  <div class="w-20 h-20 rounded-full overflow-hidden border-2 border-indigo-200 shadow-md bg-indigo-50 mb-3">
                     <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
-                    <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
-                      <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                    <div v-else class="w-full h-full flex items-center justify-center">
+                      <svg class="w-10 h-10 text-indigo-200" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.333 0-10 1.667-10 5v2h20v-2c0-3.333-6.667-5-10-5z"/>
+                      </svg>
                     </div>
                   </div>
-                  <div>
-                    <p class="font-bold text-blue-900">{{ formData.full_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
-                    <p class="text-sm text-gray-600">{{ formData.student_id }}</p>
-                  </div>
+                  <p class="font-bold text-indigo-700 text-sm leading-tight uppercase tracking-wide">
+                    {{ formData.full_name }} {{ formData.last_name }}{{ formData.suffix ? ' ' + formData.suffix : '' }}
+                  </p>
+                  <p class="text-xs text-gray-400 mt-0.5 font-mono">{{ formData.student_id }}</p>
                 </div>
-                
-                <div class="border-t border-gray-200 pt-3 grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <p class="text-gray-500 text-xs">Email</p>
-                    <p class="font-medium text-gray-800 break-all text-xs">{{ formData.email }}</p>
+
+                <!-- Details rows -->
+                <div class="border-t border-indigo-100 divide-y divide-indigo-50">
+                  <div class="flex items-center justify-between px-4 py-2.5">
+                    <span class="text-xs text-gray-400 font-medium w-20 flex-shrink-0">Email</span>
+                    <span class="text-xs font-semibold text-gray-700 text-right break-all">{{ formData.email }}</span>
                   </div>
-                  <div>
-                    <p class="text-gray-500 text-xs">Program</p>
-                    <p class="font-medium text-gray-800">{{ formData.program }}</p>
+                  <div class="flex items-center justify-between px-4 py-2.5">
+                    <span class="text-xs text-gray-400 font-medium w-20 flex-shrink-0">Program</span>
+                    <span class="text-xs font-semibold text-gray-700">{{ formData.program }}</span>
                   </div>
-                  <div>
-                    <p class="text-gray-500 text-xs">Year Level</p>
-                    <p class="font-medium text-gray-800">{{ formData.year_level }}</p>
+                  <div class="flex items-center justify-between px-4 py-2.5">
+                    <span class="text-xs text-gray-400 font-medium w-20 flex-shrink-0">Year Level</span>
+                    <span class="text-xs font-semibold text-gray-700">{{ formData.year_level }}</span>
                   </div>
-                  <div>
-                  </div>
-                </div>
-              </div>
-              
-              <div v-if="reviewCountdown > 0" class="text-center">
-                <div class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full">
-                  <svg class="w-5 h-5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                  <span class="font-medium text-sm">Please review... {{ reviewCountdown }}s</span>
                 </div>
               </div>
-              
-              <div class="flex items-center justify-center pt-2">
+
+              <!-- Review countdown -->
+              <div v-if="reviewCountdown > 0" class="flex justify-center">
+                <div class="inline-flex items-center gap-2 bg-indigo-50 text-indigo-600 px-4 py-2 rounded-xl text-xs font-medium">
+                  <svg class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  Please review… {{ reviewCountdown }}s
+                </div>
+              </div>
+
+              <div class="flex items-center justify-center pt-1">
                 <div class="flex space-x-2">
-                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
-                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
-                  <div class="w-10 h-1 bg-blue-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-indigo-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-indigo-500 rounded-full"></div>
+                  <div class="w-10 h-1 bg-indigo-500 rounded-full"></div>
                   <div class="w-10 h-1 bg-gray-200 rounded-full"></div>
                 </div>
               </div>
@@ -624,7 +634,7 @@
                 <button type="button" @click="currentStep = 3" class="flex-1 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm">
                   ← Back
                 </button>
-                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm shadow-sm', reviewCountdown > 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white']">
+                <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-6 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm shadow-sm', reviewCountdown > 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white']">
                   {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm →' }}
                 </button>
               </div>
@@ -1001,74 +1011,86 @@
             </div>
           </div>
 
-          <div v-if="currentStep === 3.5" class="space-y-4 step-animate">
-            <div class="text-center mb-3">
-              <div class="w-14 h-14 mx-auto mb-3 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <div v-if="currentStep === 3.5" class="space-y-3 step-animate">
+            <!-- Header -->
+            <div class="text-center mb-1">
+              <div class="w-12 h-12 mx-auto mb-2.5 rounded-full bg-indigo-100 flex items-center justify-center">
+                <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
               </div>
-              <h3 class="text-base font-semibold text-blue-900 mb-1">Review Your Information</h3>
-              <p class="text-xs text-gray-600">Please verify all details are correct.</p>
+              <h3 class="text-base font-bold text-gray-900 mb-0.5">Review Your Information</h3>
+              <p class="text-[11px] text-gray-400">Please verify all details are correct.</p>
             </div>
-            
-            <div class="bg-green-50 rounded-2xl p-3 space-y-2">
-              <div class="flex flex-col items-center text-center gap-2">
-                <div class="w-12 h-12 rounded-full bg-gray-200 flex-shrink-0 overflow-hidden">
+
+            <!-- Info card -->
+            <div class="rounded-2xl border border-indigo-100 bg-gradient-to-b from-indigo-50/60 to-white overflow-hidden">
+              <!-- Avatar + name -->
+              <div class="flex flex-col items-center pt-4 pb-3 px-4 text-center">
+                <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-indigo-200 shadow-md bg-indigo-50 mb-2">
                   <img v-if="imagePreview" :src="imagePreview" class="w-full h-full object-cover" />
-                  <div v-else class="w-full h-full flex items-center justify-center text-gray-400">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                  <div v-else class="w-full h-full flex items-center justify-center">
+                    <svg class="w-8 h-8 text-indigo-200" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M12 12c2.761 0 5-2.239 5-5s-2.239-5-5-5-5 2.239-5 5 2.239 5 5 5zm0 2c-3.333 0-10 1.667-10 5v2h20v-2c0-3.333-6.667-5-10-5z"/>
+                    </svg>
                   </div>
                 </div>
-                <div class="min-w-0">
-                  <p class="font-bold text-blue-900 text-sm">{{ formData.full_name }} {{ formData.last_name }} {{ formData.suffix }}</p>
-                  <p class="text-xs text-gray-600">{{ formData.student_id }}</p>
-                </div>
+                <p class="font-bold text-indigo-700 text-xs leading-tight uppercase tracking-wide">
+                  {{ formData.full_name }} {{ formData.last_name }}{{ formData.suffix ? ' ' + formData.suffix : '' }}
+                </p>
+                <p class="text-[10px] text-gray-400 mt-0.5 font-mono">{{ formData.student_id }}</p>
               </div>
-              
-              <div class="border-t border-gray-200 pt-2 grid grid-cols-2 gap-2">
-                <div>
-                  <p class="text-gray-400 text-[10px]">Email</p>
-                  <p class="font-medium text-gray-800 break-all text-[10px] leading-tight">{{ formData.email }}</p>
+
+              <!-- Details rows -->
+              <div class="border-t border-indigo-100 divide-y divide-indigo-50">
+                <div class="flex items-center justify-between px-4 py-2">
+                  <span class="text-[10px] text-gray-400 font-medium w-16 flex-shrink-0">Email</span>
+                  <span class="text-[10px] font-semibold text-gray-700 text-right break-all">{{ formData.email }}</span>
                 </div>
-                <div>
-                  <p class="text-gray-400 text-[10px]">Program</p>
-                  <p class="font-medium text-gray-800 text-xs">{{ formData.program }}</p>
+                <div class="flex items-center justify-between px-4 py-2">
+                  <span class="text-[10px] text-gray-400 font-medium w-16 flex-shrink-0">Program</span>
+                  <span class="text-[10px] font-semibold text-gray-700">{{ formData.program }}</span>
                 </div>
-                <div>
-                  <p class="text-gray-400 text-[10px]">Year Level</p>
-                  <p class="font-medium text-gray-800 text-xs">{{ formData.year_level }}</p>
+                <div class="flex items-center justify-between px-4 py-2">
+                  <span class="text-[10px] text-gray-400 font-medium w-16 flex-shrink-0">Year Level</span>
+                  <span class="text-[10px] font-semibold text-gray-700">{{ formData.year_level }}</span>
                 </div>
-                <div>
-                  <p class="text-gray-400 text-[10px]">Semester</p>
-                  <p class="font-medium text-gray-800 text-xs">{{ formData.semester }}</p>
+                <div class="flex items-center justify-between px-4 py-2">
+                  <span class="text-[10px] text-gray-400 font-medium w-16 flex-shrink-0">Semester</span>
+                  <span class="text-[10px] font-semibold text-gray-700">{{ formData.semester }}</span>
                 </div>
-                <div class="col-span-2">
-                  <p class="text-gray-400 text-[10px]">School Year</p>
-                  <p class="font-medium text-gray-800 text-xs">{{ formData.school_year }}</p>
+                <div class="flex items-center justify-between px-4 py-2">
+                  <span class="text-[10px] text-gray-400 font-medium w-16 flex-shrink-0">School Year</span>
+                  <span class="text-[10px] font-semibold text-gray-700">{{ formData.school_year }}</span>
                 </div>
-              </div>
-            </div>
-            
-            <div v-if="reviewCountdown > 0" class="text-center">
-              <div class="inline-flex items-center gap-2 bg-blue-100 text-blue-700 px-4 py-2 rounded-full">
-                <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                <span class="font-medium text-xs">Please review... {{ reviewCountdown }}s</span>
               </div>
             </div>
-            
+
+            <!-- Review countdown -->
+            <div v-if="reviewCountdown > 0" class="flex justify-center">
+              <div class="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-xl text-[11px] font-medium">
+                <svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                Please review… {{ reviewCountdown }}s
+              </div>
+            </div>
+
             <div class="flex items-center justify-center">
               <div class="flex space-x-2">
-                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
-                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
-                <div class="w-8 h-1 bg-blue-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-indigo-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-indigo-500 rounded-full"></div>
+                <div class="w-8 h-1 bg-indigo-500 rounded-full"></div>
                 <div class="w-8 h-1 bg-gray-200 rounded-full"></div>
               </div>
             </div>
             <div class="flex gap-3">
-              <button type="button" @click="currentStep = 3" class="flex-1 bg-green-50 text-blue-600 py-3 px-3 rounded-full font-semibold hover:bg-green-100 transition duration-300 flex items-center justify-center text-sm">
-                <span class="mr-1">&larr;</span>Back
+              <button type="button" @click="currentStep = 3" class="flex-1 bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 py-3 px-3 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm">
+                ← Back
               </button>
-              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-3 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm shadow-sm', reviewCountdown > 0 ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white']">
-                {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm' }} <span v-if="reviewCountdown <= 0" class="ml-1">→</span>
+              <button type="submit" :disabled="reviewCountdown > 0" :class="['flex-1 py-3 px-3 rounded-xl font-semibold transition duration-200 flex items-center justify-center text-sm shadow-sm', reviewCountdown > 0 ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-indigo-500 hover:bg-indigo-600 active:bg-indigo-700 text-white']">
+                {{ reviewCountdown > 0 ? `Wait ${reviewCountdown}s` : 'Confirm →' }}
               </button>
             </div>
           </div>
