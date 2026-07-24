@@ -154,14 +154,14 @@
       </div>
     </div>
     <!-- Gentle S-wave divider -->
-    <div class="absolute top-0 bottom-0 z-40 pointer-events-none" style="left:40%;transform:translateX(-50%);width:72px;">
-      <svg class="h-full w-full" viewBox="0 0 72 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M36,0 C72,200 0,600 36,800 L72,800 L72,0 Z" fill="white" filter="url(#wave-shadow-r)"/>
+    <div class="absolute top-0 bottom-0 z-40 pointer-events-none" style="left:40%;transform:translateX(-50%);width:120px;">
+      <svg class="h-full w-full" viewBox="0 0 120 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <filter id="wave-shadow-r" x="-20%" y="0%" width="140%" height="100%">
-            <feDropShadow dx="-4" dy="0" stdDeviation="6" flood-color="rgba(0,0,0,0.18)"/>
+          <filter id="wave-shadow-r" x="-30%" y="0%" width="160%" height="100%">
+            <feDropShadow dx="-5" dy="0" stdDeviation="8" flood-color="rgba(0,0,0,0.22)"/>
           </filter>
         </defs>
+        <path d="M60,0 C140,200 -20,600 60,800 L120,800 L120,0 Z" fill="white" filter="url(#wave-shadow-r)"/>
       </svg>
     </div>
 
