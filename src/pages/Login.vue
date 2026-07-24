@@ -1843,7 +1843,6 @@ function manualRetryFace() {
   padding: 2rem;
   position: relative;
   overflow: hidden;
-  box-shadow: inset -18px 0 40px rgba(0,0,0,0.20), 8px 0 32px rgba(10,30,130,0.25);
 }
 
 .mobile-bg-full {
