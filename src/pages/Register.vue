@@ -456,19 +456,20 @@
                 <div class="space-y-1.5">
                   <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Program</label>
                   <div class="relative" ref="programDropdownDesktopRef">
-                  <button type="button" @click="toggleProgramMenu('desktop')" class="w-full text-left px-4 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none flex items-center justify-between text-sm bg-white transition">
-                    <span class="truncate">
-                      <template v-if="selectedProgramItem">{{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}</template>
-                      <template v-else><span class="text-gray-400">Select Program</span></template>
-                    </span>
-                    <img :src="'/arrow_down.svg'" alt="Dropdown" class="w-4 h-4 opacity-65 flex-shrink-0" />
-                  </button>
+                  <div class="relative">
+                    <input
+                      :value="showProgramMenu ? programSearch : (selectedProgramItem ? selectedProgramItem.shortName + ' - ' + selectedProgramItem.fullName : '')"
+                      @focus="openProgramMenu('desktop')"
+                      @input="programSearch = $event.target.value; showProgramMenu = true"
+                      type="text"
+                      placeholder="Select Program"
+                      class="w-full px-4 py-3 pr-10 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-400 bg-white transition"
+                    />
+                    <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform" :class="showProgramMenu ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                  </div>
                   <div v-if="showProgramMenu" :class="showMenuAboveDesktop ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg'">
-                    <div class="px-2 pt-2 pb-1">
-                      <input v-model="programSearch" type="text" placeholder="Search program..." @click.stop class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 outline-none" />
-                    </div>
                     <ul class="max-h-48 overflow-auto">
-                      <li v-for="p in filteredPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer">
+                      <li v-for="p in filteredPrograms" :key="p.shortName" @mousedown.prevent @click="chooseProgram(p)" class="flex items-start gap-3 px-3 py-2 hover:bg-gray-100 cursor-pointer">
                         <img :src="p.departmentLogo" :alt="p.departmentLabel" class="w-8 h-8 object-contain rounded bg-white flex-shrink-0" />
                         <div class="min-w-0">
                           <div class="text-sm font-medium text-gray-800">{{ p.shortName }}</div>
@@ -905,19 +906,20 @@
             <div>
               <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Program</label>
               <div class="relative" ref="programDropdownMobileRef">
-                <button type="button" @click="toggleProgramMenu('mobile')" class="w-full text-left px-4 pr-8 py-3 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none flex items-center justify-between text-sm bg-white transition">
-                  <span class="truncate">
-                    <template v-if="selectedProgramItem">{{ selectedProgramItem.shortName }} - {{ selectedProgramItem.fullName }}</template>
-                    <template v-else><span class="text-gray-400">Select Program</span></template>
-                  </span>
-                  <img :src="'/arrow_down.svg'" alt="Dropdown" class="w-4 h-4 opacity-65 flex-shrink-0" />
-                </button>
+                <div class="relative">
+                  <input
+                    :value="showProgramMenu ? programSearch : (selectedProgramItem ? selectedProgramItem.shortName + ' - ' + selectedProgramItem.fullName : '')"
+                    @focus="openProgramMenu('mobile')"
+                    @input="programSearch = $event.target.value; showProgramMenu = true"
+                    type="text"
+                    placeholder="Select Program"
+                    class="w-full px-4 py-3 pr-10 border border-gray-200 rounded-xl focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 outline-none text-sm text-gray-800 placeholder-gray-400 bg-white transition"
+                  />
+                  <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none transition-transform" :class="showProgramMenu ? 'rotate-180' : ''" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"/></svg>
+                </div>
                 <div v-if="showProgramMenu" :class="showMenuAboveMobile ? 'absolute z-30 bottom-full mb-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg' : 'absolute z-30 mt-2 w-full bg-white border border-gray-200 rounded-2xl shadow-lg'">
-                  <div class="px-2 pt-2 pb-1">
-                    <input v-model="programSearch" type="text" placeholder="Search program..." @click.stop class="w-full px-3 py-2 text-sm bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-200 outline-none" />
-                  </div>
                   <ul class="max-h-48 overflow-auto">
-                    <li v-for="p in filteredPrograms" :key="p.shortName" @click="chooseProgram(p)" class="flex items-start gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer">
+                    <li v-for="p in filteredPrograms" :key="p.shortName" @mousedown.prevent @click="chooseProgram(p)" class="flex items-start gap-2 px-3 py-2 hover:bg-gray-100 cursor-pointer">
                       <img :src="p.departmentLogo" :alt="p.departmentLabel" class="w-6 h-6 object-contain rounded bg-white flex-shrink-0" />
                       <div class="min-w-0">
                         <div class="text-sm font-medium text-gray-800">{{ p.shortName }}</div>
@@ -1651,6 +1653,12 @@ const toggleProgramMenu = (which) => {
     programSearch.value = ''
     updateProgramMenuPlacement(which)
   }
+}
+
+const openProgramMenu = (which) => {
+  programSearch.value = ''
+  showProgramMenu.value = true
+  updateProgramMenuPlacement(which)
 }
 
 onMounted(() => {
