@@ -171,36 +171,42 @@
                   <p class="text-xs font-semibold text-blue-800">Sign up with JRMSU ARMS Portal</p>
                 </div>
                 <p class="text-xs text-blue-600 leading-relaxed">Verify your enrollment to auto-fill your details. Enter your Student ID and ARMS portal password.</p>
-                <div v-if="!showArmsInput">
-                  <button type="button" @click="showArmsInput = true; armsError = ''"
-                    class="w-full py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition flex items-center justify-center gap-2 shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Verify with ARMS
-                  </button>
-                </div>
-                <div v-if="showArmsInput" class="space-y-2">
-                  <input v-model="armsStudentIdInput" @input="armsStudentIdInput = armsStudentIdInput.toUpperCase().replace(/[^0-9A-Z-]/g,'')" type="text" placeholder="Student ID (e.g. 25-A-00000)" maxlength="10"
-                    class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800" />
-                  <div class="relative">
-                    <input v-model="armsPassword" :type="armsShowPw ? 'text' : 'password'" placeholder="ARMS portal password"
-                      class="w-full px-3 py-2 pr-10 border border-blue-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800"
-                      @keydown.enter.prevent="verifyWithARMS" />
-                    <button type="button" @click="armsShowPw = !armsShowPw" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                      <svg v-if="armsShowPw" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
-                      <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <transition name="arms-btn">
+                  <div v-if="!showArmsInput">
+                    <button type="button" @click="showArmsInput = true; armsError = ''"
+                      class="w-full py-2 px-4 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition flex items-center justify-center gap-2 shadow-sm">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      Verify with ARMS
                     </button>
                   </div>
-                  <p v-if="armsError" class="text-xs text-red-600">{{ armsError }}</p>
-                  <div class="flex gap-2">
-                    <button type="button" @click="showArmsInput = false; armsPassword = ''; armsError = ''"
-                      class="flex-1 py-2 px-3 rounded-lg border border-gray-200 bg-white text-gray-600 text-xs font-semibold hover:bg-gray-50 transition">Cancel</button>
-                    <button type="button" @click="verifyWithARMS" :disabled="armsLoading"
-                      class="flex-1 py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold transition flex items-center justify-center gap-1">
-                      <svg v-if="armsLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                      {{ armsLoading ? 'Verifying...' : 'Verify' }}
-                    </button>
+                </transition>
+                <transition name="arms-expand">
+                  <div v-if="showArmsInput" class="space-y-2 overflow-hidden">
+                    <input v-model="armsStudentIdInput" @input="armsStudentIdInput = armsStudentIdInput.toUpperCase().replace(/[^0-9A-Z-]/g,'')" type="text" placeholder="Student ID (e.g. 25-A-00000)" maxlength="10"
+                      class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800" />
+                    <div class="relative">
+                      <input v-model="armsPassword" :type="armsShowPw ? 'text' : 'password'" placeholder="ARMS portal password"
+                        class="w-full px-3 py-2 pr-10 border border-blue-200 rounded-lg text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800"
+                        @keydown.enter.prevent="verifyWithARMS" />
+                      <button type="button" @click="armsShowPw = !armsShowPw" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <svg v-if="armsShowPw" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                      </button>
+                    </div>
+                    <transition name="arms-error">
+                      <p v-if="armsError" class="text-xs text-red-600">{{ armsError }}</p>
+                    </transition>
+                    <div class="flex gap-2">
+                      <button type="button" @click="showArmsInput = false; armsPassword = ''; armsError = ''"
+                        class="flex-1 py-2 px-3 rounded-lg border border-gray-200 bg-white text-gray-600 text-xs font-semibold hover:bg-gray-50 transition">Cancel</button>
+                      <button type="button" @click="verifyWithARMS" :disabled="armsLoading"
+                        class="flex-1 py-2 px-3 rounded-lg bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold transition flex items-center justify-center gap-1">
+                        <svg v-if="armsLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                        {{ armsLoading ? 'Verifying...' : 'Verify' }}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </transition>
               </div>
 
               <!-- ARMS verified badge (desktop Step 1) -->
@@ -602,36 +608,42 @@
                   <p class="text-xs font-semibold text-blue-800">Sign up with JRMSU ARMS Portal</p>
                 </div>
                 <p class="text-xs text-blue-600 leading-relaxed">Verify your enrollment to auto-fill your details.</p>
-                <div v-if="!showArmsInput">
-                  <button type="button" @click="showArmsInput = true; armsError = ''"
-                    class="w-full py-2.5 px-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition flex items-center justify-center gap-2 shadow-sm">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Verify with ARMS
-                  </button>
-                </div>
-                <div v-if="showArmsInput" class="space-y-2">
-                  <input v-model="armsStudentIdInput" @input="armsStudentIdInput = armsStudentIdInput.toUpperCase().replace(/[^0-9A-Z-]/g,'')" type="text" placeholder="Student ID (e.g. 25-A-00000)" maxlength="10"
-                    class="w-full px-4 py-2.5 border border-blue-200 rounded-full text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800" />
-                  <div class="relative">
-                    <input v-model="armsPassword" :type="armsShowPw ? 'text' : 'password'" placeholder="ARMS portal password"
-                      class="w-full px-4 py-2.5 pr-10 border border-blue-200 rounded-full text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800"
-                      @keydown.enter.prevent="verifyWithARMS" />
-                    <button type="button" @click="armsShowPw = !armsShowPw" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                      <svg v-if="armsShowPw" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
-                      <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                <transition name="arms-btn">
+                  <div v-if="!showArmsInput">
+                    <button type="button" @click="showArmsInput = true; armsError = ''"
+                      class="w-full py-2.5 px-4 rounded-full bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition flex items-center justify-center gap-2 shadow-sm">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      Verify with ARMS
                     </button>
                   </div>
-                  <p v-if="armsError" class="text-xs text-red-600 px-1">{{ armsError }}</p>
-                  <div class="flex gap-2">
-                    <button type="button" @click="showArmsInput = false; armsPassword = ''; armsError = ''"
-                      class="flex-1 py-2 px-3 rounded-full border border-gray-200 bg-white text-gray-600 text-xs font-semibold hover:bg-gray-50 transition">Cancel</button>
-                    <button type="button" @click="verifyWithARMS" :disabled="armsLoading"
-                      class="flex-1 py-2 px-3 rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold transition flex items-center justify-center gap-1">
-                      <svg v-if="armsLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                      {{ armsLoading ? 'Verifying...' : 'Verify' }}
-                    </button>
+                </transition>
+                <transition name="arms-expand">
+                  <div v-if="showArmsInput" class="space-y-2 overflow-hidden">
+                    <input v-model="armsStudentIdInput" @input="armsStudentIdInput = armsStudentIdInput.toUpperCase().replace(/[^0-9A-Z-]/g,'')" type="text" placeholder="Student ID (e.g. 25-A-00000)" maxlength="10"
+                      class="w-full px-4 py-2.5 border border-blue-200 rounded-full text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800" />
+                    <div class="relative">
+                      <input v-model="armsPassword" :type="armsShowPw ? 'text' : 'password'" placeholder="ARMS portal password"
+                        class="w-full px-4 py-2.5 pr-10 border border-blue-200 rounded-full text-sm bg-white outline-none focus:ring-2 focus:ring-blue-300 text-gray-800"
+                        @keydown.enter.prevent="verifyWithARMS" />
+                      <button type="button" @click="armsShowPw = !armsShowPw" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                        <svg v-if="armsShowPw" class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                        <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                      </button>
+                    </div>
+                    <transition name="arms-error">
+                      <p v-if="armsError" class="text-xs text-red-600 px-1">{{ armsError }}</p>
+                    </transition>
+                    <div class="flex gap-2">
+                      <button type="button" @click="showArmsInput = false; armsPassword = ''; armsError = ''"
+                        class="flex-1 py-2 px-3 rounded-full border border-gray-200 bg-white text-gray-600 text-xs font-semibold hover:bg-gray-50 transition">Cancel</button>
+                      <button type="button" @click="verifyWithARMS" :disabled="armsLoading"
+                        class="flex-1 py-2 px-3 rounded-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-semibold transition flex items-center justify-center gap-1">
+                        <svg v-if="armsLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                        {{ armsLoading ? 'Verifying...' : 'Verify' }}
+                      </button>
+                    </div>
                   </div>
-                </div>
+                </transition>
               </div>
 
               <!-- ARMS verified badge (mobile Step 1) -->
@@ -1977,5 +1989,58 @@ const goToLogin = () => {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ── ARMS panel expand/collapse ── */
+.arms-expand-enter-active {
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), max-height 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  max-height: 300px;
+  overflow: hidden;
+}
+.arms-expand-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.24s ease;
+  max-height: 300px;
+  overflow: hidden;
+}
+.arms-expand-enter-from {
+  opacity: 0;
+  transform: translateY(-8px);
+  max-height: 0;
+}
+.arms-expand-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+  max-height: 0;
+}
+
+/* ── ARMS verify button fade ── */
+.arms-btn-enter-active {
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.arms-btn-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.arms-btn-enter-from {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+.arms-btn-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* ── ARMS inline error shake-in ── */
+.arms-error-enter-active {
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.arms-error-leave-active {
+  transition: opacity 0.15s ease;
+}
+.arms-error-enter-from {
+  opacity: 0;
+  transform: translateX(-6px);
+}
+.arms-error-leave-to {
+  opacity: 0;
 }
 </style>
