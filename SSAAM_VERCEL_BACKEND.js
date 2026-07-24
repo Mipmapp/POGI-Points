@@ -87,6 +87,22 @@ async function _loginRecord(key, success) {
 const app = express();
 dotenv.config();
 
+// Re-configure Cloudinary now that dotenv has loaded the env vars.
+// (Static ESM imports run before the module body, so config/cloudinary.js
+//  executes before dotenv.config() — we must re-apply the config here.)
+if (process.env.CLOUDINARY_URL) {
+    try {
+        const _cu = new URL(process.env.CLOUDINARY_URL);
+        cloudinary.config({
+            cloud_name: _cu.hostname,
+            api_key:    _cu.username,
+            api_secret: decodeURIComponent(_cu.password),
+        });
+    } catch (e) {
+        console.error('[Cloudinary] Failed to parse CLOUDINARY_URL:', e.message);
+    }
+}
+
 const ALLOWED_ORIGINS = [
     'https://ssaam.vercel.app',
     // 'http://:5000',
