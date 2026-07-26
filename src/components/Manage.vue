@@ -51,7 +51,7 @@
       <!-- USERS TAB -->
       <div v-if="activeTab === 'users'" class="space-y-6">
         <!-- Users Search and Filter -->
-        <div :class="['rounded-lg md:rounded-xl p-4 md:p-6 mb-6 space-y-4 md:space-y-5 shadow-sm border', isCOE ? 'bg-gradient-to-br from-white via-orange-50 to-white border-orange-100' : isSOM ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : isCNAHS ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : 'bg-gradient-to-br from-white via-blue-50 to-white border-blue-100']"
+        <div :class="['rounded-lg md:rounded-xl p-4 md:p-6 mb-6 space-y-4 md:space-y-5 shadow-sm border', isCOE ? 'bg-gradient-to-br from-white via-orange-50 to-white border-orange-100' : isSOM ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : isCNAHS ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : 'bg-gradient-to-br from-white via-blue-50 to-white border-blue-100']">
           <!-- Search Input -->
           <div class="relative group">
             <div :class="['absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none', isCOE ? 'text-gray-400 group-focus-within:text-orange-700' : isSOM ? 'text-gray-400 group-focus-within:text-green-700' : isCNAHS ? 'text-gray-400 group-focus-within:text-green-700' : 'text-gray-400 group-focus-within:text-blue-600', 'transition-colors duration-200']">
@@ -296,128 +296,9 @@
                 </button>
               </div>
 
-              <!-- Chevron -->
-              <svg :class="['w-4 h-4 flex-shrink-0 text-gray-400 transition-transform duration-200', expandedUserId === (user._id || user.student_id) ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              <!-- View icon hint -->
+              <svg class="w-4 h-4 flex-shrink-0 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
             </div>
-
-            <!-- ── Expanded Panel ── -->
-            <transition name="expand">
-              <div v-if="expandedUserId === (user._id || user.student_id)" class="border-t border-gray-100 bg-gray-50">
-
-                <!-- Profile Details Grid -->
-                <div class="px-4 pt-4 pb-3 grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <div>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email</p>
-                    <p class="text-sm text-gray-800 font-medium truncate">{{ user.email || '—' }}</p>
-                  </div>
-                  <div>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Program</p>
-                    <p class="text-sm text-gray-800 font-medium">{{ user.program || '—' }}</p>
-                  </div>
-                  <div>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Year Level</p>
-                    <p class="text-sm text-gray-800 font-medium">{{ user.year_level || '—' }}</p>
-                  </div>
-                  <div>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">RFID</p>
-                    <p class="text-sm font-mono font-bold" :class="user.rfid_code && user.rfid_code !== 'N/A' ? 'text-green-600' : 'text-red-500'">
-                      {{ user.rfid_code ? (user.rfid_code.length > 10 ? user.rfid_code.substring(0, 10) + '…' : user.rfid_code) : 'N/A' }}
-                    </p>
-                  </div>
-                  <!-- Mobile-only badges row -->
-                  <div class="col-span-2 sm:hidden flex flex-wrap gap-1.5 pt-1">
-                    <span v-if="user.role && user.role !== 'student'" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700 capitalize">{{ user.role }}</span>
-                    <span v-else class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">Student</span>
-                    <span v-if="getAutoVerificationStatus(user) === true" class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[11px] font-bold">✓ Verified</span>
-                    <span v-else-if="getAutoVerificationStatus(user) === false" class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-[11px] font-bold">Unverified</span>
-                    <span v-else-if="getAutoVerificationStatus(user) === 'unreadable'" class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-[11px] font-bold">Unreadable</span>
-                  </div>
-                  <!-- Copy ID button -->
-                  <div class="col-span-2 md:col-span-4 flex items-center gap-2">
-                    <button @click="copyToClipboard(user.student_id)" class="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 transition-colors">
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                      Copy Student ID
-                    </button>
-                  </div>
-                </div>
-
-                <!-- Attendance Records -->
-                <div class="px-4 pb-4">
-                  <div class="border-t border-gray-200 pt-3">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Attendance Record</p>
-
-                    <!-- Loading -->
-                    <div v-if="attendanceFetching[user._id || user.student_id]" class="flex items-center gap-2 py-3 text-sm text-gray-400">
-                      <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                      Loading attendance…
-                    </div>
-
-                    <!-- No records -->
-                    <div v-else-if="userAttendanceCache[user._id || user.student_id] && userAttendanceCache[user._id || user.student_id].length === 0" class="text-sm text-gray-400 py-2">
-                      No closed events found for this student.
-                    </div>
-
-                    <!-- Records loaded -->
-                    <div v-else-if="userAttendanceCache[user._id || user.student_id]">
-                      <!-- Summary Counts -->
-                      <div class="flex gap-3 mb-3">
-                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-50 border border-green-100 flex-1">
-                          <div class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></div>
-                          <div>
-                            <p class="text-xs font-bold text-green-700">{{ getAttendanceSummary(user).present }}</p>
-                            <p class="text-[10px] text-green-600 leading-tight">Present</p>
-                          </div>
-                        </div>
-                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 border border-red-100 flex-1">
-                          <div class="w-2 h-2 rounded-full bg-red-500 flex-shrink-0"></div>
-                          <div>
-                            <p class="text-xs font-bold text-red-700">{{ getAttendanceSummary(user).absent }}</p>
-                            <p class="text-[10px] text-red-600 leading-tight">Absent</p>
-                          </div>
-                        </div>
-                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-yellow-50 border border-yellow-100 flex-1">
-                          <div class="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0"></div>
-                          <div>
-                            <p class="text-xs font-bold text-yellow-700">{{ getAttendanceSummary(user).late }}</p>
-                            <p class="text-[10px] text-yellow-600 leading-tight">Late</p>
-                          </div>
-                        </div>
-                        <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 flex-1">
-                          <div class="w-2 h-2 rounded-full bg-blue-400 flex-shrink-0"></div>
-                          <div>
-                            <p class="text-xs font-bold text-blue-700">{{ getAttendanceSummary(user).excused }}</p>
-                            <p class="text-[10px] text-blue-600 leading-tight">Excused</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- Recent Events List -->
-                      <div class="space-y-1 max-h-52 overflow-y-auto pr-1">
-                        <div
-                          v-for="rec in userAttendanceCache[user._id || user.student_id].slice(0, 15)"
-                          :key="rec.event._id"
-                          class="flex items-center gap-3 px-3 py-2 rounded-lg bg-white border border-gray-100 text-xs"
-                        >
-                          <!-- Status dot -->
-                          <div :class="['w-2 h-2 rounded-full flex-shrink-0', rec.overall_status === 'present' ? 'bg-green-500' : rec.overall_status === 'late' ? 'bg-yellow-500' : rec.overall_status === 'excused' ? 'bg-blue-400' : 'bg-red-400']"></div>
-                          <!-- Event title -->
-                          <span class="flex-1 text-gray-700 truncate font-medium">{{ rec.event.title }}</span>
-                          <!-- Date -->
-                          <span class="text-gray-400 flex-shrink-0 font-mono">{{ rec.event.event_date ? new Date(rec.event.event_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) : '—' }}</span>
-                          <!-- Status label -->
-                          <span :class="['px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 capitalize', rec.overall_status === 'present' ? 'bg-green-100 text-green-700' : rec.overall_status === 'late' ? 'bg-yellow-100 text-yellow-700' : rec.overall_status === 'excused' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-600']">{{ rec.overall_status }}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Error state -->
-                    <div v-else-if="attendanceError[user._id || user.student_id]" class="text-sm text-red-500 py-2">
-                      Failed to load attendance. <button @click="fetchStudentAttendance(user)" class="underline">Retry</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </transition>
           </div>
           
           <!-- Pagination Controls -->
@@ -752,6 +633,147 @@
       </transition>
     </div>
 
+    <!-- View User Modal -->
+    <div v-if="showViewUserModal && viewingUser" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4" @click.self="closeViewUserModal">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[88vh] flex flex-col overflow-hidden">
+          <!-- Modal Header -->
+          <div :class="['px-5 py-4 flex items-center gap-4 flex-shrink-0 bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500' : isSOM ? 'from-green-600 to-teal-500' : isCNAHS ? 'from-green-700 to-green-500' : 'from-ssaam-dark to-ssaam-light']">
+            <!-- Avatar -->
+            <div class="w-12 h-12 rounded-full flex-shrink-0 flex items-center justify-center text-white font-bold text-base overflow-hidden border-2 border-white/30 shadow-md">
+              <img v-if="viewingUser.photo && !photoFailed[viewingUser._id || viewingUser.student_id]" :src="viewingUser.photo" class="w-full h-full object-cover" @error="markPhotoFailed(viewingUser._id || viewingUser.student_id)" referrerpolicy="no-referrer" />
+              <span v-else>{{ getInitials(viewingUser) }}</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="text-white font-bold text-base leading-tight truncate">
+                {{ (viewingUser.first_name || viewingUser.firstName) }} {{ (viewingUser.last_name || viewingUser.lastName) }}{{ viewingUser.suffix ? ' ' + viewingUser.suffix : '' }}
+              </h3>
+              <p class="text-white/70 text-xs font-mono mt-0.5">{{ viewingUser.student_id }}</p>
+            </div>
+            <button @click="closeViewUserModal" class="text-white/70 hover:text-white transition p-1.5 rounded-lg hover:bg-white/10 flex-shrink-0">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- Scrollable body -->
+          <div class="flex-1 overflow-y-auto">
+            <!-- Profile Details -->
+            <div class="px-5 pt-4 pb-3 grid grid-cols-2 md:grid-cols-4 gap-3">
+              <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email</p>
+                <p class="text-sm text-gray-800 font-medium break-all">{{ viewingUser.email || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Program</p>
+                <p class="text-sm text-gray-800 font-medium">{{ viewingUser.program || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Year Level</p>
+                <p class="text-sm text-gray-800 font-medium">{{ viewingUser.year_level || '—' }}</p>
+              </div>
+              <div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">RFID</p>
+                <p class="text-sm font-mono font-bold" :class="viewingUser.rfid_code && viewingUser.rfid_code !== 'N/A' ? 'text-green-600' : 'text-red-500'">
+                  {{ viewingUser.rfid_code ? (viewingUser.rfid_code.length > 10 ? viewingUser.rfid_code.substring(0, 10) + '…' : viewingUser.rfid_code) : 'N/A' }}
+                </p>
+              </div>
+              <!-- Badges row -->
+              <div class="col-span-2 md:col-span-3 flex flex-wrap gap-1.5 items-center">
+                <span v-if="viewingUser.role && viewingUser.role !== 'student'" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-blue-100 text-blue-700 capitalize">{{ viewingUser.role }}</span>
+                <span v-else class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-600">Student</span>
+                <span v-if="isMaster && viewingUser.college" :class="['px-2 py-0.5 rounded-full text-[11px] font-bold', viewingUser.college === 'COE' ? 'bg-orange-100 text-orange-700' : viewingUser.college === 'SOM' ? 'bg-green-100 text-green-700' : viewingUser.college === 'CNAHS' ? 'bg-teal-100 text-teal-700' : 'bg-blue-100 text-blue-700']">{{ viewingUser.college }}</span>
+                <span v-if="getAutoVerificationStatus(viewingUser) === true" class="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[11px] font-bold">✓ Verified</span>
+                <span v-else-if="getAutoVerificationStatus(viewingUser) === false" class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-[11px] font-bold">Unverified</span>
+                <span v-else-if="getAutoVerificationStatus(viewingUser) === 'unreadable'" class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-[11px] font-bold">Unreadable</span>
+              </div>
+              <!-- Copy ID -->
+              <div class="col-span-2 md:col-span-1 flex justify-end items-center">
+                <button @click="copyToClipboard(viewingUser.student_id)" class="flex items-center gap-1.5 text-xs text-gray-400 hover:text-gray-700 transition-colors">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  Copy ID
+                </button>
+              </div>
+            </div>
+
+            <!-- Attendance Records -->
+            <div class="px-5 pb-5 border-t border-gray-100 pt-4">
+              <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-3">Attendance Record</p>
+
+              <!-- Loading -->
+              <div v-if="attendanceFetching[viewingUser._id || viewingUser.student_id]" class="flex items-center gap-2 py-6 justify-center text-sm text-gray-400">
+                <svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Loading attendance…
+              </div>
+
+              <!-- No records -->
+              <div v-else-if="userAttendanceCache[viewingUser._id || viewingUser.student_id] && userAttendanceCache[viewingUser._id || viewingUser.student_id].length === 0" class="text-sm text-gray-400 py-4 text-center">
+                No closed events found for this student.
+              </div>
+
+              <!-- Records loaded -->
+              <div v-else-if="userAttendanceCache[viewingUser._id || viewingUser.student_id]">
+                <!-- Summary chips -->
+                <div class="grid grid-cols-4 gap-2 mb-4">
+                  <div class="flex flex-col items-center px-3 py-2.5 rounded-xl bg-green-50 border border-green-100">
+                    <span class="text-base font-black text-green-700">{{ getAttendanceSummary(viewingUser).present }}</span>
+                    <span class="text-[10px] text-green-600 font-medium mt-0.5">Present</span>
+                  </div>
+                  <div class="flex flex-col items-center px-3 py-2.5 rounded-xl bg-red-50 border border-red-100">
+                    <span class="text-base font-black text-red-700">{{ getAttendanceSummary(viewingUser).absent }}</span>
+                    <span class="text-[10px] text-red-600 font-medium mt-0.5">Absent</span>
+                  </div>
+                  <div class="flex flex-col items-center px-3 py-2.5 rounded-xl bg-yellow-50 border border-yellow-100">
+                    <span class="text-base font-black text-yellow-700">{{ getAttendanceSummary(viewingUser).late }}</span>
+                    <span class="text-[10px] text-yellow-600 font-medium mt-0.5">Late</span>
+                  </div>
+                  <div class="flex flex-col items-center px-3 py-2.5 rounded-xl bg-blue-50 border border-blue-100">
+                    <span class="text-base font-black text-blue-700">{{ getAttendanceSummary(viewingUser).excused }}</span>
+                    <span class="text-[10px] text-blue-600 font-medium mt-0.5">Excused</span>
+                  </div>
+                </div>
+
+                <!-- Events list -->
+                <div class="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                  <div
+                    v-for="rec in userAttendanceCache[viewingUser._id || viewingUser.student_id]"
+                    :key="rec.event._id"
+                    class="flex items-center gap-3 px-3 py-2 rounded-xl bg-gray-50 border border-gray-100 text-xs"
+                  >
+                    <div :class="['w-2 h-2 rounded-full flex-shrink-0', rec.overall_status === 'present' ? 'bg-green-500' : rec.overall_status === 'late' ? 'bg-yellow-500' : rec.overall_status === 'excused' ? 'bg-blue-400' : 'bg-red-400']"></div>
+                    <span class="flex-1 text-gray-700 truncate font-medium">{{ rec.event.title }}</span>
+                    <span class="text-gray-400 flex-shrink-0 font-mono text-[11px]">{{ rec.event.event_date ? new Date(rec.event.event_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) : '—' }}</span>
+                    <span :class="['px-2 py-0.5 rounded-full text-[10px] font-bold flex-shrink-0 capitalize', rec.overall_status === 'present' ? 'bg-green-100 text-green-700' : rec.overall_status === 'late' ? 'bg-yellow-100 text-yellow-700' : rec.overall_status === 'excused' ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-600']">{{ rec.overall_status }}</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Error -->
+              <div v-else-if="attendanceError[viewingUser._id || viewingUser.student_id]" class="text-sm text-red-500 py-4 text-center">
+                Failed to load attendance.
+                <button @click="fetchStudentAttendance(viewingUser)" class="underline ml-1">Retry</button>
+              </div>
+
+              <!-- Not fetched yet (shouldn't normally happen) -->
+              <div v-else class="text-sm text-gray-400 py-4 text-center">
+                <button @click="fetchStudentAttendance(viewingUser)" :class="['px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-gradient-to-r', primaryButtonGradient]">Load Attendance</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer actions -->
+          <div class="px-5 py-3 border-t border-gray-100 bg-gray-50 flex items-center gap-2 flex-shrink-0">
+            <button @click="editUser(viewingUser); closeViewUserModal()" :class="['flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold text-white bg-gradient-to-r transition', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600' : isCNAHS ? 'from-green-700 to-green-600 hover:from-green-800 hover:to-green-700' : 'from-ssaam-dark to-ssaam-light hover:opacity-90']">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+              Edit User
+            </button>
+            <button @click="closeViewUserModal" class="ml-auto px-4 py-2 rounded-lg text-xs font-semibold text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition">
+              Close
+            </button>
+          </div>
+        </div>
+      </transition>
+    </div>
+
     <!-- Edit User Modal -->
     <div v-if="showEditUserModal && editingUser" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeEditUserModal">
       <transition name="modal-bounce" appear>
@@ -1067,6 +1089,8 @@ export default {
       // initials fallback inside the same circle can show.
       photoFailed: {},
       expandedUserId: null,
+      showViewUserModal: false,
+      viewingUser: null,
       userAttendanceCache: {},
       attendanceFetching: {},
       attendanceError: {},
@@ -1280,22 +1304,26 @@ export default {
   },
   methods: {
     toggleExpand(user) {
+      this.openViewUserModal(user)
+    },
+    openViewUserModal(user) {
+      this.viewingUser = user
+      this.showViewUserModal = true
       const uid = user._id || user.student_id
-      if (this.expandedUserId === uid) {
-        this.expandedUserId = null
-      } else {
-        this.expandedUserId = uid
-        if (!this.userAttendanceCache[uid] && !this.attendanceFetching[uid]) {
-          this.fetchStudentAttendance(user)
-        }
+      if (!this.userAttendanceCache[uid] && !this.attendanceFetching[uid]) {
+        this.fetchStudentAttendance(user)
       }
+    },
+    closeViewUserModal() {
+      this.showViewUserModal = false
+      this.viewingUser = null
     },
     async fetchStudentAttendance(user) {
       const uid = user._id || user.student_id
       const sid = user.student_id
       if (!sid) return
-      this.$set(this.attendanceFetching, uid, true)
-      this.$set(this.attendanceError, uid, false)
+      this.attendanceFetching = { ...this.attendanceFetching, [uid]: true }
+      this.attendanceError = { ...this.attendanceError, [uid]: false }
       try {
         const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken')
         const college = (user.college) || localStorage.getItem('loginChosenDepartment') || 'CCS'
@@ -1308,14 +1336,14 @@ export default {
         })
         if (res.ok) {
           const data = await res.json()
-          this.$set(this.userAttendanceCache, uid, data.data || [])
+          this.userAttendanceCache = { ...this.userAttendanceCache, [uid]: data.data || [] }
         } else {
-          this.$set(this.attendanceError, uid, true)
+          this.attendanceError = { ...this.attendanceError, [uid]: true }
         }
       } catch {
-        this.$set(this.attendanceError, uid, true)
+        this.attendanceError = { ...this.attendanceError, [uid]: true }
       } finally {
-        this.$set(this.attendanceFetching, uid, false)
+        this.attendanceFetching = { ...this.attendanceFetching, [uid]: false }
       }
     },
     getAttendanceSummary(user) {

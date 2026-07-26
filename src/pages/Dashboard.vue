@@ -1543,23 +1543,21 @@
                 </div>
               </div>
             </div>
-            <div class="p-3 sm:p-4 md:p-6 flex flex-col gap-3">
+            <div class="px-3 sm:px-4 md:px-6 py-3 flex items-center gap-2 flex-wrap border-b border-gray-100">
               <h2 class="sr-only">Attendance Events</h2>
-              <!-- Action buttons row -->
-              <div class="flex gap-2">
-                <button @click="refreshAttendanceSection" :disabled="attendanceLoading" :class="['flex-1 px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-sm font-semibold disabled:opacity-70 text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Refresh">
-                  <svg :class="['w-4 h-4', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                  <span>Refresh</span>
-                </button>
-                <button @click="openCreateEventModal" :class="['flex-1 px-3 py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-sm font-semibold text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Create Event">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                  <span>Create Event</span>
-                </button>
-              </div>
-              <!-- Tab switcher -->
-              <div class="flex gap-2">
-                <button @click="attendanceTab = 'events'" :class="['flex-1 px-4 py-2 rounded-xl text-sm font-semibold transition whitespace-nowrap', attendanceTab === 'events' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">Events</button>
-                <button @click="switchToScannerTab" :class="['flex-1 px-4 py-2 rounded-xl text-sm font-semibold transition whitespace-nowrap', attendanceTab === 'scanner' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-md'] : 'bg-gray-100 text-gray-600 hover:bg-gray-200']">Scanner</button>
+              <!-- Compact action buttons -->
+              <button @click="refreshAttendanceSection" :disabled="attendanceLoading" :class="['px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-xs font-semibold disabled:opacity-70 text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Refresh">
+                <svg :class="['w-3.5 h-3.5', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span>Refresh</span>
+              </button>
+              <button @click="openCreateEventModal" :class="['px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-xs font-semibold text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Create Event">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                <span>Create Event</span>
+              </button>
+              <!-- Tab switcher — right-aligned -->
+              <div class="ml-auto flex gap-0.5 p-0.5 bg-gray-100 rounded-lg">
+                <button @click="attendanceTab = 'events'" :class="['px-3 py-1 rounded-md text-xs font-semibold transition whitespace-nowrap', attendanceTab === 'events' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-sm'] : 'text-gray-500 hover:text-gray-700']">Events</button>
+                <button @click="switchToScannerTab" :class="['px-3 py-1 rounded-md text-xs font-semibold transition whitespace-nowrap', attendanceTab === 'scanner' ? ['bg-gradient-to-r', primaryButtonGradient, 'text-white shadow-sm'] : 'text-gray-500 hover:text-gray-700']">Scanner</button>
               </div>
             </div>
 
