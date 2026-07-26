@@ -1,20 +1,14 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "SSAAM_VERCEL_BACKEND.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": { "distDir": "dist" }
-    }
-  ],
+  "outputDirectory": "dist",
+  "functions": {
+    "api/arms-verify.js": { "runtime": "edge" },
+    "SSAAM_VERCEL_BACKEND.js": { "maxDuration": 30 }
+  },
   "routes": [
     { "src": "/apis/students/arms-verify", "dest": "/api/arms-verify.js" },
-    { "src": "/apis/(.*)", "dest": "/SSAAM_VERCEL_BACKEND.js" },
+    { "src": "/apis/(.*)",                 "dest": "/SSAAM_VERCEL_BACKEND.js" },
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/index.html" }
+    { "src": "/(.*)",                      "dest": "/index.html" }
   ]
 }
