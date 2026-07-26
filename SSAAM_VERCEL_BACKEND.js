@@ -8250,6 +8250,75 @@ app.post('/apis/attendance/sessions/:sessionId/check-face', auth, async (req, re
     }
 });
 
+// Admin: get any student's attendance records by student_id
+app.get('/apis/attendance/student/:studentId/records', auth, requireCoAdminOrAbove, async (req, res) => {
+    try {
+        const { studentId } = req.params;
+        const EventModel = getCollegeModel(AttendanceEvent, CCS_AttendanceEvent, COE_AttendanceEvent, req.college);
+        const SessionModel = getCollegeModel(AttendanceSession, CCS_AttendanceSession, COE_AttendanceSession, req.college);
+        const LogModel = getCollegeModel(AttendanceLog, CCS_AttendanceLog, COE_AttendanceLog, req.college);
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+
+        const student = await StudentModel.findOne({ student_id: studentId }).lean();
+        if (!student) return res.status(404).json({ message: 'Student not found' });
+
+        const toDateOnly = (d) => {
+            if (!d) return null;
+            const dt = new Date(d);
+            if (isNaN(dt.getTime())) return null;
+            const ph = new Date(dt.getTime() + 8 * 60 * 60 * 1000);
+            return `${ph.getUTCFullYear()}-${String(ph.getUTCMonth() + 1).padStart(2, '0')}-${String(ph.getUTCDate()).padStart(2, '0')}`;
+        };
+        const studentRegisteredOn = toDateOnly(student.created_date);
+
+        const events = await EventModel.find({
+            $or: [
+                { is_custom: false },
+                { is_custom: { $exists: false } },
+                { is_custom: null },
+                { is_custom: true, assigned_users: { $in: [student._id] } }
+            ]
+        }).sort({ event_date: -1 });
+
+        const records = await Promise.all(events.map(async (event) => {
+            if (studentRegisteredOn) {
+                const eventOn = toDateOnly(event.event_date);
+                if (eventOn && eventOn < studentRegisteredOn) return null;
+            }
+
+            const sessions = await SessionModel.find({ event_id: event._id }).sort({ start_time: 1 });
+            const logs = await LogModel.find({ event_id: event._id, student_id: student._id });
+
+            const sessionRecords = sessions.map(session => {
+                const log = logs.find(l => l.session_id?.toString() === session._id.toString());
+                let status = 'absent';
+                if (log) {
+                    if (log.excused) status = 'excused';
+                    else if (log.check_in_at && (log.check_out_at || session.check_in_only)) status = log.is_late ? 'late' : 'present';
+                    else if (log.check_in_at) status = 'incomplete';
+                }
+                return { session: { _id: session._id, label: session.label, status: session.status, check_in_only: session.check_in_only || false }, attendance: { check_in_at: log?.check_in_at || null, check_out_at: log?.check_out_at || null, is_late: log?.is_late || false, excused: log?.excused || false, status } };
+            });
+
+            const completedSessions = sessionRecords.filter(s => ['present','late','excused'].includes(s.attendance.status));
+            const excusedSessions = sessionRecords.filter(s => s.attendance.status === 'excused');
+            const lateSessions = sessionRecords.filter(s => s.attendance.status === 'late');
+            const incompleteSessions = sessionRecords.filter(s => s.attendance.status === 'incomplete');
+            let overallStatus = 'absent';
+            if (sessions.length > 0) {
+                if (excusedSessions.length > 0) overallStatus = 'excused';
+                else if (completedSessions.length === sessions.length) overallStatus = lateSessions.length > 0 ? 'late' : 'present';
+                else if (completedSessions.length > 0 || incompleteSessions.length > 0) overallStatus = event.status === 'closed' ? 'absent' : 'incomplete';
+            } else if (event.status === 'closed') overallStatus = 'absent';
+
+            return { event: { _id: event._id, title: event.title, event_date: event.event_date, status: event.status, is_custom: event.is_custom }, sessions: sessionRecords, overall_status: overallStatus };
+        }));
+
+        const filteredRecords = records.filter(r => r !== null && r.event.status === 'closed');
+        res.json({ data: filteredRecords });
+    } catch (err) { internalError(res, err); }
+});
+
 // Get student's own attendance records - now session-based
 app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) => {
     try {
