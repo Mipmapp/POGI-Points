@@ -1422,78 +1422,13 @@ const verifyWithARMS = async () => {
   armsLoading.value = true
 
   const doVerify = async () => {
-    const ARMS_TOKEN_URL = 'https://jrmsu-arms.online/api/version-2/services/credential/token/request'
-    const ARMS_LOGIN_URL = 'https://jrmsu-arms.online/api/version-2/services/student/account/login'
-    const ARMS_HEADERS   = {
-      'User-Agent': 'Coderstation-Protocol',
-      'Referer':    'https://jrmsu-election-system.vercel.app/',
-      'Origin':     'https://jrmsu-election-system.vercel.app',
-    }
-    const fail = (message) => ({ response: { ok: false }, data: { message } })
-
-    // Step 1 — get bearer token
-    let tokenData
-    try {
-      const tokenRes = await fetch(ARMS_TOKEN_URL, {
-        method:  'POST',
-        headers: { ...ARMS_HEADERS, 'Api-Key': 'asaguin.jr@gmail.com', 'Api-Secret': 'D43m0nCh41N' },
-      })
-      if (!tokenRes.ok) return fail('ARMS service error. Please try again later.')
-      tokenData = await tokenRes.json()
-    } catch {
-      return fail('Could not reach JRMSU ARMS portal. Please try again later.')
-    }
-
-    const secretKey = tokenData.Secret_Key ?? tokenData.SecretKey ?? tokenData.secretKey ?? null
-    const jwToken   = tokenData.JWToken    ?? tokenData.Token     ?? tokenData.jwToken   ?? null
-    if (!secretKey || !jwToken) return fail('ARMS token response was invalid. Please try again.')
-
-    // Step 2 — authenticate student
-    let loginData
-    try {
-      const loginRes = await fetch(ARMS_LOGIN_URL, {
-        method:  'POST',
-        headers: {
-          ...ARMS_HEADERS,
-          'Secret-Key':    secretKey,
-          'Token':         jwToken,
-          'Authorization': `Bearer ${jwToken}`,
-          'Content-Type':  'application/json',
-        },
-        body: JSON.stringify({ Username: sid, Password: armsPassword.value }),
-      })
-      loginData = await loginRes.json()
-      if (!loginRes.ok || !loginData?.Record) return fail('Incorrect Student ID or ARMS portal password. Please check and try again.')
-    } catch {
-      return fail('Could not reach JRMSU ARMS portal. Please try again later.')
-    }
-
-    const record    = loginData.Record
-    const rawStatus = record.Enrollment_Status ?? record.enrollment_status ?? record.EnrollmentStatus ?? null
-    const statusStr = rawStatus ? String(rawStatus).toLowerCase().trim() : null
-    const isEnrolled = !statusStr || statusStr.includes('enroll') || statusStr === 'active'
-    if (!isEnrolled) return fail(`Your enrollment status is "${rawStatus}". Only currently enrolled students may register.`)
-
-    return {
-      response: { ok: true },
-      data: {
-        message: 'ARMS verification successful.',
-        student: {
-          studentId:        record.Student_ID        ?? record.student_id   ?? sid,
-          studentName:      record.Student_Name      ?? record.student_name ?? '',
-          email:            record.Email             ?? '',
-          college:          record.College           ?? '',
-          collegeCode:      record.College_Code      ?? record.college_code ?? '',
-          programEnrolled:  record.Program_Enrolled  ?? record.program      ?? '',
-          programCode:      record.Program_Code      ?? record.program_code ?? '',
-          yearLevel:        record.Year_Level        ?? record.year_level   ?? '',
-          semester:         record.Semester          ?? '',
-          schoolYear:       record.School_Year       ?? '',
-          enrollmentStatus: rawStatus                ?? '',
-          sex:              record.Sex               ?? record.Gender       ?? '',
-        },
-      },
-    }
+    const response = await fetch(buildAPIUrl('/apis/students/arms-verify'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer SSAAMStudents' },
+      body: JSON.stringify({ student_id: sid, password: armsPassword.value })
+    })
+    const data = await response.json()
+    return { response, data }
   }
 
   try {

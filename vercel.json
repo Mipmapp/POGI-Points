@@ -12,6 +12,7 @@
     }
   ],
   "routes": [
+    { "src": "/apis/students/arms-verify", "dest": "/api/arms-verify.js" },
     { "src": "/apis/(.*)", "dest": "/SSAAM_VERCEL_BACKEND.js" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
