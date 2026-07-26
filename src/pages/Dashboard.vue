@@ -1564,7 +1564,7 @@
               <!-- Search + Compact Pagination Row -->
               <div class="space-y-2.5">
                 <!-- Search Input -->
-                <div class="relative">
+                <div class="relative max-w-xs">
                   <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                   <input
                     v-model="attendanceSearchQuery"
@@ -1616,7 +1616,7 @@
               </div>
 
               <!-- Event Cards -->
-              <transition-group v-else name="event-slide-in" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 relative" appear>
+              <transition-group v-else name="event-slide-in" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 relative items-start" appear>
                 <div v-for="event in paginatedAttendanceEvents" :key="event._id" :class="['bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-shadow', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-emerald-100' : 'border-blue-100']">
                   <!-- Clickable Header -->
                   <div class="p-3 sm:p-4 cursor-pointer select-none" @click="toggleEventExpansion(event._id)">
@@ -1798,7 +1798,7 @@
                   <p class="text-gray-500 text-xs mt-0.5">Choose an active event to start scanning RFID cards</p>
                 </div>
                 <!-- Custom themed dropdown -->
-                <div class="w-full relative">
+                <div class="w-full max-w-xs relative">
                   <!-- Trigger button -->
                   <button
                     type="button"
@@ -10390,7 +10390,7 @@ const noPhotoCache = {} // studentId -> expiry timestamp (ms)
 // Attendance Events Search and Pagination
 const attendanceSearchQuery = ref('')
 const attendanceCurrentPage = ref(1)
-const attendanceItemsPerPage = 5
+const attendanceItemsPerPage = 4
 
 // Helper to derive a stable student key from log or student object
 const deriveStudentKey = (obj) => {
