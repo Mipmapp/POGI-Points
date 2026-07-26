@@ -1530,7 +1530,7 @@
 
         <div v-if="currentPage === 'attendance'" class="space-y-6">
           <!-- Admin Attendance Management -->
-          <div v-if="isAdminLike && inRoleView" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden max-w-3xl">
+          <div v-if="isAdminLike && inRoleView" class="bg-white rounded-2xl shadow-sm border border-gray-200 max-w-3xl">
             <!-- Flat section header -->
             <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div class="flex items-center gap-3">
@@ -1618,7 +1618,7 @@
               </div>
 
               <!-- Event Cards -->
-              <transition-group v-else name="event-slide-in" tag="div" class="space-y-2.5 relative" appear>
+              <transition-group v-else name="event-slide-in" tag="div" class="grid grid-cols-2 gap-2.5 relative" appear>
                 <div v-for="event in paginatedAttendanceEvents" :key="event._id" :class="['bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-shadow', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-emerald-100' : 'border-blue-100']">
                   <!-- Clickable Header -->
                   <div class="p-3 sm:p-4 cursor-pointer select-none" @click="toggleEventExpansion(event._id)">
@@ -1789,7 +1789,7 @@
               </div>
 
               <!-- Step 1: No event selected -->
-              <div v-if="!selectedEvent" :class="['rounded-2xl border-2 border-dashed p-6 flex flex-col items-center gap-4', isCOE ? 'border-orange-200 bg-orange-50/40' : isSOM ? 'border-green-200 bg-green-50/40' : isCNAHS ? 'border-emerald-200 bg-emerald-50/40' : 'border-blue-200 bg-blue-50/40']">
+              <div v-if="!selectedEvent" :class="['rounded-2xl border-2 border-dashed p-6 flex flex-col items-center gap-4 max-w-sm mx-auto w-full', isCOE ? 'border-orange-200 bg-orange-50/40' : isSOM ? 'border-green-200 bg-green-50/40' : isCNAHS ? 'border-emerald-200 bg-emerald-50/40' : 'border-blue-200 bg-blue-50/40']">
                 <!-- Icon -->
                 <div :class="['w-14 h-14 rounded-2xl flex items-center justify-center', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-emerald-100' : 'bg-blue-100']">
                   <svg :class="['w-7 h-7', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
