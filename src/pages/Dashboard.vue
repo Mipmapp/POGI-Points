@@ -1528,7 +1528,7 @@
 
         <div v-if="currentPage === 'attendance'" class="space-y-6">
           <!-- Admin Attendance Management -->
-          <div v-if="isAdminLike && inRoleView" class="bg-white rounded-2xl shadow-sm border border-gray-200 max-w-3xl">
+          <div v-if="isAdminLike && inRoleView" class="bg-white rounded-2xl shadow-sm border border-gray-200 w-full">
             <!-- Flat section header -->
             <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div class="flex items-center gap-3">
@@ -1616,7 +1616,7 @@
               </div>
 
               <!-- Event Cards -->
-              <transition-group v-else name="event-slide-in" tag="div" class="grid grid-cols-2 gap-2.5 relative" appear>
+              <transition-group v-else name="event-slide-in" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 relative" appear>
                 <div v-for="event in paginatedAttendanceEvents" :key="event._id" :class="['bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-shadow', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-emerald-100' : 'border-blue-100']">
                   <!-- Clickable Header -->
                   <div class="p-3 sm:p-4 cursor-pointer select-none" @click="toggleEventExpansion(event._id)">
