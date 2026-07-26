@@ -80,6 +80,7 @@ app.post('/arms/login', async (req, res) => {
         }
 
         const record = loginData.Record;
+        console.log(record)
 
         return res.json({
             message: 'ARMS login successful.',
