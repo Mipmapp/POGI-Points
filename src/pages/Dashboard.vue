@@ -1530,42 +1530,16 @@
 
         <div v-if="currentPage === 'attendance'" class="space-y-6">
           <!-- Admin Attendance Management -->
-          <div v-if="isAdminLike && inRoleView" class="relative bg-white rounded-3xl shadow-xl border border-gray-100 overflow-visible">
-            <div :class="['relative h-24 sm:h-28 overflow-hidden rounded-t-3xl', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
-              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-              <div class="light-sweep"></div>
-              <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          <div v-if="isAdminLike && inRoleView" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+            <!-- Flat section header -->
+            <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div :class="['w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                  <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                 </div>
-                <div class="flex-1 min-w-0">
-                  <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Attendance Events</h2>
-                  <p class="text-white/70 text-xs sm:text-sm mt-0.5">Manage events, sessions, and RFID scanner</p>
-                </div>
-              </div>
-              <!-- Info button sits inside the hero visually, but tooltip escapes via outer overflow-visible -->
-              <div class="absolute top-3 right-3 group z-10">
-                <button class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all" title="About Attendance Events">
-                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
-                </button>
-              </div>
-            </div>
-            <!-- Tooltip rendered OUTSIDE the overflow-hidden hero, anchored top-right of card -->
-            <div class="absolute top-3 right-3 group z-50 pointer-events-none">
-              <div class="w-8 h-8 pointer-events-auto"></div>
-              <div :class="['invisible group-hover:visible absolute right-0 top-full mt-1 w-64 p-3 rounded-xl shadow-xl border text-xs space-y-2 pointer-events-none', isCOE ? 'bg-orange-50 border-orange-200 text-orange-900' : isSOM ? 'bg-green-50 border-green-200 text-green-900' : isCNAHS ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-blue-50 border-blue-200 text-blue-900']">
-                <div class="font-bold flex items-center gap-1">
-                  <svg class="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"></path></svg>
-                  Attendance Events
-                </div>
-                <p>Browse active and upcoming events. Click an event to view and manage its sessions.</p>
-                <div class="pt-2 border-t" :class="isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-emerald-200' : 'border-blue-200'">
-                  <p class="font-semibold mb-1">What you can do:</p>
-                  <ul class="space-y-1">
-                    <li class="flex gap-1"><span class="font-bold">✓</span><span>Auto-select session (1 active) or choose manually</span></li>
-                    <li class="flex gap-1"><span class="font-bold">✓</span><span>View session details and times</span></li>
-                    <li class="flex gap-1"><span class="font-bold">✓</span><span>Manage attendance with RFID Scanner</span></li>
-                  </ul>
+                <div>
+                  <h2 class="text-base font-bold text-gray-900">Attendance Events</h2>
+                  <p class="text-xs text-gray-500 mt-0.5">Manage events, sessions, and RFID scanner</p>
                 </div>
               </div>
             </div>
@@ -2927,23 +2901,22 @@
         </div>
 
         <!-- Pending Approvals Page -->
-        <div v-if="currentPage === 'pending' && (isAdminLike)" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-          <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
-            <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-            <div class="light-sweep"></div>
-            <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
-              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <div v-if="currentPage === 'pending' && (isAdminLike)" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <!-- Flat section header -->
+          <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               </div>
-              <div class="flex-1 min-w-0">
-                <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Pending Approvals</h2>
-                <p class="text-white/70 text-xs sm:text-sm mt-0.5">Review and approve or reject student registrations</p>
+              <div>
+                <h2 class="text-base font-bold text-gray-900">Pending Approvals</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Review and approve or reject student registrations</p>
               </div>
-              <button @click="refreshPendingSection" :disabled="pendingLoading" class="px-3 sm:px-4 py-2 rounded-xl text-white text-sm font-semibold bg-white/20 hover:bg-white/30 border border-white/20 transition flex items-center gap-2 disabled:opacity-60 flex-shrink-0">
-                <svg :class="['w-4 h-4', pendingLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="hidden sm:inline">Refresh</span>
-              </button>
             </div>
+            <button @click="refreshPendingSection" :disabled="pendingLoading" :class="['flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition disabled:opacity-60', isCOE ? 'bg-orange-600 hover:bg-orange-700' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700']">
+              <svg :class="['w-4 h-4', pendingLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              Refresh
+            </button>
           </div>
           <div class="p-3 sm:p-4 md:p-6">
 
@@ -3077,23 +3050,22 @@
         </div>
 
         <!-- User Management Page -->
-        <div v-if="currentPage === 'users' && (isAdminLike)" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-          <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
-            <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-            <div class="light-sweep"></div>
-            <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
-              <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-                <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <div v-if="currentPage === 'users' && (isAdminLike)" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <!-- Flat section header -->
+          <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
               </div>
-              <div class="flex-1 min-w-0">
-                <h2 class="text-lg sm:text-xl font-extrabold text-white tracking-tight">Manage Users</h2>
-                <p class="text-white/70 text-xs sm:text-sm mt-0.5">View, search, edit, and manage student accounts</p>
+              <div>
+                <h2 class="text-base font-bold text-gray-900">Manage Users</h2>
+                <p class="text-xs text-gray-500 mt-0.5">View, search, edit, and manage student accounts</p>
               </div>
-              <button @click="refreshStudents" :disabled="isRefreshing" class="px-3 sm:px-4 py-2 rounded-xl text-white text-sm font-semibold bg-white/20 hover:bg-white/30 border border-white/20 transition flex items-center gap-2 disabled:opacity-60 flex-shrink-0">
-                <svg :class="['w-4 h-4', isRefreshing ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span class="hidden sm:inline">{{ isRefreshing ? 'Refreshing...' : 'Refresh' }}</span>
-              </button>
             </div>
+            <button @click="refreshStudents" :disabled="isRefreshing" :class="['flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition disabled:opacity-60', isCOE ? 'bg-orange-600 hover:bg-orange-700' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700']">
+              <svg :class="['w-4 h-4', isRefreshing ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+              {{ isRefreshing ? 'Refreshing...' : 'Refresh' }}
+            </button>
           </div>
           <div class="p-3 sm:p-4 md:p-6">
           <div class="mb-4">

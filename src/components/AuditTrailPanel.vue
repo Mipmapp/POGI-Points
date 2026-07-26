@@ -1,31 +1,30 @@
 <template>
   <div class="space-y-4">
 
-    <!-- Header card -->
-    <div :class="['rounded-3xl shadow-xl border overflow-hidden', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-green-100' : 'border-blue-100']">
-      <div :class="['px-5 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3', isCOE ? 'bg-gradient-to-r from-orange-700 to-red-600' : isSOM ? 'bg-gradient-to-r from-green-700 to-yellow-600' : isCNAHS ? 'bg-gradient-to-r from-green-800 to-green-600' : 'bg-gradient-to-r from-blue-800 via-blue-600 to-blue-400']">
+    <!-- Flat header card -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+          <div :class="['w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+            <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
             </svg>
           </div>
           <div>
-            <h2 class="text-white font-bold text-base leading-tight">College Audit Trail</h2>
-            <p class="text-white/70 text-xs mt-0.5">All admin actions for {{ collegeName }}</p>
+            <h2 class="text-base font-bold text-gray-900">College Audit Trail</h2>
+            <p class="text-xs text-gray-500 mt-0.5">All admin actions for {{ collegeName }}</p>
           </div>
         </div>
         <button @click="fetchLogs" :disabled="loading"
-          class="flex items-center gap-2 bg-white/15 hover:bg-white/25 text-white text-xs font-medium px-4 py-2 rounded-full transition-all duration-200 border border-white/20 flex-shrink-0">
-          <svg :class="['w-3.5 h-3.5', loading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          :class="['flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition disabled:opacity-60', isCOE ? 'bg-orange-600 hover:bg-orange-700' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700']">
+          <svg :class="['w-4 h-4', loading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
           </svg>
           Refresh
         </button>
       </div>
-
       <!-- Stats strip -->
-      <div class="bg-white grid grid-cols-3 divide-x divide-gray-100">
+      <div class="grid grid-cols-3 divide-x divide-gray-100">
         <div class="px-4 py-3 text-center">
           <p class="text-lg font-bold" :class="themeText">{{ totalLogs }}</p>
           <p class="text-xs text-gray-500">Total Actions</p>

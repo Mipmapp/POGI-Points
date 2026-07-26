@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-white rounded-lg shadow-lg p-3 md:p-8">
+  <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 md:p-6">
     <!-- Loading State -->
     <div v-if="isLoading" class="flex items-center justify-center py-12">
       <div :class="['animate-spin rounded-full h-12 w-12 border-b-2', isCOE ? 'border-orange-700' : isSOM ? 'border-green-600' : isCNAHS ? 'border-green-700' : 'border-blue-600']"></div>

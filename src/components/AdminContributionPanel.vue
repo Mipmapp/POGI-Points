@@ -1,28 +1,21 @@
 <template>
   <div class="space-y-6">
-    <!-- Banner Header -->
-    <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-      <div class="relative h-32 sm:h-36 bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light overflow-hidden">
-        <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-        <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-blue-400/20 blur-3xl animate-pulse"></div>
-        <div class="absolute -bottom-16 -left-16 w-56 h-56 rounded-full bg-blue-500/20 blur-3xl"></div>
-        <div class="light-sweep"></div>
-        <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
-          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 flex items-center justify-center flex-shrink-0">
-            <svg class="w-5 h-5 sm:w-7 sm:h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <!-- Flat Header -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+      <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
             </svg>
           </div>
-          <div class="flex-1 min-w-0">
-            <h2 class="text-xl sm:text-2xl font-extrabold text-white tracking-tight">Contribution Management</h2>
-            <p class="text-white/70 text-sm mt-0.5">Track and manage student payment contributions</p>
+          <div>
+            <h2 class="text-base font-bold text-gray-900">Contribution Management</h2>
+            <p class="text-xs text-gray-500 mt-0.5">Track and manage student payment contributions</p>
           </div>
-          <div class="flex-shrink-0 hidden sm:flex items-center gap-3">
-            <div class="text-center bg-white/15 rounded-2xl px-4 py-2 border border-white/20">
-              <p class="text-white/70 text-[10px] uppercase tracking-wider">Matched</p>
-              <p class="text-white font-extrabold text-xl">{{ serverFilteredCount !== null ? serverFilteredCount : filteredCount }}</p>
-            </div>
-          </div>
+        </div>
+        <div class="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 text-xs font-bold text-blue-700 flex-shrink-0">
+          {{ serverFilteredCount !== null ? serverFilteredCount : filteredCount }} matched
         </div>
       </div>
 
