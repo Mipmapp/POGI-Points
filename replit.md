@@ -10,19 +10,20 @@ Vue 3 + Vite frontend for JRMSU (Jose Rizal Memorial State University) College o
 
 ## Running the app
 
-Start the frontend dev server (port 5000):
+Two workflows run in parallel:
 
-```
-npm run dev
-```
+| Workflow | Command | Port |
+|---|---|---|
+| Start application | `npm run dev` | 5000 |
+| Backend Server | `node server.js` | 3001 |
 
-API calls to `/apis/*` are proxied to `https://ssaam-api.vercel.app` via Vite's dev server proxy.
+API calls from the frontend (`/apis/*`) are proxied by Vite to the local Express backend on port 3001, which connects to MongoDB Atlas.
 
 ## Notes
 
-- `vite-plugin-pwa` was removed because its `workbox-expiration` transitive dependency was blocked by the Replit Package Firewall. PWA features (service worker, offline caching) are disabled in dev mode; re-add the plugin if you need a production build with PWA support.
-- The local Express backend (`server.js` / `SSAAM_VERCEL_BACKEND.js`) is present but not used in this setup — the frontend connects to the already-deployed Vercel backend.
+- `vite-plugin-pwa` was removed because its `workbox-expiration` transitive dependency was blocked by the Replit Package Firewall. PWA features (service worker, offline caching) are disabled — re-add the plugin if a production build with PWA support is needed.
+- All credentials (MongoDB, Cloudinary, JWT secret, Gmail accounts) are loaded from `.env` via `dotenv`.
 
 ## User preferences
 
-- Run frontend only; connect to the existing Vercel backend.
+- Run both frontend and local backend on Replit.
