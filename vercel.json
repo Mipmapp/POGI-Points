@@ -2,7 +2,7 @@
   "version": 2,
   "outputDirectory": "dist",
   "functions": {
-    "api/arms-verify.js": { "runtime": "edge" },
+    "api/arms-verify.js": {},
     "SSAAM_VERCEL_BACKEND.js": { "maxDuration": 30 }
   },
   "routes": [
