@@ -8,7 +8,7 @@
       <div class="welcome-card bg-white w-full sm:max-w-xl sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl flex flex-col" style="max-height: 92vh;">
 
         <!-- Banner image -->
-        <div class="flex-shrink-0 relative overflow-hidden" style="height: 130px;">
+        <div class="flex-shrink-0 relative overflow-hidden" style="height: 180px;">
           <img src="/img/ssaam_popup.png" alt="SSAAM Banner" class="w-full h-full object-cover object-center" />
           <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60"></div>
           <div class="absolute bottom-3 left-4 flex items-center gap-2">

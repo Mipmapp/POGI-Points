@@ -644,12 +644,23 @@
   </transition>
 
   <div class="md:flex md:h-screen md:overflow-hidden">
-    <!-- Sidebar (Hidden on mobile, visible on desktop) -->
-    <div :class="[
-      'hidden md:flex bg-gradient-to-b text-white flex-col order-1 border-r border-white/10 h-screen shadow-2xl sticky top-0 self-start transition-all duration-300 ease-in-out overflow-hidden',
-      sidebarCollapsed ? 'w-16' : 'w-64',
-      sidebarGradient
-    ]">
+    <!-- Sidebar wrapper (Hidden on mobile, visible on desktop) -->
+    <div class="hidden md:block relative flex-shrink-0 sticky top-0 self-start h-screen order-1">
+      <!-- Collapse toggle — sits on the sidebar's right border line -->
+      <button
+        @click="sidebarCollapsed = !sidebarCollapsed"
+        :title="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+        class="absolute top-1/3 -translate-y-1/2 -right-3 z-20 flex items-center justify-center w-6 h-10 bg-[#0a1540] hover:bg-[#1a3a8f] rounded-r-xl shadow-lg border border-white/20 border-l-0 transition-all duration-200 hover:w-7 group"
+      >
+        <svg :class="['w-3 h-3 text-white/60 group-hover:text-white transition-transform duration-300', sidebarCollapsed ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
+        </svg>
+      </button>
+      <div :class="[
+        'flex bg-gradient-to-b text-white flex-col border-r border-white/10 h-screen shadow-2xl transition-all duration-300 ease-in-out overflow-hidden',
+        sidebarCollapsed ? 'w-16' : 'w-64',
+        sidebarGradient
+      ]">
       <!-- Logo / Header -->
       <div :class="['border-b border-white/15 flex-shrink-0 bg-white/5 backdrop-blur-sm flex items-center transition-all duration-300', sidebarCollapsed ? 'px-0 py-4 justify-center' : 'px-5 py-5 gap-3']">
         <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
@@ -828,26 +839,13 @@
         </button>
       </div>
 
-      <!-- Footer / Collapse toggle -->
-      <div :class="['border-t border-white/10 flex-shrink-0 transition-all duration-300', sidebarCollapsed ? 'px-2 py-3' : 'px-5 py-3']">
-        <!-- Collapse toggle button -->
-        <button @click="sidebarCollapsed = !sidebarCollapsed"
-          :title="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
-          :class="['w-full flex items-center rounded-xl py-2 transition-all duration-200 hover:bg-white/10 text-white/50 hover:text-white mb-2', sidebarCollapsed ? 'justify-center px-0' : 'gap-2 px-2']"
-        >
-          <!-- chevron left when expanded, chevron right when collapsed -->
-          <svg :class="['w-4 h-4 flex-shrink-0 transition-transform duration-300', sidebarCollapsed ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/>
-          </svg>
-          <span v-if="!sidebarCollapsed" class="text-[10px] font-medium whitespace-nowrap">Collapse sidebar</span>
-        </button>
-        <!-- Credits (hidden when collapsed) -->
-        <template v-if="!sidebarCollapsed">
-          <p class="text-white/30 text-[10px]">Powered by</p>
-          <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
-        </template>
+      <!-- Footer / Credits -->
+      <div v-if="!sidebarCollapsed" class="border-t border-white/10 flex-shrink-0 px-5 py-3">
+        <p class="text-white/30 text-[10px]">Powered by</p>
+        <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
       </div>
     </div>
+    </div><!-- /sidebar wrapper -->
 
     <!-- Mobile Sidebar (Slide-in menu for mobile) with Animation -->
     <transition name="slide-in">
@@ -1789,7 +1787,7 @@
               </div>
 
               <!-- Step 1: No event selected -->
-              <div v-if="!selectedEvent" :class="['rounded-2xl border-2 border-dashed p-6 flex flex-col items-center gap-4 max-w-sm mx-auto w-full', isCOE ? 'border-orange-200 bg-orange-50/40' : isSOM ? 'border-green-200 bg-green-50/40' : isCNAHS ? 'border-emerald-200 bg-emerald-50/40' : 'border-blue-200 bg-blue-50/40']">
+              <div v-if="!selectedEvent" :class="['rounded-2xl border-2 border-dashed p-6 flex flex-col items-center gap-4 w-full', isCOE ? 'border-orange-200 bg-orange-50/40' : isSOM ? 'border-green-200 bg-green-50/40' : isCNAHS ? 'border-emerald-200 bg-emerald-50/40' : 'border-blue-200 bg-blue-50/40']">
                 <!-- Icon -->
                 <div :class="['w-14 h-14 rounded-2xl flex items-center justify-center', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-emerald-100' : 'bg-blue-100']">
                   <svg :class="['w-7 h-7', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-blue-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h4v4H3V4zm0 8h4v4H3v-4zm0 8h4v4H3v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4zm8-16h4v4h-4V4zm0 8h4v4h-4v-4zm0 8h4v4h-4v-4z"></path></svg>
