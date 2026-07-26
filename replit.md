@@ -1,37 +1,28 @@
 # SSAAM — Student School Activities Attendance Monitoring
 
-A web-based attendance monitoring system for JRMSU-CCS (Jose Rizal Memorial State University – College of Computing Studies). Built with Vue 3 + Vite (frontend) and Express.js (backend), using MongoDB Atlas, Cloudinary, face-detection, and email notifications.
-
-## How to run
-
-Two workflows run in parallel (configured in `.replit`):
-
-| Workflow | Command | Port |
-|---|---|---|
-| Start application | `npm run dev` | 5000 (frontend) |
-| Backend Server | `node server.js` | 3001 (backend) |
-
-The Vite dev server proxies `/apis/*` requests to the Express backend at `localhost:3001`, so the frontend and backend work seamlessly together.
+Vue 3 + Vite frontend for JRMSU (Jose Rizal Memorial State University) College of Computing Studies student government activities and attendance tracking system.
 
 ## Stack
 
-- **Frontend**: Vue 3, Vite, Tailwind CSS, Vue Router, PWA (vite-plugin-pwa)
-- **Backend**: Express.js (`SSAAM_VERCEL_BACKEND.js` → `server.js`)
-- **Database**: MongoDB Atlas (Mongoose)
-- **Storage**: Cloudinary (image uploads)
-- **Auth**: JWT + bcrypt
-- **Face detection**: @vladmandic/face-api
-- **Email**: Nodemailer (multiple Gmail accounts)
+- **Frontend**: Vue 3, Vite, Tailwind CSS, Vue Router
+- **Backend**: Hosted on Vercel at `https://ssaam-api.vercel.app` (not running locally)
+- **Auth**: JWT-based, handled by the Vercel backend
 
-## Environment
+## Running the app
 
-Credentials are stored in `.env` and `.replit` `[userenv]` sections. Key variables:
-- `MONGODB_URI` — MongoDB Atlas connection string
-- `CLOUDINARY_URL` / `CLOUDINARY_CLOUD_NAME` — image storage
-- `JWT_SECRET` — token signing
-- `GMAIL_ACCOUNTS` — JSON array of Gmail credentials for email dispatch
-- `VITE_API_URL` — set to `""` (uses Vite proxy in dev; configure for production)
+Start the frontend dev server (port 5000):
+
+```
+npm run dev
+```
+
+API calls to `/apis/*` are proxied to `https://ssaam-api.vercel.app` via Vite's dev server proxy.
+
+## Notes
+
+- `vite-plugin-pwa` was removed because its `workbox-expiration` transitive dependency was blocked by the Replit Package Firewall. PWA features (service worker, offline caching) are disabled in dev mode; re-add the plugin if you need a production build with PWA support.
+- The local Express backend (`server.js` / `SSAAM_VERCEL_BACKEND.js`) is present but not used in this setup — the frontend connects to the already-deployed Vercel backend.
 
 ## User preferences
 
-_None recorded yet._
+- Run frontend only; connect to the existing Vercel backend.
