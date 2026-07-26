@@ -1530,7 +1530,7 @@
 
         <div v-if="currentPage === 'attendance'" class="space-y-6">
           <!-- Admin Attendance Management -->
-          <div v-if="isAdminLike && inRoleView" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          <div v-if="isAdminLike && inRoleView" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden max-w-3xl">
             <!-- Flat section header -->
             <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
               <div class="flex items-center gap-3">
@@ -1725,92 +1725,67 @@
             <!-- RFID Scanner Tab -->
             <div v-if="attendanceTab === 'scanner'" class="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 space-y-3">
               <!-- RFID Scanner Lock Controls -->
-              <div v-if="selectedEvent || selectedSession" :class="['bg-gradient-to-r border rounded-xl p-3 sm:p-4', isCOE ? 'from-orange-50 to-red-50 border-orange-200' : isSOM ? 'from-green-50 to-teal-50 border-green-200' : isCNAHS ? 'from-green-50 to-teal-50 border-green-200' : 'from-blue-50 to-blue-50 border-blue-200']">
-                <h3 :class="['font-semibold mb-3 sm:mb-4 flex items-center gap-2 text-sm sm:text-base', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
-                  <svg class="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                  Attendance Mode (Select One)
-                </h3>
-                
-                <!-- Active Mode Indicator -->
-                <div class="mb-4 p-3 rounded-lg" :class="[
-                  effectiveRfid.checkInEnabled ? 'bg-green-100 border border-green-300' :
-                  effectiveRfid.checkOutEnabled ? 'bg-blue-100 border border-blue-300' :
-                  'bg-gray-100 border border-gray-300'
-                ]">
-                  <div class="flex items-center gap-2">
-                    <svg v-if="effectiveRfid.checkInEnabled" class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                    <svg v-else-if="effectiveRfid.checkOutEnabled" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                    <svg v-else class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path></svg>
-                    <span class="font-semibold" :class="[
-                       effectiveRfid.checkInEnabled ? 'text-green-700' :
-                       effectiveRfid.checkOutEnabled ? 'text-blue-700' :
-                      'text-gray-600'
-                    ]">
-                       {{ effectiveRfid.checkInEnabled ? 'CHECK-IN MODE ACTIVE' : 
-                         effectiveRfid.checkOutEnabled ? 'CHECK-OUT MODE ACTIVE' : 
-                         'NO MODE SELECTED - SCANNING DISABLED' }}
-                    </span>
-                  </div>
-                  <p class="text-xs mt-1" :class="[
-                    effectiveRfid.checkInEnabled ? 'text-green-600' :
-                    effectiveRfid.checkOutEnabled ? 'text-blue-600' :
-                    'text-gray-500'
-                  ]">
-                    {{ effectiveRfid.checkInEnabled ? 'Students will be marked as checked in when scanning. Late threshold applies.' : 
-                       effectiveRfid.checkOutEnabled ? 'Students will be marked as checked out when scanning.' : 
-                       'Select a mode below to enable RFID scanning.' }}
-                  </p>
+              <div v-if="selectedEvent || selectedSession" :class="['bg-gradient-to-r border rounded-xl p-3', isCOE ? 'from-orange-50 to-red-50 border-orange-200' : isSOM ? 'from-green-50 to-teal-50 border-green-200' : isCNAHS ? 'from-green-50 to-teal-50 border-green-200' : 'from-blue-50 to-blue-50 border-blue-200']">
+                <!-- Header row -->
+                <div class="flex items-center gap-1.5 mb-2">
+                  <svg class="w-3.5 h-3.5 flex-shrink-0" :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                  <h3 :class="['font-semibold text-xs uppercase tracking-wide', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">Attendance Mode</h3>
+                  <!-- Inline status pill -->
+                  <span :class="['ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full', effectiveRfid.checkInEnabled ? 'bg-green-200 text-green-800' : effectiveRfid.checkOutEnabled ? 'bg-blue-200 text-blue-800' : 'bg-gray-200 text-gray-600']">
+                    {{ effectiveRfid.checkInEnabled ? '● Check-In Active' : effectiveRfid.checkOutEnabled ? '● Check-Out Active' : '○ No Mode' }}
+                  </span>
                 </div>
-                
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                  <!-- Check-In Control -->
-                  <div :class="['rounded-lg p-4 shadow-sm transition-all', effectiveRfid.checkInEnabled ? 'bg-green-50 ring-2 ring-green-400' : 'bg-white']">
-                    <div class="flex items-center justify-between mb-3">
-                      <span class="font-medium text-gray-700 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
+
+                <!-- Toggle cards — always side by side -->
+                <div class="grid grid-cols-2 gap-2">
+                  <!-- Check-In -->
+                  <div :class="['rounded-lg p-2.5 transition-all border', effectiveRfid.checkInEnabled ? 'bg-green-50 border-green-300 ring-1 ring-green-400' : 'bg-white border-gray-200']">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
                         Check-In
                       </span>
-                      <button 
-                        @click="toggleCheckIn" 
+                      <button
+                        @click="toggleCheckIn"
                         :disabled="rfidScannerSaving || checkToggleCooldown || (!selectedEvent && !selectedSession)"
-                        :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', effectiveRfid.checkInEnabled ? 'bg-green-500' : 'bg-gray-300']"
+                        :class="['relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 disabled:opacity-50', effectiveRfid.checkInEnabled ? 'bg-green-500' : 'bg-gray-300']"
                       >
-                        <span :class="['inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300', effectiveRfid.checkInEnabled ? 'translate-x-7' : 'translate-x-1']"></span>
+                        <span :class="['inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-300', effectiveRfid.checkInEnabled ? 'translate-x-[18px]' : 'translate-x-0.5']"></span>
                       </button>
                     </div>
-                    <span :class="['text-sm font-medium px-3 py-1 rounded-full', effectiveRfid.checkInEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700']">
+                    <span :class="['text-[10px] font-bold px-1.5 py-0.5 rounded-full', effectiveRfid.checkInEnabled ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600']">
                       {{ effectiveRfid.checkInEnabled ? 'Active' : 'Inactive' }}
                     </span>
                   </div>
-                  
-                  <!-- Check-Out Control -->
-                  <div :class="['rounded-lg p-4 shadow-sm transition-all', effectiveRfid.checkOutEnabled ? 'bg-blue-50 ring-2 ring-blue-400' : 'bg-white']">
-                    <div class="flex items-center justify-between mb-3">
-                      <span class="font-medium text-gray-700 flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+
+                  <!-- Check-Out -->
+                  <div :class="['rounded-lg p-2.5 transition-all border', effectiveRfid.checkOutEnabled ? 'bg-blue-50 border-blue-300 ring-1 ring-blue-400' : 'bg-white border-gray-200']">
+                    <div class="flex items-center justify-between mb-1.5">
+                      <span class="text-xs font-semibold text-gray-700 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
                         Check-Out
                       </span>
-                      <button 
-                        @click="toggleCheckOut" 
+                      <button
+                        @click="toggleCheckOut"
                         :disabled="rfidScannerSaving || checkToggleCooldown || (!selectedEvent && !selectedSession)"
-                        :class="['relative inline-flex h-8 w-14 items-center rounded-full transition-colors duration-300', effectiveRfid.checkOutEnabled ? 'bg-blue-500' : 'bg-gray-300']"
+                        :class="['relative inline-flex h-5 w-9 items-center rounded-full transition-colors duration-300 disabled:opacity-50', effectiveRfid.checkOutEnabled ? 'bg-blue-500' : 'bg-gray-300']"
                       >
-                        <span :class="['inline-block h-6 w-6 transform rounded-full bg-white shadow-lg transition-transform duration-300', effectiveRfid.checkOutEnabled ? 'translate-x-7' : 'translate-x-1']"></span>
+                        <span :class="['inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform duration-300', effectiveRfid.checkOutEnabled ? 'translate-x-[18px]' : 'translate-x-0.5']"></span>
                       </button>
                     </div>
-                    <span :class="['text-sm font-medium px-3 py-1 rounded-full', effectiveRfid.checkOutEnabled ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700']">
+                    <span :class="['text-[10px] font-bold px-1.5 py-0.5 rounded-full', effectiveRfid.checkOutEnabled ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-600']">
                       {{ effectiveRfid.checkOutEnabled ? 'Active' : 'Inactive' }}
                     </span>
                   </div>
                 </div>
-                
-                <!-- Auto-switch notice & cooldown UI -->
-                <div class="mt-4">
-                  <p v-if="lastAutoSwitchedFromCheckIn" class="text-sm text-blue-800 bg-blue-50 border border-blue-100 px-3 py-2 rounded-lg">Check-In was turned off — automatically switched to Check-Out.</p>
-                  <p v-if="checkToggleCooldown" class="text-xs text-gray-500 mt-2">Switch cooldown: {{ cooldownSeconds }}s</p>
+
+                <!-- Auto-switch / cooldown notices -->
+                <div v-if="lastAutoSwitchedFromCheckIn || checkToggleCooldown" class="mt-2 space-y-1">
+                  <p v-if="lastAutoSwitchedFromCheckIn" class="text-xs text-blue-700 bg-blue-50 border border-blue-100 px-2.5 py-1.5 rounded-lg">Check-In turned off — switched to Check-Out.</p>
+                  <p v-if="checkToggleCooldown" class="text-xs text-gray-500">Cooldown: {{ cooldownSeconds }}s</p>
                 </div>
-                
-                <p class="text-xs text-gray-500 mt-3 text-center">⚙️ Settings apply only to the selected event/session. Select an event or session to configure.</p>
+
+                <p class="text-[10px] text-gray-400 mt-2 text-center">Settings apply only to the selected event/session.</p>
               </div>
 
               <!-- Step 1: No event selected -->
@@ -1824,14 +1799,61 @@
                   <p :class="['font-bold text-sm', isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : isCNAHS ? 'text-emerald-800' : 'text-blue-800']">Select an Event</p>
                   <p class="text-gray-500 text-xs mt-0.5">Choose an active event to start scanning RFID cards</p>
                 </div>
-                <!-- Dropdown -->
+                <!-- Custom themed dropdown -->
                 <div class="w-full relative">
-                  <select v-model="selectedEvent" @change="onEventSelectForScanner" :class="['w-full px-4 py-3 pr-10 border-2 rounded-xl bg-white focus:ring-2 outline-none text-sm font-medium appearance-none cursor-pointer', isCOE ? 'border-orange-200 focus:border-orange-400 focus:ring-orange-100 text-orange-900' : isSOM ? 'border-green-200 focus:border-green-400 focus:ring-green-100 text-green-900' : isCNAHS ? 'border-emerald-200 focus:border-emerald-400 focus:ring-emerald-100 text-emerald-900' : 'border-blue-200 focus:border-blue-400 focus:ring-blue-100 text-blue-900']">
-                    <option :value="null">-- Select Event --</option>
-                    <option v-for="event in attendanceEvents.filter(e => getEventDisplayStatus(e).status === 'active')" :key="event._id" :value="event">{{ event.title }} ({{ formatEventDate(event.date || event.event_date) }})</option>
-                  </select>
-                  <!-- Custom chevron -->
-                  <svg class="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                  <!-- Trigger button -->
+                  <button
+                    type="button"
+                    @click="showEventDropdown = !showEventDropdown"
+                    :class="['w-full flex items-center justify-between px-4 py-3 border-2 rounded-xl bg-white text-sm font-medium cursor-pointer transition-all',
+                      showEventDropdown
+                        ? (isCOE ? 'border-orange-400 ring-2 ring-orange-100' : isSOM ? 'border-green-400 ring-2 ring-green-100' : isCNAHS ? 'border-emerald-400 ring-2 ring-emerald-100' : 'border-blue-400 ring-2 ring-blue-100')
+                        : (isCOE ? 'border-orange-200 hover:border-orange-300' : isSOM ? 'border-green-200 hover:border-green-300' : isCNAHS ? 'border-emerald-200 hover:border-emerald-300' : 'border-blue-200 hover:border-blue-300')]"
+                  >
+                    <span :class="[selectedEvent ? (isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-emerald-900' : 'text-blue-900') : 'text-gray-400', 'truncate text-left']">
+                      {{ selectedEvent ? `${selectedEvent.title} · ${formatEventDate(selectedEvent.date || selectedEvent.event_date)}` : '-- Select Event --' }}
+                    </span>
+                    <svg :class="['w-4 h-4 flex-shrink-0 ml-2 transition-transform duration-200', showEventDropdown ? 'rotate-180' : '', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-emerald-400' : 'text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                  </button>
+
+                  <!-- Dropdown panel -->
+                  <div v-if="showEventDropdown" class="absolute z-50 top-full left-0 right-0 mt-1.5 bg-white rounded-xl border shadow-xl overflow-hidden"
+                    :class="[isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-emerald-200' : 'border-blue-200']">
+                    <!-- Placeholder option -->
+                    <button type="button"
+                      @click="selectedEvent = null; showEventDropdown = false; onEventSelectForScanner()"
+                      class="w-full text-left px-4 py-2.5 text-sm text-gray-400 hover:bg-gray-50 transition-colors border-b border-gray-100 font-medium">
+                      -- Select Event --
+                    </button>
+                    <!-- Active events -->
+                    <div class="max-h-48 overflow-y-auto">
+                      <button type="button"
+                        v-for="event in attendanceEvents.filter(e => getEventDisplayStatus(e).status === 'active')"
+                        :key="event._id"
+                        @click="selectedEvent = event; showEventDropdown = false; onEventSelectForScanner()"
+                        :class="['w-full text-left px-4 py-2.5 text-sm transition-colors flex items-center gap-3 group',
+                          selectedEvent && selectedEvent._id === event._id
+                            ? (isCOE ? 'bg-orange-50 text-orange-900' : isSOM ? 'bg-green-50 text-green-900' : isCNAHS ? 'bg-emerald-50 text-emerald-900' : 'bg-blue-50 text-blue-900')
+                            : 'text-gray-700 hover:bg-gray-50']">
+                        <!-- Active dot -->
+                        <span :class="['w-2 h-2 rounded-full flex-shrink-0', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-400' : isCNAHS ? 'bg-emerald-400' : 'bg-blue-400']"></span>
+                        <div class="min-w-0 flex-1">
+                          <p class="font-semibold truncate leading-tight">{{ event.title }}</p>
+                          <p class="text-xs text-gray-400 mt-0.5 leading-tight">{{ formatEventDate(event.date || event.event_date) }}</p>
+                        </div>
+                        <!-- Check if selected -->
+                        <svg v-if="selectedEvent && selectedEvent._id === event._id" :class="['w-4 h-4 flex-shrink-0', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-blue-500']" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>
+                      </button>
+                      <!-- Empty state -->
+                      <div v-if="attendanceEvents.filter(e => getEventDisplayStatus(e).status === 'active').length === 0"
+                        class="px-4 py-5 text-center text-sm text-gray-400">
+                        No active events available
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Backdrop to close dropdown -->
+                  <div v-if="showEventDropdown" class="fixed inset-0 z-40" @click="showEventDropdown = false"></div>
                 </div>
               </div>
 
@@ -11173,6 +11195,7 @@ watch(rfidOperationType, (newVal) => {
 })
 const rfidResult = ref(null)
 const attendanceTab = ref('events')
+const showEventDropdown = ref(false)
 const rfidScannerVerified = ref(false)
 const rfidCopied = ref(false)
 const scanMode = ref('rfid') // 'rfid' or 'student_id'
