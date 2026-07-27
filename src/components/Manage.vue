@@ -67,99 +67,140 @@
             />
           </div>
           
-          <!-- Filters: compact dropdown row -->
+          <!-- Filters: custom dropdown row -->
           <div class="flex flex-wrap justify-center gap-3 animate-fade-in">
+
             <!-- Role -->
-            <div class="space-y-1.5 w-40">
+            <div class="space-y-1.5 w-40 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Role</label>
-              <div class="relative">
-                <select
-                  :value="userRoleFilter ?? ''"
-                  @change="(e) => { userRoleFilter = e.target.value || null; currentPage = 1 }"
-                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-700 shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+              <button
+                @click="openDropdown = openDropdown === 'role' ? null : 'role'"
+                :class="['w-full flex items-center justify-between px-3 py-2 bg-white border rounded-lg text-sm shadow-sm transition-all duration-150 cursor-pointer outline-none',
+                  openDropdown === 'role' ? 'border-blue-400 ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300',
+                  userRoleFilter ? 'text-gray-900 font-medium' : 'text-gray-500']"
+              >
+                <span class="truncate">{{ userRoleFilter === 'student' ? 'Student' : userRoleFilter === 'treasurer' ? 'Treasurer' : userRoleFilter === 'co-admin' ? 'Co-Admin' : 'All Roles' }}</span>
+                <svg :class="['w-3.5 h-3.5 ml-1.5 flex-shrink-0 transition-transform duration-150 text-gray-400', openDropdown === 'role' ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div v-if="openDropdown === 'role'" class="absolute top-full mt-1 left-0 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden py-1">
+                <button v-for="opt in [{value:'',label:'All Roles'},{value:'student',label:'Student'},{value:'treasurer',label:'Treasurer'},{value:'co-admin',label:'Co-Admin'}]" :key="opt.value"
+                  @click="userRoleFilter = opt.value || null; currentPage = 1; openDropdown = null"
+                  :class="['w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors hover:bg-gray-50',
+                    (userRoleFilter === opt.value || (!userRoleFilter && !opt.value)) ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700']"
                 >
-                  <option value="">All Roles</option>
-                  <option value="student">Students</option>
-                  <option value="treasurer">Treasurers</option>
-                  <option value="co-admin">Co-Admins</option>
-                </select>
-                <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  <span>{{ opt.label }}</span>
+                  <svg v-if="userRoleFilter === opt.value || (!userRoleFilter && !opt.value)" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </button>
               </div>
             </div>
 
             <!-- Year Level -->
-            <div class="space-y-1.5 w-40">
+            <div class="space-y-1.5 w-40 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Year Level</label>
-              <div class="relative">
-                <select
-                  :value="userYearFilter ?? ''"
-                  @change="(e) => { userYearFilter = e.target.value || null; currentPage = 1 }"
-                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-700 shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+              <button
+                @click="openDropdown = openDropdown === 'year' ? null : 'year'"
+                :class="['w-full flex items-center justify-between px-3 py-2 bg-white border rounded-lg text-sm shadow-sm transition-all duration-150 cursor-pointer outline-none',
+                  openDropdown === 'year' ? 'border-blue-400 ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300',
+                  userYearFilter ? 'text-gray-900 font-medium' : 'text-gray-500']"
+              >
+                <span class="truncate">{{ userYearFilter || 'All Years' }}</span>
+                <svg :class="['w-3.5 h-3.5 ml-1.5 flex-shrink-0 transition-transform duration-150 text-gray-400', openDropdown === 'year' ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div v-if="openDropdown === 'year'" class="absolute top-full mt-1 left-0 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden py-1">
+                <button v-for="opt in [{value:'',label:'All Years'},{value:'1st year',label:'1st Year'},{value:'2nd year',label:'2nd Year'},{value:'3rd year',label:'3rd Year'},{value:'4th year',label:'4th Year'}]" :key="opt.value"
+                  @click="userYearFilter = opt.value || null; currentPage = 1; openDropdown = null"
+                  :class="['w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors hover:bg-gray-50',
+                    (userYearFilter === opt.value || (!userYearFilter && !opt.value)) ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700']"
                 >
-                  <option value="">All Years</option>
-                  <option value="1st year">1st Year</option>
-                  <option value="2nd year">2nd Year</option>
-                  <option value="3rd year">3rd Year</option>
-                  <option value="4th year">4th Year</option>
-                </select>
-                <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  <span>{{ opt.label }}</span>
+                  <svg v-if="userYearFilter === opt.value || (!userYearFilter && !opt.value)" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </button>
               </div>
             </div>
 
             <!-- Program -->
-            <div class="space-y-1.5 w-40">
+            <div class="space-y-1.5 w-40 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Program</label>
-              <div class="relative">
-                <select
-                  :value="userProgramFilter ?? ''"
-                  @change="(e) => { userProgramFilter = e.target.value || null; currentPage = 1 }"
-                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-700 shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+              <button
+                @click="openDropdown = openDropdown === 'program' ? null : 'program'"
+                :class="['w-full flex items-center justify-between px-3 py-2 bg-white border rounded-lg text-sm shadow-sm transition-all duration-150 cursor-pointer outline-none',
+                  openDropdown === 'program' ? 'border-blue-400 ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300',
+                  userProgramFilter ? 'text-gray-900 font-medium' : 'text-gray-500']"
+              >
+                <span class="truncate">{{ userProgramFilter || 'All Programs' }}</span>
+                <svg :class="['w-3.5 h-3.5 ml-1.5 flex-shrink-0 transition-transform duration-150 text-gray-400', openDropdown === 'program' ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div v-if="openDropdown === 'program'" class="absolute top-full mt-1 left-0 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden py-1">
+                <button v-for="opt in [{value:'',label:'All Programs'},{value:'BSCS',label:'BSCS'},{value:'BSIT',label:'BSIT'},{value:'BSIS',label:'BSIS'}]" :key="opt.value"
+                  @click="userProgramFilter = opt.value || null; currentPage = 1; openDropdown = null"
+                  :class="['w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors hover:bg-gray-50',
+                    (userProgramFilter === opt.value || (!userProgramFilter && !opt.value)) ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700']"
                 >
-                  <option value="">All Programs</option>
-                  <option value="BSCS">BSCS</option>
-                  <option value="BSIT">BSIT</option>
-                  <option value="BSIS">BSIS</option>
-                </select>
-                <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  <span>{{ opt.label }}</span>
+                  <svg v-if="userProgramFilter === opt.value || (!userProgramFilter && !opt.value)" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </button>
               </div>
             </div>
 
             <!-- College (super admin only) -->
-            <div v-if="isMaster && !isCoAdmin && !isTreasurer" class="space-y-1.5 w-40">
+            <div v-if="isMaster && !isCoAdmin && !isTreasurer" class="space-y-1.5 w-40 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">College</label>
-              <div class="relative">
-                <select
-                  :value="userCollegeFilter ?? ''"
-                  @change="(e) => { userCollegeFilter = e.target.value || null; currentPage = 1 }"
-                  class="w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-700 shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+              <button
+                @click="openDropdown = openDropdown === 'college' ? null : 'college'"
+                :class="['w-full flex items-center justify-between px-3 py-2 bg-white border rounded-lg text-sm shadow-sm transition-all duration-150 cursor-pointer outline-none',
+                  openDropdown === 'college' ? 'border-blue-400 ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300',
+                  userCollegeFilter ? 'text-gray-900 font-medium' : 'text-gray-500']"
+              >
+                <span class="truncate">{{ userCollegeFilter || 'All Colleges' }}</span>
+                <svg :class="['w-3.5 h-3.5 ml-1.5 flex-shrink-0 transition-transform duration-150 text-gray-400', openDropdown === 'college' ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div v-if="openDropdown === 'college'" class="absolute top-full mt-1 left-0 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden py-1">
+                <button v-for="opt in [{value:'',label:'All Colleges'},{value:'CCS',label:'CCS'},{value:'COE',label:'COE'},{value:'SOM',label:'SOM'},{value:'CNAHS',label:'CNAHS'}]" :key="opt.value"
+                  @click="userCollegeFilter = opt.value || null; currentPage = 1; openDropdown = null"
+                  :class="['w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors hover:bg-gray-50',
+                    (userCollegeFilter === opt.value || (!userCollegeFilter && !opt.value)) ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700']"
                 >
-                  <option value="">All Colleges</option>
-                  <option value="CCS">CCS</option>
-                  <option value="COE">COE</option>
-                  <option value="SOM">SOM</option>
-                  <option value="CNAHS">CNAHS</option>
-                </select>
-                <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  <span>{{ opt.label }}</span>
+                  <svg v-if="userCollegeFilter === opt.value || (!userCollegeFilter && !opt.value)" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </button>
               </div>
             </div>
 
             <!-- Verification Status -->
-            <div class="space-y-1.5 w-44">
+            <div class="space-y-1.5 w-44 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Verification</label>
-              <div class="relative">
-                <select
-                  :value="userStatusFilter ?? ''"
-                  @change="(e) => { userStatusFilter = e.target.value || null; currentPage = 1 }"
-                  class="w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-700 shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+              <button
+                @click="openDropdown = openDropdown === 'status' ? null : 'status'"
+                :class="['w-full flex items-center justify-between px-3 py-2 bg-white border rounded-lg text-sm shadow-sm transition-all duration-150 cursor-pointer outline-none',
+                  openDropdown === 'status' ? 'border-blue-400 ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300',
+                  userStatusFilter ? 'text-gray-900 font-medium' : 'text-gray-500']"
+              >
+                <span class="flex items-center gap-1.5 truncate">
+                  <span v-if="userStatusFilter === 'verified'" class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                  <span v-else-if="userStatusFilter === 'unverified'" class="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0"></span>
+                  <span v-else-if="userStatusFilter === 'unreadable'" class="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0"></span>
+                  {{ userStatusFilter === 'verified' ? 'Verified' : userStatusFilter === 'unverified' ? 'Unverified' : userStatusFilter === 'unreadable' ? 'Unreadable' : 'All Statuses' }}
+                </span>
+                <svg :class="['w-3.5 h-3.5 ml-1.5 flex-shrink-0 transition-transform duration-150 text-gray-400', openDropdown === 'status' ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div v-if="openDropdown === 'status'" class="absolute top-full mt-1 left-0 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden py-1">
+                <button v-for="opt in [{value:'',label:'All Statuses',dot:null},{value:'verified',label:'Verified',dot:'green'},{value:'unverified',label:'Unverified',dot:'red'},{value:'unreadable',label:'Unreadable',dot:'yellow'}]" :key="opt.value"
+                  @click="userStatusFilter = opt.value || null; currentPage = 1; openDropdown = null"
+                  :class="['w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors hover:bg-gray-50',
+                    (userStatusFilter === opt.value || (!userStatusFilter && !opt.value)) ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700']"
                 >
-                  <option value="">All Statuses</option>
-                  <option value="verified">✓ Verified</option>
-                  <option value="unverified">✗ Unverified</option>
-                  <option value="unreadable">⚠ Unreadable</option>
-                </select>
-                <svg class="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                  <span class="flex items-center gap-2">
+                    <span v-if="opt.dot === 'green'" class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span>
+                    <span v-else-if="opt.dot === 'red'" class="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0"></span>
+                    <span v-else-if="opt.dot === 'yellow'" class="w-1.5 h-1.5 rounded-full bg-yellow-400 flex-shrink-0"></span>
+                    <span v-else class="w-1.5 h-1.5 flex-shrink-0"></span>
+                    {{ opt.label }}
+                  </span>
+                  <svg v-if="userStatusFilter === opt.value || (!userStatusFilter && !opt.value)" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </button>
               </div>
             </div>
+
           </div>
         </div>
 
@@ -504,32 +545,89 @@
         </div>
       </div>
 
-      <!-- College Role Members Cards -->
+      <!-- College Role Members -->
       <div class="space-y-3">
-        <div class="flex items-center gap-2">
-          <div :class="['w-1 h-5 rounded-full', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']"></div>
-          <h3 :class="['text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Role Members by College</h3>
-        </div>
-        <div :class="['grid gap-3', (isMaster && !isCoAdmin && !isTreasurer) ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1']">
+        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest px-0.5">Role Members by College</h3>
+
+        <!-- Master admin: 4-college card grid (click → modal) -->
+        <div v-if="isMaster && !isCoAdmin && !isTreasurer" class="grid grid-cols-2 md:grid-cols-4 gap-2">
           <button
-            v-for="col in ((isMaster && !isCoAdmin && !isTreasurer) ? ['CCS','COE','SOM','CNAHS'] : [currentUser.college || 'CCS'])"
+            v-for="col in ['CCS','COE','SOM','CNAHS']"
             :key="col"
             @click="fetchCollegeMembers(col)"
-            :class="['rounded-xl p-4 text-left transition-all hover:scale-[1.02] active:scale-95 shadow-sm border-2 border-transparent hover:border-opacity-50',
-              col === 'COE' ? 'bg-gradient-to-br from-orange-500 to-red-600 hover:border-orange-300' :
-              col === 'SOM' ? 'bg-gradient-to-br from-green-600 to-emerald-700 hover:border-green-300' :
-              col === 'CNAHS' ? 'bg-gradient-to-br from-teal-500 to-green-600 hover:border-teal-300' :
-              'bg-gradient-to-br from-blue-600 to-indigo-700 hover:border-blue-300']"
+            class="group bg-white rounded-xl p-4 text-left transition-all active:scale-95 border border-gray-200 hover:border-gray-300 hover:shadow-md shadow-sm flex items-center justify-between gap-3"
           >
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <img :src="`/icons/${col.toLowerCase()}.svg`" :alt="col" class="w-8 h-8 object-contain drop-shadow-md" />
-                <span class="text-white font-black text-base tracking-wide">{{ col }}</span>
+            <div class="flex items-center gap-3">
+              <div :class="['w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0', col === 'COE' ? 'bg-orange-50' : col === 'SOM' ? 'bg-green-50' : col === 'CNAHS' ? 'bg-teal-50' : 'bg-blue-50']">
+                <img :src="`/icons/${col.toLowerCase()}.svg`" :alt="col" class="w-6 h-6 object-contain" />
               </div>
-              <svg class="w-4 h-4 text-white/50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+              <div>
+                <span class="font-bold text-gray-800 text-sm block">{{ col }}</span>
+                <span class="text-[10px] text-gray-400">Roles</span>
+              </div>
             </div>
-            <p class="text-white/70 text-[10px] font-medium mt-2">Treasurers &amp; Co-Admins</p>
+            <svg class="w-4 h-4 text-gray-300 group-hover:text-gray-500 transition-colors flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           </button>
+        </div>
+
+        <!-- Single-college user: inline members list -->
+        <div v-else class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <!-- College header row -->
+          <div class="flex items-center gap-3 px-5 py-3.5 border-b border-gray-100">
+            <div :class="['w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-teal-50' : 'bg-blue-50']">
+              <img :src="`/icons/${(currentUser.college || 'CCS').toLowerCase()}.svg`" :alt="currentUser.college || 'CCS'" class="w-5 h-5 object-contain" />
+            </div>
+            <span class="font-bold text-gray-800 text-sm">{{ currentUser.college || 'CCS' }}</span>
+            <span class="text-xs text-gray-400 ml-auto" v-if="!loadingInlineMembers">
+              {{ inlineCollegeMembers.length }} member{{ inlineCollegeMembers.length !== 1 ? 's' : '' }}
+            </span>
+          </div>
+
+          <!-- Loading -->
+          <div v-if="loadingInlineMembers" class="flex items-center justify-center py-10">
+            <svg class="w-5 h-5 animate-spin text-gray-300" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          </div>
+
+          <!-- Empty -->
+          <div v-else-if="inlineCollegeMembers.length === 0" class="flex flex-col items-center justify-center py-10 text-gray-400">
+            <svg class="w-8 h-8 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <p class="text-sm">No members assigned yet</p>
+          </div>
+
+          <!-- Members grouped by role -->
+          <template v-else v-for="roleGroup in ['co-admin', 'treasurer']" :key="roleGroup">
+            <div v-if="inlineCollegeMembers.filter(m => m.role === roleGroup).length > 0">
+              <!-- Group label -->
+              <div class="px-5 py-1.5 flex items-center gap-2 bg-gray-50 border-b border-gray-100">
+                <span :class="['text-[10px] font-black uppercase tracking-widest', roleGroup === 'co-admin' ? 'text-violet-500' : 'text-cyan-600']">
+                  {{ roleGroup === 'co-admin' ? 'Co-Admins' : 'Treasurers' }}
+                </span>
+                <span class="text-[10px] text-gray-300 font-semibold">({{ inlineCollegeMembers.filter(m => m.role === roleGroup).length }})</span>
+              </div>
+              <!-- Member rows -->
+              <div v-for="member in inlineCollegeMembers.filter(m => m.role === roleGroup)" :key="member.student_id"
+                class="px-5 py-3 flex items-center gap-3 hover:bg-gray-50 transition border-b border-gray-50 last:border-0">
+                <div class="w-9 h-9 rounded-full flex-shrink-0 overflow-hidden bg-gray-100 border border-gray-200">
+                  <img v-if="member.photo && !photoFailed['inl-' + (member._id || member.student_id)]"
+                    :src="member.photo" class="w-full h-full object-cover"
+                    @error="markPhotoFailed('inl-' + (member._id || member.student_id))" referrerpolicy="no-referrer" />
+                  <div v-else class="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
+                    {{ (member.first_name || '?').charAt(0).toUpperCase() }}{{ (member.last_name || '').charAt(0).toUpperCase() }}
+                  </div>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="font-semibold text-gray-900 text-sm truncate">
+                    {{ member.first_name }} {{ member.middle_name ? member.middle_name.charAt(0) + '. ' : '' }}{{ member.last_name }}{{ member.suffix ? ' ' + member.suffix : '' }}
+                  </p>
+                  <p class="text-xs text-gray-400 truncate">{{ member.student_id }} · {{ member.program }} – {{ member.year_level }}</p>
+                </div>
+                <span :class="['px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide flex-shrink-0',
+                  member.role === 'co-admin' ? 'bg-violet-50 text-violet-600' : 'bg-cyan-50 text-cyan-600']">
+                  {{ member.role === 'co-admin' ? 'Co-Admin' : 'Treasurer' }}
+                </span>
+              </div>
+            </div>
+          </template>
         </div>
       </div>
 
@@ -557,67 +655,71 @@
     </div>
 
     <!-- College Members Modal -->
-    <div v-if="showCollegeMembersModal" class="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 px-4" @click.self="showCollegeMembersModal = false">
+    <div v-if="showCollegeMembersModal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 px-4" @click.self="showCollegeMembersModal = false">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm max-h-[78vh] flex flex-col overflow-hidden border border-gray-100">
+
           <!-- Modal Header -->
-          <div :class="['px-6 py-4 flex items-center justify-between flex-shrink-0',
-            collegeMembersModalData.college === 'COE' ? 'bg-gradient-to-r from-orange-500 to-red-600' :
-            collegeMembersModalData.college === 'SOM' ? 'bg-gradient-to-r from-green-600 to-emerald-700' :
-            collegeMembersModalData.college === 'CNAHS' ? 'bg-gradient-to-r from-teal-500 to-green-600' :
-            'bg-gradient-to-r from-blue-600 to-indigo-700']">
+          <div class="px-5 py-4 flex items-center justify-between flex-shrink-0 border-b border-gray-100">
             <div class="flex items-center gap-3">
-              <img :src="`/icons/${collegeMembersModalData.college.toLowerCase()}.svg`" :alt="collegeMembersModalData.college" class="w-10 h-10 object-contain drop-shadow-md flex-shrink-0" />
+              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0',
+                collegeMembersModalData.college === 'COE' ? 'bg-orange-50' :
+                collegeMembersModalData.college === 'SOM' ? 'bg-green-50' :
+                collegeMembersModalData.college === 'CNAHS' ? 'bg-teal-50' : 'bg-blue-50']">
+                <img :src="`/icons/${collegeMembersModalData.college.toLowerCase()}.svg`" :alt="collegeMembersModalData.college" class="w-6 h-6 object-contain" />
+              </div>
               <div>
-                <h3 class="text-white font-black text-lg">{{ collegeMembersModalData.college }}</h3>
-                <p class="text-white/70 text-xs">Assigned Role Members</p>
+                <h3 class="font-bold text-gray-900 text-sm leading-tight">{{ collegeMembersModalData.college }}</h3>
+                <p class="text-[11px] text-gray-400 leading-tight">Assigned Role Members</p>
               </div>
             </div>
-            <button @click="showCollegeMembersModal = false" class="text-white/70 hover:text-white transition p-1 rounded-lg hover:bg-white/10">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            <button @click="showCollegeMembersModal = false" class="text-gray-400 hover:text-gray-600 transition p-1.5 rounded-lg hover:bg-gray-100">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
 
           <!-- Loading State -->
-          <div v-if="loadingCollegeMembers" class="flex-1 flex items-center justify-center py-12">
-            <svg class="w-8 h-8 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+          <div v-if="loadingCollegeMembers" class="flex-1 flex items-center justify-center py-10">
+            <svg class="w-6 h-6 animate-spin text-gray-300" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
           </div>
 
           <!-- Empty State -->
-          <div v-else-if="!collegeMembersModalData.members.length" class="flex-1 flex flex-col items-center justify-center py-12 text-gray-400">
-            <svg class="w-12 h-12 mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-            <p class="text-sm font-medium">No role members assigned yet</p>
-            <p class="text-xs mt-1">Use the form above to assign Treasurer or Co-Admin roles.</p>
+          <div v-else-if="!collegeMembersModalData.members.length" class="flex-1 flex flex-col items-center justify-center py-10 text-gray-400">
+            <svg class="w-10 h-10 mb-2 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <p class="text-sm font-medium text-gray-500">No members assigned yet</p>
           </div>
 
           <!-- Members List -->
-          <div v-else class="flex-1 overflow-y-auto divide-y divide-gray-100">
-            <!-- Role group headers -->
+          <div v-else class="flex-1 overflow-y-auto">
             <template v-for="roleGroup in ['co-admin', 'treasurer']" :key="roleGroup">
               <div v-if="collegeMembersModalData.members.filter(m => m.role === roleGroup).length > 0">
-                <div :class="['px-5 py-2 text-[10px] font-black uppercase tracking-widest sticky top-0 z-10',
-                  roleGroup === 'co-admin' ? 'bg-violet-50 text-violet-600' : 'bg-cyan-50 text-cyan-600']">
-                  {{ roleGroup === 'co-admin' ? 'Co-Admins' : 'Treasurers' }}
-                  <span class="ml-1 opacity-60">({{ collegeMembersModalData.members.filter(m => m.role === roleGroup).length }})</span>
+                <!-- Group label -->
+                <div class="px-5 py-1.5 flex items-center gap-2 sticky top-0 bg-white border-b border-gray-50 z-10">
+                  <span :class="['text-[10px] font-black uppercase tracking-widest',
+                    roleGroup === 'co-admin' ? 'text-violet-500' : 'text-cyan-600']">
+                    {{ roleGroup === 'co-admin' ? 'Co-Admins' : 'Treasurers' }}
+                  </span>
+                  <span class="text-[10px] text-gray-300 font-semibold">({{ collegeMembersModalData.members.filter(m => m.role === roleGroup).length }})</span>
                 </div>
+                <!-- Member rows -->
                 <div v-for="member in collegeMembersModalData.members.filter(m => m.role === roleGroup)" :key="member.student_id"
-                  class="px-5 py-3 flex items-center gap-3 hover:bg-gray-50 transition">
-                  <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white font-bold text-sm flex-shrink-0 overflow-hidden shadow-sm',
-                    collegeMembersModalData.college === 'COE' ? 'bg-gradient-to-br from-orange-400 to-red-500' :
-                    collegeMembersModalData.college === 'SOM' ? 'bg-gradient-to-br from-green-400 to-yellow-500' :
-                    collegeMembersModalData.college === 'CNAHS' ? 'bg-gradient-to-br from-teal-400 to-green-500' :
-                    'bg-gradient-to-br from-blue-500 to-indigo-600']">
-                    <img v-if="member.photo && !photoFailed['mem-' + (member._id || member.student_id)]" :src="member.photo" class="w-full h-full object-cover" @error="markPhotoFailed('mem-' + (member._id || member.student_id))" referrerpolicy="no-referrer" />
-                    <span v-else>{{ (member.first_name || '?').charAt(0).toUpperCase() }}{{ (member.last_name || '').charAt(0).toUpperCase() }}</span>
+                  class="px-5 py-2.5 flex items-center gap-3 hover:bg-gray-50 transition">
+                  <div class="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden bg-gray-100 border border-gray-200">
+                    <img v-if="member.photo && !photoFailed['mem-' + (member._id || member.student_id)]"
+                      :src="member.photo" class="w-full h-full object-cover"
+                      @error="markPhotoFailed('mem-' + (member._id || member.student_id))" referrerpolicy="no-referrer" />
+                    <div v-else class="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
+                      {{ (member.first_name || '?').charAt(0).toUpperCase() }}{{ (member.last_name || '').charAt(0).toUpperCase() }}
+                    </div>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-gray-900 text-sm truncate">
+                    <p class="font-semibold text-gray-900 text-sm truncate leading-tight">
                       {{ member.first_name }} {{ member.middle_name ? member.middle_name.charAt(0) + '. ' : '' }}{{ member.last_name }}{{ member.suffix ? ' ' + member.suffix : '' }}
                     </p>
-                    <p class="text-xs text-gray-400 truncate">{{ member.student_id }} · {{ member.program }} – {{ member.year_level }}</p>
+                    <p class="text-[11px] text-gray-400 truncate leading-tight">{{ member.student_id }} · {{ member.program }} – {{ member.year_level }}</p>
                   </div>
-                  <span :class="['px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide flex-shrink-0',
-                    member.role === 'co-admin' ? 'bg-violet-100 text-violet-700' : 'bg-cyan-100 text-cyan-700']">
+                  <span :class="['px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wide flex-shrink-0',
+                    member.role === 'co-admin' ? 'bg-violet-50 text-violet-600' : 'bg-cyan-50 text-cyan-600']">
                     {{ member.role === 'co-admin' ? 'Co-Admin' : 'Treasurer' }}
                   </span>
                 </div>
@@ -626,8 +728,8 @@
           </div>
 
           <!-- Footer -->
-          <div class="px-6 py-3 border-t border-gray-100 flex-shrink-0">
-            <p class="text-xs text-gray-400 text-center">{{ collegeMembersModalData.members.length }} assigned member{{ collegeMembersModalData.members.length !== 1 ? 's' : '' }} in {{ collegeMembersModalData.college }}</p>
+          <div class="px-5 py-3 border-t border-gray-100 flex-shrink-0">
+            <p class="text-[11px] text-gray-400 text-center">{{ collegeMembersModalData.members.length }} member{{ collegeMembersModalData.members.length !== 1 ? 's' : '' }} in {{ collegeMembersModalData.college }}</p>
           </div>
         </div>
       </transition>
@@ -1125,6 +1227,9 @@ export default {
       showCollegeMembersModal: false,
       collegeMembersModalData: { college: '', members: [] },
       loadingCollegeMembers: false,
+      inlineCollegeMembers: [],
+      loadingInlineMembers: false,
+      openDropdown: null,
       availableStudentRoles: [
         { value: 'student', label: 'Student' },
         { value: 'treasurer', label: 'Treasurer' },
@@ -1318,6 +1423,12 @@ export default {
     },
     userProgramFilter() {
       this.currentPage = 1
+    },
+    activeTab(val) {
+      // Auto-load inline members for single-college users when Roles tab is opened
+      if (val === 'roles' && !(this.isMaster && !this.isCoAdmin && !this.isTreasurer)) {
+        this.fetchInlineCollegeMembers()
+      }
     }
   },
   methods: {
@@ -1733,6 +1844,28 @@ export default {
         this.isAssigningRole = false
       }
     },
+    async fetchInlineCollegeMembers() {
+      const college = this.currentUser.college || 'CCS'
+      this.inlineCollegeMembers = []
+      this.loadingInlineMembers = true
+      try {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
+        const response = await fetch(buildAPIUrl(`/apis/students/role-members?college=${college}`), {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'X-SSAAM-College': college
+          }
+        })
+        if (response.ok) {
+          const data = await response.json()
+          this.inlineCollegeMembers = data.members || []
+        }
+      } catch (e) {
+        console.error('Error fetching inline college members:', e)
+      } finally {
+        this.loadingInlineMembers = false
+      }
+    },
     async fetchCollegeMembers(college) {
       this.collegeMembersModalData = { college, members: [] }
       this.showCollegeMembersModal = true
@@ -1823,11 +1956,16 @@ export default {
       }
     }
     window.addEventListener('user-deleted', this.handleUserDeletedEvent)
+    this._closeDropdownOnOutside = () => { this.openDropdown = null }
+    document.addEventListener('click', this._closeDropdownOnOutside)
   },
   beforeUnmount() {
-    // Clean up event listener
+    // Clean up event listeners
     if (this.handleUserDeletedEvent) {
       window.removeEventListener('user-deleted', this.handleUserDeletedEvent)
+    }
+    if (this._closeDropdownOnOutside) {
+      document.removeEventListener('click', this._closeDropdownOnOutside)
     }
   }
 }
