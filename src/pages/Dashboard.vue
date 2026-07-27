@@ -3810,288 +3810,235 @@
         </div>
 
         <!-- Dashboard Page -->
-        <div v-if="currentPage === 'dashboard' && (!isAdminLike || inUserView)" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
-          <!-- Profile Header -->
-          <div :class="['relative h-32 sm:h-36 md:h-40 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-            <!-- Artistic Blurred Background -->
-            <div 
-              v-if="currentUser.image || currentUser.photo"
-              class="absolute inset-0 w-full h-full bg-cover bg-center transition-all duration-1000 scale-125"
-              :style="{ 
-                backgroundImage: `url(${currentUser.image || currentUser.photo})`,
-                filter: 'blur(30px) saturate(1.8) brightness(0.8)'
-              }"
-            ></div>
-            <div v-else :class="[isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-dark', 'absolute inset-0 w-full h-full animate-gradient-slow']"></div>
-            
-            <!-- Artistic Overlays -->
-            <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/20"></div>
-            <div class="absolute inset-0 opacity-30 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-            <div :class="[isCOE ? 'bg-orange-500/20' : isSOM ? 'bg-green-500/20' : isCNAHS ? 'bg-green-700/20' : 'bg-blue-500/20', 'absolute -top-20 -right-20 w-64 h-64 rounded-full blur-3xl animate-pulse']"></div>
-            <div :class="[isCOE ? 'bg-red-500/20' : isSOM ? 'bg-teal-500/20' : isCNAHS ? 'bg-green-600/20' : 'bg-blue-500/20', 'absolute -bottom-20 -left-20 w-64 h-64 rounded-full blur-3xl animate-pulse-slow']"></div>
-            
-            <div class="light-sweep"></div>
-            <button @click="refreshCurrentUser" :disabled="refreshingUserData" class="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition-all backdrop-blur-md z-10 border border-white/20 shadow-lg" title="Refresh Profile">
-              <svg :class="['w-5 h-5', refreshingUserData ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-            </button>
-          </div>
+        <div v-if="currentPage === 'dashboard' && (!isAdminLike || inUserView)" class="mb-8">
 
-          <div class="px-4 sm:px-6 md:px-8 pb-4 sm:pb-6 md:pb-8">
-            <div class="relative -mt-12 sm:-mt-14 md:-mt-16 mb-3 sm:mb-5 md:mb-6">
-              <div class="inline-block relative">
-                <div :class="[isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light', 'w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-2xl md:rounded-3xl overflow-hidden ring-4 ring-white shadow-2xl flex items-center justify-center']">
-                  <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
-                    <svg class="animate-spin h-10 w-10 text-white/80" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                  </div>
-                  <img 
-                    v-else-if="!profileImageFailed && (currentUser.image || currentUser.photo)" 
-                    :src="currentUser.image || currentUser.photo" 
-                    alt="Profile Picture" 
-                    class="w-full h-full object-cover" 
-                    crossorigin="anonymous"
-                    @load="onProfileImageLoad" 
-                    @error="handleProfileImageError" 
-                  />
-                  <div v-else class="w-full h-full flex items-center justify-center text-4xl font-bold text-white">
-                    {{ getInitials(currentUser?.full_name || displayName || '') }}
-                  </div>
-                </div>
-                <button 
-                  v-if="currentUser.role !== 'admin' && !currentUser.isMaster"
-                  @click="$refs.studentPhotoInput.click()" 
-                  :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'absolute -bottom-2 -right-2 p-2.5 bg-white rounded-2xl shadow-lg hover:scale-110 transition-transform border border-gray-100']"
-                  title="Change Photo"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                </button>
-              </div>
-              <input 
-                ref="studentPhotoInput" 
-                @change="handleStudentPhotoUpload"
-                type="file" 
-                accept="image/*" 
-                class="hidden" 
-              />
-            </div>
+          <!-- ── Top identity card ── -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+            <!-- Thin accent top bar -->
+            <div :class="['h-1', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-400' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-400' : isCNAHS ? 'bg-gradient-to-r from-green-600 to-green-400' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']"></div>
 
-            <div class="mb-4 sm:mb-6 md:mb-8">
-              <h1 class="text-xl sm:text-2xl md:text-3xl font-extrabold text-gray-900 tracking-tight">{{ displayName }}</h1>
-              <p :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'text-sm sm:text-base md:text-lg font-medium']">ID: {{ currentUser.studentId || currentUser.student_id }}</p>
-              <p v-if="studentPhotoUploading" :class="[isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600', 'text-xs mt-2 font-medium']">Uploading photo...</p>
-            </div>
+            <div class="p-5 sm:p-7">
+              <div class="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-7">
 
-            <!-- Info Grid -->
-            <div class="space-y-4 sm:space-y-6 md:space-y-8">
-              <section>
-                <div class="flex items-center gap-2 mb-2 sm:mb-3 md:mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full']"></div>
-                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Personal Information</h3>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                  <div v-for="(val, label) in { 'First Name': currentUser.firstName || currentUser.first_name, 'Middle Name': currentUser.middleName || currentUser.middle_name || 'N/A', 'Last Name': currentUser.lastName || currentUser.last_name, 'Suffix': currentUser.suffix || 'N/A' }" :key="label" 
-                       :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-2.5 sm:p-3 md:p-4 bg-gray-50 rounded-xl md:rounded-2xl border border-gray-100 transition-colors']">
-                    <p class="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 sm:mb-1">{{ label }}</p>
-                    <p class="text-sm sm:text-base text-gray-900 font-semibold truncate">{{ val }}</p>
-                  </div>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">Account created on {{ formatDateTimeShort(currentUser.created_date) }}</p>
-              </section>
-
-              <section>
-                <div class="flex items-center gap-2 mb-2 sm:mb-3 md:mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full']"></div>
-                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Contact & Identification</h3>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                  <div :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-2.5 sm:p-3 md:p-4 bg-gray-50 rounded-xl md:rounded-2xl border border-gray-100 transition-colors']">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Email Address</p>
-                    <p class="text-gray-900 font-semibold truncate">{{ currentUser.email || 'Not provided' }}</p>
-                  </div>
-                  <div :class="['p-2.5 sm:p-3 md:p-4 bg-white rounded-xl md:rounded-2xl border-2 shadow-sm relative overflow-hidden group', currentUser.rfid_status === 'verified' ? 'border-green-100' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'border-gray-200' : 'border-yellow-100']">
-                    <div class="absolute top-0 right-0 p-2">
-                      <span :class="['px-2 py-0.5 rounded-full text-[10px] font-bold', currentUser.rfid_status === 'verified' ? 'bg-green-100 text-green-700' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-100 text-gray-700' : 'bg-yellow-100 text-yellow-700']">
-                        {{ currentUser.rfid_status === 'verified' ? 'Verified' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'Unreadable' : 'Pending' }}
-                      </span>
-                    </div>
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">RFID STATUS</p>
-                    <div v-if="currentUser.rfid_status === 'verified'" class="flex items-center gap-2 mb-2">
-                      <p :class="[isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900', 'text-lg font-mono font-bold tracking-tight']">{{ currentUser.rfidCode || currentUser.rfid_code }}</p>
-                      <button @click="copyRfidToClipboard(currentUser.rfidCode || currentUser.rfid_code)" :class="[isCOE ? 'hover:bg-orange-50 text-orange-400' : isSOM ? 'hover:bg-green-50 text-green-400' : isCNAHS ? 'hover:bg-green-50 text-green-700' : 'hover:bg-blue-50 text-blue-400', 'p-1 rounded transition-colors']">
-                        <svg v-if="!rfidCopied" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-                        <svg v-else class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                      </button>
-                    </div>
-                    <div v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))">
-                      <p class="text-base font-semibold text-gray-700">Card Damaged</p>
-                    </div>
-                    <div v-else>
-                      <p class="text-base font-semibold text-gray-900">Not Yet Assigned</p>
-                    </div>
-                    <p v-if="currentUser.rfid_verified_at" class="text-[10px] text-gray-500 mt-2">Verified on: {{ formatDateTimeShort(currentUser.rfid_verified_at) }}</p>
-                    <p v-else class="text-[10px] text-gray-500 mt-2 italic">{{ currentUser.rfid_status === 'verified' ? 'Active and ready for attendance logging.' : 'Please visit the CCS office for assistance.' }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <section>
-                <div class="flex items-center gap-2 mb-2 sm:mb-3 md:mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full']"></div>
-                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Academic Information</h3>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
-                  <div v-for="(val, label) in { 
-                    'Program': currentUser.program || 'N/A', 
-                    'Year': currentUser.yearLevel || currentUser.year_level || 'N/A', 
-                    'Semester': appSettings.semester || 'N/A', 
-                    'School Year': appSettings.schoolYear || 'N/A' 
-                  }" :key="label" 
-                       :class="[isCOE ? 'hover:border-orange-200' : isSOM ? 'hover:border-green-200' : isCNAHS ? 'hover:border-green-200' : 'hover:border-blue-200', 'p-2.5 sm:p-3 md:p-4 bg-gray-50 rounded-xl md:rounded-2xl border border-gray-100 transition-colors']">
-                    <p class="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-0.5 sm:mb-1">{{ label }}</p>
-                    <p class="text-sm sm:text-base text-gray-900 font-bold">{{ val }}</p>
-                  </div>
-                </div>
-              </section>
-
-              <!-- Face ID Section (sidebar-styled: deep navy + glass) -->
-              <section>
-                <div class="flex items-center gap-2 mb-2 sm:mb-3 md:mb-4">
-                  <div :class="[faceAccentBar, 'w-1 h-5 rounded-full']"></div>
-                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Face ID</h3>
-                </div>
-                <div class="face-id-card relative overflow-hidden rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-6 border border-white/10 shadow-2xl bg-gradient-to-b from-[#080e2e] to-[#0f1f6e] text-white">
-                  <!-- Soft animated orbs (sidebar vibe) -->
-                  <div class="absolute -top-16 -right-16 w-56 h-56 rounded-full blur-3xl opacity-30 animate-pulse-slow" :class="faceOrbA"></div>
-                  <div class="absolute -bottom-20 -left-20 w-60 h-60 rounded-full blur-3xl opacity-20 animate-pulse-slower" :class="faceOrbB"></div>
-                  <!-- subtle grid sheen -->
-                  <div class="absolute inset-0 opacity-[0.07] pointer-events-none" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 22px 22px;"></div>
-
-                  <div class="relative z-10">
-                    <!-- Top row: avatar + text (+ inline button on sm+) -->
-                    <div class="flex items-start gap-3 sm:gap-5 sm:items-center">
-                      <!-- Avatar / status circle -->
-                      <div class="flex-shrink-0">
-                        <div class="relative">
-                          <span v-if="!faceLoading && !faceEnrolled" class="absolute inset-0 rounded-2xl animate-ping-slow opacity-40" :class="faceAccentRing"></span>
-                          <div :class="['relative w-14 h-14 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-2xl md:rounded-3xl overflow-hidden flex items-center justify-center shadow-xl ring-2 ring-white/20 backdrop-blur-sm', faceEnrolled ? 'bg-emerald-500/20' : 'bg-white/10']">
-                            <img v-if="faceEnrolled && faceData?.faces?.[0]?.photo" :src="faceData.faces[0].photo" class="w-full h-full object-cover" alt="Face ID preview" />
-                            <svg v-else class="w-7 h-7 sm:w-10 sm:h-10 md:w-12 md:h-12 text-white/85" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0M4 7v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7a3 3 0 00-3 3z" />
-                            </svg>
-                          </div>
-                          <span v-if="faceEnrolled" class="absolute -bottom-1 -right-1 w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 rounded-full bg-emerald-400 ring-2 ring-[#0a1340] flex items-center justify-center shadow-lg">
-                            <svg class="w-3 h-3 md:w-4 md:h-4 text-[#0a1340]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                          </span>
-                        </div>
-                      </div>
-
-                      <!-- Status text -->
-                      <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-1.5 mb-1">
-                          <h4 class="text-sm sm:text-base md:text-lg font-bold text-white leading-tight">Face Recognition</h4>
-                          <span v-if="faceLoading" class="flex-shrink-0 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-white/10 text-white/80 border border-white/15">Loading…</span>
-                          <span v-else-if="faceEnrolled" class="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-400/20 text-emerald-200 border border-emerald-300/40">
-                            <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                            Enrolled
-                          </span>
-                          <span v-else class="flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold bg-white/10 text-white border border-white/20">Not set up</span>
-                        </div>
-                        <p v-if="faceLoading" class="text-xs text-white/70">Checking Face ID status…</p>
-                        <template v-else-if="faceEnrolled">
-                          <p class="text-xs sm:text-sm text-white/90 font-medium">Use your face to mark attendance during events.</p>
-                          <p class="text-[10px] sm:text-xs text-white/60 mt-0.5 sm:mt-1">
-                            Updated <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.face_updated_at) }}</span>.
-                            <template v-if="faceData.in_cooldown"> Next on <span class="font-semibold text-white/80">{{ formatFaceDate(faceData.next_update_allowed_at) }}</span>.</template>
-                            <template v-else> Can update anytime.</template>
-                          </p>
-                        </template>
-                        <template v-else>
-                          <p class="text-xs sm:text-sm text-white/90 font-medium">Enroll your face to enable self check-in on events.</p>
-                          <p class="text-[10px] sm:text-xs text-white/60 mt-0.5 sm:mt-1">Only takes a few seconds with your camera.</p>
-                        </template>
-                      </div>
-
-                      <!-- Inline button — visible on sm+ only -->
-                      <div class="hidden sm:block flex-shrink-0">
-                        <button
-                          @click="openFaceEnroll"
-                          :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
-                          :class="['face-cta group relative px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 overflow-hidden transition-all duration-300 ease-out border whitespace-nowrap', (faceEnrolled && faceData?.in_cooldown) ? 'bg-white/5 text-white/40 border-white/10 cursor-not-allowed' : 'text-white border-white/25 bg-white/10 hover:bg-white/20 hover:border-white/40 hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-black/20 hover:shadow-xl']"
-                          :title="faceEnrolled && faceData?.in_cooldown ? `Locked until ${formatFaceDate(faceData.next_update_allowed_at)}` : ''"
-                        >
-                          <span v-if="!(faceEnrolled && faceData?.in_cooldown)" class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></span>
-                          <svg class="relative w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                          </svg>
-                          <span class="relative">{{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Full-width button — mobile only -->
-                    <div class="sm:hidden mt-3">
-                      <button
-                        @click="openFaceEnroll"
-                        :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
-                        :class="['face-cta group relative w-full px-4 py-2 rounded-xl font-bold text-xs flex items-center justify-center gap-2 overflow-hidden transition-all duration-300 ease-out border', (faceEnrolled && faceData?.in_cooldown) ? 'bg-white/5 text-white/40 border-white/10 cursor-not-allowed' : 'text-white border-white/25 bg-white/10 hover:bg-white/20 hover:border-white/40 active:translate-y-0 shadow-lg shadow-black/20']"
-                        :title="faceEnrolled && faceData?.in_cooldown ? `Locked until ${formatFaceDate(faceData.next_update_allowed_at)}` : ''"
-                      >
-                        <span v-if="!(faceEnrolled && faceData?.in_cooldown)" class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none"></span>
-                        <svg class="relative w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                <!-- Avatar column -->
+                <div class="flex-shrink-0 flex flex-col items-center gap-3">
+                  <div class="relative">
+                    <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50 flex items-center justify-center">
+                      <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
+                        <svg class="animate-spin h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
                         </svg>
-                        <span class="relative">{{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}</span>
-                      </button>
+                      </div>
+                      <img
+                        v-else-if="!profileImageFailed && (currentUser.image || currentUser.photo)"
+                        :src="currentUser.image || currentUser.photo"
+                        alt="Profile"
+                        class="w-full h-full object-cover"
+                        crossorigin="anonymous"
+                        @load="onProfileImageLoad"
+                        @error="handleProfileImageError"
+                      />
+                      <span v-else class="text-3xl font-bold text-gray-300">{{ getInitials(currentUser?.full_name || displayName || '') }}</span>
                     </div>
+                    <!-- Change photo button -->
+                    <button
+                      v-if="currentUser.role !== 'admin' && !currentUser.isMaster"
+                      @click="$refs.studentPhotoInput.click()"
+                      class="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
+                      :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-500']"
+                      title="Change Photo"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </button>
+                  </div>
+                  <p v-if="studentPhotoUploading" class="text-[11px] text-gray-400 animate-pulse">Uploading…</p>
+                  <input ref="studentPhotoInput" @change="handleStudentPhotoUpload" type="file" accept="image/*" class="hidden" />
+                </div>
+
+                <!-- Identity column -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-start justify-between gap-3 mb-1">
+                    <div>
+                      <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5" :class="[isCOE ? 'text-orange-400' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-400']">
+                        ID {{ currentUser.studentId || currentUser.student_id }}
+                      </p>
+                      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-tight">{{ displayName }}</h1>
+                    </div>
+                    <button
+                      @click="refreshCurrentUser"
+                      :disabled="refreshingUserData"
+                      class="flex-shrink-0 w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                      title="Refresh"
+                    >
+                      <svg :class="['w-4 h-4', refreshingUserData ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    </button>
                   </div>
 
-                  <!-- tip strip -->
-                  <div class="relative z-10 mt-3 sm:mt-5 pt-3 sm:pt-4 border-t border-white/10 grid grid-cols-3 gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-white/80">
-                    <div class="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
-                      <span class="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
-                        <svg class="w-2.5 h-2.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                      </span>
-                      <span class="leading-tight">Phone &amp; laptop</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
-                      <span class="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
-                        <svg class="w-2.5 h-2.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                      </span>
-                      <span class="leading-tight">Unique to you</span>
-                    </div>
-                    <div class="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 sm:py-2 rounded-lg bg-white/5 border border-white/10 border-l-4" :class="faceAccentBorderL">
-                      <span class="w-4 h-4 rounded-md flex items-center justify-center flex-shrink-0 bg-white/10">
-                        <svg class="w-2.5 h-2.5 text-emerald-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                      </span>
-                      <span class="leading-tight">Every {{ (faceData && faceData.cooldown_days) || 7 }}d update</span>
-                    </div>
+                  <!-- Quick-stat chips -->
+                  <div class="flex flex-wrap gap-2 mt-3">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 border border-gray-100 text-xs text-gray-600 font-medium">
+                      <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                      {{ currentUser.program || 'N/A' }}
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 border border-gray-100 text-xs text-gray-600 font-medium">
+                      <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                      {{ currentUser.yearLevel || currentUser.year_level || 'N/A' }}
+                    </span>
+                    <span :class="['inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border',
+                      currentUser.rfid_status === 'verified'
+                        ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
+                        : 'bg-amber-50 border-amber-100 text-amber-700']">
+                      <span :class="['w-1.5 h-1.5 rounded-full', currentUser.rfid_status === 'verified' ? 'bg-emerald-500' : 'bg-amber-400']"></span>
+                      {{ currentUser.rfid_status === 'verified' ? 'RFID Verified' : 'RFID Pending' }}
+                    </span>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 border border-gray-100 text-xs text-gray-500 font-medium">
+                      {{ appSettings.schoolYear || 'N/A' }} · {{ appSettings.semester || 'N/A' }}
+                    </span>
                   </div>
+                  <p class="text-[11px] text-gray-400 mt-3">Member since {{ formatDateTimeShort(currentUser.created_date) }}</p>
                 </div>
-              </section>
-
-              <section>
-                <div class="flex items-center gap-2 mb-2 sm:mb-3 md:mb-4">
-                  <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full']"></div>
-                  <h3 class="text-xs font-bold text-gray-400 uppercase tracking-widest">Account Security</h3>
-                </div>
-                <div class="p-3 sm:p-4 md:p-6 bg-gray-50 rounded-xl md:rounded-2xl border border-gray-100 flex items-center justify-between gap-3">
-                  <div class="flex-1 min-w-0">
-                    <h4 class="font-bold text-sm text-gray-900 mb-0.5">Password</h4>
-                    <p class="text-xs text-gray-500">Keep your account secure with a strong password.</p>
-                  </div>
-                  <button @click="showPasswordChangeModal = true" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 shadow-lg shadow-orange-200 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-yellow-500 shadow-lg shadow-green-200 hover:from-green-700 hover:to-yellow-600' : isCNAHS ? 'bg-gradient-to-r from-green-700 to-green-600 shadow-lg shadow-green-300 hover:from-green-800 hover:to-green-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light shadow-lg shadow-blue-200 hover:from-ssaam-dark hover:to-ssaam-light', 'flex-shrink-0 px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 text-white rounded-xl font-bold text-xs sm:text-sm hover:scale-105 transition-transform flex items-center gap-1.5 whitespace-nowrap']">
-                    <svg class="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
-                    Change Password
-                  </button>
-                </div>
-              </section>
-
+              </div>
             </div>
           </div>
+
+          <!-- ── Info sections grid ── -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+
+            <!-- Personal Information -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+              <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Personal Information</h3>
+              <div class="grid grid-cols-2 gap-3">
+                <div v-for="(val, label) in {
+                  'First Name': currentUser.firstName || currentUser.first_name,
+                  'Middle Name': currentUser.middleName || currentUser.middle_name || 'N/A',
+                  'Last Name': currentUser.lastName || currentUser.last_name,
+                  'Suffix': currentUser.suffix || 'N/A'
+                }" :key="label" class="space-y-0.5">
+                  <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{{ label }}</p>
+                  <p class="text-sm font-semibold text-gray-800 truncate">{{ val }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact & Identification -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+              <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Contact & Identification</h3>
+              <div class="space-y-4">
+                <!-- Email -->
+                <div class="space-y-0.5">
+                  <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Email Address</p>
+                  <p class="text-sm font-semibold text-gray-800 truncate">{{ currentUser.email || 'Not provided' }}</p>
+                </div>
+                <!-- RFID -->
+                <div class="pt-3 border-t border-gray-50">
+                  <div class="flex items-center justify-between mb-1.5">
+                    <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">RFID Status</p>
+                    <span :class="['px-2 py-0.5 rounded-full text-[10px] font-bold',
+                      currentUser.rfid_status === 'verified' ? 'bg-emerald-50 text-emerald-700' :
+                      (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'bg-gray-100 text-gray-600' :
+                      'bg-amber-50 text-amber-700']">
+                      {{ currentUser.rfid_status === 'verified' ? 'Verified' : (currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))) ? 'Unreadable' : 'Pending' }}
+                    </span>
+                  </div>
+                  <div v-if="currentUser.rfid_status === 'verified'" class="flex items-center gap-2">
+                    <p class="text-base font-mono font-bold text-gray-800 tracking-tight">{{ currentUser.rfidCode || currentUser.rfid_code }}</p>
+                    <button @click="copyRfidToClipboard(currentUser.rfidCode || currentUser.rfid_code)"
+                      :class="['p-1 rounded-lg transition-colors', isCOE ? 'text-orange-400 hover:bg-orange-50' : isSOM ? 'text-green-400 hover:bg-green-50' : isCNAHS ? 'text-green-600 hover:bg-green-50' : 'text-blue-400 hover:bg-blue-50']">
+                      <svg v-if="!rfidCopied" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                      <svg v-else class="w-3.5 h-3.5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    </button>
+                  </div>
+                  <p v-else-if="currentUser.rfid_status === 'Unreadable' || (currentUser.rfid_code && currentUser.rfid_code.toUpperCase().startsWith('UNREADABLE'))" class="text-sm font-semibold text-gray-700">Card Damaged</p>
+                  <p v-else class="text-sm font-semibold text-gray-700">Not Yet Assigned</p>
+                  <p class="text-[10px] text-gray-400 mt-1.5">
+                    {{ currentUser.rfid_verified_at ? 'Verified on ' + formatDateTimeShort(currentUser.rfid_verified_at) : currentUser.rfid_status === 'verified' ? 'Active and ready for attendance logging.' : 'Please visit the CCS office for assistance.' }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── Face ID ── -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 mb-4">
+            <div class="flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row">
+              <div class="flex items-center gap-4">
+                <!-- Face preview / icon -->
+                <div :class="['w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 border',
+                  faceEnrolled ? 'border-emerald-100 bg-emerald-50' : 'border-gray-100 bg-gray-50']">
+                  <img v-if="faceEnrolled && faceData?.faces?.[0]?.photo" :src="faceData.faces[0].photo" class="w-full h-full object-cover" alt="Face ID" />
+                  <svg v-else class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0M4 7v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7a3 3 0 00-3 3z"/>
+                  </svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2 mb-0.5">
+                    <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Face ID</h3>
+                    <span v-if="faceLoading" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 text-gray-500">Checking…</span>
+                    <span v-else-if="faceEnrolled" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
+                      <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                      Enrolled
+                    </span>
+                    <span v-else class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 text-gray-500">Not set up</span>
+                  </div>
+                  <p class="text-sm font-semibold text-gray-800">Face Recognition</p>
+                  <p v-if="faceEnrolled && faceData" class="text-[11px] text-gray-400 mt-0.5">
+                    Updated {{ formatFaceDate(faceData.face_updated_at) }}.
+                    <span v-if="faceData.in_cooldown">Next update on {{ formatFaceDate(faceData.next_update_allowed_at) }}.</span>
+                    <span v-else> Can update anytime.</span>
+                  </p>
+                  <p v-else-if="!faceEnrolled && !faceLoading" class="text-[11px] text-gray-400 mt-0.5">Enable face check-in for events.</p>
+                </div>
+              </div>
+              <!-- CTA button -->
+              <button
+                @click="openFaceEnroll"
+                :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
+                :class="['flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all',
+                  (faceEnrolled && faceData?.in_cooldown)
+                    ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
+                    : isCOE ? 'bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-100'
+                    : isSOM ? 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
+                    : isCNAHS ? 'bg-green-50 text-green-700 border-green-100 hover:bg-green-100'
+                    : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100']"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                {{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}
+              </button>
+            </div>
+
+            <!-- Feature chips -->
+            <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-50">
+              <span v-for="tip in ['Works on phone & laptop', 'Unique to you', `Updates every ${(faceData && faceData.cooldown_days) || 7} days`]" :key="tip"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 border border-gray-100 text-[11px] text-gray-500">
+                <svg class="w-3 h-3 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                {{ tip }}
+              </span>
+            </div>
+          </div>
+
+          <!-- ── Account Security ── -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
+            <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Account Security</h3>
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="text-sm font-semibold text-gray-800 mb-0.5">Password</p>
+                <p class="text-xs text-gray-400">Keep your account secure with a strong password.</p>
+              </div>
+              <button
+                @click="showPasswordChangeModal = true"
+                :class="['flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all',
+                  isCOE ? 'bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-100'
+                  : isSOM ? 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
+                  : isCNAHS ? 'bg-green-50 text-green-700 border-green-100 hover:bg-green-100'
+                  : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100']"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+                Change Password
+              </button>
+            </div>
+          </div>
+
         </div>
 
         <!-- My Contributions Page (Students) -->
