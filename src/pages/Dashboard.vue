@@ -2171,26 +2171,23 @@
           </div>
 
           <!-- Student Attendance View -->
-          <div v-else class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <!-- Header Banner -->
-            <div :class="['relative h-24 sm:h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-900 via-orange-600 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-900 via-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-800 via-green-700 to-green-600' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
-              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-              <div class="light-sweep"></div>
-              <div class="relative z-10 px-4 sm:px-6 h-full flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
-                  </div>
-                  <div>
-                    <h2 class="text-base sm:text-lg font-bold text-white leading-tight">My Attendance</h2>
-                    <p class="text-white/65 text-[10px] sm:text-xs">Events &amp; sessions</p>
-                  </div>
-                </div>
-                <button @click="refreshAttendanceData" :disabled="attendanceLoading" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 border border-white/20 text-white text-xs font-semibold transition disabled:opacity-50">
-                  <svg :class="['w-3.5 h-3.5', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                  Refresh
-                </button>
+          <div v-else class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <!-- Header -->
+            <div :class="['h-1', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-400' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-400' : isCNAHS ? 'bg-gradient-to-r from-green-600 to-green-400' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']"></div>
+            <div class="px-5 sm:px-7 py-5 flex items-center gap-4 border-b border-gray-100">
+              <div :class="['w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border',
+                isCOE ? 'bg-orange-50 border-orange-100 text-orange-500' : isSOM ? 'bg-green-50 border-green-100 text-green-500' : isCNAHS ? 'bg-green-50 border-green-100 text-green-600' : 'bg-blue-50 border-blue-100 text-blue-500']">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
               </div>
+              <div class="flex-1 min-w-0">
+                <h2 class="text-lg font-bold text-gray-900">My Attendance</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Events &amp; sessions</p>
+              </div>
+              <button @click="refreshAttendanceData" :disabled="attendanceLoading"
+                class="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors">
+                <svg :class="['w-3.5 h-3.5', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                Refresh
+              </button>
             </div>
 
             <!-- Content -->
@@ -2209,8 +2206,8 @@
             <div v-else class="space-y-6">
               <!-- Active Events Section - Social Media Style -->
               <div v-if="activeNonEndedEvents.length > 0">
-                <h3 class="font-semibold text-gray-700 mb-2 sm:mb-3 flex items-center gap-2 text-xs sm:text-sm uppercase tracking-widest">
-                  <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0"></span>
+                <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-1 flex items-center gap-2">
+                  <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse flex-shrink-0"></span>
                   Active Events
                 </h3>
                 <!-- ============================================================
@@ -2388,8 +2385,7 @@
 
               <!-- Upcoming Events Section -->
               <div v-if="upcomingEvents.length > 0">
-                <h3 class="font-semibold text-gray-700 mb-2 sm:mb-3 flex items-center gap-2 text-xs sm:text-sm uppercase tracking-widest">
-                  <span class="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0"></span>
+                <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-1">
                   Upcoming Events
                 </h3>
                 <div class="space-y-4">
@@ -2453,56 +2449,44 @@
 
               <!-- My Attendance Records Section - Enhanced with Expandable Event Folders -->
               <div v-if="myAttendanceRecords.length > 0">
-                <h3 class="font-semibold text-gray-700 mb-2 sm:mb-3 flex items-center gap-2 text-xs sm:text-sm uppercase tracking-widest">
-                  <img :src="'/events.svg'" alt="History" class="w-4 h-4 flex-shrink-0" style="filter: invert(0.3) sepia(1) hue-rotate(270deg) saturate(1.5);" />
-                  My Attendance History
-                </h3>
-                <div class="space-y-3">
+                <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-1">My Attendance History</h3>
+                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
                   <div 
                     v-for="record in myAttendanceRecords" 
-                    :key="record._id || record.event_id" 
-                    class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm"
+                    :key="record._id || record.event_id"
                   >
-                    <!-- Event Folder Header - Clickable with press animation -->
+                    <!-- Event Row - Clickable -->
                     <div 
                       @click="expandedAttendanceRecords[record.event_id] = !expandedAttendanceRecords[record.event_id]"
-                      class="attendance-event-card px-4 py-3 cursor-pointer flex items-center justify-between gap-3 hover:bg-gray-50 transition-all duration-200"
-                      :class="{ 'bg-gray-50': expandedAttendanceRecords[record.event_id] }"
+                      class="px-5 py-4 cursor-pointer flex items-center justify-between gap-3 hover:bg-gray-50/70 transition-colors duration-150"
+                      :class="{ 'bg-gray-50/70': expandedAttendanceRecords[record.event_id] }"
                     >
                       <div class="flex items-center gap-3 flex-1 min-w-0">
-                        <!-- Folder Icon with expand indicator -->
-                        <div class="flex-shrink-0 relative">
-                          <svg :class="['w-8 h-8 transition-all duration-200', expandedAttendanceRecords[record.event_id] ? (isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-blue-600') : 'text-gray-400']" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
-                          </svg>
-                          <svg :class="['w-3 h-3 absolute -right-0.5 -bottom-0.5 transition-transform duration-200', expandedAttendanceRecords[record.event_id] ? ('rotate-90 ' + (isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-blue-600')) : 'text-gray-500']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path>
-                          </svg>
+                        <!-- Icon -->
+                        <div :class="['w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border transition-colors duration-200',
+                          expandedAttendanceRecords[record.event_id]
+                            ? (isCOE ? 'bg-orange-50 border-orange-100 text-orange-500' : isSOM ? 'bg-green-50 border-green-100 text-green-500' : isCNAHS ? 'bg-green-50 border-green-100 text-green-600' : 'bg-blue-50 border-blue-100 text-blue-500')
+                            : 'bg-gray-50 border-gray-100 text-gray-400']">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
                         <!-- Event Info -->
                         <div class="flex-1 min-w-0">
-                          <h4 class="font-semibold text-gray-900 truncate">{{ record.event?.title || record.event_title || 'Event' }}</h4>
-                          <div class="flex flex-wrap items-center gap-2 mt-1 text-xs text-gray-500">
-                            <span class="flex items-center gap-1">
-                              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                              {{ record.event?.event_date ? formatEventDate(record.event.event_date) : '-' }}
-                            </span>
-                            <span v-if="record.sessions && record.sessions.length > 0" class="text-gray-400">|</span>
-                            <span v-if="record.sessions && record.sessions.length > 0" class="text-gray-500">
+                          <h4 class="font-semibold text-gray-800 truncate text-sm">{{ record.event?.title || record.event_title || 'Event' }}</h4>
+                          <div class="flex items-center gap-2 mt-0.5 text-[11px] text-gray-400">
+                            <span>{{ record.event?.event_date ? formatEventDate(record.event.event_date) : '-' }}</span>
+                            <span v-if="record.sessions && record.sessions.length > 0">·</span>
+                            <span v-if="record.sessions && record.sessions.length > 0">
                               {{ record.sessions.length }} session{{ record.sessions.length > 1 ? 's' : '' }}
                             </span>
                           </div>
                         </div>
                       </div>
-                      <!-- Overall Status Badge -->
-                      <div class="flex-shrink-0 flex flex-col items-end gap-1">
-                        <span :class="['px-3 py-1 rounded-full text-xs font-semibold', getOverallStatusClass(getSmartRecordStatus(record))]">
+                      <!-- Status + chevron -->
+                      <div class="flex items-center gap-2 flex-shrink-0">
+                        <span :class="['px-2.5 py-1 rounded-full text-[11px] font-semibold border', getOverallStatusClass(getSmartRecordStatus(record))]">
                           {{ getOverallStatusLabel(getSmartRecordStatus(record)) }}
                         </span>
-                        <!-- Show excuse reason if applicable -->
-                        <span v-if="record.overall_status === 'excused' && record.excuse_reason" class="text-xs text-gray-600 italic max-w-xs text-right">
-                          Reason: {{ record.excuse_reason }}
-                        </span>
+                        <svg :class="['w-3.5 h-3.5 text-gray-300 transition-transform duration-200', expandedAttendanceRecords[record.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                       </div>
                     </div>
                     
@@ -4042,49 +4026,44 @@
         </div>
 
         <!-- My Contributions Page (Students) -->
-        <div v-if="currentPage === 'my-contributions' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-6">
-          <!-- Header Banner -->
-          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
-              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-              <div class="light-sweep"></div>
-              <div class="relative z-10 px-4 sm:p-6 flex items-center gap-3 sm:gap-4 h-full">
-                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-white/20 backdrop-blur flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                </div>
-                <div class="min-w-0">
-                  <h2 class="text-base sm:text-xl font-bold text-white leading-tight">My Contributions</h2>
-                  <p class="text-white/70 text-xs sm:text-sm mt-0.5">Track your contribution fees and payment status</p>
-                </div>
+        <div v-if="currentPage === 'my-contributions' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-4">
+          <!-- Header -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div :class="['h-1', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-400' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-400' : isCNAHS ? 'bg-gradient-to-r from-green-600 to-green-400' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']"></div>
+            <div class="px-5 sm:px-7 py-5 flex items-center gap-4">
+              <div :class="['w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border',
+                isCOE ? 'bg-orange-50 border-orange-100 text-orange-500' : isSOM ? 'bg-green-50 border-green-100 text-green-500' : isCNAHS ? 'bg-green-50 border-green-100 text-green-600' : 'bg-blue-50 border-blue-100 text-blue-500']">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h2 class="text-lg font-bold text-gray-900">My Contributions</h2>
+                <p class="text-xs text-gray-400 mt-0.5">Track your contribution fees and payment status</p>
               </div>
             </div>
-
-            <!-- Summary Cards -->
-            <div class="p-3 sm:p-6 grid grid-cols-3 gap-2 sm:gap-4">
-              <div :class="['rounded-2xl p-2.5 sm:p-4 text-center', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
-                <p class="text-xl sm:text-2xl font-bold text-gray-800">{{ myPayments.length }}</p>
-                <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 font-medium">Total</p>
+            <!-- Summary stats -->
+            <div class="grid grid-cols-3 divide-x divide-gray-100 border-t border-gray-100">
+              <div class="px-4 py-4 text-center">
+                <p class="text-2xl font-bold text-gray-800">{{ myPayments.length }}</p>
+                <p class="text-[11px] text-gray-400 mt-0.5 font-medium">Total</p>
               </div>
-              <div class="rounded-2xl p-2.5 sm:p-4 text-center bg-green-50">
-                <p class="text-xl sm:text-2xl font-bold text-green-700">{{ myPayments.filter(p => p.is_paid).length }}</p>
-                <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 font-medium">Paid</p>
+              <div class="px-4 py-4 text-center">
+                <p class="text-2xl font-bold text-emerald-600">{{ myPayments.filter(p => p.is_paid).length }}</p>
+                <p class="text-[11px] text-gray-400 mt-0.5 font-medium">Paid</p>
               </div>
-              <div class="rounded-2xl p-2.5 sm:p-4 text-center bg-red-50">
-                <p class="text-xl sm:text-2xl font-bold text-red-600">{{ myPayments.filter(p => !p.is_paid).length }}</p>
-                <p class="text-[10px] sm:text-xs text-gray-500 mt-0.5 sm:mt-1 font-medium">Outstanding</p>
+              <div class="px-4 py-4 text-center">
+                <p class="text-2xl font-bold text-red-500">{{ myPayments.filter(p => !p.is_paid).length }}</p>
+                <p class="text-[11px] text-gray-400 mt-0.5 font-medium">Outstanding</p>
               </div>
             </div>
           </div>
 
           <!-- Records Card -->
-          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-            <div class="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-100">
-              <div class="flex items-center gap-2">
-                <div :class="[isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600', 'w-1 h-5 rounded-full flex-shrink-0']"></div>
-                <h3 class="text-xs sm:text-sm font-bold text-gray-700 uppercase tracking-widest">Payment Records</h3>
-              </div>
-              <button @click="fetchMyPayments" :disabled="loadingMyPayments" :class="[isCOE ? 'text-orange-600 hover:bg-orange-50' : isSOM ? 'text-green-600 hover:bg-green-50' : isCNAHS ? 'text-green-700 hover:bg-green-50' : 'text-blue-600 hover:bg-blue-50', 'p-2 rounded-xl transition-colors flex items-center gap-1.5 text-xs font-medium']" title="Refresh">
-                <svg :class="['w-4 h-4', loadingMyPayments ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="flex items-center justify-between px-5 sm:px-7 py-4 border-b border-gray-100">
+              <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Payment Records</h3>
+              <button @click="fetchMyPayments" :disabled="loadingMyPayments"
+                class="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors">
+                <svg :class="['w-3.5 h-3.5', loadingMyPayments ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                 Refresh
               </button>
             </div>
@@ -4135,50 +4114,52 @@
               <div class="hidden sm:block overflow-x-auto">
                 <table class="w-full text-sm">
                   <thead>
-                    <tr :class="[isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
-                      <th :class="['text-left px-5 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Description</th>
-                      <th :class="['text-right px-5 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Amount</th>
-                      <th :class="['text-center px-5 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Status</th>
-                      <th :class="['text-right px-5 py-3 font-bold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Deadline</th>
+                    <tr class="border-b border-gray-100">
+                      <th class="text-left px-5 sm:px-7 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Description</th>
+                      <th class="text-right px-5 sm:px-7 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Amount</th>
+                      <th class="text-center px-5 sm:px-7 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</th>
+                      <th class="text-right px-5 sm:px-7 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Deadline</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-gray-100">
-                    <tr v-for="record in myPayments.slice(0, myPaymentsLimit)" :key="record._id" class="hover:bg-gray-50 transition-colors">
-                      <td class="px-5 py-4">
-                        <p class="font-semibold text-gray-900">{{ record.title }}</p>
-                        <p v-if="record.description" class="text-xs text-gray-500 mt-0.5 line-clamp-2">{{ record.description }}</p>
+                  <tbody class="divide-y divide-gray-50">
+                    <tr v-for="record in myPayments.slice(0, myPaymentsLimit)" :key="record._id" class="hover:bg-gray-50/60 transition-colors">
+                      <td class="px-5 sm:px-7 py-4">
+                        <p class="font-semibold text-gray-800">{{ record.title }}</p>
+                        <p v-if="record.description" class="text-xs text-gray-400 mt-0.5 line-clamp-1">{{ record.description }}</p>
                       </td>
-                      <td class="px-5 py-4 text-right">
-                        <span class="font-bold text-gray-900">₱{{ Number(record.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
-                        <p v-if="record.is_paid && record.amount_paid" class="text-xs text-gray-400 mt-0.5">Paid: ₱{{ Number(record.amount_paid).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</p>
+                      <td class="px-5 sm:px-7 py-4 text-right">
+                        <span class="font-bold text-gray-800">₱{{ Number(record.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                        <p v-if="record.is_paid && record.amount_paid" class="text-[11px] text-gray-400 mt-0.5">Paid: ₱{{ Number(record.amount_paid).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</p>
                       </td>
-                      <td class="px-5 py-4 text-center">
-                        <span :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold',
-                          record.is_paid ? 'bg-green-100 text-green-700' :
-                          record.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-red-100 text-red-700']">
-                          <svg v-if="record.is_paid" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                      <td class="px-5 sm:px-7 py-4 text-center">
+                        <span :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold',
+                          record.is_paid ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                          record.payment_status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
+                          'bg-red-50 text-red-600 border border-red-100']">
+                          <svg v-if="record.is_paid" class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                           {{ record.is_paid ? 'Paid' : record.payment_status === 'pending' ? 'Pending' : 'Unpaid' }}
                         </span>
                         <p v-if="record.is_paid && record.paid_date" class="text-[10px] text-gray-400 mt-1">{{ new Date(record.paid_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</p>
                       </td>
-                      <td class="px-5 py-4 text-right">
-                        <span v-if="record.deadline" class="text-xs text-gray-600">{{ new Date(record.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
-                        <span v-else class="text-xs text-gray-400">—</span>
+                      <td class="px-5 sm:px-7 py-4 text-right">
+                        <span v-if="record.deadline" class="text-xs text-gray-500">{{ new Date(record.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
+                        <span v-else class="text-xs text-gray-300">—</span>
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
               <!-- Load More -->
-              <div v-if="myPayments.length > myPaymentsLimit" class="px-4 sm:px-5 py-3 border-t border-gray-100 text-center">
-                <button @click="myPaymentsLimit += 10" :class="['px-5 py-2 rounded-xl text-sm font-semibold transition-all hover:scale-105 active:scale-95', isCOE ? 'bg-orange-50 text-orange-700 hover:bg-orange-100' : isSOM ? 'bg-green-50 text-green-700 hover:bg-green-100' : isCNAHS ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-blue-50 text-blue-700 hover:bg-blue-100']">
+              <div v-if="myPayments.length > myPaymentsLimit" class="px-5 sm:px-7 py-3 border-t border-gray-100 text-center">
+                <button @click="myPaymentsLimit += 10"
+                  :class="['px-4 py-1.5 rounded-xl text-xs font-semibold border transition-all',
+                    isCOE ? 'bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-100' : isSOM ? 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100' : isCNAHS ? 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100' : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100']">
                   Load More ({{ myPayments.length - myPaymentsLimit }} remaining)
                 </button>
               </div>
-              <div :class="['px-4 sm:px-5 py-3 flex items-center justify-between border-t border-gray-100', isCOE ? 'bg-orange-50/50' : isSOM ? 'bg-green-50/50' : isCNAHS ? 'bg-green-50/50' : 'bg-blue-50/50']">
-                <span class="text-xs text-gray-500">{{ myPayments.filter(p => p.is_paid).length }} of {{ myPayments.length }} paid</span>
-                <span :class="['text-xs font-bold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">
+              <div class="px-5 sm:px-7 py-3 flex items-center justify-between border-t border-gray-100 bg-gray-50/50">
+                <span class="text-xs text-gray-400">{{ myPayments.filter(p => p.is_paid).length }} of {{ myPayments.length }} paid</span>
+                <span class="text-xs font-bold text-gray-700">
                   Total: ₱{{ myPayments.reduce((s, p) => s + (p.amount_due || 0), 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
                 </span>
               </div>
