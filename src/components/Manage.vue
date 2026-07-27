@@ -51,7 +51,7 @@
       <!-- USERS TAB -->
       <div v-if="activeTab === 'users'" class="space-y-6">
         <!-- Users Search and Filter -->
-        <div class="rounded-xl p-4 md:p-5 mb-6 space-y-4 bg-white border border-gray-200 shadow-sm">
+        <div class="rounded-xl p-4 md:p-5 mb-6 space-y-4 bg-white border border-gray-200 shadow-sm relative z-10">
           <!-- Search Input -->
           <div class="relative group">
             <div :class="['absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none', isCOE ? 'text-gray-400 group-focus-within:text-orange-700' : isSOM ? 'text-gray-400 group-focus-within:text-green-700' : isCNAHS ? 'text-gray-400 group-focus-within:text-green-700' : 'text-gray-400 group-focus-within:text-blue-600', 'transition-colors duration-200']">
