@@ -7,56 +7,65 @@
   <WelcomeModal :visible="showWelcomeModal" :user-name="displayName" @agreed="onWelcomeAgreed" />
 
 
-  <transition name="dev-modal">
-    <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" @click.self="showDevelopersPopup = false">
-      <div class="dev-modal-card bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[88vh] sm:max-h-[85vh] overflow-hidden flex flex-col">
-
-        <!-- Header -->
-        <div class="bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light px-4 sm:px-6 py-4 sm:py-5 flex-shrink-0 relative overflow-hidden">
-          <div class="light-sweep"></div>
-          <div class="relative z-10 flex items-center justify-between">
-            <div class="flex items-center gap-2.5 sm:gap-3">
-              <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-                <svg class="w-4.5 h-4.5 sm:w-5 sm:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-              </div>
-              <div>
-                <h3 class="text-base sm:text-lg font-bold text-white leading-tight">Meet Our Developers</h3>
-                <p class="text-blue-100/80 text-[10px] sm:text-xs">CCS &middot; Creatives Committee</p>
-              </div>
-            </div>
-            <button @click="showDevelopersPopup = false" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition flex-shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+  <transition name="fade">
+    <div v-if="showDevelopersPopup" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click.self="showDevelopersPopup = false">
+      <transition name="modal-bounce" appear>
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[90vh] flex flex-col">
+          <!-- Header -->
+          <div class="px-6 sm:px-8 pt-6 sm:pt-7 pb-1 text-center relative flex-shrink-0">
+            <button @click="showDevelopersPopup = false"
+              class="absolute right-4 top-4 sm:right-5 sm:top-5 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition text-xl leading-none">
+              &times;
             </button>
+            <h3 class="text-xl sm:text-2xl font-bold text-gray-900">Meet our team</h3>
+            <p class="text-gray-500 text-xs sm:text-sm mt-1">CCS – Creatives Committee</p>
           </div>
-        </div>
 
-        <!-- Scrollable content -->
-        <div class="px-3 sm:px-5 py-3 sm:py-5 overflow-y-auto dev-modal-scroll flex-1">
-          <div class="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2.5 sm:gap-4">
-            <div
-              v-for="(dev, index) in developers"
-              :key="dev.name"
-              class="flex flex-col items-center bg-blue-50/60 hover:bg-blue-50 rounded-2xl p-2.5 sm:p-3 transition-all duration-200 hover:shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
-              :style="{ transitionDelay: `${index * 40}ms` }"
-            >
-              <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-blue-200 shadow-md bg-gradient-to-br from-ssaam-dark to-ssaam-light mb-2 flex items-center justify-center text-white">
-                <img v-if="dev.image" :src="dev.image" :alt="dev.name" class="w-full h-full object-cover rounded-full" />
-                <span v-else class="text-sm font-bold">{{ dev.initials }}</span>
+          <!-- Carousel -->
+          <div class="relative px-4 sm:px-6 pt-4 sm:pt-5 pb-3 sm:pb-4 select-none overflow-hidden">
+            <div class="relative" style="height: 240px; overflow: visible;">
+              <div v-for="(dev, i) in developers" :key="dev.name"
+                :style="getDevStyle(i)"
+                @click="handleDevClick(i)">
+                <img :src="dev.image" :alt="dev.name"
+                  class="w-full h-full object-cover object-top" />
+                <!-- Active card overlay -->
+                <div v-if="i === devCarouselIdx"
+                  class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-3 sm:p-4 pt-8 sm:pt-10">
+                  <p class="text-white font-bold text-sm leading-tight">{{ dev.name }}</p>
+                  <p class="text-white/80 text-xs mt-0.5">{{ dev.role }}</p>
+                  <p class="text-white/55 text-xs">{{ dev.year_level }} · {{ dev.program }}</p>
+                </div>
+                <!-- Side card name overlay -->
+                <div v-else class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
+                  <p class="text-white font-semibold text-[10px] text-center leading-tight truncate">{{ dev.name }}</p>
+                </div>
               </div>
-              <p class="text-[10px] sm:text-xs font-bold text-center leading-tight text-blue-700 hover:text-blue-900 mb-0.5 line-clamp-2">
-                <a :href="dev.facebook" target="_blank" rel="noopener noreferrer" class="underline underline-offset-1">{{ dev.name }}</a>
-              </p>
-              <p class="text-[9px] sm:text-[10px] text-gray-500 text-center line-clamp-1 font-medium">{{ dev.year_level }} - {{ dev.program }}</p>
-              <p class="text-[9px] sm:text-[10px] text-blue-400 text-center font-semibold line-clamp-1 mt-0.5">{{ dev.role }}</p>
+            </div>
+
+            <!-- Nav arrows -->
+            <button @click="prevDev"
+              class="absolute left-1 top-1/2 -translate-y-6 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:shadow-lg transition z-30">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <button @click="nextDev"
+              class="absolute right-1 top-1/2 -translate-y-6 w-8 h-8 rounded-full bg-white shadow-md border border-gray-100 flex items-center justify-center text-gray-500 hover:text-gray-900 hover:shadow-lg transition z-30">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
+
+            <!-- Dot indicators -->
+            <div class="flex justify-center gap-2 mt-3 sm:mt-4">
+              <button v-for="(_, i) in developers" :key="i" @click="devCarouselIdx = i"
+                :class="['rounded-full transition-all duration-300', i === devCarouselIdx ? 'w-5 h-2 bg-gray-800' : 'w-2 h-2 bg-gray-300 hover:bg-gray-400']" />
             </div>
           </div>
-        </div>
 
-        <!-- Sticky Footer -->
-        <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 flex-shrink-0 bg-white">
-          <button @click="showDevelopersPopup = false" class="w-full bg-gradient-to-r from-ssaam-dark via-blue-700 to-ssaam-light text-white py-2.5 sm:py-3 rounded-2xl font-bold text-sm hover:opacity-90 active:scale-[0.98] transition shadow-md shadow-blue-200">Done</button>
+          <!-- Footer -->
+          <div class="px-6 sm:px-8 pb-5 sm:pb-6 text-center flex-shrink-0">
+            <p class="text-xs text-gray-400">CCS – Creatives Committee</p>
+          </div>
         </div>
-      </div>
+      </transition>
     </div>
   </transition>
 
@@ -11637,6 +11646,55 @@ const developers = [
     { name: 'Christoph Bagabuyo', initials: 'CB', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/christoph.bagabuyo', image: '/team/christoph.jpg' },
     { name: 'Mischi Jeda Elumba', initials: 'MJ', role: 'UI/UX Designer', year_level: '2nd year', program: 'IS', facebook: 'https://facebook.com/mischijeda.elumba.1', image: '/team/mischi.jpg' }
   ]
+
+// Developer carousel logic (same as Login/Register pages)
+const devCarouselIdx = ref(1)
+let devCarouselTimer = null
+const DEV_COUNT = developers.length
+const devIdxWrap = (i) => ((i % DEV_COUNT) + DEV_COUNT) % DEV_COUNT
+const prevDev = () => { devCarouselIdx.value = devIdxWrap(devCarouselIdx.value - 1) }
+const nextDev = () => { devCarouselIdx.value = devIdxWrap(devCarouselIdx.value + 1) }
+
+const getDevStyle = (i) => {
+  let d = i - devCarouselIdx.value
+  if (d > DEV_COUNT / 2) d -= DEV_COUNT
+  if (d < -DEV_COUNT / 2) d += DEV_COUNT
+  const t = {
+    position: 'absolute', bottom: '0', left: '50%',
+    borderRadius: '1rem', overflow: 'hidden',
+    transition: 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+    cursor: 'pointer',
+  }
+  if (d === 0) {
+    return { ...t, width: '160px', height: '240px', transform: 'translateX(-80px)', opacity: '1', filter: 'none', zIndex: '20' }
+  } else if (d === -1) {
+    return { ...t, width: '112px', height: '176px', transform: 'translateX(-204px)', opacity: '0.55', filter: 'grayscale(1)', zIndex: '10' }
+  } else if (d === 1) {
+    return { ...t, width: '112px', height: '176px', transform: 'translateX(92px)', opacity: '0.55', filter: 'grayscale(1)', zIndex: '10' }
+  } else if (d < -1) {
+    return { ...t, width: '112px', height: '176px', transform: 'translateX(-420px)', opacity: '0', filter: 'grayscale(1)', zIndex: '5', pointerEvents: 'none' }
+  } else {
+    return { ...t, width: '112px', height: '176px', transform: 'translateX(380px)', opacity: '0', filter: 'grayscale(1)', zIndex: '5', pointerEvents: 'none' }
+  }
+}
+
+const handleDevClick = (i) => {
+  if (i !== devCarouselIdx.value) {
+    devCarouselIdx.value = i
+  } else {
+    window.open(developers[i].facebook, '_blank', 'noopener,noreferrer')
+  }
+}
+
+watch(showDevelopersPopup, (open) => {
+  if (open) {
+    devCarouselIdx.value = 1
+    devCarouselTimer = setInterval(nextDev, 3000)
+  } else {
+    clearInterval(devCarouselTimer)
+    devCarouselTimer = null
+  }
+})
 
 const displayName = computed(() => {
   const firstName = currentUser.value.firstName || currentUser.value.first_name

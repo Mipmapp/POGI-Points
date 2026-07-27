@@ -22,14 +22,14 @@
           </button>
         </div>
         <!-- Tab Navigation -->
-        <div class="flex gap-2 border-b-2 border-gray-200">
+        <div class="flex gap-1 p-1 bg-gray-100 rounded-xl w-fit">
           <button
             @click="activeTab = 'users'"
             :class="[
-              'px-3 md:px-4 py-2 font-medium transition-all duration-200 border-b-2 text-sm md:text-base',
+              'px-4 md:px-5 py-1.5 font-semibold rounded-lg transition-all duration-200 text-sm',
               activeTab === 'users'
-                ? [primaryTextColor, isCOE ? 'border-orange-700' : isSOM ? 'border-green-700' : isCNAHS ? 'border-green-700' : 'border-blue-600']
-                : 'text-gray-600 border-transparent hover:text-gray-700'
+                ? 'bg-white shadow-sm text-gray-900'
+                : 'text-gray-500 hover:text-gray-700'
             ]"
           >
             Users
@@ -37,10 +37,10 @@
           <button
             @click="activeTab = 'roles'"
             :class="[
-              'px-3 md:px-4 py-2 font-medium transition-all duration-200 border-b-2 text-sm md:text-base',
+              'px-4 md:px-5 py-1.5 font-semibold rounded-lg transition-all duration-200 text-sm',
               activeTab === 'roles'
-                ? [primaryTextColor, isCOE ? 'border-orange-700' : isSOM ? 'border-green-700' : isCNAHS ? 'border-green-700' : 'border-blue-600']
-                : 'text-gray-600 border-transparent hover:text-gray-700'
+                ? 'bg-white shadow-sm text-gray-900'
+                : 'text-gray-500 hover:text-gray-700'
             ]"
           >
             Roles
@@ -51,7 +51,7 @@
       <!-- USERS TAB -->
       <div v-if="activeTab === 'users'" class="space-y-6">
         <!-- Users Search and Filter -->
-        <div :class="['rounded-lg md:rounded-xl p-4 md:p-6 mb-6 space-y-4 md:space-y-5 shadow-sm border', isCOE ? 'bg-gradient-to-br from-white via-orange-50 to-white border-orange-100' : isSOM ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : isCNAHS ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : 'bg-gradient-to-br from-white via-blue-50 to-white border-blue-100']">
+        <div class="rounded-xl p-4 md:p-5 mb-6 space-y-4 bg-white border border-gray-200 shadow-sm">
           <!-- Search Input -->
           <div class="relative group">
             <div :class="['absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none', isCOE ? 'text-gray-400 group-focus-within:text-orange-700' : isSOM ? 'text-gray-400 group-focus-within:text-green-700' : isCNAHS ? 'text-gray-400 group-focus-within:text-green-700' : 'text-gray-400 group-focus-within:text-blue-600', 'transition-colors duration-200']">
@@ -787,13 +787,17 @@
     <!-- Edit User Modal -->
     <div v-if="showEditUserModal && editingUser" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeEditUserModal">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-          <div class="flex justify-between items-center mb-6">
-            <h3 :class="['text-2xl font-bold', primaryDarkText]">Edit User</h3>
-            <button @click="closeEditUserModal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        <div class="bg-white rounded-3xl shadow-xl max-w-xl w-full mx-4 max-h-[90vh] flex flex-col overflow-hidden">
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 flex-shrink-0">
+            <h3 class="text-base font-bold text-gray-900">Edit User</h3>
+            <button @click="closeEditUserModal" class="w-8 h-8 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-800 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
           </div>
 
-          <!-- Edit Form -->
+          <!-- Edit Form (scrollable) -->
+          <div class="flex-1 overflow-y-auto px-6 py-5">
           <div class="space-y-4 mb-6">
             <!-- Profile Picture Preview and Upload -->
             <div class="mb-4">
@@ -824,19 +828,19 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Student ID</label>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Student ID</label>
                 <input 
                   v-model="editingUser.student_id"
                   type="text"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                  :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">RFID</label>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">RFID</label>
                 <input 
                   v-model="editingUser.rfid_code"
                   type="text"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                  :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 />
                 <!-- Mark as Unreadable Button aligned under RFID -->
                 <button
@@ -853,35 +857,35 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">First Name</label>
                 <input 
                   v-model="editingUser.first_name"
                   type="text"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                  :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Middle Name</label>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Middle Name</label>
                 <input 
                   v-model="editingUser.middle_name"
                   type="text"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                  :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Last Name</label>
                 <input 
                   v-model="editingUser.last_name"
                   type="text"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                  :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 />
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Suffix <span class="text-gray-500 text-xs">(optional)</span></label>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Suffix <span class="font-normal normal-case text-gray-400">(opt.)</span></label>
                 <div>
-                  <select v-model="editingUser.suffix" :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none appearance-none bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']">
+                  <select v-model="editingUser.suffix" :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none appearance-none bg-white text-sm', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']">
                     <option value="">None</option>
                     <option value="Jr.">Jr.</option>
                     <option value="Sr.">Sr.</option>
@@ -901,20 +905,20 @@
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Email</label>
               <input 
                 v-model="editingUser.email"
                 type="email"
-                :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
               />
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Program</label>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Program</label>
                 <select 
                   v-model="editingUser.program"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                  :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 >
                   <option value="N/A">N/A</option>
                   <option value="BSCS">BSCS</option>
@@ -923,10 +927,10 @@
                 </select>
               </div>
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Year Level</label>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Year Level</label>
                 <select 
                   v-model="editingUser.year_level"
-                  :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                  :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 >
                   <option value="N/A">N/A</option>
                   <option value="1st Year">1st Year</option>
@@ -938,10 +942,10 @@
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Verification Status</label>
+              <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Verification Status</label>
               <select 
                 v-model="editingUser.rfid_status"
-                :class="['w-full px-4 py-2 border border-gray-300 rounded-lg outline-none', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none bg-white text-sm', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
               >
                 <option value="verified">Verified</option>
                 <option value="unverified">Unverified</option>
@@ -949,20 +953,22 @@
               </select>
             </div>
           </div>
+          </div><!-- end scrollable -->
 
           <!-- Action Buttons -->
-          <div class="flex gap-3 pt-4 border-t border-gray-200">
+          <div class="flex gap-3 px-6 py-4 border-t border-gray-100 flex-shrink-0">
             <button 
               @click="closeEditUserModal"
-              class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition"
+              class="flex-1 bg-gray-100 text-gray-700 py-2.5 px-4 rounded-xl font-semibold text-sm hover:bg-gray-200 transition"
             >
               Cancel
             </button>
             <button 
               @click="saveEditUser"
               :disabled="isSavingUser"
-              :class="['flex-1 bg-gradient-to-r text-white py-2 px-4 rounded-lg font-medium transition disabled:opacity-70', primaryButtonGradient, primaryButtonHover]"
+              :class="['flex-1 bg-gradient-to-r text-white py-2.5 px-4 rounded-xl font-semibold text-sm transition disabled:opacity-60 flex items-center justify-center gap-2', primaryButtonGradient, primaryButtonHover]"
             >
+              <svg v-if="isSavingUser" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
               {{ isSavingUser ? 'Saving...' : 'Save Changes' }}
             </button>
           </div>
@@ -971,32 +977,34 @@
     </div>
 
     <!-- Delete User Confirmation Modal -->
-    <div v-if="showDeleteConfirmModal && userToDelete" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closeDeleteConfirmModal">
+    <div v-if="showDeleteConfirmModal && userToDelete" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4" @click.self="closeDeleteConfirmModal">
       <transition name="modal-bounce" appear>
-        <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
-          <div class="text-center mb-6">
-            <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
-              <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        <div class="bg-white rounded-3xl shadow-xl max-w-sm w-full overflow-hidden">
+          <!-- Icon header -->
+          <div class="pt-7 px-6 pb-4 text-center">
+            <div class="w-12 h-12 mx-auto mb-4 bg-red-50 rounded-2xl flex items-center justify-center">
+              <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
               </svg>
             </div>
-            <h3 class="text-xl font-bold text-blue-900 mb-2">Delete User</h3>
-            <p class="text-gray-600">
-              Are you sure you want to delete <strong>{{ (userToDelete.first_name || userToDelete.firstName) }} {{ (userToDelete.last_name || userToDelete.lastName) }}</strong>? This action cannot be undone.
+            <h3 class="text-base font-bold text-gray-900 mb-1">Delete User</h3>
+            <p class="text-sm text-gray-500 leading-relaxed">
+              Remove <span class="font-semibold text-gray-800">{{ (userToDelete.first_name || userToDelete.firstName) }} {{ (userToDelete.last_name || userToDelete.lastName) }}</span>? This cannot be undone.
             </p>
           </div>
-          <div class="flex gap-3">
+          <div class="flex gap-2 px-6 pb-6">
             <button 
               @click="closeDeleteConfirmModal"
-              class="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-lg font-medium hover:bg-gray-300 transition"
+              class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold text-sm hover:bg-gray-200 transition"
             >
               Cancel
             </button>
             <button 
               @click="deleteUser"
               :disabled="isDeletingUser"
-              class="flex-1 bg-red-500 text-white py-2 px-4 rounded-lg font-medium hover:bg-red-600 transition disabled:opacity-70"
+              class="flex-1 bg-red-500 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-red-600 transition disabled:opacity-60 flex items-center justify-center gap-2"
             >
+              <svg v-if="isDeletingUser" class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
               {{ isDeletingUser ? 'Deleting...' : 'Delete' }}
             </button>
           </div>
