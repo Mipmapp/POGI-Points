@@ -1473,10 +1473,14 @@ const verifyWithARMS = async () => {
     const mappedYear = mapArmsYearLevel(s.yearLevel)
     if (mappedYear) formData.year_level = mappedYear
 
-    // Auto-fill program if ARMS code matches a known shortName
-    const prog = (s.programCode || s.programEnrolled || '').toUpperCase().replace(/\s+/g, '')
+    // Auto-fill program — ARMS returns "SHORTCODE -FULL NAME" (e.g. "BSCS -BACHELOR OF SCIENCE IN COMPUTER SCIENCE")
+    // Extract the shortcode prefix (everything before the first space or hyphen)
+    const rawProg = (s.program || '').trim()
+    const shortCode = rawProg.includes('-')
+      ? rawProg.split('-')[0].trim().toUpperCase()
+      : rawProg.toUpperCase().replace(/\s+/g, '')
     const validShortNames = flattenedPrograms.value.map(p => p.shortName)
-    if (validShortNames.includes(prog)) formData.program = prog
+    if (shortCode && validShortNames.includes(shortCode)) formData.program = shortCode
 
     // Auto-fill semester and school year
     if (s.semester)   formData.semester    = s.semester

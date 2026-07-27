@@ -97,8 +97,9 @@ export default async function handler(request) {
                 email:            record.Email             ?? '',
                 college:          record.College           ?? '',
                 collegeCode:      record.College_Code      ?? record.college_code ?? '',
-                programEnrolled:  record.Program_Enrolled  ?? record.program      ?? '',
-                programCode:      record.Program_Code      ?? record.program_code ?? '',
+                // ARMS returns the program as "SHORTCODE -FULL NAME" in Record.Program
+                program:          record.Program           ?? record.Program_Enrolled ?? record.program ?? '',
+                major:            record.Major             ?? '',
                 yearLevel:        record.Year_Level        ?? record.year_level   ?? '',
                 semester:         record.Semester          ?? '',
                 schoolYear:       record.School_Year       ?? '',
