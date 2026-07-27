@@ -68,15 +68,15 @@
           </div>
           
           <!-- Filters: compact dropdown row -->
-          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 animate-fade-in">
+          <div class="flex flex-wrap justify-center gap-3 animate-fade-in">
             <!-- Role -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">Role</label>
+            <div class="space-y-1.5 w-40">
+              <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Role</label>
               <div class="relative">
                 <select
                   :value="userRoleFilter ?? ''"
                   @change="(e) => { userRoleFilter = e.target.value || null; currentPage = 1 }"
-                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-800 font-medium shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-700 shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 >
                   <option value="">All Roles</option>
                   <option value="student">Students</option>
@@ -88,13 +88,13 @@
             </div>
 
             <!-- Year Level -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">Year Level</label>
+            <div class="space-y-1.5 w-40">
+              <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Year Level</label>
               <div class="relative">
                 <select
                   :value="userYearFilter ?? ''"
                   @change="(e) => { userYearFilter = e.target.value || null; currentPage = 1 }"
-                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-800 font-medium shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-700 shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 >
                   <option value="">All Years</option>
                   <option value="1st year">1st Year</option>
@@ -107,13 +107,13 @@
             </div>
 
             <!-- Program -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">Program</label>
+            <div class="space-y-1.5 w-40">
+              <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Program</label>
               <div class="relative">
                 <select
                   :value="userProgramFilter ?? ''"
                   @change="(e) => { userProgramFilter = e.target.value || null; currentPage = 1 }"
-                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-800 font-medium shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
+                  :class="['w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-700 shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 >
                   <option value="">All Programs</option>
                   <option value="BSCS">BSCS</option>
@@ -125,13 +125,13 @@
             </div>
 
             <!-- College (super admin only) -->
-            <div v-if="isMaster && !isCoAdmin && !isTreasurer" class="space-y-1.5">
-              <label class="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">College</label>
+            <div v-if="isMaster && !isCoAdmin && !isTreasurer" class="space-y-1.5 w-40">
+              <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">College</label>
               <div class="relative">
                 <select
                   :value="userCollegeFilter ?? ''"
                   @change="(e) => { userCollegeFilter = e.target.value || null; currentPage = 1 }"
-                  class="w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-800 font-medium shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+                  class="w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-700 shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent"
                 >
                   <option value="">All Colleges</option>
                   <option value="CCS">CCS</option>
@@ -144,13 +144,13 @@
             </div>
 
             <!-- Verification Status -->
-            <div class="space-y-1.5">
-              <label class="text-[10px] font-bold text-gray-600 uppercase tracking-wider block">Verification Status</label>
+            <div class="space-y-1.5 w-44">
+              <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Verification</label>
               <div class="relative">
                 <select
                   :value="userStatusFilter ?? ''"
                   @change="(e) => { userStatusFilter = e.target.value || null; currentPage = 1 }"
-                  class="w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-800 font-medium shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                  class="w-full appearance-none bg-white border border-gray-200 rounded-lg pl-3 pr-8 py-2 text-sm text-gray-700 shadow-sm focus:shadow-md outline-none transition-all duration-200 cursor-pointer hover:border-gray-300 focus:ring-2 focus:ring-green-600 focus:border-transparent"
                 >
                   <option value="">All Statuses</option>
                   <option value="verified">✓ Verified</option>
@@ -386,7 +386,7 @@
     <!-- ROLES TAB -->
     <div v-if="activeTab === 'roles'" class="space-y-6">
       <!-- Assign Role Section -->
-      <div :class="['rounded-xl p-5 md:p-6 shadow-sm border space-y-5', isCOE ? 'bg-gradient-to-br from-white via-orange-50 to-white border-orange-100' : isSOM ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : isCNAHS ? 'bg-gradient-to-br from-white via-green-50 to-white border-green-100' : 'bg-gradient-to-br from-white via-blue-50 to-white border-blue-100']">
+      <div class="rounded-xl p-5 md:p-6 shadow-sm border border-gray-200 bg-white space-y-5">
         <div class="flex items-center gap-2 mb-1">
           <div :class="['w-1 h-5 rounded-full', isCOE ? 'bg-orange-600' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-blue-600']"></div>
           <h3 :class="['text-sm font-bold uppercase tracking-widest', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">Assign Student Role</h3>
