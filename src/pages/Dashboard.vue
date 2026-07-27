@@ -1583,7 +1583,7 @@
                     <button
                       @click="prevAttendancePage"
                       :disabled="attendanceCurrentPage === 1"
-                      :class="['px-3 py-1.5 rounded-lg font-semibold transition-all text-xs flex items-center gap-1', attendanceCurrentPage === 1 ? 'opacity-40 cursor-not-allowed bg-gray-100 text-gray-500' : isCOE ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 active:scale-95' : isSOM ? 'bg-green-100 text-green-700 hover:bg-green-200 active:scale-95' : isCNAHS ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200 active:scale-95' : 'bg-blue-100 text-blue-700 hover:bg-blue-200 active:scale-95']"
+                      :class="['px-3 py-1.5 rounded-lg font-semibold transition-all text-xs flex items-center gap-1', attendanceCurrentPage === 1 ? 'opacity-40 cursor-not-allowed bg-gray-100 text-gray-500' : isCOE ? 'bg-orange-600 text-white hover:bg-orange-700 active:scale-95' : isSOM ? 'bg-green-600 text-white hover:bg-green-700 active:scale-95' : isCNAHS ? 'bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95']"
                     >
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
                       Prev
@@ -1616,7 +1616,7 @@
               </div>
 
               <!-- Event Cards -->
-              <transition-group v-else name="event-slide-in" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-6 relative items-start" appear>
+              <transition-group v-else name="event-slide-in" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 relative items-start" appear>
                 <div v-for="event in paginatedAttendanceEvents" :key="event._id" :class="['bg-white rounded-2xl border overflow-hidden shadow-sm hover:shadow-md transition-shadow', isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-emerald-100' : 'border-blue-100']">
                   <!-- Clickable Header -->
                   <div class="p-3 sm:p-4 cursor-pointer select-none" @click="toggleEventExpansion(event._id)">
@@ -1700,8 +1700,8 @@
                 </div>
               </transition-group>
 
-              <!-- Bottom Pagination -->
-              <div v-if="attendanceTotalPages > 1" class="flex items-center justify-between gap-2 pt-2 border-t border-gray-100">
+              <!-- Bottom Pagination — mobile only -->
+              <div v-if="attendanceTotalPages > 1" class="md:hidden flex items-center justify-between gap-2 pt-2 border-t border-gray-100">
                 <span :class="['text-xs font-semibold', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-blue-600']">
                   Page {{ attendanceCurrentPage }} of {{ attendanceTotalPages }}
                 </span>
