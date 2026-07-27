@@ -1,29 +1,32 @@
 # SSAAM — Student School Activities Attendance Monitoring
 
-Vue 3 + Vite frontend for JRMSU (Jose Rizal Memorial State University) College of Computing Studies student government activities and attendance tracking system.
+A Vue 3 + Express web application for Jose Rizal Memorial State University (JRMSU), College of Computing Studies Student Government. Manages student attendance, events, and academic activities.
 
 ## Stack
+- **Frontend**: Vue 3 + Vite + Tailwind CSS (port 5000)
+- **Backend**: Express.js (port 3001)
+- **Database**: MongoDB Atlas (Mongoose)
+- **Storage**: Cloudinary (file/image uploads)
+- **Auth**: JWT
+- **Email**: Nodemailer (multiple Gmail accounts)
 
-- **Frontend**: Vue 3, Vite, Tailwind CSS, Vue Router
-- **Backend**: Hosted on Vercel at `https://ssaam-api.vercel.app` (not running locally)
-- **Auth**: JWT-based, handled by the Vercel backend
+## How to run
 
-## Running the app
+Two workflows must both be running:
 
-Two workflows run in parallel:
+1. **Start application** — `npm run dev` — starts the Vite dev server on port 5000
+2. **Backend Server** — `node server.js` — starts the Express API on port 3001
 
-| Workflow | Command | Port |
-|---|---|---|
-| Start application | `npm run dev` | 5000 |
-| Backend Server | `node server.js` | 3001 |
+The Vite dev server proxies `/apis/*` requests to the backend on port 3001.
 
-API calls from the frontend (`/apis/*`) are proxied by Vite to the local Express backend on port 3001, which connects to MongoDB Atlas.
+## Environment
+All credentials are in `.env` (MongoDB URI, Cloudinary URL, JWT secret, Gmail accounts, etc.).
 
-## Notes
-
-- `vite-plugin-pwa` was removed because its `workbox-expiration` transitive dependency was blocked by the Replit Package Firewall. PWA features (service worker, offline caching) are disabled — re-add the plugin if a production build with PWA support is needed.
-- All credentials (MongoDB, Cloudinary, JWT secret, Gmail accounts) are loaded from `.env` via `dotenv`.
+## Key files
+- `SSAAM_VERCEL_BACKEND.js` — main Express app (routes, middleware)
+- `server.js` — entry point that starts the Express server
+- `src/` — Vue 3 frontend (components, pages, router, composables)
+- `api/` — additional API modules
+- `config/cloudinary.js` — Cloudinary configuration
 
 ## User preferences
-
-- Run both frontend and local backend on Replit.
