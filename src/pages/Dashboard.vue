@@ -987,19 +987,19 @@
     <!-- Main Content Area -->
     <div ref="mainContentEl" tabindex="-1" class="bg-slate-50 md:flex-1 md:order-2 min-w-0 min-h-screen md:min-h-0 md:overflow-y-auto outline-none">
       <!-- Mobile Header with Hamburger Menu -->
-      <div :class="['md:hidden sticky top-0 p-3 flex items-center justify-between z-20 shadow-md', isCOE ? 'bg-gradient-to-r from-orange-700 to-red-600' : isSOM ? 'bg-gradient-to-r from-green-800 to-teal-700' : isCNAHS ? 'bg-gradient-to-r from-green-900 to-green-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
+      <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
         <div class="flex items-center gap-2">
-          <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" />
+          <img src="/assets/ccs_logo.png" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" />
           <div class="flex flex-col leading-tight">
-            <h1 class="text-xl font-extrabold italic text-white">SSAAM</h1>
-            <p class="text-[9px] uppercase tracking-widest font-semibold text-white/60">JRMSU</p>
+            <h1 class="text-xl font-extrabold italic text-gray-900">SSAAM</h1>
+            <p class="text-[9px] uppercase tracking-widest font-semibold text-gray-500">JRMSU</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <button @click="showContactModal = true" class="p-2 rounded-lg hover:bg-white/15 transition">
-            <img :src="'/help.svg'" alt="Help" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
+          <button @click="showContactModal = true" :class="['p-2 rounded-lg transition', isCOE ? 'hover:bg-orange-100' : isSOM ? 'hover:bg-green-100' : isCNAHS ? 'hover:bg-green-100' : 'hover:bg-blue-100']">
+            <img :src="'/help.svg'" alt="Help" class="w-5 h-5" />
           </button>
-          <button @click="showMobileMenu = true" class="text-2xl text-white hover:text-white/80 transition">☰</button>
+          <button @click="showMobileMenu = true" :class="['text-2xl', isCOE ? 'text-orange-900 hover:text-orange-700' : isSOM ? 'text-green-900 hover:text-green-700' : isCNAHS ? 'text-green-900 hover:text-green-700' : 'text-blue-900 hover:text-blue-700']">☰</button>
         </div>
       </div>
 
@@ -5145,57 +5145,68 @@
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <div>
                 <h3 class="text-base font-semibold text-gray-900">Crop your photo</h3>
-                <p class="text-xs text-gray-400 mt-0.5">Drag to reposition · scroll or slide to zoom</p>
+                <p class="text-xs text-gray-400 mt-0.5">Drag image to reposition · scroll or slider to zoom</p>
               </div>
               <button @click="closeCropModal" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
 
-            <!-- Crop viewport: the container IS the crop frame, image is clipped inside it -->
-            <div class="px-5 pt-4">
+            <!-- Stage: full image visible behind the overlay + crop frame -->
+            <div
+              ref="cropContainerEl"
+              class="relative overflow-hidden select-none touch-none bg-gray-900"
+              style="height: 340px;"
+              :style="{ cursor: cropDragging ? 'grabbing' : 'grab' }"
+              @mousedown.prevent="startCropDrag"
+              @mousemove.prevent="onCropMouseMove"
+              @mouseup="stopCropDrag"
+              @mouseleave="stopCropDrag"
+              @touchstart.prevent="startCropTouch"
+              @touchmove.prevent="onCropTouchMove"
+              @touchend="stopCropDrag"
+              @wheel.prevent="onCropWheel"
+            >
+              <!-- Full image (draggable) -->
+              <img
+                v-if="cropImageSrc"
+                :src="cropImageSrc"
+                alt="Crop"
+                class="absolute pointer-events-none select-none"
+                draggable="false"
+                :style="{
+                  left: cropX + 'px',
+                  top: cropY + 'px',
+                  width: (cropImageNatural.width * cropScale) + 'px',
+                  height: (cropImageNatural.height * cropScale) + 'px'
+                }"
+              />
+
+              <!-- Dark overlay with transparent crop window cut out via box-shadow -->
               <div
-                ref="cropContainerEl"
-                class="relative overflow-hidden rounded-xl select-none touch-none bg-gray-100"
-                style="width: 100%; aspect-ratio: 1 / 1; cursor: grab;"
-                :style="{ cursor: cropDragging ? 'grabbing' : 'grab' }"
-                @mousedown.prevent="startCropDrag"
-                @mousemove.prevent="onCropMouseMove"
-                @mouseup="stopCropDrag"
-                @mouseleave="stopCropDrag"
-                @touchstart.prevent="startCropTouch"
-                @touchmove.prevent="onCropTouchMove"
-                @touchend="stopCropDrag"
-                @wheel.prevent="onCropWheel"
+                class="absolute pointer-events-none rounded-lg"
+                :style="{
+                  left: cropFrameLeft + 'px',
+                  top: cropFrameTop + 'px',
+                  width: CROP_FRAME + 'px',
+                  height: CROP_FRAME + 'px',
+                  boxShadow: '0 0 0 9999px rgba(0,0,0,0.52)'
+                }"
               >
-                <!-- Image inside the clipping container -->
-                <img
-                  v-if="cropImageSrc"
-                  :src="cropImageSrc"
-                  alt="Crop preview"
-                  class="absolute pointer-events-none select-none"
-                  draggable="false"
-                  :style="{
-                    left: cropX + 'px',
-                    top: cropY + 'px',
-                    width: (cropImageNatural.width * cropScale) + 'px',
-                    height: (cropImageNatural.height * cropScale) + 'px'
-                  }"
-                />
-                <!-- Edge handles — only at the 4 corners and 4 mid-edges, no overlay -->
-                <!-- Corners -->
-                <span class="absolute top-0 left-0 w-6 h-6 border-t-[3px] border-l-[3px] border-gray-700 rounded-tl-xl pointer-events-none"></span>
-                <span class="absolute top-0 right-0 w-6 h-6 border-t-[3px] border-r-[3px] border-gray-700 rounded-tr-xl pointer-events-none"></span>
-                <span class="absolute bottom-0 left-0 w-6 h-6 border-b-[3px] border-l-[3px] border-gray-700 rounded-bl-xl pointer-events-none"></span>
-                <span class="absolute bottom-0 right-0 w-6 h-6 border-b-[3px] border-r-[3px] border-gray-700 rounded-br-xl pointer-events-none"></span>
+                <!-- Corner handles only — no full border line -->
+                <span class="absolute top-0 left-0 w-6 h-6 border-t-[3px] border-l-[3px] border-white pointer-events-none"></span>
+                <span class="absolute top-0 right-0 w-6 h-6 border-t-[3px] border-r-[3px] border-white pointer-events-none"></span>
+                <span class="absolute bottom-0 left-0 w-6 h-6 border-b-[3px] border-l-[3px] border-white pointer-events-none"></span>
+                <span class="absolute bottom-0 right-0 w-6 h-6 border-b-[3px] border-r-[3px] border-white pointer-events-none"></span>
                 <!-- Mid-edge handles -->
-                <span class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-gray-700/70 rounded-full pointer-events-none"></span>
-                <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-gray-700/70 rounded-full pointer-events-none"></span>
-                <span class="absolute left-0 top-1/2 -translate-y-1/2 h-8 w-[3px] bg-gray-700/70 rounded-full pointer-events-none"></span>
-                <span class="absolute right-0 top-1/2 -translate-y-1/2 h-8 w-[3px] bg-gray-700/70 rounded-full pointer-events-none"></span>
-                <!-- 500×500 badge -->
-                <div class="absolute bottom-2 right-2 bg-black/40 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full pointer-events-none">500 × 500</div>
+                <span class="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[3px] bg-white/80 rounded-full pointer-events-none"></span>
+                <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-7 h-[3px] bg-white/80 rounded-full pointer-events-none"></span>
+                <span class="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-[3px] bg-white/80 rounded-full pointer-events-none"></span>
+                <span class="absolute right-0 top-1/2 -translate-y-1/2 h-7 w-[3px] bg-white/80 rounded-full pointer-events-none"></span>
               </div>
+
+              <!-- Badge -->
+              <div class="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full pointer-events-none">500 × 500</div>
             </div>
 
             <!-- Zoom Slider -->
@@ -9433,7 +9444,18 @@ const cropDragStart = ref({ x: 0, y: 0, imgX: 0, imgY: 0 })
 const cropImageNatural = ref({ width: 1, height: 1 })
 const cropContainerEl = ref(null)
 
-// Open the modal at the upload phase (triggered by the hidden input in the avatar area)
+// Fixed crop frame dimensions (px) — must match the template style="height:340px"
+const CROP_FRAME = 280          // square crop window size
+const CROP_CONTAINER_H = 340    // container height
+
+// Crop frame top-left corner inside the stage (centred)
+const cropFrameLeft = computed(() => {
+  const w = cropContainerEl.value ? cropContainerEl.value.clientWidth : 360
+  return Math.round((w - CROP_FRAME) / 2)
+})
+const cropFrameTop = computed(() => Math.round((CROP_CONTAINER_H - CROP_FRAME) / 2))
+
+// Open the modal at the upload phase
 const openPhotoCropModal = () => {
   cropPhase.value = 'upload'
   cropImageSrc.value = ''
@@ -9470,19 +9492,21 @@ const loadCropFile = (file) => {
     const img = new Image()
     img.onload = () => {
       cropImageNatural.value = { width: img.width, height: img.height }
-      // Container is square and fills the modal width — use its actual size after next tick
+      cropPhase.value = 'crop'
+      // Wait for the stage to mount, then calculate initial scale/position
       nextTick(() => {
-        const size = cropContainerEl.value ? cropContainerEl.value.clientWidth : 300
-        // Min scale: image must cover the square container
-        const minS = Math.max(size / img.width, size / img.height)
+        const contW = cropContainerEl.value ? cropContainerEl.value.clientWidth : 360
+        const fL = Math.round((contW - CROP_FRAME) / 2)
+        const fT = Math.round((CROP_CONTAINER_H - CROP_FRAME) / 2)
+        // Min scale: image must cover the crop frame square
+        const minS = Math.max(CROP_FRAME / img.width, CROP_FRAME / img.height)
         cropMinScale.value = minS
         cropScale.value = minS
-        // Centre image inside the container
-        cropX.value = (size - img.width * minS) / 2
-        cropY.value = (size - img.height * minS) / 2
+        // Centre the image over the crop frame
+        cropX.value = fL + (CROP_FRAME - img.width * minS) / 2
+        cropY.value = fT + (CROP_FRAME - img.height * minS) / 2
         clampCropPosition()
       })
-      cropPhase.value = 'crop'
     }
     img.src = e.target.result
   }
@@ -9503,17 +9527,17 @@ const onCropFileDrop = (event) => {
   loadCropFile(file)
 }
 
-// The hidden input in the avatar area just opens the modal now
-// (actual file picking happens inside the modal via cropFileInput)
-
-// Clamp so image always covers the crop container
+// Clamp so the image always fully covers the crop frame (not just the container)
 const clampCropPosition = () => {
-  const size = cropContainerEl.value ? cropContainerEl.value.clientWidth : 300
+  const contW = cropContainerEl.value ? cropContainerEl.value.clientWidth : 360
+  const fL = Math.round((contW - CROP_FRAME) / 2)
+  const fT = Math.round((CROP_CONTAINER_H - CROP_FRAME) / 2)
   const scaledW = cropImageNatural.value.width * cropScale.value
   const scaledH = cropImageNatural.value.height * cropScale.value
-  // Image left edge must be ≤ 0, right edge must be ≥ container right
-  cropX.value = Math.min(0, Math.max(size - scaledW, cropX.value))
-  cropY.value = Math.min(0, Math.max(size - scaledH, cropY.value))
+  // Image left edge ≤ frame left, image right edge ≥ frame right
+  cropX.value = Math.min(fL, Math.max(fL + CROP_FRAME - scaledW, cropX.value))
+  // Image top edge ≤ frame top, image bottom edge ≥ frame bottom
+  cropY.value = Math.min(fT, Math.max(fT + CROP_FRAME - scaledH, cropY.value))
 }
 
 const startCropDrag = (e) => {
@@ -9556,13 +9580,16 @@ const applyCrop = async () => {
   img.src = cropImageSrc.value
   await new Promise(resolve => { img.onload = resolve; if (img.complete) resolve() })
 
-  // Container size = crop square size
-  const size = cropContainerEl.value ? cropContainerEl.value.clientWidth : 300
+  // Frame position inside the stage
+  const contW = cropContainerEl.value ? cropContainerEl.value.clientWidth : 360
+  const fL = Math.round((contW - CROP_FRAME) / 2)
+  const fT = Math.round((CROP_CONTAINER_H - CROP_FRAME) / 2)
 
-  // Portion of original image visible in the container
-  const srcX = -cropX.value / cropScale.value
-  const srcY = -cropY.value / cropScale.value
-  const srcSize = size / cropScale.value
+  // Map the crop frame window back to source image coordinates
+  // cropX/cropY is the image's top-left in stage pixels
+  const srcX = (fL - cropX.value) / cropScale.value
+  const srcY = (fT - cropY.value) / cropScale.value
+  const srcSize = CROP_FRAME / cropScale.value
 
   const canvas = document.createElement('canvas')
   canvas.width = 500
