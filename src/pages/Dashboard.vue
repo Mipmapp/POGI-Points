@@ -5145,7 +5145,7 @@
             <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <div>
                 <h3 class="text-base font-semibold text-gray-900">Crop your photo</h3>
-                <p class="text-xs text-gray-400 mt-0.5">Drag image to reposition · scroll or slider to zoom</p>
+                <p class="text-xs text-gray-400 mt-0.5">Drag image to reposition</p>
               </div>
               <button @click="closeCropModal" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -5165,7 +5165,6 @@
               @touchstart.prevent="startCropTouch"
               @touchmove.prevent="onCropTouchMove"
               @touchend="stopCropDrag"
-              @wheel.prevent="onCropWheel"
             >
               <!-- Full image (draggable) -->
               <img
