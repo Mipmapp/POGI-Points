@@ -7127,7 +7127,7 @@
 
         <!-- Sticky Footer -->
         <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 flex-shrink-0 bg-white">
-          <button @click="showContactModal = false" :class="['w-full py-2.5 sm:py-3 rounded-2xl font-bold text-sm text-white transition active:scale-[0.98] shadow-sm', isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-gray-900 hover:bg-gray-800']">Done</button>
+          <button @click="showContactModal = false" :class="['w-full py-2.5 sm:py-3 rounded-2xl font-bold text-sm text-white transition active:scale-[0.98] shadow-sm', isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700']">Done</button>
         </div>
       </div>
     </div>
