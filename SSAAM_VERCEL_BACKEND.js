@@ -2543,10 +2543,17 @@ const studentSchema = new mongoose.Schema({
     face_updated_at: { type: Date, default: null }
 });
 
-// Pre-save middleware: ensure full_name is always set
+// Pre-save middleware: ensure full_name is always set.
+// Build it from first_name + middle_name when those fields are present;
+// fall back to last_name only as a last resort so the required validator passes.
 studentSchema.pre('save', function () {
-    if (!this.full_name || this.full_name.trim() === '') {
-        this.full_name = this.last_name || '';
+    const firstName  = (this.first_name  || '').trim().toUpperCase();
+    const middleName = (this.middle_name || '').trim().toUpperCase();
+    const computed   = middleName ? `${firstName} ${middleName}` : firstName;
+    if (computed) {
+        this.full_name = computed;
+    } else if (!this.full_name || this.full_name.trim() === '') {
+        this.full_name = (this.last_name || '').trim().toUpperCase();
     }
 });
 
