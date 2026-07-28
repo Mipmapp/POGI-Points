@@ -3846,9 +3846,7 @@
                       <p :class="['text-[10px] font-semibold uppercase tracking-widest mb-0.5', isCOE ? 'text-orange-400' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-400']">
                         ID {{ currentUser.studentId || currentUser.student_id }}
                       </p>
-                      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-tight break-words">
-                        <span :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']">{{ displayName.split(' ')[0] }}</span>{{ displayName.includes(' ') ? ' ' + displayName.split(' ').slice(1).join(' ') : '' }}
-                      </h1>
+                      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-tight break-words">{{ displayName }}</h1>
                     </div>
                     <!-- Mobile refresh button -->
                     <button
