@@ -1012,7 +1012,7 @@
 
       <Transition name="section-fade" mode="out-in">
       <div :key="currentPage" class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'location' ? 'Location' : currentPage === 'audit-trail' ? (isTreasurer ? 'My Audit Trail' : 'College Audit Trail') : currentPage === 'dashboard' && (isAdminLike) && inRoleView ? 'Statistics' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'location' ? 'Location' : currentPage === 'audit-trail' ? (isTreasurer ? 'My Audit Trail' : 'College Audit Trail') : currentPage === 'dashboard' && (isAdminLike) && inRoleView ? 'Statistics' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-4 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
@@ -2151,28 +2151,29 @@
           </div>
 
           <!-- Student Attendance View -->
-          <div v-else class="bg-white border border-[#e0e0e0] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.07)] overflow-hidden">
-            <!-- Fluent accent bar -->
-            <div :class="['h-0.5', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-[#0078d4]']"></div>
-            <!-- Command Bar -->
-            <div class="flex items-center gap-3 px-4 sm:px-6 h-14 border-b border-[#edebe9] bg-[#faf9f8]">
-              <div :class="['w-8 h-8 rounded flex items-center justify-center flex-shrink-0',
-                isCOE ? 'bg-orange-50 text-orange-500' : isSOM ? 'bg-green-50 text-green-600' : isCNAHS ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-[#0078d4]']">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          <div v-else class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <!-- Gradient Banner -->
+            <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <div class="light-sweep"></div>
+              <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/20">
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                  <h2 class="text-white text-base sm:text-lg md:text-xl font-bold leading-tight">My Attendance</h2>
+                  <p class="text-white/80 text-xs sm:text-sm">Events &amp; sessions</p>
+                </div>
+                <button @click="refreshAttendanceData" :disabled="attendanceLoading"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-white bg-white/20 hover:bg-white/30 border border-white/20 transition-colors disabled:opacity-40">
+                  <svg :class="['w-3.5 h-3.5 flex-shrink-0', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  <span class="hidden sm:inline">Refresh</span>
+                </button>
               </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-[#201f1e] leading-tight">My Attendance</p>
-                <p class="text-xs text-[#605e5c] hidden sm:block">Events &amp; sessions</p>
-              </div>
-              <button @click="refreshAttendanceData" :disabled="attendanceLoading"
-                class="flex items-center gap-1.5 px-3 h-8 rounded text-xs font-medium text-[#605e5c] hover:bg-[#f3f2f1] active:bg-[#edebe9] transition-colors disabled:opacity-40 border border-transparent hover:border-[#e0e0e0] min-w-[44px] justify-center">
-                <svg :class="['w-3.5 h-3.5 flex-shrink-0', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                <span class="hidden sm:inline">Refresh</span>
-              </button>
             </div>
 
             <!-- Content -->
-            <div class="p-3 sm:p-4 md:p-5 bg-[#f3f2f1] space-y-0">
+            <div class="p-3 sm:p-4 md:p-5 space-y-0">
 
             <div v-if="attendanceLoading" class="flex items-center justify-center py-12">
               <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
@@ -4012,18 +4013,19 @@
         <div v-if="currentPage === 'my-contributions' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-3">
 
           <!-- Header / KPI card -->
-          <div class="bg-white border border-[#e0e0e0] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.07)] overflow-hidden">
-            <!-- Fluent accent strip -->
-            <div :class="['h-0.5', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-[#0078d4]']"></div>
-            <!-- Command bar -->
-            <div class="flex items-center gap-3 px-4 sm:px-6 h-14 border-b border-[#edebe9] bg-[#faf9f8]">
-              <div :class="['w-8 h-8 rounded flex items-center justify-center flex-shrink-0',
-                isCOE ? 'bg-orange-50 text-orange-500' : isSOM ? 'bg-green-50 text-green-600' : isCNAHS ? 'bg-green-50 text-green-700' : 'bg-[#e8f0fb] text-[#0078d4]']">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-sm font-semibold text-[#201f1e] leading-tight">My Contributions</p>
-                <p class="text-xs text-[#605e5c] hidden sm:block">Track fees and payment status</p>
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
+            <!-- Gradient Banner -->
+            <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
+              <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <div class="light-sweep"></div>
+              <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
+                <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/20">
+                  <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+                </div>
+                <div class="min-w-0">
+                  <h2 class="text-white text-base sm:text-lg md:text-xl font-bold leading-tight">My Contributions</h2>
+                  <p class="text-white/80 text-xs sm:text-sm">Track fees and payment status</p>
+                </div>
               </div>
             </div>
             <!-- KPI tiles — stacks on very small screens -->
@@ -4044,7 +4046,7 @@
           </div>
 
           <!-- Records Card -->
-          <div class="bg-white border border-[#e0e0e0] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.07)] overflow-hidden">
+          <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
             <!-- Section command bar -->
             <div class="flex items-center justify-between px-4 sm:px-6 h-10 bg-[#faf9f8] border-b border-[#edebe9]">
               <span class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider">Payment Records</span>
