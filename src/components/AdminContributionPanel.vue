@@ -36,43 +36,43 @@
         <div class="grid grid-cols-4 gap-2 sm:hidden">
           <button
             @click="showCreateEventModal = true"
-            class="flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-2xl bg-gradient-to-b from-blue-600 to-indigo-700 text-white shadow-md shadow-blue-200/70 active:scale-95 transition-all"
+            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-[#0078d4] text-white active:opacity-80 transition-all min-h-[60px]"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-            <span class="text-[11px] font-bold leading-tight">Create Event</span>
+            <span class="text-[10px] font-semibold leading-tight text-center">Create Event</span>
           </button>
           <button
             @click="downloadPaymentExcel"
             :disabled="isDownloading"
-            class="flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-2xl bg-gradient-to-b from-green-600 to-green-700 text-white shadow-md shadow-green-200/70 active:scale-95 transition-all disabled:opacity-60"
+            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-white border border-[#e0e0e0] text-[#201f1e] active:bg-[#f3f2f1] transition-all disabled:opacity-50 min-h-[60px]"
           >
-            <svg v-if="isDownloading" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            <span class="text-[11px] font-bold leading-tight">{{ isDownloading ? 'Loading…' : 'Export Excel' }}</span>
+            <svg v-if="isDownloading" class="w-5 h-5 animate-spin text-[#605e5c]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            <svg v-else class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <span class="text-[10px] font-semibold leading-tight text-center text-[#605e5c]">{{ isDownloading ? 'Loading…' : 'Export' }}</span>
           </button>
           <button
             @click="openReportConfig"
             :disabled="isGeneratingReport || paymentEvents.length === 0"
-            class="flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-2xl bg-gradient-to-b from-violet-600 to-purple-700 text-white shadow-md shadow-purple-200/70 active:scale-95 transition-all disabled:opacity-60"
+            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-white border border-[#e0e0e0] text-[#201f1e] active:bg-[#f3f2f1] transition-all disabled:opacity-50 min-h-[60px]"
           >
-            <svg v-if="isGeneratingReport" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span class="text-[11px] font-bold leading-tight">{{ isGeneratingReport ? 'Loading…' : 'Gen. Report' }}</span>
+            <svg v-if="isGeneratingReport" class="w-5 h-5 animate-spin text-[#605e5c]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            <svg v-else class="w-5 h-5 text-[#0078d4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="text-[10px] font-semibold leading-tight text-center text-[#605e5c]">{{ isGeneratingReport ? 'Loading…' : 'Report' }}</span>
           </button>
           <button
             @click="showExportHistory = true"
-            class="flex flex-col items-center justify-center gap-1.5 py-3.5 rounded-2xl bg-gradient-to-b from-slate-600 to-slate-800 text-white shadow-md shadow-slate-200/70 active:scale-95 transition-all"
+            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-white border border-[#e0e0e0] text-[#201f1e] active:bg-[#f3f2f1] transition-all min-h-[60px]"
           >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span class="text-[11px] font-bold leading-tight">History</span>
+            <svg class="w-5 h-5 text-[#605e5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="text-[10px] font-semibold leading-tight text-center text-[#605e5c]">History</span>
           </button>
         </div>
 
-        <!-- Desktop: original flex row buttons -->
+        <!-- Desktop: Fluent command bar buttons -->
         <div class="hidden sm:flex items-center gap-2 flex-wrap">
           <button
             @click="showCreateEventModal = true"
-            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-ssaam-dark to-ssaam-light text-white rounded-xl hover:opacity-90 transition-all font-semibold text-sm shadow-md shadow-blue-200 active:scale-95"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0078d4] text-white rounded text-sm font-semibold hover:bg-[#106ebe] transition-colors active:opacity-80 min-h-[34px]"
           >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Create Event
@@ -80,26 +80,26 @@
           <button
             @click="downloadPaymentExcel"
             :disabled="isDownloading"
-            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 transition-all font-semibold text-sm disabled:opacity-70 shadow-md shadow-green-200 active:scale-95"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[#e0e0e0] text-[#201f1e] rounded text-sm font-semibold hover:bg-[#f3f2f1] transition-colors disabled:opacity-50 active:bg-[#edebe9] min-h-[34px]"
           >
-            <svg v-if="isDownloading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <svg v-if="isDownloading" class="w-4 h-4 animate-spin text-[#605e5c]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             {{ isDownloading ? 'Preparing...' : 'Export Excel' }}
           </button>
           <button
             @click="openReportConfig"
             :disabled="isGeneratingReport || paymentEvents.length === 0"
-            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-violet-600 to-purple-700 text-white rounded-xl hover:from-violet-700 hover:to-purple-800 transition-all font-semibold text-sm disabled:opacity-60 shadow-md shadow-purple-200 active:scale-95"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[#e0e0e0] text-[#201f1e] rounded text-sm font-semibold hover:bg-[#f3f2f1] transition-colors disabled:opacity-50 active:bg-[#edebe9] min-h-[34px]"
           >
-            <svg v-if="isGeneratingReport" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <svg v-if="isGeneratingReport" class="w-4 h-4 animate-spin text-[#605e5c]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-4 h-4 text-[#0078d4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             {{ isGeneratingReport ? 'Generating...' : 'Generate Report' }}
           </button>
           <button
             @click="showExportHistory = true"
-            class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-slate-600 to-slate-800 text-white rounded-xl hover:from-slate-700 hover:to-slate-900 transition-all font-semibold text-sm shadow-md shadow-slate-200 active:scale-95"
+            class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[#e0e0e0] text-[#201f1e] rounded text-sm font-semibold hover:bg-[#f3f2f1] transition-colors active:bg-[#edebe9] min-h-[34px]"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg class="w-4 h-4 text-[#605e5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             Export History
           </button>
         </div>
@@ -109,13 +109,13 @@
       <div class="px-4 sm:px-6 md:px-8 py-4 sm:py-5 border-b border-gray-100">
         <!-- Header row -->
         <div class="flex items-center gap-2 mb-3 sm:mb-4">
-          <div class="w-1 h-5 rounded-full bg-purple-500"></div>
-          <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Select Event</h3>
-          <span v-if="activePayment" class="ml-auto inline-flex items-center gap-1.5 text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-full max-w-[140px] sm:max-w-none truncate">
-            <span class="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse flex-shrink-0"></span>
+          <div class="w-1 h-5 rounded-full bg-[#0078d4]"></div>
+          <h3 class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider">Select Event</h3>
+          <span v-if="activePayment" class="ml-auto inline-flex items-center gap-1.5 text-xs font-semibold text-[#0078d4] bg-[#e8f0fb] border border-[#c7d8f6] px-2.5 py-1 rounded max-w-[140px] sm:max-w-none truncate">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#0078d4] animate-pulse flex-shrink-0"></span>
             <span class="truncate">{{ activePayment.title }}</span>
           </span>
-          <span v-else-if="!isLoadingEvents && paymentEvents.length > 0" class="ml-auto text-xs text-gray-400 font-medium">No event selected</span>
+          <span v-else-if="!isLoadingEvents && paymentEvents.length > 0" class="ml-auto text-xs text-[#a19f9d] font-medium">No event selected</span>
         </div>
 
         <!-- Search bar — shown when events exist -->
@@ -142,7 +142,7 @@
           <!-- Search results badge -->
           <Transition name="carousel-slide">
             <div v-if="eventSearchQuery" class="mt-2 flex items-center gap-2">
-              <span class="inline-flex items-center gap-1.5 text-[11px] text-purple-700 font-bold bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-full">
+              <span class="inline-flex items-center gap-1.5 text-[11px] text-[#0078d4] font-semibold bg-[#e8f0fb] border border-[#c7d8f6] px-2.5 py-1 rounded">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z"/></svg>
                 {{ displayedEvents.length }} of {{ paymentEvents.length }} event{{ paymentEvents.length === 1 ? '' : 's' }} found
               </span>
@@ -191,7 +191,7 @@
             <button
               @click="prevCarousel"
               :disabled="displayedEvents.length <= 1"
-              class="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-purple-100 transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
+              class="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded bg-white border border-[#e0e0e0] shadow-sm items-center justify-center text-[#605e5c] hover:text-[#0078d4] hover:border-[#0078d4] transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
             </button>
@@ -200,7 +200,7 @@
             <button
               @click="nextCarousel"
               :disabled="displayedEvents.length <= 1"
-              class="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-full bg-white/95 backdrop-blur-sm border border-gray-200 shadow-lg items-center justify-center text-gray-400 hover:text-purple-600 hover:border-purple-300 hover:shadow-purple-100 transition-all duration-200 disabled:opacity-20 disabled:cursor-not-allowed"
+              class="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded bg-white border border-[#e0e0e0] shadow-sm items-center justify-center text-[#605e5c] hover:text-[#0078d4] hover:border-[#0078d4] transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </button>
@@ -215,59 +215,55 @@
             >
               <!-- Inner card -->
               <div
-                :class="['rounded-3xl overflow-hidden border-2 shadow-xl transition-shadow duration-450',
+                :class="['rounded-lg overflow-hidden border shadow-[0_1px_6px_rgba(0,0,0,0.08)] transition-shadow duration-300',
                   activePayment && activePayment._id === event._id
-                    ? 'border-purple-400 shadow-purple-200'
-                    : 'border-gray-200 shadow-gray-100']"
+                    ? 'border-[#0078d4] shadow-[0_2px_8px_rgba(0,120,212,0.15)]'
+                    : 'border-[#e0e0e0]']"
               >
-                <!-- Gradient header -->
-                <div :class="['relative px-5 pt-5 pb-4 overflow-hidden',
-                  event.type === 'fee'        ? 'bg-gradient-to-br from-blue-600 to-indigo-700'   :
-                  event.type === 'membership' ? 'bg-gradient-to-br from-green-600 to-teal-700'    :
-                  event.type === 'donation'   ? 'bg-gradient-to-br from-orange-500 to-amber-600'  :
-                                                'bg-gradient-to-br from-purple-600 to-violet-700']">
-                  <!-- Decorative blobs -->
-                  <div class="absolute inset-0 opacity-[0.15] bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
-                  <div class="absolute -top-10 -right-10 w-36 h-36 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
-                  <div class="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-black/10 blur-2xl pointer-events-none"></div>
-
-                  <!-- Active badge -->
-                  <div v-if="activePayment && activePayment._id === event._id"
-                    class="absolute top-3 right-3 flex items-center gap-1.5 bg-white/20 backdrop-blur border border-white/30 rounded-full px-2.5 py-1 z-10">
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                    <span class="text-white text-[10px] font-bold tracking-widest uppercase">Active</span>
-                  </div>
-
-                  <!-- Top-left: Type badge always, then edit/delete only on center card -->
-                  <div class="absolute top-3 left-3 flex items-center gap-1.5 z-10">
-                    <!-- Type badge — pill shape, distinct from icon buttons -->
-                    <span :class="['inline-flex items-center px-2.5 py-1 rounded-lg text-[10px] font-extrabold uppercase tracking-wider border backdrop-blur-sm shadow-sm',
-                      event.type === 'fee'        ? 'bg-blue-500/40 border-blue-300/60 text-white'       :
-                      event.type === 'membership' ? 'bg-green-500/40 border-green-300/60 text-white'     :
-                      event.type === 'donation'   ? 'bg-amber-500/40 border-amber-300/60 text-white'     :
-                                                    'bg-violet-500/40 border-violet-300/60 text-white']">
+                <!-- White header -->
+                <div class="relative px-4 pt-4 pb-3 bg-white border-b border-[#edebe9]">
+                  <!-- Row 1: type badge + active badge + edit/delete -->
+                  <div class="flex items-center gap-1.5 mb-3">
+                    <!-- Type badge -->
+                    <span :class="['inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider',
+                      event.type === 'fee'        ? 'bg-[#e8f0fb] text-[#0078d4]' :
+                      event.type === 'membership' ? 'bg-emerald-50 text-emerald-700' :
+                      event.type === 'donation'   ? 'bg-amber-50 text-amber-700' :
+                                                    'bg-purple-50 text-purple-700']">
                       {{ event.type || 'event' }}
                     </span>
-                    <!-- Divider + edit/delete only on center card -->
+                    <!-- Active badge -->
+                    <span v-if="activePayment && activePayment._id === event._id"
+                      class="inline-flex items-center gap-1 bg-[#dff6dd] text-[#107c10] text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider">
+                      <span class="w-1.5 h-1.5 rounded-full bg-[#107c10] animate-pulse flex-shrink-0"></span>
+                      Selected
+                    </span>
+                    <!-- Edit / Delete — only on center card -->
                     <template v-if="idx === carouselIndex">
-                      <div class="w-px h-4 bg-white/30 rounded-full"></div>
-                      <button @click.stop="openEditEvent(event)"
-                        class="w-7 h-7 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition-all" title="Edit">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15.414 9 16l.586-3z"/></svg>
-                      </button>
-                      <button @click.stop="confirmDeleteEvent(event)"
-                        class="w-7 h-7 rounded-full bg-white/20 hover:bg-red-500/70 text-white flex items-center justify-center transition-all" title="Delete">
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                      </button>
+                      <div class="ml-auto flex items-center gap-1">
+                        <button @click.stop="openEditEvent(event)"
+                          class="w-7 h-7 rounded flex items-center justify-center text-[#605e5c] hover:bg-[#f3f2f1] transition-colors" title="Edit">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15.414 9 16l.586-3z"/></svg>
+                        </button>
+                        <button @click.stop="confirmDeleteEvent(event)"
+                          class="w-7 h-7 rounded flex items-center justify-center text-[#605e5c] hover:bg-[#fde7e9] hover:text-[#a4262c] transition-colors" title="Delete">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                      </div>
                     </template>
                   </div>
 
-                  <!-- Amount only (type chip moved to top-left) -->
-                  <div class="mt-6 flex items-center justify-end relative z-10">
-                    <span class="text-xl font-extrabold text-white drop-shadow tracking-tight">₱{{ Number(event.amount_due || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                  <!-- Amount -->
+                  <div class="flex items-start justify-between gap-2">
+                    <h4 class="text-[#201f1e] font-bold text-base leading-snug flex-1 line-clamp-2 pr-1">{{ event.title }}</h4>
+                    <span :class="['text-xl font-bold tabular-nums flex-shrink-0',
+                      event.type === 'fee'        ? 'text-[#0078d4]' :
+                      event.type === 'membership' ? 'text-emerald-600' :
+                      event.type === 'donation'   ? 'text-amber-600' :
+                                                    'text-purple-700']">
+                      ₱{{ Number(event.amount_due || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
+                    </span>
                   </div>
-                  <!-- Title -->
-                  <h4 class="text-white font-extrabold text-[1.05rem] mt-1 leading-snug relative z-10 pr-2 line-clamp-2">{{ event.title }}</h4>
                 </div>
 
                 <!-- Card body -->
@@ -297,10 +293,10 @@
                     v-if="idx === carouselIndex"
                     @click.stop="selectEvent(event)"
                     :disabled="!!(activePayment && activePayment._id === event._id)"
-                    :class="['w-full py-2.5 rounded-2xl text-sm font-bold transition-all duration-200 active:scale-[0.97]',
+                    :class="['w-full py-2 rounded text-sm font-semibold transition-all duration-150 active:scale-[0.98] min-h-[36px]',
                       activePayment && activePayment._id === event._id
-                        ? 'bg-purple-50 text-purple-600 border-2 border-purple-200 cursor-default'
-                        : 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white hover:from-purple-700 hover:to-indigo-700 shadow-md shadow-purple-200 hover:shadow-lg hover:shadow-purple-200']"
+                        ? 'bg-[#dff6dd] text-[#107c10] cursor-default'
+                        : 'bg-[#0078d4] text-white hover:bg-[#106ebe] shadow-sm']"
                   >
                     <span v-if="activePayment && activePayment._id === event._id" class="flex items-center justify-center gap-2">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -327,16 +323,16 @@
             <button
               @click="prevCarousel"
               :disabled="displayedEvents.length <= 1"
-              class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-200 shadow text-gray-500 text-xs font-semibold hover:text-purple-600 hover:border-purple-300 transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
+              class="flex items-center gap-1.5 px-4 py-2 rounded bg-white border border-[#e0e0e0] text-[#605e5c] text-xs font-semibold hover:text-[#0078d4] hover:border-[#0078d4] transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 min-h-[36px]"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
               Prev
             </button>
-            <span class="text-xs text-gray-400 font-medium">{{ carouselIndex + 1 }} / {{ displayedEvents.length }}</span>
+            <span class="text-xs text-[#605e5c] font-medium">{{ carouselIndex + 1 }} / {{ displayedEvents.length }}</span>
             <button
               @click="nextCarousel"
               :disabled="displayedEvents.length <= 1"
-              class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-gray-200 shadow text-gray-500 text-xs font-semibold hover:text-purple-600 hover:border-purple-300 transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
+              class="flex items-center gap-1.5 px-4 py-2 rounded bg-white border border-[#e0e0e0] text-[#605e5c] text-xs font-semibold hover:text-[#0078d4] hover:border-[#0078d4] transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 min-h-[36px]"
             >
               Next
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
@@ -349,10 +345,10 @@
               v-for="(event, idx) in displayedEvents"
               :key="event._id"
               @click="carouselIndex = idx"
-              :class="['rounded-full transition-all duration-300', idx === carouselIndex ? 'w-7 h-2.5 bg-purple-500' : 'w-2.5 h-2.5 bg-gray-300 hover:bg-purple-300']"
+              :class="['rounded-full transition-all duration-300', idx === carouselIndex ? 'w-7 h-2 bg-[#0078d4]' : 'w-2 h-2 bg-[#c8c6c4] hover:bg-[#0078d4]/50']"
             ></button>
           </div>
-          <p class="text-xs text-gray-400 font-medium">{{ carouselIndex + 1 }} of {{ displayedEvents.length }} event{{ displayedEvents.length === 1 ? '' : 's' }}</p>
+          <p class="text-xs text-[#605e5c] font-medium">{{ carouselIndex + 1 }} of {{ displayedEvents.length }} event{{ displayedEvents.length === 1 ? '' : 's' }}</p>
         </div>
       </div>
 
@@ -361,29 +357,25 @@
            moment the admin clicks a card above.                            -->
       <Transition name="contrib-reveal">
         <div v-if="!activePayment && !isLoadingEvents && paymentEvents.length > 0"
-          class="px-4 sm:px-6 md:px-8 py-14 sm:py-20 flex flex-col items-center justify-center text-center gap-6 border-t border-gray-100">
-          <!-- Animated icon -->
-          <div class="relative flex items-center justify-center">
-            <div class="absolute w-32 h-32 rounded-full bg-purple-100/60 animate-ping" style="animation-duration:2.4s"></div>
-            <div class="absolute w-24 h-24 rounded-full bg-indigo-100/70 animate-pulse" style="animation-duration:1.8s"></div>
-            <div class="relative w-20 h-20 rounded-3xl bg-gradient-to-br from-purple-500 via-indigo-500 to-blue-500 flex items-center justify-center shadow-xl shadow-purple-200">
-              <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
-                  d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-              </svg>
-            </div>
+          class="px-4 sm:px-6 md:px-8 py-14 sm:py-20 flex flex-col items-center justify-center text-center gap-5 border-t border-[#edebe9]">
+          <!-- Icon -->
+          <div class="w-16 h-16 rounded-lg bg-[#e8f0fb] flex items-center justify-center">
+            <svg class="w-8 h-8 text-[#0078d4]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6"
+                d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
           </div>
           <!-- Message -->
           <div>
-            <h3 class="text-xl sm:text-2xl font-extrabold text-gray-800 mb-2 tracking-tight">Select an Event to Get Started</h3>
-            <p class="text-sm text-gray-500 max-w-xs sm:max-w-sm leading-relaxed mx-auto">
+            <h3 class="text-lg font-bold text-[#201f1e] mb-1">Select an Event to Get Started</h3>
+            <p class="text-sm text-[#605e5c] max-w-xs sm:max-w-sm leading-relaxed mx-auto">
               Choose an event from the cards above to view its statistics, manage payments, and track contributions.
             </p>
           </div>
-          <!-- Available count pill -->
-          <div class="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-2xl shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-purple-500 animate-pulse flex-shrink-0"></span>
-            <span class="text-sm font-bold text-purple-700">
+          <!-- Count badge -->
+          <div class="inline-flex items-center gap-2 px-4 py-2 bg-[#e8f0fb] border border-[#c7d8f6] rounded text-sm font-semibold text-[#0078d4]">
+            <span class="w-1.5 h-1.5 rounded-full bg-[#0078d4] animate-pulse flex-shrink-0"></span>
+            <span>
               {{ paymentEvents.length }} event{{ paymentEvents.length === 1 ? '' : 's' }} available — tap one above
             </span>
           </div>

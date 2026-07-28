@@ -9,7 +9,7 @@
 
         <!-- Banner image -->
         <div class="flex-shrink-0 relative overflow-hidden" style="height: 180px;">
-          <img src="/img/ssaam_popup.png" alt="SSAAM Banner" class="w-full h-full object-cover object-center" />
+          <img src="/img/ssaam_popup.png" alt="SSAAM Banner" class="tc-kenburns w-full h-full object-cover object-center" />
           <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60"></div>
           <div class="absolute bottom-3 left-4 flex items-center gap-2">
             <img src="/src/assets/ccs-logo.png" alt="CCS Logo" class="w-8 h-8 object-contain drop-shadow-lg" />
@@ -317,4 +317,16 @@ const tcSections = [
 .welcome-scroll::-webkit-scrollbar-track { background: transparent; }
 .welcome-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 999px; }
 .welcome-scroll::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
+
+/* Ken Burns — slow zoom-in with gentle top-to-bottom pan, then reverses */
+@keyframes kenburns {
+  0%   { transform: scale(1.0)  translateY(0%);    }
+  50%  { transform: scale(1.12) translateY(-3%);   }
+  100% { transform: scale(1.0)  translateY(0%);    }
+}
+.tc-kenburns {
+  animation: kenburns 14s ease-in-out infinite;
+  transform-origin: center center;
+  will-change: transform;
+}
 </style>
