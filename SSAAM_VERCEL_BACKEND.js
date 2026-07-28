@@ -8862,7 +8862,7 @@ app.get('/api/auth/callback/google', (req, res, next) => {
 });
 
 // Step 3: frontend exchanges the short-lived code for the full auth payload
-app.post('/api/auth/google/exchange', (req, res) => {
+app.post('/api/auth/google/exchange', async (req, res) => {
     const { code } = req.body;
     if (!code) return res.status(400).json({ message: 'Missing code.' });
     const data = await GoogleExchangeCode.findOneAndDelete({ code });
