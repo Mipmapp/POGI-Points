@@ -1542,9 +1542,8 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 <span>Create Event</span>
               </button>
-              <button @click="refreshAttendanceSection" :disabled="attendanceLoading" :class="['px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 text-xs font-semibold disabled:opacity-70 text-white bg-gradient-to-r', primaryButtonGradient, primaryButtonHover]" title="Refresh">
+              <button @click="refreshAttendanceSection" :disabled="attendanceLoading" :class="['w-7 h-7 rounded-lg transition flex items-center justify-center disabled:opacity-70 text-white bg-gradient-to-r flex-shrink-0', primaryButtonGradient, primaryButtonHover]" title="Refresh">
                 <svg :class="['w-3.5 h-3.5', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                <span>Refresh</span>
               </button>
             </div>
 
