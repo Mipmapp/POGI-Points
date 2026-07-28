@@ -1211,6 +1211,71 @@ onMounted(async () => {
   // (login, password reset) don't 401 due to user PC clock skew. Fire-and-forget.
   syncServerTime()
 
+  // ── Google OAuth callback handling ──────────────────────────────────────────
+  const params = new URLSearchParams(window.location.search)
+
+  // If Google redirected back with an error, show it and clean the URL
+  const googleError = params.get('google_error')
+  if (googleError) {
+    errorMessage.value = googleError
+    showErrorNotification.value = true
+    window.history.replaceState({}, '', window.location.pathname)
+  }
+
+  // If Google redirected back with a short-lived exchange code, trade it for
+  // the full auth payload and log the student in automatically.
+  const gc = params.get('gc')
+  if (gc) {
+    window.history.replaceState({}, '', window.location.pathname)
+    try {
+      isLoading.value = true
+      const resp = await fetch('/api/auth/google/exchange', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: gc })
+      })
+      const data = await resp.json()
+      if (!resp.ok || !data.token || !data.student) {
+        throw new Error(data.message || 'Google login failed. Please try again.')
+      }
+      const user = data.student
+      const college = data.college
+      const normalizedUser = {
+        ...user,
+        studentId: user.student_id,
+        fullName: user.full_name || '',
+        lastName: user.last_name || '',
+        email: user.email || '',
+        rfidCode: user.rfid_code || '',
+        rfid_code: user.rfid_code || '',
+        rfid_status: user.rfid_status || 'unverified',
+        rfid_verified_at: user.rfid_verified_at || null,
+        yearLevel: user.year_level || '',
+        semester: user.semester || '',
+        schoolYear: user.school_year || '',
+        program: user.program || '',
+        role: user.role || 'student',
+        actualRole: 'student',
+        image: user.photo || user.image || '',
+        isMaster: false,
+        token: data.token,
+        requiresPasswordUpdate: false,
+        selectedDepartment: departments.find(d => d.label === college) || null
+      }
+      const { token: _tok, custom_password: _cp, password_hash: _ph, admin_verification_token: _avt, ...safeUser } = normalizedUser
+      localStorage.setItem('currentUser', JSON.stringify(safeUser))
+      localStorage.setItem('authToken', data.token)
+      pruneExpiredPhotoCache()
+      router.push('/dashboard')
+      return
+    } catch (err) {
+      isLoading.value = false
+      errorMessage.value = err.message || 'Google login failed. Please try again.'
+      showErrorNotification.value = true
+    }
+  }
+  // ────────────────────────────────────────────────────────────────────────────
+
   const currentUser = localStorage.getItem('currentUser')
   if (currentUser) {
     const user = JSON.parse(currentUser)
@@ -1240,8 +1305,7 @@ onMounted(async () => {
 })
 
 const handleGoogleLogin = () => {
-  errorMessage.value = 'Google login is coming soon. Please use your Student ID and password for now.'
-  showErrorNotification.value = true
+  window.location.href = '/api/auth/google'
 }
 
 const handleLogin = async () => {

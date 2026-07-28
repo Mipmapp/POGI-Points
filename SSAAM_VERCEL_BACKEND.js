@@ -9,6 +9,8 @@ import crypto from 'crypto';
 import { MongoClient } from 'mongodb';
 import cloudinary from './config/cloudinary.js';
 import cookieParser from 'cookie-parser';
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 
 // ── Login rate limiter & account lockout ──────────────────────────────────────
 // Tracks failed login attempts per IP (and per credential) in memory.
@@ -159,6 +161,7 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(passport.initialize());
 
 // ── NoSQL injection sanitizer ─────────────────────────────────────────────────
 // Recursively removes any key that starts with '$' or contains '.' from
@@ -2563,6 +2566,59 @@ const CCS_Student = mongoose.model("CCS_Student", studentSchema, 'ccs_students')
 const COE_Student = mongoose.model("COE_Student", studentSchema, 'coe_students');
 const SOM_Student = mongoose.model("SOM_Student", studentSchema, 'som_students');
 const CNAHS_Student = mongoose.model("CNAHS_Student", studentSchema, 'cnahs_students');
+
+// ── Google OAuth Strategy ──────────────────────────────────────────────────────
+// Short-lived exchange codes: after Google redirects back, the backend stores
+// auth data here for 60 s; the frontend POSTs the code back to get the token.
+const _googleCodes = new Map(); // code → { token, student, college, expires }
+setInterval(() => {
+    const now = Date.now();
+    for (const [k, v] of _googleCodes.entries()) {
+        if (v.expires < now) _googleCodes.delete(k);
+    }
+}, 60_000);
+
+if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
+    passport.use(new GoogleStrategy({
+        clientID: process.env.GOOGLE_CLIENT_ID,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        callbackURL: process.env.GOOGLE_CALLBACK_URL || '/api/auth/callback/google',
+    }, async (accessToken, refreshToken, profile, done) => {
+        try {
+            const email = profile.emails?.[0]?.value?.toLowerCase().trim();
+            if (!email) return done(null, false, { message: 'Google did not provide an email address.' });
+
+            // Search all college collections for a student with this email
+            const collegeModels = [
+                { model: CCS_Student,  college: 'CCS'   },
+                { model: COE_Student,  college: 'COE'   },
+                { model: SOM_Student,  college: 'SOM'   },
+                { model: CNAHS_Student, college: 'CNAHS' },
+            ];
+
+            let foundStudent = null, foundCollege = null;
+            for (const { model, college } of collegeModels) {
+                const s = await model.findOne({ email: { $regex: new RegExp(`^${email}$`, 'i') } })
+                    .select('-contributions -semester -school_year');
+                if (s) { foundStudent = s; foundCollege = college; break; }
+            }
+
+            if (!foundStudent) {
+                return done(null, false, { message: 'No SSAAM account is linked to this Google email. Please register first.' });
+            }
+            if (foundStudent.status === 'pending') {
+                return done(null, false, { message: 'Your account is pending admin approval.' });
+            }
+            if (foundStudent.status === 'rejected') {
+                return done(null, false, { message: foundStudent.rejection_reason ? `Your account was not approved. Reason: ${foundStudent.rejection_reason}` : 'Your account was not approved. Please contact admin.' });
+            }
+
+            return done(null, { student: foundStudent, college: foundCollege });
+        } catch (err) {
+            return done(err);
+        }
+    }));
+}
 
 const verificationCodeSchema = new mongoose.Schema({
     email: { type: String, required: true },
@@ -8735,5 +8791,76 @@ app.get('/apis/contributions/download/excel', auth, async (req, res) => {
 
 
 
+
+// ── Google OAuth routes ────────────────────────────────────────────────────────
+// Step 1: redirect user to Google
+app.get('/api/auth/google', (req, res, next) => {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_SECRET) {
+        return res.redirect('/?google_error=' + encodeURIComponent('Google login is not configured yet.'));
+    }
+    passport.authenticate('google', { scope: ['profile', 'email'], session: false })(req, res, next);
+});
+
+// Step 2: Google redirects back here
+app.get('/api/auth/callback/google', (req, res, next) => {
+    passport.authenticate('google', { session: false }, async (err, user, info) => {
+        if (err) {
+            console.error('[Google OAuth] strategy error:', err);
+            return res.redirect('/?google_error=' + encodeURIComponent('Authentication error. Please try again.'));
+        }
+        if (!user) {
+            const msg = info?.message || 'No SSAAM account found for this Google email.';
+            return res.redirect('/?google_error=' + encodeURIComponent(msg));
+        }
+        try {
+            const { student, college } = user;
+            const token = jwt.sign(
+                { id: student._id, student_id: student.student_id, role: student.role, college },
+                JWT_SECRET_KEY,
+                { expiresIn: '7d' }
+            );
+            const tokenHash = hashToken(token);
+            const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+            const sessionModels = {
+                CCS: CCS_SessionToken, COE: COE_SessionToken,
+                SOM: SOM_SessionToken,  CNAHS: CNAHS_SessionToken,
+            };
+            const SessionTokenModel = sessionModels[college] || SessionToken;
+            await SessionTokenModel.create({
+                token_hash: tokenHash,
+                user_id: student._id,
+                user_type: 'student',
+                expires_at: expiresAt
+            });
+
+            // Store data under a short-lived exchange code so the URL stays clean
+            const code = crypto.randomBytes(24).toString('hex');
+            _googleCodes.set(code, {
+                token,
+                student: student.toJSON(),
+                college,
+                expires: Date.now() + 60_000   // 60-second TTL
+            });
+
+            res.redirect(`/?gc=${code}`);
+        } catch (innerErr) {
+            console.error('[Google OAuth] callback error:', innerErr);
+            res.redirect('/?google_error=' + encodeURIComponent('Login failed. Please try again.'));
+        }
+    })(req, res, next);
+});
+
+// Step 3: frontend exchanges the short-lived code for the full auth payload
+app.post('/api/auth/google/exchange', (req, res) => {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ message: 'Missing code.' });
+    const data = _googleCodes.get(code);
+    if (!data || data.expires < Date.now()) {
+        _googleCodes.delete(code);
+        return res.status(400).json({ message: 'Invalid or expired login code. Please try again.' });
+    }
+    _googleCodes.delete(code); // one-time use
+    return res.json({ token: data.token, student: data.student, college: data.college });
+});
 
 export default app;

@@ -24,6 +24,11 @@ export default defineConfig({
           console.log(`[Proxy] Routing ${path} → localhost:3001`)
           return path
         }
+      },
+      '/api/auth': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+        secure: false,
       }
     },
     middlewareMode: false,
