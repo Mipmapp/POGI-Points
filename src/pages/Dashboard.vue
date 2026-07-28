@@ -5156,6 +5156,8 @@
               @wheel.prevent="onCropWheel"
             >
               <!-- The image — moves freely beneath the fixed crop frame -->
+              <!-- maxWidth/maxHeight: none overrides Tailwind preflight's max-width: 100% which would cap the image -->
+              <!-- and cause stretching when both width & height are explicitly set. -->
               <img
                 v-if="cropImageSrc"
                 :src="cropImageSrc"
@@ -5167,6 +5169,8 @@
                   top: cropY + 'px',
                   width: (cropImageNatural.width * cropScale) + 'px',
                   height: (cropImageNatural.height * cropScale) + 'px',
+                  maxWidth: 'none',
+                  maxHeight: 'none',
                 }"
               />
 
@@ -5234,7 +5238,7 @@
                   :src="cropImageSrc"
                   alt=""
                   draggable="false"
-                  :style="cropPreviewStyle"
+                  :style="{ ...cropPreviewStyle, maxWidth: 'none', maxHeight: 'none' }"
                 />
               </div>
               <!-- Buttons -->
