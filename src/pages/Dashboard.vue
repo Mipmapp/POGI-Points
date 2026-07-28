@@ -5141,85 +5141,127 @@
 
           <!-- ── PHASE 2: Crop ── -->
           <template v-else>
-            <!-- Header -->
-            <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <!-- Gradient header -->
+            <div :class="['flex items-center justify-between px-5 py-4',
+              isCOE ? 'bg-gradient-to-r from-orange-700 to-red-500' :
+              isSOM ? 'bg-gradient-to-r from-green-700 to-teal-500' :
+              isCNAHS ? 'bg-gradient-to-r from-green-800 to-green-600' :
+              'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
               <div>
-                <h3 class="text-base font-semibold text-gray-900">Crop your photo</h3>
-                <p class="text-xs text-gray-400 mt-0.5">Drag image to reposition</p>
+                <h3 class="text-base font-semibold text-white">Crop your photo</h3>
+                <p class="text-xs text-white/70 mt-0.5">Drag corners to resize · drag box to move</p>
               </div>
-              <button @click="closeCropModal" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              <button @click="closeCropModal" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
 
-            <!-- Stage: full image visible behind the overlay + crop frame -->
+            <!-- Stage: fixed image, movable crop box -->
             <div
               ref="cropContainerEl"
-              class="relative overflow-hidden select-none touch-none bg-gray-900"
-              style="height: 340px;"
-              :style="{ cursor: cropDragging ? 'grabbing' : 'grab' }"
-              @mousedown.prevent="startCropDrag"
+              class="relative overflow-hidden select-none touch-none bg-gray-950"
+              style="height: 380px;"
               @mousemove.prevent="onCropMouseMove"
               @mouseup="stopCropDrag"
               @mouseleave="stopCropDrag"
-              @touchstart.prevent="startCropTouch"
               @touchmove.prevent="onCropTouchMove"
               @touchend="stopCropDrag"
             >
-              <!-- Full image (draggable) -->
+              <!-- Image (fixed, letterboxed to fit stage) -->
               <img
                 v-if="cropImageSrc"
                 :src="cropImageSrc"
                 alt="Crop"
-                class="absolute pointer-events-none select-none"
                 draggable="false"
+                class="absolute pointer-events-none select-none"
                 :style="{
-                  left: cropX + 'px',
-                  top: cropY + 'px',
-                  width: (cropImageNatural.width * cropScale) + 'px',
-                  height: (cropImageNatural.height * cropScale) + 'px'
+                  left: cropImgX + 'px',
+                  top: cropImgY + 'px',
+                  width: cropImgW + 'px',
+                  height: cropImgH + 'px'
                 }"
               />
 
-              <!-- Dark overlay with transparent crop window cut out via box-shadow -->
+              <!-- Dark overlay (box-shadow) + grid + draggable handles -->
               <div
-                class="absolute pointer-events-none rounded-lg"
+                class="absolute"
                 :style="{
-                  left: cropFrameLeft + 'px',
-                  top: cropFrameTop + 'px',
-                  width: CROP_FRAME + 'px',
-                  height: CROP_FRAME + 'px',
-                  boxShadow: '0 0 0 9999px rgba(0,0,0,0.52)'
+                  left: cropBoxX + 'px',
+                  top: cropBoxY + 'px',
+                  width: cropBoxSize + 'px',
+                  height: cropBoxSize + 'px',
+                  boxShadow: '0 0 0 9999px rgba(0,0,0,0.60)'
                 }"
               >
-                <!-- Corner handles only — no full border line -->
-                <span class="absolute top-0 left-0 w-6 h-6 border-t-[3px] border-l-[3px] border-white pointer-events-none"></span>
-                <span class="absolute top-0 right-0 w-6 h-6 border-t-[3px] border-r-[3px] border-white pointer-events-none"></span>
-                <span class="absolute bottom-0 left-0 w-6 h-6 border-b-[3px] border-l-[3px] border-white pointer-events-none"></span>
-                <span class="absolute bottom-0 right-0 w-6 h-6 border-b-[3px] border-r-[3px] border-white pointer-events-none"></span>
-                <!-- Mid-edge handles -->
-                <span class="absolute top-0 left-1/2 -translate-x-1/2 w-7 h-[3px] bg-white/80 rounded-full pointer-events-none"></span>
-                <span class="absolute bottom-0 left-1/2 -translate-x-1/2 w-7 h-[3px] bg-white/80 rounded-full pointer-events-none"></span>
-                <span class="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-[3px] bg-white/80 rounded-full pointer-events-none"></span>
-                <span class="absolute right-0 top-1/2 -translate-y-1/2 h-7 w-[3px] bg-white/80 rounded-full pointer-events-none"></span>
+                <!-- Thin border -->
+                <div class="absolute inset-0 border border-white/70 pointer-events-none"></div>
+
+                <!-- Rule-of-thirds grid -->
+                <div class="absolute inset-0 pointer-events-none">
+                  <div class="absolute left-1/3 inset-y-0 w-px bg-white/25"></div>
+                  <div class="absolute left-2/3 inset-y-0 w-px bg-white/25"></div>
+                  <div class="absolute top-1/3 inset-x-0 h-px bg-white/25"></div>
+                  <div class="absolute top-2/3 inset-x-0 h-px bg-white/25"></div>
+                </div>
+
+                <!-- Move area (entire interior) -->
+                <div
+                  class="absolute inset-0 cursor-move z-0"
+                  @mousedown.prevent.stop="startBoxMove"
+                  @touchstart.prevent.stop="startBoxMoveTouch"
+                ></div>
+
+                <!-- Corner NW -->
+                <div
+                  class="absolute -top-3 -left-3 w-10 h-10 cursor-nw-resize z-10 flex items-start justify-start p-1"
+                  @mousedown.prevent.stop="e => startCornerDrag(e, 'nw')"
+                  @touchstart.prevent.stop="e => startCornerDragTouch(e, 'nw')"
+                >
+                  <span class="w-5 h-5 border-t-[3px] border-l-[3px] border-white rounded-tl block"></span>
+                </div>
+                <!-- Corner NE -->
+                <div
+                  class="absolute -top-3 -right-3 w-10 h-10 cursor-ne-resize z-10 flex items-start justify-end p-1"
+                  @mousedown.prevent.stop="e => startCornerDrag(e, 'ne')"
+                  @touchstart.prevent.stop="e => startCornerDragTouch(e, 'ne')"
+                >
+                  <span class="w-5 h-5 border-t-[3px] border-r-[3px] border-white rounded-tr block"></span>
+                </div>
+                <!-- Corner SW -->
+                <div
+                  class="absolute -bottom-3 -left-3 w-10 h-10 cursor-sw-resize z-10 flex items-end justify-start p-1"
+                  @mousedown.prevent.stop="e => startCornerDrag(e, 'sw')"
+                  @touchstart.prevent.stop="e => startCornerDragTouch(e, 'sw')"
+                >
+                  <span class="w-5 h-5 border-b-[3px] border-l-[3px] border-white rounded-bl block"></span>
+                </div>
+                <!-- Corner SE -->
+                <div
+                  class="absolute -bottom-3 -right-3 w-10 h-10 cursor-se-resize z-10 flex items-end justify-end p-1"
+                  @mousedown.prevent.stop="e => startCornerDrag(e, 'se')"
+                  @touchstart.prevent.stop="e => startCornerDragTouch(e, 'se')"
+                >
+                  <span class="w-5 h-5 border-b-[3px] border-r-[3px] border-white rounded-br block"></span>
+                </div>
               </div>
 
-              <!-- Badge -->
-              <div class="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full pointer-events-none">500 × 500</div>
+              <!-- Output size badge -->
+              <div class="absolute bottom-3 right-3 bg-black/60 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full pointer-events-none backdrop-blur-sm">500 × 500</div>
             </div>
 
             <!-- Action Buttons -->
-            <div class="px-5 pb-5 flex gap-3">
+            <div class="px-5 py-4 flex gap-3 bg-gray-50 border-t border-gray-100">
               <button
                 @click="cropPhase = 'upload'; cropImageSrc = ''"
-                class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
-              >Cancel</button>
+                class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 transition"
+              >← Back</button>
               <button
                 @click="applyCrop"
                 :disabled="studentPhotoUploading"
-                :class="['flex-1 py-2.5 rounded-xl text-white text-sm font-semibold shadow-sm transition disabled:opacity-60',
+                :class="['flex-1 py-2.5 rounded-xl text-white text-sm font-semibold shadow transition disabled:opacity-60 flex items-center justify-center gap-2',
                   isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-700 hover:bg-green-800' : 'bg-blue-600 hover:bg-blue-700']"
               >
+                <svg v-if="!studentPhotoUploading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
                 <span v-if="studentPhotoUploading">Uploading…</span>
                 <span v-else>Apply &amp; Upload</span>
               </button>
@@ -9419,25 +9461,26 @@ const cropPhase = ref('upload')      // 'upload' | 'crop'
 const cropImageSrc = ref('')
 const cropDragOver = ref(false)
 const cropFileError = ref('')
-const cropX = ref(0)
-const cropY = ref(0)
-const cropScale = ref(1)
-const cropMinScale = ref(1)
-const cropDragging = ref(false)
-const cropDragStart = ref({ x: 0, y: 0, imgX: 0, imgY: 0 })
-const cropImageNatural = ref({ width: 1, height: 1 })
 const cropContainerEl = ref(null)
 
-// Fixed crop frame dimensions (px) — must match the template style="height:340px"
-const CROP_FRAME = 280          // square crop window size
-const CROP_CONTAINER_H = 340    // container height
+// Image display geometry (letterboxed into the stage)
+const cropImgX = ref(0)
+const cropImgY = ref(0)
+const cropImgW = ref(0)
+const cropImgH = ref(0)
+const cropImgScale = ref(1)
 
-// Crop frame top-left corner inside the stage (centred)
-const cropFrameLeft = computed(() => {
-  const w = cropContainerEl.value ? cropContainerEl.value.clientWidth : 360
-  return Math.round((w - CROP_FRAME) / 2)
-})
-const cropFrameTop = computed(() => Math.round((CROP_CONTAINER_H - CROP_FRAME) / 2))
+// Resizable crop box (always square)
+const cropBoxX = ref(0)
+const cropBoxY = ref(0)
+const cropBoxSize = ref(200)
+
+// Drag state: null | 'move' | 'nw' | 'ne' | 'sw' | 'se'
+const cropDragMode = ref(null)
+const cropDragOrigin = ref({ mx: 0, my: 0, bx: 0, by: 0, bs: 0 })
+
+const CROP_STAGE_H = 380
+const CROP_BOX_MIN = 48
 
 // Open the modal at the upload phase
 const openPhotoCropModal = () => {
