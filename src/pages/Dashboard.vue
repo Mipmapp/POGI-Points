@@ -796,12 +796,6 @@
           <span v-if="!sidebarCollapsed" class="truncate">Contributions</span>
         </button>
 
-        <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'raffle-tickets'"
-          :title="sidebarCollapsed ? 'Raffle Ticket' : ''"
-          :class="[dNavBtn, 'mt-1', currentPage === 'raffle-tickets' ? dNavBtnActive : dNavBtnHover]">
-          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
-          <span v-if="!sidebarCollapsed" class="truncate">Raffle Ticket</span>
-        </button>
 
         <button v-if="(isTreasurer || isCoAdmin) && inRoleView" @click="currentPage = 'audit-trail'"
           :title="sidebarCollapsed ? 'Audit Trail' : ''"
@@ -817,12 +811,6 @@
           <span v-if="!sidebarCollapsed" class="truncate">Contributions</span>
         </button>
 
-        <button v-if="!isAdminLike || inUserView" @click="currentPage = 'my-raffle'"
-          :title="sidebarCollapsed ? 'My Raffle' : ''"
-          :class="[dNavBtn, 'mt-1', currentPage === 'my-raffle' ? dNavBtnActive : dNavBtnHover]">
-          <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
-          <span v-if="!sidebarCollapsed" class="truncate">My Raffle</span>
-        </button>
 
         <button v-if="!isAdminLike || inUserView" @click="currentPage = 'location'; fetchAttendanceData()"
           :title="sidebarCollapsed ? 'Location' : ''"
@@ -948,10 +936,6 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <span>Contributions</span>
           </button>
-          <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'raffle-tickets'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'raffle-tickets' ? sidebarItemActive : sidebarItemHover]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
-            <span>Raffle Ticket</span>
-          </button>
           <button v-if="(isTreasurer || isCoAdmin) && inRoleView" @click="currentPage = 'audit-trail'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'audit-trail' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
             <span>Audit Trail</span>
@@ -959,10 +943,6 @@
           <button v-if="!isAdminLike || inUserView" @click="currentPage = 'my-contributions'; showMobileMenu = false; fetchMyPayments()" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-contributions' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <span>Contributions</span>
-          </button>
-          <button v-if="!isAdminLike || inUserView" @click="currentPage = 'my-raffle'; showMobileMenu = false" :class="[sidebarItemBase, 'mt-2', currentPage === 'my-raffle' ? sidebarItemActive : sidebarItemHover]">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"></path></svg>
-            <span>My Raffle</span>
           </button>
           <button v-if="!isAdminLike || inUserView" @click="currentPage = 'location'; showMobileMenu = false; fetchAttendanceData()" :class="[sidebarItemBase, 'mt-2', currentPage === 'location' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -1032,7 +1012,7 @@
 
       <Transition name="section-fade" mode="out-in">
       <div :key="currentPage" class="p-4 md:p-8">
-        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'raffle-tickets' ? 'Raffle Ticket' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'my-raffle' ? 'My Raffle Results' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'location' ? 'Location' : currentPage === 'audit-trail' ? (isTreasurer ? 'My Audit Trail' : 'College Audit Trail') : currentPage === 'dashboard' && (isAdminLike) && inRoleView ? 'Statistics' : 'Dashboard' }}</h1>
+        <h1 :class="['hidden md:block text-xl md:text-3xl font-bold mb-4 pb-3 border-b', isCOE ? 'text-orange-900 border-orange-200' : isSOM ? 'text-green-900 border-green-200' : isCNAHS ? 'text-green-900 border-green-200' : 'text-blue-900 border-blue-200']">{{ currentPage === 'users' ? 'Manage Users' : currentPage === 'roles' ? 'Manage Roles' : currentPage === 'settings' ? 'Settings' : currentPage === 'pending' ? 'Pending Approvals' : currentPage === 'attendance' ? 'Attendance' : currentPage === 'payments' ? 'Payments' : currentPage === 'contributions' ? 'Contributions' : currentPage === 'my-contributions' ? 'My Contributions' : currentPage === 'admin-profile' ? 'My Profile' : currentPage === 'co-admins' ? 'Promote Co-Admins' : currentPage === 'location' ? 'Location' : currentPage === 'audit-trail' ? (isTreasurer ? 'My Audit Trail' : 'College Audit Trail') : currentPage === 'dashboard' && (isAdminLike) && inRoleView ? 'Statistics' : 'Dashboard' }}</h1>
 
         <!-- Password Update Warning Banner -->
         <div v-if="showPasswordUpdateWarning && !currentUser.isMaster && currentUser.role !== 'admin'" class="mb-4 bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-xl flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
@@ -3215,14 +3195,10 @@
         <!-- Admin Contribution Panel - visible for admin/co-admin -->
         <AdminContributionPanel v-if="currentPage === 'contributions' && (isAdminLike)" />
 
-        <!-- Admin Raffle Ticket Panel - visible for admin/co-admin -->
-        <AdminRaffleTicketPanel v-if="currentPage === 'raffle-tickets' && (isAdminLike)" />
 
         <!-- Audit Trail - treasurer sees own logs, co-admin sees college-wide logs -->
         <AuditTrailPanel v-if="currentPage === 'audit-trail' && (isTreasurer || isCoAdmin)" :currentUser="currentUser" />
 
-        <!-- Student Raffle Results - visible for students only -->
-        <StudentRaffleResultsView v-if="currentPage === 'my-raffle' && currentUser.role !== 'admin' && !currentUser.isMaster" />
 
         <!-- Manage Page (Roles & Users) -->
         <Manage ref="manageComponent" v-if="currentPage === 'manage' && (isAdminLike)" />
@@ -7000,14 +6976,12 @@ import WelcomeModal from '../components/WelcomeModal.vue'
 // [AI WARNING] AnnouncementPopup import removed — component was imported but never used in the template.
 import RFIDLoadingEffect from '../components/RFIDLoadingEffect.vue'
 import SessionExpiredModal from '../components/SessionExpiredModal.vue'
-import StudentRaffleResultsView from '../components/StudentRaffleResultsView.vue'
 import AdminContributionPanel from '../components/AdminContributionPanel.vue'
 // Vite-resolved asset URL for the JRMSU logo so we can use it as a CSS
 // mask-image. A bare `/src/assets/...` string in inline `mask-image` is
 // not reliably loaded as a mask — importing it gives us a stable hashed
 // URL that the browser can fetch and use as an alpha mask.
 import jrmsuLogoUrl from '../assets/ccs-logo.png'
-import AdminRaffleTicketPanel from '../components/AdminRaffleTicketPanel.vue'
 import AuditTrailPanel from '../components/AuditTrailPanel.vue'
 import FaceRecognitionSettings from '../components/FaceRecognitionSettings.vue'
 import Manage from '../components/Manage.vue'
@@ -12161,8 +12135,8 @@ onMounted(async () => {
   if (savedPage && savedPage !== 'dashboard') {
     const isAdmin = currentUser.value.isMaster || currentUser.value.role === 'admin'
     // Only restore pages the current role can actually access
-    const adminPages = ['manage', 'pending', 'attendance', 'contributions', 'settings', 'co-admins', 'raffle-tickets']
-    const studentPages = ['attendance', 'my-contributions', 'my-raffle']
+    const adminPages = ['manage', 'pending', 'attendance', 'contributions', 'settings', 'co-admins']
+    const studentPages = ['attendance', 'my-contributions']
     const allowed = isAdmin ? adminPages : studentPages
     if (allowed.includes(savedPage)) {
       currentPage.value = savedPage
