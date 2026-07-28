@@ -2568,15 +2568,17 @@ const SOM_Student = mongoose.model("SOM_Student", studentSchema, 'som_students')
 const CNAHS_Student = mongoose.model("CNAHS_Student", studentSchema, 'cnahs_students');
 
 // ── Google OAuth Strategy ──────────────────────────────────────────────────────
-// Short-lived exchange codes: after Google redirects back, the backend stores
-// auth data here for 60 s; the frontend POSTs the code back to get the token.
-const _googleCodes = new Map(); // code → { token, student, college, expires }
-setInterval(() => {
-    const now = Date.now();
-    for (const [k, v] of _googleCodes.entries()) {
-        if (v.expires < now) _googleCodes.delete(k);
-    }
-}, 60_000);
+// Short-lived exchange codes stored in MongoDB so they survive across
+// Vercel's stateless serverless function instances.
+const googleExchangeCodeSchema = new mongoose.Schema({
+    code:       { type: String, required: true, unique: true, index: true },
+    token:      { type: String, required: true },
+    student:    { type: Object, required: true },
+    college:    { type: String, required: true },
+    expires_at: { type: Date,   required: true },
+});
+googleExchangeCodeSchema.index({ expires_at: 1 }, { expireAfterSeconds: 0 });
+const GoogleExchangeCode = mongoose.model('GoogleExchangeCode', googleExchangeCodeSchema);
 
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.use(new GoogleStrategy({
@@ -4661,12 +4663,12 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
 
         // First try to find student in the CLAIMED college
         let student = await StudentModel.findOne({ student_id })
-            .select('-contributions -semester -full_name -school_year');
+            .select('-contributions -semester -school_year');
 
         // If not found in claimed college, check if they exist in the OTHER college
         if (!student) {
             const otherStudent = await OtherStudentModel.findOne({ student_id })
-                .select('-contributions -semester -full_name -school_year');
+                .select('-contributions -semester -school_year');
 
             if (otherStudent) {
                 // Student exists, but in the OTHER college - reject
@@ -8833,13 +8835,15 @@ app.get('/api/auth/callback/google', (req, res, next) => {
                 expires_at: expiresAt
             });
 
-            // Store data under a short-lived exchange code so the URL stays clean
+            // Store data under a short-lived exchange code so the URL stays clean.
+            // Uses MongoDB so it survives across Vercel's stateless function instances.
             const code = crypto.randomBytes(24).toString('hex');
-            _googleCodes.set(code, {
+            await GoogleExchangeCode.create({
+                code,
                 token,
                 student: student.toJSON(),
                 college,
-                expires: Date.now() + 60_000   // 60-second TTL
+                expires_at: new Date(Date.now() + 60_000), // 60-second TTL
             });
 
             res.redirect(`/?gc=${code}`);
@@ -8854,12 +8858,10 @@ app.get('/api/auth/callback/google', (req, res, next) => {
 app.post('/api/auth/google/exchange', (req, res) => {
     const { code } = req.body;
     if (!code) return res.status(400).json({ message: 'Missing code.' });
-    const data = _googleCodes.get(code);
-    if (!data || data.expires < Date.now()) {
-        _googleCodes.delete(code);
+    const data = await GoogleExchangeCode.findOneAndDelete({ code });
+    if (!data || data.expires_at < new Date()) {
         return res.status(400).json({ message: 'Invalid or expired login code. Please try again.' });
     }
-    _googleCodes.delete(code); // one-time use
     return res.json({ token: data.token, student: data.student, college: data.college });
 });
 
