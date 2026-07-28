@@ -910,10 +910,10 @@ app.post('/apis/admin/contributions', async (req, res) => {
 app.get('/apis/contributions/transparency', async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-        const students = await StudentModel.find({ "contributions.0": { $exists: true } }, 'full_name first_name last_name program year_level contributions');
+        const students = await StudentModel.find({ "contributions.0": { $exists: true } }, 'full_name last_name program year_level contributions');
 
         const allContributions = students.map(s => ({
-            name: s.full_name || `${s.first_name} ${s.last_name}`,
+            name: s.full_name || s.last_name,
             program: s.program,
             year_level: s.year_level,
             payments: s.contributions.map(c => ({
@@ -1023,7 +1023,7 @@ app.post('/apis/payments', auth, async (req, res) => {
                                 document: {
                                     student_id: student.student_id,
                                     student_id_number: student.student_id,
-                                    student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+                                    student_name: student.full_name || student.last_name,
                                     program: student.program,
                                     year_level: student.year_level,
                                     campaigns: [campaignEntry],
@@ -1428,7 +1428,7 @@ app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
             paymentRecord = new CollegePaymentRecordModel({
                 student_id: student.student_id,
                 student_id_number: student.student_id,
-                student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+                student_name: student.full_name || student.last_name,
                 program: student.program || '',
                 year_level: student.year_level || '',
                 campaigns: []
@@ -1437,7 +1437,7 @@ app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
             // Always update program and year_level to latest student info
             paymentRecord.program = student.program || paymentRecord.program || '';
             paymentRecord.year_level = student.year_level || paymentRecord.year_level || '';
-            paymentRecord.student_name = student.full_name || `${student.first_name} ${student.last_name}`;
+            paymentRecord.student_name = student.full_name || student.last_name;
         }
 
         // Check if campaign already exists
@@ -1446,7 +1446,7 @@ app.put('/apis/payments/:paymentId/mark-paid', auth, async (req, res) => {
         // If already paid, return error instead of overwriting
         if (campaignIndex >= 0 && paymentRecord.campaigns[campaignIndex].payment_status === 'paid') {
             return res.status(400).json({
-                message: `${student.first_name} ${student.last_name} is already marked as paid for this payment campaign`,
+                message: `${student.full_name || student.last_name} is already marked as paid for this payment campaign`,
                 alreadyPaid: true,
                 paidAt: paymentRecord.campaigns[campaignIndex].paid_at,
                 paidBy: paymentRecord.campaigns[campaignIndex].paid_by_treasurer
@@ -1544,7 +1544,7 @@ app.put('/apis/payments/:paymentId/mark-unpaid', auth, async (req, res) => {
         // Always update program and year_level to latest student info
         paymentRecord.program = student.program || paymentRecord.program || '';
         paymentRecord.year_level = student.year_level || paymentRecord.year_level || '';
-        paymentRecord.student_name = student.full_name || `${student.first_name} ${student.last_name}`;
+        paymentRecord.student_name = student.full_name || student.last_name;
 
         // Find and update campaign (defensive `?.toString()` in case payment_id is null)
         const campaignIndex = paymentRecord.campaigns.findIndex(
@@ -1933,7 +1933,7 @@ app.post('/apis/payments/:paymentId/sync-students', auth, async (req, res) => {
                 paymentRecord = new PaymentRecordModel({
                     student_id: student.student_id,
                     student_id_number: student.student_id,
-                    student_name: student.full_name || `${student.first_name} ${student.last_name}`,
+                    student_name: student.full_name || student.last_name,
                     program: student.program,
                     year_level: student.year_level,
                     campaigns: [{
@@ -2446,27 +2446,15 @@ const studentSchema = new mongoose.Schema({
     },
     rfid_verified_at: { type: Date, default: null },
     admin_verification_token: { type: String, default: null },
-    full_name: { type: String },
-    first_name: {
+    full_name: {
         type: String,
-        required: [true, "First name is required"],
+        required: [true, "Full name is required"],
         validate: {
             validator: function (v) {
-                return UPPERCASE_ONLY_REGEX.test(v) && v.length <= 64;
+                return UPPERCASE_ONLY_REGEX.test(v.trim()) && v.trim().length <= 128;
             },
-            message: "First name must be uppercase letters only and max 64 characters"
+            message: "Full name must be uppercase letters only and max 128 characters"
         }
-    },
-    middle_name: {
-        type: String,
-        validate: {
-            validator: function (v) {
-                if (!v || v === "") return true;
-                return UPPERCASE_ONLY_REGEX.test(v) && v.length <= 64;
-            },
-            message: "Middle name must be uppercase letters only and max 64 characters"
-        },
-        default: ""
     },
     last_name: {
         type: String,
@@ -2552,13 +2540,10 @@ const studentSchema = new mongoose.Schema({
     face_updated_at: { type: Date, default: null }
 });
 
-// Pre-save middleware to auto-generate full_name from parts
-// Use synchronous middleware (no `next`) to avoid runtime `next is not a function` errors
+// Pre-save middleware: ensure full_name is always set
 studentSchema.pre('save', function () {
     if (!this.full_name || this.full_name.trim() === '') {
-        const parts = [this.first_name, this.middle_name, this.last_name, this.suffix]
-            .filter(p => p && p.trim() !== '');
-        this.full_name = parts.join(' ').replace(/\s+/g, ' ').trim();
+        this.full_name = this.last_name || '';
     }
 });
 
@@ -3367,7 +3352,7 @@ app.get('/apis/students', auth, async (req, res) => {
 
         // Select only necessary fields to reduce payload size
         const students = await StudentModel.find({ status: 'approved' })
-            .select('student_id first_name middle_name last_name suffix full_name program year_level semester school_year photo email role rfid_status rfid_code created_date')
+            .select('student_id full_name last_name suffix program year_level semester school_year photo email role rfid_status rfid_code created_date')
             .skip(skip)
             .limit(limit)
             .sort({ created_date: -1 });
@@ -3466,7 +3451,7 @@ app.get('/apis/students/all-colleges', auth, async (req, res) => {
         for (const college of colleges) {
             const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
             const students = await StudentModel.find({ status: 'approved' })
-                .select('_id student_id first_name middle_name last_name suffix email program year_level role rfid_code rfid_status photo')
+                .select('_id student_id full_name last_name suffix email program year_level role rfid_code rfid_status photo')
                 .lean();
             students.forEach(s => { s.college = college; allStudents.push(s); });
         }
@@ -3482,16 +3467,14 @@ app.get('/apis/students/list/all', auth, async (req, res) => {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
         const students = await StudentModel.find({ status: 'approved' })
-            .select('student_id first_name middle_name last_name suffix program year_level photo email rfid_status rfid_code role college')
-            .sort({ first_name: 1, last_name: 1 });
+            .select('student_id full_name last_name suffix program year_level photo email rfid_status rfid_code role college')
+            .sort({ last_name: 1 });
 
         const formattedStudents = students.map(s => ({
             _id: s._id,
             student_id: s.student_id,
-            first_name: s.first_name || '',
-            middle_name: s.middle_name || '',
             last_name: s.last_name || '',
-            full_name: `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+            full_name: s.full_name || s.last_name || '',
             program: s.program || '',
             year_level: s.year_level || '',
             photo: s.photo || '',
@@ -3530,11 +3513,10 @@ app.post('/apis/students/search', auth, async (req, res) => {
             $or: [
                 { student_id: { $regex: escapedSearch, $options: 'i' } },
                 { rfid_code: { $regex: escapedSearch, $options: 'i' } },
-                { first_name: { $regex: escapedSearch, $options: 'i' } },
                 { last_name: { $regex: escapedSearch, $options: 'i' } },
                 { full_name: { $regex: escapedSearch, $options: 'i' } }
             ]
-        }).select('student_id first_name last_name middle_name suffix full_name program year_level email rfid_status role photo college');
+        }).select('student_id full_name last_name suffix program year_level email rfid_status role photo college');
 
         if (!student) {
             return res.status(404).json({
@@ -3576,8 +3558,6 @@ app.post('/apis/students/search-multi', auth, async (req, res) => {
                 $or: [
                     { student_id: { $regex: esc, $options: 'i' } },
                     { rfid_code: { $regex: esc, $options: 'i' } },
-                    { first_name: { $regex: esc, $options: 'i' } },
-                    { middle_name: { $regex: esc, $options: 'i' } },
                     { last_name: { $regex: esc, $options: 'i' } },
                     { full_name: { $regex: esc, $options: 'i' } }
                 ]
@@ -3590,8 +3570,6 @@ app.post('/apis/students/search-multi', auth, async (req, res) => {
                     const esc = escapeRegex(t);
                     return {
                         $or: [
-                            { first_name: { $regex: esc, $options: 'i' } },
-                            { middle_name: { $regex: esc, $options: 'i' } },
                             { last_name: { $regex: esc, $options: 'i' } },
                             { full_name: { $regex: esc, $options: 'i' } },
                             { student_id: { $regex: esc, $options: 'i' } }
@@ -3605,8 +3583,8 @@ app.post('/apis/students/search-multi', auth, async (req, res) => {
             status: 'approved',
             ...nameFilter
         })
-            .select('student_id first_name last_name middle_name suffix full_name program year_level email rfid_status role photo college')
-            .sort({ first_name: 1, last_name: 1 })
+            .select('student_id full_name last_name suffix program year_level email rfid_status role photo college')
+            .sort({ last_name: 1 })
             .limit(10)
             .lean();
 
@@ -3658,8 +3636,8 @@ app.get('/apis/students/search', studentSearchAuth, async (req, res) => {
                 const escapedSearch = escapeRegex(search.trim());
                 filter.$or = [
                     { student_id: { $regex: escapedSearch, $options: 'i' } },
-                    { first_name: { $regex: escapedSearch, $options: 'i' } },
                     { last_name: { $regex: escapedSearch, $options: 'i' } },
+                    { full_name: { $regex: escapedSearch, $options: 'i' } },
                     { email: { $regex: escapedSearch, $options: 'i' } },
                     { rfid_code: { $regex: escapedSearch, $options: 'i' } }
                 ];
@@ -3700,7 +3678,7 @@ app.get('/apis/students/search', studentSearchAuth, async (req, res) => {
 
         // Select only necessary fields to reduce payload size
         const students = await StudentModel.find(filter)
-            .select('student_id first_name middle_name last_name suffix full_name program year_level semester school_year photo email role rfid_status rfid_code created_date')
+            .select('student_id full_name last_name suffix program year_level semester school_year photo email role rfid_status rfid_code created_date')
             .skip(skip)
             .limit(limit)
             .sort({ created_date: -1 });
@@ -3751,7 +3729,7 @@ app.get('/apis/students/pending', auth, async (req, res) => {
 
         // Select only necessary fields to reduce payload size
         const students = await StudentModel.find({ status: 'pending' })
-            .select('student_id first_name middle_name last_name suffix full_name program year_level semester school_year photo email role rfid_status created_date')
+            .select('student_id full_name last_name suffix program year_level semester school_year photo email role rfid_status created_date')
             .skip(skip)
             .limit(limit)
             .sort({ created_date: -1 });
@@ -3941,21 +3919,14 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
             return res.status(400).json({ message: "Student ID must start with 10 to 30" });
         }
 
-        const firstNameValidation = validateName(data.first_name, "First name");
-        if (!firstNameValidation.valid) {
-            return res.status(400).json({ message: firstNameValidation.message });
+        const fullNameValidation = validateName(data.full_name, "Full name");
+        if (!fullNameValidation.valid) {
+            return res.status(400).json({ message: fullNameValidation.message });
         }
 
         const lastNameValidation = validateName(data.last_name, "Last name");
         if (!lastNameValidation.valid) {
             return res.status(400).json({ message: lastNameValidation.message });
-        }
-
-        if (data.middle_name && data.middle_name.trim() !== "") {
-            const middleNameValidation = validateName(data.middle_name, "Middle name");
-            if (!middleNameValidation.valid) {
-                return res.status(400).json({ message: middleNameValidation.message });
-            }
         }
 
         const suffixValidation = validateSuffix(data.suffix);
@@ -4001,16 +3972,11 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
         const code = generateVerificationCode();
         const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes instead of 10
 
-        const firstName = firstNameValidation.value;
-        const middleName = data.middle_name ? data.middle_name.toUpperCase().trim() : "";
+        const fullName = fullNameValidation.value;
         const lastName = lastNameValidation.value;
-
-        const fullName = `${firstName} ${middleName} ${lastName} ${suffixValidation.value}`.replace(/\s+/g, " ").trim();
 
         const studentData = {
             student_id: data.student_id,
-            first_name: firstName,
-            middle_name: middleName,
             last_name: lastName,
             suffix: suffixValidation.value,
             full_name: fullName,
@@ -4031,7 +3997,7 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
             expires_at: expiresAt
         });
 
-        await sendVerificationEmail(data.email, code, data.first_name);
+        await sendVerificationEmail(data.email, code, data.full_name);
 
         res.json({
             message: "Verification code sent to your email",
@@ -4124,14 +4090,14 @@ app.put('/apis/students/:student_id/approve', auth, requireCoAdminOrAbove, times
 
         if (student.email) {
             try {
-                await sendApprovalEmail(student.email, student.first_name, true);
+                await sendApprovalEmail(student.email, student.full_name, true);
             } catch (emailErr) {
                 console.error("Failed to send approval email:", emailErr);
             }
         }
 
         await logAudit(req.college, req.master, 'STUDENT_APPROVED', 'Student', student.student_id,
-            `${student.first_name} ${student.last_name}`.trim(),
+            student.full_name || student.last_name,
             { program: student.program, year_level: student.year_level });
         res.json({
             message: "Student approved successfully",
@@ -4157,7 +4123,7 @@ app.put('/apis/students/:student_id/reject', auth, requireCoAdminOrAbove, timest
 
         const studentInfo = {
             student_id: student.student_id,
-            first_name: student.first_name,
+            full_name: student.full_name,
             last_name: student.last_name,
             email: student.email,
             program: student.program,
@@ -4166,7 +4132,7 @@ app.put('/apis/students/:student_id/reject', auth, requireCoAdminOrAbove, timest
 
         if (student.email) {
             try {
-                await sendApprovalEmail(student.email, student.first_name, false, reason);
+                await sendApprovalEmail(student.email, student.full_name, false, reason);
             } catch (emailErr) {
                 console.error("Failed to send rejection email:", emailErr);
             }
@@ -4179,7 +4145,7 @@ app.put('/apis/students/:student_id/reject', auth, requireCoAdminOrAbove, timest
         await StudentModel.deleteOne({ _id: student._id });
 
         await logAudit(req.college, req.master, 'STUDENT_REJECTED', 'Student', studentInfo.student_id,
-            `${studentInfo.first_name} ${studentInfo.last_name}`.trim(),
+            studentInfo.full_name || studentInfo.last_name,
             { program: studentInfo.program, year_level: studentInfo.year_level, reason: reason || '' });
         res.json({
             message: "Student rejected and removed from database",
@@ -4243,7 +4209,7 @@ app.put('/apis/students/:student_id/rfid', auth, requireCoAdminOrAbove, timestam
             try {
                 await sendRFIDVerificationEmail(
                     updated.email,
-                    updated.first_name,
+                    updated.full_name,
                     rfid_code.trim(),
                     req.master.username
                 );
@@ -4255,7 +4221,7 @@ app.put('/apis/students/:student_id/rfid', auth, requireCoAdminOrAbove, timestam
         }
 
         await logAudit(req.college, req.master, 'STUDENT_RFID_UPDATED', 'Student', updated.student_id,
-            `${updated.first_name} ${updated.last_name}`.trim(),
+            updated.full_name || updated.last_name,
             { rfid_code: rfid_code.trim() });
         res.json({
             message: "RFID code assigned and verified successfully",
@@ -4276,7 +4242,7 @@ app.get('/apis/students/role-members', auth, requireCoAdminOrAbove, async (req, 
         const members = await StudentModel.find({
             status: 'approved',
             role: { $in: ['treasurer', 'co-admin'] }
-        }).select('student_id first_name last_name middle_name suffix photo role program year_level').sort({ role: 1, last_name: 1 });
+        }).select('student_id full_name last_name suffix photo role program year_level').sort({ role: 1, last_name: 1 });
         res.json({ members, college });
     } catch (err) {
         console.error('Error fetching role members:', err);
@@ -4317,7 +4283,7 @@ app.put('/apis/students/:student_id/role', auth, requireCoAdminOrAbove, timestam
         }
 
         await logAudit(req.college, req.master, 'STUDENT_ROLE_UPDATED', 'Student', updated.student_id,
-            updated.full_name || `${updated.first_name} ${updated.last_name}`.trim(),
+            updated.full_name || updated.last_name,
             { new_role: role });
         res.json({
             message: `Role updated to ${role} successfully`,
@@ -4473,20 +4439,12 @@ app.put('/apis/students/:student_id', auth, requireCoAdminOrAbove, timestampAuth
         delete updates.rfid_verified_at;
         delete updates.admin_verification_token;
 
-        if (updates.first_name) {
-            const validation = validateName(updates.first_name, "First name");
+        if (updates.full_name) {
+            const validation = validateName(updates.full_name, "Full name");
             if (!validation.valid) {
                 return res.status(400).json({ message: validation.message });
             }
-            updates.first_name = validation.value;
-        }
-
-        if (updates.middle_name && updates.middle_name.trim() !== "") {
-            const validation = validateName(updates.middle_name, "Middle name");
-            if (!validation.valid) {
-                return res.status(400).json({ message: validation.message });
-            }
-            updates.middle_name = validation.value;
+            updates.full_name = validation.value;
         }
 
         if (updates.last_name) {
@@ -4533,18 +4491,6 @@ app.put('/apis/students/:student_id', auth, requireCoAdminOrAbove, timestampAuth
             }
         }
 
-        if (updates.first_name || updates.middle_name !== undefined || updates.last_name || updates.suffix !== undefined) {
-            const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-            const currentStudent = await StudentModel.findOne({ student_id: req.params.student_id });
-            if (currentStudent) {
-                const first = updates.first_name || currentStudent.first_name || "";
-                const mid = updates.middle_name !== undefined ? updates.middle_name : (currentStudent.middle_name || "");
-                const last = updates.last_name || currentStudent.last_name || "";
-                const suf = updates.suffix !== undefined ? updates.suffix : (currentStudent.suffix || "");
-                updates.full_name = `${first} ${mid} ${last} ${suf}`.replace(/\s+/g, " ").trim();
-            }
-        }
-
         // Allow frontend to specify the original student id via header or body when renaming IDs.
         const originalIdHeader = req.headers['x-ssaam-original-student-id'] || req.body?.originalStudentId;
         const lookupId = originalIdHeader || req.params.student_id;
@@ -4571,7 +4517,7 @@ app.put('/apis/students/:student_id', auth, requireCoAdminOrAbove, timestampAuth
         if (!updated) return res.status(404).json({ message: "Student not found" });
 
         await logAudit(req.college, req.master, 'STUDENT_UPDATED', 'Student', updated.student_id,
-            updated.full_name || `${updated.first_name} ${updated.last_name}`.trim(),
+            updated.full_name || updated.last_name,
             { fields_changed: Object.keys(updates).join(', ') });
         res.json(updated);
     } catch (err) {
@@ -4607,7 +4553,7 @@ app.delete('/apis/students/:student_id', auth, requireCoAdminOrAbove, async (req
         );
 
         await logAudit(foundCollege, req.master, 'STUDENT_DELETED', 'Student', deleted.student_id,
-            deleted.full_name || `${deleted.first_name} ${deleted.last_name}`.trim(),
+            deleted.full_name || deleted.last_name,
             { program: deleted.program, year_level: deleted.year_level });
         res.json({ message: "Student deleted successfully." });
     } catch (err) {
@@ -6129,7 +6075,7 @@ app.post('/apis/password-reset/request', studentAuth, timestampAuth, async (req,
         });
 
         // Send email with plain code
-        await sendPasswordResetEmail(student.email, code, student.first_name);
+        await sendPasswordResetEmail(student.email, code, student.full_name || student.last_name);
 
         // Reset attempt counter on success
         passwordResetAttempts.set(rateLimitKey, { count: 0, lastAttempt: now });
@@ -6558,7 +6504,7 @@ app.get('/apis/attendance/events', auth, async (req, res) => {
             if (idsToFetch.size > 0) {
                 const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
                 const students = await StudentModel.find({ _id: { $in: Array.from(idsToFetch) } })
-                    .select('first_name middle_name last_name student_id program year_level photo full_name');
+                    .select('full_name last_name student_id program year_level photo');
                 const studentMap = {};
                 students.forEach(s => {
                     studentMap[s._id.toString()] = s;
@@ -6574,7 +6520,7 @@ app.get('/apis/attendance/events', auth, async (req, res) => {
                                 if (s) return {
                                     _id: s._id,
                                     student_id: s.student_id,
-                                    full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                    full_name: s.full_name || s.last_name || '',
                                     program: s.program || '',
                                     year_level: s.year_level || '',
                                     photo: s.photo || ''
@@ -6586,7 +6532,7 @@ app.get('/apis/attendance/events', auth, async (req, res) => {
                                 if (s) return {
                                     _id: s._id,
                                     student_id: s.student_id,
-                                    full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                    full_name: s.full_name || s.last_name || '',
                                     program: s.program || u.program || '',
                                     year_level: s.year_level || u.year_level || '',
                                     photo: s.photo || u.photo || ''
@@ -6694,7 +6640,7 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
             if (idsToFetch.size > 0) {
                 const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
                 const students = await StudentModel.find({ _id: { $in: Array.from(idsToFetch) } })
-                    .select('first_name middle_name last_name student_id program year_level photo full_name');
+                    .select('full_name last_name student_id program year_level photo');
                 const studentMap = {};
                 students.forEach(s => { studentMap[s._id.toString()] = s; });
 
@@ -6707,7 +6653,7 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
                                 if (s) return {
                                     _id: s._id,
                                     student_id: s.student_id,
-                                    full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                    full_name: s.full_name || s.last_name || '',
                                     program: s.program || '',
                                     year_level: s.year_level || '',
                                     photo: s.photo || ''
@@ -6719,7 +6665,7 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
                                 if (s) return {
                                     _id: s._id,
                                     student_id: s.student_id,
-                                    full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                    full_name: s.full_name || s.last_name || '',
                                     program: s.program || u.program || '',
                                     year_level: s.year_level || u.year_level || '',
                                     photo: s.photo || u.photo || ''
@@ -6763,7 +6709,7 @@ app.get('/apis/attendance/events/:id', auth, async (req, res) => {
                 if (idsToFetch.length > 0) {
                     const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
                     const students = await StudentModel.find({ _id: { $in: idsToFetch } })
-                        .select('first_name middle_name last_name student_id program year_level photo full_name');
+                        .select('full_name last_name student_id program year_level photo');
                     const studentMap = {};
                     students.forEach(s => { studentMap[s._id.toString()] = s; });
 
@@ -6774,7 +6720,7 @@ app.get('/apis/attendance/events/:id', auth, async (req, res) => {
                             if (s) return {
                                 _id: s._id,
                                 student_id: s.student_id,
-                                full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                full_name: s.full_name || s.last_name || '',
                                 program: s.program || '',
                                 year_level: s.year_level || '',
                                 photo: s.photo || ''
@@ -6786,7 +6732,7 @@ app.get('/apis/attendance/events/:id', auth, async (req, res) => {
                             if (s) return {
                                 _id: s._id,
                                 student_id: s.student_id,
-                                full_name: s.full_name || `${s.first_name || ''} ${s.middle_name || ''} ${s.last_name || ''}`.trim().toUpperCase(),
+                                full_name: s.full_name || s.last_name || '',
                                 program: s.program || u.program || '',
                                 year_level: s.year_level || u.year_level || '',
                                 photo: s.photo || u.photo || ''

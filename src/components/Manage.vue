@@ -306,7 +306,7 @@
               <!-- Name + ID -->
               <div class="flex-1 min-w-0">
                 <p class="text-sm font-semibold text-gray-900 truncate leading-tight">
-                  {{ (user.first_name || user.firstName) }} {{ (user.last_name || user.lastName) }}{{ user.suffix ? (' ' + user.suffix) : '' }}
+                  {{ user.full_name || user.first_name || user.firstName }}{{ user.suffix ? (' ' + user.suffix) : '' }}
                 </p>
                 <p class="text-xs text-gray-500 font-mono leading-tight mt-0.5">{{ user.student_id }}</p>
               </div>
@@ -464,7 +464,7 @@
               <span v-else>{{ getInitials(roleTargetStudent) }}</span>
             </div>
             <div class="flex-1 min-w-0">
-              <h4 class="font-bold text-gray-900 text-sm">{{ roleTargetStudent.first_name }} {{ roleTargetStudent.middle_name ? roleTargetStudent.middle_name + ' ' : '' }}{{ roleTargetStudent.last_name }}{{ roleTargetStudent.suffix ? ' ' + roleTargetStudent.suffix : '' }}</h4>
+              <h4 class="font-bold text-gray-900 text-sm">{{ roleTargetStudent.full_name || roleTargetStudent.last_name }}{{ roleTargetStudent.suffix ? ' ' + roleTargetStudent.suffix : '' }}</h4>
               <p class="text-xs text-gray-500">{{ roleTargetStudent.student_id }} · {{ roleTargetStudent.program }} – {{ roleTargetStudent.year_level }}</p>
               <div class="mt-1 flex items-center gap-1.5">
                 <span class="text-[10px] text-gray-400 font-medium">Current role:</span>
@@ -532,7 +532,7 @@
               <span v-else>{{ getInitials(r) }}</span>
             </div>
             <div class="min-w-0 flex-1">
-              <p class="text-sm font-bold text-gray-900 truncate">{{ r.first_name }} {{ r.last_name }}</p>
+              <p class="text-sm font-bold text-gray-900 truncate">{{ r.full_name || r.last_name }}</p>
               <p class="text-[11px] text-gray-500 truncate">{{ r.student_id }} · {{ r.program || '—' }} · {{ r.year_level || '—' }}</p>
             </div>
             <span :class="['px-2 py-0.5 rounded-full text-[10px] font-bold capitalize flex-shrink-0', r.role && r.role !== 'student' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600']">{{ r.role || 'student' }}</span>
@@ -612,12 +612,12 @@
                     :src="member.photo" class="w-full h-full object-cover"
                     @error="markPhotoFailed('inl-' + (member._id || member.student_id))" referrerpolicy="no-referrer" />
                   <div v-else class="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
-                    {{ (member.first_name || '?').charAt(0).toUpperCase() }}{{ (member.last_name || '').charAt(0).toUpperCase() }}
+                    {{ (member.full_name || member.last_name || '?').charAt(0).toUpperCase() }}
                   </div>
                 </div>
                 <div class="flex-1 min-w-0">
                   <p class="font-semibold text-gray-900 text-sm truncate">
-                    {{ member.first_name }} {{ member.middle_name ? member.middle_name.charAt(0) + '. ' : '' }}{{ member.last_name }}{{ member.suffix ? ' ' + member.suffix : '' }}
+                    {{ member.full_name || member.last_name }}{{ member.suffix ? ' ' + member.suffix : '' }}
                   </p>
                   <p class="text-xs text-gray-400 truncate">{{ member.student_id }} · {{ member.program }} – {{ member.year_level }}</p>
                 </div>
@@ -709,12 +709,12 @@
                       :src="member.photo" class="w-full h-full object-cover"
                       @error="markPhotoFailed('mem-' + (member._id || member.student_id))" referrerpolicy="no-referrer" />
                     <div v-else class="w-full h-full flex items-center justify-center text-xs font-bold text-gray-500">
-                      {{ (member.first_name || '?').charAt(0).toUpperCase() }}{{ (member.last_name || '').charAt(0).toUpperCase() }}
+                      {{ (member.full_name || member.last_name || '?').charAt(0).toUpperCase() }}
                     </div>
                   </div>
                   <div class="flex-1 min-w-0">
                     <p class="font-semibold text-gray-900 text-sm truncate leading-tight">
-                      {{ member.first_name }} {{ member.middle_name ? member.middle_name.charAt(0) + '. ' : '' }}{{ member.last_name }}{{ member.suffix ? ' ' + member.suffix : '' }}
+                      {{ member.full_name || member.last_name }}{{ member.suffix ? ' ' + member.suffix : '' }}
                     </p>
                     <p class="text-[11px] text-gray-400 truncate leading-tight">{{ member.student_id }} · {{ member.program }} – {{ member.year_level }}</p>
                   </div>
@@ -754,7 +754,7 @@
             <!-- Name + ID -->
             <div class="flex-1 min-w-0 pt-0.5">
               <h3 class="font-bold text-gray-900 text-lg leading-tight truncate">
-                {{ (viewingUser.first_name || viewingUser.firstName) }} {{ (viewingUser.last_name || viewingUser.lastName) }}{{ viewingUser.suffix ? ' ' + viewingUser.suffix : '' }}
+                {{ viewingUser.full_name || viewingUser.first_name || viewingUser.firstName }}{{ viewingUser.suffix ? ' ' + viewingUser.suffix : '' }}
               </h3>
               <p class="text-sm text-gray-400 font-mono mt-0.5 tracking-wide">{{ viewingUser.student_id }}</p>
               <!-- Badges -->
@@ -909,7 +909,7 @@
                   <img
                     v-if="editingUser.photo && !photoFailed['edit-' + (editingUser._id || editingUser.student_id)]"
                     :src="editingUser.photo"
-                    :alt="`${editingUser.first_name} ${editingUser.last_name}`"
+                    :alt="editingUser.full_name || editingUser.last_name || ''"
                     class="w-full h-full object-cover"
                     @error="markPhotoFailed('edit-' + (editingUser._id || editingUser.student_id))"
                     referrerpolicy="no-referrer"
@@ -959,20 +959,13 @@
               </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">First Name</label>
+                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Full Name</label>
                 <input 
-                  v-model="editingUser.first_name"
+                  v-model="editingUser.full_name"
                   type="text"
-                  :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
-                />
-              </div>
-              <div>
-                <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">Middle Name</label>
-                <input 
-                  v-model="editingUser.middle_name"
-                  type="text"
+                  placeholder="e.g. JUAN DELA CRUZ"
                   :class="['w-full px-3 py-2.5 border border-gray-200 rounded-xl outline-none text-sm bg-white', isCOE ? 'focus:ring-2 focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : isCNAHS ? 'focus:ring-2 focus:ring-green-600 focus:border-transparent' : 'focus:ring-2 focus:ring-blue-600 focus:border-transparent']"
                 />
               </div>
@@ -1091,7 +1084,7 @@
             </div>
             <h3 class="text-base font-bold text-gray-900 mb-1">Delete User</h3>
             <p class="text-sm text-gray-500 leading-relaxed">
-              Remove <span class="font-semibold text-gray-800">{{ (userToDelete.first_name || userToDelete.firstName) }} {{ (userToDelete.last_name || userToDelete.lastName) }}</span>? This cannot be undone.
+              Remove <span class="font-semibold text-gray-800">{{ userToDelete.full_name || userToDelete.first_name || userToDelete.firstName }}</span>? This cannot be undone.
             </p>
           </div>
           <div class="flex gap-2 px-6 pb-6">
@@ -1314,7 +1307,7 @@ export default {
       if (this.userSearchQuery.trim()) {
         const query = this.userSearchQuery.toLowerCase()
         filtered = filtered.filter(user => {
-          const fullName = `${(user.first_name || user.firstName) || ''} ${(user.last_name || user.lastName) || ''}`.toLowerCase()
+          const fullName = (user.full_name || user.first_name || user.firstName || '').toLowerCase()
           const studentId = (user.student_id || '').toLowerCase()
           const email = (user.email || '').toLowerCase()
           const rfid = (user.rfid_code || '').toLowerCase()
@@ -1508,9 +1501,9 @@ export default {
       })
     },
     getInitials(user) {
-      const firstName = user.first_name || user.firstName || ''
+      const name = user.full_name || user.first_name || user.firstName || ''
       const lastName = user.last_name || user.lastName || ''
-      return (firstName.charAt(0) + lastName.charAt(0)).toUpperCase()
+      return (name.charAt(0) + lastName.charAt(0)).toUpperCase()
     },
     getAutoVerificationStatus(user) {
       // Check RFID code first (primary source of truth)
@@ -1593,8 +1586,7 @@ export default {
       // Create a copy of the user to edit
       this.editingUser = {
         ...user,
-        first_name: user.first_name || user.firstName || '',
-        middle_name: user.middle_name || user.middleName || '',
+        full_name: user.full_name || user.first_name || user.firstName || '',
         last_name: user.last_name || user.lastName || '',
         suffix: user.suffix || '',
         originalStudentId: user.student_id || user.studentId // Preserve original ID for API calls
@@ -1703,8 +1695,7 @@ export default {
         
         // Prepare update data (without role - defaults to student)
         const updateData = {
-          first_name: this.editingUser.first_name,
-          middle_name: this.editingUser.middle_name,
+          full_name: this.editingUser.full_name,
           last_name: this.editingUser.last_name,
           suffix: this.editingUser.suffix,
           email: this.editingUser.email,
@@ -1825,14 +1816,14 @@ export default {
           const roleLabel = this.availableStudentRoles.find(r => r.value === this.selectedNewRole)?.label || this.selectedNewRole
           this.recentRoleAssignments.unshift({
             student_id: studentId,
-            name: `${this.roleTargetStudent.first_name} ${this.roleTargetStudent.last_name}`,
+            name: this.roleTargetStudent.full_name || this.roleTargetStudent.last_name,
             photo: this.roleTargetStudent.photo || '',
             role: this.selectedNewRole,
             time: new Date().toLocaleTimeString()
           })
           if (this.recentRoleAssignments.length > 10) this.recentRoleAssignments.pop()
           this.roleTargetStudent = { ...this.roleTargetStudent, role: this.selectedNewRole }
-          this.showNotification('success', 'Role Assigned', `${this.roleTargetStudent.first_name} is now a ${roleLabel}.`)
+          this.showNotification('success', 'Role Assigned', `${this.roleTargetStudent.full_name || this.roleTargetStudent.last_name} is now a ${roleLabel}.`)
           this.selectedNewRole = null
         } else {
           this.roleAssignError = data.message || 'Failed to assign role.'

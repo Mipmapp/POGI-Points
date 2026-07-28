@@ -1932,10 +1932,7 @@ const sendVerificationCode = async () => {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer SSAAMStudents'
       },
-      body: JSON.stringify({
-          ...formData,
-          first_name: formData.full_name
-        })
+      body: JSON.stringify(formData)
     })
 
     const data = await response.json()

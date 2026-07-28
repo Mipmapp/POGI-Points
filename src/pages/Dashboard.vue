@@ -1265,10 +1265,10 @@
                         <div v-for="student in group.students" :key="student.student_id" class="bg-white p-2 rounded border border-gray-200 flex items-center gap-3">
                           <div class="w-8 h-8 rounded-full bg-gradient-to-r from-ssaam-dark to-ssaam-light flex items-center justify-center text-white text-xs font-bold overflow-hidden flex-shrink-0">
                             <img v-if="student.photo" :src="student.photo" class="w-full h-full object-cover rounded-full" />
-                            <span v-else>{{ (student.first_name || '?').charAt(0) }}</span>
+                            <span v-else>{{ (student.full_name || student.last_name || '?').charAt(0) }}</span>
                           </div>
                           <div class="flex-1 min-w-0">
-                            <p class="font-medium text-gray-900 text-sm truncate">{{ student.first_name }} {{ student.last_name }}</p>
+                            <p class="font-medium text-gray-900 text-sm truncate">{{ student.full_name || student.last_name }}</p>
                             <p class="text-xs text-gray-500">ID: {{ student.student_id }} | {{ student.email }}</p>
                             <p v-if="student.rfid_code" class="text-xs text-blue-600">RFID: {{ student.rfid_code }}</p>
                           </div>
@@ -1330,10 +1330,10 @@
                       <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-r from-ssaam-dark to-ssaam-light flex items-center justify-center text-white text-sm font-bold overflow-hidden">
                           <img v-if="result.photo" :src="result.photo" class="w-full h-full object-cover rounded-full" />
-                          <span v-else>{{ (result.first_name || '?').charAt(0) }}</span>
+                          <span v-else>{{ (result.full_name || result.last_name || '?').charAt(0) }}</span>
                         </div>
                         <div class="flex-1 min-w-0">
-                          <p class="font-medium text-gray-900 truncate">{{ result.first_name }} {{ result.last_name }}</p>
+                          <p class="font-medium text-gray-900 truncate">{{ result.full_name || result.last_name }}</p>
                           <p class="text-xs text-gray-500">ID: {{ result.student_id }} | {{ result.program }} - {{ result.year_level }}</p>
                           <p class="text-xs text-gray-500">Email: {{ result.email }}</p>
                           <p v-if="result.rfid_code" class="text-xs text-blue-600">RFID: {{ result.rfid_code }}</p>
@@ -2949,7 +2949,7 @@
                 <div class="flex-1">
                   <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
                     <div>
-                      <h3 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ student.first_name }} {{ student.middle_name || '' }} {{ student.last_name }} {{ student.suffix || '' }}</h3>
+                      <h3 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ student.full_name || student.last_name }}{{ student.suffix ? ' ' + student.suffix : '' }}</h3>
                       <p class="text-sm text-gray-500">{{ student.student_id }}</p>
                     </div>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 w-fit">
@@ -3016,7 +3016,7 @@
         <div v-if="showRejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showRejectModal = false">
           <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
             <h3 class="text-xl font-bold text-red-600 mb-4">Reject Student Registration</h3>
-            <p class="text-gray-600 mb-4">Are you sure you want to reject <span class="font-semibold">{{ studentToReject?.first_name }} {{ studentToReject?.last_name }}</span>'s registration?</p>
+            <p class="text-gray-600 mb-4">Are you sure you want to reject <span class="font-semibold">{{ studentToReject?.full_name || studentToReject?.last_name }}</span>'s registration?</p>
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700 mb-2">Reason for rejection (optional)</label>
               <textarea v-model="rejectReason" placeholder="Enter a reason to include in the notification email..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none" rows="3"></textarea>
@@ -3894,8 +3894,7 @@
               <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Personal Information</h3>
               <div class="grid grid-cols-2 gap-3">
                 <div v-for="(val, label) in {
-                  'First Name': currentUser.firstName || currentUser.first_name,
-                  'Middle Name': currentUser.middleName || currentUser.middle_name || 'N/A',
+                  'Full Name': currentUser.firstName || currentUser.full_name,
                   'Last Name': currentUser.lastName || currentUser.last_name,
                   'Suffix': currentUser.suffix || 'N/A'
                 }" :key="label" class="space-y-0.5">
@@ -8007,7 +8006,7 @@ const confirmMarkPaymentAsPaid = async () => {
     
     const result = await response.json()
     if (response.ok) {
-      showNotification(`${selectedPaymentStudent.value.full_name || selectedPaymentStudent.value.first_name + ' ' + selectedPaymentStudent.value.last_name} marked as paid!`, 'success')
+      showNotification(`${selectedPaymentStudent.value.full_name || selectedPaymentStudent.value.last_name} marked as paid!`, 'success')
       clearPaymentStudent()
       await refreshContributions()
     } else {
@@ -8604,7 +8603,7 @@ const confirmDeletePaymentRecord = async () => {
       }).then(r => r.json())
       
       const student = students.data?.find(s => 
-        (s.full_name || `${s.first_name} ${s.last_name}`).toLowerCase() === record.name.toLowerCase()
+        (s.full_name || s.last_name || '').toLowerCase() === record.name.toLowerCase()
       )
       
       if (student) {
@@ -9969,8 +9968,8 @@ const exportToExcelByYear = async (event, yearLevel) => {
     }
     
     logs.sort((a, b) => {
-      const nameA = (a.student?.full_name || a.full_name || `${a.student?.first_name || ''} ${a.student?.last_name || ''}`).toLowerCase()
-      const nameB = (b.student?.full_name || b.full_name || `${b.student?.first_name || ''} ${b.student?.last_name || ''}`).toLowerCase()
+      const nameA = (a.student?.full_name || a.full_name || a.student?.last_name || '').toLowerCase()
+      const nameB = (b.student?.full_name || b.full_name || b.student?.last_name || '').toLowerCase()
       return nameA.localeCompare(nameB)
     })
     
@@ -10839,7 +10838,7 @@ const filteredPendingStudents = computed(() => {
   }
   const query = pendingSearchQuery.value.toLowerCase().trim()
   return pendingStudents.value.filter(student => {
-    const fullName = `${student.first_name || ''} ${student.middle_name || ''} ${student.last_name || ''} ${student.suffix || ''}`.toLowerCase()
+    const fullName = `${student.full_name || student.last_name || ''} ${student.suffix || ''}`.toLowerCase()
     const studentId = (student.student_id || '').toLowerCase()
     const email = (student.email || '').toLowerCase()
     const rfid = (student.rfid_code || '').toLowerCase()
@@ -10997,8 +10996,7 @@ const openCreateEventModalImpl = async () => {
           const mappedBatch = batch.map(s => ({
             ...s,
             studentId: s.student_id,
-            firstName: s.first_name,
-            middleName: s.middle_name || '',
+            firstName: s.full_name || s.first_name || '',
             lastName: s.last_name,
             yearLevel: s.year_level,
             rfidCode: s.rfid_code || 'N/A',
@@ -11198,7 +11196,7 @@ const fetchExcuseStudentOptions = async () => {
     })
     if (response.ok) {
       const data = await response.json()
-      excuseStudentOptions.value = (data.data || data || []).map(s => ({ _id: s._id || s.id, full_name: s.full_name || s.first_name + ' ' + (s.last_name||''), student_id: s.student_id }))
+      excuseStudentOptions.value = (data.data || data || []).map(s => ({ _id: s._id || s.id, full_name: s.full_name || s.last_name || '', student_id: s.student_id }))
       excuseStudentOptionsVisible.value = true
     }
   } catch (e) {
