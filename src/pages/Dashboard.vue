@@ -2171,27 +2171,28 @@
           </div>
 
           <!-- Student Attendance View -->
-          <div v-else class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <!-- Header -->
-            <div :class="['h-1', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-400' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-400' : isCNAHS ? 'bg-gradient-to-r from-green-600 to-green-400' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']"></div>
-            <div class="px-5 sm:px-7 py-5 flex items-center gap-4 border-b border-gray-100">
-              <div :class="['w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border',
-                isCOE ? 'bg-orange-50 border-orange-100 text-orange-500' : isSOM ? 'bg-green-50 border-green-100 text-green-500' : isCNAHS ? 'bg-green-50 border-green-100 text-green-600' : 'bg-blue-50 border-blue-100 text-blue-500']">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          <div v-else class="bg-white border border-[#e0e0e0] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.07)] overflow-hidden">
+            <!-- Fluent accent bar -->
+            <div :class="['h-0.5', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-[#0078d4]']"></div>
+            <!-- Command Bar -->
+            <div class="flex items-center gap-3 px-4 sm:px-6 h-14 border-b border-[#edebe9] bg-[#faf9f8]">
+              <div :class="['w-8 h-8 rounded flex items-center justify-center flex-shrink-0',
+                isCOE ? 'bg-orange-50 text-orange-500' : isSOM ? 'bg-green-50 text-green-600' : isCNAHS ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-[#0078d4]']">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
               </div>
               <div class="flex-1 min-w-0">
-                <h2 class="text-lg font-bold text-gray-900">My Attendance</h2>
-                <p class="text-xs text-gray-400 mt-0.5">Events &amp; sessions</p>
+                <p class="text-sm font-semibold text-[#201f1e] leading-tight">My Attendance</p>
+                <p class="text-xs text-[#605e5c] hidden sm:block">Events &amp; sessions</p>
               </div>
               <button @click="refreshAttendanceData" :disabled="attendanceLoading"
-                class="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors">
-                <svg :class="['w-3.5 h-3.5', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                Refresh
+                class="flex items-center gap-1.5 px-3 h-8 rounded text-xs font-medium text-[#605e5c] hover:bg-[#f3f2f1] active:bg-[#edebe9] transition-colors disabled:opacity-40 border border-transparent hover:border-[#e0e0e0] min-w-[44px] justify-center">
+                <svg :class="['w-3.5 h-3.5 flex-shrink-0', attendanceLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span class="hidden sm:inline">Refresh</span>
               </button>
             </div>
 
             <!-- Content -->
-            <div class="p-3 sm:p-4 md:p-5">
+            <div class="p-3 sm:p-4 md:p-5 bg-[#f3f2f1] space-y-0">
 
             <div v-if="attendanceLoading" class="flex items-center justify-center py-12">
               <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
@@ -2206,7 +2207,7 @@
             <div v-else class="space-y-6">
               <!-- Active Events Section - Social Media Style -->
               <div v-if="activeNonEndedEvents.length > 0">
-                <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-1 flex items-center gap-2">
+                <h3 class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider mb-2 flex items-center gap-2">
                   <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse flex-shrink-0"></span>
                   Active Events
                 </h3>
@@ -2385,7 +2386,7 @@
 
               <!-- Upcoming Events Section -->
               <div v-if="upcomingEvents.length > 0">
-                <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-1">
+                <h3 class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider mb-2">
                   Upcoming Events
                 </h3>
                 <div class="space-y-4">
@@ -2449,124 +2450,104 @@
 
               <!-- My Attendance Records Section - Enhanced with Expandable Event Folders -->
               <div v-if="myAttendanceRecords.length > 0">
-                <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3 px-1">My Attendance History</h3>
-                <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
+                <h3 class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider mb-2">My Attendance History</h3>
+                <div class="bg-white border border-[#e0e0e0] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden divide-y divide-[#edebe9]">
                   <div 
                     v-for="record in myAttendanceRecords" 
                     :key="record._id || record.event_id"
                   >
-                    <!-- Event Row - Clickable -->
+                    <!-- Event Row - ListItem style -->
                     <div 
                       @click="expandedAttendanceRecords[record.event_id] = !expandedAttendanceRecords[record.event_id]"
-                      class="px-5 py-4 cursor-pointer flex items-center justify-between gap-3 hover:bg-gray-50/70 transition-colors duration-150"
-                      :class="{ 'bg-gray-50/70': expandedAttendanceRecords[record.event_id] }"
+                      class="flex items-center gap-3 px-4 py-0 cursor-pointer hover:bg-[#f3f2f1] active:bg-[#edebe9] transition-colors duration-100 min-h-[52px]"
+                      :class="{ 'bg-[#f3f2f1]': expandedAttendanceRecords[record.event_id] }"
                     >
-                      <div class="flex items-center gap-3 flex-1 min-w-0">
+                      <div class="flex items-center gap-3 flex-1 min-w-0 py-3">
                         <!-- Icon -->
-                        <div :class="['w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 border transition-colors duration-200',
+                        <div :class="['w-8 h-8 rounded flex items-center justify-center flex-shrink-0 transition-colors duration-150',
                           expandedAttendanceRecords[record.event_id]
-                            ? (isCOE ? 'bg-orange-50 border-orange-100 text-orange-500' : isSOM ? 'bg-green-50 border-green-100 text-green-500' : isCNAHS ? 'bg-green-50 border-green-100 text-green-600' : 'bg-blue-50 border-blue-100 text-blue-500')
-                            : 'bg-gray-50 border-gray-100 text-gray-400']">
+                            ? (isCOE ? 'bg-orange-50 text-orange-500' : isSOM ? 'bg-green-50 text-green-600' : isCNAHS ? 'bg-green-50 text-green-700' : 'bg-blue-50 text-[#0078d4]')
+                            : 'bg-[#f3f2f1] text-[#605e5c]']">
                           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                         </div>
                         <!-- Event Info -->
                         <div class="flex-1 min-w-0">
-                          <h4 class="font-semibold text-gray-800 truncate text-sm">{{ record.event?.title || record.event_title || 'Event' }}</h4>
-                          <div class="flex items-center gap-2 mt-0.5 text-[11px] text-gray-400">
-                            <span>{{ record.event?.event_date ? formatEventDate(record.event.event_date) : '-' }}</span>
-                            <span v-if="record.sessions && record.sessions.length > 0">·</span>
-                            <span v-if="record.sessions && record.sessions.length > 0">
-                              {{ record.sessions.length }} session{{ record.sessions.length > 1 ? 's' : '' }}
-                            </span>
-                          </div>
+                          <p class="text-sm font-semibold text-[#201f1e] truncate leading-snug">{{ record.event?.title || record.event_title || 'Event' }}</p>
+                          <p class="text-xs text-[#605e5c] mt-0.5">
+                            {{ record.event?.event_date ? formatEventDate(record.event.event_date) : '-' }}
+                            <span v-if="record.sessions && record.sessions.length > 0"> · {{ record.sessions.length }} session{{ record.sessions.length > 1 ? 's' : '' }}</span>
+                          </p>
                         </div>
                       </div>
                       <!-- Status + chevron -->
                       <div class="flex items-center gap-2 flex-shrink-0">
-                        <span :class="['px-2.5 py-1 rounded-full text-[11px] font-semibold border', getOverallStatusClass(getSmartRecordStatus(record))]">
+                        <span :class="['px-2 py-0.5 rounded text-[11px] font-semibold', getOverallStatusClass(getSmartRecordStatus(record))]">
                           {{ getOverallStatusLabel(getSmartRecordStatus(record)) }}
                         </span>
-                        <svg :class="['w-3.5 h-3.5 text-gray-300 transition-transform duration-200', expandedAttendanceRecords[record.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        <svg :class="['w-3.5 h-3.5 text-[#a19f9d] transition-transform duration-150', expandedAttendanceRecords[record.event_id] ? 'rotate-90' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                       </div>
                     </div>
                     
                     <!-- Expanded Sessions Panel -->
                     <transition name="slide-fade">
-                      <div v-if="expandedAttendanceRecords[record.event_id]" :class="['border-t bg-gradient-to-b', isCOE ? 'border-orange-100 from-orange-50 to-white' : 'border-gray-100 from-blue-50 to-white']">
-                        <!-- Event Description if available -->
-                        <div v-if="record.event?.description" class="px-4 py-2 text-sm text-gray-600 border-b border-gray-100">
+                      <div v-if="expandedAttendanceRecords[record.event_id]" class="border-t border-[#edebe9] bg-[#faf9f8]">
+                        <!-- Event Description -->
+                        <div v-if="record.event?.description" class="px-4 py-2.5 text-xs text-[#605e5c] border-b border-[#edebe9]">
                           {{ record.event.description }}
                         </div>
-                        
                         <!-- Sessions List -->
-                        <div v-if="record.sessions && record.sessions.length > 0" class="p-4 space-y-3">
-                          <div 
-                            v-for="(sessionData, idx) in record.sessions" 
-                            :key="sessionData.session_id || idx"
-                            class="bg-gradient-to-br from-white to-gray-50 rounded-xl border-2 border-gray-100 p-4 shadow-sm hover:shadow-md transition-all"
-                          >
-                            <div class="flex flex-col gap-3">
-                              <!-- Session Header with Badge -->
-                              <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                                <!-- Session Badge and Info -->
-                                <div class="flex items-start gap-3 flex-1">
-                                  <div :class="['w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 shadow-md overflow-hidden', getSessionBadgeStyle(sessionData.session?.label).bgGradient]">
-                                    <img 
-                                      :src="getSessionBadgeStyle(sessionData.session?.label).icon" 
-                                      :alt="getSessionBadgeStyle(sessionData.session?.label).displayText"
-                                      :class="['w-11 h-11 object-contain', (sessionData.session?.label?.toLowerCase().includes('night') || sessionData.session?.label?.toLowerCase().includes('whole day')) ? 'mt-1' : '']"
-                                      style="filter: brightness(0) invert(1) drop-shadow(0 0 1px rgba(0,0,0,0.1)); mix-blend-mode: lighten;"
-                                    />
-                                  </div>
-                                  <div class="flex-1 min-w-0">
-                                    <div class="flex flex-wrap items-center gap-2 mb-1">
-                                      <h5 class="font-bold text-gray-900 text-sm">{{ getSessionBadgeStyle(sessionData.session?.label).displayText }}</h5>
-                                      <span :class="['px-2 py-0.5 rounded-full text-xs font-semibold', getSessionAttendanceClass(sessionData.attendance, sessionData.session, record.event)]">
-                                        {{ getSessionAttendanceLabel(sessionData.attendance, sessionData.session, record.event) }}
-                                      </span>
-                                    </div>
-                                    <p class="text-xs text-gray-600 font-medium">
-                                      {{ formatEventTime(sessionData.session?.start_time) }} - {{ formatEventTime(sessionData.session?.end_time) }}
-                                    </p>
-                                    <p v-if="sessionData.session?.start_time" class="text-xs text-orange-600 flex items-center gap-1 mt-1.5">
-                                      <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                      <span>Late after {{ calculateLateThreshold(sessionData.session.start_time, sessionData.session.late_timer_minutes || 60) }}</span>
-                                    </p>
-                                  </div>
+                        <div v-if="record.sessions && record.sessions.length > 0" class="p-3 space-y-2">
+                          <div v-for="(sessionData, idx) in record.sessions" :key="sessionData.session_id || idx"
+                            class="bg-white border border-[#e0e0e0] rounded-md overflow-hidden">
+                            <!-- Session header row -->
+                            <div class="flex flex-col sm:flex-row sm:items-center gap-2 px-3 py-2.5 border-b border-[#edebe9]">
+                              <div class="flex items-center gap-2.5 flex-1 min-w-0">
+                                <div :class="['w-8 h-8 rounded flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm', getSessionBadgeStyle(sessionData.session?.label).bgGradient]">
+                                  <img :src="getSessionBadgeStyle(sessionData.session?.label).icon"
+                                    :alt="getSessionBadgeStyle(sessionData.session?.label).displayText"
+                                    class="w-6 h-6 object-contain"
+                                    style="filter: brightness(0) invert(1);" />
+                                </div>
+                                <div class="min-w-0">
+                                  <p class="text-sm font-semibold text-[#201f1e]">{{ getSessionBadgeStyle(sessionData.session?.label).displayText }}</p>
+                                  <p class="text-xs text-[#605e5c]">{{ formatEventTime(sessionData.session?.start_time) }} – {{ formatEventTime(sessionData.session?.end_time) }}</p>
                                 </div>
                               </div>
-                              
-                              <!-- Check-in/Check-out Times Grid -->
-                              <div :class="['gap-3 text-sm', sessionData.session?.check_in_only ? 'grid grid-cols-1' : 'grid grid-cols-2']">
-                                <div class="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-3 border border-green-100">
-                                  <div class="flex items-center gap-2 text-green-700 mb-2">
-                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path></svg>
-                                    <span class="font-semibold text-xs">Check-in</span>
-                                    <span v-if="sessionData.session?.check_in_only" class="text-[10px] bg-blue-100 text-blue-700 rounded-full px-1.5 py-0.5 font-medium">Check-in Only</span>
-                                  </div>
-                                  <p class="font-bold text-lg text-green-800 tabular-nums">
-                                    {{ sessionData.attendance?.check_in_at ? new Date(sessionData.attendance.check_in_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
-                                  </p>
-                                </div>
-                                <div v-if="!sessionData.session?.check_in_only" class="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg p-3 border border-blue-100">
-                                  <div class="flex items-center gap-2 text-blue-700 mb-2">
-                                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                                    <span class="font-semibold text-xs">Check-out</span>
-                                  </div>
-                                  <p class="font-bold text-lg text-blue-800 tabular-nums">
-                                    {{ sessionData.attendance?.check_out_at ? new Date(sessionData.attendance.check_out_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
-                                  </p>
-                                </div>
+                              <div class="flex items-center gap-2 flex-shrink-0">
+                                <span :class="['px-2 py-0.5 rounded text-[11px] font-semibold', getSessionAttendanceClass(sessionData.attendance, sessionData.session, record.event)]">
+                                  {{ getSessionAttendanceLabel(sessionData.attendance, sessionData.session, record.event) }}
+                                </span>
+                                <span v-if="sessionData.session?.start_time" class="text-[10px] text-[#a19f9d]">
+                                  Late after {{ calculateLateThreshold(sessionData.session.start_time, sessionData.session.late_timer_minutes || 60) }}
+                                </span>
+                              </div>
+                            </div>
+                            <!-- Check-in / Check-out tiles -->
+                            <div :class="['grid divide-x divide-[#edebe9]', sessionData.session?.check_in_only ? 'grid-cols-1' : 'grid-cols-2']">
+                              <div class="px-3 py-2.5">
+                                <p class="text-[10px] font-semibold text-[#605e5c] uppercase tracking-wide mb-1 flex items-center gap-1">
+                                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/></svg>
+                                  Check-in
+                                  <span v-if="sessionData.session?.check_in_only" class="ml-1 text-[9px] bg-[#e8f0fb] text-[#0078d4] rounded px-1">Only</span>
+                                </p>
+                                <p class="text-base font-semibold text-[#201f1e] tabular-nums">
+                                  {{ sessionData.attendance?.check_in_at ? new Date(sessionData.attendance.check_in_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
+                                </p>
+                              </div>
+                              <div v-if="!sessionData.session?.check_in_only" class="px-3 py-2.5">
+                                <p class="text-[10px] font-semibold text-[#605e5c] uppercase tracking-wide mb-1 flex items-center gap-1">
+                                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                                  Check-out
+                                </p>
+                                <p class="text-base font-semibold text-[#201f1e] tabular-nums">
+                                  {{ sessionData.attendance?.check_out_at ? new Date(sessionData.attendance.check_out_at).toLocaleTimeString('en-PH', { hour: '2-digit', minute: '2-digit' }) : '--:--' }}
+                                </p>
                               </div>
                             </div>
                           </div>
                         </div>
-                        
-                        <!-- No Sessions Message -->
-                        <div v-else class="p-4 text-center text-sm text-gray-500">
-                          <svg class="w-8 h-8 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
-                          No session data available for this event.
-                        </div>
+                        <!-- No sessions -->
+                        <div v-else class="px-4 py-5 text-center text-xs text-[#a19f9d]">No session data available for this event.</div>
                       </div>
                     </transition>
                   </div>
@@ -4026,141 +4007,163 @@
         </div>
 
         <!-- My Contributions Page (Students) -->
-        <div v-if="currentPage === 'my-contributions' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-4">
-          <!-- Header -->
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div :class="['h-1', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-400' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-400' : isCNAHS ? 'bg-gradient-to-r from-green-600 to-green-400' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']"></div>
-            <div class="px-5 sm:px-7 py-5 flex items-center gap-4">
-              <div :class="['w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 border',
-                isCOE ? 'bg-orange-50 border-orange-100 text-orange-500' : isSOM ? 'bg-green-50 border-green-100 text-green-500' : isCNAHS ? 'bg-green-50 border-green-100 text-green-600' : 'bg-blue-50 border-blue-100 text-blue-500']">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <div v-if="currentPage === 'my-contributions' && currentUser.role !== 'admin' && !currentUser.isMaster" class="space-y-3">
+
+          <!-- Header / KPI card -->
+          <div class="bg-white border border-[#e0e0e0] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.07)] overflow-hidden">
+            <!-- Fluent accent strip -->
+            <div :class="['h-0.5', isCOE ? 'bg-orange-500' : isSOM ? 'bg-green-600' : isCNAHS ? 'bg-green-700' : 'bg-[#0078d4]']"></div>
+            <!-- Command bar -->
+            <div class="flex items-center gap-3 px-4 sm:px-6 h-14 border-b border-[#edebe9] bg-[#faf9f8]">
+              <div :class="['w-8 h-8 rounded flex items-center justify-center flex-shrink-0',
+                isCOE ? 'bg-orange-50 text-orange-500' : isSOM ? 'bg-green-50 text-green-600' : isCNAHS ? 'bg-green-50 text-green-700' : 'bg-[#e8f0fb] text-[#0078d4]']">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
               </div>
               <div class="flex-1 min-w-0">
-                <h2 class="text-lg font-bold text-gray-900">My Contributions</h2>
-                <p class="text-xs text-gray-400 mt-0.5">Track your contribution fees and payment status</p>
+                <p class="text-sm font-semibold text-[#201f1e] leading-tight">My Contributions</p>
+                <p class="text-xs text-[#605e5c] hidden sm:block">Track fees and payment status</p>
               </div>
             </div>
-            <!-- Summary stats -->
-            <div class="grid grid-cols-3 divide-x divide-gray-100 border-t border-gray-100">
-              <div class="px-4 py-4 text-center">
-                <p class="text-2xl font-bold text-gray-800">{{ myPayments.length }}</p>
-                <p class="text-[11px] text-gray-400 mt-0.5 font-medium">Total</p>
+            <!-- KPI tiles — stacks on very small screens -->
+            <div class="grid grid-cols-3 divide-x divide-[#edebe9]">
+              <div class="px-3 sm:px-6 py-4 sm:py-5 text-center">
+                <p class="text-2xl sm:text-3xl font-light text-[#201f1e] tabular-nums">{{ myPayments.length }}</p>
+                <p class="text-[11px] text-[#605e5c] mt-1 font-medium uppercase tracking-wide">Total</p>
               </div>
-              <div class="px-4 py-4 text-center">
-                <p class="text-2xl font-bold text-emerald-600">{{ myPayments.filter(p => p.is_paid).length }}</p>
-                <p class="text-[11px] text-gray-400 mt-0.5 font-medium">Paid</p>
+              <div class="px-3 sm:px-6 py-4 sm:py-5 text-center">
+                <p class="text-2xl sm:text-3xl font-light text-emerald-600 tabular-nums">{{ myPayments.filter(p => p.is_paid).length }}</p>
+                <p class="text-[11px] text-[#605e5c] mt-1 font-medium uppercase tracking-wide">Paid</p>
               </div>
-              <div class="px-4 py-4 text-center">
-                <p class="text-2xl font-bold text-red-500">{{ myPayments.filter(p => !p.is_paid).length }}</p>
-                <p class="text-[11px] text-gray-400 mt-0.5 font-medium">Outstanding</p>
+              <div class="px-3 sm:px-6 py-4 sm:py-5 text-center">
+                <p class="text-2xl sm:text-3xl font-light text-red-500 tabular-nums">{{ myPayments.filter(p => !p.is_paid).length }}</p>
+                <p class="text-[11px] text-[#605e5c] mt-1 font-medium uppercase tracking-wide">Outstanding</p>
               </div>
             </div>
           </div>
 
           <!-- Records Card -->
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-            <div class="flex items-center justify-between px-5 sm:px-7 py-4 border-b border-gray-100">
-              <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Payment Records</h3>
+          <div class="bg-white border border-[#e0e0e0] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.07)] overflow-hidden">
+            <!-- Section command bar -->
+            <div class="flex items-center justify-between px-4 sm:px-6 h-10 bg-[#faf9f8] border-b border-[#edebe9]">
+              <span class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider">Payment Records</span>
               <button @click="fetchMyPayments" :disabled="loadingMyPayments"
-                class="flex items-center gap-1.5 text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors">
-                <svg :class="['w-3.5 h-3.5', loadingMyPayments ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                Refresh
+                class="flex items-center gap-1.5 px-2.5 h-7 rounded text-xs font-medium text-[#605e5c] hover:bg-[#f3f2f1] active:bg-[#edebe9] transition-colors disabled:opacity-40 min-w-[44px] justify-center">
+                <svg :class="['w-3.5 h-3.5 flex-shrink-0', loadingMyPayments ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span class="hidden sm:inline">Refresh</span>
               </button>
             </div>
 
             <!-- Loading -->
             <div v-if="loadingMyPayments" class="flex items-center justify-center py-16">
-              <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-green-500' : 'text-blue-400']" fill="none" viewBox="0 0 24 24">
+              <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-green-500' : 'text-[#0078d4]']" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
               </svg>
             </div>
 
-            <!-- Empty -->
-            <div v-else-if="myPayments.length === 0" class="p-12 text-center">
-              <div :class="['w-16 h-16 mx-auto mb-4 rounded-full flex items-center justify-center', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
-                <svg :class="['w-8 h-8', isCOE ? 'text-orange-300' : isSOM ? 'text-green-300' : isCNAHS ? 'text-green-400' : 'text-blue-300']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            <!-- Empty state -->
+            <div v-else-if="myPayments.length === 0" class="px-6 py-14 flex flex-col items-center text-center">
+              <div class="w-12 h-12 rounded-lg flex items-center justify-center mb-4 bg-[#f3f2f1]">
+                <svg class="w-6 h-6 text-[#a19f9d]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
               </div>
-              <p class="text-base font-semibold text-gray-500">No contribution records yet</p>
-              <p class="text-sm text-gray-400 mt-1">Your payment records will appear here once fees are assigned by your college admin.</p>
+              <p class="text-sm font-semibold text-[#201f1e]">No contribution records yet</p>
+              <p class="text-xs text-[#605e5c] mt-1 max-w-xs">Your payment records will appear here once fees are assigned by your college admin.</p>
             </div>
 
-            <!-- Table -->
+            <!-- Records -->
             <div v-else>
-              <!-- Mobile card list (xs only) -->
-              <div class="block sm:hidden divide-y divide-gray-100">
-                <div v-for="record in myPayments.slice(0, myPaymentsLimit)" :key="record._id + '-m'" class="px-4 py-3 hover:bg-gray-50 transition-colors">
-                  <div class="flex items-start justify-between gap-2 mb-1.5">
-                    <p class="font-semibold text-sm text-gray-900 leading-tight flex-1">{{ record.title }}</p>
-                    <span :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold flex-shrink-0',
-                      record.is_paid ? 'bg-green-100 text-green-700' :
-                      record.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-red-100 text-red-700']">
-                      <svg v-if="record.is_paid" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+              <!-- Mobile: card list (xs) -->
+              <div class="block sm:hidden divide-y divide-[#edebe9]">
+                <div v-for="record in myPayments.slice(0, myPaymentsLimit)" :key="record._id + '-m'"
+                  class="px-4 py-3.5 hover:bg-[#f3f2f1] active:bg-[#edebe9] transition-colors">
+                  <!-- Title row -->
+                  <div class="flex items-start justify-between gap-2 mb-2">
+                    <p class="text-sm font-semibold text-[#201f1e] leading-snug flex-1">{{ record.title }}</p>
+                    <span :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold flex-shrink-0',
+                      record.is_paid ? 'bg-[#dff6dd] text-[#107c10]' :
+                      record.payment_status === 'pending' ? 'bg-[#fff4ce] text-[#986f0b]' :
+                      'bg-[#fde7e9] text-[#a4262c]']">
+                      <svg v-if="record.is_paid" class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                       {{ record.is_paid ? 'Paid' : record.payment_status === 'pending' ? 'Pending' : 'Unpaid' }}
                     </span>
                   </div>
+                  <!-- Amount + meta row -->
                   <div class="flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-3 min-w-0">
-                      <span :class="['text-sm font-bold', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-blue-700']">₱{{ Number(record.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
-                      <span v-if="record.is_paid && record.amount_paid" class="text-[10px] text-gray-400">Paid: ₱{{ Number(record.amount_paid).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span :class="['text-base font-semibold tabular-nums',
+                        isCOE ? 'text-orange-600' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-800' : 'text-[#0078d4]']">
+                        ₱{{ Number(record.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
+                      </span>
+                      <span v-if="record.is_paid && record.amount_paid" class="text-[10px] text-[#a19f9d] truncate">
+                        Paid ₱{{ Number(record.amount_paid).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
+                      </span>
                     </div>
-                    <span v-if="record.deadline" class="text-[10px] text-gray-400 flex-shrink-0">Due {{ new Date(record.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) }}</span>
+                    <span v-if="record.deadline" class="text-[10px] text-[#a19f9d] flex-shrink-0">
+                      Due {{ new Date(record.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric' }) }}
+                    </span>
                   </div>
-                  <p v-if="record.description" class="text-[11px] text-gray-400 mt-1 line-clamp-1">{{ record.description }}</p>
+                  <p v-if="record.description" class="text-xs text-[#605e5c] mt-1.5 line-clamp-1">{{ record.description }}</p>
                 </div>
               </div>
-              <!-- Desktop table (sm+) -->
+
+              <!-- Desktop: DataGrid table (sm+) -->
               <div class="hidden sm:block overflow-x-auto">
                 <table class="w-full text-sm">
                   <thead>
-                    <tr class="border-b border-gray-100">
-                      <th class="text-left px-5 sm:px-7 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Description</th>
-                      <th class="text-right px-5 sm:px-7 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Amount</th>
-                      <th class="text-center px-5 sm:px-7 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Status</th>
-                      <th class="text-right px-5 sm:px-7 py-3 text-[10px] font-bold text-gray-400 uppercase tracking-wider">Deadline</th>
+                    <tr class="border-b border-[#edebe9] bg-[#faf9f8]">
+                      <th class="text-left px-5 sm:px-7 py-2.5 text-[11px] font-semibold text-[#605e5c] uppercase tracking-wide">Description</th>
+                      <th class="text-right px-5 sm:px-7 py-2.5 text-[11px] font-semibold text-[#605e5c] uppercase tracking-wide">Amount</th>
+                      <th class="text-center px-5 sm:px-7 py-2.5 text-[11px] font-semibold text-[#605e5c] uppercase tracking-wide">Status</th>
+                      <th class="text-right px-5 sm:px-7 py-2.5 text-[11px] font-semibold text-[#605e5c] uppercase tracking-wide">Deadline</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-gray-50">
-                    <tr v-for="record in myPayments.slice(0, myPaymentsLimit)" :key="record._id" class="hover:bg-gray-50/60 transition-colors">
-                      <td class="px-5 sm:px-7 py-4">
-                        <p class="font-semibold text-gray-800">{{ record.title }}</p>
-                        <p v-if="record.description" class="text-xs text-gray-400 mt-0.5 line-clamp-1">{{ record.description }}</p>
+                  <tbody class="divide-y divide-[#edebe9]">
+                    <tr v-for="record in myPayments.slice(0, myPaymentsLimit)" :key="record._id"
+                      class="hover:bg-[#f3f2f1] transition-colors">
+                      <td class="px-5 sm:px-7 py-3.5">
+                        <p class="font-semibold text-[#201f1e]">{{ record.title }}</p>
+                        <p v-if="record.description" class="text-xs text-[#605e5c] mt-0.5 line-clamp-1">{{ record.description }}</p>
                       </td>
-                      <td class="px-5 sm:px-7 py-4 text-right">
-                        <span class="font-bold text-gray-800">₱{{ Number(record.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
-                        <p v-if="record.is_paid && record.amount_paid" class="text-[11px] text-gray-400 mt-0.5">Paid: ₱{{ Number(record.amount_paid).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</p>
+                      <td class="px-5 sm:px-7 py-3.5 text-right">
+                        <span class="font-semibold text-[#201f1e] tabular-nums">₱{{ Number(record.amount_due).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</span>
+                        <p v-if="record.is_paid && record.amount_paid" class="text-xs text-[#605e5c] mt-0.5 tabular-nums">Paid: ₱{{ Number(record.amount_paid).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}</p>
                       </td>
-                      <td class="px-5 sm:px-7 py-4 text-center">
-                        <span :class="['inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold',
-                          record.is_paid ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
-                          record.payment_status === 'pending' ? 'bg-amber-50 text-amber-700 border border-amber-100' :
-                          'bg-red-50 text-red-600 border border-red-100']">
+                      <td class="px-5 sm:px-7 py-3.5 text-center">
+                        <span :class="['inline-flex items-center gap-1 px-2.5 py-0.5 rounded text-[11px] font-semibold',
+                          record.is_paid ? 'bg-[#dff6dd] text-[#107c10]' :
+                          record.payment_status === 'pending' ? 'bg-[#fff4ce] text-[#986f0b]' :
+                          'bg-[#fde7e9] text-[#a4262c]']">
                           <svg v-if="record.is_paid" class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                           {{ record.is_paid ? 'Paid' : record.payment_status === 'pending' ? 'Pending' : 'Unpaid' }}
                         </span>
-                        <p v-if="record.is_paid && record.paid_date" class="text-[10px] text-gray-400 mt-1">{{ new Date(record.paid_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</p>
+                        <p v-if="record.is_paid && record.paid_date" class="text-[10px] text-[#a19f9d] mt-1">{{ new Date(record.paid_date).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</p>
                       </td>
-                      <td class="px-5 sm:px-7 py-4 text-right">
-                        <span v-if="record.deadline" class="text-xs text-gray-500">{{ new Date(record.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
-                        <span v-else class="text-xs text-gray-300">—</span>
+                      <td class="px-5 sm:px-7 py-3.5 text-right">
+                        <span v-if="record.deadline" class="text-xs text-[#605e5c]">{{ new Date(record.deadline).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) }}</span>
+                        <span v-else class="text-xs text-[#a19f9d]">—</span>
                       </td>
                     </tr>
                   </tbody>
                 </table>
               </div>
+
               <!-- Load More -->
-              <div v-if="myPayments.length > myPaymentsLimit" class="px-5 sm:px-7 py-3 border-t border-gray-100 text-center">
+              <div v-if="myPayments.length > myPaymentsLimit" class="px-5 sm:px-7 py-3 border-t border-[#edebe9] flex justify-center">
                 <button @click="myPaymentsLimit += 10"
-                  :class="['px-4 py-1.5 rounded-xl text-xs font-semibold border transition-all',
-                    isCOE ? 'bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-100' : isSOM ? 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100' : isCNAHS ? 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100' : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100']">
-                  Load More ({{ myPayments.length - myPaymentsLimit }} remaining)
+                  :class="['px-4 py-1.5 rounded text-xs font-semibold border transition-all min-h-[36px]',
+                    isCOE ? 'border-orange-200 text-orange-600 hover:bg-orange-50' :
+                    isSOM ? 'border-green-200 text-green-700 hover:bg-green-50' :
+                    isCNAHS ? 'border-green-200 text-green-700 hover:bg-green-50' :
+                    'border-[#c8c6c4] text-[#0078d4] hover:bg-[#e8f0fb]']">
+                  Show {{ Math.min(10, myPayments.length - myPaymentsLimit) }} more · {{ myPayments.length - myPaymentsLimit }} remaining
                 </button>
               </div>
-              <div class="px-5 sm:px-7 py-3 flex items-center justify-between border-t border-gray-100 bg-gray-50/50">
-                <span class="text-xs text-gray-400">{{ myPayments.filter(p => p.is_paid).length }} of {{ myPayments.length }} paid</span>
-                <span class="text-xs font-bold text-gray-700">
-                  Total: ₱{{ myPayments.reduce((s, p) => s + (p.amount_due || 0), 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
+
+              <!-- Footer summary -->
+              <div class="px-4 sm:px-7 py-3 flex items-center justify-between border-t border-[#edebe9] bg-[#faf9f8]">
+                <span class="text-xs text-[#605e5c]">{{ myPayments.filter(p => p.is_paid).length }} of {{ myPayments.length }} paid</span>
+                <span class="text-xs font-semibold text-[#201f1e] tabular-nums">
+                  Total ₱{{ myPayments.reduce((s, p) => s + (p.amount_due || 0), 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
                 </span>
               </div>
             </div>
