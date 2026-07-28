@@ -36,7 +36,7 @@
         <div class="grid grid-cols-4 gap-2 sm:hidden">
           <button
             @click="showCreateEventModal = true"
-            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-[#0078d4] text-white active:opacity-80 transition-all min-h-[60px]"
+            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white active:opacity-80 transition-all min-h-[60px]"
           >
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             <span class="text-[10px] font-semibold leading-tight text-center">Create Event</span>
@@ -44,62 +44,62 @@
           <button
             @click="downloadPaymentExcel"
             :disabled="isDownloading"
-            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-white border border-[#e0e0e0] text-[#201f1e] active:bg-[#f3f2f1] transition-all disabled:opacity-50 min-h-[60px]"
+            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 active:bg-gray-50 transition-all disabled:opacity-50 min-h-[60px]"
           >
-            <svg v-if="isDownloading" class="w-5 h-5 animate-spin text-[#605e5c]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            <svg v-if="isDownloading" class="w-5 h-5 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
             <svg v-else class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-            <span class="text-[10px] font-semibold leading-tight text-center text-[#605e5c]">{{ isDownloading ? 'Loading…' : 'Export' }}</span>
+            <span class="text-[10px] font-semibold leading-tight text-center text-gray-600">{{ isDownloading ? 'Loading…' : 'Export' }}</span>
           </button>
           <button
             @click="openReportConfig"
             :disabled="isGeneratingReport || paymentEvents.length === 0"
-            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-white border border-[#e0e0e0] text-[#201f1e] active:bg-[#f3f2f1] transition-all disabled:opacity-50 min-h-[60px]"
+            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 active:bg-gray-50 transition-all disabled:opacity-50 min-h-[60px]"
           >
-            <svg v-if="isGeneratingReport" class="w-5 h-5 animate-spin text-[#605e5c]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-            <svg v-else class="w-5 h-5 text-[#0078d4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-            <span class="text-[10px] font-semibold leading-tight text-center text-[#605e5c]">{{ isGeneratingReport ? 'Loading…' : 'Report' }}</span>
+            <svg v-if="isGeneratingReport" class="w-5 h-5 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            <svg v-else class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span class="text-[10px] font-semibold leading-tight text-center text-gray-600">{{ isGeneratingReport ? 'Loading…' : 'Report' }}</span>
           </button>
           <button
             @click="showExportHistory = true"
-            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-white border border-[#e0e0e0] text-[#201f1e] active:bg-[#f3f2f1] transition-all min-h-[60px]"
+            class="flex flex-col items-center justify-center gap-1.5 py-3 rounded-lg bg-white border border-gray-200 text-gray-700 active:bg-gray-50 transition-all min-h-[60px]"
           >
-            <svg class="w-5 h-5 text-[#605e5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span class="text-[10px] font-semibold leading-tight text-center text-[#605e5c]">History</span>
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="text-[10px] font-semibold leading-tight text-center text-gray-600">History</span>
           </button>
         </div>
 
-        <!-- Desktop: Fluent command bar buttons -->
+        <!-- Desktop: action buttons matching attendance style -->
         <div class="hidden sm:flex items-center gap-2 flex-wrap">
           <button
             @click="showCreateEventModal = true"
-            class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-[#0078d4] text-white rounded text-sm font-semibold hover:bg-[#106ebe] transition-colors active:opacity-80 min-h-[34px]"
+            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 text-white text-xs font-semibold hover:from-blue-700 hover:to-blue-800 transition-all active:opacity-80"
           >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Create Event
           </button>
           <button
             @click="downloadPaymentExcel"
             :disabled="isDownloading"
-            class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[#e0e0e0] text-[#201f1e] rounded text-sm font-semibold hover:bg-[#f3f2f1] transition-colors disabled:opacity-50 active:bg-[#edebe9] min-h-[34px]"
+            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-50 transition-all disabled:opacity-50 active:bg-gray-100"
           >
-            <svg v-if="isDownloading" class="w-4 h-4 animate-spin text-[#605e5c]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <svg v-else class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            <svg v-if="isDownloading" class="w-3.5 h-3.5 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-3.5 h-3.5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
             {{ isDownloading ? 'Preparing...' : 'Export Excel' }}
           </button>
           <button
             @click="openReportConfig"
             :disabled="isGeneratingReport || paymentEvents.length === 0"
-            class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[#e0e0e0] text-[#201f1e] rounded text-sm font-semibold hover:bg-[#f3f2f1] transition-colors disabled:opacity-50 active:bg-[#edebe9] min-h-[34px]"
+            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-50 transition-all disabled:opacity-50 active:bg-gray-100"
           >
-            <svg v-if="isGeneratingReport" class="w-4 h-4 animate-spin text-[#605e5c]" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-            <svg v-else class="w-4 h-4 text-[#0078d4]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <svg v-if="isGeneratingReport" class="w-3.5 h-3.5 animate-spin text-gray-400" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+            <svg v-else class="w-3.5 h-3.5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             {{ isGeneratingReport ? 'Generating...' : 'Generate Report' }}
           </button>
           <button
             @click="showExportHistory = true"
-            class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white border border-[#e0e0e0] text-[#201f1e] rounded text-sm font-semibold hover:bg-[#f3f2f1] transition-colors active:bg-[#edebe9] min-h-[34px]"
+            class="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-700 text-xs font-semibold hover:bg-gray-50 transition-all active:bg-gray-100"
           >
-            <svg class="w-4 h-4 text-[#605e5c]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <svg class="w-3.5 h-3.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
             Export History
           </button>
         </div>
@@ -191,7 +191,7 @@
             <button
               @click="prevCarousel"
               :disabled="displayedEvents.length <= 1"
-              class="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded bg-white border border-[#e0e0e0] shadow-sm items-center justify-center text-[#605e5c] hover:text-[#0078d4] hover:border-[#0078d4] transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed"
+              class="hidden sm:flex absolute left-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-lg bg-white border border-gray-200 shadow-sm items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-400 transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
             </button>
@@ -200,7 +200,7 @@
             <button
               @click="nextCarousel"
               :disabled="displayedEvents.length <= 1"
-              class="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded bg-white border border-[#e0e0e0] shadow-sm items-center justify-center text-[#605e5c] hover:text-[#0078d4] hover:border-[#0078d4] transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed"
+              class="hidden sm:flex absolute right-2 top-1/2 -translate-y-1/2 z-30 w-9 h-9 rounded-lg bg-white border border-gray-200 shadow-sm items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-400 transition-all duration-150 disabled:opacity-20 disabled:cursor-not-allowed"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
             </button>
@@ -215,10 +215,10 @@
             >
               <!-- Inner card -->
               <div
-                :class="['rounded-lg overflow-hidden border shadow-[0_1px_6px_rgba(0,0,0,0.08)] transition-shadow duration-300',
+                :class="['rounded-2xl overflow-hidden border shadow-sm hover:shadow-md transition-shadow duration-300',
                   activePayment && activePayment._id === event._id
-                    ? 'border-[#0078d4] shadow-[0_2px_8px_rgba(0,120,212,0.15)]'
-                    : 'border-[#e0e0e0]']"
+                    ? 'border-blue-400 shadow-[0_2px_8px_rgba(59,130,246,0.2)]'
+                    : 'border-blue-100']"
               >
                 <!-- White header -->
                 <div class="relative px-4 pt-4 pb-3 bg-white border-b border-[#edebe9]">
@@ -240,16 +240,7 @@
                     </span>
                     <!-- Edit / Delete — only on center card -->
                     <template v-if="idx === carouselIndex">
-                      <div class="ml-auto flex items-center gap-1">
-                        <button @click.stop="openEditEvent(event)"
-                          class="w-7 h-7 rounded flex items-center justify-center text-[#605e5c] hover:bg-[#f3f2f1] transition-colors" title="Edit">
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 012.828 0l.172.172a2 2 0 010 2.828L12 15.414 9 16l.586-3z"/></svg>
-                        </button>
-                        <button @click.stop="confirmDeleteEvent(event)"
-                          class="w-7 h-7 rounded flex items-center justify-center text-[#605e5c] hover:bg-[#fde7e9] hover:text-[#a4262c] transition-colors" title="Delete">
-                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                        </button>
-                      </div>
+                      <div class="ml-auto flex items-center gap-1"></div>
                     </template>
                   </div>
 
@@ -293,10 +284,10 @@
                     v-if="idx === carouselIndex"
                     @click.stop="selectEvent(event)"
                     :disabled="!!(activePayment && activePayment._id === event._id)"
-                    :class="['w-full py-2 rounded text-sm font-semibold transition-all duration-150 active:scale-[0.98] min-h-[36px]',
+                    :class="['w-full py-2 rounded-2xl text-sm font-semibold transition-all duration-150 active:scale-[0.98] min-h-[36px]',
                       activePayment && activePayment._id === event._id
-                        ? 'bg-[#dff6dd] text-[#107c10] cursor-default'
-                        : 'bg-[#0078d4] text-white hover:bg-[#106ebe] shadow-sm']"
+                        ? 'bg-emerald-50 text-emerald-700 cursor-default border border-emerald-200'
+                        : 'bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 shadow-sm']"
                   >
                     <span v-if="activePayment && activePayment._id === event._id" class="flex items-center justify-center gap-2">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
@@ -314,6 +305,18 @@
                     <span v-else class="text-[11px] text-gray-400 italic">All students</span>
                   </div>
                 </div>
+
+                <!-- Action buttons row — only on center card, matching attendance style -->
+                <div v-if="idx === carouselIndex" class="flex items-center gap-1.5 px-4 py-2.5 border-t border-blue-50 bg-blue-50/40" @click.stop>
+                  <button @click.stop="openEditEvent(event)" class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-amber-50 text-amber-700 hover:bg-amber-100 active:scale-95 transition text-xs font-semibold">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    <span>Edit</span>
+                  </button>
+                  <button @click.stop="confirmDeleteEvent(event)" class="flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 active:scale-95 transition text-xs font-semibold">
+                    <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                    <span>Delete</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -323,16 +326,16 @@
             <button
               @click="prevCarousel"
               :disabled="displayedEvents.length <= 1"
-              class="flex items-center gap-1.5 px-4 py-2 rounded bg-white border border-[#e0e0e0] text-[#605e5c] text-xs font-semibold hover:text-[#0078d4] hover:border-[#0078d4] transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 min-h-[36px]"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-600 text-xs font-semibold hover:text-blue-600 hover:border-blue-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
               Prev
             </button>
-            <span class="text-xs text-[#605e5c] font-medium">{{ carouselIndex + 1 }} / {{ displayedEvents.length }}</span>
+            <span class="text-xs text-gray-500 font-medium">{{ carouselIndex + 1 }} / {{ displayedEvents.length }}</span>
             <button
               @click="nextCarousel"
               :disabled="displayedEvents.length <= 1"
-              class="flex items-center gap-1.5 px-4 py-2 rounded bg-white border border-[#e0e0e0] text-[#605e5c] text-xs font-semibold hover:text-[#0078d4] hover:border-[#0078d4] transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 min-h-[36px]"
+              class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-gray-200 text-gray-600 text-xs font-semibold hover:text-blue-600 hover:border-blue-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed active:scale-95"
             >
               Next
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
@@ -345,10 +348,10 @@
               v-for="(event, idx) in displayedEvents"
               :key="event._id"
               @click="carouselIndex = idx"
-              :class="['rounded-full transition-all duration-300', idx === carouselIndex ? 'w-7 h-2 bg-[#0078d4]' : 'w-2 h-2 bg-[#c8c6c4] hover:bg-[#0078d4]/50']"
+              :class="['rounded-full transition-all duration-300', idx === carouselIndex ? 'w-7 h-2 bg-blue-600' : 'w-2 h-2 bg-gray-300 hover:bg-blue-400/60']"
             ></button>
           </div>
-          <p class="text-xs text-[#605e5c] font-medium">{{ carouselIndex + 1 }} of {{ displayedEvents.length }} event{{ displayedEvents.length === 1 ? '' : 's' }}</p>
+          <p class="text-xs text-gray-500 font-medium">{{ carouselIndex + 1 }} of {{ displayedEvents.length }} event{{ displayedEvents.length === 1 ? '' : 's' }}</p>
         </div>
       </div>
 
