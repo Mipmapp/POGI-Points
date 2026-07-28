@@ -3846,7 +3846,9 @@
                       <p :class="['text-[10px] font-semibold uppercase tracking-widest mb-0.5', isCOE ? 'text-orange-400' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-400']">
                         ID {{ currentUser.studentId || currentUser.student_id }}
                       </p>
-                      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-tight">{{ displayName }}</h1>
+                      <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-tight break-words">
+                        <span :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']">{{ displayName.split(' ')[0] }}</span>{{ displayName.includes(' ') ? ' ' + displayName.split(' ').slice(1).join(' ') : '' }}
+                      </h1>
                     </div>
                     <!-- Mobile refresh button -->
                     <button
@@ -3892,14 +3894,22 @@
             <!-- Personal Information -->
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
               <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Personal Information</h3>
-              <div class="grid grid-cols-2 gap-3">
-                <div v-for="(val, label) in {
-                  'Full Name': currentUser.fullName || currentUser.full_name,
-                  'Last Name': currentUser.lastName || currentUser.last_name,
-                  'Suffix': currentUser.suffix || 'N/A'
-                }" :key="label" class="space-y-0.5">
-                  <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{{ label }}</p>
-                  <p class="text-sm font-semibold text-gray-800 truncate">{{ val }}</p>
+              <div class="space-y-3">
+                <!-- Full Name — full width so long names never truncate -->
+                <div class="space-y-0.5">
+                  <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Full Name</p>
+                  <p class="text-sm font-semibold text-gray-800 break-words leading-snug">{{ currentUser.fullName || currentUser.full_name || '—' }}</p>
+                </div>
+                <!-- Last Name + Suffix side by side -->
+                <div class="grid grid-cols-2 gap-3">
+                  <div class="space-y-0.5">
+                    <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Last Name</p>
+                    <p class="text-sm font-semibold text-gray-800 break-words">{{ currentUser.lastName || currentUser.last_name || '—' }}</p>
+                  </div>
+                  <div class="space-y-0.5">
+                    <p class="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Suffix</p>
+                    <p class="text-sm font-semibold text-gray-800">{{ currentUser.suffix || 'N/A' }}</p>
+                  </div>
                 </div>
               </div>
             </div>

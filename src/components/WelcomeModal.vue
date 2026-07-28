@@ -8,33 +8,33 @@
       <div class="welcome-card bg-white w-full sm:max-w-xl sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl flex flex-col" style="max-height: 92vh;">
 
         <!-- Banner image -->
-        <div class="flex-shrink-0 relative overflow-hidden" style="height: 180px;">
+        <div class="flex-shrink-0 relative overflow-hidden" style="height: 100px;">
           <img :src="ssaamBanner" alt="SSAAM Banner" class="tc-kenburns w-full h-full object-cover object-center" />
           <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60"></div>
-          <div class="absolute bottom-3 left-4 flex items-center gap-2">
-            <img :src="ccsLogo" alt="CCS Logo" class="w-8 h-8 object-contain drop-shadow-lg" />
+          <div class="absolute bottom-2 left-3 flex items-center gap-1.5">
+            <img :src="ccsLogo" alt="CCS Logo" class="w-6 h-6 object-contain drop-shadow-lg" />
             <div class="leading-tight">
-              <p class="text-white/80 text-[9px] uppercase tracking-widest font-bold">SSAAM — CCS</p>
-              <p class="text-white text-sm font-extrabold tracking-tight leading-none">Terms &amp; Conditions</p>
+              <p class="text-white/80 text-[8px] uppercase tracking-widest font-bold">SSAAM — CCS</p>
+              <p class="text-white text-xs font-extrabold tracking-tight leading-none">Terms &amp; Conditions</p>
             </div>
           </div>
         </div>
 
         <!-- Header -->
-        <div class="flex-shrink-0 bg-gradient-to-br from-[#080e2e] via-[#0f2080] to-[#1a4abf] px-5 py-4">
-          <div class="flex items-center gap-3 mb-3">
-            <div class="w-10 h-10 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <div class="flex-shrink-0 bg-gradient-to-br from-[#080e2e] via-[#0f2080] to-[#1a4abf] px-4 py-2.5">
+          <div class="flex items-center gap-2.5 mb-1.5">
+            <div class="w-8 h-8 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center flex-shrink-0">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
             </div>
             <div>
-              <p class="text-white/50 text-[10px] font-bold uppercase tracking-widest leading-none mb-0.5">SSAAM — CCS</p>
-              <h2 class="text-white text-lg font-extrabold leading-tight tracking-tight">Terms &amp; Conditions</h2>
+              <p class="text-white/50 text-[9px] font-bold uppercase tracking-widest leading-none mb-0.5">SSAAM — CCS</p>
+              <h2 class="text-white text-sm font-extrabold leading-tight tracking-tight">Terms &amp; Conditions</h2>
             </div>
           </div>
-          <p class="text-white/60 text-xs leading-relaxed">
-            Please read through all sections carefully before continuing. Scroll to the bottom to accept.
+          <p class="text-white/60 text-[11px] leading-snug">
+            Read all sections carefully before continuing. Scroll to the bottom to accept.
           </p>
         </div>
 
@@ -44,40 +44,40 @@
           class="flex-1 overflow-y-auto welcome-scroll bg-gray-50 overscroll-contain"
           @scroll="onScroll"
         >
-          <div class="p-5 space-y-6">
+          <div class="p-3 space-y-3">
 
             <div
               v-for="(section, idx) in tcSections"
               :key="idx"
-              class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden"
+              class="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden"
             >
               <!-- Section header -->
-              <div :class="['flex items-center gap-3 px-5 py-4 border-b border-gray-100', section.headerBg]">
-                <div :class="['w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-black shadow-sm', section.color]">
+              <div :class="['flex items-center gap-2.5 px-3 py-2.5 border-b border-gray-100', section.headerBg]">
+                <div :class="['w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 text-white text-[10px] font-black shadow-sm', section.color]">
                   {{ idx + 1 }}
                 </div>
-                <h3 :class="['font-bold text-sm leading-tight', section.titleColor]">{{ section.title }}</h3>
+                <h3 :class="['font-bold text-xs leading-tight', section.titleColor]">{{ section.title }}</h3>
               </div>
 
               <!-- Section body -->
-              <div class="px-5 py-4 space-y-3">
+              <div class="px-3 py-2.5 space-y-2">
                 <div
                   v-for="(point, pi) in section.points"
                   :key="pi"
-                  class="flex gap-3"
+                  class="flex gap-2"
                 >
-                  <span :class="['flex-shrink-0 mt-[5px] w-2 h-2 rounded-full', section.dot]"></span>
-                  <p class="text-sm text-gray-700 leading-relaxed">{{ point }}</p>
+                  <span :class="['flex-shrink-0 mt-[5px] w-1.5 h-1.5 rounded-full', section.dot]"></span>
+                  <p class="text-[11px] text-gray-700 leading-relaxed">{{ point }}</p>
                 </div>
               </div>
             </div>
 
             <!-- End marker -->
-            <div class="text-center py-2">
-              <span class="inline-flex items-center gap-2 text-xs text-gray-400 font-medium">
-                <span class="w-8 h-px bg-gray-200 inline-block"></span>
+            <div class="text-center py-1">
+              <span class="inline-flex items-center gap-2 text-[10px] text-gray-400 font-medium">
+                <span class="w-6 h-px bg-gray-200 inline-block"></span>
                 End of Terms &amp; Conditions
-                <span class="w-8 h-px bg-gray-200 inline-block"></span>
+                <span class="w-6 h-px bg-gray-200 inline-block"></span>
               </span>
             </div>
           </div>
@@ -87,26 +87,26 @@
         <Transition name="hint-fade">
           <div
             v-if="!hasScrolledToBottom"
-            class="flex-shrink-0 flex items-center justify-center gap-1.5 py-2 bg-blue-50 border-t border-blue-100 cursor-pointer select-none"
+            class="flex-shrink-0 flex items-center justify-center gap-1.5 py-1.5 bg-blue-50 border-t border-blue-100 cursor-pointer select-none"
             @click="scrollToBottom"
           >
-            <svg class="w-3.5 h-3.5 text-blue-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3 h-3 text-blue-400 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/>
             </svg>
-            <p class="text-[11px] text-blue-500 font-semibold">Scroll down to read all terms</p>
+            <p class="text-[10px] text-blue-500 font-semibold">Scroll down to read all terms</p>
           </div>
         </Transition>
 
         <!-- Footer -->
-        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-5 pt-4 pb-5 space-y-3">
+        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-4 pt-2.5 pb-3 space-y-2">
 
           <!-- Checkbox -->
-          <label :class="['flex items-start gap-3 select-none transition-opacity rounded-xl p-3 border', hasScrolledToBottom ? 'cursor-pointer opacity-100 border-gray-200 bg-gray-50 hover:bg-blue-50/40 hover:border-blue-200 transition-colors' : 'cursor-not-allowed opacity-50 border-gray-100 bg-gray-50']">
+          <label :class="['flex items-start gap-2.5 select-none transition-opacity rounded-lg p-2.5 border', hasScrolledToBottom ? 'cursor-pointer opacity-100 border-gray-200 bg-gray-50 hover:bg-blue-50/40 hover:border-blue-200 transition-colors' : 'cursor-not-allowed opacity-50 border-gray-100 bg-gray-50']">
             <div class="relative flex-shrink-0 mt-0.5">
               <input type="checkbox" v-model="agreed" :disabled="!hasScrolledToBottom" class="sr-only" />
               <div
                 :class="[
-                  'w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200',
+                  'w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200',
                   agreed && hasScrolledToBottom
                     ? 'bg-[#0f2080] border-[#0f2080]'
                     : hasScrolledToBottom
@@ -114,12 +114,12 @@
                     : 'bg-gray-100 border-gray-200'
                 ]"
               >
-                <svg v-if="agreed && hasScrolledToBottom" class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg v-if="agreed && hasScrolledToBottom" class="w-2.5 h-2.5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3.5" d="M5 13l4 4L19 7"/>
                 </svg>
               </div>
             </div>
-            <span class="text-xs text-gray-600 leading-relaxed">
+            <span class="text-[11px] text-gray-600 leading-relaxed">
               I have read and understood SSAAM's <strong class="text-[#0f2080]">Terms &amp; Conditions</strong>.
               I acknowledge that my attendance data and contributions are managed through this system.
             </span>
@@ -130,16 +130,16 @@
             @click="handleAgree"
             :disabled="!agreed || !hasScrolledToBottom"
             :class="[
-              'w-full py-3.5 rounded-2xl font-bold text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-2',
+              'w-full py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5',
               agreed && hasScrolledToBottom
                 ? 'bg-gradient-to-r from-[#080e2e] to-[#1a3a8f] text-white shadow-lg hover:-translate-y-0.5 active:scale-[0.98]'
                 : 'bg-gray-100 text-gray-400 cursor-not-allowed'
             ]"
           >
-            <svg v-if="agreed && hasScrolledToBottom" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg v-if="agreed && hasScrolledToBottom" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
-            <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
             <span>{{
@@ -152,7 +152,7 @@
           </button>
 
           <!-- Welcome message -->
-          <p class="text-center text-[11px] text-gray-400 leading-snug">
+          <p class="text-center text-[10px] text-gray-400 leading-snug">
             <span v-if="userName && userName !== 'User'">
               Welcome, <strong class="text-gray-600">{{ userName }}</strong>! Glad to have you in SSAAM.
             </span>
