@@ -3951,78 +3951,95 @@
           </div>
 
           <!-- ── Face ID ── -->
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 mb-4">
-            <div class="flex items-start sm:items-center justify-between gap-4 flex-col sm:flex-row">
-              <div class="flex items-center gap-4">
-                <!-- Face preview / icon -->
-                <div :class="['w-14 h-14 rounded-xl overflow-hidden flex items-center justify-center flex-shrink-0 border',
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+            <!-- Card header strip -->
+            <div :class="['px-5 py-3 flex items-center justify-between border-b border-gray-50',
+              faceEnrolled ? 'bg-emerald-50/60' : 'bg-gray-50/60']">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Face ID</span>
+              <span v-if="faceLoading" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 text-gray-500">Checking…</span>
+              <span v-else-if="faceEnrolled" class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                Enrolled
+              </span>
+              <span v-else class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 text-gray-500">Not set up</span>
+            </div>
+
+            <div class="p-5">
+              <!-- Face preview + info row -->
+              <div class="flex items-center gap-4 mb-4">
+                <div :class="['w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center flex-shrink-0 border-2',
                   faceEnrolled ? 'border-emerald-100 bg-emerald-50' : 'border-gray-100 bg-gray-50']">
                   <img v-if="faceEnrolled && faceData?.faces?.[0]?.photo" :src="faceData.faces[0].photo" class="w-full h-full object-cover" alt="Face ID" />
-                  <svg v-else class="w-7 h-7 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg v-else class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 10h.01M15 10h.01M9.5 15a3.5 3.5 0 005 0M4 7v10a3 3 0 003 3h10a3 3 0 003-3V7a3 3 0 00-3-3H7a3 3 0 00-3 3z"/>
                   </svg>
                 </div>
-                <div>
-                  <div class="flex items-center gap-2 mb-0.5">
-                    <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Face ID</h3>
-                    <span v-if="faceLoading" class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 text-gray-500">Checking…</span>
-                    <span v-else-if="faceEnrolled" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-100">
-                      <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                      Enrolled
-                    </span>
-                    <span v-else class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 text-gray-500">Not set up</span>
-                  </div>
-                  <p class="text-sm font-semibold text-gray-800">Face Recognition</p>
-                  <p v-if="faceEnrolled && faceData" class="text-[11px] text-gray-400 mt-0.5">
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-bold text-gray-800 leading-snug">Face Recognition</p>
+                  <p v-if="faceEnrolled && faceData" class="text-[11px] text-gray-400 mt-0.5 leading-snug">
                     Updated {{ formatFaceDate(faceData.face_updated_at) }}.
-                    <span v-if="faceData.in_cooldown">Next update on {{ formatFaceDate(faceData.next_update_allowed_at) }}.</span>
-                    <span v-else> Can update anytime.</span>
+                    <span v-if="faceData.in_cooldown" class="text-amber-500">Next update: {{ formatFaceDate(faceData.next_update_allowed_at) }}.</span>
+                    <span v-else>Can update anytime.</span>
                   </p>
                   <p v-else-if="!faceEnrolled && !faceLoading" class="text-[11px] text-gray-400 mt-0.5">Enable face check-in for events.</p>
                 </div>
               </div>
-              <!-- CTA button -->
+
+              <!-- CTA button — full width -->
               <button
                 @click="openFaceEnroll"
                 :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
-                :class="['flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all',
+                :class="['w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all',
                   (faceEnrolled && faceData?.in_cooldown)
-                    ? 'bg-gray-50 text-gray-400 border-gray-100 cursor-not-allowed'
-                    : isCOE ? 'bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-100'
-                    : isSOM ? 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
-                    : isCNAHS ? 'bg-green-50 text-green-700 border-green-100 hover:bg-green-100'
-                    : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100']"
+                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                    : isCOE ? 'bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100'
+                    : isSOM ? 'bg-green-50 text-green-600 border border-green-100 hover:bg-green-100'
+                    : isCNAHS ? 'bg-green-50 text-green-700 border border-green-100 hover:bg-green-100'
+                    : 'bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100']"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
                 {{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}
               </button>
-            </div>
 
-            <!-- Feature chips -->
-            <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-50">
-              <span v-for="tip in ['Works on phone & laptop', 'Unique to you', `Updates every ${(faceData && faceData.cooldown_days) || 7} days`]" :key="tip"
-                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 border border-gray-100 text-[11px] text-gray-500">
-                <svg class="w-3 h-3 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                {{ tip }}
-              </span>
+              <!-- Feature chips -->
+              <div class="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-50">
+                <span v-for="tip in ['Works on phone & laptop', 'Unique to you', `Updates every ${(faceData && faceData.cooldown_days) || 7} days`]" :key="tip"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 border border-gray-100 text-[10px] text-gray-500">
+                  <svg class="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                  {{ tip }}
+                </span>
+              </div>
             </div>
           </div>
 
           <!-- ── Account Security ── -->
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
-            <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Account Security</h3>
-            <div class="flex items-center justify-between gap-4">
-              <div>
-                <p class="text-sm font-semibold text-gray-800 mb-0.5">Password</p>
-                <p class="text-xs text-gray-400">Keep your account secure with a strong password.</p>
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+            <div class="px-5 py-3 border-b border-gray-50 bg-gray-50/60">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Account Security</span>
+            </div>
+            <div class="p-5">
+              <!-- Icon + text row -->
+              <div class="flex items-center gap-4 mb-4">
+                <div :class="['w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0',
+                  isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                  <svg :class="['w-6 h-6', isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/>
+                  </svg>
+                </div>
+                <div>
+                  <p class="text-sm font-bold text-gray-800 leading-snug">Password</p>
+                  <p class="text-[11px] text-gray-400 mt-0.5">Keep your account secure with a strong password.</p>
+                </div>
               </div>
+              <!-- Full-width button -->
               <button
                 @click="showPasswordChangeModal = true"
-                :class="['flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold border transition-all',
-                  isCOE ? 'bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-100'
-                  : isSOM ? 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
-                  : isCNAHS ? 'bg-green-50 text-green-700 border-green-100 hover:bg-green-100'
-                  : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100']"
+                :class="['w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all',
+                  isCOE ? 'bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100'
+                  : isSOM ? 'bg-green-50 text-green-600 border border-green-100 hover:bg-green-100'
+                  : isCNAHS ? 'bg-green-50 text-green-700 border border-green-100 hover:bg-green-100'
+                  : 'bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100']"
               >
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
                 Change Password
