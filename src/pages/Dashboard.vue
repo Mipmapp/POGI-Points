@@ -357,7 +357,7 @@
                 <div class="relative flex-shrink-0">
                   <div class="relative w-16 h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-2 border-green-300/60 shadow-lg">
                     <div :class="['absolute inset-0 flex items-center justify-center font-bold text-lg text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-                      {{ (rfidResult.student?.full_name || rfidResult.student_name || '?').charAt(0) }}
+                      {{ getInitials(getStudentName(rfidResult.student, rfidResult.student_name)) }}
                     </div>
                     <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="absolute inset-0 w-full h-full object-cover" @error="$event.target.style.display='none'" />
                   </div>
@@ -369,7 +369,7 @@
                   <p class="text-green-300 font-bold text-sm lg:text-base mb-0.5">
                     {{ rfidResult.action === 'check_in' ? 'Check-in Successful!' : rfidResult.action === 'check_out' ? 'Check-out Successful!' : 'Success!' }}
                   </p>
-                  <p class="text-white font-bold text-lg lg:text-xl truncate">{{ rfidResult.student?.full_name || rfidResult.student_name }}</p>
+                  <p class="text-white font-bold text-lg lg:text-xl truncate">{{ getStudentName(rfidResult.student, rfidResult.student_name) }}</p>
                   <div v-if="rfidResult.student?.program || rfidResult.student?.year_level" class="text-white/70 text-sm mt-0.5">
                     <span v-if="rfidResult.student?.program">{{ rfidResult.student.program }}</span>
                     <span v-if="rfidResult.student?.program && rfidResult.student?.year_level"> • </span>
@@ -393,7 +393,7 @@
                 <div class="relative flex-shrink-0">
                   <div class="relative w-16 h-16 lg:w-20 lg:h-20 rounded-full overflow-hidden border-2 border-yellow-300/60 shadow-lg">
                     <div :class="['absolute inset-0 flex items-center justify-center font-bold text-lg text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-                      {{ (rfidResult.student?.full_name || rfidResult.student_name || '?').charAt(0) }}
+                      {{ getInitials(getStudentName(rfidResult.student, rfidResult.student_name)) }}
                     </div>
                     <img v-if="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" :src="rfidResult.student_image || rfidResult.student?.photo || rfidResult.student?.image || rfidResult.student?.avatar" class="absolute inset-0 w-full h-full object-cover" @error="$event.target.style.display='none'" />
                   </div>
@@ -405,7 +405,7 @@
                   <p class="text-yellow-300 font-bold text-sm lg:text-base mb-0.5">
                     {{ (rfidResult.action === 'check_out' || rfidResult.action === 'already_checked_out' || (rfidResult.action === 'already_completed' && rfidOperationType === 'out')) ? 'Already Logged Out' : 'Already Logged In' }}
                   </p>
-                  <p class="text-white font-bold text-lg lg:text-xl truncate">{{ rfidResult.student?.full_name || rfidResult.student_name }}</p>
+                  <p class="text-white font-bold text-lg lg:text-xl truncate">{{ getStudentName(rfidResult.student, rfidResult.student_name) }}</p>
                   <div v-if="rfidResult.student?.program || rfidResult.student?.year_level" class="text-white/70 text-sm mt-0.5">
                     <span v-if="rfidResult.student?.program">{{ rfidResult.student.program }}</span>
                     <span v-if="rfidResult.student?.program && rfidResult.student?.year_level"> • </span>
@@ -485,14 +485,14 @@
                   <!-- Avatar -->
                   <div class="relative w-9 h-9 rounded-full flex-shrink-0">
                     <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-white text-xs font-bold', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-                      {{ getInitials(log.student?.full_name || log.student_name) }}
+                      {{ getInitials(getStudentName(log.student, log.student_name)) }}
                     </div>
                     <img v-if="log.student_image || log.student?.photo" :src="log.student_image || log.student?.photo" class="absolute inset-0 w-full h-full rounded-full object-cover" @error="$event.target.style.display='none'" />
                   </div>
                   
                   <!-- Name & Details -->
                   <div class="flex-1 min-w-0">
-                    <p class="font-semibold text-white text-sm truncate">{{ log.student?.full_name || log.student_name }}</p>
+                    <p class="font-semibold text-white text-sm truncate">{{ getStudentName(log.student, log.student_name) }}</p>
                     <p class="text-white/50 text-xs truncate">{{ log.program || log.student?.program || '' }}</p>
                   </div>
                   
@@ -527,7 +527,7 @@
           <div class="flex items-center gap-3 sm:gap-4">
             <div class="relative w-12 h-12 sm:w-16 sm:h-16 rounded-full flex-shrink-0 ring-4 ring-green-400 ring-opacity-60">
               <div :class="['absolute inset-0 rounded-full flex items-center justify-center text-xl sm:text-2xl font-bold text-white', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-teal-600' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-                {{ getInitials(rfidResult.student?.full_name || rfidResult.student_name) }}
+                {{ getInitials(getStudentName(rfidResult.student, rfidResult.student_name)) }}
               </div>
             </div>
             <div class="flex-1 min-w-0">
@@ -535,7 +535,7 @@
                 <svg class="w-4 h-4 sm:w-5 sm:h-5 text-green-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                 <span class="text-sm sm:text-lg font-bold text-green-400">{{ rfidResult.action === 'check_in' ? 'Check-in!' : 'Check-out!' }}</span>
               </div>
-              <p class="text-white font-semibold text-xs sm:text-sm truncate">{{ rfidResult.student?.full_name || rfidResult.student_name }}</p>
+              <p class="text-white font-semibold text-xs sm:text-sm truncate">{{ getStudentName(rfidResult.student, rfidResult.student_name) }}</p>
             </div>
           </div>
         </div>
@@ -629,7 +629,7 @@
             <div v-if="excuseStudentOptionsVisible" class="mt-2">
               <select v-model="editExcusedById" @change="onExcuseStudentSelected" class="w-full border rounded-md px-3 py-2 text-sm">
                 <option :value="null">-- Select student (or leave blank) --</option>
-                <option v-for="s in excuseStudentOptions" :key="s._id" :value="s._id">{{ s.full_name }} — {{ s.student_id }}</option>
+                <option v-for="s in excuseStudentOptions" :key="s._id" :value="s._id">{{ getStudentName(s, s.full_name) }} — {{ s.student_id }}</option>
               </select>
               <div class="text-xs text-gray-500 mt-1">Selecting a student will set the excused-by reference; you can still type a manual name.</div>
             </div>
@@ -2086,10 +2086,10 @@
                         <div class="flex items-center gap-3 min-w-0 flex-1">
                           <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
                             <img v-if="log.student_image || log.student?.photo" :src="log.student_image || log.student?.photo" class="w-full h-full object-cover" />
-                            <span v-else>{{ (log.student?.full_name || log.student_name)?.charAt(0) || '?' }}</span>
+                            <span v-else>{{ getInitials(getStudentName(log.student, log.student_name)) }}</span>
                           </div>
                           <div class="min-w-0 flex-1">
-                            <p class="font-semibold text-sm text-gray-900 truncate">{{ log.student?.full_name || log.student_name }}</p>
+                            <p class="font-semibold text-sm text-gray-900 truncate">{{ getStudentName(log.student, log.student_name) }}</p>
                             <p class="text-xs text-gray-500 truncate">{{ log.program || log.student?.program || '-' }}</p>
                           </div>
                         </div>
@@ -2127,9 +2127,9 @@
                             <div class="flex items-center gap-2">
                               <div :class="['w-7 h-7 rounded-full flex items-center justify-center text-white text-xs overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-r from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-r from-green-400 to-teal-600' : isCNAHS ? 'bg-gradient-to-r from-green-500 to-green-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
                                 <img v-if="log.student_image || log.student?.photo" :src="log.student_image || log.student?.photo" class="w-full h-full object-cover rounded-full" />
-                                <span v-else>{{ (log.student?.full_name || log.student_name)?.charAt(0) || '?' }}</span>
+                                <span v-else>{{ getInitials(getStudentName(log.student, log.student_name)) }}</span>
                               </div>
-                              <span class="font-medium text-xs">{{ log.student?.full_name || log.student_name }}</span>
+                              <span class="font-medium text-xs">{{ getStudentName(log.student, log.student_name) }}</span>
                             </div>
                           </td>
                           <td class="px-3 py-2 text-xs">{{ log.program || log.student?.program || '-' }}</td>
@@ -11539,9 +11539,10 @@ const toggleEditEventUser = (userId) => {
 const getUserDisplayName = (user) => {
   if (!user) return 'Unknown'
   
-  // Try full_name first (from backend populate)
+  // Try full_name first (from backend populate), always include last_name
   if (user.full_name && user.full_name.trim() !== '') {
-    return user.full_name.trim().toUpperCase()
+    const lastName = user.last_name ? ' ' + user.last_name.trim() : ''
+    return (user.full_name.trim() + lastName).toUpperCase()
   }
   
   // Try constructed name from parts (case-insensitive)
@@ -17662,6 +17663,13 @@ const getInitials = (name) => {
   const parts = name.trim().split(/\s+/)
   if (parts.length === 1) return parts[0].charAt(0).toUpperCase()
   return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+}
+
+// Returns the full display name combining first/middle (full_name) and last_name.
+// Falls back to fallback string when no student object is available.
+const getStudentName = (student, fallback = '') => {
+  if (!student) return fallback
+  return [student.full_name, student.last_name].filter(Boolean).join(' ').trim() || fallback
 }
 
 // Transparency board helper functions

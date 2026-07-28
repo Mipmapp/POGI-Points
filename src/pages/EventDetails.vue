@@ -67,7 +67,7 @@
               <div class="absolute inset-0 bg-gradient-to-b from-transparent to-black/10"></div>
             </div>
             <div class="p-4 pt-6">
-              <div class="font-medium">{{ stu.full_name || stu.student?.full_name || stu.student_name || stu.first_name + ' ' + stu.last_name }}</div>
+              <div class="font-medium">{{ [stu.full_name || stu.student?.full_name || stu.first_name, stu.last_name || stu.student?.last_name].filter(Boolean).join(' ') || stu.student_name }}</div>
               <div class="text-sm text-gray-500">{{ stu.student_id || stu.student?.student_id || stu.student_id_number || '' }}</div>
             </div>
           </div>
