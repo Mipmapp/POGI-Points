@@ -3093,10 +3093,10 @@
             <div v-for="user in filteredUsers" :key="user.studentId || user.student_id" class="px-4 py-4 hover:bg-gray-50 transition">
               <div class="flex items-center gap-3 mb-3">
                 <div :class="['w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-bold flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-500 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-500 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-500 to-green-700' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']">
-                  {{ ((user.firstName || user.first_name || '?').charAt(0)).toUpperCase() }}
+                  {{ ((user.fullName || user.full_name || '?').charAt(0)).toUpperCase() }}
                 </div>
                 <div class="flex-1 min-w-0">
-                  <p class="font-semibold text-gray-900 text-sm truncate">{{ (user.firstName || user.first_name) }} {{ (user.lastName || user.last_name) }}</p>
+                  <p class="font-semibold text-gray-900 text-sm truncate">{{ (user.fullName || user.full_name) }} {{ (user.lastName || user.last_name) }}</p>
                   <p class="text-xs text-gray-500 font-mono truncate">{{ user.studentId || user.student_id }}</p>
                 </div>
                 <span :class="['px-2 py-1 rounded-full text-xs font-medium flex-shrink-0', (user.rfid_status === 'verified') ? 'bg-green-100 text-green-800' : (user.rfid_status === 'Unreadable') ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800']">
@@ -3142,7 +3142,7 @@
                   <td colspan="8" class="border border-blue-300 px-4 py-8 text-center text-gray-600">No users found matching your search.</td>
                 </tr>
                 <tr v-for="user in filteredUsers" :key="user.studentId || user.student_id" class="hover:bg-gray-50">
-                  <td class="border border-blue-300 px-4 py-3 text-gray-700">{{ (user.firstName || user.first_name) }} {{ (user.lastName || user.last_name) }}</td>
+                  <td class="border border-blue-300 px-4 py-3 text-gray-700">{{ (user.fullName || user.full_name) }} {{ (user.lastName || user.last_name) }}</td>
                   <td class="border border-blue-300 px-4 py-3 text-gray-700 text-xs font-mono">{{ user.studentId || user.student_id }}</td>
                   <td class="border border-blue-300 px-4 py-3 text-gray-700">{{ user.email }}</td>
                   <td class="border border-blue-300 px-4 py-3 text-center text-gray-700">{{ user.rfidCode || user.rfid_code || '—' }}</td>
@@ -3777,7 +3777,7 @@
           <div class="flex items-start sm:items-center justify-between gap-4 mb-5">
             <div>
               <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
-                Hi, {{ (currentUser.firstName || currentUser.first_name || displayName.split(' ')[0]) }}!
+                Hi, {{ (currentUser.fullName || currentUser.full_name || displayName.split(' ')[0]) }}!
               </h2>
               <p class="text-gray-400 text-sm mt-0.5">Here's your student profile in SSAAM.</p>
             </div>
@@ -3894,7 +3894,7 @@
               <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-4">Personal Information</h3>
               <div class="grid grid-cols-2 gap-3">
                 <div v-for="(val, label) in {
-                  'Full Name': currentUser.firstName || currentUser.full_name,
+                  'Full Name': currentUser.fullName || currentUser.full_name,
                   'Last Name': currentUser.lastName || currentUser.last_name,
                   'Suffix': currentUser.suffix || 'N/A'
                 }" :key="label" class="space-y-0.5">
@@ -4956,12 +4956,8 @@
           <input v-model="editingUser.studentId" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
-          <input v-model="editingUser.firstName" @input="editingUser.firstName = editingUser.firstName.toUpperCase()" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none uppercase" />
-        </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-2">Middle Name <span class="text-gray-400">(optional)</span></label>
-          <input v-model="editingUser.middleName" @input="editingUser.middleName = editingUser.middleName.toUpperCase()" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none uppercase" />
+          <label class="block text-sm font-medium text-gray-700 mb-2">Full Name <span class="text-gray-400 text-xs">(First &amp; Middle)</span></label>
+          <input v-model="editingUser.fullName" @input="editingUser.fullName = editingUser.fullName.toUpperCase()" type="text" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none uppercase" placeholder="e.g. JULLAN CARL JAMORA" />
         </div>
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
@@ -7756,8 +7752,7 @@ const refreshAllData = async () => {
         users.value = pageData.map(s => ({
           ...s,
           studentId: s.student_id,
-          firstName: s.first_name,
-          middleName: s.middle_name || '',
+          fullName: s.full_name || s.first_name || '',
           lastName: s.last_name,
           yearLevel: s.year_level,
           rfidCode: s.rfid_code || 'N/A',
@@ -10996,7 +10991,7 @@ const openCreateEventModalImpl = async () => {
           const mappedBatch = batch.map(s => ({
             ...s,
             studentId: s.student_id,
-            firstName: s.full_name || s.first_name || '',
+            fullName: s.full_name || s.first_name || '',
             lastName: s.last_name,
             yearLevel: s.year_level,
             rfidCode: s.rfid_code || 'N/A',
@@ -11551,7 +11546,7 @@ const getUserDisplayName = (user) => {
   
   // Try constructed name from parts (case-insensitive)
   if (user.first_name || user.last_name) {
-    const parts = [user.first_name, user.middle_name, user.last_name].filter(p => p && p.trim() !== '')
+    const parts = [user.full_name || user.first_name, user.last_name].filter(p => p && p.trim() !== '')
     if (parts.length > 0) {
       return parts.join(' ').trim().toUpperCase()
     }
@@ -12170,13 +12165,13 @@ watch(showDevelopersPopup, (open) => {
 })
 
 const displayName = computed(() => {
-  const firstName = currentUser.value.firstName || currentUser.value.first_name
+  const fullName = currentUser.value.fullName || currentUser.value.full_name
   const lastName = currentUser.value.lastName || currentUser.value.last_name
   if (currentUser.value.role === 'admin' || currentUser.value.isMaster) {
     return 'Admin'
   }
-  if (firstName && lastName) {
-    return `${firstName} ${lastName}`
+  if (fullName && lastName) {
+    return `${fullName} ${lastName}`
   }
   return currentUser.value.name || 'User'
 })
@@ -12635,8 +12630,7 @@ onMounted(async () => {
         users.value = pageData.map(s => ({
           ...s,
           studentId: s.student_id,
-          firstName: s.first_name,
-          middleName: s.middle_name || '',
+          fullName: s.full_name || s.first_name || '',
           lastName: s.last_name,
           yearLevel: s.year_level,
           rfidCode: s.rfid_code || 'N/A',
@@ -12799,8 +12793,7 @@ const refreshCurrentUser = async () => {
           ...currentUser.value,
           ...updatedUser,
           studentId: updatedUser.student_id || currentUser.value.studentId,
-          firstName: updatedUser.first_name || currentUser.value.firstName,
-          middleName: updatedUser.middle_name || currentUser.value.middleName,
+          fullName: updatedUser.full_name || updatedUser.first_name || currentUser.value.fullName,
           lastName: updatedUser.last_name || currentUser.value.lastName,
           yearLevel: updatedUser.year_level || currentUser.value.yearLevel,
           rfidCode: updatedUser.rfid_code || currentUser.value.rfidCode,
@@ -12948,9 +12941,8 @@ const toggleRfidList = async (type) => {
       const normalizedStudents = allStudents.map(s => ({
         ...s,
         student_id: s.student_id || '',
-        first_name: s.first_name || '',
         last_name: s.last_name || '',
-        full_name: s.full_name || `${s.first_name || ''} ${s.last_name || ''}`.trim(),
+        full_name: s.full_name || s.first_name || '',
         program: s.program || '',
         year_level: s.year_level || '',
         rfid_code: s.rfid_code || 'N/A',
@@ -13357,8 +13349,7 @@ const refreshStudents = async () => {
       users.value = apiStudents.map(s => ({
         ...s,
         studentId: s.student_id,
-        firstName: s.first_name,
-        middleName: s.middle_name || '',
+        fullName: s.full_name || s.first_name || '',
         lastName: s.last_name,
         yearLevel: s.year_level,
         rfidCode: s.rfid_code || 'N/A',
@@ -14265,8 +14256,7 @@ const openEditDuplicateStudent = (student) => {
   const userCopy = JSON.parse(JSON.stringify(student))
   userCopy.studentId = userCopy.student_id || userCopy.studentId
   userCopy.originalStudentId = userCopy.studentId // Store original ID for updates (duplicate flow)
-  userCopy.firstName = userCopy.first_name || userCopy.firstName || ''
-  userCopy.middleName = userCopy.middle_name || userCopy.middleName || ''
+  userCopy.fullName = userCopy.full_name || userCopy.first_name || userCopy.fullName || ''
   userCopy.lastName = userCopy.last_name || userCopy.lastName || ''
   userCopy.yearLevel = userCopy.year_level || userCopy.yearLevel || ''
   userCopy.rfidCode = userCopy.rfid_code || userCopy.rfidCode || 'N/A'
@@ -14283,7 +14273,7 @@ const openEditDuplicateStudent = (student) => {
 // Delete a duplicate student with modal confirmation and admin action key
 const deleteDuplicateStudent = (student) => {
   const studentId = student.student_id || student.studentId
-  const studentName = `${student.first_name || student.firstName} ${student.last_name || student.lastName}`.trim()
+  const studentName = `${student.full_name || student.fullName || ''} ${student.last_name || student.lastName || ''}`.trim()
   
   // Show confirmation modal
   duplicateStudentToDelete.value = { id: studentId, name: studentName }
@@ -14468,8 +14458,7 @@ const openEditModalWithUser = (user) => {
   const userCopy = JSON.parse(JSON.stringify(user))
   userCopy.studentId = userCopy.studentId || userCopy.student_id
   userCopy.originalStudentId = userCopy.studentId // Store original ID for updates
-  userCopy.firstName = userCopy.firstName || userCopy.first_name || ''
-  userCopy.middleName = userCopy.middleName || userCopy.middle_name || ''
+  userCopy.fullName = userCopy.full_name || userCopy.first_name || userCopy.fullName || ''
   userCopy.lastName = userCopy.lastName || userCopy.last_name || ''
   userCopy.yearLevel = userCopy.yearLevel || userCopy.year_level || ''
   userCopy.rfidCode = userCopy.rfidCode || userCopy.rfid_code || ''
@@ -14791,8 +14780,7 @@ const saveUserImpl = async () => {
     
     const updateData = {
       student_id: newStudentId,
-      first_name: (editingUser.value.firstName || editingUser.value.first_name || '').toUpperCase(),
-      middle_name: (editingUser.value.middleName || editingUser.value.middle_name || '').toUpperCase(),
+      full_name: (editingUser.value.fullName || editingUser.value.full_name || '').toUpperCase(),
       last_name: (editingUser.value.lastName || editingUser.value.last_name || '').toUpperCase(),
       email: editingUser.value.email,
       rfid_code: editingUser.value.rfidCode || editingUser.value.rfid_code || 'N/A',
@@ -14924,8 +14912,7 @@ const duplicateUserImpl = async () => {
 
     const createData = {
       student_id: editingUser.value.studentId || editingUser.value.student_id,
-      first_name: (editingUser.value.firstName || editingUser.value.first_name || '').toUpperCase(),
-      middle_name: (editingUser.value.middleName || editingUser.value.middle_name || '').toUpperCase(),
+      full_name: (editingUser.value.fullName || editingUser.value.full_name || '').toUpperCase(),
       last_name: (editingUser.value.lastName || editingUser.value.last_name || '').toUpperCase(),
       email: editingUser.value.email,
       rfid_code: editingUser.value.rfidCode || editingUser.value.rfid_code || 'N/A',
@@ -16918,8 +16905,7 @@ const openEditEvent = (event) => {
             const mappedBatch = batch.map(s => ({
               ...s,
               studentId: s.student_id,
-              firstName: s.first_name,
-              middleName: s.middle_name || '',
+              fullName: s.full_name || s.first_name || '',
               lastName: s.last_name,
               yearLevel: s.year_level,
               rfidCode: s.rfid_code || 'N/A',

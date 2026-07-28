@@ -7885,7 +7885,7 @@ const sessionAttendanceCheck = async (req, res) => {
         }
 
         // Calculate student full name
-        const studentFullName = `${student.first_name} ${student.middle_name || ''} ${student.last_name}`.replace(/\s+/g, ' ').trim();
+        const studentFullName = `${student.full_name || student.first_name || ''} ${student.last_name || ''}`.replace(/\s+/g, ' ').trim();
 
         // Validate if event is custom - only assigned users can check in
         if (event.is_custom && event.assigned_users && Array.isArray(event.assigned_users)) {
