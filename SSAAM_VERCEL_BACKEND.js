@@ -8850,7 +8850,7 @@ app.get('/api/auth/callback/google', (req, res, next) => {
                 token,
                 student: student.toJSON(),
                 college,
-                expires_at: new Date(Date.now() + 60_000), // 60-second TTL
+                expires_at: new Date(Date.now() + 300_000), // 5-minute TTL
             });
 
             res.redirect(`/?gc=${code}`);
@@ -8865,11 +8865,20 @@ app.get('/api/auth/callback/google', (req, res, next) => {
 app.post('/api/auth/google/exchange', async (req, res) => {
     const { code } = req.body;
     if (!code) return res.status(400).json({ message: 'Missing code.' });
-    const data = await GoogleExchangeCode.findOneAndDelete({ code });
-    if (!data || data.expires_at < new Date()) {
-        return res.status(400).json({ message: 'Invalid or expired login code. Please try again.' });
+    try {
+        // Ensure DB is connected (important for Vercel cold starts)
+        if (mongoose.connection.readyState !== 1) {
+            await mongoose.connect(MONGO_URI, MONGO_OPTS);
+        }
+        const data = await GoogleExchangeCode.findOneAndDelete({ code });
+        if (!data || data.expires_at < new Date()) {
+            return res.status(400).json({ message: 'Invalid or expired login code. Please try again.' });
+        }
+        return res.json({ token: data.token, student: data.student, college: data.college });
+    } catch (err) {
+        console.error('[Google OAuth] exchange error:', err);
+        return res.status(500).json({ message: 'Login failed due to a server error. Please try again.' });
     }
-    return res.json({ token: data.token, student: data.student, college: data.college });
 });
 
 export default app;
