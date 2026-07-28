@@ -40,3 +40,46 @@ setTimeout(applyTheme, 120)
 const app = createApp(App)
 app.use(router)
 app.mount('#app')
+
+// ── Service Worker registration with auto-update ──────────────────────────
+// The SW uses network-first for HTML, so every online visit fetches the
+// latest shell from Vercel. When a new SW version installs (skipWaiting is
+// called inside sw.js), we detect the controller change and reload once so
+// the fresh assets are served immediately.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js');
+
+      // When a new SW has installed and is waiting to activate
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        newWorker?.addEventListener('statechange', () => {
+          // New SW is installed and the page is already controlled
+          // (not first load) → reload to apply the update immediately
+          if (
+            newWorker.state === 'installed' &&
+            navigator.serviceWorker.controller
+          ) {
+            // sw.js calls skipWaiting(), so activation is immediate.
+            // We reload once the controller actually changes.
+          }
+        });
+      });
+
+      // Reload the page as soon as the new SW takes control
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!reloading) {
+          reloading = true;
+          window.location.reload();
+        }
+      });
+
+      // Periodically check for SW updates while the tab is open
+      setInterval(() => registration.update(), 60 * 60 * 1000); // every hour
+    } catch (err) {
+      console.warn('[SW] Registration failed:', err);
+    }
+  });
+}

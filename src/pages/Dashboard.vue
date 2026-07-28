@@ -1268,7 +1268,7 @@
                             <span v-else>{{ (student.full_name || student.last_name || '?').charAt(0) }}</span>
                           </div>
                           <div class="flex-1 min-w-0">
-                            <p class="font-medium text-gray-900 text-sm truncate">{{ student.full_name || student.last_name }}</p>
+                            <p class="font-medium text-gray-900 text-sm truncate">{{ student.full_name }}{{ student.last_name ? ' ' + student.last_name : '' }}</p>
                             <p class="text-xs text-gray-500">ID: {{ student.student_id }} | {{ student.email }}</p>
                             <p v-if="student.rfid_code" class="text-xs text-blue-600">RFID: {{ student.rfid_code }}</p>
                           </div>
@@ -1333,7 +1333,7 @@
                           <span v-else>{{ (result.full_name || result.last_name || '?').charAt(0) }}</span>
                         </div>
                         <div class="flex-1 min-w-0">
-                          <p class="font-medium text-gray-900 truncate">{{ result.full_name || result.last_name }}</p>
+                          <p class="font-medium text-gray-900 truncate">{{ result.full_name }}{{ result.last_name ? ' ' + result.last_name : '' }}</p>
                           <p class="text-xs text-gray-500">ID: {{ result.student_id }} | {{ result.program }} - {{ result.year_level }}</p>
                           <p class="text-xs text-gray-500">Email: {{ result.email }}</p>
                           <p v-if="result.rfid_code" class="text-xs text-blue-600">RFID: {{ result.rfid_code }}</p>
@@ -2949,7 +2949,7 @@
                 <div class="flex-1">
                   <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
                     <div>
-                      <h3 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ student.full_name || student.last_name }}{{ student.suffix ? ' ' + student.suffix : '' }}</h3>
+                      <h3 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ student.full_name }}{{ student.last_name ? ' ' + student.last_name : '' }}{{ student.suffix ? ' ' + student.suffix : '' }}</h3>
                       <p class="text-sm text-gray-500">{{ student.student_id }}</p>
                     </div>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 w-fit">
@@ -3016,7 +3016,7 @@
         <div v-if="showRejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showRejectModal = false">
           <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full mx-4">
             <h3 class="text-xl font-bold text-red-600 mb-4">Reject Student Registration</h3>
-            <p class="text-gray-600 mb-4">Are you sure you want to reject <span class="font-semibold">{{ studentToReject?.full_name || studentToReject?.last_name }}</span>'s registration?</p>
+            <p class="text-gray-600 mb-4">Are you sure you want to reject <span class="font-semibold">{{ studentToReject?.full_name }}{{ studentToReject?.last_name ? ' ' + studentToReject.last_name : '' }}</span>'s registration?</p>
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-700 mb-2">Reason for rejection (optional)</label>
               <textarea v-model="rejectReason" placeholder="Enter a reason to include in the notification email..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none resize-none" rows="3"></textarea>
@@ -3512,7 +3512,7 @@
                       {{ (getCoAdminForCollege('CCS').full_name || getCoAdminForCollege('CCS').username || '?').charAt(0).toUpperCase() }}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('CCS').full_name || getCoAdminForCollege('CCS').username }}</p>
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('CCS').full_name }}{{ getCoAdminForCollege('CCS').last_name ? ' ' + getCoAdminForCollege('CCS').last_name : (getCoAdminForCollege('CCS').full_name ? '' : getCoAdminForCollege('CCS').username) }}</p>
                       <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('CCS').email }}</p>
                     </div>
                     <button @click="removeCoAdmin(getCoAdminForCollege('CCS')._id, 'CCS')" :disabled="coAdminActionLoading === 'CCS'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
@@ -3529,7 +3529,7 @@
                       {{ (getTreasurerForCollege('CCS').full_name || getTreasurerForCollege('CCS').username || '?').charAt(0).toUpperCase() }}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('CCS').full_name || getTreasurerForCollege('CCS').username }}</p>
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('CCS').full_name }}{{ getTreasurerForCollege('CCS').last_name ? ' ' + getTreasurerForCollege('CCS').last_name : (getTreasurerForCollege('CCS').full_name ? '' : getTreasurerForCollege('CCS').username) }}</p>
                       <p class="text-xs text-gray-500 truncate">{{ getTreasurerForCollege('CCS').email }}</p>
                     </div>
                     <button @click="removeTreasurer(getTreasurerForCollege('CCS')._id, 'CCS')" :disabled="coAdminActionLoading === 'CCS-treasurer'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
@@ -3575,7 +3575,7 @@
                       {{ (getCoAdminForCollege('COE').full_name || getCoAdminForCollege('COE').username || '?').charAt(0).toUpperCase() }}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('COE').full_name || getCoAdminForCollege('COE').username }}</p>
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('COE').full_name }}{{ getCoAdminForCollege('COE').last_name ? ' ' + getCoAdminForCollege('COE').last_name : (getCoAdminForCollege('COE').full_name ? '' : getCoAdminForCollege('COE').username) }}</p>
                       <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('COE').email }}</p>
                     </div>
                     <button @click="removeCoAdmin(getCoAdminForCollege('COE')._id, 'COE')" :disabled="coAdminActionLoading === 'COE'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
@@ -3591,7 +3591,7 @@
                       {{ (getTreasurerForCollege('COE').full_name || getTreasurerForCollege('COE').username || '?').charAt(0).toUpperCase() }}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('COE').full_name || getTreasurerForCollege('COE').username }}</p>
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('COE').full_name }}{{ getTreasurerForCollege('COE').last_name ? ' ' + getTreasurerForCollege('COE').last_name : (getTreasurerForCollege('COE').full_name ? '' : getTreasurerForCollege('COE').username) }}</p>
                       <p class="text-xs text-gray-500 truncate">{{ getTreasurerForCollege('COE').email }}</p>
                     </div>
                     <button @click="removeTreasurer(getTreasurerForCollege('COE')._id, 'COE')" :disabled="coAdminActionLoading === 'COE-treasurer'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
@@ -3636,7 +3636,7 @@
                       {{ (getCoAdminForCollege('SOM').full_name || getCoAdminForCollege('SOM').username || '?').charAt(0).toUpperCase() }}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('SOM').full_name || getCoAdminForCollege('SOM').username }}</p>
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('SOM').full_name }}{{ getCoAdminForCollege('SOM').last_name ? ' ' + getCoAdminForCollege('SOM').last_name : (getCoAdminForCollege('SOM').full_name ? '' : getCoAdminForCollege('SOM').username) }}</p>
                       <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('SOM').email }}</p>
                     </div>
                     <button @click="removeCoAdmin(getCoAdminForCollege('SOM')._id, 'SOM')" :disabled="coAdminActionLoading === 'SOM'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
@@ -3652,7 +3652,7 @@
                       {{ (getTreasurerForCollege('SOM').full_name || getTreasurerForCollege('SOM').username || '?').charAt(0).toUpperCase() }}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('SOM').full_name || getTreasurerForCollege('SOM').username }}</p>
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('SOM').full_name }}{{ getTreasurerForCollege('SOM').last_name ? ' ' + getTreasurerForCollege('SOM').last_name : (getTreasurerForCollege('SOM').full_name ? '' : getTreasurerForCollege('SOM').username) }}</p>
                       <p class="text-xs text-gray-500 truncate">{{ getTreasurerForCollege('SOM').email }}</p>
                     </div>
                     <button @click="removeTreasurer(getTreasurerForCollege('SOM')._id, 'SOM')" :disabled="coAdminActionLoading === 'SOM-treasurer'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
@@ -3697,7 +3697,7 @@
                       {{ (getCoAdminForCollege('CNAHS').full_name || getCoAdminForCollege('CNAHS').username || '?').charAt(0).toUpperCase() }}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('CNAHS').full_name || getCoAdminForCollege('CNAHS').username }}</p>
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getCoAdminForCollege('CNAHS').full_name }}{{ getCoAdminForCollege('CNAHS').last_name ? ' ' + getCoAdminForCollege('CNAHS').last_name : (getCoAdminForCollege('CNAHS').full_name ? '' : getCoAdminForCollege('CNAHS').username) }}</p>
                       <p class="text-xs text-gray-500 truncate">{{ getCoAdminForCollege('CNAHS').email }}</p>
                     </div>
                     <button @click="removeCoAdmin(getCoAdminForCollege('CNAHS')._id, 'CNAHS')" :disabled="coAdminActionLoading === 'CNAHS'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
@@ -3713,7 +3713,7 @@
                       {{ (getTreasurerForCollege('CNAHS').full_name || getTreasurerForCollege('CNAHS').username || '?').charAt(0).toUpperCase() }}
                     </div>
                     <div class="flex-1 min-w-0">
-                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('CNAHS').full_name || getTreasurerForCollege('CNAHS').username }}</p>
+                      <p class="font-semibold text-sm text-gray-900 truncate">{{ getTreasurerForCollege('CNAHS').full_name }}{{ getTreasurerForCollege('CNAHS').last_name ? ' ' + getTreasurerForCollege('CNAHS').last_name : (getTreasurerForCollege('CNAHS').full_name ? '' : getTreasurerForCollege('CNAHS').username) }}</p>
                       <p class="text-xs text-gray-500 truncate">{{ getTreasurerForCollege('CNAHS').email }}</p>
                     </div>
                     <button @click="removeTreasurer(getTreasurerForCollege('CNAHS')._id, 'CNAHS')" :disabled="coAdminActionLoading === 'CNAHS-treasurer'" class="p-1.5 rounded-xl text-red-400 hover:bg-red-50 hover:text-red-600 transition flex-shrink-0" title="Remove">
@@ -4349,7 +4349,7 @@
                     class="hover:bg-gray-50/80 ssaam-row-anim transition-colors"
                     :style="{ animationDelay: Math.min(idx * 30, 600) + 'ms' }">
                     <td class="px-4 py-3 text-gray-600 text-xs font-mono">{{ user.student_id }}</td>
-                    <td class="px-4 py-3 text-gray-900 font-medium">{{ user.full_name || `${user.first_name} ${user.last_name}` }}</td>
+                    <td class="px-4 py-3 text-gray-900 font-medium">{{ (user.full_name || user.first_name || '') }}{{ user.last_name ? ' ' + user.last_name : '' }}</td>
                     <td class="px-4 py-3 text-gray-500">{{ user.program }}</td>
                     <td class="px-4 py-3 text-gray-500">{{ user.year_level }}</td>
                     <td class="px-4 py-3 text-gray-500 font-mono text-xs">{{ user.rfid_code || 'N/A' }}</td>

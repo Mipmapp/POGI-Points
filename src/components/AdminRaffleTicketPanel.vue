@@ -98,7 +98,7 @@
               </div>
             </div>
             <div class="min-w-0">
-              <h3 class="font-extrabold text-gray-900 text-sm sm:text-base truncate">{{ selectedStudent.full_name || (selectedStudent.first_name + ' ' + selectedStudent.last_name) }}</h3>
+              <h3 class="font-extrabold text-gray-900 text-sm sm:text-base truncate">{{ (selectedStudent.full_name || selectedStudent.first_name || '') }}{{ selectedStudent.last_name ? ' ' + selectedStudent.last_name : '' }}</h3>
               <p class="text-gray-500 text-xs truncate">{{ selectedStudent.student_id }} · {{ selectedStudent.program }} – {{ selectedStudent.year_level }}</p>
             </div>
           </div>
