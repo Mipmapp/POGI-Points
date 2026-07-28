@@ -3777,7 +3777,7 @@
           <div class="flex items-start sm:items-center justify-between gap-4 mb-5">
             <div>
               <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
-                Hi, {{ greetingName }}!
+                Hi, <span :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']">{{ greetingName }}</span>!
               </h2>
               <p class="text-gray-400 text-sm mt-0.5">Here's your student profile in SSAAM.</p>
             </div>
@@ -4216,7 +4216,7 @@
           <div class="flex items-start sm:items-center justify-between gap-4">
             <div>
               <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
-                Hi, {{ greetingName }}!
+                Hi, <span :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']">{{ greetingName }}</span>!
               </h2>
               <p class="text-gray-400 text-sm mt-0.5">Here's what's happening in SSAAM today.</p>
             </div>
