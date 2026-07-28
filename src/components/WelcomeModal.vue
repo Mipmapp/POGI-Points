@@ -12,7 +12,7 @@
           <img :src="'/img/ssaam_popup.png'" alt="SSAAM Banner" class="tc-kenburns w-full h-full object-cover object-center" />
           <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60"></div>
           <div class="absolute bottom-3 left-4 flex items-center gap-2">
-            <img src="/src/assets/ccs-logo.png" alt="CCS Logo" class="w-8 h-8 object-contain drop-shadow-lg" />
+            <img :src="ccsLogo" alt="CCS Logo" class="w-8 h-8 object-contain drop-shadow-lg" />
             <div class="leading-tight">
               <p class="text-white/80 text-[9px] uppercase tracking-widest font-bold">SSAAM — CCS</p>
               <p class="text-white text-sm font-extrabold tracking-tight leading-none">Terms &amp; Conditions</p>
@@ -169,6 +169,7 @@
 
 <script setup>
 import { ref, watch, nextTick } from 'vue'
+import ccsLogo from '../assets/ccs-logo.png'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
