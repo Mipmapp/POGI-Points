@@ -987,19 +987,19 @@
     <!-- Main Content Area -->
     <div ref="mainContentEl" tabindex="-1" class="bg-slate-50 md:flex-1 md:order-2 min-w-0 min-h-screen md:min-h-0 md:overflow-y-auto outline-none">
       <!-- Mobile Header with Hamburger Menu -->
-      <div class="md:hidden sticky top-0 bg-white border-b border-gray-200 p-3 flex items-center justify-between z-20 shadow">
+      <div :class="['md:hidden sticky top-0 p-3 flex items-center justify-between z-20 shadow-md', isCOE ? 'bg-gradient-to-r from-orange-700 to-red-600' : isSOM ? 'bg-gradient-to-r from-green-800 to-teal-700' : isCNAHS ? 'bg-gradient-to-r from-green-900 to-green-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
         <div class="flex items-center gap-2">
-          <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" />
+          <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU Logo" class="w-8 h-8 object-contain drop-shadow" style="filter: brightness(0) invert(1);" />
           <div class="flex flex-col leading-tight">
-            <h1 class="text-xl font-extrabold italic text-gray-900">SSAAM</h1>
-            <p class="text-[9px] uppercase tracking-widest font-semibold text-gray-500">JRMSU</p>
+            <h1 class="text-xl font-extrabold italic text-white">SSAAM</h1>
+            <p class="text-[9px] uppercase tracking-widest font-semibold text-white/60">JRMSU</p>
           </div>
         </div>
         <div class="flex items-center gap-2">
-          <button @click="showContactModal = true" :class="['p-2 rounded-lg transition', isCOE ? 'hover:bg-orange-100' : isSOM ? 'hover:bg-green-100' : isCNAHS ? 'hover:bg-green-100' : 'hover:bg-blue-100']">
-            <img :src="'/help.svg'" alt="Help" :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" />
+          <button @click="showContactModal = true" class="p-2 rounded-lg hover:bg-white/15 transition">
+            <img :src="'/help.svg'" alt="Help" class="w-5 h-5" style="filter: brightness(0) invert(1);" />
           </button>
-          <button @click="showMobileMenu = true" :class="['text-2xl', isCOE ? 'text-orange-900 hover:text-orange-700' : isSOM ? 'text-green-900 hover:text-green-700' : isCNAHS ? 'text-green-900 hover:text-green-700' : 'text-blue-900 hover:text-blue-700']">☰</button>
+          <button @click="showMobileMenu = true" class="text-2xl text-white hover:text-white/80 transition">☰</button>
         </div>
       </div>
 
@@ -3753,6 +3753,29 @@
         <!-- Dashboard Page -->
         <div v-if="currentPage === 'dashboard' && (!isAdminLike || inUserView)" class="mb-8">
 
+          <!-- Greeting Row -->
+          <div class="flex items-start sm:items-center justify-between gap-4 mb-5">
+            <div>
+              <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
+                Hi, {{ (currentUser.firstName || currentUser.first_name || displayName.split(' ')[0]) }}!
+              </h2>
+              <p class="text-gray-400 text-sm mt-0.5">Here's your student profile in SSAAM.</p>
+            </div>
+            <button
+              @click="refreshCurrentUser"
+              :disabled="refreshingUserData"
+              :class="['hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0',
+                isCOE ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-200' :
+                isSOM ? 'bg-green-600 hover:bg-green-700 shadow-green-200' :
+                isCNAHS ? 'bg-green-700 hover:bg-green-800 shadow-green-200' :
+                'bg-blue-600 hover:bg-blue-700 shadow-blue-200']"
+              title="Refresh"
+            >
+              <svg :class="['w-4 h-4', refreshingUserData ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              {{ refreshingUserData ? 'Refreshing…' : 'Refresh' }}
+            </button>
+          </div>
+
           <!-- ── Top identity card ── -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
             <!-- Thin accent top bar -->
@@ -3761,11 +3784,14 @@
             <div class="p-5 sm:p-7">
               <div class="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-7">
 
-                <!-- Avatar column -->
-                <div class="flex-shrink-0 flex flex-col items-center gap-3">
-                  <div class="relative">
-                    <div class="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50 flex items-center justify-center">
-                      <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center">
+                <!-- Avatar column — centered card on mobile, left-pinned on sm+ -->
+                <div class="flex-shrink-0 flex flex-col items-center gap-3 sm:items-start">
+                  <!-- Photo card -->
+                  <div class="relative group">
+                    <!-- Card shadow border -->
+                    <div :class="['w-36 h-36 sm:w-32 sm:h-32 rounded-2xl overflow-hidden border-2 shadow-lg bg-gray-50 flex items-center justify-center',
+                      isCOE ? 'border-orange-100 shadow-orange-100' : isSOM ? 'border-green-100 shadow-green-100' : isCNAHS ? 'border-green-100 shadow-green-100' : 'border-blue-100 shadow-blue-100']">
+                      <div v-if="profileImageLoading && !profileImageFailed" class="w-full h-full flex items-center justify-center bg-gray-50">
                         <svg class="animate-spin h-8 w-8 text-gray-300" fill="none" viewBox="0 0 24 24">
                           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
@@ -3780,36 +3806,37 @@
                         @load="onProfileImageLoad"
                         @error="handleProfileImageError"
                       />
-                      <span v-else class="text-3xl font-bold text-gray-300">{{ getInitials(currentUser?.full_name || displayName || '') }}</span>
+                      <span v-else class="text-4xl font-bold text-gray-300">{{ getInitials(currentUser?.full_name || displayName || '') }}</span>
                     </div>
                     <!-- Change photo button -->
                     <button
                       v-if="currentUser.role !== 'admin' && !currentUser.isMaster"
                       @click="$refs.studentPhotoInput.click()"
-                      class="absolute -bottom-2 -right-2 w-8 h-8 bg-white rounded-xl border border-gray-200 shadow-sm flex items-center justify-center hover:bg-gray-50 transition-colors"
-                      :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-500']"
+                      :class="['absolute -bottom-2 -right-2 w-9 h-9 bg-white rounded-xl border-2 shadow-md flex items-center justify-center hover:scale-110 active:scale-95 transition-transform',
+                        isCOE ? 'border-orange-100 text-orange-500' : isSOM ? 'border-green-100 text-green-500' : isCNAHS ? 'border-green-100 text-green-600' : 'border-blue-100 text-blue-500']"
                       title="Change Photo"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     </button>
                   </div>
-                  <p v-if="studentPhotoUploading" class="text-[11px] text-gray-400 animate-pulse">Uploading…</p>
-                  <input ref="studentPhotoInput" @change="handleStudentPhotoUpload" type="file" accept="image/*" class="hidden" />
+                  <p v-if="studentPhotoUploading" :class="['text-[11px] animate-pulse font-medium', isCOE ? 'text-orange-400' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-400']">Uploading…</p>
+                  <input ref="studentPhotoInput" @change="openPhotoCropModal" type="file" accept="image/*" class="hidden" />
                 </div>
 
                 <!-- Identity column -->
                 <div class="flex-1 min-w-0">
                   <div class="flex items-start justify-between gap-3 mb-1">
                     <div>
-                      <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-widest mb-0.5" :class="[isCOE ? 'text-orange-400' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-400']">
+                      <p :class="['text-[10px] font-semibold uppercase tracking-widest mb-0.5', isCOE ? 'text-orange-400' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-400']">
                         ID {{ currentUser.studentId || currentUser.student_id }}
                       </p>
                       <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight leading-tight">{{ displayName }}</h1>
                     </div>
+                    <!-- Mobile refresh button -->
                     <button
                       @click="refreshCurrentUser"
                       :disabled="refreshingUserData"
-                      class="flex-shrink-0 w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
+                      class="sm:hidden flex-shrink-0 w-8 h-8 rounded-xl border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-colors"
                       title="Refresh"
                     >
                       <svg :class="['w-4 h-4', refreshingUserData ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -5047,6 +5074,127 @@
         </button>
       </div>
       </div>
+    </div>
+  </transition>
+
+  <!-- ── Photo Crop Modal ── -->
+  <transition name="fade">
+    <div
+      v-if="showPhotoCropModal"
+      class="fixed inset-0 bg-black/75 z-[200] flex items-end sm:items-center justify-center"
+      @click.self="closeCropModal"
+    >
+      <transition name="modal-bounce" appear>
+        <div v-if="showPhotoCropModal" class="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-sm overflow-hidden">
+          <!-- Header -->
+          <div :class="['flex items-center justify-between px-5 py-4', isCOE ? 'bg-gradient-to-r from-orange-700 to-red-600' : isSOM ? 'bg-gradient-to-r from-green-700 to-teal-600' : isCNAHS ? 'bg-gradient-to-r from-green-900 to-green-700' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
+            <div class="flex items-center gap-3">
+              <div class="bg-white/20 p-2 rounded-lg">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-white">Crop Profile Photo</h3>
+                <p class="text-white/60 text-xs">Drag to reposition · scroll or slide to zoom</p>
+              </div>
+            </div>
+            <button @click="closeCropModal" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+
+          <!-- Crop Stage -->
+          <div
+            ref="cropContainerEl"
+            class="relative bg-gray-900 overflow-hidden select-none touch-none"
+            style="height: 320px;"
+            @mousedown.prevent="startCropDrag"
+            @mousemove.prevent="onCropMouseMove"
+            @mouseup="stopCropDrag"
+            @mouseleave="stopCropDrag"
+            @touchstart.prevent="startCropTouch"
+            @touchmove.prevent="onCropTouchMove"
+            @touchend="stopCropDrag"
+            @wheel.prevent="onCropWheel"
+          >
+            <!-- The image being repositioned -->
+            <img
+              v-if="cropImageSrc"
+              ref="cropImageEl"
+              :src="cropImageSrc"
+              alt="Crop preview"
+              class="absolute pointer-events-none"
+              draggable="false"
+              :style="{
+                left: cropX + 'px',
+                top: cropY + 'px',
+                width: (cropImageNatural.width * cropScale) + 'px',
+                height: (cropImageNatural.height * cropScale) + 'px',
+                cursor: cropDragging ? 'grabbing' : 'grab'
+              }"
+            />
+            <!-- Dark overlay with square cutout (CSS clip trick) -->
+            <div class="absolute inset-0 pointer-events-none" style="background: rgba(0,0,0,0.55);">
+              <!-- The transparent "hole" is simulated with box-shadow on the crop frame -->
+            </div>
+            <!-- Crop frame -->
+            <div
+              class="absolute pointer-events-none border-2 border-white rounded-xl"
+              :style="{
+                left: cropFrameOffset + 'px',
+                top: cropFrameOffset + 'px',
+                width: cropFrameSize + 'px',
+                height: cropFrameSize + 'px',
+                boxShadow: '0 0 0 9999px rgba(0,0,0,0.55)'
+              }"
+            >
+              <!-- Corner decorations -->
+              <span class="absolute -top-0.5 -left-0.5 w-5 h-5 border-t-4 border-l-4 border-white rounded-tl-lg"></span>
+              <span class="absolute -top-0.5 -right-0.5 w-5 h-5 border-t-4 border-r-4 border-white rounded-tr-lg"></span>
+              <span class="absolute -bottom-0.5 -left-0.5 w-5 h-5 border-b-4 border-l-4 border-white rounded-bl-lg"></span>
+              <span class="absolute -bottom-0.5 -right-0.5 w-5 h-5 border-b-4 border-r-4 border-white rounded-br-lg"></span>
+              <!-- Center crosshair -->
+              <span class="absolute inset-0 flex items-center justify-center opacity-30">
+                <span class="w-px h-full bg-white absolute left-1/2"></span>
+                <span class="h-px w-full bg-white absolute top-1/2"></span>
+              </span>
+            </div>
+            <!-- 1:1 label -->
+            <div class="absolute bottom-2 right-2 bg-black/50 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full pointer-events-none">500 × 500</div>
+          </div>
+
+          <!-- Zoom Slider -->
+          <div class="px-5 py-3 flex items-center gap-3 bg-gray-50 border-y border-gray-100">
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"/></svg>
+            <input
+              type="range"
+              v-model.number="cropScale"
+              :min="cropMinScale"
+              :max="cropMinScale * 4"
+              :step="cropMinScale * 0.01"
+              class="flex-1 accent-blue-600"
+              @input="clampCropPosition"
+            />
+            <svg class="w-4 h-4 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="p-5 flex gap-3">
+            <button
+              @click="closeCropModal"
+              class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition"
+            >Cancel</button>
+            <button
+              @click="applyCrop"
+              :disabled="studentPhotoUploading"
+              :class="['flex-1 py-2.5 rounded-xl text-white text-sm font-semibold shadow-md transition disabled:opacity-60',
+                isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-700 hover:bg-green-800' : 'bg-blue-600 hover:bg-blue-700']"
+            >
+              <span v-if="studentPhotoUploading">Uploading…</span>
+              <span v-else>Apply &amp; Upload</span>
+            </button>
+          </div>
+        </div>
+      </transition>
     </div>
   </transition>
 
@@ -9231,6 +9379,196 @@ const sidebarImageRetries = ref(0)
 const maxRetries = 3
 const studentPhotoUploading = ref(false)
 const refreshingUserData = ref(false)
+
+// ── Photo Crop Modal state ──────────────────────────────────────────────────
+const showPhotoCropModal = ref(false)
+const cropImageSrc = ref('')
+const cropX = ref(0)
+const cropY = ref(0)
+const cropScale = ref(1)
+const cropMinScale = ref(1)
+const cropFrameSize = 280      // displayed crop square px
+const cropContainerHeight = 320 // container height px (matches template style)
+const cropDragging = ref(false)
+const cropDragStart = ref({ x: 0, y: 0, imgX: 0, imgY: 0 })
+const cropImageNatural = ref({ width: 1, height: 1 })
+const cropContainerEl = ref(null)
+
+// Computed offset so the crop frame is centred in the container
+const cropFrameOffset = computed(() => {
+  const containerW = cropContainerEl.value ? cropContainerEl.value.clientWidth : 360
+  return (Math.min(containerW, cropContainerHeight) - cropFrameSize) / 2
+})
+
+const clampCropPosition = () => {
+  const containerW = cropContainerEl.value ? cropContainerEl.value.clientWidth : 360
+  const frameOff = (Math.min(containerW, cropContainerHeight) - cropFrameSize) / 2
+  const scaledW = cropImageNatural.value.width * cropScale.value
+  const scaledH = cropImageNatural.value.height * cropScale.value
+  const minX = frameOff + cropFrameSize - scaledW
+  const maxX = frameOff
+  const minY = frameOff + cropFrameSize - scaledH
+  const maxY = frameOff
+  cropX.value = Math.min(maxX, Math.max(minX, cropX.value))
+  cropY.value = Math.min(maxY, Math.max(minY, cropY.value))
+}
+
+const openPhotoCropModal = (event) => {
+  const file = event.target.files[0]
+  event.target.value = '' // allow re-selecting same file
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    cropImageSrc.value = e.target.result
+    const img = new Image()
+    img.onload = () => {
+      cropImageNatural.value = { width: img.width, height: img.height }
+      const containerW = cropContainerEl.value ? cropContainerEl.value.clientWidth : 360
+      const frameOff = (Math.min(containerW, cropContainerHeight) - cropFrameSize) / 2
+      // Minimum scale: image must cover the crop frame entirely
+      const minS = Math.max(cropFrameSize / img.width, cropFrameSize / img.height)
+      cropMinScale.value = minS
+      cropScale.value = minS
+      // Center image in container
+      cropX.value = frameOff + (cropFrameSize - img.width * minS) / 2
+      cropY.value = frameOff + (cropFrameSize - img.height * minS) / 2
+      clampCropPosition()
+    }
+    img.src = e.target.result
+    showPhotoCropModal.value = true
+  }
+  reader.readAsDataURL(file)
+}
+
+const closeCropModal = () => {
+  showPhotoCropModal.value = false
+  cropImageSrc.value = ''
+}
+
+const startCropDrag = (e) => {
+  cropDragging.value = true
+  cropDragStart.value = { x: e.clientX, y: e.clientY, imgX: cropX.value, imgY: cropY.value }
+}
+
+const onCropMouseMove = (e) => {
+  if (!cropDragging.value) return
+  const dx = e.clientX - cropDragStart.value.x
+  const dy = e.clientY - cropDragStart.value.y
+  cropX.value = cropDragStart.value.imgX + dx
+  cropY.value = cropDragStart.value.imgY + dy
+  clampCropPosition()
+}
+
+const startCropTouch = (e) => {
+  if (e.touches.length !== 1) return
+  const t = e.touches[0]
+  cropDragging.value = true
+  cropDragStart.value = { x: t.clientX, y: t.clientY, imgX: cropX.value, imgY: cropY.value }
+}
+
+const onCropTouchMove = (e) => {
+  if (!cropDragging.value || e.touches.length !== 1) return
+  const t = e.touches[0]
+  cropX.value = cropDragStart.value.imgX + (t.clientX - cropDragStart.value.x)
+  cropY.value = cropDragStart.value.imgY + (t.clientY - cropDragStart.value.y)
+  clampCropPosition()
+}
+
+const stopCropDrag = () => { cropDragging.value = false }
+
+const onCropWheel = (e) => {
+  const delta = e.deltaY > 0 ? -0.05 : 0.05
+  cropScale.value = Math.max(cropMinScale.value, Math.min(cropMinScale.value * 4, cropScale.value + delta * cropMinScale.value))
+  clampCropPosition()
+}
+
+const applyCrop = async () => {
+  const img = new Image()
+  img.src = cropImageSrc.value
+  await new Promise(resolve => { img.onload = resolve; if (img.complete) resolve() })
+
+  const containerW = cropContainerEl.value ? cropContainerEl.value.clientWidth : 360
+  const frameOff = (Math.min(containerW, cropContainerHeight) - cropFrameSize) / 2
+
+  // Source rectangle in the original image pixels
+  const srcX = (frameOff - cropX.value) / cropScale.value
+  const srcY = (frameOff - cropY.value) / cropScale.value
+  const srcSize = cropFrameSize / cropScale.value
+
+  const canvas = document.createElement('canvas')
+  canvas.width = 500
+  canvas.height = 500
+  const ctx = canvas.getContext('2d')
+  ctx.drawImage(img, srcX, srcY, srcSize, srcSize, 0, 0, 500, 500)
+
+  // Quality-step compress to keep under ~100 KB
+  let quality = 0.92
+  let base64 = canvas.toDataURL('image/jpeg', quality)
+  while (quality > 0.1) {
+    const sizeBytes = (base64.length - 'data:image/jpeg;base64,'.length) * 3 / 4
+    if (sizeBytes <= 100 * 1024) break
+    quality -= 0.1
+    base64 = canvas.toDataURL('image/jpeg', quality)
+  }
+
+  showPhotoCropModal.value = false
+  await uploadStudentPhotoBase64(base64)
+}
+
+const uploadStudentPhotoBase64 = async (base64Data) => {
+  studentPhotoUploading.value = true
+  const maxUploadRetries = 3
+  let uploadSuccess = false
+  try {
+    for (let attempt = 1; attempt <= maxUploadRetries; attempt++) {
+      try {
+        const res = await fetch(buildAPIUrl('/apis/upload-image'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image: base64Data })
+        })
+        const data = await res.json()
+        if (data.success) {
+          const photoUrl = data.url
+          const studentId = currentUser.value.studentId || currentUser.value.student_id
+          const token = localStorage.getItem('authToken') || localStorage.getItem('studentToken')
+          const updateRes = await fetch(buildAPIUrl(`/apis/students/${studentId}/photo`), {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+            body: JSON.stringify({ photo: photoUrl })
+          })
+          if (updateRes.ok) {
+            const displayUrl = photoUrl + (photoUrl.includes('?') ? '&' : '?') + 'v=' + Date.now()
+            currentUser.value.image = displayUrl
+            currentUser.value.photo = displayUrl
+            const stored = JSON.parse(localStorage.getItem('currentUser') || '{}')
+            stored.image = displayUrl
+            stored.photo = displayUrl
+            localStorage.setItem('currentUser', JSON.stringify(stored))
+            try {
+              if (studentId) localStorage.removeItem(`photo_${studentId}`)
+              if (studentPhotoCache?.value && studentId) delete studentPhotoCache.value[studentId]
+            } catch (_) {}
+            profileImageFailed.value = false
+            sidebarImageFailed.value = false
+            uploadSuccess = true
+            showNotification('Photo updated successfully!', 'success')
+            break
+          }
+        }
+        if (attempt < maxUploadRetries) await new Promise(r => setTimeout(r, 1000))
+      } catch (err) {
+        console.error('Photo upload attempt error:', err)
+        if (attempt < maxUploadRetries) await new Promise(r => setTimeout(r, 1000))
+      }
+    }
+    if (!uploadSuccess) showNotification('Failed to update photo. Please try again.', 'error')
+  } catch (err) {
+    console.error('Photo upload error:', err)
+    showNotification('Image processing error. Please try again.', 'error')
+  }
+  studentPhotoUploading.value = false
+}
 
 // User attendance logs
 const userAttendanceLogs = ref([])
