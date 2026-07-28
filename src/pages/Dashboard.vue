@@ -3777,7 +3777,7 @@
           <div class="flex items-start sm:items-center justify-between gap-4 mb-5">
             <div>
               <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
-                Hi, {{ (currentUser.fullName || currentUser.full_name || displayName.split(' ')[0]) }}!
+                Hi, {{ displayName }}!
               </h2>
               <p class="text-gray-400 text-sm mt-0.5">Here's your student profile in SSAAM.</p>
             </div>
