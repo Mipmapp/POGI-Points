@@ -2049,14 +2049,15 @@ app.get('/apis/my-payments', auth, async (req, res) => {
                 }
 
                 // Defensive targeting filter: when a campaign restricts year levels
-                // or programs, exclude it for students who do not match. An empty
-                // / missing targeting array means "all students" and is allowed.
+                // or programs, the student MUST match — even if their profile field
+                // is null/empty (absence of a match is not a pass).
+                // An empty/missing targeting array means "all students" and is allowed.
                 const targetYears = Array.isArray(payment.target_year_levels) ? payment.target_year_levels : [];
-                if (targetYears.length > 0 && studentYearLevel && !targetYears.includes(studentYearLevel)) {
+                if (targetYears.length > 0 && !targetYears.includes(studentYearLevel)) {
                     return false;
                 }
                 const targetPrograms = Array.isArray(payment.target_programs) ? payment.target_programs : [];
-                if (targetPrograms.length > 0 && studentProgram && !targetPrograms.includes(studentProgram)) {
+                if (targetPrograms.length > 0 && !targetPrograms.includes(studentProgram)) {
                     return false;
                 }
 

@@ -1003,8 +1003,8 @@
         </div>
       </div>
 
-      <!-- Floating Help Button (visible on mobile and desktop) -->
-      <div class="fixed bottom-4 right-4 md:bottom-8 md:right-8 z-20">
+      <!-- Floating Help Button (desktop only) -->
+      <div class="hidden md:block fixed md:bottom-8 md:right-8 z-20">
         <button @click="showContactModal = true" :class="['text-white rounded-full w-12 h-12 md:w-14 md:h-14 flex items-center justify-center transition-all duration-300 shadow-lg hover:scale-110 active:scale-95 hover:shadow-xl bg-gradient-to-r', isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'from-green-600 to-yellow-500 hover:from-green-700 hover:to-yellow-600' : isCNAHS ? 'from-green-700 to-green-600 hover:from-green-800 hover:to-green-700' : 'from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light']">
           <img :src="'/help.svg'" alt="Help" class="w-5 h-5 md:w-6 md:h-6" style="filter: brightness(0) invert(1);" />
         </button>
@@ -5080,71 +5080,93 @@
   <transition name="fade">
     <div
       v-if="showPhotoCropModal"
-      class="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center p-4 backdrop-blur-sm"
+      class="fixed inset-0 bg-black/50 z-[200] flex items-end sm:items-center justify-center sm:p-4 backdrop-blur-sm"
       @click.self="closeCropModal"
     >
       <transition name="modal-bounce" appear>
-        <div v-if="showPhotoCropModal" class="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden">
+        <div v-if="showPhotoCropModal" class="bg-white w-full sm:max-w-sm sm:rounded-3xl rounded-t-3xl shadow-2xl overflow-hidden">
 
           <!-- ── PHASE 1: Upload picker ── -->
           <template v-if="cropPhase === 'upload'">
-            <div class="flex items-center justify-between px-5 pt-5 pb-3">
+            <!-- Drag handle (mobile) -->
+            <div class="flex justify-center pt-3 pb-1 sm:hidden">
+              <div class="w-10 h-1 rounded-full bg-gray-200"></div>
+            </div>
+            <!-- Header -->
+            <div class="flex items-center justify-between px-5 pt-4 pb-3">
               <div>
-                <h3 class="text-base font-semibold text-gray-900">Upload your profile photo</h3>
-                <p class="text-xs text-gray-400 mt-0.5">Square crop · PNG or JPG · max 10 MB</p>
+                <h3 class="text-[15px] font-semibold text-gray-900 leading-tight">Upload profile photo</h3>
+                <p class="text-xs text-gray-400 mt-0.5">PNG or JPG · max 10 MB</p>
               </div>
-              <button @click="closeCropModal" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              <button @click="closeCropModal" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
+            <!-- Drop zone -->
             <div class="px-5 pb-5">
               <div
-                :class="['border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-3 py-12 cursor-pointer transition select-none',
-                  cropDragOver ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100']"
+                :class="['border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3 py-10 cursor-pointer transition-all select-none',
+                  cropDragOver
+                    ? 'border-blue-400 bg-blue-50/60 scale-[0.99]'
+                    : 'border-gray-200 bg-gray-50/80 hover:border-gray-300 hover:bg-gray-100/80']"
                 @click="$refs.cropFileInput.click()"
                 @dragover.prevent="cropDragOver = true"
                 @dragleave.prevent="cropDragOver = false"
                 @drop.prevent="onCropFileDrop"
               >
-                <div class="w-14 h-14 rounded-full bg-white border border-gray-200 shadow flex items-center justify-center">
-                  <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                <div :class="['w-14 h-14 rounded-2xl flex items-center justify-center transition-colors',
+                  cropDragOver ? 'bg-blue-100' : 'bg-white border border-gray-100 shadow-sm']">
+                  <svg :class="['w-7 h-7 transition-colors', cropDragOver ? 'text-blue-500' : 'text-gray-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/>
+                  </svg>
                 </div>
-                <div class="text-center">
-                  <p class="text-sm text-gray-600">Drag &amp; drop or <span :class="['font-semibold underline', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']">browse files</span></p>
-                  <p class="text-xs text-gray-400 mt-1">PNG, JPG (max. 10 MB)</p>
+                <div class="text-center px-2">
+                  <p class="text-sm text-gray-600 font-medium">
+                    Drop your photo here, or
+                    <span :class="['underline underline-offset-2', isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-500']">browse</span>
+                  </p>
+                  <p class="text-xs text-gray-400 mt-1">PNG, JPG up to 10 MB</p>
                 </div>
               </div>
-              <p v-if="cropFileError" class="mt-2 text-xs text-red-500 text-center font-medium">{{ cropFileError }}</p>
+              <p v-if="cropFileError" class="mt-2.5 text-xs text-red-500 text-center font-medium flex items-center justify-center gap-1">
+                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                {{ cropFileError }}
+              </p>
               <input ref="cropFileInput" type="file" accept="image/png,image/jpeg" class="hidden" @change="onCropFileSelected" />
               <button
                 @click="$refs.cropFileInput.click()"
-                :class="['mt-4 w-full py-2.5 rounded-xl text-sm font-semibold border transition',
-                  isCOE ? 'border-orange-200 text-orange-600 hover:bg-orange-50' : isSOM ? 'border-green-200 text-green-600 hover:bg-green-50' : isCNAHS ? 'border-green-200 text-green-700 hover:bg-green-50' : 'border-blue-200 text-blue-600 hover:bg-blue-50']"
-              >Browse &amp; Select</button>
+                :class="['mt-4 w-full py-3 rounded-2xl text-sm font-semibold transition-all active:scale-[0.98]',
+                  isCOE ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm shadow-orange-200'
+                  : isSOM ? 'bg-green-600 hover:bg-green-700 text-white shadow-sm shadow-green-200'
+                  : isCNAHS ? 'bg-green-700 hover:bg-green-800 text-white shadow-sm shadow-green-200'
+                  : 'bg-blue-500 hover:bg-blue-600 text-white shadow-sm shadow-blue-200']"
+              >Choose Photo</button>
             </div>
           </template>
 
-          <!-- ── PHASE 2: Crop (Facebook / Discord style) ── -->
+          <!-- ── PHASE 2: Crop ── -->
           <template v-else>
-            <!-- Gradient header -->
-            <div :class="['flex items-center justify-between px-5 py-3.5',
-              isCOE ? 'bg-gradient-to-r from-orange-700 to-red-500' :
-              isSOM ? 'bg-gradient-to-r from-green-700 to-teal-500' :
-              isCNAHS ? 'bg-gradient-to-r from-green-800 to-green-600' :
-              'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
+            <!-- Drag handle (mobile) -->
+            <div class="flex justify-center pt-3 pb-0 sm:hidden">
+              <div class="w-10 h-1 rounded-full bg-gray-200"></div>
+            </div>
+
+            <!-- White header -->
+            <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-100">
               <div>
-                <h3 class="text-base font-semibold text-white">Crop your photo</h3>
-                <p class="text-xs text-white/70 mt-0.5">Drag to reposition · scroll or slide to zoom</p>
+                <h3 class="text-[15px] font-semibold text-gray-900 leading-tight">Crop your photo</h3>
+                <p class="text-xs text-gray-400 mt-0.5">Drag to reposition · pinch or slide to zoom</p>
               </div>
-              <button @click="closeCropModal" class="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition">
-                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+              <button @click="closeCropModal" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
               </button>
             </div>
 
-            <!-- Crop stage: image moves, frame is fixed -->
+            <!-- Crop stage -->
             <div
               ref="cropContainerEl"
-              class="relative overflow-hidden select-none touch-none bg-gray-950 cursor-grab active:cursor-grabbing"
+              class="relative overflow-hidden select-none touch-none cursor-grab active:cursor-grabbing"
+              style="background: #f3f4f6;"
               :style="{ height: CROP_CONTAINER_H + 'px' }"
               @mousedown.prevent="startCropDrag"
               @mousemove.prevent="onCropMouseMove"
@@ -5155,13 +5177,11 @@
               @touchend="stopCropDrag"
               @wheel.prevent="onCropWheel"
             >
-              <!-- The image — moves freely beneath the fixed crop frame -->
-              <!-- maxWidth/maxHeight: none overrides Tailwind preflight's max-width: 100% which would cap the image -->
-              <!-- and cause stretching when both width & height are explicitly set. -->
+              <!-- Image: moves freely under the fixed frame -->
               <img
                 v-if="cropImageSrc"
                 :src="cropImageSrc"
-                alt="Crop preview"
+                alt=""
                 draggable="false"
                 class="absolute pointer-events-none select-none"
                 :style="{
@@ -5174,65 +5194,75 @@
                 }"
               />
 
-              <!-- Fixed crop frame — box-shadow creates the dark overlay outside it -->
+              <!-- Fixed 280×280 crop frame – box-shadow produces the frosted overlay -->
               <div
                 class="absolute pointer-events-none"
-                style="left: calc(50% - 140px); top: 50px; width: 280px; height: 280px; box-shadow: 0 0 0 9999px rgba(0,0,0,0.68); border-radius: 12px;"
+                style="left: calc(50% - 140px); top: 50px; width: 280px; height: 280px;
+                       box-shadow: 0 0 0 9999px rgba(243,244,246,0.82);
+                       border-radius: 16px;"
               >
-                <!-- White border ring -->
-                <div class="absolute inset-0 rounded-xl border-2 border-white/80"></div>
-                <!-- Rule-of-thirds grid lines -->
-                <div class="absolute inset-0 rounded-xl overflow-hidden">
-                  <div class="absolute left-1/3 inset-y-0 w-px bg-white/20"></div>
-                  <div class="absolute left-2/3 inset-y-0 w-px bg-white/20"></div>
-                  <div class="absolute top-1/3 inset-x-0 h-px bg-white/20"></div>
-                  <div class="absolute top-2/3 inset-x-0 h-px bg-white/20"></div>
+                <!-- Clean white border -->
+                <div class="absolute inset-0 rounded-2xl border-2 border-white shadow-lg"></div>
+                <!-- Rule-of-thirds grid -->
+                <div class="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+                  <div class="absolute left-1/3 inset-y-0 w-px bg-black/10"></div>
+                  <div class="absolute left-2/3 inset-y-0 w-px bg-black/10"></div>
+                  <div class="absolute top-1/3 inset-x-0 h-px bg-black/10"></div>
+                  <div class="absolute top-2/3 inset-x-0 h-px bg-black/10"></div>
                 </div>
-                <!-- Corner accent handles -->
-                <div class="absolute -top-px -left-px w-6 h-6 border-t-[3px] border-l-[3px] border-white rounded-tl-xl"></div>
-                <div class="absolute -top-px -right-px w-6 h-6 border-t-[3px] border-r-[3px] border-white rounded-tr-xl"></div>
-                <div class="absolute -bottom-px -left-px w-6 h-6 border-b-[3px] border-l-[3px] border-white rounded-bl-xl"></div>
-                <div class="absolute -bottom-px -right-px w-6 h-6 border-b-[3px] border-r-[3px] border-white rounded-br-xl"></div>
+                <!-- Corner handles – accent color -->
+                <div :class="['absolute -top-0.5 -left-0.5 w-5 h-5 border-t-[3px] border-l-[3px] rounded-tl-2xl',
+                  isCOE ? 'border-orange-400' : isSOM ? 'border-green-500' : isCNAHS ? 'border-green-600' : 'border-blue-400']"></div>
+                <div :class="['absolute -top-0.5 -right-0.5 w-5 h-5 border-t-[3px] border-r-[3px] rounded-tr-2xl',
+                  isCOE ? 'border-orange-400' : isSOM ? 'border-green-500' : isCNAHS ? 'border-green-600' : 'border-blue-400']"></div>
+                <div :class="['absolute -bottom-0.5 -left-0.5 w-5 h-5 border-b-[3px] border-l-[3px] rounded-bl-2xl',
+                  isCOE ? 'border-orange-400' : isSOM ? 'border-green-500' : isCNAHS ? 'border-green-600' : 'border-blue-400']"></div>
+                <div :class="['absolute -bottom-0.5 -right-0.5 w-5 h-5 border-b-[3px] border-r-[3px] rounded-br-2xl',
+                  isCOE ? 'border-orange-400' : isSOM ? 'border-green-500' : isCNAHS ? 'border-green-600' : 'border-blue-400']"></div>
               </div>
 
-              <!-- Output size badge -->
-              <div class="absolute bottom-2.5 right-3 bg-black/55 text-white text-[10px] font-semibold px-2.5 py-1 rounded-full pointer-events-none backdrop-blur-sm tracking-wide">500 × 500 px</div>
+              <!-- Size badge -->
+              <div class="absolute bottom-2.5 right-3 pointer-events-none">
+                <span class="bg-white/90 backdrop-blur-sm text-gray-500 text-[10px] font-semibold px-2 py-0.5 rounded-full border border-gray-200 shadow-sm tracking-wide">500 × 500</span>
+              </div>
             </div>
 
-            <!-- Zoom slider row -->
-            <div class="px-5 py-3 bg-gray-900 flex items-center gap-3">
+            <!-- Zoom controls (white) -->
+            <div class="px-5 py-3.5 border-b border-gray-100 flex items-center gap-3">
               <button
                 @click="onZoomStep(-1)"
-                class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition flex-shrink-0"
-                title="Zoom out"
+                class="w-8 h-8 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors flex-shrink-0 shadow-sm"
               >
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4"/></svg>
               </button>
-              <div class="flex-1 relative flex items-center">
+              <div class="flex-1 relative h-5 flex items-center">
+                <div class="absolute inset-x-0 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+                  <div
+                    :class="['h-full rounded-full transition-all', isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : isCNAHS ? 'bg-green-600' : 'bg-blue-400']"
+                    :style="{ width: cropZoomPercent + '%' }"
+                  ></div>
+                </div>
                 <input
                   type="range"
                   min="0"
                   max="100"
                   :value="cropZoomPercent"
                   @input="e => { cropZoomPercent = +e.target.value }"
-                  class="w-full h-1 rounded-full appearance-none cursor-pointer"
-                  style="accent-color: #ffffff; background: linear-gradient(to right, rgba(255,255,255,0.9) var(--pct), rgba(255,255,255,0.2) var(--pct));"
-                  :style="{ '--pct': cropZoomPercent + '%' }"
+                  class="absolute inset-x-0 w-full h-5 opacity-0 cursor-pointer"
                 />
               </div>
               <button
                 @click="onZoomStep(1)"
-                class="w-7 h-7 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white/70 hover:text-white transition flex-shrink-0"
-                title="Zoom in"
+                class="w-8 h-8 rounded-full border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center text-gray-500 hover:text-gray-700 transition-colors flex-shrink-0 shadow-sm"
               >
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
               </button>
             </div>
 
-            <!-- Footer: live preview + action buttons -->
-            <div class="px-5 py-4 bg-gray-50 border-t border-gray-100 flex items-center gap-3">
-              <!-- Live circular preview -->
-              <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-gray-200 shadow-sm flex-shrink-0 relative bg-gray-200">
+            <!-- Footer: preview + buttons -->
+            <div class="px-5 py-4 flex items-center gap-3">
+              <!-- Live preview -->
+              <div class="w-12 h-12 rounded-full overflow-hidden border-2 border-gray-100 shadow-sm flex-shrink-0 relative bg-gray-100">
                 <img
                   v-if="cropImageSrc"
                   :src="cropImageSrc"
@@ -5241,26 +5271,28 @@
                   :style="{ ...cropPreviewStyle, maxWidth: 'none', maxHeight: 'none' }"
                 />
               </div>
-              <!-- Buttons -->
+              <!-- Actions -->
               <div class="flex gap-2 flex-1 min-w-0">
                 <button
                   @click="closeCropModal"
-                  class="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-100 transition"
+                  class="flex-1 py-2.5 rounded-2xl border border-gray-200 text-sm font-medium text-gray-500 hover:bg-gray-50 active:scale-[0.97] transition-all"
                 >Cancel</button>
                 <button
                   @click="resetCrop"
-                  class="px-4 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-500 hover:bg-gray-100 transition flex-shrink-0"
-                  title="Reset to original fit"
+                  class="px-4 py-2.5 rounded-2xl border border-gray-200 text-sm font-medium text-gray-500 hover:bg-gray-50 active:scale-[0.97] transition-all flex-shrink-0"
                 >Reset</button>
                 <button
                   @click="applyCrop"
                   :disabled="studentPhotoUploading"
-                  :class="['flex-1 py-2.5 rounded-xl text-white text-sm font-semibold shadow transition disabled:opacity-60 flex items-center justify-center gap-1.5',
-                    isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-700 hover:bg-green-800' : 'bg-blue-600 hover:bg-blue-700']"
+                  :class="['flex-1 py-2.5 rounded-2xl text-white text-sm font-semibold transition-all active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5 shadow-sm',
+                    isCOE ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-100'
+                    : isSOM ? 'bg-green-600 hover:bg-green-700 shadow-green-100'
+                    : isCNAHS ? 'bg-green-700 hover:bg-green-800 shadow-green-100'
+                    : 'bg-blue-500 hover:bg-blue-600 shadow-blue-100']"
                 >
                   <svg v-if="studentPhotoUploading" class="w-3.5 h-3.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 12 0 12 12H4z"/></svg>
                   <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                  <span>{{ studentPhotoUploading ? 'Uploading…' : 'Save Photo' }}</span>
+                  <span>{{ studentPhotoUploading ? 'Saving…' : 'Save Photo' }}</span>
                 </button>
               </div>
             </div>
