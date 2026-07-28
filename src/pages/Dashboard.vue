@@ -6800,42 +6800,39 @@
       <div class="help-modal-card bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl max-w-2xl w-full max-h-[92vh] sm:max-h-[88vh] overflow-hidden flex flex-col">
 
         <!-- Header -->
-        <div class="bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light px-4 sm:px-6 pt-4 sm:pt-5 pb-0 flex-shrink-0 relative overflow-hidden">
-          <div class="light-sweep"></div>
-          <div class="relative z-10">
-            <div class="flex items-center justify-between mb-3 sm:mb-4">
-              <div class="flex items-center gap-2.5 sm:gap-3">
-                <div class="w-9 h-9 sm:w-10 sm:h-10 bg-white/20 rounded-2xl flex items-center justify-center flex-shrink-0">
-                  <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                </div>
-                <div>
-                  <h3 class="text-base sm:text-lg font-bold text-white leading-tight">Help &amp; Support</h3>
-                  <p class="text-blue-100/80 text-[10px] sm:text-xs">SSAAM &middot; JRMSU</p>
-                </div>
+        <div class="bg-white px-4 sm:px-6 pt-4 sm:pt-5 pb-0 flex-shrink-0 border-b border-gray-100">
+          <div class="flex items-center justify-between mb-4">
+            <div class="flex items-center gap-2.5 sm:gap-3">
+              <div :class="['w-9 h-9 sm:w-10 sm:h-10 rounded-2xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-emerald-100' : 'bg-blue-100']">
+                <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
-              <button @click="showContactModal = false" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white transition flex-shrink-0">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
-              </button>
+              <div>
+                <h3 class="text-base sm:text-lg font-bold text-gray-900 leading-tight">Help &amp; Support</h3>
+                <p class="text-gray-400 text-[10px] sm:text-xs">SSAAM &middot; JRMSU</p>
+              </div>
             </div>
-            <!-- Tabs (flush inside header) -->
-            <div class="flex gap-0.5 -mx-4 sm:-mx-6 px-2 sm:px-3 overflow-x-auto scrollbar-hide">
-              <button @click="helpTab = 'about'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0', helpTab === 'about' ? 'bg-white text-blue-900' : 'text-white/80 hover:text-white hover:bg-white/10']">
-                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                About
-              </button>
-              <button @click="helpTab = 'faq'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0', helpTab === 'faq' ? 'bg-white text-blue-900' : 'text-white/80 hover:text-white hover:bg-white/10']">
-                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                FAQ
-              </button>
-              <button @click="helpTab = 'contact'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0', helpTab === 'contact' ? 'bg-white text-blue-900' : 'text-white/80 hover:text-white hover:bg-white/10']">
-                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                Contact
-              </button>
-              <button @click="helpTab = 'terms'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2 sm:py-2.5 rounded-t-xl font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0', helpTab === 'terms' ? 'bg-white text-blue-900' : 'text-white/80 hover:text-white hover:bg-white/10']">
-                <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Terms
-              </button>
-            </div>
+            <button @click="showContactModal = false" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 hover:text-gray-700 transition flex-shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
+          <!-- Tabs — underline style -->
+          <div class="flex gap-0 -mx-4 sm:-mx-6 px-2 sm:px-3 overflow-x-auto scrollbar-hide">
+            <button @click="helpTab = 'about'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2.5 font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0 border-b-2', helpTab === 'about' ? (isCOE ? 'border-orange-500 text-orange-600' : isSOM ? 'border-green-600 text-green-700' : isCNAHS ? 'border-emerald-600 text-emerald-700' : 'border-blue-600 text-blue-700') : 'border-transparent text-gray-400 hover:text-gray-700']">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              About
+            </button>
+            <button @click="helpTab = 'faq'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2.5 font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0 border-b-2', helpTab === 'faq' ? (isCOE ? 'border-orange-500 text-orange-600' : isSOM ? 'border-green-600 text-green-700' : isCNAHS ? 'border-emerald-600 text-emerald-700' : 'border-blue-600 text-blue-700') : 'border-transparent text-gray-400 hover:text-gray-700']">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              FAQ
+            </button>
+            <button @click="helpTab = 'contact'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2.5 font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0 border-b-2', helpTab === 'contact' ? (isCOE ? 'border-orange-500 text-orange-600' : isSOM ? 'border-green-600 text-green-700' : isCNAHS ? 'border-emerald-600 text-emerald-700' : 'border-blue-600 text-blue-700') : 'border-transparent text-gray-400 hover:text-gray-700']">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              Contact
+            </button>
+            <button @click="helpTab = 'terms'" :class="['flex items-center gap-1.5 px-3 sm:px-4 py-2.5 font-semibold text-xs sm:text-sm whitespace-nowrap transition flex-shrink-0 border-b-2', helpTab === 'terms' ? (isCOE ? 'border-orange-500 text-orange-600' : isSOM ? 'border-green-600 text-green-700' : isCNAHS ? 'border-emerald-600 text-emerald-700' : 'border-blue-600 text-blue-700') : 'border-transparent text-gray-400 hover:text-gray-700']">
+              <svg class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              Terms
+            </button>
           </div>
         </div>
 
@@ -6845,18 +6842,16 @@
         <transition name="help-tab" mode="out-in">
         <div v-if="helpTab === 'about'" key="about" class="space-y-3">
           <!-- Hero card -->
-          <div class="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-4 text-white shadow-lg relative overflow-hidden">
-            <div class="absolute -top-4 -right-4 w-24 h-24 bg-white/10 rounded-full"></div>
-            <div class="absolute -bottom-6 -left-3 w-20 h-20 bg-white/5 rounded-full"></div>
-            <div class="relative z-10">
-              <div class="flex items-center gap-2 mb-2">
-                <div class="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center">
-                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
-                </div>
-                <span class="text-xs font-semibold text-blue-200 uppercase tracking-widest">About SSAAM</span>
+          <div :class="['rounded-2xl p-4 border relative overflow-hidden', isCOE ? 'bg-orange-50 border-orange-100' : isSOM ? 'bg-green-50 border-green-100' : isCNAHS ? 'bg-emerald-50 border-emerald-100' : 'bg-blue-50 border-blue-100']">
+            <div class="flex items-start gap-3">
+              <div :class="['w-10 h-10 rounded-2xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-emerald-100' : 'bg-blue-100']">
+                <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
               </div>
-              <h4 class="font-bold text-sm sm:text-base leading-snug mb-2">Student School Activities<br>Attendance Monitoring</h4>
-              <p class="text-blue-100 text-xs leading-relaxed">A comprehensive attendance management system for JRMSU — providing real-time RFID scanning, automated tracking, and detailed reporting.</p>
+              <div>
+                <p :class="['text-[10px] font-bold uppercase tracking-widest mb-1', isCOE ? 'text-orange-400' : isSOM ? 'text-green-500' : isCNAHS ? 'text-emerald-500' : 'text-blue-400']">About SSAAM</p>
+                <h4 class="font-bold text-sm sm:text-base text-gray-900 leading-snug mb-1.5">Student School Activities<br>Attendance Monitoring</h4>
+                <p class="text-gray-500 text-xs leading-relaxed">A comprehensive attendance management system for JRMSU — providing real-time RFID scanning, automated tracking, and detailed reporting.</p>
+              </div>
             </div>
           </div>
           <!-- Features grid -->
@@ -7095,14 +7090,13 @@
         </div>
 
         <div v-else-if="helpTab === 'terms'" key="terms" class="space-y-3">
-          <div class="bg-gradient-to-br from-violet-700 via-indigo-700 to-blue-700 rounded-2xl p-4 flex items-center gap-3 text-white overflow-hidden relative">
-            <div class="pointer-events-none absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/5"></div>
-            <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          <div class="bg-white rounded-2xl p-4 flex items-center gap-3 border border-gray-200 shadow-sm">
+            <div class="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
-            <div class="flex-1 min-w-0 relative">
-              <p class="font-black text-sm leading-tight">Terms &amp; Conditions</p>
-              <p class="text-white/70 text-[10px] mt-0.5 leading-snug">By using SSAAM, you agree to the terms governing system use, attendance, contributions, data privacy, and account security within JRMSU.</p>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-gray-900 text-sm leading-tight">Terms &amp; Conditions</p>
+              <p class="text-gray-400 text-[10px] mt-0.5 leading-snug">By using SSAAM, you agree to the terms governing system use, attendance, contributions, data privacy, and account security within JRMSU.</p>
             </div>
           </div>
           <p class="text-xs text-gray-500 px-0.5 leading-relaxed">These terms cover SSAAM's purpose, how your data is collected and protected, attendance and contribution policies, and your responsibilities as a user across all JRMSU colleges.</p>
@@ -7138,7 +7132,7 @@
 
         <!-- Sticky Footer -->
         <div class="px-4 sm:px-6 py-3 sm:py-4 border-t border-gray-100 flex-shrink-0 bg-white">
-          <button @click="showContactModal = false" class="w-full bg-gradient-to-r from-ssaam-dark via-blue-700 to-ssaam-light text-white py-2.5 sm:py-3 rounded-2xl font-bold text-sm hover:opacity-90 active:scale-[0.98] transition shadow-md shadow-blue-200">Done</button>
+          <button @click="showContactModal = false" :class="['w-full py-2.5 sm:py-3 rounded-2xl font-bold text-sm text-white transition active:scale-[0.98] shadow-sm', isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-gray-900 hover:bg-gray-800']">Done</button>
         </div>
       </div>
     </div>
