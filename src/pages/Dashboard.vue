@@ -2155,6 +2155,16 @@
             <!-- Gradient Banner -->
             <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <!-- Geometric art -->
+              <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 112" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="opacity:0.13">
+                <circle cx="370" cy="56" r="55" fill="none" stroke="white" stroke-width="1.2"/>
+                <circle cx="370" cy="56" r="82" fill="none" stroke="white" stroke-width="0.8"/>
+                <circle cx="370" cy="56" r="112" fill="none" stroke="white" stroke-width="0.6"/>
+                <line x1="-10" y1="95" x2="170" y2="-15" stroke="white" stroke-width="0.7"/>
+                <line x1="40" y1="112" x2="220" y2="0" stroke="white" stroke-width="0.55"/>
+                <line x1="90" y1="112" x2="270" y2="0" stroke="white" stroke-width="0.45"/>
+                <rect x="55" y="22" width="44" height="44" fill="none" stroke="white" stroke-width="0.9" transform="rotate(45 77 44)"/>
+              </svg>
               <div class="light-sweep"></div>
               <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/20">
@@ -3373,6 +3383,16 @@
           <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
             <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <!-- Geometric art -->
+              <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 112" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="opacity:0.13">
+                <circle cx="370" cy="56" r="55" fill="none" stroke="white" stroke-width="1.2"/>
+                <circle cx="370" cy="56" r="82" fill="none" stroke="white" stroke-width="0.8"/>
+                <circle cx="370" cy="56" r="112" fill="none" stroke="white" stroke-width="0.6"/>
+                <line x1="-10" y1="95" x2="170" y2="-15" stroke="white" stroke-width="0.7"/>
+                <line x1="40" y1="112" x2="220" y2="0" stroke="white" stroke-width="0.55"/>
+                <line x1="90" y1="112" x2="270" y2="0" stroke="white" stroke-width="0.45"/>
+                <rect x="55" y="22" width="44" height="44" fill="none" stroke="white" stroke-width="0.9" transform="rotate(45 77 44)"/>
+              </svg>
               <div class="light-sweep"></div>
               <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/20">
@@ -3779,9 +3799,6 @@
 
           <!-- ── Top identity card ── -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
-            <!-- Thin accent top bar -->
-            <div :class="['h-1', isCOE ? 'bg-gradient-to-r from-orange-500 to-red-400' : isSOM ? 'bg-gradient-to-r from-green-500 to-teal-400' : isCNAHS ? 'bg-gradient-to-r from-green-600 to-green-400' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']"></div>
-
             <div class="p-5 sm:p-7">
               <div class="flex flex-col sm:flex-row sm:items-start gap-5 sm:gap-7">
 
@@ -4017,6 +4034,16 @@
             <!-- Gradient Banner -->
             <div :class="['relative h-28 overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-600 to-red-700' : isSOM ? 'bg-gradient-to-br from-green-600 to-teal-600' : isCNAHS ? 'bg-gradient-to-br from-emerald-600 to-green-700' : 'bg-gradient-to-br from-ssaam-dark via-blue-700 to-ssaam-light']">
               <div class="absolute inset-0 opacity-20 mix-blend-overlay bg-[url('https://www.transparenttextures.com/patterns/stardust.png')]"></div>
+              <!-- Geometric art -->
+              <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 112" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="opacity:0.13">
+                <circle cx="370" cy="56" r="55" fill="none" stroke="white" stroke-width="1.2"/>
+                <circle cx="370" cy="56" r="82" fill="none" stroke="white" stroke-width="0.8"/>
+                <circle cx="370" cy="56" r="112" fill="none" stroke="white" stroke-width="0.6"/>
+                <line x1="-10" y1="95" x2="170" y2="-15" stroke="white" stroke-width="0.7"/>
+                <line x1="40" y1="112" x2="220" y2="0" stroke="white" stroke-width="0.55"/>
+                <line x1="90" y1="112" x2="270" y2="0" stroke="white" stroke-width="0.45"/>
+                <rect x="55" y="22" width="44" height="44" fill="none" stroke="white" stroke-width="0.9" transform="rotate(45 77 44)"/>
+              </svg>
               <div class="light-sweep"></div>
               <div class="absolute inset-0 flex items-center px-4 sm:px-6 md:px-8 gap-3 sm:gap-4">
                 <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-white/20">
