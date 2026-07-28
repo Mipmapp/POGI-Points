@@ -224,7 +224,7 @@
       </div>
       <!-- Top-left SSAAM branding -->
       <div class="absolute top-8 left-8 z-20 flex items-center gap-2.5">
-        <img :src="'/img/ssaam_icon.png'" alt="SSAAM" class="w-9 h-9 rounded-xl object-cover shadow-md" />
+        <img :src="'/img/app_icon.png'" alt="SSAAM" class="w-9 h-9 rounded-xl object-cover shadow-md" />
         <span class="text-white font-bold text-xl tracking-wide">SSAAM</span>
       </div>
       <!-- Bottom quote -->
@@ -723,7 +723,7 @@
     <ParticleBackground />
     <div class="text-white pt-12 pb-8 px-6 relative z-10">
       <div class="flex items-center gap-3 mb-8">
-        <img :src="'/img/ssaam_icon.png'" alt="SSAAM" class="w-10 h-10 rounded-2xl object-cover shadow-md" />
+        <img :src="'/img/app_icon.png'" alt="SSAAM" class="w-10 h-10 rounded-2xl object-cover shadow-md" />
         <span class="text-white font-bold text-2xl tracking-wide">SSAAM</span>
       </div>
       <h1 class="text-3xl font-bold leading-tight mb-2">Create Your Account!</h1>

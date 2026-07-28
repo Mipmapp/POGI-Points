@@ -9,7 +9,7 @@
 
         <!-- Banner image -->
         <div class="flex-shrink-0 relative overflow-hidden" style="height: 180px;">
-          <img :src="'/img/ssaam_popup.png'" alt="SSAAM Banner" class="tc-kenburns w-full h-full object-cover object-center" />
+          <img :src="ssaamBanner" alt="SSAAM Banner" class="tc-kenburns w-full h-full object-cover object-center" />
           <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60"></div>
           <div class="absolute bottom-3 left-4 flex items-center gap-2">
             <img :src="ccsLogo" alt="CCS Logo" class="w-8 h-8 object-contain drop-shadow-lg" />
@@ -170,6 +170,7 @@
 <script setup>
 import { ref, watch, nextTick } from 'vue'
 import ccsLogo from '../assets/ccs-logo.png'
+import ssaamBanner from '../assets/ssaam_popup.png'
 
 const props = defineProps({
   visible: { type: Boolean, default: false },
