@@ -672,7 +672,7 @@
       ]">
       <!-- Logo / Header -->
       <div :class="['border-b border-white/15 flex-shrink-0 bg-white/5 backdrop-blur-sm flex items-center transition-all duration-300', sidebarCollapsed ? 'px-0 py-4 justify-center' : 'px-5 py-5 gap-3']">
-        <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
+        <img :src="'/ccs-logo.png'" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-xl flex-shrink-0" :class="{ 'logo-flip-animation': sidebarLogoFlipping }" />
         <Transition name="sidebar-label">
           <div v-if="!sidebarCollapsed" class="flex flex-col leading-tight overflow-hidden">
             <h1 class="text-2xl font-extrabold italic text-white tracking-wide drop-shadow-sm whitespace-nowrap">SSAAM</h1>
@@ -849,7 +849,7 @@
       <div v-if="showMobileMenu" :class="[ 'fixed left-0 top-0 h-screen w-72 bg-gradient-to-b text-white flex flex-col z-40 md:hidden shadow-2xl', sidebarGradient ]">
         <div class="flex items-center justify-between px-4 py-4 border-b border-white/15 bg-white/5 flex-shrink-0">
           <div class="flex items-center gap-2.5">
-            <img :src="'/src/assets/ccs-logo.png'" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-lg flex-shrink-0" />
+            <img :src="'/ccs-logo.png'" alt="JRMSU Logo" class="w-9 h-9 object-contain drop-shadow-lg flex-shrink-0" />
             <div class="flex flex-col leading-tight">
               <h1 class="text-xl font-extrabold italic text-white tracking-wide drop-shadow-sm">SSAAM</h1>
               <p class="text-[9px] uppercase tracking-widest font-semibold text-white/50">JRMSU</p>
