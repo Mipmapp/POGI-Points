@@ -3777,7 +3777,7 @@
           <div class="flex items-start sm:items-center justify-between gap-4 mb-5">
             <div>
               <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
-                Hi, {{ displayName }}!
+                Hi, {{ greetingName }}!
               </h2>
               <p class="text-gray-400 text-sm mt-0.5">Here's your student profile in SSAAM.</p>
             </div>
@@ -4206,7 +4206,7 @@
           <div class="flex items-start sm:items-center justify-between gap-4">
             <div>
               <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
-                Hi, {{ displayName }}!
+                Hi, {{ greetingName }}!
               </h2>
               <p class="text-gray-400 text-sm mt-0.5">Here's what's happening in SSAAM today.</p>
             </div>
@@ -12164,6 +12164,8 @@ watch(showDevelopersPopup, (open) => {
     devCarouselTimer = null
   }
 })
+
+const greetingName = computed(() => displayName.value.split(' ')[0])
 
 const displayName = computed(() => {
   const fullName = currentUser.value.fullName || currentUser.value.full_name || currentUser.value.firstName
