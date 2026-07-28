@@ -12165,14 +12165,16 @@ watch(showDevelopersPopup, (open) => {
 })
 
 const displayName = computed(() => {
-  const fullName = currentUser.value.fullName || currentUser.value.full_name
+  const fullName = currentUser.value.fullName || currentUser.value.full_name || currentUser.value.firstName
   const lastName = currentUser.value.lastName || currentUser.value.last_name
   if (currentUser.value.role === 'admin' || currentUser.value.isMaster) {
     return 'Admin'
   }
-  if (fullName && lastName) {
-    return `${fullName} ${lastName}`
+  // Co-admins and treasurers show their real name, not 'Admin'
+  if (fullName) {
+    return lastName ? `${fullName} ${lastName}` : fullName
   }
+  if (lastName) return lastName
   return currentUser.value.name || 'User'
 })
 
@@ -12538,6 +12540,10 @@ onMounted(async () => {
   if (!user.studentId && !user.student_id) {
     router.push('/')
     return
+  }
+  // Migrate old firstName/middleName keys → fullName for existing sessions
+  if (!user.fullName && user.firstName) {
+    user.fullName = user.firstName
   }
   currentUser.value = user
 

@@ -1447,7 +1447,7 @@ const handleLogin = async () => {
       const normalizedUser = {
         ...user,
         studentId: user.student_id || user.username || enteredId,
-        firstName: user.full_name || user.first_name || '',
+        fullName: user.full_name || user.first_name || '',
         lastName: user.last_name || '',
         email: user.email || '',
         rfidCode: user.rfid_code || '',
