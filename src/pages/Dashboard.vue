@@ -2463,7 +2463,7 @@
                         </div>
                         <!-- Event Info -->
                         <div class="flex-1 min-w-0">
-                          <p class="text-sm font-semibold text-[#201f1e] truncate leading-snug">{{ record.event?.title || record.event_title || 'Event' }}</p>
+                          <p class="text-sm font-semibold text-[#201f1e] leading-snug line-clamp-2">{{ record.event?.title || record.event_title || 'Event' }}</p>
                           <p class="text-xs text-[#605e5c] mt-0.5">
                             {{ record.event?.event_date ? formatEventDate(record.event.event_date) : '-' }}
                             <span v-if="record.sessions && record.sessions.length > 0"> · {{ record.sessions.length }} session{{ record.sessions.length > 1 ? 's' : '' }}</span>
