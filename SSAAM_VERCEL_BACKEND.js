@@ -2789,7 +2789,9 @@ const attendanceEventSchema = new mongoose.Schema({
     updated_at: { type: Date, default: Date.now },
     activated_at: { type: Date, default: null },
     closed_at: { type: Date, default: null },
-    rfidScanner: { type: mongoose.Schema.Types.Mixed, default: { checkInEnabled: true, checkOutEnabled: false } }
+    rfidScanner: { type: mongoose.Schema.Types.Mixed, default: { checkInEnabled: true, checkOutEnabled: false } },
+    school_year: { type: String, default: '' },
+    semester: { type: String, default: '' }
 });
 
 attendanceEventSchema.index({ status: 1, event_date: -1 });
@@ -2863,6 +2865,8 @@ const attendanceLogSchema = new mongoose.Schema({
     // Stored here so aggregation pipelines can determine attendance status
     // without needing a $lookup join back to the sessions collection.
     check_in_only: { type: Boolean, default: false },
+    school_year: { type: String, default: '' },
+    semester: { type: String, default: '' },
     created_at: { type: Date, default: Date.now },
     updated_at: { type: Date, default: Date.now }
 });
@@ -3042,7 +3046,7 @@ async function getSettings(college = 'CCS') {
                 checkOutDisableAt: null
             },
             semester: '1st Sem',
-            schoolYear: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`
+            schoolYear: '2026-2027'
         });
     } else {
         let needsSave = false;
@@ -3062,7 +3066,7 @@ async function getSettings(college = 'CCS') {
             needsSave = true;
         }
         if (settings.schoolYear === undefined) {
-            settings.schoolYear = `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
+            settings.schoolYear = '2026-2027';
             needsSave = true;
         }
         if (needsSave) {
@@ -4670,12 +4674,12 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
 
         // First try to find student in the CLAIMED college
         let student = await StudentModel.findOne({ student_id })
-            .select('-contributions -semester -school_year');
+            .select('-contributions');
 
         // If not found in claimed college, check if they exist in the OTHER college
         if (!student) {
             const otherStudent = await OtherStudentModel.findOne({ student_id })
-                .select('-contributions -semester -school_year');
+                .select('-contributions');
 
             if (otherStudent) {
                 // Student exists, but in the OTHER college - reject
@@ -4754,6 +4758,26 @@ app.post('/apis/students/login', studentAuth, timestampAuth, async (req, res) =>
         const requiresPasswordUpdate = !student.custom_password;
 
         await _loginRecord(_key, true); // clear the counter on success
+
+        // Stamp the student's school_year and semester from current settings on every login.
+        // This "validates" them for the current semester — the dashboard uses these fields
+        // to show whether the student has logged in and been validated this term.
+        try {
+            const loginSettings = await getSettings(claimedCollege);
+            const stampYear = loginSettings.schoolYear || '2026-2027';
+            const stampSem  = loginSettings.semester   || '1st Sem';
+            await StudentModel.updateOne(
+                { student_id },
+                { school_year: stampYear, semester: stampSem }
+            );
+            // Reflect the update in the object returned to the client
+            student = student.toObject ? student.toObject() : Object.assign({}, student);
+            student.school_year = stampYear;
+            student.semester    = stampSem;
+        } catch (stampErr) {
+            console.error('[Login] Failed to stamp semester validation:', stampErr.message);
+        }
+
         res.cookie('ssaam_token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -6846,6 +6870,9 @@ app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res
             geofence_enabled, geofence_lat, geofence_lng, geofence_radius_meters
         });
 
+        // Tag the event with the current academic year and semester from settings
+        const eventSettings = await getSettings(req.college);
+
         const event = new EventModel({
             title,
             description: description || "",
@@ -6862,6 +6889,8 @@ app.post('/apis/attendance/events', auth, requireCoAdminOrAbove, async (req, res
             assigned_users: assigned_users && Array.isArray(assigned_users) ? assigned_users : [],
             rfidScanner: { checkInEnabled: true, checkOutEnabled: false },
             face_id_enabled: face_id_enabled === undefined ? true : !!face_id_enabled,
+            school_year: eventSettings.schoolYear || '2026-2027',
+            semester: eventSettings.semester || '1st Sem',
             ...sanitisedGeofence
         });
 
@@ -7004,6 +7033,9 @@ app.post('/apis/attendance/events/custom/create', auth, requireCoAdminOrAbove, a
 
         const EventModel = getCollegeModel(AttendanceEvent, CCS_AttendanceEvent, COE_AttendanceEvent, req.college);
 
+        // Tag custom event with current academic year and semester
+        const customEventSettings = await getSettings(req.college);
+
         const customEvent = new EventModel({
             title,
             description: description || "",
@@ -7018,7 +7050,9 @@ app.post('/apis/attendance/events/custom/create', auth, requireCoAdminOrAbove, a
             created_by_name: req.master
                 ? (req.master.username || req.master.full_name || req.master.email || 'Admin')
                 : (req.student.full_name || req.student.student_id || 'Student'),
-            activated_at: new Date()
+            activated_at: new Date(),
+            school_year: customEventSettings.schoolYear || '2026-2027',
+            semester: customEventSettings.semester || '1st Sem'
         });
 
         await customEvent.save();
@@ -8029,7 +8063,9 @@ const sessionAttendanceCheck = async (req, res) => {
                 is_late: isLate,
                 check_in_only: session.check_in_only || false,
                 source,
-                input_method: isManualStudentId ? 'manual_student_id' : 'rfid'
+                input_method: isManualStudentId ? 'manual_student_id' : 'rfid',
+                school_year: event.school_year || '',
+                semester: event.semester || ''
             });
             action = 'check_in';
         } else if (!log.check_out_at) {

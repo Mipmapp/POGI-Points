@@ -3876,8 +3876,20 @@
                       <span :class="['w-1.5 h-1.5 rounded-full', currentUser.rfid_status === 'verified' ? 'bg-emerald-500' : 'bg-amber-400']"></span>
                       {{ currentUser.rfid_status === 'verified' ? 'RFID Verified' : 'RFID Pending' }}
                     </span>
-                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-50 border border-gray-100 text-xs text-gray-500 font-medium">
-                      {{ appSettings.schoolYear || 'N/A' }} · {{ appSettings.semester || 'N/A' }}
+                    <!-- Semester validation badge: green = validated this semester, amber = needs to log in -->
+                    <span :class="['inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border',
+                      (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)
+                        ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
+                        : 'bg-amber-50 border-amber-100 text-amber-700']"
+                      :title="(currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)
+                        ? 'Validated for the current semester'
+                        : 'Not yet validated — please log in again to validate for the current semester'">
+                      <span :class="['w-1.5 h-1.5 rounded-full flex-shrink-0',
+                        (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)
+                          ? 'bg-emerald-500' : 'bg-amber-400']"></span>
+                      {{ currentUser.school_year || appSettings.schoolYear || 'N/A' }} · {{ currentUser.semester || appSettings.semester || 'N/A' }}
+                      <span class="ml-0.5">·</span>
+                      <span>{{ (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester) ? 'Validated' : 'Not Validated' }}</span>
                     </span>
                   </div>
                   <p class="text-[11px] text-gray-400 mt-3">Member since {{ formatDateTimeShort(currentUser.created_date) }}</p>
