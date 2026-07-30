@@ -320,14 +320,14 @@ const tcSections = [
 .welcome-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 999px; }
 .welcome-scroll::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
 
-/* Ken Burns — slow zoom-in with gentle top-to-bottom pan, then reverses */
+/* Slow bottom-to-top pan, then back — no zoom */
 @keyframes kenburns {
-  0%   { transform: scale(1.0)  translateY(0%);    }
-  50%  { transform: scale(1.12) translateY(-3%);   }
-  100% { transform: scale(1.0)  translateY(0%);    }
+  0%   { transform: scale(1.35) translateY(9%);  }
+  50%  { transform: scale(1.35) translateY(-9%); }
+  100% { transform: scale(1.35) translateY(9%);  }
 }
 .tc-kenburns {
-  animation: kenburns 14s ease-in-out infinite;
+  animation: kenburns 12s ease-in-out infinite;
   transform-origin: center center;
   will-change: transform;
 }

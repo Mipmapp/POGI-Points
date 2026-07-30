@@ -11330,13 +11330,20 @@ const rejectReason = ref('')
 const pendingSearchQuery = ref('')
 const pendingCurrentPage = ref(1)
 const pendingPerPage = 10
+const pendingAcadYear = ref('')
+const pendingSemFilter = ref('')
 
 const filteredPendingStudents = computed(() => {
-  if (!pendingSearchQuery.value.trim()) {
-    return pendingStudents.value
+  let result = pendingStudents.value
+  if (pendingAcadYear.value) {
+    result = result.filter(s => s.school_year === pendingAcadYear.value)
   }
+  if (pendingSemFilter.value) {
+    result = result.filter(s => s.semester === pendingSemFilter.value)
+  }
+  if (!pendingSearchQuery.value.trim()) return result
   const query = pendingSearchQuery.value.toLowerCase().trim()
-  return pendingStudents.value.filter(student => {
+  return result.filter(student => {
     const fullName = `${student.full_name || student.last_name || ''} ${student.suffix || ''}`.toLowerCase()
     const studentId = (student.student_id || '').toLowerCase()
     const email = (student.email || '').toLowerCase()
@@ -11375,11 +11382,35 @@ const attendanceCurrentPage = ref(1)
 const attendanceItemsPerPage = 4
 const attendanceSchoolYearFilter = ref('')
 const attendanceSemesterFilter = ref('')
+const statsAcadYear = ref('')
+const statsSemFilter = ref('')
+const userAttendAcadYear = ref('')
+const userAttendSemFilter = ref('')
+const userContribAcadYear = ref('')
+const userContribSemFilter = ref('')
 
 // Reset to page 1 when attendance filters change
 watch([attendanceSearchQuery, attendanceSchoolYearFilter, attendanceSemesterFilter], () => {
   attendanceCurrentPage.value = 1
 })
+
+// Initialize all academic year filters to the current academic year/semester from settings
+watch(() => appSettings.value.schoolYear, (yr) => {
+  if (!yr) return
+  if (!statsAcadYear.value) statsAcadYear.value = yr
+  if (!pendingAcadYear.value) pendingAcadYear.value = yr
+  if (!attendanceSchoolYearFilter.value) attendanceSchoolYearFilter.value = yr
+  if (!userAttendAcadYear.value) userAttendAcadYear.value = yr
+  if (!userContribAcadYear.value) userContribAcadYear.value = yr
+}, { immediate: true })
+watch(() => appSettings.value.semester, (sem) => {
+  if (!sem) return
+  if (!statsSemFilter.value) statsSemFilter.value = sem
+  if (!pendingSemFilter.value) pendingSemFilter.value = sem
+  if (!attendanceSemesterFilter.value) attendanceSemesterFilter.value = sem
+  if (!userAttendSemFilter.value) userAttendSemFilter.value = sem
+  if (!userContribSemFilter.value) userContribSemFilter.value = sem
+}, { immediate: true })
 
 // Helper to derive a stable student key from log or student object
 const deriveStudentKey = (obj) => {
@@ -13447,7 +13478,11 @@ const refreshCurrentUser = async () => {
 const fetchStats = async () => {
   statsLoading.value = true
   try {
-    const response = await fetch(buildAPIUrl(`/apis/students/stats`), {
+    const statsParams = new URLSearchParams()
+    if (statsAcadYear.value) statsParams.set('school_year', statsAcadYear.value)
+    if (statsSemFilter.value) statsParams.set('semester', statsSemFilter.value)
+    const statsUrl = `/apis/students/stats${statsParams.toString() ? '?' + statsParams.toString() : ''}`
+    const response = await fetch(buildAPIUrl(statsUrl), {
       method: 'GET',
       headers: getFetchHeaders()
     })

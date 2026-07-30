@@ -937,7 +937,7 @@ app.get('/apis/contributions/transparency', async (req, res) => {
 // Create new payment
 app.post('/apis/payments', auth, async (req, res) => {
     try {
-        const { title, description, type, amount_due, deadline, target_year_levels, target_programs, addons } = req.body;
+        const { title, description, type, amount_due, deadline, target_year_levels, target_programs, addons, school_year, semester } = req.body;
 
         if (!title || !title.trim()) {
             return res.status(400).json({ message: 'Payment title is required' });
@@ -959,6 +959,8 @@ app.post('/apis/payments', auth, async (req, res) => {
             amount_due: Number(amount_due),
             deadline: deadline || null,
             created_by: createdBy,
+            school_year: school_year ? String(school_year).trim() : '',
+            semester: semester ? String(semester).trim() : '',
             target_year_levels: Array.isArray(target_year_levels) ? target_year_levels : [],
             target_programs:    Array.isArray(target_programs)    ? target_programs    : [],
             addons: Array.isArray(addons) ? addons
@@ -2027,7 +2029,7 @@ app.get('/apis/my-payments', auth, async (req, res) => {
 
         const paymentRecord = await PaymentRecordModel.findOne({
             $or: possibleStudentIds.map(id => ({ student_id: id }))
-        }).populate({ path: 'campaigns.payment_id', model: PaymentModel, select: 'title description type amount_due deadline status created_at target_year_levels target_programs' });
+        }).populate({ path: 'campaigns.payment_id', model: PaymentModel, select: 'title description type amount_due deadline status created_at school_year semester target_year_levels target_programs' });
 
         if (!paymentRecord) {
             return res.json({
@@ -2073,6 +2075,8 @@ app.get('/apis/my-payments', auth, async (req, res) => {
                 type: campaign.payment_id?.type || 'fee',
                 amount_due: campaign.payment_id?.amount_due || 0,
                 deadline: campaign.payment_id?.deadline,
+                school_year: campaign.payment_id?.school_year || '',
+                semester: campaign.payment_id?.semester || '',
                 is_paid: campaign.payment_status === 'paid',
                 payment_status: campaign.payment_status,
                 paid_date: campaign.paid_at,
@@ -2922,6 +2926,9 @@ const paymentSchema = new mongoose.Schema({
     // Targeting: empty array = applies to ALL; non-empty = only matching students
     target_year_levels: { type: [String], default: [] },
     target_programs:    { type: [String], default: [] },
+    // Academic period this campaign belongs to
+    school_year: { type: String, default: '' },
+    semester: { type: String, default: '' },
     // Optional add-ons: items/tickets students can purchase alongside the base fee
     addons: [{
         name:        { type: String, required: true },
@@ -3461,7 +3468,10 @@ app.get('/apis/students/stats', auth, async (req, res) => {
         };
         const YEAR_LEVELS = ['1st Year', '2nd Year', '3rd Year', '4th Year'];
 
-        const allStudents = await StudentModel.find({ status: 'approved' });
+        const statsQuery = { status: 'approved' };
+        if (req.query.school_year) statsQuery.school_year = req.query.school_year;
+        if (req.query.semester) statsQuery.semester = req.query.semester;
+        const allStudents = await StudentModel.find(statsQuery);
 
         // Dynamically discover all programs in this college's data
         const stats = {};
@@ -6301,8 +6311,9 @@ app.post('/apis/password-reset/request', studentAuth, timestampAuth, async (req,
             attempts: 0 // Track verification attempts
         });
 
-        // Send email with plain code
-        await sendPasswordResetEmail(student.email, code, student.full_name || student.last_name);
+        // Send email with plain code — build a full display name: first+middle+last
+        const displayName = [student.full_name, student.last_name].filter(Boolean).join(' ');
+        await sendPasswordResetEmail(student.email, code, displayName);
 
         // Reset attempt counter on success
         passwordResetAttempts.set(rateLimitKey, { count: 0, lastAttempt: now });
