@@ -3956,6 +3956,142 @@ app.post('/apis/students/arms-verify', studentAuth, async (req, res) => {
     }
 });
 
+// POST /apis/students/self-arms-validate
+// Authenticated student validates their own enrollment for the current semester via JRMSU ARMS.
+// The student_id comes from the JWT (cannot be spoofed); only the ARMS password is submitted.
+app.post('/apis/students/self-arms-validate', studentAuthWithToken, async (req, res) => {
+    try {
+        const { password } = req.body;
+        const student_id = req.student.student_id;
+
+        if (!password) {
+            return res.status(400).json({ message: "ARMS portal password is required." });
+        }
+
+        const armsApiKey    = process.env.ARMS_API_KEY;
+        const armsApiSecret = process.env.ARMS_API_SECRET;
+
+        if (!armsApiKey || !armsApiSecret) {
+            return res.status(503).json({ message: "ARMS verification is not configured on this server. Please contact your administrator." });
+        }
+
+        // Step 1: Request ARMS bearer token
+        let tokenRes, tokenData;
+        try {
+            tokenRes = await fetch(ARMS_TOKEN_URL, {
+                method:  'POST',
+                headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
+            });
+            tokenData = await tokenRes.json();
+        } catch (e) {
+            return res.status(503).json({ message: "Could not reach JRMSU ARMS portal. Please try again later." });
+        }
+
+        if (!tokenRes.ok) {
+            return res.status(503).json({ message: "ARMS service error. Please try again later." });
+        }
+
+        const secretKey = tokenData.Secret_Key ?? tokenData.SecretKey ?? tokenData.secretKey ?? null;
+        const jwToken   = tokenData.JWToken    ?? tokenData.Token     ?? tokenData.jwToken   ?? null;
+
+        if (!secretKey || !jwToken) {
+            return res.status(503).json({ message: "ARMS token response was invalid. Please try again." });
+        }
+
+        // Step 2: Authenticate the student against ARMS
+        let loginRes, loginData;
+        try {
+            loginRes = await fetch(ARMS_LOGIN_URL, {
+                method:  'POST',
+                headers: {
+                    ...ARMS_BASE_HEADERS,
+                    'Secret-Key':    secretKey,
+                    'Token':         jwToken,
+                    'Authorization': `Bearer ${jwToken}`,
+                    'Content-Type':  'application/json',
+                },
+                body: JSON.stringify({ Username: student_id, Password: password }),
+            });
+            loginData = await loginRes.json();
+        } catch (e) {
+            return res.status(503).json({ message: "Could not reach JRMSU ARMS portal. Please try again later." });
+        }
+
+        if (!loginRes.ok || !loginData?.Record) {
+            return res.status(401).json({ message: "Incorrect ARMS portal password. Please check and try again." });
+        }
+
+        const record = loginData.Record;
+
+        // Step 3: Enrollment check
+        const rawStatus = record.Enrollment_Status ?? record.enrollment_status ?? record.EnrollmentStatus ?? null;
+        const statusStr = rawStatus ? String(rawStatus).toLowerCase().trim() : null;
+        const isEnrolled = !statusStr || statusStr.includes('enroll') || statusStr === 'active';
+
+        if (!isEnrolled) {
+            return res.status(403).json({
+                message: `Your enrollment status is "${rawStatus}". Only currently enrolled students may be validated.`,
+                enrollmentStatus: rawStatus
+            });
+        }
+
+        const armsSemester   = record.Semester    ?? '';
+        const armsSchoolYear = record.School_Year ?? '';
+
+        // Step 4: Check that ARMS semester/school_year matches the current settings period
+        const settings = await getSettings(req.college);
+        const semesterMatches   = !settings.semester   || armsSemester   === settings.semester;
+        const schoolYearMatches = !settings.schoolYear || armsSchoolYear === settings.schoolYear;
+
+        if (!semesterMatches || !schoolYearMatches) {
+            return res.status(422).json({
+                message: `Your ARMS enrollment is for ${armsSchoolYear} · ${armsSemester}, but the current period is ${settings.schoolYear} · ${settings.semester}. Please enroll for the current semester first.`,
+                armsSemester,
+                armsSchoolYear,
+                currentSemester:   settings.semester,
+                currentSchoolYear: settings.schoolYear
+            });
+        }
+
+        // Step 5: Stamp the student record with the validated semester/school_year
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        const updated = await StudentModel.findOneAndUpdate(
+            { student_id },
+            { school_year: armsSchoolYear, semester: armsSemester },
+            { returnDocument: 'after', runValidators: true, validateModifiedOnly: true }
+        );
+
+        if (!updated) {
+            return res.status(404).json({ message: "Student record not found." });
+        }
+
+        logAudit(req.college, null, 'STUDENT_ARMS_VALIDATED', 'Student', student_id,
+            updated.full_name || updated.last_name,
+            { semester: armsSemester, school_year: armsSchoolYear }).catch(() => {});
+
+        return res.json({
+            message: "Enrollment validated successfully via ARMS.",
+            validated: true,
+            armsStudent: {
+                studentName:      record.Student_Name ?? '',
+                semester:         armsSemester,
+                schoolYear:       armsSchoolYear,
+                program:          record.Program ?? '',
+                yearLevel:        record.Year_Level ?? '',
+                enrollmentStatus: rawStatus ?? '',
+            },
+            updated: {
+                school_year: updated.school_year,
+                semester:    updated.semester,
+            }
+        });
+
+    } catch (err) {
+        console.error("ARMS self-validate error:", err);
+        return res.status(500).json({ message: "An error occurred during ARMS validation. Please try again." });
+    }
+});
+
 app.post('/apis/students/send-verification', studentAuth, antiBotProtection, async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);

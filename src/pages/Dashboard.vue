@@ -4008,6 +4008,153 @@
             </div>
           </div>
 
+          <!-- ── ARMS Enrollment Validation ── -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+            <!-- Header strip -->
+            <div :class="['px-5 py-3 flex items-center justify-between border-b border-gray-50',
+              (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)
+                ? 'bg-emerald-50/60' : 'bg-blue-50/40']">
+              <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">ARMS Enrollment Validation</span>
+              <span v-if="(currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)"
+                class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700">
+                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                Validated
+              </span>
+              <span v-else class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700">Not Validated</span>
+            </div>
+
+            <div class="p-5">
+              <!-- Already validated state -->
+              <template v-if="currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-2xl bg-emerald-50 border-2 border-emerald-100 flex items-center justify-center flex-shrink-0">
+                    <svg class="w-6 h-6 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-gray-800 leading-snug">Enrollment Verified</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5 leading-snug">
+                      {{ currentUser.school_year }} · {{ currentUser.semester }}
+                      <span v-if="dashArmsResult"> — {{ dashArmsResult.studentName }}</span>
+                    </p>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-50">
+                  <span v-for="chip in ['Verified via JRMSU ARMS', 'Current semester confirmed', 'Attendance-ready']" :key="chip"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 border border-gray-100 text-[10px] text-gray-500">
+                    <svg class="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                    {{ chip }}
+                  </span>
+                </div>
+              </template>
+
+              <!-- Not yet validated state -->
+              <template v-else>
+                <!-- Info row -->
+                <div class="flex items-center gap-4 mb-4">
+                  <div class="w-12 h-12 rounded-2xl bg-blue-50 border-2 border-blue-100 flex items-center justify-center flex-shrink-0">
+                    <img src="/jrmsu.svg" alt="JRMSU" class="w-7 h-7 object-contain" />
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-gray-800 leading-snug">Verify via JRMSU ARMS Portal</p>
+                    <p class="text-[11px] text-gray-400 mt-0.5 leading-snug">
+                      Confirm your enrollment for {{ appSettings.schoolYear || 'the current' }} — {{ appSettings.semester || 'semester' }}.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Trigger button -->
+                <transition name="arms-btn">
+                  <button v-if="!dashArmsShowInput"
+                    @click="dashArmsShowInput = true; dashArmsError = ''"
+                    :class="['w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all border',
+                      isCOE   ? 'bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-100'
+                      : isSOM ? 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
+                      : isCNAHS ? 'bg-green-50 text-green-700 border-green-100 hover:bg-green-100'
+                      : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100']">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Validate Enrollment
+                  </button>
+                </transition>
+
+                <!-- Expanded form -->
+                <transition name="arms-expand">
+                  <div v-if="dashArmsShowInput" class="space-y-3">
+                    <!-- Student ID — pre-filled & locked -->
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Student ID</label>
+                      <div class="relative">
+                        <input
+                          :value="currentUser.studentId || currentUser.student_id"
+                          type="text" readonly
+                          :class="['w-full px-3 py-2.5 pr-9 border rounded-xl text-sm bg-gray-50 text-gray-700 font-mono cursor-not-allowed',
+                            isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-green-100' : 'border-blue-100']" />
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2">
+                          <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        </span>
+                      </div>
+                      <p class="text-[10px] text-gray-400 mt-1">Your Student ID is pre-filled and locked to your account.</p>
+                    </div>
+
+                    <!-- ARMS password -->
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">ARMS Portal Password</label>
+                      <div class="relative">
+                        <input
+                          v-model="dashArmsPassword"
+                          :type="dashArmsShowPw ? 'text' : 'password'"
+                          placeholder="Your JRMSU ARMS password"
+                          @keydown.enter.prevent="dashVerifyWithARMS"
+                          :class="['w-full px-3 py-2.5 pr-10 border rounded-xl text-sm bg-white outline-none transition',
+                            isCOE   ? 'border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20'
+                            : isSOM ? 'border-green-200 focus:border-green-400 focus:ring-2 focus:ring-green-400/20'
+                            : isCNAHS ? 'border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'
+                            : 'border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20',
+                            'text-gray-800']" />
+                        <button type="button" @click="dashArmsShowPw = !dashArmsShowPw"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                          <svg v-if="dashArmsShowPw" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                          <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Error message -->
+                    <transition name="arms-error">
+                      <p v-if="dashArmsError" class="text-xs text-red-600 leading-snug">{{ dashArmsError }}</p>
+                    </transition>
+
+                    <!-- Action buttons -->
+                    <div class="flex gap-2 pt-1">
+                      <button type="button"
+                        @click="dashArmsShowInput = false; dashArmsPassword = ''; dashArmsError = ''"
+                        class="flex-1 py-2.5 px-3 rounded-xl border border-gray-200 bg-white text-gray-600 text-sm font-semibold hover:bg-gray-50 transition">
+                        Cancel
+                      </button>
+                      <button type="button" @click="dashVerifyWithARMS" :disabled="dashArmsLoading"
+                        :class="['flex-1 py-2.5 px-3 rounded-xl text-white text-sm font-semibold transition flex items-center justify-center gap-1.5 disabled:opacity-60',
+                          isCOE   ? 'bg-orange-500 hover:bg-orange-600'
+                          : isSOM ? 'bg-green-500 hover:bg-green-600'
+                          : isCNAHS ? 'bg-green-600 hover:bg-green-700'
+                          : 'bg-blue-600 hover:bg-blue-700']">
+                        <svg v-if="dashArmsLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                        {{ dashArmsLoading ? 'Verifying…' : 'Validate' }}
+                      </button>
+                    </div>
+
+                    <p class="text-[10px] text-gray-400 text-center leading-snug">
+                      Forgot your password? Visit
+                      <a href="https://jrmsu-arms.online/student/login.php" target="_blank" rel="noopener noreferrer"
+                        :class="['underline underline-offset-2 font-medium transition',
+                          isCOE ? 'text-orange-500 hover:text-orange-700' : isSOM ? 'text-green-500 hover:text-green-700' : 'text-blue-500 hover:text-blue-700']">
+                        JRMSU-ARMS Portal
+                      </a>
+                    </p>
+                  </div>
+                </transition>
+              </template>
+            </div>
+          </div>
+
           <!-- ── Face ID ── -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
             <!-- Card header strip -->
@@ -9589,6 +9736,14 @@ const maxRetries = 3
 const studentPhotoUploading = ref(false)
 const refreshingUserData = ref(false)
 
+// ── ARMS Dashboard Validation ─────────────────────────────────────────────────
+const dashArmsPassword  = ref('')
+const dashArmsLoading   = ref(false)
+const dashArmsError     = ref('')
+const dashArmsShowPw    = ref(false)
+const dashArmsShowInput = ref(false)
+const dashArmsResult    = ref(null)  // set on success: { studentName, semester, schoolYear }
+
 // ── Photo Upload / Crop Modal state ────────────────────────────────────────
 const showPhotoCropModal = ref(false)
 const cropPhase = ref('upload')      // 'upload' | 'crop'
@@ -13004,6 +13159,75 @@ const handleStatsRefresh = async () => {
     showNotification('Statistics refreshed successfully!', 'success')
   } catch (error) {
     console.error('Stats refresh error:', error)
+  }
+}
+
+// ── ARMS Dashboard Validation ─────────────────────────────────────────────────
+const dashVerifyWithARMS = async () => {
+  if (!dashArmsPassword.value.trim()) {
+    dashArmsError.value = 'Please enter your JRMSU ARMS portal password.'
+    return
+  }
+  dashArmsError.value  = ''
+  dashArmsLoading.value = true
+
+  const doVerify = async () => {
+    const response = await fetch(buildAPIUrl('/apis/students/self-arms-validate'), {
+      method:  'POST',
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` }),
+      body:    JSON.stringify({ password: dashArmsPassword.value })
+    })
+    const data = await response.json()
+    return { response, data }
+  }
+
+  try {
+    let response, data, firstFailMessage
+
+    try {
+      ;({ response, data } = await doVerify())
+      if (!response.ok) {
+        firstFailMessage = data.message || 'ARMS verification failed. Please try again.'
+        response = null
+      }
+    } catch (_) {
+      firstFailMessage = 'Could not reach JRMSU ARMS portal.'
+      response = null
+    }
+
+    // Retry once after 2 s on network failure
+    if (!response) {
+      await new Promise(r => setTimeout(r, 2000))
+      try {
+        ;({ response, data } = await doVerify())
+        if (!response.ok) {
+          dashArmsError.value = data.message || firstFailMessage || 'ARMS verification failed.'
+          return
+        }
+      } catch (__) {
+        dashArmsError.value = 'Could not reach JRMSU ARMS portal. Please try again later.'
+        return
+      }
+    }
+
+    // Success — update local state and currentUser
+    dashArmsResult.value    = data.armsStudent
+    dashArmsPassword.value  = ''
+    dashArmsShowInput.value = false
+
+    // Stamp the currentUser ref and localStorage so the semester badge turns green immediately
+    currentUser.value = {
+      ...currentUser.value,
+      school_year: data.updated.school_year,
+      semester:    data.updated.semester,
+    }
+    localStorage.setItem('currentUser', JSON.stringify(currentUser.value))
+
+    showNotification('Enrollment validated via JRMSU ARMS!', 'success')
+  } catch (_) {
+    dashArmsError.value = 'Could not reach JRMSU ARMS portal. Please try again later.'
+  } finally {
+    dashArmsLoading.value = false
   }
 }
 
