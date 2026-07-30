@@ -327,7 +327,7 @@ const tcSections = [
   100% { transform: translateY(calc(-100% + 100px)); }
 }
 .tc-kenburns {
-  animation: banner-pan 24s ease-in-out infinite;
+  animation: banner-pan 96s ease-in-out infinite;
   will-change: transform;
 }
 </style>
