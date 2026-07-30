@@ -4008,8 +4008,8 @@
             </div>
           </div>
 
-          <!-- ── ARMS Enrollment Validation ── -->
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+          <!-- ── ARMS Enrollment Validation (only shown when not yet validated for current semester) ── -->
+          <div v-if="!(currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
             <!-- Header strip -->
             <div :class="['px-5 py-3 flex items-center justify-between border-b border-gray-50',
               (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)
