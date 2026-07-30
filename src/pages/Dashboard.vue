@@ -1580,6 +1580,22 @@
                     <option value="1st Sem">1st Sem</option>
                     <option value="2nd Sem">2nd Sem</option>
                   </select>
+                  <!-- Export Period Report (only when both filters active) -->
+                  <button
+                    v-if="attendanceSchoolYearFilter && attendanceSemesterFilter"
+                    @click="exportPeriodReport"
+                    :disabled="exportingPeriodReport"
+                    :class="['px-3 py-2.5 rounded-xl border-2 text-xs font-semibold transition flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap',
+                      isCOE ? 'border-orange-300 text-orange-700 bg-orange-50 hover:bg-orange-100' :
+                      isSOM ? 'border-green-300 text-green-700 bg-green-50 hover:bg-green-100' :
+                      isCNAHS ? 'border-emerald-300 text-emerald-700 bg-emerald-50 hover:bg-emerald-100' :
+                      'border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100']"
+                    title="Export all attendance for this academic period as a single Excel file"
+                  >
+                    <svg v-if="exportingPeriodReport" class="w-3.5 h-3.5 animate-spin flex-shrink-0" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                    <svg v-else class="w-3.5 h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    {{ exportingPeriodReport ? 'Exporting…' : 'Export Period' }}
+                  </button>
                   <!-- Clear filters -->
                   <button
                     v-if="attendanceSchoolYearFilter || attendanceSemesterFilter"
@@ -9884,6 +9900,7 @@ const selectedStatusFilters = ref([]) // empty => all statuses
 const selectedProgramFilters = ref([]) // empty => all programs
 const exportingFiltered = ref(false)
 const exportingAbsent = ref(false)
+const exportingPeriodReport = ref(false)
 const showExportMenu = ref(false)
 
 const getLogCountByYear = (yearLevel) => {
@@ -10431,6 +10448,130 @@ const exportFilteredToExcel = async (event) => {
     showNotification('Failed to export filtered Excel file', 'error')
   } finally {
     exportingFiltered.value = false
+  }
+}
+
+// Export all attendance across every event in the selected academic period.
+// Generates a multi-sheet Excel: one Summary sheet + one sheet per event.
+const exportPeriodReport = async () => {
+  if (!attendanceSchoolYearFilter.value || !attendanceSemesterFilter.value) {
+    showNotification('Select both School Year and Semester filters to export a period report', 'warning')
+    return
+  }
+  if (exportingPeriodReport.value) return
+  exportingPeriodReport.value = true
+  try {
+    const url = `/apis/attendance/period-report?school_year=${encodeURIComponent(attendanceSchoolYearFilter.value)}&semester=${encodeURIComponent(attendanceSemesterFilter.value)}`
+    const response = await fetch(url, {
+      credentials: 'include',
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
+    })
+    if (!response.ok) throw new Error(`Server responded ${response.status}`)
+    const data = await response.json()
+
+    if (!data.events || data.events.length === 0) {
+      showNotification('No events found for the selected academic period', 'warning')
+      return
+    }
+
+    const workbook = XLSX.utils.book_new()
+
+    // ── Summary sheet ────────────────────────────────────────────────────────
+    const summaryHeader = [
+      { 'Event': `Academic Period: ${attendanceSemesterFilter.value} — ${attendanceSchoolYearFilter.value}` },
+      { 'Event': `Exported: ${new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}` },
+      { 'Event': `Total events: ${data.events.length}` },
+      { 'Event': '' }
+    ]
+    const summaryRows = data.events.map(event => {
+      const logs = data.logsByEvent[event._id] || []
+      const present    = logs.filter(l => l.check_in_at && l.check_out_at && !l.is_late).length
+      const late       = logs.filter(l => l.check_in_at && l.is_late).length
+      const incomplete = logs.filter(l => l.check_in_at && !l.check_out_at && !l.is_late).length
+      const absent     = logs.filter(l => !l.check_in_at).length
+      const dateRaw    = event.event_date || event.date
+      return {
+        'Event':      event.title || 'Untitled',
+        'Date':       dateRaw ? new Date(dateRaw).toLocaleDateString('en-PH') : '',
+        'Total':      logs.length,
+        'Present':    present,
+        'Late':       late,
+        'Incomplete': incomplete,
+        'Absent':     absent
+      }
+    })
+    const summarySheet = XLSX.utils.json_to_sheet(summaryHeader)
+    XLSX.utils.sheet_add_json(summarySheet, summaryRows, { origin: `A${summaryHeader.length + 1}` })
+    summarySheet['!cols'] = [{ wch: 35 }, { wch: 15 }, { wch: 8 }, { wch: 10 }, { wch: 8 }, { wch: 12 }, { wch: 8 }]
+    XLSX.utils.book_append_sheet(workbook, summarySheet, 'Summary')
+
+    // ── One sheet per event ──────────────────────────────────────────────────
+    const usedSheetNames = new Set(['Summary'])
+    data.events.forEach(event => {
+      const logs = data.logsByEvent[event._id] || []
+      if (logs.length === 0) return
+
+      const dateRaw     = event.event_date || event.date
+      const eventDateFmt = dateRaw ? new Date(dateRaw).toLocaleDateString('en-PH') : ''
+      const headerRows  = [
+        { 'Event': event.title || 'Attendance Event' },
+        { 'Event': `Date: ${eventDateFmt}` },
+        { 'Event': `School Year: ${event.school_year}` },
+        { 'Event': `Semester: ${event.semester}` },
+        ...(event.location ? [{ 'Event': `Location: ${event.location}` }] : []),
+        { 'Event': '' }
+      ]
+
+      // Sort: year level then name
+      const sorted = [...logs].sort((a, b) => {
+        const ya = (a.year_level || '').localeCompare(b.year_level || '')
+        if (ya !== 0) return ya
+        return (a.student_name || '').localeCompare(b.student_name || '')
+      })
+
+      const rowData = sorted.map((log, i) => {
+        let status = 'Absent'
+        if (log.excused) {
+          status = 'Excused'
+        } else if (log.check_in_at && log.check_out_at) {
+          status = log.is_late ? 'Late' : 'Present'
+        } else if (log.check_in_at) {
+          status = log.is_late ? 'Late' : 'Incomplete'
+        }
+        return {
+          '#':           i + 1,
+          'Student ID':  log.student_id_number || '',
+          'Name':        log.student_name || '',
+          'Program':     log.program || '',
+          'Year Level':  log.year_level || '',
+          'Check In':    log.check_in_at  ? new Date(log.check_in_at).toLocaleTimeString('en-PH')  : '—',
+          'Check Out':   log.check_out_at ? new Date(log.check_out_at).toLocaleTimeString('en-PH') : '—',
+          'Status':      status
+        }
+      })
+
+      const sheet = XLSX.utils.json_to_sheet(headerRows)
+      XLSX.utils.sheet_add_json(sheet, rowData, { origin: `A${headerRows.length + 1}` })
+      sheet['!cols'] = [{ wch: 5 }, { wch: 15 }, { wch: 30 }, { wch: 10 }, { wch: 12 }, { wch: 12 }, { wch: 12 }, { wch: 12 }]
+
+      // Build a unique sheet name ≤31 chars (Excel limit)
+      let sheetName = (event.title || 'Event').replace(/[\\/*?[\]:]/g, '').substring(0, 28)
+      let suffix = 1
+      while (usedSheetNames.has(sheetName)) {
+        sheetName = sheetName.substring(0, 25) + `_${suffix++}`
+      }
+      usedSheetNames.add(sheetName)
+      XLSX.utils.book_append_sheet(workbook, sheet, sheetName)
+    })
+
+    const periodTag = `${attendanceSemesterFilter.value.replace(/\s+/g, '')}_${attendanceSchoolYearFilter.value.replace(/-/g, '_')}`
+    XLSX.writeFile(workbook, `PeriodReport_${periodTag}.xlsx`)
+    showNotification(`Period report exported — ${data.events.length} event${data.events.length === 1 ? '' : 's'} included.`, 'success')
+  } catch (err) {
+    console.error('[Period Report Export] Error:', err)
+    showNotification('Failed to export period report. Please try again.', 'error')
+  } finally {
+    exportingPeriodReport.value = false
   }
 }
 

@@ -7468,6 +7468,52 @@ app.get('/apis/attendance/sessions/:id/logs', auth, async (req, res) => {
     }
 });
 
+// Export all attendance logs for a given academic period (school_year + semester)
+// Returns every event and its logs for that period so the client can build a combined report.
+app.get('/apis/attendance/period-report', auth, async (req, res) => {
+    try {
+        const { school_year, semester } = req.query;
+        if (!school_year || !semester) {
+            return res.status(400).json({ message: 'school_year and semester query params are required' });
+        }
+
+        const EventModel = getCollegeModel(AttendanceEvent, CCS_AttendanceEvent, COE_AttendanceEvent, req.college);
+        const LogModel   = getCollegeModel(AttendanceLog,   CCS_AttendanceLog,   COE_AttendanceLog,   req.college);
+
+        // Fetch all events that belong to this academic period
+        const events = await EventModel.find({ school_year, semester })
+            .select('_id title event_date date school_year semester location status')
+            .sort({ event_date: 1, date: 1, created_at: 1 });
+
+        if (events.length === 0) {
+            return res.json({ events: [], logsByEvent: {} });
+        }
+
+        const eventIds = events.map(e => e._id);
+
+        // Fetch every raw log for those events
+        const allLogs = await LogModel.find({ event_id: { $in: eventIds } })
+            .select('event_id student_id_number student_name program year_level check_in_at check_out_at is_late excused excuse_reason source rfid_code')
+            .sort({ event_id: 1, year_level: 1, student_name: 1 });
+
+        // Group by event_id string
+        const logsByEvent = {};
+        allLogs.forEach(log => {
+            const key = log.event_id.toString();
+            if (!logsByEvent[key]) logsByEvent[key] = [];
+            logsByEvent[key].push(log.toObject ? log.toObject() : log);
+        });
+
+        res.json({
+            events: events.map(e => e.toObject ? e.toObject() : e),
+            logsByEvent
+        });
+    } catch (err) {
+        console.error('[Period Report] Error:', err.message);
+        internalError(res, err);
+    }
+});
+
 // Get attendance logs for an event (admin only) - aggregated across all sessions
 // When no session_id is provided, aggregates logs by student to show one record per student
 // with their best status across all sessions (present > late > incomplete > absent)
