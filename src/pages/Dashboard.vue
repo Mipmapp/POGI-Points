@@ -3937,16 +3937,7 @@
                       <span class="ml-0.5">·</span>
                       <span>{{ (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester) ? 'Validated' : 'Not Validated' }}</span>
                     </span>
-                    <!-- Validate button — always visible in chips row -->
-                    <button
-                      @click="dashArmsShowInput = true; $nextTick(() => { const el = document.getElementById('arms-validation-card'); if (el) { const scroller = mainContentEl || el.closest('[class*=overflow-y-auto]'); if (scroller) { scroller.scrollTo({ top: el.offsetTop - 16, behavior: 'smooth' }); } else { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } })"
-                      :class="['inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-colors',
-                        (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)
-                          ? 'bg-white border-emerald-200 text-emerald-600 hover:bg-emerald-50'
-                          : 'bg-amber-500 border-amber-500 text-white hover:bg-amber-600']">
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                      Validate
-                    </button>
+
                   </div>
                   <p class="text-[11px] text-gray-400 mt-3">Member since {{ formatDateTimeShort(currentUser.created_date) }}</p>
                 </div>
@@ -4273,29 +4264,27 @@
                 </div>
               </div>
 
-              <!-- CTA button — full width -->
-              <button
-                @click="openFaceEnroll"
-                :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
-                :class="['w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all',
-                  (faceEnrolled && faceData?.in_cooldown)
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                    : isCOE ? 'bg-orange-50 text-orange-600 border border-orange-100 hover:bg-orange-100'
-                    : isSOM ? 'bg-green-50 text-green-600 border border-green-100 hover:bg-green-100'
-                    : isCNAHS ? 'bg-green-50 text-green-700 border border-green-100 hover:bg-green-100'
-                    : 'bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100']"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                {{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}
-              </button>
-
-              <!-- Feature chips -->
-              <div class="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-50">
+              <!-- Feature chips + CTA button lower right -->
+              <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-gray-50">
                 <span v-for="tip in ['Works on phone & laptop', 'Unique to you', `Updates every ${(faceData && faceData.cooldown_days) || 7} days`]" :key="tip"
                   class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 border border-gray-100 text-[10px] text-gray-500">
                   <svg class="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                   {{ tip }}
                 </span>
+                <button
+                  @click="openFaceEnroll"
+                  :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
+                  :class="['ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-medium transition-colors',
+                    (faceEnrolled && faceData?.in_cooldown)
+                      ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                      : isCOE ? 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
+                      : isSOM ? 'bg-white border-green-200 text-green-600 hover:bg-green-50'
+                      : isCNAHS ? 'bg-white border-green-200 text-green-700 hover:bg-green-50'
+                      : 'bg-white border-blue-200 text-blue-600 hover:bg-blue-50']"
+                >
+                  <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                  {{ faceEnrolled ? 'Update Face ID' : 'Set Up Face ID' }}
+                </button>
               </div>
             </div>
           </div>
