@@ -5883,6 +5883,11 @@ app.put('/apis/settings', auth, requireCoAdminOrAbove, async (req, res) => {
 
         const SettingsModel = getCollegeModel(Settings, CCS_Settings, COE_Settings, req.college);
         let settings = await SettingsModel.findOne();
+
+        // Track previous academic period so we can auto-reset validation if it changes
+        let prevSemester = null;
+        let prevSchoolYear = null;
+
         if (!settings) {
             settings = new SettingsModel({
                 userRegister: userRegister || { register: true, message: "" },
@@ -5898,6 +5903,9 @@ app.put('/apis/settings', auth, requireCoAdminOrAbove, async (req, res) => {
                 }
             });
         } else {
+            prevSemester = settings.semester;
+            prevSchoolYear = settings.schoolYear;
+
             if (userRegister !== undefined) {
                 settings.userRegister = userRegister;
             }
@@ -5919,9 +5927,38 @@ app.put('/apis/settings', auth, requireCoAdminOrAbove, async (req, res) => {
         }
 
         await settings.save();
+
+        // Auto-reset student validation when the academic period changes.
+        // Clearing school_year + semester on every approved student forces them to
+        // log in again so they get re-stamped for the new semester.
+        const semesterChanged = prevSemester !== null &&
+            req.body.semester !== undefined &&
+            req.body.semester !== prevSemester;
+        const schoolYearChanged = prevSchoolYear !== null &&
+            req.body.schoolYear !== undefined &&
+            req.body.schoolYear !== prevSchoolYear;
+
+        let validationReset = false;
+        let resetCount = 0;
+        if (semesterChanged || schoolYearChanged) {
+            try {
+                const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+                const resetResult = await StudentModel.updateMany(
+                    { status: 'approved' },
+                    { $set: { school_year: null, semester: null } }
+                );
+                resetCount = resetResult.modifiedCount || 0;
+                validationReset = true;
+                console.log(`[Settings] Academic period changed — reset validation for ${resetCount} student(s) in ${req.college}`);
+            } catch (resetErr) {
+                console.error('[Settings] Failed to reset student validation:', resetErr.message);
+            }
+        }
+
         res.json({
             message: "Settings updated successfully",
-            settings
+            settings,
+            ...(validationReset ? { validationReset: true, resetCount } : {})
         });
     } catch (err) {
         internalError(res, err);

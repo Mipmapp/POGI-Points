@@ -1551,15 +1551,42 @@
             <div v-if="attendanceTab === 'events'" class="px-3 sm:px-4 md:px-6 pb-4 sm:pb-6 space-y-3">
               <!-- Search + Compact Pagination Row -->
               <div class="space-y-2.5">
-                <!-- Search Input -->
-                <div class="relative max-w-xs">
-                  <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                  <input
-                    v-model="attendanceSearchQuery"
-                    type="text"
-                    placeholder="Search events by title..."
-                    :class="['w-full pl-9 pr-4 py-2.5 rounded-xl border-2 bg-gray-50 focus:bg-white transition-all outline-none text-sm', isCOE ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100' : isSOM ? 'border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100' : isCNAHS ? 'border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100' : 'border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100']"
-                  />
+                <!-- Search + Filters row -->
+                <div class="flex flex-wrap items-center gap-2">
+                  <!-- Search Input -->
+                  <div class="relative flex-1 min-w-[160px] max-w-xs">
+                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input
+                      v-model="attendanceSearchQuery"
+                      type="text"
+                      placeholder="Search events..."
+                      :class="['w-full pl-9 pr-4 py-2.5 rounded-xl border-2 bg-gray-50 focus:bg-white transition-all outline-none text-sm', isCOE ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100' : isSOM ? 'border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100' : isCNAHS ? 'border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100' : 'border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100']"
+                    />
+                  </div>
+                  <!-- School Year Filter -->
+                  <select
+                    v-model="attendanceSchoolYearFilter"
+                    :class="['py-2.5 pl-3 pr-8 rounded-xl border-2 bg-gray-50 text-sm outline-none transition-all cursor-pointer', attendanceSchoolYearFilter ? 'font-semibold' : 'text-gray-500', isCOE ? 'border-gray-200 focus:border-orange-400' : isSOM ? 'border-gray-200 focus:border-green-400' : isCNAHS ? 'border-gray-200 focus:border-emerald-400' : 'border-gray-200 focus:border-blue-400']"
+                  >
+                    <option value="">All School Years</option>
+                    <option v-for="yr in availableAttendanceSchoolYears" :key="yr" :value="yr">{{ yr }}</option>
+                  </select>
+                  <!-- Semester Filter -->
+                  <select
+                    v-model="attendanceSemesterFilter"
+                    :class="['py-2.5 pl-3 pr-8 rounded-xl border-2 bg-gray-50 text-sm outline-none transition-all cursor-pointer', attendanceSemesterFilter ? 'font-semibold' : 'text-gray-500', isCOE ? 'border-gray-200 focus:border-orange-400' : isSOM ? 'border-gray-200 focus:border-green-400' : isCNAHS ? 'border-gray-200 focus:border-emerald-400' : 'border-gray-200 focus:border-blue-400']"
+                  >
+                    <option value="">All Semesters</option>
+                    <option value="1st Sem">1st Sem</option>
+                    <option value="2nd Sem">2nd Sem</option>
+                  </select>
+                  <!-- Clear filters -->
+                  <button
+                    v-if="attendanceSchoolYearFilter || attendanceSemesterFilter"
+                    @click="attendanceSchoolYearFilter = ''; attendanceSemesterFilter = ''; attendanceCurrentPage = 1"
+                    class="px-2.5 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-500 hover:text-gray-700 hover:bg-gray-100 text-xs transition"
+                    title="Clear filters"
+                  >✕</button>
                 </div>
                 <!-- Count + Pagination inline -->
                 <div class="flex items-center justify-between gap-2">
@@ -1599,8 +1626,8 @@
               <!-- Empty -->
               <div v-else-if="paginatedAttendanceEvents.length === 0" class="flex flex-col items-center justify-center py-14 text-center">
                 <img :src="'/events.svg'" alt="No Events" class="w-14 h-14 mb-3 opacity-30" />
-                <p class="text-gray-500 text-sm font-medium">{{ attendanceSearchQuery ? 'No events match your search.' : 'No attendance events yet.' }}</p>
-                <p v-if="!attendanceSearchQuery" class="text-gray-400 text-xs mt-1">Click "Create Event" above to get started.</p>
+                <p class="text-gray-500 text-sm font-medium">{{ (attendanceSearchQuery || attendanceSchoolYearFilter || attendanceSemesterFilter) ? 'No events match the current filters.' : 'No attendance events yet.' }}</p>
+                <p v-if="!(attendanceSearchQuery || attendanceSchoolYearFilter || attendanceSemesterFilter)" class="text-gray-400 text-xs mt-1">Click "Create Event" above to get started.</p>
               </div>
 
               <!-- Event Cards -->
@@ -1622,6 +1649,9 @@
                       <span v-if="event.status === 'active' && getEventTimeRemaining(event._id) && getEventTimeRemaining(event._id) !== 'Ended'" class="px-2 py-0.5 rounded-full text-[11px] font-semibold whitespace-nowrap bg-orange-100 text-orange-700">
                         {{ getEventTimeRemaining(event._id) }}
                       </span>
+                      <!-- Academic period badges -->
+                      <span v-if="event.school_year" class="px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap bg-indigo-50 text-indigo-600">{{ event.school_year }}</span>
+                      <span v-if="event.semester" class="px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap bg-violet-50 text-violet-600">{{ event.semester }}</span>
                     </div>
                     <!-- Meta chips -->
                     <div class="flex flex-wrap gap-1.5 pl-6">
@@ -3211,7 +3241,7 @@
 
 
         <!-- Manage Page (Roles & Users) -->
-        <Manage ref="manageComponent" v-if="currentPage === 'manage' && (isAdminLike)" />
+        <Manage ref="manageComponent" v-if="currentPage === 'manage' && (isAdminLike)" :appSettings="appSettings" />
 
         <!-- Admin / Co-Admin Profile Page -->
         <div v-if="false" class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden mb-8">
@@ -7445,6 +7475,11 @@ const prevAttendancePage = () => {
   }
 }
 
+// Reset to page 1 when attendance filters change
+watch([attendanceSearchQuery, attendanceSchoolYearFilter, attendanceSemesterFilter], () => {
+  attendanceCurrentPage.value = 1
+})
+
 
 // Contribution feature state
 const contributionTabMode = ref('general') // 'general' or 'events'
@@ -10017,6 +10052,8 @@ const exportToExcelByYear = async (event, yearLevel) => {
       { 'Event': `Date: ${eventDateFormatted}` },
       { 'Event': `Session: ${sessionsLabel}` },
       ...(eventLocation ? [{ 'Event': `Location: ${eventLocation}` }] : []),
+      ...(event.school_year ? [{ 'Event': `School Year: ${event.school_year}` }] : []),
+      ...(event.semester ? [{ 'Event': `Semester: ${event.semester}` }] : []),
       { 'Event': `Year Level: ${yearLevel}` },
       { 'Event': '' }
     ]
@@ -10061,7 +10098,8 @@ const exportToExcelByYear = async (event, yearLevel) => {
     const eventDate = formatEventDate(event.date || event.event_date).replace(/[^a-zA-Z0-9]/g, '_')
     const eventTitle = (event.title || 'Event').replace(/[^a-zA-Z0-9]/g, '_').substring(0, 20)
     const yearLabel = yearLevel.replace(' ', '_')
-    const filename = `Attendance_${eventTitle}_${yearLabel}_${eventDate}.xlsx`
+    const semTag = event.semester ? `_${event.semester.replace(/\s+/g, '')}` : ''
+    const filename = `Attendance_${eventTitle}_${yearLabel}${semTag}_${eventDate}.xlsx`
     
     XLSX.writeFile(workbook, filename)
     
@@ -10115,6 +10153,8 @@ const exportToExcel = async (event) => {
         { 'Event': `Date: ${eventDateFormatted}` },
         { 'Event': `Session: ${sessionsLabel}` },
         ...(eventLocation ? [{ 'Event': `Location: ${eventLocation}` }] : []),
+        ...(event.school_year ? [{ 'Event': `School Year: ${event.school_year}` }] : []),
+        ...(event.semester ? [{ 'Event': `Semester: ${event.semester}` }] : []),
         { 'Event': `Year Level: ${yearLevel}` },
         { 'Event': '' }
       ]
@@ -10906,6 +10946,8 @@ const noPhotoCache = {} // studentId -> expiry timestamp (ms)
 const attendanceSearchQuery = ref('')
 const attendanceCurrentPage = ref(1)
 const attendanceItemsPerPage = 4
+const attendanceSchoolYearFilter = ref('')
+const attendanceSemesterFilter = ref('')
 
 // Helper to derive a stable student key from log or student object
 const deriveStudentKey = (obj) => {
@@ -12520,12 +12562,26 @@ const logoutParticles = computed(() => {
 
 // Attendance Events Search & Pagination
 const filteredAttendanceEvents = computed(() => {
-  if (!attendanceSearchQuery.value.trim()) {
-    return attendanceEvents.value
+  let events = attendanceEvents.value
+
+  if (attendanceSearchQuery.value.trim()) {
+    events = events.filter(event =>
+      event.title.toLowerCase().includes(attendanceSearchQuery.value.toLowerCase())
+    )
   }
-  return attendanceEvents.value.filter(event =>
-    event.title.toLowerCase().includes(attendanceSearchQuery.value.toLowerCase())
-  )
+  if (attendanceSchoolYearFilter.value) {
+    events = events.filter(e => e.school_year === attendanceSchoolYearFilter.value)
+  }
+  if (attendanceSemesterFilter.value) {
+    events = events.filter(e => e.semester === attendanceSemesterFilter.value)
+  }
+  return events
+})
+
+// Available school years for the filter dropdown (derived from loaded events)
+const availableAttendanceSchoolYears = computed(() => {
+  const years = new Set(attendanceEvents.value.map(e => e.school_year).filter(Boolean))
+  return Array.from(years).sort().reverse()
 })
 
 const paginatedAttendanceEvents = computed(() => {
@@ -13746,7 +13802,12 @@ const saveSettingsImpl = async () => {
     })
     
     if (response.ok) {
-      showNotification('Settings saved successfully!', 'success')
+      const data = await response.json()
+      if (data.validationReset && data.resetCount > 0) {
+        showNotification(`Settings saved. ${data.resetCount} student${data.resetCount === 1 ? '' : 's'} reset — they must log in again to validate for the new semester.`, 'success')
+      } else {
+        showNotification('Settings saved successfully!', 'success')
+      }
     } else {
       if (response.status === 403) {
         const error = await response.json()

@@ -53,6 +53,32 @@
 
       <!-- USERS TAB -->
       <div v-if="activeTab === 'users'" class="space-y-6">
+
+        <!-- Unvalidated students banner -->
+        <div
+          v-if="appSettings?.schoolYear && appSettings?.semester && unvalidatedCount > 0 && userValidationFilter !== 'not_validated'"
+          :class="['flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-sm', isCOE ? 'bg-orange-50 border-orange-200' : isSOM ? 'bg-yellow-50 border-yellow-200' : isCNAHS ? 'bg-yellow-50 border-yellow-200' : 'bg-orange-50 border-orange-200']"
+        >
+          <div class="flex items-center gap-2">
+            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            <span class="font-medium text-orange-800">
+              <strong>{{ unvalidatedCount }}</strong> student{{ unvalidatedCount === 1 ? '' : 's' }} haven't logged in yet for
+              <strong>{{ appSettings.semester }} {{ appSettings.schoolYear }}</strong>
+            </span>
+          </div>
+          <button
+            @click="userValidationFilter = 'not_validated'; currentPage = 1"
+            class="flex-shrink-0 px-3 py-1 bg-orange-600 text-white rounded-lg text-xs font-semibold hover:bg-orange-700 transition active:scale-95"
+          >Show them</button>
+        </div>
+        <div
+          v-if="userValidationFilter === 'not_validated'"
+          class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-sm"
+        >
+          <span class="font-medium text-indigo-800">Showing <strong>{{ filteredUsers.length }}</strong> unvalidated student{{ filteredUsers.length === 1 ? '' : 's' }}</span>
+          <button @click="userValidationFilter = null" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline transition">Clear filter</button>
+        </div>
+
         <!-- Users Search and Filter -->
         <div class="rounded-xl p-4 md:p-5 mb-6 space-y-4 bg-white border border-gray-200 shadow-sm relative z-10">
           <!-- Search Input -->
@@ -165,6 +191,39 @@
                 >
                   <span>{{ opt.label }}</span>
                   <svg v-if="userCollegeFilter === opt.value || (!userCollegeFilter && !opt.value)" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Semester Validation -->
+            <div v-if="appSettings?.schoolYear && appSettings?.semester" class="space-y-1.5 w-44 relative" @click.stop>
+              <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Sem. Validation</label>
+              <button
+                @click="openDropdown = openDropdown === 'validation' ? null : 'validation'"
+                :class="['w-full flex items-center justify-between px-3 py-2 bg-white border rounded-lg text-sm shadow-sm transition-all duration-150 cursor-pointer outline-none',
+                  openDropdown === 'validation' ? 'border-indigo-400 ring-2 ring-indigo-100' : 'border-gray-200 hover:border-gray-300',
+                  userValidationFilter ? 'text-gray-900 font-medium' : 'text-gray-500']"
+              >
+                <span class="flex items-center gap-1.5 truncate">
+                  <span v-if="userValidationFilter === 'validated'" class="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0"></span>
+                  <span v-else-if="userValidationFilter === 'not_validated'" class="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0"></span>
+                  {{ userValidationFilter === 'validated' ? 'Validated' : userValidationFilter === 'not_validated' ? 'Not Validated' : 'All Students' }}
+                </span>
+                <svg :class="['w-3.5 h-3.5 ml-1.5 flex-shrink-0 transition-transform duration-150 text-gray-400', openDropdown === 'validation' ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div v-if="openDropdown === 'validation'" class="absolute top-full mt-1 left-0 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden py-1">
+                <button v-for="opt in [{value:'',label:'All Students',dot:null},{value:'validated',label:'Validated',dot:'indigo'},{value:'not_validated',label:'Not Validated',dot:'orange'}]" :key="opt.value"
+                  @click="userValidationFilter = opt.value || null; currentPage = 1; openDropdown = null"
+                  :class="['w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors hover:bg-gray-50',
+                    (userValidationFilter === opt.value || (!userValidationFilter && !opt.value)) ? 'text-indigo-600 font-semibold bg-indigo-50' : 'text-gray-700']"
+                >
+                  <span class="flex items-center gap-2">
+                    <span v-if="opt.dot === 'indigo'" class="w-1.5 h-1.5 rounded-full bg-indigo-500 flex-shrink-0"></span>
+                    <span v-else-if="opt.dot === 'orange'" class="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0"></span>
+                    <span v-else class="w-1.5 h-1.5 flex-shrink-0"></span>
+                    {{ opt.label }}
+                  </span>
+                  <svg v-if="userValidationFilter === opt.value || (!userValidationFilter && !opt.value)" class="w-3.5 h-3.5 text-indigo-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
                 </button>
               </div>
             </div>
@@ -328,6 +387,17 @@
                 </span>
                 <span v-else-if="getAutoVerificationStatus(user) === false" class="px-2 py-0.5 bg-yellow-100 text-yellow-700 rounded-full text-[11px] font-bold">Unverified</span>
                 <span v-else-if="getAutoVerificationStatus(user) === 'unreadable'" class="px-2 py-0.5 bg-red-100 text-red-700 rounded-full text-[11px] font-bold">Unreadable</span>
+                <!-- Semester Validation badge -->
+                <span
+                  v-if="appSettings?.schoolYear && appSettings?.semester && user.school_year === appSettings.schoolYear && user.semester === appSettings.semester"
+                  class="px-2 py-0.5 bg-indigo-100 text-indigo-700 rounded-full text-[11px] font-bold"
+                  :title="`Validated for ${appSettings.semester} ${appSettings.schoolYear}`"
+                >✓ Validated</span>
+                <span
+                  v-else-if="appSettings?.schoolYear && appSettings?.semester"
+                  class="px-2 py-0.5 bg-orange-100 text-orange-700 rounded-full text-[11px] font-bold"
+                  :title="`Has not logged in for ${appSettings.semester} ${appSettings.schoolYear} yet`"
+                >Not Validated</span>
               </div>
 
               <!-- Action Buttons -->
@@ -1172,6 +1242,12 @@ import { COLLEGES } from '../config/themes.js'
 
 export default {
   name: 'Manage',
+  props: {
+    appSettings: {
+      type: Object,
+      default: () => ({ schoolYear: '', semester: '' })
+    }
+  },
   data() {
     return {
       activeTab: 'users',
@@ -1185,6 +1261,7 @@ export default {
       userProgramFilter: null,
       userStatusFilter: null,
       userCollegeFilter: null,
+      userValidationFilter: null,
       showEditUserModal: false,
       editingUser: null,
       isSavingUser: false,
@@ -1294,6 +1371,14 @@ export default {
     isCoAdmin() { return this.currentUser?.role === 'co-admin' },
     isTreasurer() { return this.currentUser?.isMaster === true && this.currentUser?.role === 'treasurer' },
     // End theme helpers
+    unvalidatedCount() {
+      const currentSchoolYear = this.appSettings?.schoolYear || ''
+      const currentSemester = this.appSettings?.semester || ''
+      if (!currentSchoolYear || !currentSemester) return 0
+      return this.allUsers.filter(user =>
+        user.school_year !== currentSchoolYear || user.semester !== currentSemester
+      ).length
+    },
 
     filteredUsers() {
       let filtered = this.allUsers
@@ -1348,6 +1433,19 @@ export default {
       // Apply college filter (super admin only)
       if (this.userCollegeFilter !== null) {
         filtered = filtered.filter(user => (user.college || 'CCS') === this.userCollegeFilter)
+      }
+
+      // Apply semester validation filter
+      if (this.userValidationFilter !== null) {
+        const currentSchoolYear = this.appSettings?.schoolYear || ''
+        const currentSemester = this.appSettings?.semester || ''
+        filtered = filtered.filter(user => {
+          const isValidated = !!(currentSchoolYear && currentSemester &&
+            user.school_year === currentSchoolYear && user.semester === currentSemester)
+          if (this.userValidationFilter === 'validated') return isValidated
+          if (this.userValidationFilter === 'not_validated') return !isValidated
+          return true
+        })
       }
 
       return filtered
@@ -1418,6 +1516,9 @@ export default {
       this.currentPage = 1
     },
     userProgramFilter() {
+      this.currentPage = 1
+    },
+    userValidationFilter() {
       this.currentPage = 1
     },
     activeTab(val) {
