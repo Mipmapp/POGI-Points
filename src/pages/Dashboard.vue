@@ -1217,12 +1217,12 @@
                 </div>
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-2">School Year</label>
-                  <input 
+                  <select
                     v-model="appSettings.schoolYear"
-                    type="text"
-                    placeholder="e.g. 2023-2024"
                     :class="['w-full px-4 py-2 bg-white rounded-lg outline-none transition-all', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200' : 'border-gray-300 focus:ring-2 focus:ring-blue-600']"
-                  />
+                  >
+                    <option v-for="yr in schoolYearOptions" :key="yr" :value="yr">{{ yr }}</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -9591,6 +9591,16 @@ const updateProfileGradientFromImage = async (img) => {
 };
 
 // Return full department object for theming decisions
+// Generate school year options from 2025 up to current calendar year (e.g. 2026 → ["2025-2026","2026-2027"])
+const schoolYearOptions = computed(() => {
+  const currentYear = new Date().getFullYear()
+  const options = []
+  for (let y = 2025; y <= currentYear; y++) {
+    options.push(`${y}-${y + 1}`)
+  }
+  return options
+})
+
 const userDepartment = computed(() => {
   if (currentUser.value.selectedDepartment) return currentUser.value.selectedDepartment
   const userProgram = currentUser.value.program
