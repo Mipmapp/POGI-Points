@@ -165,14 +165,14 @@
       @click.self="pendingUserIsRestrictedRole() ? undefined : cancelFaceVerification()">
       <transition name="face-slide" appear>
         <div :class="['relative w-full sm:max-w-[360px] overflow-hidden flex flex-col',
-          'rounded-t-3xl sm:rounded-2xl',
+          'rounded-t-3xl sm:rounded-2xl bg-white',
           faceEnrollMode
-            ? 'bg-[#0d0818] border border-violet-500/15 shadow-[0_-20px_60px_rgba(139,92,246,0.15)] sm:shadow-[0_20px_60px_rgba(139,92,246,0.2)]'
-            : 'bg-[#080e1a] border border-white/8 shadow-[0_-20px_60px_rgba(0,0,0,0.5)] sm:shadow-[0_20px_60px_rgba(0,0,0,0.6)]']">
+            ? 'border border-violet-100 shadow-[0_-20px_60px_rgba(139,92,246,0.08)] sm:shadow-[0_20px_60px_rgba(139,92,246,0.12)]'
+            : 'border border-gray-100 shadow-[0_-20px_60px_rgba(0,0,0,0.08)] sm:shadow-[0_20px_60px_rgba(0,0,0,0.12)]']">
 
           <!-- Drag handle (mobile only) -->
           <div class="sm:hidden flex justify-center pt-2.5 shrink-0">
-            <div class="w-8 h-[3px] rounded-full bg-white/15"></div>
+            <div class="w-8 h-[3px] rounded-full bg-gray-200"></div>
           </div>
 
           <!-- Content -->
@@ -180,24 +180,23 @@
 
             <!-- Step pills -->
             <div class="flex items-center justify-center gap-1.5">
-              <span :class="['w-6 h-1 rounded-full', faceEnrollMode ? 'bg-violet-400/40' : 'bg-cyan-400/40']"></span>
-              <span :class="['w-6 h-1 rounded-full', faceEnrollMode ? 'bg-violet-400/40' : 'bg-cyan-400/40']"></span>
-              <span :class="['w-6 h-1 rounded-full', faceEnrollMode ? 'bg-violet-400' : 'bg-cyan-400']"></span>
+              <span :class="['w-6 h-1 rounded-full', faceEnrollMode ? 'bg-violet-200' : 'bg-blue-200']"></span>
+              <span :class="['w-6 h-1 rounded-full', faceEnrollMode ? 'bg-violet-200' : 'bg-blue-200']"></span>
+              <span :class="['w-6 h-1 rounded-full', faceEnrollMode ? 'bg-violet-500' : 'bg-blue-500']"></span>
             </div>
 
             <!-- Header -->
             <template v-if="faceEnrollMode">
               <div class="text-center">
-                <!-- Icon -->
                 <div class="inline-flex items-center justify-center w-11 h-11 rounded-xl mb-2.5"
-                  :class="pendingUser?.actualRole === 'treasurer' ? 'bg-teal-500/15 border border-teal-500/25' : 'bg-violet-500/15 border border-violet-500/25'">
-                  <svg class="w-5 h-5" :class="pendingUser?.actualRole === 'treasurer' ? 'text-teal-400' : 'text-violet-400'"
+                  :class="pendingUser?.actualRole === 'treasurer' ? 'bg-teal-50 border border-teal-100' : 'bg-violet-50 border border-violet-100'">
+                  <svg class="w-5 h-5" :class="pendingUser?.actualRole === 'treasurer' ? 'text-teal-500' : 'text-violet-500'"
                     fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                   </svg>
                 </div>
-                <h3 class="text-base font-bold text-white tracking-tight">Face ID Setup</h3>
-                <p class="text-[11px] mt-0.5 leading-relaxed" :class="pendingUser?.actualRole === 'treasurer' ? 'text-teal-300/50' : 'text-violet-300/50'">
+                <h3 class="text-base font-bold text-gray-900 tracking-tight">Face ID Setup</h3>
+                <p class="text-[11px] mt-0.5 leading-relaxed text-gray-400">
                   {{ pendingUserRoleLabel() }} · One-time security setup
                 </p>
               </div>
@@ -205,54 +204,53 @@
 
             <template v-else>
               <div class="text-center">
-                <!-- Icon -->
-                <div class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-blue-500/10 border border-blue-500/20 mb-2.5">
-                  <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
+                <div class="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-blue-50 border border-blue-100 mb-2.5">
+                  <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.8">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
                   </svg>
                 </div>
-                <h3 class="text-base font-bold text-white tracking-tight">Face Verification</h3>
-                <p class="text-[11px] text-white/35 mt-0.5">Step 3 of 3 — Center your face and hold still</p>
+                <h3 class="text-base font-bold text-gray-900 tracking-tight">Face Verification</h3>
+                <p class="text-[11px] text-gray-400 mt-0.5">Step 3 of 3 — Center your face and hold still</p>
               </div>
             </template>
 
             <!-- Error banner -->
             <div v-if="faceError"
-              class="px-3 py-2 bg-red-950/60 border border-red-500/20 rounded-xl text-red-300/90 text-[11px] text-center leading-snug">
+              class="px-3 py-2 bg-red-50 border border-red-100 rounded-xl text-red-600 text-[11px] text-center leading-snug">
               {{ faceError }}
             </div>
 
             <!-- No-faces info (super-admin bypass) -->
             <div v-if="noFacesEnrolled"
-              class="px-3 py-2 bg-amber-950/40 border border-amber-500/20 rounded-xl text-amber-200/80 text-[11px] text-center leading-snug">
-              No Face ID enrolled. You can continue and set one up from <strong class="text-amber-200">Settings → Face ID</strong>.
+              class="px-3 py-2 bg-amber-50 border border-amber-100 rounded-xl text-amber-700 text-[11px] text-center leading-snug">
+              No Face ID enrolled. You can continue and set one up from <strong class="text-amber-800">Settings → Face ID</strong>.
             </div>
 
             <!-- Camera frame -->
-            <div :class="['relative mx-auto w-full rounded-xl overflow-hidden bg-black',
-              faceEnrollMode ? 'ring-1 ring-violet-500/30' : 'ring-1 ring-white/8']"
+            <div :class="['relative mx-auto w-full rounded-xl overflow-hidden bg-gray-950',
+              faceEnrollMode ? 'ring-1 ring-violet-200' : 'ring-1 ring-gray-200']"
               style="aspect-ratio:1/1; max-width:min(240px,100%);">
               <video ref="faceVideoEl" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover -scale-x-100"></video>
 
               <!-- Loading -->
               <div v-if="!faceCameraOn && !noFacesEnrolled"
-                class="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-gray-950/98">
+                class="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-gray-950">
                 <div :class="['w-8 h-8 rounded-full border-2 border-t-transparent animate-spin',
-                  faceEnrollMode ? 'border-violet-400/60' : 'border-blue-400/60']"></div>
-                <p class="text-[10px] text-white/40 font-medium">{{ faceLoadingModels ? 'Loading face models…' : 'Starting camera…' }}</p>
+                  faceEnrollMode ? 'border-violet-400' : 'border-blue-400']"></div>
+                <p class="text-[10px] text-white/50 font-medium">{{ faceLoadingModels ? 'Loading face models…' : 'Starting camera…' }}</p>
               </div>
 
               <!-- No-faces placeholder -->
               <div v-if="noFacesEnrolled"
-                class="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-gray-950/95 px-5 text-center">
-                <div class="w-10 h-10 rounded-xl bg-white/4 flex items-center justify-center border border-white/8">
-                  <svg class="w-5 h-5 text-white/25" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
+                class="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-gray-950 px-5 text-center">
+                <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
+                  <svg class="w-5 h-5 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
                   </svg>
                 </div>
-                <p class="text-[10px] text-white/30 leading-relaxed">No Face ID<br>enrolled</p>
+                <p class="text-[10px] text-white/35 leading-relaxed">No Face ID<br>enrolled</p>
               </div>
 
               <!-- Enrollment overlay -->
@@ -262,10 +260,10 @@
                   <span class="corner-enroll corner-tr-enroll"></span>
                   <span class="corner-enroll corner-bl-enroll"></span>
                   <span class="corner-enroll corner-br-enroll"></span>
-                  <div class="absolute inset-0 rounded-[30%] border border-violet-400/20 animate-pulse-ring-violet"></div>
+                  <div class="absolute inset-0 rounded-[30%] border border-violet-400/30 animate-pulse-ring-violet"></div>
                   <div v-if="faceCapturing" class="scan-line-enroll"></div>
                 </div>
-                <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full text-[10px] font-medium backdrop-blur-md bg-black/50 border border-violet-400/25 text-violet-300 flex items-center gap-1.5 whitespace-nowrap">
+                <div class="absolute bottom-2.5 left-1/2 -translate-x-1/2 px-2.5 py-1 rounded-full text-[10px] font-medium backdrop-blur-md bg-black/50 border border-violet-300/30 text-violet-200 flex items-center gap-1.5 whitespace-nowrap">
                   <span class="w-1 h-1 rounded-full bg-violet-400 animate-pulse"></span>
                   {{ faceCapturing ? 'Capturing…' : 'Position your face' }}
                 </div>
@@ -278,12 +276,12 @@
                   <span class="corner corner-tr"></span>
                   <span class="corner corner-bl"></span>
                   <span class="corner corner-br"></span>
-                  <div class="absolute inset-0 rounded-[28%] border border-cyan-400/25 animate-pulse-ring"></div>
+                  <div class="absolute inset-0 rounded-[28%] border border-cyan-400/30 animate-pulse-ring"></div>
                   <div v-if="faceMatching" class="scan-line"></div>
                   <transition name="burst">
                     <div v-if="faceVerified" class="absolute inset-0 flex items-center justify-center">
-                      <div class="absolute inset-0 rounded-[28%] border-2 border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.6)]"></div>
-                      <div class="relative w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(52,211,153,0.7)]">
+                      <div class="absolute inset-0 rounded-[28%] border-2 border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.5)]"></div>
+                      <div class="relative w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center shadow-[0_0_20px_rgba(52,211,153,0.6)]">
                         <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="3">
                           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
                         </svg>
@@ -302,9 +300,9 @@
             <transition name="fade">
               <div v-if="faceEnrollMode && faceEnrollStatus"
                 :class="['px-3 py-2 rounded-xl text-[11px] font-medium text-center leading-snug border',
-                  faceEnrollKind === 'error'   ? 'bg-red-950/50 border-red-500/20 text-red-300/80'
-                  : faceEnrollKind === 'success' ? 'bg-emerald-950/50 border-emerald-500/20 text-emerald-300/80'
-                  : 'bg-violet-950/40 border-violet-500/15 text-violet-200/70']">
+                  faceEnrollKind === 'error'   ? 'bg-red-50 border-red-100 text-red-600'
+                  : faceEnrollKind === 'success' ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
+                  : 'bg-violet-50 border-violet-100 text-violet-700']">
                 {{ faceEnrollStatus }}
               </div>
             </transition>
@@ -312,10 +310,10 @@
             <!-- Match-streak dots (verification only) -->
             <div v-if="faceCameraOn && !faceEnrollMode && !noFacesEnrolled"
               class="flex items-center justify-center gap-1.5">
-              <span class="text-[10px] text-white/25 mr-0.5">Match</span>
+              <span class="text-[10px] text-gray-400 mr-0.5">Match</span>
               <span v-for="n in 3" :key="n"
                 :class="['h-1.5 rounded-full transition-all duration-300',
-                  faceMatchStreakDisplay >= n ? 'w-6 bg-cyan-400 shadow-[0_0_8px_rgba(34,211,238,0.8)]' : 'w-1.5 bg-white/10']">
+                  faceMatchStreakDisplay >= n ? 'w-6 bg-blue-500' : 'w-1.5 bg-gray-200']">
               </span>
             </div>
 
@@ -323,8 +321,8 @@
             <div v-if="faceEnrollMode && !faceCapturing && !faceEnrollStatus"
               class="grid grid-cols-3 gap-1.5">
               <div v-for="tip in ['Good lighting','Face forward','No glare']" :key="tip"
-                class="px-2 py-1.5 rounded-lg bg-white/3 border border-white/6 text-center">
-                <p class="text-[10px] text-white/30 leading-snug">{{ tip }}</p>
+                class="px-2 py-1.5 rounded-lg bg-gray-50 border border-gray-100 text-center">
+                <p class="text-[10px] text-gray-400 leading-snug">{{ tip }}</p>
               </div>
             </div>
 
@@ -333,7 +331,7 @@
               <button
                 v-if="!faceEnrollMode || !pendingUserIsRestrictedRole()"
                 @click="cancelFaceVerification"
-                class="flex-none px-4 py-2.5 bg-white/4 hover:bg-white/8 border border-white/8 hover:border-white/15 text-white/50 hover:text-white/80 rounded-xl text-sm font-medium transition-all active:scale-95">
+                class="flex-none px-4 py-2.5 bg-gray-50 hover:bg-gray-100 border border-gray-200 text-gray-500 hover:text-gray-700 rounded-xl text-sm font-medium transition-all active:scale-95">
                 Cancel
               </button>
 
@@ -342,10 +340,10 @@
                 v-if="faceEnrollMode"
                 @click="captureAndEnrollFace"
                 :disabled="!faceCameraOn || faceCapturing || faceEnrollSaving"
-                :class="['flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed',
+                :class="['flex-1 py-2.5 rounded-xl text-sm font-semibold transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed text-white',
                   pendingUser?.actualRole === 'treasurer'
-                    ? 'bg-teal-500/90 hover:bg-teal-500 text-white shadow-[0_4px_20px_rgba(20,184,166,0.3)]'
-                    : 'bg-violet-500/90 hover:bg-violet-500 text-white shadow-[0_4px_20px_rgba(139,92,246,0.3)]']">
+                    ? 'bg-teal-500 hover:bg-teal-600'
+                    : 'bg-violet-500 hover:bg-violet-600']">
                 <svg v-if="faceCapturing || faceEnrollSaving" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
                   <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
@@ -356,7 +354,7 @@
               <!-- Super-admin bypass -->
               <button v-else-if="noFacesEnrolled"
                 @click="completeLoginFromFace"
-                class="flex-1 py-2.5 bg-blue-500/90 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-all active:scale-95 shadow-[0_4px_20px_rgba(59,130,246,0.25)]">
+                class="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-semibold transition-all active:scale-95">
                 Continue Anyway
               </button>
 
@@ -364,7 +362,7 @@
               <button v-else
                 @click="manualRetryFace"
                 :disabled="!faceCameraOn || faceMatching || faceVerified"
-                class="flex-1 py-2.5 bg-blue-500/90 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed shadow-[0_4px_20px_rgba(59,130,246,0.25)]">
+                class="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed">
                 {{ faceVerified ? '✓ Verified' : faceMatching ? 'Scanning…' : 'Retry' }}
               </button>
             </div>
