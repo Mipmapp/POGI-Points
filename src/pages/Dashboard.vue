@@ -2227,6 +2227,20 @@
               </div>
             </div>
 
+            <!-- Academic Year Filter -->
+            <div class="flex items-center gap-2.5 px-4 sm:px-6 py-2 border-b border-gray-100 bg-gray-50/70">
+              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide flex-shrink-0">A.Y.</span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <button v-for="yr in STUDENT_ACAD_YEARS" :key="yr" @click="userAttendAcadYear = yr"
+                  :class="['px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors',
+                    userAttendAcadYear === yr
+                      ? (isCOE ? 'bg-orange-600 text-white' : isSOM ? 'bg-green-600 text-white' : isCNAHS ? 'bg-emerald-600 text-white' : 'bg-[#0f2080] text-white')
+                      : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-100']">
+                  {{ yr }}<span v-if="yr === currentAcademicYear" class="ml-1 opacity-70 text-[10px]">·current</span>
+                </button>
+              </div>
+            </div>
+
             <!-- Content -->
             <div class="p-3 sm:p-4 md:p-5 space-y-0">
 
@@ -2487,9 +2501,12 @@
               <!-- My Attendance Records Section - Enhanced with Expandable Event Folders -->
               <div v-if="myAttendanceRecords.length > 0">
                 <h3 class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider mb-2">My Attendance History</h3>
-                <div class="bg-white border border-[#e0e0e0] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden divide-y divide-[#edebe9]">
+                <div v-if="filteredMyAttendanceRecords.length === 0" class="text-center py-8 text-gray-400 text-sm bg-white border border-[#e0e0e0] rounded-lg">
+                  No attendance records for {{ userAttendAcadYear }}.
+                </div>
+                <div v-else class="bg-white border border-[#e0e0e0] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden divide-y divide-[#edebe9]">
                   <div 
-                    v-for="record in myAttendanceRecords" 
+                    v-for="record in filteredMyAttendanceRecords" 
                     :key="record._id || record.event_id"
                   >
                     <!-- Event Row - ListItem style -->
@@ -4370,15 +4387,15 @@
             <!-- KPI tiles — stacks on very small screens -->
             <div class="grid grid-cols-3 divide-x divide-[#edebe9]">
               <div class="px-3 sm:px-6 py-4 sm:py-5 text-center">
-                <p class="text-2xl sm:text-3xl font-light text-[#201f1e] tabular-nums">{{ myPayments.length }}</p>
+                <p class="text-2xl sm:text-3xl font-light text-[#201f1e] tabular-nums">{{ filteredMyPayments.length }}</p>
                 <p class="text-[11px] text-[#605e5c] mt-1 font-medium uppercase tracking-wide">Total</p>
               </div>
               <div class="px-3 sm:px-6 py-4 sm:py-5 text-center">
-                <p class="text-2xl sm:text-3xl font-light text-emerald-600 tabular-nums">{{ myPayments.filter(p => p.is_paid).length }}</p>
+                <p class="text-2xl sm:text-3xl font-light text-emerald-600 tabular-nums">{{ filteredMyPayments.filter(p => p.is_paid).length }}</p>
                 <p class="text-[11px] text-[#605e5c] mt-1 font-medium uppercase tracking-wide">Paid</p>
               </div>
               <div class="px-3 sm:px-6 py-4 sm:py-5 text-center">
-                <p class="text-2xl sm:text-3xl font-light text-red-500 tabular-nums">{{ myPayments.filter(p => !p.is_paid).length }}</p>
+                <p class="text-2xl sm:text-3xl font-light text-red-500 tabular-nums">{{ filteredMyPayments.filter(p => !p.is_paid).length }}</p>
                 <p class="text-[11px] text-[#605e5c] mt-1 font-medium uppercase tracking-wide">Outstanding</p>
               </div>
             </div>
@@ -4387,8 +4404,19 @@
           <!-- Records Card -->
           <div class="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
             <!-- Section command bar -->
-            <div class="flex items-center justify-between px-4 sm:px-6 h-10 bg-[#faf9f8] border-b border-[#edebe9]">
-              <span class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider">Payment Records</span>
+            <div class="flex items-center justify-between px-4 sm:px-6 py-2 min-h-[40px] bg-[#faf9f8] border-b border-[#edebe9] gap-2 flex-wrap">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider">Payment Records</span>
+                <div class="flex items-center gap-1">
+                  <button v-for="yr in STUDENT_ACAD_YEARS" :key="yr" @click="userContribAcadYear = yr"
+                    :class="['px-2 py-0.5 rounded-full text-[11px] font-semibold transition-colors',
+                      userContribAcadYear === yr
+                        ? (isCOE ? 'bg-orange-600 text-white' : isSOM ? 'bg-green-600 text-white' : isCNAHS ? 'bg-emerald-600 text-white' : 'bg-[#0f2080] text-white')
+                        : 'bg-white border border-[#e0e0e0] text-[#605e5c] hover:bg-[#f3f2f1]']">
+                    {{ yr }}<span v-if="yr === currentAcademicYear" class="ml-0.5 opacity-60">·</span>
+                  </button>
+                </div>
+              </div>
               <button @click="fetchMyPayments" :disabled="loadingMyPayments"
                 class="flex items-center gap-1.5 px-2.5 h-7 rounded text-xs font-medium text-[#605e5c] hover:bg-[#f3f2f1] active:bg-[#edebe9] transition-colors disabled:opacity-40 min-w-[44px] justify-center">
                 <svg :class="['w-3.5 h-3.5 flex-shrink-0', loadingMyPayments ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
@@ -4417,7 +4445,7 @@
             <div v-else>
               <!-- Mobile: card list (xs) -->
               <div class="block sm:hidden divide-y divide-[#edebe9]">
-                <div v-for="record in myPayments.slice(0, myPaymentsLimit)" :key="record._id + '-m'"
+                <div v-for="record in filteredMyPayments.slice(0, myPaymentsLimit)" :key="record._id + '-m'"
                   class="px-4 py-3.5 hover:bg-[#f3f2f1] active:bg-[#edebe9] transition-colors">
                   <!-- Title row -->
                   <div class="flex items-start justify-between gap-2 mb-2">
@@ -4461,7 +4489,7 @@
                     </tr>
                   </thead>
                   <tbody class="divide-y divide-[#edebe9]">
-                    <tr v-for="record in myPayments.slice(0, myPaymentsLimit)" :key="record._id"
+                    <tr v-for="record in filteredMyPayments.slice(0, myPaymentsLimit)" :key="record._id"
                       class="hover:bg-[#f3f2f1] transition-colors">
                       <td class="px-5 sm:px-7 py-3.5">
                         <p class="font-semibold text-[#201f1e]">{{ record.title }}</p>
@@ -4491,22 +4519,22 @@
               </div>
 
               <!-- Load More -->
-              <div v-if="myPayments.length > myPaymentsLimit" class="px-5 sm:px-7 py-3 border-t border-[#edebe9] flex justify-center">
+              <div v-if="filteredMyPayments.length > myPaymentsLimit" class="px-5 sm:px-7 py-3 border-t border-[#edebe9] flex justify-center">
                 <button @click="myPaymentsLimit += 10"
                   :class="['px-4 py-1.5 rounded text-xs font-semibold border transition-all min-h-[36px]',
                     isCOE ? 'border-orange-200 text-orange-600 hover:bg-orange-50' :
                     isSOM ? 'border-green-200 text-green-700 hover:bg-green-50' :
                     isCNAHS ? 'border-green-200 text-green-700 hover:bg-green-50' :
                     'border-[#c8c6c4] text-[#0078d4] hover:bg-[#e8f0fb]']">
-                  Show {{ Math.min(10, myPayments.length - myPaymentsLimit) }} more · {{ myPayments.length - myPaymentsLimit }} remaining
+                  Show {{ Math.min(10, filteredMyPayments.length - myPaymentsLimit) }} more · {{ filteredMyPayments.length - myPaymentsLimit }} remaining
                 </button>
               </div>
 
               <!-- Footer summary -->
               <div class="px-4 sm:px-7 py-3 flex items-center justify-between border-t border-[#edebe9] bg-[#faf9f8]">
-                <span class="text-xs text-[#605e5c]">{{ myPayments.filter(p => p.is_paid).length }} of {{ myPayments.length }} paid</span>
+                <span class="text-xs text-[#605e5c]">{{ filteredMyPayments.filter(p => p.is_paid).length }} of {{ filteredMyPayments.length }} paid</span>
                 <span class="text-xs font-semibold text-[#201f1e] tabular-nums">
-                  Total ₱{{ myPayments.reduce((s, p) => s + (p.amount_due || 0), 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
+                  Total ₱{{ filteredMyPayments.reduce((s, p) => s + (p.amount_due || 0), 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }}
                 </span>
               </div>
             </div>
@@ -11384,9 +11412,17 @@ const attendanceSchoolYearFilter = ref('')
 const attendanceSemesterFilter = ref('')
 const statsAcadYear = ref('')
 const statsSemFilter = ref('')
-const userAttendAcadYear = ref('')
+// Auto-derives the current academic year: July onwards = new year begins
+const currentAcademicYear = computed(() => {
+  const now = new Date()
+  const y = now.getFullYear()
+  return now.getMonth() >= 6 ? `${y}-${y + 1}` : `${y - 1}-${y}`
+})
+const STUDENT_ACAD_YEARS = ['2025-2026', '2026-2027']
+
+const userAttendAcadYear = ref(currentAcademicYear.value)
 const userAttendSemFilter = ref('')
-const userContribAcadYear = ref('')
+const userContribAcadYear = ref(currentAcademicYear.value)
 const userContribSemFilter = ref('')
 
 // Reset to page 1 when attendance filters change
@@ -11480,6 +11516,16 @@ const cacheStudentPhoto = (obj, photo) => {
 }
 const myAttendanceRecords = ref([])
 const expandedAttendanceRecords = ref({})
+
+// Filtered student-facing attendance records and payments by selected academic year
+const filteredMyAttendanceRecords = computed(() => {
+  if (!userAttendAcadYear.value) return myAttendanceRecords.value
+  return myAttendanceRecords.value.filter(r => (r.event?.school_year || '') === userAttendAcadYear.value)
+})
+const filteredMyPayments = computed(() => {
+  if (!userContribAcadYear.value) return myPayments.value
+  return myPayments.value.filter(p => (p.school_year || '') === userContribAcadYear.value)
+})
 const attendanceLoading = ref(false)
 const attendanceRefreshInterval = ref(null)
 const eventTimeInterval = ref(null)
