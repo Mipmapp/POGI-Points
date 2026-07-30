@@ -1227,6 +1227,63 @@
               </div>
             </div>
 
+            <!-- Retag Events by School Year -->
+            <div :class="['border rounded-xl p-6', isCOE ? 'border-orange-200 bg-orange-50/40' : isSOM ? 'border-green-200 bg-green-50/40' : isCNAHS ? 'border-emerald-200 bg-emerald-50/40' : 'border-indigo-200 bg-indigo-50/30']">
+              <div class="mb-4">
+                <h3 :class="['text-lg font-semibold flex items-center gap-2', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-emerald-900' : 'text-indigo-900']">
+                  <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-emerald-600' : 'text-indigo-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a2 2 0 012-2z"/></svg>
+                  Retag Events by School Year
+                </h3>
+                <p class="text-sm text-gray-500 mt-1">Bulk-update the school year label on attendance events so they appear under the correct year filter tab.</p>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">From (leave blank for all)</label>
+                  <select v-model="retagFromYear" :class="['w-full px-3 py-2 rounded-lg border bg-white text-sm outline-none transition-all', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200' : isSOM ? 'border-green-300 focus:ring-2 focus:ring-green-200' : isCNAHS ? 'border-emerald-300 focus:ring-2 focus:ring-emerald-200' : 'border-indigo-300 focus:ring-2 focus:ring-indigo-200']">
+                    <option value="">All events (no filter)</option>
+                    <option v-for="yr in availableAttendanceSchoolYears" :key="yr" :value="yr">{{ yr }}</option>
+                    <option v-if="attendanceEvents.some(e => !e.school_year)" value="__blank__">Untagged / blank</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">To (new school year)</label>
+                  <select v-model="retagToYear" :class="['w-full px-3 py-2 rounded-lg border bg-white text-sm outline-none transition-all', isCOE ? 'border-orange-300 focus:ring-2 focus:ring-orange-200' : isSOM ? 'border-green-300 focus:ring-2 focus:ring-green-200' : isCNAHS ? 'border-emerald-300 focus:ring-2 focus:ring-emerald-200' : 'border-indigo-300 focus:ring-2 focus:ring-indigo-200']">
+                    <option value="" disabled>Select target year…</option>
+                    <option v-for="yr in schoolYearOptions" :key="yr" :value="yr">{{ yr }}</option>
+                  </select>
+                </div>
+              </div>
+              <div class="flex items-center gap-3 flex-wrap">
+                <button
+                  @click="retagEventsSchoolYear"
+                  :disabled="retaggingEvents || !retagToYear"
+                  :class="['px-4 py-2 rounded-lg text-sm font-semibold text-white transition flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed bg-gradient-to-r',
+                    isCOE ? 'from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' :
+                    isSOM ? 'from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600' :
+                    isCNAHS ? 'from-emerald-600 to-green-500 hover:from-emerald-700 hover:to-green-600' :
+                    'from-indigo-600 to-blue-500 hover:from-indigo-700 hover:to-blue-600']"
+                >
+                  <svg v-if="retaggingEvents" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                  {{ retaggingEvents ? 'Retagging…' : 'Apply Retag' }}
+                </button>
+                <span class="text-xs text-gray-400">
+                  <template v-if="retagFromYear === '__blank__'">
+                    {{ attendanceEvents.filter(e => !e.school_year).length }} untagged event(s) will be updated
+                  </template>
+                  <template v-else-if="retagFromYear">
+                    {{ attendanceEvents.filter(e => e.school_year === retagFromYear).length }} event(s) will be updated
+                  </template>
+                  <template v-else>
+                    {{ attendanceEvents.length }} event(s) will be updated
+                  </template>
+                </span>
+              </div>
+              <p :class="['text-xs mt-3', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-emerald-700' : 'text-indigo-700']">
+                <strong>ℹ️ What this does:</strong> Updates the <code>school_year</code> field on attendance events so they appear under the correct tab in the event list. Attendance logs and student records are not affected.
+              </p>
+            </div>
+
             <!-- Search for Duplicates Section -->
             <div class="border border-blue-200 rounded-xl p-6 bg-blue-50">
               <div class="mb-4">
@@ -11100,6 +11157,11 @@ const clearingSessionTokens = ref(false)
 const migrationDestinationUri = ref('')
 const migratingDatabase = ref(false)
 
+// Retag events school year management
+const retagFromYear = ref('')
+const retagToYear = ref('')
+const retaggingEvents = ref(false)
+
 // Duplicate search management
 const duplicateSearchQuery = ref('')
 const duplicateSearchLoading = ref(false)
@@ -14753,6 +14815,56 @@ const migrateFullName = async () => {
     showNotification('Failed to run migration: ' + error.message, 'error')
   } finally {
     migratingFullName.value = false
+  }
+}
+
+// Bulk-retag attendance events to a new school_year
+const retagEventsSchoolYear = async () => {
+  if (!retagToYear.value) {
+    showNotification('Please select a target school year.', 'error')
+    return
+  }
+  const fromLabel = retagFromYear.value === '__blank__'
+    ? 'untagged / blank events'
+    : retagFromYear.value
+      ? `events tagged "${retagFromYear.value}"`
+      : 'ALL events'
+  const previewCount = retagFromYear.value === '__blank__'
+    ? attendanceEvents.value.filter(e => !e.school_year).length
+    : retagFromYear.value
+      ? attendanceEvents.value.filter(e => e.school_year === retagFromYear.value).length
+      : attendanceEvents.value.length
+  const msg = `This will update ${previewCount} ${fromLabel} → school year "${retagToYear.value}".\n\nThis cannot be undone. Continue?`
+  if (!confirm(msg)) return
+
+  retaggingEvents.value = true
+  try {
+    const token = localStorage.getItem('authToken')
+    const body = { to_year: retagToYear.value }
+    if (retagFromYear.value) body.from_year = retagFromYear.value
+    const response = await fetch(buildAPIUrl('/apis/admin/retag-events-school-year'), {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        'X-SSAAM-TS': encodeTimestamp()
+      },
+      body: JSON.stringify(body)
+    })
+    const data = await response.json()
+    if (response.ok) {
+      showNotification(`✓ ${data.message}`, 'success')
+      retagFromYear.value = ''
+      retagToYear.value = ''
+      await refreshAttendanceSection()
+    } else {
+      showNotification(data.message || 'Retag failed', 'error')
+    }
+  } catch (err) {
+    console.error('Retag events error:', err)
+    showNotification('Failed to retag events: ' + err.message, 'error')
+  } finally {
+    retaggingEvents.value = false
   }
 }
 

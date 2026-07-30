@@ -2595,7 +2595,9 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: (process.env.GOOGLE_CALLBACK_URL || '/api/auth/callback/google').trim(),
+        callbackURL: process.env.REPLIT_DEV_DOMAIN
+            ? `https://${process.env.REPLIT_DEV_DOMAIN}/api/auth/callback/google`
+            : (process.env.GOOGLE_CALLBACK_URL || '/api/auth/callback/google').trim(),
     }, async (accessToken, refreshToken, profile, done) => {
         try {
             const email = profile.emails?.[0]?.value?.toLowerCase().trim();
@@ -6111,6 +6113,45 @@ app.post('/apis/admin/migrate-full-name', auth, async (req, res) => {
 
 
 // [REMOVED] DEBUG endpoint for enriching payment records
+
+
+// Bulk retag attendance events with a new school_year value
+app.post('/apis/admin/retag-events-school-year', auth, requireCoAdminOrAbove, async (req, res) => {
+    try {
+        const { from_year, to_year } = req.body;
+
+        if (!to_year || !String(to_year).trim()) {
+            return res.status(400).json({ message: 'to_year is required' });
+        }
+
+        const EventModel = getCollegeModel(AttendanceEvent, CCS_AttendanceEvent, COE_AttendanceEvent, req.college);
+
+        let filter = {};
+        if (from_year === '__blank__') {
+            // Only events with missing/empty school_year
+            filter = { $or: [{ school_year: { $in: [null, ''] } }, { school_year: { $exists: false } }] };
+        } else if (from_year && String(from_year).trim()) {
+            filter = { school_year: String(from_year).trim() };
+        }
+        // else: empty from_year → update ALL events (filter = {})
+
+        const result = await EventModel.updateMany(filter, { $set: { school_year: String(to_year).trim() } });
+
+        await logAudit(req.college, req.master, 'EVENTS_RETAGGED', 'AttendanceEvent', null,
+            `Retagged ${result.modifiedCount} events from "${from_year || 'all'}" → "${to_year}"`);
+
+        res.json({
+            message: `Successfully retagged ${result.modifiedCount} event(s) to ${to_year}`,
+            updatedCount: result.modifiedCount,
+            from_year: from_year || null,
+            to_year
+        });
+
+    } catch (err) {
+        console.error('Retag events school_year error:', err);
+        internalError(res, err);
+    }
+});
 
 
 // MongoDB Migration Endpoint - Copy all data to another MongoDB instance
