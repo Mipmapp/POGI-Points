@@ -6101,33 +6101,62 @@ app.put('/apis/settings', auth, requireCoAdminOrAbove, async (req, res) => {
     }
 });
 
-// Cleanup Endpoint - Remove unused fields from all students to free up space
-app.post('/apis/admin/cleanup-unused-fields', auth, async (req, res) => {
+// Migrate full_name — populate full_name from first_name + middle_name for all students
+// that have first_name stored but no full_name (or whose full_name equals their last_name fallback).
+app.post('/apis/admin/migrate-full-name', auth, async (req, res) => {
     try {
-        // Only allow primary admin
         if (req.master.username !== PRIMARY_ADMIN_USERNAME) {
             return res.status(403).json({
-                message: `Only the primary admin can perform database cleanup`,
+                message: 'Only the primary admin can run data migrations',
                 code: 'NOT_PRIMARY_ADMIN'
             });
         }
 
-        // Remove unused fields: contributions, semester, full_name, school_year
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-        const result = await StudentModel.updateMany(
-            {},
-            { $unset: { contributions: 1, semester: 1, full_name: 1, school_year: 1 } }
-        );
+
+        // Fetch all students that have a first_name stored in the document
+        const students = await StudentModel.find({ first_name: { $exists: true, $nin: [null, ''] } })
+            .select('_id first_name middle_name last_name full_name')
+            .lean();
+
+        let updatedCount = 0;
+        let skippedCount = 0;
+        const bulk = [];
+
+        for (const s of students) {
+            const firstName  = (s.first_name  || '').trim().toUpperCase();
+            const middleName = (s.middle_name || '').trim().toUpperCase();
+            const computed   = middleName ? `${firstName} ${middleName}` : firstName;
+
+            if (!computed) { skippedCount++; continue; }
+
+            // Only update if full_name is missing or is only the last_name fallback
+            const currentFull = (s.full_name || '').trim().toUpperCase();
+            const lastNameFallback = (s.last_name || '').trim().toUpperCase();
+            if (currentFull && currentFull !== lastNameFallback) { skippedCount++; continue; }
+
+            bulk.push({
+                updateOne: {
+                    filter: { _id: s._id },
+                    update: { $set: { full_name: computed } }
+                }
+            });
+            updatedCount++;
+        }
+
+        if (bulk.length > 0) {
+            await StudentModel.bulkWrite(bulk, { ordered: false });
+        }
 
         res.json({
-            message: "Unused fields removed successfully",
-            modifiedCount: result.modifiedCount,
-            removedFields: ['contributions', 'semester', 'full_name', 'school_year'],
-            details: `${result.modifiedCount} student records updated and cleaned up`
+            message: 'full_name migration completed',
+            updatedCount,
+            skippedCount,
+            details: `${updatedCount} records updated, ${skippedCount} already had a full_name or lacked first_name data`
         });
 
     } catch (err) {
-        console.error('Cleanup error:', err);
+        console.error('Migrate full_name error:', err);
         internalError(res, err);
     }
 });

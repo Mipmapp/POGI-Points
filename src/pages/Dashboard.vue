@@ -1396,29 +1396,29 @@
               </div>
             </div>
 
-            <!-- Clean Up Unused Fields Section -->
-            <div class="border border-orange-200 rounded-xl p-6 bg-orange-50">
+            <!-- Migrate full_name Section -->
+            <div class="border border-teal-200 rounded-xl p-6 bg-teal-50">
               <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
                 <div>
-                  <h3 class="text-lg font-semibold text-orange-900 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    Clean Up Unused Fields
+                  <h3 class="text-lg font-semibold text-teal-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Migrate Full Name
                   </h3>
-                  <p class="text-sm text-orange-700 mt-1">Remove unused fields and free up database storage</p>
+                  <p class="text-sm text-teal-700 mt-1">Populate <code class="bg-teal-100 px-1 rounded">full_name</code> from <code class="bg-teal-100 px-1 rounded">first_name</code> + <code class="bg-teal-100 px-1 rounded">middle_name</code> for existing student records</p>
                 </div>
               </div>
-              <div class="bg-white rounded-lg p-4 border border-orange-200 space-y-4">
-                <div class="bg-orange-50 rounded p-3 border border-orange-200">
-                  <p class="text-xs text-orange-700"><strong>⚠️ Warning:</strong> This will permanently remove contributions, semester, full_name, and school_year fields from all student records. Student data (ID, name parts, program, etc.) will remain intact. This action cannot be undone.</p>
+              <div class="bg-white rounded-lg p-4 border border-teal-200 space-y-4">
+                <div class="bg-teal-50 rounded p-3 border border-teal-200">
+                  <p class="text-xs text-teal-800"><strong>ℹ️ What this does:</strong> For every student who has <strong>first_name</strong> stored in the database, this will build their <strong>full_name</strong> as <em>FIRST_NAME MIDDLE_NAME</em> (middle name included when present). Records that already have a full_name set are skipped automatically. This is safe to run multiple times.</p>
                 </div>
-                <button 
-                  @click="cleanupUnusedFieldsConfirm" 
-                  :disabled="cleaningUpFields"
-                  class="w-full bg-gradient-to-r from-orange-600 to-orange-700 text-white px-6 py-3 rounded-lg font-medium hover:from-orange-700 hover:to-orange-800 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                <button
+                  @click="migrateFullNameConfirm"
+                  :disabled="migratingFullName"
+                  class="w-full bg-gradient-to-r from-teal-600 to-teal-700 text-white px-6 py-3 rounded-lg font-medium hover:from-teal-700 hover:to-teal-800 transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <svg v-if="cleaningUpFields" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                  {{ cleaningUpFields ? 'Cleaning up...' : 'Start Cleanup' }}
+                  <svg v-if="migratingFullName" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                  {{ migratingFullName ? 'Migrating...' : 'Start Migration' }}
                 </button>
               </div>
             </div>
@@ -10910,7 +10910,7 @@ const confirmAndExportPaymentRecords = () => {
 // Settings management
 const settingsLoading = ref(false)
 const settingsSaving = ref(false)
-const cleaningUpFields = ref(false)
+const migratingFullName = ref(false)
 const appSettings = ref({
   userRegister: { register: true, message: '' },
   userLogin: { login: true, message: '' },
@@ -14518,19 +14518,19 @@ const migrateDatabase = async () => {
   }
 }
 
-// Clean Up Unused Fields function
-const cleanupUnusedFieldsConfirm = () => {
-  if (confirm('⚠️ PERMANENT ACTION:\n\nThis will permanently remove the following fields from ALL student records:\n• contributions\n• semester\n• full_name\n• school_year\n\nStudent data (ID, name parts, program, etc.) will remain intact.\n\nThis action CANNOT be undone. Continue?')) {
-    cleanupUnusedFields()
+// Migrate full_name from first_name + middle_name
+const migrateFullNameConfirm = () => {
+  if (confirm('This will populate full_name for every student who has first_name stored but no full_name yet.\n\nRecords that already have a full_name are skipped.\n\nProceed?')) {
+    migrateFullName()
   }
 }
 
-const cleanupUnusedFields = async () => {
-  cleaningUpFields.value = true
-  
+const migrateFullName = async () => {
+  migratingFullName.value = true
+
   try {
     const token = localStorage.getItem('authToken')
-    const response = await fetch(buildAPIUrl(`/apis/admin/cleanup-unused-fields`), {
+    const response = await fetch(buildAPIUrl(`/apis/admin/migrate-full-name`), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -14538,19 +14538,19 @@ const cleanupUnusedFields = async () => {
         'X-SSAAM-TS': encodeTimestamp()
       }
     })
-    
+
     const data = await response.json()
-    
+
     if (response.ok) {
-      showNotification(`✓ Cleanup successful! ${data.modifiedCount} student records cleaned up. Storage freed!`, 'success')
+      showNotification(`✓ Migration complete! ${data.updatedCount} records updated, ${data.skippedCount} already up-to-date.`, 'success')
     } else {
-      showNotification(data.message || 'Cleanup failed', 'error')
+      showNotification(data.message || 'Migration failed', 'error')
     }
   } catch (error) {
-    console.error('Cleanup error:', error)
-    showNotification('Failed to cleanup fields: ' + error.message, 'error')
+    console.error('Migrate full_name error:', error)
+    showNotification('Failed to run migration: ' + error.message, 'error')
   } finally {
-    cleaningUpFields.value = false
+    migratingFullName.value = false
   }
 }
 
