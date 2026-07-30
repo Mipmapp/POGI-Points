@@ -373,7 +373,7 @@ const confirmedDescriptor = ref(null)
 const confirmedPhoto = ref(null)
 const submitting = ref(false)
 
-const TARGET_SAMPLES = 45
+const TARGET_SAMPLES = 20
 const progressPct = computed(() => Math.min(100, (capturedSamples.value / TARGET_SAMPLES) * 100))
 
 const stageStyle = computed(() => {
