@@ -3982,8 +3982,12 @@ app.post('/apis/students/self-arms-validate', studentAuthWithToken, async (req, 
         }
 
         const { record, rawStatus } = result;
-        const armsSemester   = record.Semester    ?? '';
         const armsSchoolYear = record.School_Year ?? '';
+
+        // Normalize ARMS semester value to match the schema enum ('1st Sem' / '2nd Sem').
+        // ARMS returns raw values like '1st', '2nd', '1st Semester', etc.
+        const rawSemester = String(record.Semester ?? '').trim();
+        const armsSemester = rawSemester.startsWith('2') ? '2nd Sem' : rawSemester.startsWith('1') ? '1st Sem' : rawSemester;
 
         // Stamp the student record with the validated semester/school_year from ARMS
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
