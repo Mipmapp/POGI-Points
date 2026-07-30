@@ -4018,8 +4018,11 @@
             </div>
           </div>
 
-          <!-- ── ARMS Enrollment Validation ── -->
-          <div id="arms-validation-card" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+          <!-- ── Face ID + ARMS Validation 2-col grid ── -->
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-start">
+
+          <!-- Right: ARMS Enrollment Validation -->
+          <div id="arms-validation-card" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden order-2 lg:order-2">
             <!-- Header strip -->
             <div :class="['px-5 py-3 flex items-center justify-between border-b border-gray-50',
               (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)
@@ -4172,8 +4175,8 @@
             </div>
           </div>
 
-          <!-- ── Face ID ── -->
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+          <!-- Left: Face ID -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden order-1 lg:order-1">
             <!-- Card header strip -->
             <div :class="['px-5 py-3 flex items-center justify-between border-b border-gray-50',
               faceEnrolled ? 'bg-emerald-50/60' : 'bg-gray-50/60']">
@@ -4233,6 +4236,8 @@
               </div>
             </div>
           </div>
+
+          </div><!-- end Face ID + ARMS 2-col grid -->
 
           <!-- ── Account Security ── -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
