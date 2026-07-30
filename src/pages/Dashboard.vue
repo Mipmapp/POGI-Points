@@ -4027,7 +4027,7 @@
               <span v-else class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700">Not Validated</span>
             </div>
 
-            <div class="p-5">
+            <div class="p-5 flex flex-col flex-1">
               <!-- Already validated state -->
               <template v-if="currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester">
                 <div class="flex items-center gap-4">
@@ -4049,7 +4049,12 @@
                     {{ chip }}
                   </span>
                 </div>
-                <div v-if="!dashArmsShowInput" class="flex justify-end mt-2">
+                <!-- Password note -->
+                <p class="text-[10px] text-gray-400 leading-snug mt-2">
+                  <svg class="w-2.5 h-2.5 inline-block mr-0.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Your JRMSU-ARMS password is separate from your SSAAM login password.
+                </p>
+                <div v-if="!dashArmsShowInput" class="flex justify-end mt-auto pt-3">
                   <button
                     @click="dashArmsShowInput = true; dashArmsError = ''"
                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-white text-[10px] text-gray-500 font-medium hover:bg-gray-50 transition-colors">
@@ -4244,7 +4249,7 @@
               <span v-else class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-gray-100 text-gray-500">Not set up</span>
             </div>
 
-            <div class="p-5">
+            <div class="p-5 flex flex-col flex-1">
               <!-- Face preview + info row -->
               <div class="flex items-center gap-4 mb-4">
                 <div :class="['w-16 h-16 rounded-2xl overflow-hidden flex items-center justify-center flex-shrink-0 border-2',
@@ -4273,8 +4278,8 @@
                   {{ tip }}
                 </span>
               </div>
-              <!-- Update Face ID button — dedicated bottom-right row -->
-              <div class="flex justify-end mt-2">
+              <!-- Update Face ID button — pinned to card bottom -->
+              <div class="flex justify-end mt-auto pt-3">
                 <button
                   @click="openFaceEnroll"
                   :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
@@ -4296,7 +4301,8 @@
           </div><!-- end Face ID + ARMS 2-col grid -->
 
           <!-- ── Account Security ── -->
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+          <div class="flex justify-center">
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden w-full max-w-lg">
             <div class="px-5 py-3 border-b border-gray-50 bg-gray-50/60">
               <span class="text-[10px] font-bold uppercase tracking-widest text-gray-400">Account Security</span>
             </div>
@@ -4329,6 +4335,7 @@
               </button>
             </div>
           </div>
+          </div><!-- end Account Security wrapper -->
 
         </div>
 
