@@ -5640,100 +5640,143 @@
     </div>
   </transition>
 
-  <!-- Password Change Modal with Email Verification -->
+  <!-- Password Change Modal -->
   <transition name="fade">
-    <div v-if="showPasswordChangeModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="closePasswordChangeModal">
+    <div v-if="showPasswordChangeModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" @click.self="closePasswordChangeModal">
       <transition name="modal-bounce" appear>
-        <div v-if="showPasswordChangeModal" class="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-md w-full mx-4 max-h-[90vh] flex flex-col">
-          <!-- Gradient Header -->
-          <div :class="['flex justify-between items-center px-6 py-4 flex-shrink-0', isCOE ? 'bg-gradient-to-r from-orange-700 to-red-500' : isSOM ? 'bg-gradient-to-r from-green-700 to-teal-500' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light']">
-            <div class="flex items-center gap-3">
-              <div class="bg-white/20 p-2 rounded-lg">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+        <div v-if="showPasswordChangeModal" class="bg-white w-full sm:max-w-sm sm:rounded-2xl rounded-t-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
+
+          <!-- Header -->
+          <div class="flex items-start justify-between px-5 pt-5 pb-4 border-b border-gray-100 flex-shrink-0">
+            <div>
+              <div class="flex items-center gap-2 mb-0.5">
+                <div :class="['w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-100']">
+                  <svg :class="['w-3.5 h-3.5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+                <h3 class="text-base font-bold text-gray-900">Change Password</h3>
               </div>
-              <h3 class="text-xl font-bold text-white">Change Password</h3>
+              <p class="text-[11px] text-gray-400 ml-9">This updates your <span class="font-semibold text-gray-500">SSAAM account</span> password.</p>
             </div>
-            <button @click="closePasswordChangeModal" class="text-white/70 hover:text-white text-2xl leading-none">&times;</button>
+            <button @click="closePasswordChangeModal" class="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 transition flex-shrink-0 ml-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
           </div>
+
+          <!-- Step indicator -->
+          <div class="flex items-center gap-1.5 px-5 pt-4 pb-0 flex-shrink-0">
+            <template v-for="s in 3" :key="s">
+              <div :class="['h-1 rounded-full flex-1 transition-all',
+                s < pwChangeStep ? (isCOE ? 'bg-orange-400' : isSOM ? 'bg-green-500' : isCNAHS ? 'bg-green-600' : 'bg-blue-500')
+                : s === pwChangeStep ? (isCOE ? 'bg-orange-300' : isSOM ? 'bg-green-300' : isCNAHS ? 'bg-green-300' : 'bg-blue-300')
+                : 'bg-gray-100']"></div>
+            </template>
+          </div>
+          <p class="px-5 pt-1.5 pb-0 text-[10px] text-gray-400 flex-shrink-0">
+            Step {{ pwChangeStep }} of 3 —
+            <span class="font-medium text-gray-500">{{ pwChangeStep === 1 ? 'Verify your email' : pwChangeStep === 2 ? 'Enter the code' : 'Set new password' }}</span>
+          </p>
+
           <!-- Body -->
-          <div class="p-6 overflow-y-auto flex-1">
+          <div class="px-5 pt-4 pb-5 overflow-y-auto flex-1 space-y-4">
 
-          <!-- Step 1: Request Email Verification -->
-          <div v-if="pwChangeStep === 1" class="space-y-4">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <div class="flex items-start gap-3">
-                <svg class="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p class="text-sm text-blue-800">For your security, we'll send a verification code to your registered email address.</p>
+            <!-- Step 1: Email -->
+            <template v-if="pwChangeStep === 1">
+              <p class="text-xs text-gray-500 leading-relaxed">
+                We'll send a one-time code to your registered email to confirm it's you.
+              </p>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Email Address</label>
+                <input v-model="pwChangeEmail" type="email" :placeholder="currentUser.email || 'your.email@example.com'"
+                  :class="['w-full px-3.5 py-2.5 border rounded-xl text-sm outline-none transition bg-white',
+                    isCOE ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20'
+                    : isSOM ? 'border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-400/20'
+                    : isCNAHS ? 'border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'
+                    : 'border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20']" />
               </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Your Email Address</label>
-              <input v-model="pwChangeEmail" type="email" :placeholder="currentUser.email || 'your.email@example.com'" :class="['w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-blue-600']" />
-            </div>
-            <button @click="requestPasswordChangeCode" :disabled="changingPassword || !pwChangeEmail.trim()" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
-              <svg v-if="changingPassword" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              {{ changingPassword ? 'Sending...' : 'Send Verification Code' }}
-            </button>
-            <p v-if="pwChangeMessage" :class="['text-sm text-center', pwChangeSuccess ? 'text-green-600' : 'text-red-600']">{{ pwChangeMessage }}</p>
-          </div>
+              <button @click="requestPasswordChangeCode" :disabled="changingPassword || !pwChangeEmail.trim()"
+                :class="['w-full py-2.5 rounded-xl text-sm font-semibold text-white transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed',
+                  isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-500 hover:bg-green-600' : isCNAHS ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700']">
+                <svg v-if="changingPassword" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                {{ changingPassword ? 'Sending…' : 'Send Verification Code' }}
+              </button>
+              <p v-if="pwChangeMessage" :class="['text-xs text-center font-medium', pwChangeSuccess ? 'text-green-600' : 'text-red-500']">{{ pwChangeMessage }}</p>
+            </template>
 
-          <!-- Step 2: Enter Verification Code -->
-          <div v-if="pwChangeStep === 2" class="space-y-4">
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-              <div class="flex items-start gap-3">
-                <svg class="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                <p class="text-sm text-green-800">A 6-digit code has been sent to your email. Please check your inbox.</p>
+            <!-- Step 2: Code -->
+            <template v-if="pwChangeStep === 2">
+              <div class="flex items-start gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+                <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                <p class="text-xs text-emerald-800 leading-relaxed">A 6-digit code was sent to <span class="font-semibold">{{ pwChangeEmail }}</span>. Check your inbox.</p>
               </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Verification Code</label>
-              <input v-model="pwChangeCode" type="text" placeholder="123456" maxlength="6" :class="['w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none text-center text-2xl tracking-widest', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-blue-600']" />
-            </div>
-            <button @click="verifyPasswordChangeCode" :disabled="changingPassword || pwChangeCode.length !== 6" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
-              <svg v-if="changingPassword" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              {{ changingPassword ? 'Verifying...' : 'Verify Code' }}
-            </button>
-            <button @click="pwChangeStep = 1" :class="[isCOE ? 'text-orange-600 hover:text-orange-700' : isSOM ? 'text-green-600 hover:text-green-700' : 'text-blue-600 hover:text-blue-700', 'w-full text-sm font-medium']">Back to Step 1</button>
-            <p v-if="pwChangeMessage" :class="['text-sm text-center', pwChangeSuccess ? 'text-green-600' : 'text-red-600']">{{ pwChangeMessage }}</p>
-          </div>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Verification Code</label>
+                <input v-model="pwChangeCode" type="text" placeholder="— — — — — —" maxlength="6"
+                  :class="['w-full px-3.5 py-3 border rounded-xl text-center text-2xl font-mono tracking-[0.5em] outline-none transition',
+                    isCOE ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20'
+                    : isSOM ? 'border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-400/20'
+                    : isCNAHS ? 'border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'
+                    : 'border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20']" />
+              </div>
+              <button @click="verifyPasswordChangeCode" :disabled="changingPassword || pwChangeCode.length !== 6"
+                :class="['w-full py-2.5 rounded-xl text-sm font-semibold text-white transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed',
+                  isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-500 hover:bg-green-600' : isCNAHS ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700']">
+                <svg v-if="changingPassword" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                {{ changingPassword ? 'Verifying…' : 'Verify Code' }}
+              </button>
+              <button @click="pwChangeStep = 1" class="w-full text-xs font-medium text-gray-400 hover:text-gray-600 transition py-1">← Back</button>
+              <p v-if="pwChangeMessage" :class="['text-xs text-center font-medium', pwChangeSuccess ? 'text-green-600' : 'text-red-500']">{{ pwChangeMessage }}</p>
+            </template>
 
-          <!-- Step 3: Enter New Password -->
-          <div v-if="pwChangeStep === 3" class="space-y-4">
-            <div :class="[isCOE ? 'bg-orange-50 border-orange-200' : isSOM ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200', 'border rounded-lg p-4 mb-4']">
-              <div class="flex items-start gap-3">
-                <svg :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500', 'w-5 h-5 mt-0.5 flex-shrink-0']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                <p :class="[isCOE ? 'text-orange-800' : isSOM ? 'text-green-800' : 'text-blue-800', 'text-sm']">Email verified! Now create your new secure password.</p>
+            <!-- Step 3: New Password -->
+            <template v-if="pwChangeStep === 3">
+              <div class="flex items-start gap-2.5 p-3 rounded-xl bg-emerald-50 border border-emerald-100">
+                <svg class="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                <p class="text-xs text-emerald-800">Email verified. Create a new strong password for your SSAAM account.</p>
               </div>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
-              <div class="relative">
-                <input v-model="passwordForm.newPassword" :type="showNewPassword ? 'text' : 'password'" placeholder="Enter new password (min 6 characters)" :class="['w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-blue-600']" />
-                <button type="button" @click="showNewPassword = !showNewPassword" :class="[isCOE ? 'hover:text-orange-600' : isSOM ? 'hover:text-green-600' : 'hover:text-blue-600', 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition']">
-                  <svg v-if="showNewPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                  <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
-                </button>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">New Password</label>
+                <div class="relative">
+                  <input v-model="passwordForm.newPassword" :type="showNewPassword ? 'text' : 'password'" placeholder="At least 6 characters"
+                    :class="['w-full px-3.5 py-2.5 pr-10 border rounded-xl text-sm outline-none transition',
+                      isCOE ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20'
+                      : isSOM ? 'border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-400/20'
+                      : isCNAHS ? 'border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'
+                      : 'border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20']" />
+                  <button type="button" @click="showNewPassword = !showNewPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
+                    <svg v-if="showNewPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                  </button>
+                </div>
+                <p v-if="passwordErrors.newPassword" class="text-red-500 text-[11px] mt-1">{{ passwordErrors.newPassword }}</p>
               </div>
-              <p v-if="passwordErrors.newPassword" class="text-red-500 text-xs mt-1">{{ passwordErrors.newPassword }}</p>
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
-              <div class="relative">
-                <input v-model="passwordForm.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" placeholder="Confirm new password" :class="['w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600' : isSOM ? 'focus:ring-green-600' : 'focus:ring-blue-600']" />
-                <button type="button" @click="showConfirmPassword = !showConfirmPassword" :class="[isCOE ? 'hover:text-orange-600' : isSOM ? 'hover:text-green-600' : 'hover:text-blue-600', 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 transition']">
-                  <svg v-if="showConfirmPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                  <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path></svg>
-                </button>
+              <div>
+                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Confirm Password</label>
+                <div class="relative">
+                  <input v-model="passwordForm.confirmPassword" :type="showConfirmPassword ? 'text' : 'password'" placeholder="Re-enter your new password"
+                    :class="['w-full px-3.5 py-2.5 pr-10 border rounded-xl text-sm outline-none transition',
+                      passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword
+                        ? 'border-red-300 focus:ring-2 focus:ring-red-300/30'
+                      : isCOE ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20'
+                      : isSOM ? 'border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-400/20'
+                      : isCNAHS ? 'border-gray-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'
+                      : 'border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20']" />
+                  <button type="button" @click="showConfirmPassword = !showConfirmPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition">
+                    <svg v-if="showConfirmPassword" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                  </button>
+                </div>
+                <p v-if="passwordErrors.confirmPassword" class="text-red-500 text-[11px] mt-1">{{ passwordErrors.confirmPassword }}</p>
+                <p v-else-if="passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword" class="text-red-500 text-[11px] mt-1">Passwords do not match</p>
               </div>
-              <p v-if="passwordErrors.confirmPassword" class="text-red-500 text-xs mt-1">{{ passwordErrors.confirmPassword }}</p>
-            </div>
-            <button @click="completePasswordChange" :disabled="changingPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword" :class="[isCOE ? 'bg-gradient-to-r from-orange-600 to-red-500 hover:from-orange-700 hover:to-red-600' : isSOM ? 'bg-gradient-to-r from-green-600 to-teal-500 hover:from-green-700 hover:to-teal-600' : 'bg-gradient-to-r from-ssaam-dark to-ssaam-light hover:from-ssaam-dark hover:to-ssaam-light', 'w-full text-white py-3 px-6 rounded-lg font-medium transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center']">
-              <svg v-if="changingPassword" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>
-              {{ changingPassword ? 'Changing Password...' : 'Change Password' }}
-            </button>
-            <p v-if="passwordForm.newPassword && passwordForm.confirmPassword && passwordForm.newPassword !== passwordForm.confirmPassword" class="text-sm text-red-600 text-center">Passwords do not match</p>
-            <p v-if="pwChangeMessage" :class="['text-sm text-center', pwChangeSuccess ? 'text-green-600' : 'text-red-600']">{{ pwChangeMessage }}</p>
-          </div>
+              <button @click="completePasswordChange" :disabled="changingPassword || !passwordForm.newPassword || passwordForm.newPassword !== passwordForm.confirmPassword"
+                :class="['w-full py-2.5 rounded-xl text-sm font-semibold text-white transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed',
+                  isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-500 hover:bg-green-600' : isCNAHS ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700']">
+                <svg v-if="changingPassword" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                {{ changingPassword ? 'Saving…' : 'Save New Password' }}
+              </button>
+              <p v-if="pwChangeMessage" :class="['text-xs text-center font-medium', pwChangeSuccess ? 'text-green-600' : 'text-red-500']">{{ pwChangeMessage }}</p>
+            </template>
+
           </div>
         </div>
       </transition>
