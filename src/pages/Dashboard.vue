@@ -4049,11 +4049,6 @@
                     {{ chip }}
                   </span>
                 </div>
-                <!-- Password note -->
-                <p class="text-[10px] text-gray-400 leading-snug mt-2">
-                  <svg class="w-2.5 h-2.5 inline-block mr-0.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                  Your JRMSU-ARMS password is separate from your SSAAM login password.
-                </p>
                 <div v-if="!dashArmsShowInput" class="flex justify-end mt-auto pt-3">
                   <button
                     @click="dashArmsShowInput = true; dashArmsError = ''"
@@ -4319,6 +4314,10 @@
                 <div>
                   <p class="text-sm font-bold text-gray-800 leading-snug">Password</p>
                   <p class="text-[11px] text-gray-400 mt-0.5">Keep your account secure with a strong password.</p>
+                  <p class="text-[10px] text-amber-600 mt-1 leading-snug">
+                    <svg class="w-2.5 h-2.5 inline-block mr-0.5 align-text-top" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Your JRMSU-ARMS password is separate from your SSAAM password.
+                  </p>
                 </div>
               </div>
               <!-- Full-width button -->
