@@ -3939,7 +3939,7 @@
                     </span>
                     <!-- Validate button — always visible in chips row -->
                     <button
-                      @click="dashArmsShowInput = true; $nextTick(() => { const el = document.getElementById('arms-validation-card'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }) })"
+                      @click="dashArmsShowInput = true; $nextTick(() => { const el = document.getElementById('arms-validation-card'); if (el) { const scroller = mainContentEl || el.closest('[class*=overflow-y-auto]'); if (scroller) { scroller.scrollTo({ top: el.offsetTop - 16, behavior: 'smooth' }); } else { el.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } })"
                       :class="['inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-colors',
                         (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)
                           ? 'bg-white border-emerald-200 text-emerald-600 hover:bg-emerald-50'
@@ -18523,6 +18523,55 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ── ARMS expand / collapse ── */
+.arms-expand-enter-active {
+  transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), max-height 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  max-height: 600px;
+  overflow: hidden;
+}
+.arms-expand-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease, max-height 0.24s ease;
+  max-height: 600px;
+  overflow: hidden;
+}
+.arms-expand-enter-from {
+  opacity: 0;
+  transform: translateY(-8px);
+  max-height: 0;
+}
+.arms-expand-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+  max-height: 0;
+}
+
+/* ── ARMS trigger button fade ── */
+.arms-btn-enter-active {
+  transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.arms-btn-leave-active {
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
+.arms-btn-enter-from, .arms-btn-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+/* ── ARMS inline error shake-in ── */
+.arms-error-enter-active {
+  transition: opacity 0.2s ease, transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.arms-error-leave-active {
+  transition: opacity 0.15s ease;
+}
+.arms-error-enter-from {
+  opacity: 0;
+  transform: translateX(-6px);
+}
+.arms-error-leave-to {
+  opacity: 0;
+}
+
 .logout-particle {
   animation: logout-float linear infinite both;
 }
