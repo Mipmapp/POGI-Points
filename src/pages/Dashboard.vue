@@ -3937,6 +3937,16 @@
                       <span class="ml-0.5">·</span>
                       <span>{{ (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester) ? 'Validated' : 'Not Validated' }}</span>
                     </span>
+                    <!-- Validate button — always visible in chips row -->
+                    <button
+                      @click="dashArmsShowInput = true; $nextTick(() => { const el = document.getElementById('arms-validation-card'); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }) })"
+                      :class="['inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-colors',
+                        (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)
+                          ? 'bg-white border-emerald-200 text-emerald-600 hover:bg-emerald-50'
+                          : 'bg-amber-500 border-amber-500 text-white hover:bg-amber-600']">
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      Validate
+                    </button>
                   </div>
                   <p class="text-[11px] text-gray-400 mt-3">Member since {{ formatDateTimeShort(currentUser.created_date) }}</p>
                 </div>
@@ -4008,8 +4018,8 @@
             </div>
           </div>
 
-          <!-- ── ARMS Enrollment Validation (only shown when not yet validated for current semester) ── -->
-          <div v-if="!(currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+          <!-- ── ARMS Enrollment Validation ── -->
+          <div id="arms-validation-card" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
             <!-- Header strip -->
             <div :class="['px-5 py-3 flex items-center justify-between border-b border-gray-50',
               (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)
@@ -4038,12 +4048,19 @@
                     </p>
                   </div>
                 </div>
-                <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-50">
+                <div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-gray-50">
                   <span v-for="chip in ['Verified via JRMSU ARMS', 'Current semester confirmed', 'Attendance-ready']" :key="chip"
                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 border border-gray-100 text-[10px] text-gray-500">
                     <svg class="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                     {{ chip }}
                   </span>
+                  <!-- Re-validate button inside validated state -->
+                  <button
+                    @click="dashArmsShowInput = true"
+                    class="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-white text-[10px] text-gray-500 font-medium hover:bg-gray-50 transition-colors">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    Re-validate
+                  </button>
                 </div>
               </template>
 
