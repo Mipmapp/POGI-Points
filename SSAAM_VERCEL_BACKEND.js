@@ -4038,9 +4038,13 @@ app.post('/apis/students/self-arms-validate', studentAuthWithToken, async (req, 
         const armsSemester   = record.Semester    ?? '';
         const armsSchoolYear = record.School_Year ?? '';
 
-        // Step 4: Check that ARMS semester/school_year matches the current settings period
+        // Step 4: Check that ARMS semester/school_year matches the current settings period.
+        // ARMS may return "1st" or "2nd" while settings stores "1st Sem" / "2nd Sem".
+        // Normalize both to just the leading ordinal ("1st", "2nd", etc.) for comparison.
+        const normalizeSem = (s) => (s || '').trim().replace(/\s*sem\.?$/i, '').trim().toLowerCase();
+
         const settings = await getSettings(req.college);
-        const semesterMatches   = !settings.semester   || armsSemester   === settings.semester;
+        const semesterMatches   = !settings.semester   || normalizeSem(armsSemester) === normalizeSem(settings.semester);
         const schoolYearMatches = !settings.schoolYear || armsSchoolYear === settings.schoolYear;
 
         if (!semesterMatches || !schoolYearMatches) {
