@@ -7638,12 +7638,6 @@ const prevAttendancePage = () => {
   }
 }
 
-// Reset to page 1 when attendance filters change
-watch([attendanceSearchQuery, attendanceSchoolYearFilter, attendanceSemesterFilter], () => {
-  attendanceCurrentPage.value = 1
-})
-
-
 // Contribution feature state
 const contributionTabMode = ref('general') // 'general' or 'events'
 const contributionSearchQuery = ref('')
@@ -11244,6 +11238,11 @@ const attendanceCurrentPage = ref(1)
 const attendanceItemsPerPage = 4
 const attendanceSchoolYearFilter = ref('')
 const attendanceSemesterFilter = ref('')
+
+// Reset to page 1 when attendance filters change
+watch([attendanceSearchQuery, attendanceSchoolYearFilter, attendanceSemesterFilter], () => {
+  attendanceCurrentPage.value = 1
+})
 
 // Helper to derive a stable student key from log or student object
 const deriveStudentKey = (obj) => {
