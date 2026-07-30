@@ -3520,7 +3520,7 @@ app.get('/apis/students/all-colleges', auth, async (req, res) => {
         for (const college of colleges) {
             const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, college);
             const students = await StudentModel.find({ status: 'approved' })
-                .select('_id student_id full_name last_name suffix email program year_level role rfid_code rfid_status photo')
+                .select('_id student_id full_name last_name suffix email program year_level role rfid_code rfid_status photo school_year semester')
                 .lean();
             students.forEach(s => { s.college = college; allStudents.push(s); });
         }
@@ -3536,7 +3536,7 @@ app.get('/apis/students/list/all', auth, async (req, res) => {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
         const students = await StudentModel.find({ status: 'approved' })
-            .select('student_id full_name last_name suffix program year_level photo email rfid_status rfid_code role college')
+            .select('student_id full_name last_name suffix program year_level photo email rfid_status rfid_code role college school_year semester')
             .sort({ last_name: 1 });
 
         const formattedStudents = students.map(s => ({
@@ -3551,7 +3551,9 @@ app.get('/apis/students/list/all', auth, async (req, res) => {
             rfid_status: s.rfid_status || 'unverified',
             rfid_code: s.rfid_code || 'N/A',
             role: s.role || 'student',
-            college: s.college || ''
+            college: s.college || '',
+            school_year: s.school_year || '',
+            semester: s.semester || ''
         }));
 
         res.json({
@@ -3585,7 +3587,7 @@ app.post('/apis/students/search', auth, async (req, res) => {
                 { last_name: { $regex: escapedSearch, $options: 'i' } },
                 { full_name: { $regex: escapedSearch, $options: 'i' } }
             ]
-        }).select('student_id full_name last_name suffix program year_level email rfid_status role photo college');
+        }).select('student_id full_name last_name suffix program year_level email rfid_status role photo college school_year semester');
 
         if (!student) {
             return res.status(404).json({
@@ -3652,7 +3654,7 @@ app.post('/apis/students/search-multi', auth, async (req, res) => {
             status: 'approved',
             ...nameFilter
         })
-            .select('student_id full_name last_name suffix program year_level email rfid_status role photo college')
+            .select('student_id full_name last_name suffix program year_level email rfid_status role photo college school_year semester')
             .sort({ last_name: 1 })
             .limit(10)
             .lean();
