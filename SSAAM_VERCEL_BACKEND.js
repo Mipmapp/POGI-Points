@@ -3839,6 +3839,81 @@ const ARMS_BASE_HEADERS = {
     'Origin':     'https://jrmsu-election-system.vercel.app',
 };
 
+/**
+ * Shared ARMS verification helper — identical to what /apis/students/arms-verify uses.
+ * Requests a bearer token, logs the student into ARMS, checks enrollment status.
+ *
+ * Returns { ok: true, record, rawStatus } on success.
+ * Returns { ok: false, status, message } on any failure so callers can forward it directly.
+ */
+async function callARMSVerify(student_id, password) {
+    const armsApiKey    = process.env.ARMS_API_KEY;
+    const armsApiSecret = process.env.ARMS_API_SECRET;
+
+    if (!armsApiKey || !armsApiSecret) {
+        return { ok: false, status: 503, message: "ARMS verification is not configured on this server. Please contact your administrator." };
+    }
+
+    // Step 1: Request ARMS bearer token
+    let tokenRes, tokenData;
+    try {
+        tokenRes = await fetch(ARMS_TOKEN_URL, {
+            method:  'POST',
+            headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
+        });
+        tokenData = await tokenRes.json();
+    } catch (e) {
+        return { ok: false, status: 503, message: "Could not reach JRMSU ARMS portal. Please try again later." };
+    }
+
+    if (!tokenRes.ok) {
+        return { ok: false, status: 503, message: "ARMS service error. Please try again later." };
+    }
+
+    const secretKey = tokenData.Secret_Key ?? tokenData.SecretKey ?? tokenData.secretKey ?? null;
+    const jwToken   = tokenData.JWToken    ?? tokenData.Token     ?? tokenData.jwToken   ?? null;
+
+    if (!secretKey || !jwToken) {
+        return { ok: false, status: 503, message: "ARMS token response was invalid. Please try again." };
+    }
+
+    // Step 2: Authenticate the student against ARMS
+    let loginRes, loginData;
+    try {
+        loginRes = await fetch(ARMS_LOGIN_URL, {
+            method:  'POST',
+            headers: {
+                ...ARMS_BASE_HEADERS,
+                'Secret-Key':    secretKey,
+                'Token':         jwToken,
+                'Authorization': `Bearer ${jwToken}`,
+                'Content-Type':  'application/json',
+            },
+            body: JSON.stringify({ Username: student_id, Password: password }),
+        });
+        loginData = await loginRes.json();
+    } catch (e) {
+        return { ok: false, status: 503, message: "Could not reach JRMSU ARMS portal. Please try again later." };
+    }
+
+    if (!loginRes.ok || !loginData?.Record) {
+        return { ok: false, status: 401, message: "Incorrect Student ID or ARMS portal password. Please check and try again." };
+    }
+
+    const record = loginData.Record;
+
+    // Step 3: Enrollment check
+    const rawStatus = record.Enrollment_Status ?? record.enrollment_status ?? record.EnrollmentStatus ?? null;
+    const statusStr = rawStatus ? String(rawStatus).toLowerCase().trim() : null;
+    const isEnrolled = !statusStr || statusStr.includes('enroll') || statusStr === 'active';
+
+    if (!isEnrolled) {
+        return { ok: false, status: 403, message: `Your enrollment status is "${rawStatus}". Only currently enrolled students may proceed.`, enrollmentStatus: rawStatus };
+    }
+
+    return { ok: true, record, rawStatus };
+}
+
 // POST /apis/students/arms-verify
 // Validates a student's JRMSU ARMS credentials, checks enrollment, and confirms
 // the Student ID (format 25-A-00000) is not already registered in SSAAM.
@@ -3855,84 +3930,12 @@ app.post('/apis/students/arms-verify', studentAuth, async (req, res) => {
             return res.status(400).json({ message: "Invalid Student ID format. Use 25-A-00000 (2 digits, one letter, 5 digits)." });
         }
 
-        // Check if Student ID is already registered in SSAAM
-        // NOTE: temporarily disabled for ARMS testing — re-enable before going live
-        // const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-        // const existing = await StudentModel.findOne({ student_id });
-        // if (existing) {
-        //     return res.status(409).json({
-        //         message: "This Student ID is already registered in SSAAM. Please log in instead.",
-        //         alreadyRegistered: true
-        //     });
-        // }
-
-        const armsApiKey    = process.env.ARMS_API_KEY;
-        const armsApiSecret = process.env.ARMS_API_SECRET;
-
-        if (!armsApiKey || !armsApiSecret) {
-            return res.status(503).json({ message: "ARMS verification is not configured on this server. Please contact your administrator." });
+        const result = await callARMSVerify(student_id, password);
+        if (!result.ok) {
+            return res.status(result.status).json({ message: result.message, ...(result.enrollmentStatus ? { enrollmentStatus: result.enrollmentStatus } : {}) });
         }
 
-        // Step 1: Request ARMS bearer token
-        let tokenRes, tokenData;
-        try {
-            tokenRes = await fetch(ARMS_TOKEN_URL, {
-                method:  'POST',
-                headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
-            });
-            tokenData = await tokenRes.json();
-        } catch (e) {
-            return res.status(503).json({ message: "Could not reach JRMSU ARMS portal. Please try again later." });
-        }
-
-        if (!tokenRes.ok) {
-            return res.status(503).json({ message: "ARMS service error. Please try again later." });
-        }
-
-        const secretKey = tokenData.Secret_Key ?? tokenData.SecretKey ?? tokenData.secretKey ?? null;
-        const jwToken   = tokenData.JWToken    ?? tokenData.Token     ?? tokenData.jwToken   ?? null;
-
-        if (!secretKey || !jwToken) {
-            return res.status(503).json({ message: "ARMS token response was invalid. Please try again." });
-        }
-
-        // Step 2: Authenticate the student
-        let loginRes, loginData;
-        try {
-            loginRes = await fetch(ARMS_LOGIN_URL, {
-                method:  'POST',
-                headers: {
-                    ...ARMS_BASE_HEADERS,
-                    'Secret-Key':    secretKey,
-                    'Token':         jwToken,
-                    'Authorization': `Bearer ${jwToken}`,
-                    'Content-Type':  'application/json',
-                },
-                body: JSON.stringify({ Username: student_id, Password: password }),
-            });
-            loginData = await loginRes.json();
-        } catch (e) {
-            return res.status(503).json({ message: "Could not reach JRMSU ARMS portal. Please try again later." });
-        }
-
-        if (!loginRes.ok || !loginData?.Record) {
-            return res.status(401).json({ message: "Incorrect Student ID or ARMS portal password. Please check and try again." });
-        }
-
-        const record = loginData.Record;
-
-        // Step 3: Enrollment check
-        const rawStatus = record.Enrollment_Status ?? record.enrollment_status ?? record.EnrollmentStatus ?? null;
-        const statusStr = rawStatus ? String(rawStatus).toLowerCase().trim() : null;
-        const isEnrolled = !statusStr || statusStr.includes('enroll') || statusStr === 'active';
-
-        if (!isEnrolled) {
-            return res.status(403).json({
-                message: `Your enrollment status is "${rawStatus}". Only currently enrolled students may register.`,
-                enrollmentStatus: rawStatus
-            });
-        }
-
+        const { record, rawStatus } = result;
         return res.json({
             message: "ARMS verification successful.",
             student: {
@@ -3959,8 +3962,10 @@ app.post('/apis/students/arms-verify', studentAuth, async (req, res) => {
 });
 
 // POST /apis/students/self-arms-validate
-// Authenticated student validates their own enrollment for the current semester via JRMSU ARMS.
+// Authenticated student re-validates their own enrollment via JRMSU ARMS.
+// Uses the same verification mechanism as /apis/students/arms-verify (register page).
 // The student_id comes from the JWT (cannot be spoofed); only the ARMS password is submitted.
+// On success, stamps school_year and semester from ARMS onto the student record.
 app.post('/apis/students/self-arms-validate', studentAuthWithToken, async (req, res) => {
     try {
         const { password } = req.body;
@@ -3970,101 +3975,22 @@ app.post('/apis/students/self-arms-validate', studentAuthWithToken, async (req, 
             return res.status(400).json({ message: "ARMS portal password is required." });
         }
 
-        const armsApiKey    = process.env.ARMS_API_KEY;
-        const armsApiSecret = process.env.ARMS_API_SECRET;
-
-        if (!armsApiKey || !armsApiSecret) {
-            return res.status(503).json({ message: "ARMS verification is not configured on this server. Please contact your administrator." });
+        // Use the same shared ARMS verification as the register page
+        const result = await callARMSVerify(student_id, password);
+        if (!result.ok) {
+            return res.status(result.status).json({ message: result.message, ...(result.enrollmentStatus ? { enrollmentStatus: result.enrollmentStatus } : {}) });
         }
 
-        // Step 1: Request ARMS bearer token
-        let tokenRes, tokenData;
-        try {
-            tokenRes = await fetch(ARMS_TOKEN_URL, {
-                method:  'POST',
-                headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
-            });
-            tokenData = await tokenRes.json();
-        } catch (e) {
-            return res.status(503).json({ message: "Could not reach JRMSU ARMS portal. Please try again later." });
-        }
-
-        if (!tokenRes.ok) {
-            return res.status(503).json({ message: "ARMS service error. Please try again later." });
-        }
-
-        const secretKey = tokenData.Secret_Key ?? tokenData.SecretKey ?? tokenData.secretKey ?? null;
-        const jwToken   = tokenData.JWToken    ?? tokenData.Token     ?? tokenData.jwToken   ?? null;
-
-        if (!secretKey || !jwToken) {
-            return res.status(503).json({ message: "ARMS token response was invalid. Please try again." });
-        }
-
-        // Step 2: Authenticate the student against ARMS
-        let loginRes, loginData;
-        try {
-            loginRes = await fetch(ARMS_LOGIN_URL, {
-                method:  'POST',
-                headers: {
-                    ...ARMS_BASE_HEADERS,
-                    'Secret-Key':    secretKey,
-                    'Token':         jwToken,
-                    'Authorization': `Bearer ${jwToken}`,
-                    'Content-Type':  'application/json',
-                },
-                body: JSON.stringify({ Username: student_id, Password: password }),
-            });
-            loginData = await loginRes.json();
-        } catch (e) {
-            return res.status(503).json({ message: "Could not reach JRMSU ARMS portal. Please try again later." });
-        }
-
-        if (!loginRes.ok || !loginData?.Record) {
-            return res.status(401).json({ message: "Incorrect ARMS portal password. Please check and try again." });
-        }
-
-        const record = loginData.Record;
-
-        // Step 3: Enrollment check
-        const rawStatus = record.Enrollment_Status ?? record.enrollment_status ?? record.EnrollmentStatus ?? null;
-        const statusStr = rawStatus ? String(rawStatus).toLowerCase().trim() : null;
-        const isEnrolled = !statusStr || statusStr.includes('enroll') || statusStr === 'active';
-
-        if (!isEnrolled) {
-            return res.status(403).json({
-                message: `Your enrollment status is "${rawStatus}". Only currently enrolled students may be validated.`,
-                enrollmentStatus: rawStatus
-            });
-        }
-
+        const { record, rawStatus } = result;
         const armsSemester   = record.Semester    ?? '';
         const armsSchoolYear = record.School_Year ?? '';
 
-        // Step 4: Check that ARMS semester/school_year matches the current settings period.
-        // ARMS may return "1st" or "2nd" while settings stores "1st Sem" / "2nd Sem".
-        // Normalize both to just the leading ordinal ("1st", "2nd", etc.) for comparison.
-        const normalizeSem = (s) => (s || '').trim().replace(/\s*sem\.?$/i, '').trim().toLowerCase();
-
-        const settings = await getSettings(req.college);
-        const semesterMatches   = !settings.semester   || normalizeSem(armsSemester) === normalizeSem(settings.semester);
-        const schoolYearMatches = !settings.schoolYear || armsSchoolYear === settings.schoolYear;
-
-        if (!semesterMatches || !schoolYearMatches) {
-            return res.status(422).json({
-                message: `Your ARMS enrollment is for ${armsSchoolYear} · ${armsSemester}, but the current period is ${settings.schoolYear} · ${settings.semester}. Please enroll for the current semester first.`,
-                armsSemester,
-                armsSchoolYear,
-                currentSemester:   settings.semester,
-                currentSchoolYear: settings.schoolYear
-            });
-        }
-
-        // Step 5: Stamp the student record with the validated semester/school_year
+        // Stamp the student record with the validated semester/school_year from ARMS
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const updated = await StudentModel.findOneAndUpdate(
             { student_id },
             { school_year: armsSchoolYear, semester: armsSemester },
-            { returnDocument: 'after', runValidators: true, validateModifiedOnly: true }
+            { new: true, runValidators: true, validateModifiedOnly: true }
         );
 
         if (!updated) {
