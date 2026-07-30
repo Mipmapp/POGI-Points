@@ -4148,7 +4148,7 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
             expires_at: expiresAt
         });
 
-        await sendVerificationEmail(data.email, code, data.full_name);
+        await sendVerificationEmail(data.email, code, `${fullName} ${lastName}`.trim());
 
         res.json({
             message: "Verification code sent to your email",
@@ -4241,7 +4241,7 @@ app.put('/apis/students/:student_id/approve', auth, requireCoAdminOrAbove, times
 
         if (student.email) {
             try {
-                await sendApprovalEmail(student.email, student.full_name, true);
+                await sendApprovalEmail(student.email, `${student.full_name} ${student.last_name}`.trim(), true);
             } catch (emailErr) {
                 console.error("Failed to send approval email:", emailErr);
             }
@@ -4283,7 +4283,7 @@ app.put('/apis/students/:student_id/reject', auth, requireCoAdminOrAbove, timest
 
         if (student.email) {
             try {
-                await sendApprovalEmail(student.email, student.full_name, false, reason);
+                await sendApprovalEmail(student.email, `${student.full_name} ${student.last_name}`.trim(), false, reason);
             } catch (emailErr) {
                 console.error("Failed to send rejection email:", emailErr);
             }
@@ -4360,7 +4360,7 @@ app.put('/apis/students/:student_id/rfid', auth, requireCoAdminOrAbove, timestam
             try {
                 await sendRFIDVerificationEmail(
                     updated.email,
-                    updated.full_name,
+                    `${updated.full_name} ${updated.last_name}`.trim(),
                     rfid_code.trim(),
                     req.master.username
                 );

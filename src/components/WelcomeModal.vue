@@ -9,7 +9,7 @@
 
         <!-- Banner image -->
         <div class="flex-shrink-0 relative overflow-hidden" style="height: 100px;">
-          <img :src="ssaamBanner" alt="SSAAM Banner" class="tc-kenburns w-full h-full object-cover object-center" />
+          <img :src="ssaamBanner" alt="SSAAM Banner" class="tc-kenburns absolute left-0 top-0 w-full h-auto" />
           <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/60"></div>
           <div class="absolute bottom-2 left-3 flex items-center gap-1.5">
             <img :src="ccsLogo" alt="CCS Logo" class="w-6 h-6 object-contain drop-shadow-lg" />
@@ -320,15 +320,14 @@ const tcSections = [
 .welcome-scroll::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 999px; }
 .welcome-scroll::-webkit-scrollbar-thumb:hover { background-color: #94a3b8; }
 
-/* Slow bottom-to-top pan, then back — no zoom */
-@keyframes kenburns {
-  0%   { transform: scale(1.35) translateY(9%);  }
-  50%  { transform: scale(1.35) translateY(-9%); }
-  100% { transform: scale(1.35) translateY(9%);  }
+/* Smooth bottom-to-top pan, then back — no zoom, no cropping */
+@keyframes banner-pan {
+  0%   { transform: translateY(calc(-100% + 100px)); }
+  50%  { transform: translateY(0); }
+  100% { transform: translateY(calc(-100% + 100px)); }
 }
 .tc-kenburns {
-  animation: kenburns 12s ease-in-out infinite;
-  transform-origin: center center;
+  animation: banner-pan 12s ease-in-out infinite;
   will-change: transform;
 }
 </style>
