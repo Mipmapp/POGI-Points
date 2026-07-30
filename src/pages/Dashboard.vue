@@ -1564,25 +1564,26 @@
                     />
                   </div>
                   <!-- School Year Filter -->
-                  <select
-                    v-model="attendanceSchoolYearFilter"
-                    :class="['py-2.5 pl-3 pr-8 rounded-xl border-2 bg-gray-50 text-sm outline-none transition-all cursor-pointer', attendanceSchoolYearFilter ? 'font-semibold' : 'text-gray-500', isCOE ? 'border-gray-200 focus:border-orange-400' : isSOM ? 'border-gray-200 focus:border-green-400' : isCNAHS ? 'border-gray-200 focus:border-emerald-400' : 'border-gray-200 focus:border-blue-400']"
-                  >
-                    <option value="">All School Years</option>
-                    <option v-for="yr in availableAttendanceSchoolYears" :key="yr" :value="yr">{{ yr }}</option>
-                  </select>
-                  <!-- Semester Filter -->
-                  <select
-                    v-model="attendanceSemesterFilter"
-                    :class="['py-2.5 pl-3 pr-8 rounded-xl border-2 bg-gray-50 text-sm outline-none transition-all cursor-pointer', attendanceSemesterFilter ? 'font-semibold' : 'text-gray-500', isCOE ? 'border-gray-200 focus:border-orange-400' : isSOM ? 'border-gray-200 focus:border-green-400' : isCNAHS ? 'border-gray-200 focus:border-emerald-400' : 'border-gray-200 focus:border-blue-400']"
-                  >
-                    <option value="">All Semesters</option>
-                    <option value="1st Sem">1st Sem</option>
-                    <option value="2nd Sem">2nd Sem</option>
-                  </select>
-                  <!-- Export Period Report (only when both filters active) -->
+                  <div class="relative">
+                    <select
+                      v-model="attendanceSchoolYearFilter"
+                      :class="['appearance-none py-2.5 pl-3 pr-8 rounded-xl border-2 bg-gray-50 text-sm outline-none transition-all cursor-pointer font-medium',
+                        attendanceSchoolYearFilter ? 'text-gray-900' : 'text-gray-400',
+                        isCOE ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100' :
+                        isSOM ? 'border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100' :
+                        isCNAHS ? 'border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100' :
+                        'border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100']"
+                    >
+                      <option value="">All School Years</option>
+                      <option v-for="yr in availableAttendanceSchoolYears" :key="yr" :value="yr">{{ yr }}</option>
+                    </select>
+                    <span class="pointer-events-none absolute inset-y-0 right-2.5 flex items-center">
+                      <svg :class="['w-3.5 h-3.5 transition-colors', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-emerald-400' : 'text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                    </span>
+                  </div>
+                  <!-- Export Period Report (only when school year filter active) -->
                   <button
-                    v-if="attendanceSchoolYearFilter && attendanceSemesterFilter"
+                    v-if="attendanceSchoolYearFilter"
                     @click="exportPeriodReport"
                     :disabled="exportingPeriodReport"
                     :class="['px-3 py-2.5 rounded-xl border-2 text-xs font-semibold transition flex items-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed whitespace-nowrap',
@@ -1598,8 +1599,8 @@
                   </button>
                   <!-- Clear filters -->
                   <button
-                    v-if="attendanceSchoolYearFilter || attendanceSemesterFilter"
-                    @click="attendanceSchoolYearFilter = ''; attendanceSemesterFilter = ''; attendanceCurrentPage = 1"
+                    v-if="attendanceSchoolYearFilter"
+                    @click="attendanceSchoolYearFilter = ''; attendanceCurrentPage = 1"
                     class="px-2.5 py-2.5 rounded-xl border-2 border-gray-200 bg-gray-50 text-gray-500 hover:text-gray-700 hover:bg-gray-100 text-xs transition"
                     title="Clear filters"
                   >✕</button>
@@ -1642,8 +1643,8 @@
               <!-- Empty -->
               <div v-else-if="paginatedAttendanceEvents.length === 0" class="flex flex-col items-center justify-center py-14 text-center">
                 <img :src="'/events.svg'" alt="No Events" class="w-14 h-14 mb-3 opacity-30" />
-                <p class="text-gray-500 text-sm font-medium">{{ (attendanceSearchQuery || attendanceSchoolYearFilter || attendanceSemesterFilter) ? 'No events match the current filters.' : 'No attendance events yet.' }}</p>
-                <p v-if="!(attendanceSearchQuery || attendanceSchoolYearFilter || attendanceSemesterFilter)" class="text-gray-400 text-xs mt-1">Click "Create Event" above to get started.</p>
+                <p class="text-gray-500 text-sm font-medium">{{ (attendanceSearchQuery || attendanceSchoolYearFilter) ? 'No events match the current filters.' : 'No attendance events yet.' }}</p>
+                <p v-if="!(attendanceSearchQuery || attendanceSchoolYearFilter)" class="text-gray-400 text-xs mt-1">Click "Create Event" above to get started.</p>
               </div>
 
               <!-- Event Cards -->
@@ -1667,7 +1668,6 @@
                       </span>
                       <!-- Academic period badges -->
                       <span v-if="event.school_year" class="px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap bg-indigo-50 text-indigo-600">{{ event.school_year }}</span>
-                      <span v-if="event.semester" class="px-2 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap bg-violet-50 text-violet-600">{{ event.semester }}</span>
                     </div>
                     <!-- Meta chips -->
                     <div class="flex flex-wrap gap-1.5 pl-6">
@@ -10768,14 +10768,14 @@ const exportFilteredToExcel = async (event) => {
 // Export all attendance across every event in the selected academic period.
 // Generates a multi-sheet Excel: one Summary sheet + one sheet per event.
 const exportPeriodReport = async () => {
-  if (!attendanceSchoolYearFilter.value || !attendanceSemesterFilter.value) {
-    showNotification('Select both School Year and Semester filters to export a period report', 'warning')
+  if (!attendanceSchoolYearFilter.value) {
+    showNotification('Select a School Year filter to export a period report', 'warning')
     return
   }
   if (exportingPeriodReport.value) return
   exportingPeriodReport.value = true
   try {
-    const url = `/apis/attendance/period-report?school_year=${encodeURIComponent(attendanceSchoolYearFilter.value)}&semester=${encodeURIComponent(attendanceSemesterFilter.value)}`
+    const url = `/apis/attendance/period-report?school_year=${encodeURIComponent(attendanceSchoolYearFilter.value)}`
     const response = await fetch(url, {
       credentials: 'include',
       headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
@@ -10792,7 +10792,7 @@ const exportPeriodReport = async () => {
 
     // ── Summary sheet ────────────────────────────────────────────────────────
     const summaryHeader = [
-      { 'Event': `Academic Period: ${attendanceSemesterFilter.value} — ${attendanceSchoolYearFilter.value}` },
+      { 'Event': `Academic Period: ${attendanceSchoolYearFilter.value}` },
       { 'Event': `Exported: ${new Date().toLocaleDateString('en-PH', { year: 'numeric', month: 'long', day: 'numeric' })}` },
       { 'Event': `Total events: ${data.events.length}` },
       { 'Event': '' }
@@ -10831,7 +10831,6 @@ const exportPeriodReport = async () => {
         { 'Event': event.title || 'Attendance Event' },
         { 'Event': `Date: ${eventDateFmt}` },
         { 'Event': `School Year: ${event.school_year}` },
-        { 'Event': `Semester: ${event.semester}` },
         ...(event.location ? [{ 'Event': `Location: ${event.location}` }] : []),
         { 'Event': '' }
       ]
@@ -10878,7 +10877,7 @@ const exportPeriodReport = async () => {
       XLSX.utils.book_append_sheet(workbook, sheet, sheetName)
     })
 
-    const periodTag = `${attendanceSemesterFilter.value.replace(/\s+/g, '')}_${attendanceSchoolYearFilter.value.replace(/-/g, '_')}`
+    const periodTag = attendanceSchoolYearFilter.value.replace(/-/g, '_')
     XLSX.writeFile(workbook, `PeriodReport_${periodTag}.xlsx`)
     showNotification(`Period report exported — ${data.events.length} event${data.events.length === 1 ? '' : 's'} included.`, 'success')
   } catch (err) {
@@ -11409,7 +11408,6 @@ const attendanceSearchQuery = ref('')
 const attendanceCurrentPage = ref(1)
 const attendanceItemsPerPage = 4
 const attendanceSchoolYearFilter = ref('')
-const attendanceSemesterFilter = ref('')
 const statsAcadYear = ref('')
 const statsSemFilter = ref('')
 // Auto-derives the current academic year: July onwards = new year begins
@@ -11426,7 +11424,7 @@ const userContribAcadYear = ref(currentAcademicYear.value)
 const userContribSemFilter = ref('')
 
 // Reset to page 1 when attendance filters change
-watch([attendanceSearchQuery, attendanceSchoolYearFilter, attendanceSemesterFilter], () => {
+watch([attendanceSearchQuery, attendanceSchoolYearFilter], () => {
   attendanceCurrentPage.value = 1
 })
 
@@ -11443,7 +11441,6 @@ watch(() => appSettings.value.semester, (sem) => {
   if (!sem) return
   if (!statsSemFilter.value) statsSemFilter.value = sem
   if (!pendingSemFilter.value) pendingSemFilter.value = sem
-  if (!attendanceSemesterFilter.value) attendanceSemesterFilter.value = sem
   if (!userAttendSemFilter.value) userAttendSemFilter.value = sem
   if (!userContribSemFilter.value) userContribSemFilter.value = sem
 }, { immediate: true })
@@ -13080,9 +13077,6 @@ const filteredAttendanceEvents = computed(() => {
   }
   if (attendanceSchoolYearFilter.value) {
     events = events.filter(e => e.school_year === attendanceSchoolYearFilter.value)
-  }
-  if (attendanceSemesterFilter.value) {
-    events = events.filter(e => e.semester === attendanceSemesterFilter.value)
   }
   return events
 })
