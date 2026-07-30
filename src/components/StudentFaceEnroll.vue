@@ -85,7 +85,7 @@
                     <span v-if="tncCheckbox" class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out bg-gradient-to-r from-transparent via-white/25 to-transparent pointer-events-none"></span>
                     <span class="relative flex items-center justify-center gap-2">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
-                      Agree &amp; Continue
+                      Agree
                     </span>
                   </button>
                 </div>
