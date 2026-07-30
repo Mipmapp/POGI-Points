@@ -4042,16 +4042,17 @@
                     </p>
                   </div>
                 </div>
-                <div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-gray-50">
+                <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-50">
                   <span v-for="chip in ['Verified via JRMSU ARMS', 'Current semester confirmed', 'Attendance-ready']" :key="chip"
                     class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 border border-gray-100 text-[10px] text-gray-500">
                     <svg class="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                     {{ chip }}
                   </span>
-                  <!-- Re-validate button inside validated state -->
-                  <button v-if="!dashArmsShowInput"
+                </div>
+                <div v-if="!dashArmsShowInput" class="flex justify-end mt-2">
+                  <button
                     @click="dashArmsShowInput = true; dashArmsError = ''"
-                    class="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-white text-[10px] text-gray-500 font-medium hover:bg-gray-50 transition-colors">
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-white text-[10px] text-gray-500 font-medium hover:bg-gray-50 transition-colors">
                     <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                     Re-validate
                   </button>
@@ -4264,17 +4265,20 @@
                 </div>
               </div>
 
-              <!-- Feature chips + CTA button lower right -->
-              <div class="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-gray-50">
+              <!-- Feature chips -->
+              <div class="flex flex-wrap gap-2 mt-3 pt-3 border-t border-gray-50">
                 <span v-for="tip in ['Works on phone & laptop', 'Unique to you', `Updates every ${(faceData && faceData.cooldown_days) || 7} days`]" :key="tip"
                   class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 border border-gray-100 text-[10px] text-gray-500">
                   <svg class="w-2.5 h-2.5 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
                   {{ tip }}
                 </span>
+              </div>
+              <!-- Update Face ID button — dedicated bottom-right row -->
+              <div class="flex justify-end mt-2">
                 <button
                   @click="openFaceEnroll"
                   :disabled="faceLoading || (faceEnrolled && faceData?.in_cooldown)"
-                  :class="['ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-medium transition-colors',
+                  :class="['inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-medium transition-colors',
                     (faceEnrolled && faceData?.in_cooldown)
                       ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
                       : isCOE ? 'bg-white border-orange-200 text-orange-600 hover:bg-orange-50'
