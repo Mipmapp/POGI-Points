@@ -4019,10 +4019,10 @@
           </div>
 
           <!-- ── Face ID + ARMS Validation 2-col grid ── -->
-          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-start">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4 items-stretch">
 
           <!-- Right: ARMS Enrollment Validation -->
-          <div id="arms-validation-card" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden order-2 lg:order-2">
+          <div id="arms-validation-card" class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden order-2 lg:order-2 flex flex-col">
             <!-- Header strip -->
             <div :class="['px-5 py-3 flex items-center justify-between border-b border-gray-50',
               (currentUser.school_year === appSettings.schoolYear && currentUser.semester === appSettings.semester)
@@ -4058,13 +4058,76 @@
                     {{ chip }}
                   </span>
                   <!-- Re-validate button inside validated state -->
-                  <button
-                    @click="dashArmsShowInput = true"
+                  <button v-if="!dashArmsShowInput"
+                    @click="dashArmsShowInput = true; dashArmsError = ''"
                     class="ml-auto inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-white text-[10px] text-gray-500 font-medium hover:bg-gray-50 transition-colors">
                     <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                     Re-validate
                   </button>
                 </div>
+
+                <!-- Re-validate expanded form (shown when already validated) -->
+                <transition name="arms-expand">
+                  <div v-if="dashArmsShowInput" class="space-y-3 mt-4 pt-4 border-t border-gray-50">
+                    <!-- Student ID — pre-filled & locked -->
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Student ID</label>
+                      <div class="relative">
+                        <input
+                          :value="currentUser.studentId || currentUser.student_id"
+                          type="text" readonly
+                          :class="['w-full px-3 py-2.5 pr-9 border rounded-xl text-sm bg-gray-50 text-gray-700 font-mono cursor-not-allowed',
+                            isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-green-100' : 'border-blue-100']" />
+                        <span class="absolute right-3 top-1/2 -translate-y-1/2">
+                          <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                        </span>
+                      </div>
+                    </div>
+                    <!-- ARMS password -->
+                    <div>
+                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">ARMS Portal Password</label>
+                      <div class="relative">
+                        <input
+                          v-model="dashArmsPassword"
+                          :type="dashArmsShowPw ? 'text' : 'password'"
+                          placeholder="Your JRMSU ARMS password"
+                          @keydown.enter.prevent="dashVerifyWithARMS"
+                          :class="['w-full px-3 py-2.5 pr-10 border rounded-xl text-sm bg-white outline-none transition',
+                            isCOE   ? 'border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20'
+                            : isSOM ? 'border-green-200 focus:border-green-400 focus:ring-2 focus:ring-green-400/20'
+                            : isCNAHS ? 'border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'
+                            : 'border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20',
+                            'text-gray-800']" />
+                        <button type="button" @click="dashArmsShowPw = !dashArmsShowPw"
+                          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                          <svg v-if="dashArmsShowPw" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
+                          <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                    <!-- Error -->
+                    <transition name="arms-error">
+                      <p v-if="dashArmsError" class="text-xs text-red-600 leading-snug">{{ dashArmsError }}</p>
+                    </transition>
+                    <!-- Actions -->
+                    <div class="flex gap-2 pt-1">
+                      <button type="button"
+                        @click="dashArmsShowInput = false; dashArmsPassword = ''; dashArmsError = ''"
+                        class="flex-1 py-2.5 px-3 rounded-xl border border-gray-200 bg-white text-gray-600 text-sm font-semibold hover:bg-gray-50 transition">
+                        Cancel
+                      </button>
+                      <button type="button" @click="dashVerifyWithARMS" :disabled="dashArmsLoading"
+                        :class="['flex-1 py-2.5 px-3 rounded-xl text-white text-sm font-semibold transition flex items-center justify-center gap-1.5 disabled:opacity-60',
+                          isCOE   ? 'bg-orange-500 hover:bg-orange-600'
+                          : isSOM ? 'bg-green-500 hover:bg-green-600'
+                          : isCNAHS ? 'bg-green-600 hover:bg-green-700'
+                          : 'bg-blue-600 hover:bg-blue-700']">
+                        <svg v-if="dashArmsLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                        {{ dashArmsLoading ? 'Verifying…' : 'Validate' }}
+                      </button>
+                    </div>
+                  </div>
+                </transition>
               </template>
 
               <!-- Not yet validated state -->
@@ -4176,7 +4239,7 @@
           </div>
 
           <!-- Left: Face ID -->
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden order-1 lg:order-1">
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden order-1 lg:order-1 flex flex-col">
             <!-- Card header strip -->
             <div :class="['px-5 py-3 flex items-center justify-between border-b border-gray-50',
               faceEnrolled ? 'bg-emerald-50/60' : 'bg-gray-50/60']">
