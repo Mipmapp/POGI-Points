@@ -4633,26 +4633,6 @@
               <p class="text-gray-400 text-sm mt-0.5">Here's what's happening in SSAAM today.</p>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
-              <!-- AY Year Filter Pills -->
-              <div class="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
-                <!-- All pill -->
-                <button
-                  @click="statsAcadYear = ''; statsYearFallbackNotice = ''; fetchStats()"
-                  :class="['px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
-                    statsAcadYear === ''
-                      ? (isCOE ? 'bg-orange-500 text-white shadow-sm' : isSOM ? 'bg-green-600 text-white shadow-sm' : isCNAHS ? 'bg-green-700 text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm')
-                      : 'text-gray-500 hover:text-gray-700']"
-                >All</button>
-                <button
-                  v-for="yr in schoolYearOptions"
-                  :key="yr"
-                  @click="statsAcadYear = yr; statsYearFallbackNotice = ''; fetchStats()"
-                  :class="['px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
-                    statsAcadYear === yr
-                      ? (isCOE ? 'bg-orange-500 text-white shadow-sm' : isSOM ? 'bg-green-600 text-white shadow-sm' : isCNAHS ? 'bg-green-700 text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm')
-                      : 'text-gray-500 hover:text-gray-700']"
-                >{{ yr }}</button>
-              </div>
               <button @click="handleStatsRefresh" :disabled="statsLoading"
                 :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0',
                   isCOE ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-200' :
@@ -4663,15 +4643,6 @@
                 {{ statsLoading ? 'Refreshing...' : 'Refresh' }}
               </button>
             </div>
-          </div>
-
-          <!-- Fallback notice when selected year has no data -->
-          <div v-if="statsYearFallbackNotice" class="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-sm">
-            <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <span class="text-amber-800">No records found for <strong>{{ statsYearFallbackNotice }}</strong> — students from that year may not have logged in yet. Showing all-time data instead.</span>
-            <button @click="statsYearFallbackNotice = ''" class="ml-auto text-amber-500 hover:text-amber-700 flex-shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
           </div>
 
           <!-- Top Metrics Row: Hero + 3 RFID stat cards -->
@@ -13684,21 +13655,7 @@ const fetchStats = async () => {
   statsLoading.value = true
   try {
     const statsParams = new URLSearchParams()
-    if (statsAcadYear.value) {
-      // Only filter by school_year for past years. For the current active year, skip the filter
-      // so students who haven't logged in yet (still stamped with a past year) are still counted.
-      // Use both the settings value and the date-derived currentAcademicYear as fallback,
-      // since appSettings.value.schoolYear may still be '' if settings haven't loaded yet.
-      const activeYear = appSettings.value.schoolYear || currentAcademicYear.value
-      const isCurrentYear = statsAcadYear.value === activeYear
-      if (!isCurrentYear) {
-        statsParams.set('school_year', statsAcadYear.value)
-      }
-      // Don't add semester when a specific year is selected — students from past years
-      // may have different semesters stored, combining both filters would exclude them
-    } else if (statsSemFilter.value) {
-      statsParams.set('semester', statsSemFilter.value)
-    }
+    if (statsSemFilter.value) statsParams.set('semester', statsSemFilter.value)
     const statsUrl = `/apis/students/stats${statsParams.toString() ? '?' + statsParams.toString() : ''}`
     const response = await fetch(buildAPIUrl(statsUrl), {
       method: 'GET',
