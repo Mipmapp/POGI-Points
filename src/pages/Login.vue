@@ -595,7 +595,7 @@
           <button type="button" @click="goToRegister" class="text-indigo-500 hover:text-indigo-700 font-semibold ml-1 transition">Sign up</button>
         </p>
 
-        <div class="mt-6 text-center text-xs text-gray-400">
+        <div class="mt-2 text-center text-xs text-gray-400">
           Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer transition">CCS - Creatives Committee</button>
         </div>
       </div>
@@ -692,7 +692,7 @@
           <button type="button" @click="goToRegister" class="text-indigo-500 hover:text-indigo-700 font-semibold ml-1 transition">Sign up</button>
         </p>
 
-        <div class="mt-6 text-center text-xs text-gray-400">
+        <div class="mt-2 text-center text-xs text-gray-400">
           Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer transition">CCS - Creatives Committee</button>
         </div>
         <div class="mt-2 text-center text-xs text-gray-400">
