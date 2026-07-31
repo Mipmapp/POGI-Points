@@ -1,91 +1,74 @@
 <template>
   <Transition name="fci-overlay">
-    <div v-if="open" class="fixed inset-0 z-50 flex items-center justify-center p-4 fci-backdrop" @click.self="closeIfIdle">
+    <div v-if="open" class="fci-backdrop fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4" @click.self="closeIfIdle">
       <Transition name="fci-panel" appear>
-        <div v-if="open" class="fci-panel relative w-full max-w-md overflow-hidden">
-
-          <!-- Top glow bar -->
-          <div class="absolute top-0 left-0 right-0 h-px fci-glow-bar"></div>
+        <!-- Mobile: full-screen. Desktop (sm+): centered modal card -->
+        <div v-if="open" class="fci-panel relative w-full sm:max-w-md flex flex-col">
 
           <!-- Header -->
-          <div class="px-6 pt-6 pb-4 flex items-start justify-between">
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-3 mb-1">
-                <div class="fci-icon-wrap flex-shrink-0">
-                  <svg class="w-4 h-4 text-blue-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                  </svg>
-                </div>
-                <h3 class="text-lg font-bold text-white tracking-tight">Face ID Check-In</h3>
+          <div class="flex-shrink-0 px-5 pt-5 pb-4 sm:px-6 sm:pt-6 flex items-center justify-between gap-3 border-b border-gray-100">
+            <div class="flex items-center gap-3 min-w-0">
+              <div class="fci-icon-wrap flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
               </div>
-              <p class="text-xs text-blue-200/60 ml-11 truncate">{{ session?.label || 'Session' }} &middot; {{ event?.title || 'Event' }}</p>
+              <div class="min-w-0">
+                <h3 class="text-sm font-bold text-gray-900 leading-tight">Face ID Check-In</h3>
+                <p class="text-[11px] text-gray-400 truncate mt-0.5">{{ session?.label || 'Session' }} &middot; {{ event?.title || 'Event' }}</p>
+              </div>
             </div>
-            <button @click="closeIfIdle" :disabled="submitting" class="fci-close-btn flex-shrink-0 ml-3">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            <button @click="closeIfIdle" :disabled="submitting" class="fci-close-btn flex-shrink-0">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/>
               </svg>
             </button>
           </div>
 
-          <!-- Stage banner -->
-          <div class="mx-6 mb-4 rounded-2xl px-4 py-3 flex items-start gap-3 fci-stage-banner" :class="stageBannerClass">
-            <span class="text-xl leading-none mt-0.5 flex-shrink-0">{{ stageStyle.icon }}</span>
-            <div class="min-w-0">
-              <p class="text-sm font-semibold leading-snug">{{ stageMessage }}</p>
-              <p v-if="stageHint" class="text-xs opacity-70 mt-0.5 leading-snug">{{ stageHint }}</p>
-            </div>
-          </div>
+          <!-- Camera area — grows to fill available space on mobile -->
+          <div class="flex-1 px-4 pt-4 pb-3 sm:px-5 sm:pt-5 sm:pb-4 flex flex-col gap-3 sm:gap-4 min-h-0">
 
-          <!-- Progress bar -->
-          <div v-if="!successMessage && !failed" class="mx-6 mb-4">
-            <div class="fci-progress-track">
-              <div class="fci-progress-fill" :style="{ width: progressPct + '%' }"></div>
-            </div>
-            <div class="flex items-center justify-between mt-1.5 text-[10px] font-medium tracking-wide uppercase text-blue-200/60">
-              <span>{{ phase === 'finding' ? 'Locking' : phase === 'challenging' ? 'Verifying' : phase === 'submitting' ? 'Submitting' : 'Ready' }}</span>
-              <span class="tabular-nums">{{ Math.round(progressPct) }}%</span>
-            </div>
-          </div>
-
-          <!-- Camera area -->
-          <div class="mx-6 mb-4">
-            <div class="relative rounded-2xl overflow-hidden bg-black aspect-[4/3] fci-camera-frame">
+            <!-- Camera viewport -->
+            <div class="relative rounded-2xl overflow-hidden bg-gray-950 fci-camera-frame" style="aspect-ratio: 4/3;">
               <video ref="videoEl" autoplay muted playsinline
                 :class="['w-full h-full object-cover transition-opacity duration-500', cameraReady ? 'opacity-100' : 'opacity-0']"
                 style="transform: scaleX(-1);" />
 
-              <!-- Loading state -->
-              <div v-if="!cameraReady" class="absolute inset-0 flex flex-col items-center justify-center">
+              <!-- Loading overlay -->
+              <div v-if="!cameraReady" class="absolute inset-0 flex flex-col items-center justify-center bg-gray-950">
                 <div class="fci-spinner mb-3"></div>
-                <span class="text-sm text-blue-200/70 font-medium">{{ camStatus }}</span>
+                <span class="text-sm text-white/60 font-medium">{{ camStatus }}</span>
               </div>
 
-              <!-- Head turn / center cue, centered -->
+              <!-- Head-turn cue -->
               <div v-if="cameraReady && (currentChallenge === 'turn_left' || currentChallenge === 'turn_right' || currentChallenge === 'look_center')"
                 class="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div class="px-5 py-3 rounded-2xl bg-black/55 backdrop-blur-md flex items-center gap-3 animate-pulse">
-                  <span class="text-white text-4xl font-bold leading-none">
+                <div class="px-4 py-2.5 rounded-2xl bg-black/60 backdrop-blur-md flex items-center gap-2.5 animate-pulse">
+                  <span class="text-white text-3xl font-bold leading-none">
                     {{ currentChallenge === 'turn_left' ? '←' : currentChallenge === 'turn_right' ? '→' : '◎' }}
                   </span>
-                  <span class="text-white text-xl font-bold tracking-wide">
+                  <span class="text-white text-base font-bold tracking-wide">
                     {{ currentChallenge === 'turn_left' ? 'TURN LEFT' : currentChallenge === 'turn_right' ? 'TURN RIGHT' : 'LOOK CENTER' }}
                   </span>
                 </div>
               </div>
-              <!-- Rotating scanner ring (only while finding the face) -->
+
+              <!-- Scan ring (finding phase) -->
               <div v-if="cameraReady && phase === 'finding'" class="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <div class="fci-scan-ring"></div>
               </div>
-              <!-- Face oval -->
+
+              <!-- Face oval guide -->
               <div v-if="cameraReady" class="absolute inset-0 pointer-events-none">
                 <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-full">
                   <ellipse cx="50" cy="48" rx="22" ry="30" fill="none"
-                    :stroke="faceLocked ? '#4ade80' : (faceDetected ? '#fbbf24' : 'rgba(255,255,255,0.25)')"
+                    :stroke="faceLocked ? '#22c55e' : (faceDetected ? '#f59e0b' : 'rgba(255,255,255,0.3)')"
                     stroke-width="0.6" stroke-dasharray="2 1.5" />
                 </svg>
               </div>
 
-              <!-- Live yaw debug indicator (only visible during challenges) -->
+              <!-- Yaw debug -->
               <div v-if="cameraReady && phase === 'challenging' && currentChallenge"
                 class="absolute bottom-2 left-1/2 -translate-x-1/2 px-2 py-1 rounded-md bg-black/60 backdrop-blur-sm pointer-events-none">
                 <div class="flex items-center gap-2 text-[10px] font-mono text-white/90">
@@ -95,21 +78,42 @@
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- Challenge chips -->
-          <div v-if="challenges.length" class="mx-6 mb-4 flex items-center justify-center gap-2 flex-wrap">
-            <div v-for="(c, idx) in challenges" :key="c"
-              :class="['fci-chip', completed.includes(c) ? 'fci-chip-done' : idx === currentChallengeIndex ? 'fci-chip-active' : 'fci-chip-idle']">
-              <span v-if="completed.includes(c)">✓</span>
-              <span v-else-if="idx === currentChallengeIndex" class="animate-pulse">●</span>
-              <span v-else>○</span>
-              {{ challengeLabel(c) }}
+            <!-- Progress bar -->
+            <div v-if="!successMessage && !failed" class="flex flex-col gap-1.5">
+              <div class="fci-progress-track">
+                <div class="fci-progress-fill" :style="{ width: progressPct + '%' }"></div>
+              </div>
+              <div class="flex items-center justify-between text-[10px] font-semibold tracking-widest uppercase text-gray-400">
+                <span>{{ phase === 'finding' ? 'Scanning' : phase === 'challenging' ? 'Verifying' : phase === 'submitting' ? 'Submitting' : 'Ready' }}</span>
+                <span class="tabular-nums">{{ Math.round(progressPct) }}%</span>
+              </div>
             </div>
+
+            <!-- Stage banner -->
+            <div class="fci-stage-banner rounded-xl px-4 py-3 flex items-start gap-3" :class="stageBannerClass">
+              <span class="text-base leading-none mt-0.5 flex-shrink-0 font-bold">{{ stageStyle.icon }}</span>
+              <div class="min-w-0">
+                <p class="text-sm font-semibold leading-snug" :class="stageStyle.text">{{ stageMessage }}</p>
+                <p v-if="stageHint" class="text-xs mt-0.5 leading-snug opacity-70" :class="stageStyle.text">{{ stageHint }}</p>
+              </div>
+            </div>
+
+            <!-- Challenge chips -->
+            <div v-if="challenges.length" class="flex items-center justify-center gap-2 flex-wrap">
+              <div v-for="(c, idx) in challenges" :key="c"
+                :class="['fci-chip', completed.includes(c) ? 'fci-chip-done' : idx === currentChallengeIndex ? 'fci-chip-active' : 'fci-chip-idle']">
+                <span v-if="completed.includes(c)">✓</span>
+                <span v-else-if="idx === currentChallengeIndex" class="animate-pulse">●</span>
+                <span v-else>○</span>
+                {{ challengeLabel(c) }}
+              </div>
+            </div>
+
           </div>
 
-          <!-- Actions -->
-          <div class="px-6 pb-6 flex gap-3">
+          <!-- Footer actions -->
+          <div class="flex-shrink-0 px-4 pb-5 pt-2 sm:px-5 sm:pb-6 flex gap-3 border-t border-gray-100">
             <button @click="closeIfIdle" :disabled="submitting" class="fci-btn-cancel flex-1">
               {{ successMessage ? 'Close' : 'Cancel' }}
             </button>
@@ -118,8 +122,6 @@
             </button>
           </div>
 
-          <!-- Bottom glow bar -->
-          <div class="absolute bottom-0 left-0 right-0 h-px fci-glow-bar-bottom"></div>
         </div>
       </Transition>
     </div>
@@ -142,10 +144,9 @@ const props = defineProps({
 })
 const emit = defineEmits(['close', 'success'])
 
-// ---- Theme (kept for backwards compat)
-const accentText = computed(() => props.isCOE ? 'text-orange-900' : props.isSOM ? 'text-green-900' : props.isCNAHS ? 'text-emerald-900' : 'text-purple-900')
-const accentBg = computed(() => props.isCOE ? 'bg-orange-600' : props.isSOM ? 'bg-green-600' : props.isCNAHS ? 'bg-emerald-600' : 'bg-purple-600')
-const accentBorder = computed(() => props.isCOE ? 'border-orange-100' : props.isSOM ? 'border-green-100' : props.isCNAHS ? 'border-emerald-100' : 'border-purple-100')
+// ---- Theme
+const accentText = computed(() => props.isCOE ? 'text-orange-900' : props.isSOM ? 'text-green-900' : props.isCNAHS ? 'text-emerald-900' : 'text-blue-900')
+const accentBg = computed(() => props.isCOE ? 'bg-orange-600' : props.isSOM ? 'bg-green-600' : props.isCNAHS ? 'bg-emerald-600' : 'bg-blue-600')
 
 const stageBannerClass = computed(() => {
   if (successMessage.value) return 'fci-stage-success'
@@ -167,32 +168,13 @@ const errorMessage = ref('')
 const successMessage = ref('')
 const submitting = ref(false)
 const failed = ref(false)
-// Width of the detected face box as a fraction of the camera viewport
-// (0..1). We use this to coach the user closer to the camera if they're too
-// far — small boxes give us less reliable landmarks AND a less reliable
-// descriptor for matching.
 const boxRatio = ref(0)
-// Tightened from a tiny crop to roughly "face fills 1/4 of the frame width".
-// This is still comfortable arm's-length for a phone selfie, but rejects
-// the common case where the user is sitting back from a laptop.
 const MIN_BOX_RATIO = 0.22
 const tooFar = computed(() => faceDetected.value && boxRatio.value > 0 && boxRatio.value < MIN_BOX_RATIO)
 
 // ---- Phases
-//   'finding'    → camera is on, we're searching for a stable face
-//   'challenging'→ face is locked, walk the user through the head-turn challenges
-//   'submitting' → all challenges passed, posting to backend
-//   'done'       → success or failure (final)
 const phase = ref('finding')
-// Number of consecutive frames in which we've seen a clear face. Once this
-// passes the lock threshold we transition from 'finding' → 'challenging' and
-// fetch the challenge list. This avoids asking the user to "turn left" before
-// they've even framed themselves in the camera.
 const faceLockedFrames = ref(0)
-// Lock as soon as we see the face for ~0.3s (3 frames at the 100ms loop).
-// The earlier 0.8s gate added almost a full second of dead air before the
-// challenge even appeared on screen; 0.3s is still more than enough to
-// reject a half-frame false positive.
 const FACE_LOCK_FRAMES = 3
 
 // ---- Challenge state
@@ -202,38 +184,26 @@ const completed = ref([])
 const currentChallengeIndex = ref(0)
 const currentChallenge = computed(() => challenges.value[currentChallengeIndex.value])
 
-// Per-challenge transient state
 const turnState = ref({ neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0, strongSign: 0, centerStartTime: 0 })
-// Sign (+1 / -1) of the first turn the user actually performed. The second
-// turn challenge must be in the OPPOSITE sign, so we still get true alternation
-// regardless of which physical direction the camera reports as positive.
 const firstTurnSign = ref(0)
 
-// Capture / sampling
 const samplesCount = ref(0)
-const captured = ref([])  // { descriptor, score }
+const captured = ref([])
 let lastSampleAt = 0
-// Sample faster (every 70ms) and need fewer frames for the averaged
-// descriptor — the backend now accepts 10+ live frames, and the average of
-// 15 high-score samples is still tighter than any single descriptor.
 const TARGET_VALID_FRAMES = 15
 
 // ---- Stage UX
 const stageStyle = computed(() => {
-  if (successMessage.value) return { bg: 'bg-emerald-50', border: 'border-emerald-300', text: 'text-emerald-800', icon: '✓' }
-  if (errorMessage.value || failed.value) return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-800', icon: '!' }
-  if (submitting.value) return { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', icon: '↻' }
-  if (currentChallenge.value === 'turn_left' || currentChallenge.value === 'turn_right') return { bg: 'bg-purple-50', border: 'border-purple-200', text: 'text-purple-800', icon: '↔' }
-  if (currentChallenge.value === 'look_center') return { bg: 'bg-blue-50', border: 'border-blue-200', text: 'text-blue-800', icon: '◎' }
-  if (cameraReady.value) return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', icon: '•' }
-  return { bg: 'bg-gray-50', border: 'border-gray-200', text: 'text-gray-700', icon: '•' }
+  if (successMessage.value) return { text: 'text-emerald-800', icon: '✓' }
+  if (errorMessage.value || failed.value) return { text: 'text-red-700', icon: '!' }
+  if (submitting.value) return { text: 'text-blue-700', icon: '↻' }
+  if (currentChallenge.value === 'turn_left' || currentChallenge.value === 'turn_right') return { text: 'text-violet-700', icon: '↔' }
+  if (currentChallenge.value === 'look_center') return { text: 'text-blue-700', icon: '◎' }
+  return { text: 'text-gray-600', icon: '•' }
 })
 const stageMessage = computed(() => {
   if (successMessage.value) return successMessage.value
   if (submitting.value) return 'Verifying with the server…'
-  // Always surface the real error message before falling through to neutral
-  // "all steps complete" copy — otherwise a silent server reject looks like
-  // success on screen.
   if (errorMessage.value) return errorMessage.value
   if (failed.value) return 'Liveness check failed.'
   if (phase.value === 'finding') {
@@ -254,7 +224,7 @@ const stageMessage = computed(() => {
 const stageHint = computed(() => {
   if (phase.value === 'finding') {
     if (!faceDetected.value) return 'Make sure your face is well-lit and centered.'
-    if (tooFar.value) return 'Your face looks small — bring the camera closer to your face.'
+    if (tooFar.value) return 'Your face looks small — bring the camera closer.'
     return 'Locking on your face…'
   }
   if (currentChallenge.value === 'turn_left') return 'Slowly turn your face to your left.'
@@ -263,12 +233,6 @@ const stageHint = computed(() => {
   return ''
 })
 
-// Overall progress (0..100) the user sees in the progress bar. We weight it
-// across the three phases so the bar moves predictably:
-//   finding (face lock)        →  0% → 25%
-//   challenging (per-challenge)→ 25% → 80%
-//   sample collection          → 80% → 95%
-//   submitting                 → 95% → 100%
 const progressPct = computed(() => {
   if (successMessage.value) return 100
   if (submitting.value) return 95
@@ -276,13 +240,13 @@ const progressPct = computed(() => {
     if (!faceDetected.value) return 5
     if (tooFar.value) return 10
     const lockPct = Math.min(faceLockedFrames.value / FACE_LOCK_FRAMES, 1)
-    return 10 + lockPct * 15  // 10% → 25%
+    return 10 + lockPct * 15
   }
   if (phase.value === 'challenging') {
     const total = challenges.value.length || 1
     const challengePct = Math.min(currentChallengeIndex.value / total, 1)
     const samplePct = Math.min(samplesCount.value / 12, 1)
-    return 25 + challengePct * 55 + samplePct * 15  // 25% → 95%
+    return 25 + challengePct * 55 + samplePct * 15
   }
   return 0
 })
@@ -304,9 +268,6 @@ async function start() {
   resetState()
   await openCamera()
   if (!cameraReady.value) return
-  // Don't request challenges yet — wait until the detection loop confirms a
-  // stable face. The loop itself drives the 'finding' → 'challenging'
-  // transition and triggers requestChallenge() at the right moment.
   runDetectionLoop()
 }
 
@@ -393,9 +354,6 @@ async function requestChallenge() {
       return
     }
     challengeToken.value = data.challenge_token
-    // The backend now issues a single random head-turn, so there are no pairs
-    // to weave a "look center" between. Use the issued list verbatim — the
-    // user just performs one quick turn and we submit immediately.
     challenges.value = (data.challenges || []).slice()
   } catch (err) {
     errorMessage.value = 'Network error while starting liveness check.'
@@ -404,67 +362,28 @@ async function requestChallenge() {
 }
 
 // ---- Liveness math
-// Robust yaw estimate using jaw landmarks. With the 68-point model the jaw
-// runs from point 0 (the jaw tip on the camera's LEFT) to point 16 (camera's
-// RIGHT), and the nose tip is point 30. When the head is straight, the nose
-// sits roughly halfway between the two jaw tips. As the user rotates, the
-// nose moves much closer to whichever jaw side is rotating away from the
-// camera. Comparing those two distances is far more stable than comparing the
-// nose X to the face bounding-box center, which jitters frame to frame.
-//
-// Returned value is in roughly [-1, +1]:
-//   negative → nose is closer to the LEFT side of the unmirrored frame
-//              (the user has turned their head to THEIR right)
-//   positive → nose is closer to the RIGHT side of the unmirrored frame
-//              (the user has turned their head to THEIR left)
-function yawRatio(landmarks /* , box (unused) */) {
+function yawRatio(landmarks) {
   const pts = landmarks.positions
   const nose = pts[30]
-  const jawL = pts[0]   // camera's left jaw tip
-  const jawR = pts[16]  // camera's right jaw tip
+  const jawL = pts[0]
+  const jawR = pts[16]
   const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y)
   const dL = dist(nose, jawL)
   const dR = dist(nose, jawR)
   const total = dL + dR
   if (total === 0) return 0
-  // (dR - dL)/(dR + dL): 0 when centered, +1 when nose is on the right edge,
-  // -1 when on the left edge.
   return Math.max(-1, Math.min(1, (dR - dL) / total))
 }
 
-// Detect a head turn in the requested direction.
-//
-// In practice the sign of yawRatio depends on whether the underlying video
-// stream is pre-mirrored by the OS/driver (some webcams do this for the user
-// camera, some don't). Empirical user testing on this app shows that:
-//   user turns to THEIR LEFT  → yaw POSITIVE (mirror-flipped frame)
-//   user turns to THEIR RIGHT → yaw NEGATIVE
-// so we map turn_left → wantPositive.
-//
-// We also expose the raw yaw value via `liveYaw` so the on-screen indicator
-// shows which way the math currently thinks the head is turning — useful for
-// diagnosing camera-mirror surprises in the field.
 const liveYaw = ref(0)
-// Direction-agnostic head-turn detection. The sign of yawRatio depends on
-// whether the camera/driver pre-mirrors the stream, which varies per device,
-// so trying to map turn_left/turn_right to a fixed sign is unreliable. Instead
-// we accept a strong turn in EITHER direction; the alternation requirement
-// (second turn must be opposite the first) preserves the liveness guarantee.
-function processTurnFrame(yaw /* , direction */) {
+function processTurnFrame(yaw) {
   const s = turnState.value
   const DEEP = 0.18
-  // Once the user reaches a clear turn (|yaw| ≥ 0.45) we only need a brief
-  // 500ms hold to confirm it's not just a single-frame jitter. The earlier
-  // 1.5s hold made the check feel sluggish even for cooperative users.
   const STRONG = 0.45
   const HOLD_MS = 500
   const NEUTRAL = 0.08
   const sign = yaw >= 0 ? 1 : -1
   const requiredSign = firstTurnSign.value === 0 ? 0 : -firstTurnSign.value
-  // If a first turn already happened, this turn must be in the opposite
-  // direction. We still let the user wiggle either way before they commit —
-  // we only count time when they're holding past the threshold on the
-  // required side.
   const sideOk = requiredSign === 0 ? true : sign === requiredSign
   const strong = Math.abs(yaw) >= STRONG && sideOk
   const deep   = Math.abs(yaw) >= DEEP   && sideOk
@@ -475,9 +394,6 @@ function processTurnFrame(yaw /* , direction */) {
     if (!s.strongSign) s.strongSign = sign
   }
 
-  // Hold-at-threshold: once the user reaches ±0.5 on the allowed side,
-  // freeze the requirement there. They just need to keep their head at (or
-  // past) that angle for 1.5s total and the challenge passes.
   const now = Date.now()
   if (strong) {
     if (!s.strongStartTime) s.strongStartTime = now
@@ -487,13 +403,10 @@ function processTurnFrame(yaw /* , direction */) {
     s.strongStartTime = 0
   }
 
-  // Fallback for gentler turns: "deep turn, then return to centered".
   if (s.deepTurnFrames >= 2 && Math.abs(yaw) < NEUTRAL) s.neutralFrames++
   return s.deepTurnFrames >= 2 && s.neutralFrames >= 1
 }
 
-// Center hold: confirm the user is looking straight ahead by holding |yaw|
-// below the neutral threshold for ~1 second.
 function processCenterFrame(yaw) {
   const s = turnState.value
   const NEUTRAL = 0.1
@@ -511,14 +424,11 @@ function processCenterFrame(yaw) {
 function advanceChallenge() {
   if (currentChallengeIndex.value >= challenges.value.length) return
   const finished = challenges.value[currentChallengeIndex.value]
-  // If the user just completed a turn challenge, remember which physical
-  // side they actually turned to so the next turn is forced to be opposite.
   if ((finished === 'turn_left' || finished === 'turn_right') && !firstTurnSign.value) {
     firstTurnSign.value = turnState.value.strongSign || (turnState.value.peakYaw >= 0 ? 1 : -1)
   }
   completed.value.push(finished)
   currentChallengeIndex.value++
-  // Reset per-challenge state so the next step is clean
   turnState.value = { neutralFrames: 0, deepTurnFrames: 0, peakYaw: 0, strongStartTime: 0, strongSign: 0, centerStartTime: 0 }
 }
 
@@ -535,10 +445,6 @@ async function runDetectionLoop() {
     faceDetected.value = ok
     faceLocked.value = ok
     if (ok) {
-      // Track how big the face is in the frame so we can coach the user to
-      // move closer if they're too far away. face-api gives the box in the
-      // raw video coords, so divide by the source video width — NOT the CSS
-      // size of the <video> element (which is mirrored / object-cover'd).
       const vw = videoEl.value && (videoEl.value.videoWidth || videoEl.value.clientWidth)
       if (vw && det.detection.box && det.detection.box.width) {
         boxRatio.value = det.detection.box.width / vw
@@ -548,8 +454,6 @@ async function runDetectionLoop() {
     }
 
     if (ok) {
-      // Sample descriptor at most every ~70ms — fast enough that a normal
-      // ~1.5s scan window already collects 15+ valid frames for averaging.
       const now = Date.now()
       if (now - lastSampleAt > 70) {
         lastSampleAt = now
@@ -559,15 +463,7 @@ async function runDetectionLoop() {
         }
       }
 
-      // ---- Phase: finding face ----
-      // Wait until we've seen the face for several consecutive frames (≈0.8s)
-      // before asking for any head turn. This gives the user time to position
-      // themselves and prevents the very first "turn" instruction from
-      // appearing while they're still framing their face.
       if (phase.value === 'finding') {
-        // Don't progress the lock countdown while the user is too far away.
-        // We still want them to see the "move closer" coaching, but holding
-        // a tiny face for a second shouldn't unlock the challenge gate.
         if (tooFar.value) {
           faceLockedFrames.value = 0
         } else {
@@ -575,16 +471,11 @@ async function runDetectionLoop() {
           if (faceLockedFrames.value >= FACE_LOCK_FRAMES && !challengeToken.value) {
             phase.value = 'challenging'
             await requestChallenge()
-            if (failed.value || !challenges.value.length) {
-              // requestChallenge already set the error state; just stop here.
-              return
-            }
+            if (failed.value || !challenges.value.length) return
           }
         }
       }
 
-      // ---- Phase: challenging ----
-      // Process the currently active head-turn challenge.
       if (phase.value === 'challenging') {
         const ch = currentChallenge.value
         if (ch === 'turn_left' || ch === 'turn_right') {
@@ -597,14 +488,7 @@ async function runDetectionLoop() {
           if (processCenterFrame(yaw)) advanceChallenge()
         }
 
-        // All challenges done → submit IMMEDIATELY. The backend's anti-spoof
-        // floor is now 10 sample frames; with the 70ms sampler a normal
-        // single-turn scan already exceeds that by the time the turn
-        // completes. We deliberately do NOT spin extra frames here — the
-        // user wanted the scanner to lock as soon as the system has enough
-        // to verify them, and waiting just to pad the sample count makes the
-        // UI feel frozen for no security gain.
-        const REQUIRED_SAMPLES = 12 // small buffer over the backend's 10 minimum
+        const REQUIRED_SAMPLES = 12
         if (
           currentChallengeIndex.value >= challenges.value.length
           && !submitting.value
@@ -617,7 +501,6 @@ async function runDetectionLoop() {
         }
       }
     } else {
-      // Face lost mid-finding — start the lock timer over.
       if (phase.value === 'finding') faceLockedFrames.value = 0
     }
   } catch (err) {
@@ -633,7 +516,6 @@ async function submit() {
   submitting.value = true
   errorMessage.value = ''
 
-  // Build a final descriptor by averaging the top-N samples.
   const top = [...captured.value].sort((a, b) => b.score - a.score).slice(0, Math.min(20, captured.value.length))
   if (!top.length) {
     submitting.value = false
@@ -645,7 +527,6 @@ async function submit() {
   for (const t of top) for (let i = 0; i < 128; i++) avg[i] += t.descriptor[i]
   for (let i = 0; i < 128; i++) avg[i] /= top.length
 
-  // Geofence: only ask for GPS when the event has it enabled.
   const requestBody = {
     challenge_token: challengeToken.value,
     descriptor: avg,
@@ -653,7 +534,6 @@ async function submit() {
     samples_count: samplesCount.value
   }
   if (props.event?.geofence_enabled) {
-    // Use pre-fetched coords if available (set by parent before opening modal)
     if (props.event._pendingLat != null && props.event._pendingLng != null) {
       requestBody.latitude = props.event._pendingLat
       requestBody.longitude = props.event._pendingLng
@@ -727,195 +607,172 @@ onBeforeUnmount(() => stopCamera())
 <style scoped>
 /* ── Backdrop ─────────────────────────────────────────────── */
 .fci-backdrop {
-  background: rgba(8, 14, 46, 0.82);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 
-/* ── Panel ────────────────────────────────────────────────── */
+/* ── Panel — full-screen on mobile, card on sm+ ───────────── */
 .fci-panel {
-  background: linear-gradient(150deg, #0d1a5e 0%, #080e2e 60%, #060b22 100%);
-  border: 1px solid rgba(99, 146, 255, 0.18);
-  border-radius: 28px;
-  box-shadow: 0 32px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.04) inset;
-  max-height: 92vh;
+  background: #ffffff;
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.10), 0 -2px 8px rgba(0, 0, 0, 0.05);
+  max-height: 96vh;
   overflow-y: auto;
 }
-
-/* ── Glow bars ────────────────────────────────────────────── */
-.fci-glow-bar {
-  background: linear-gradient(90deg, transparent, rgba(99,146,255,0.6), transparent);
-}
-.fci-glow-bar-bottom {
-  background: linear-gradient(90deg, transparent, rgba(99,146,255,0.2), transparent);
+@media (min-width: 640px) {
+  .fci-panel {
+    border-radius: 24px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.14), 0 4px 16px rgba(0, 0, 0, 0.08);
+    max-height: 92vh;
+  }
 }
 
 /* ── Icon wrap ────────────────────────────────────────────── */
 .fci-icon-wrap {
   width: 32px; height: 32px;
   border-radius: 10px;
-  background: rgba(99, 146, 255, 0.18);
+  background: #eff6ff;
   display: flex; align-items: center; justify-content: center;
-  border: 1px solid rgba(99, 146, 255, 0.25);
+  color: #3b82f6;
+  border: 1px solid #dbeafe;
 }
 
 /* ── Close button ─────────────────────────────────────────── */
 .fci-close-btn {
-  width: 32px; height: 32px;
+  width: 30px; height: 30px;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.45);
-  border: 1px solid rgba(255,255,255,0.1);
-  background: rgba(255,255,255,0.05);
-  transition: all 0.2s;
+  color: #9ca3af;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  transition: all 0.18s;
   cursor: pointer;
 }
-.fci-close-btn:hover { color: white; background: rgba(255,255,255,0.12); border-color: rgba(255,255,255,0.2); }
-.fci-close-btn:disabled { opacity: 0.3; cursor: not-allowed; }
-
-/* ── Stage banner ─────────────────────────────────────────── */
-.fci-stage-banner { transition: background 0.4s, border-color 0.4s; }
-.fci-stage-default  { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
-.fci-stage-info     { background: rgba(59,130,246,0.15);  border: 1px solid rgba(96,165,250,0.35); color: #93c5fd; }
-.fci-stage-challenge{ background: rgba(139,92,246,0.15);  border: 1px solid rgba(167,139,250,0.35); color: #c4b5fd; }
-.fci-stage-success  { background: rgba(34,197,94,0.15);   border: 1px solid rgba(74,222,128,0.35); color: #86efac; }
-.fci-stage-error    { background: rgba(239,68,68,0.15);   border: 1px solid rgba(248,113,113,0.35); color: #fca5a5; }
+.fci-close-btn:hover { color: #374151; background: #f3f4f6; border-color: #d1d5db; }
+.fci-close-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
 /* ── Camera frame ─────────────────────────────────────────── */
 .fci-camera-frame {
-  box-shadow: 0 0 0 1px rgba(99,146,255,0.2), 0 8px 32px rgba(0,0,0,0.5);
+  box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 4px 20px rgba(0,0,0,0.12);
 }
 
 /* ── Spinner ──────────────────────────────────────────────── */
 .fci-spinner {
-  width: 44px; height: 44px;
+  width: 40px; height: 40px;
   border-radius: 50%;
-  border: 3px solid rgba(96,165,250,0.2);
+  border: 3px solid rgba(255,255,255,0.12);
   border-top-color: #60a5fa;
   animation: fci-spin 0.8s linear infinite;
 }
 @keyframes fci-spin { to { transform: rotate(360deg); } }
 
-/* ── Rotating scanner ring (shown while finding the face) ── */
+/* ── Scan ring ────────────────────────────────────────────── */
 .fci-scan-ring {
   width: 62%;
   aspect-ratio: 1 / 1;
-  max-width: 260px;
+  max-width: 240px;
   border-radius: 50%;
-  position: relative;
-  background:
-    conic-gradient(
-      from 0deg,
-      transparent 0deg,
-      rgba(96, 165, 250, 0.0) 40deg,
-      rgba(96, 165, 250, 0.55) 90deg,
-      rgba(167, 139, 250, 0.85) 130deg,
-      rgba(96, 165, 250, 0.55) 170deg,
-      rgba(96, 165, 250, 0.0) 220deg,
-      transparent 360deg
-    );
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgba(59,130,246,0.0) 40deg,
+    rgba(59,130,246,0.5) 90deg,
+    rgba(99,102,241,0.8) 130deg,
+    rgba(59,130,246,0.5) 170deg,
+    rgba(59,130,246,0.0) 220deg,
+    transparent 360deg
+  );
   -webkit-mask: radial-gradient(circle, transparent 56%, #000 58%, #000 64%, transparent 66%);
           mask: radial-gradient(circle, transparent 56%, #000 58%, #000 64%, transparent 66%);
   animation: fci-scan-rotate 2.4s linear infinite;
-  filter: drop-shadow(0 0 8px rgba(99, 146, 255, 0.45));
-}
-.fci-scan-ring::before,
-.fci-scan-ring::after {
-  content: "";
-  position: absolute;
-  inset: -2px;
-  border-radius: 50%;
-  border: 1px dashed rgba(99, 146, 255, 0.18);
-}
-.fci-scan-ring::after {
-  inset: -10px;
-  border-color: rgba(99, 146, 255, 0.10);
-  animation: fci-scan-pulse 2.4s ease-in-out infinite;
+  filter: drop-shadow(0 0 6px rgba(59,130,246,0.4));
 }
 @keyframes fci-scan-rotate { to { transform: rotate(360deg); } }
-@keyframes fci-scan-pulse {
-  0%, 100% { transform: scale(1);   opacity: 0.6; }
-  50%      { transform: scale(1.06); opacity: 0.2; }
+
+/* ── Stage banners ────────────────────────────────────────── */
+.fci-stage-banner { transition: background 0.3s, border-color 0.3s; border: 1px solid; }
+.fci-stage-default   { background: #f9fafb; border-color: #e5e7eb; }
+.fci-stage-info      { background: #eff6ff; border-color: #bfdbfe; }
+.fci-stage-challenge { background: #f5f3ff; border-color: #ddd6fe; }
+.fci-stage-success   { background: #f0fdf4; border-color: #bbf7d0; }
+.fci-stage-error     { background: #fef2f2; border-color: #fecaca; }
+
+/* ── Progress bar ─────────────────────────────────────────── */
+.fci-progress-track {
+  height: 5px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  overflow: hidden;
+  border: 1px solid #e5e7eb;
+}
+.fci-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%);
+  box-shadow: 0 0 8px rgba(99,102,241,0.4);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* ── Challenge chips ──────────────────────────────────────── */
 .fci-chip {
   display: inline-flex; align-items: center; gap: 5px;
-  padding: 5px 12px;
+  padding: 4px 11px;
   border-radius: 9999px;
   font-size: 0.7rem;
   font-weight: 600;
   border: 1px solid;
-  transition: all 0.3s;
+  transition: all 0.25s;
 }
-.fci-chip-idle   { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.1); color: rgba(255,255,255,0.35); }
-.fci-chip-active { background: rgba(99,146,255,0.22); border-color: rgba(99,146,255,0.5); color: #a5b4fc; }
-.fci-chip-done   { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.4); color: #86efac; }
+.fci-chip-idle   { background: #f9fafb; border-color: #e5e7eb; color: #9ca3af; }
+.fci-chip-active { background: #eff6ff; border-color: #93c5fd; color: #2563eb; }
+.fci-chip-done   { background: #f0fdf4; border-color: #86efac; color: #16a34a; }
 
 /* ── Action buttons ───────────────────────────────────────── */
 .fci-btn-cancel {
-  padding: 12px;
-  border-radius: 16px;
+  padding: 13px;
+  border-radius: 14px;
   font-size: 0.875rem;
   font-weight: 600;
-  background: rgba(255,255,255,0.07);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.75);
-  transition: all 0.2s;
+  background: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  transition: all 0.18s;
   cursor: pointer;
 }
-.fci-btn-cancel:hover { background: rgba(255,255,255,0.12); color: white; }
-.fci-btn-cancel:disabled { opacity: 0.35; cursor: not-allowed; }
+.fci-btn-cancel:hover { background: #e5e7eb; color: #111827; }
+.fci-btn-cancel:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .fci-btn-retry {
-  padding: 12px;
-  border-radius: 16px;
+  padding: 13px;
+  border-radius: 14px;
   font-size: 0.875rem;
   font-weight: 600;
-  background: linear-gradient(135deg, #f59e0b, #d97706);
+  background: #3b82f6;
   border: none;
   color: white;
-  transition: all 0.2s;
+  transition: all 0.18s;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(245,158,11,0.3);
+  box-shadow: 0 3px 12px rgba(59,130,246,0.28);
 }
-.fci-btn-retry:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(245,158,11,0.4); }
+.fci-btn-retry:hover { background: #2563eb; box-shadow: 0 5px 16px rgba(59,130,246,0.36); transform: translateY(-1px); }
 .fci-btn-retry:active { transform: translateY(0); }
 
 /* ── Overlay transition ───────────────────────────────────── */
-/* Enter: quick fade-in. Leave: slightly longer fade + a soft blur fade so the
-   backdrop visibly recedes when the modal is dismissed. */
 .fci-overlay-enter-active { transition: opacity 0.22s ease-out, backdrop-filter 0.22s ease-out, -webkit-backdrop-filter 0.22s ease-out; }
-.fci-overlay-leave-active { transition: opacity 0.32s ease-in,  backdrop-filter 0.32s ease-in,  -webkit-backdrop-filter 0.32s ease-in; }
+.fci-overlay-leave-active { transition: opacity 0.28s ease-in,  backdrop-filter 0.28s ease-in,  -webkit-backdrop-filter 0.28s ease-in; }
 .fci-overlay-enter-from,
 .fci-overlay-leave-to     { opacity: 0; backdrop-filter: blur(0px); -webkit-backdrop-filter: blur(0px); }
 
 /* ── Panel transition ─────────────────────────────────────── */
-/* Enter: spring up and scale in.
-   Leave: softly drop and shrink with a gentle ease-in so the user clearly
-   sees the modal animating away rather than vanishing. */
-.fci-panel-enter-active { transition: opacity 0.30s ease-out, transform 0.38s cubic-bezier(0.34, 1.4, 0.64, 1); }
-.fci-panel-leave-active { transition: opacity 0.28s ease-in,  transform 0.32s cubic-bezier(0.55, 0, 0.7, 0.2); }
-.fci-panel-enter-from   { opacity: 0; transform: scale(0.88) translateY(24px); }
-.fci-panel-leave-to     { opacity: 0; transform: scale(0.92) translateY(20px); }
-
-/* Progress bar — sits between the stage banner and the camera feed.
-   The fill animates smoothly so the user sees real-time movement as the
-   detection loop ratchets it up. */
-.fci-progress-track {
-  position: relative;
-  height: 6px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
-}
-.fci-progress-fill {
-  position: absolute;
-  inset: 0 auto 0 0;
-  border-radius: 999px;
-  background: linear-gradient(90deg, #60a5fa 0%, #818cf8 50%, #a78bfa 100%);
-  box-shadow: 0 0 14px rgba(129, 140, 248, 0.55);
-  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+/* Mobile: slide up from bottom. Desktop: scale up from center. */
+.fci-panel-enter-active { transition: opacity 0.28s ease-out, transform 0.34s cubic-bezier(0.34, 1.4, 0.64, 1); }
+.fci-panel-leave-active { transition: opacity 0.24s ease-in,  transform 0.28s cubic-bezier(0.55, 0, 0.7, 0.2); }
+.fci-panel-enter-from   { opacity: 0; transform: translateY(32px); }
+.fci-panel-leave-to     { opacity: 0; transform: translateY(24px); }
+@media (min-width: 640px) {
+  .fci-panel-enter-from { opacity: 0; transform: scale(0.92) translateY(12px); }
+  .fci-panel-leave-to   { opacity: 0; transform: scale(0.94) translateY(8px); }
 }
 </style>
