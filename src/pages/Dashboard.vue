@@ -13724,7 +13724,8 @@ const toggleRfidList = async (type) => {
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
     
-    const response = await fetch(buildAPIUrl(`/apis/students?limit=1000`), {
+    const yearQ = statsAcadYear.value ? `&school_year=${encodeURIComponent(statsAcadYear.value)}` : ''
+    const response = await fetch(buildAPIUrl(`/apis/students?limit=1000${yearQ}`), {
       method: 'GET',
       headers: getFetchHeaders({
         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
