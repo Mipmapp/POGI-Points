@@ -4630,7 +4630,17 @@
               <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
                 Hi, <span :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']">{{ greetingName }}</span>!
               </h2>
-              <p class="text-gray-400 text-sm mt-0.5">Here's what's happening in SSAAM today.</p>
+              <div class="flex items-center gap-2 mt-1 flex-wrap">
+                <p class="text-gray-400 text-sm">Here's what's happening in SSAAM today.</p>
+                <span v-if="statsAcadYear" :class="['inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold',
+                  isCOE ? 'bg-orange-50 text-orange-600' : isSOM ? 'bg-green-50 text-green-700' : isCNAHS ? 'bg-green-50 text-green-800' : 'bg-blue-50 text-blue-600']">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  S.Y. {{ statsAcadYear }}
+                </span>
+                <span v-if="statsYearFallbackNotice" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-yellow-50 text-yellow-700">
+                  No data for {{ statsYearFallbackNotice }} — showing all
+                </span>
+              </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
               <button @click="handleStatsRefresh" :disabled="statsLoading"
@@ -5078,13 +5088,13 @@
       style="background: rgba(0,0,0,0.32); backdrop-filter: blur(8px);"
       @click.self="showPrivacyModal = false"
     >
-      <div class="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col border border-gray-200/80" style="max-height: 90vh; box-shadow: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);">
+      <div class="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl flex flex-col border border-gray-200/80" style="max-height: 85vh; box-shadow: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);">
 
         <!-- Header -->
         <div class="flex-shrink-0 px-6 pt-6 pb-5 border-b border-gray-100">
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <div :class="['w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']">
+              <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
             </div>
             <div class="flex-1 min-w-0">
               <h2 class="text-gray-900 text-base font-bold leading-tight">Privacy Policy</h2>
@@ -5093,7 +5103,8 @@
             </div>
             <button
               @click="showPrivacyModal = false"
-              class="flex-shrink-0 w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors text-gray-400 hover:text-gray-600"
+              :class="['flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors text-white',
+                isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-700 hover:bg-green-800' : 'bg-blue-600 hover:bg-blue-700']"
               aria-label="Close"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -5102,7 +5113,7 @@
         </div>
 
         <!-- Accordion Body -->
-        <div class="modal-inner-scroll flex-1 overflow-y-auto">
+        <div class="modal-inner-scroll flex-1 min-h-0 overflow-y-auto overscroll-contain" style="-webkit-overflow-scrolling: touch;">
           <div class="px-4 py-3 space-y-1">
             <div
               v-for="(section, idx) in privacySections"
@@ -5114,23 +5125,23 @@
                 @click="privacyOpenSection = privacyOpenSection === idx ? null : idx"
                 class="w-full flex items-center gap-3 px-4 py-3.5 text-left focus:outline-none bg-white"
               >
-                <span class="flex-shrink-0 w-6 h-6 rounded-lg bg-gray-100 text-gray-500 text-[10px] font-bold flex items-center justify-center">{{ idx + 1 }}</span>
+                <span :class="['flex-shrink-0 w-6 h-6 rounded-lg text-[10px] font-bold flex items-center justify-center', privacyOpenSection === idx ? (isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : isCNAHS ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-700') : 'bg-gray-100 text-gray-500']">{{ idx + 1 }}</span>
                 <span class="flex-1 text-sm font-semibold text-gray-800 leading-snug">{{ section.title }}</span>
                 <svg
-                  :class="['w-3.5 h-3.5 text-gray-400 transition-transform duration-200 flex-shrink-0', privacyOpenSection === idx ? 'rotate-180' : '']"
+                  :class="['w-3.5 h-3.5 transition-transform duration-200 flex-shrink-0', privacyOpenSection === idx ? (isCOE ? 'rotate-180 text-orange-500' : isSOM ? 'rotate-180 text-green-600' : isCNAHS ? 'rotate-180 text-green-700' : 'rotate-180 text-blue-600') : 'text-gray-400']"
                   fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
               </button>
               <Transition name="tc-accordion">
                 <div v-if="privacyOpenSection === idx" class="px-4 pt-0 pb-4 bg-white">
-                  <div class="h-px bg-gray-100 mb-3 ml-9"></div>
+                  <div :class="['h-px mb-3 ml-9', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']"></div>
                   <ul class="space-y-2 ml-9">
                     <li
                       v-for="(point, pi) in section.points"
                       :key="pi"
                       class="flex gap-2 text-xs text-gray-500 leading-relaxed"
                     >
-                      <span class="flex-shrink-0 mt-1.5 w-1 h-1 rounded-full bg-gray-300"></span>
+                      <span :class="['flex-shrink-0 mt-1.5 w-1 h-1 rounded-full', isCOE ? 'bg-orange-300' : isSOM ? 'bg-green-400' : isCNAHS ? 'bg-green-500' : 'bg-blue-300']"></span>
                       <span v-html="point"></span>
                     </li>
                   </ul>
@@ -5148,19 +5159,22 @@
                 <button
                   @click="privacyOpenSection = privacyOpenSection > 0 ? privacyOpenSection - 1 : 0"
                   :disabled="privacyOpenSection === 0 || privacyOpenSection === null"
-                  class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  :class="['w-7 h-7 rounded-lg border flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all',
+                    isCOE ? 'border-orange-200 text-orange-600 hover:bg-orange-50' : isSOM ? 'border-green-200 text-green-600 hover:bg-green-50' : isCNAHS ? 'border-green-200 text-green-700 hover:bg-green-50' : 'border-blue-200 text-blue-600 hover:bg-blue-50']"
                 ><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></button>
                 <button
                   @click="privacyOpenSection = privacyOpenSection < privacySections.length - 1 ? privacyOpenSection + 1 : privacySections.length - 1"
                   :disabled="privacyOpenSection === privacySections.length - 1"
-                  class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  :class="['w-7 h-7 rounded-lg border flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all',
+                    isCOE ? 'border-orange-200 text-orange-600 hover:bg-orange-50' : isSOM ? 'border-green-200 text-green-600 hover:bg-green-50' : isCNAHS ? 'border-green-200 text-green-700 hover:bg-green-50' : 'border-blue-200 text-blue-600 hover:bg-blue-50']"
                 ><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg></button>
               </div>
               <p class="text-[10px] text-gray-400">Updated <span class="text-gray-500 font-medium">May 1, 2026</span></p>
             </div>
             <button
               @click="showPrivacyModal = false"
-              class="px-4 py-2 rounded-lg bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold transition-colors"
+              :class="['px-4 py-2 rounded-lg text-white text-xs font-semibold transition-colors',
+                isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-700 hover:bg-green-800' : 'bg-blue-600 hover:bg-blue-700']"
             >Close</button>
           </div>
         </div>
@@ -5177,13 +5191,13 @@
       style="background: rgba(0,0,0,0.32); backdrop-filter: blur(8px);"
       @click.self="showTermsModal = false"
     >
-      <div class="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col border border-gray-200/80" style="max-height: 90vh; box-shadow: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);">
+      <div class="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl flex flex-col border border-gray-200/80" style="max-height: 85vh; box-shadow: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);">
 
         <!-- Header -->
         <div class="flex-shrink-0 px-6 pt-6 pb-5 border-b border-gray-100">
           <div class="flex items-start gap-4">
-            <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <div :class="['w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']">
+              <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
             <div class="flex-1 min-w-0">
               <h2 class="text-gray-900 text-base font-bold leading-tight">Terms &amp; Conditions</h2>
@@ -5192,7 +5206,8 @@
             </div>
             <button
               @click="showTermsModal = false"
-              class="flex-shrink-0 w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors text-gray-400 hover:text-gray-600"
+              :class="['flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-colors text-white',
+                isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-700 hover:bg-green-800' : 'bg-blue-600 hover:bg-blue-700']"
               aria-label="Close"
             >
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -5201,7 +5216,7 @@
         </div>
 
         <!-- Accordion Body -->
-        <div class="modal-inner-scroll flex-1 overflow-y-auto">
+        <div class="modal-inner-scroll flex-1 min-h-0 overflow-y-auto overscroll-contain" style="-webkit-overflow-scrolling: touch;">
           <div class="px-4 py-3 space-y-1">
             <div
               v-for="(section, idx) in tcSections"
@@ -5213,23 +5228,23 @@
                 @click="tcOpenSection = tcOpenSection === idx ? null : idx"
                 class="w-full flex items-center gap-3 px-4 py-3.5 text-left focus:outline-none bg-white"
               >
-                <span class="flex-shrink-0 w-6 h-6 rounded-lg bg-gray-100 text-gray-500 text-[10px] font-bold flex items-center justify-center">{{ idx + 1 }}</span>
+                <span :class="['flex-shrink-0 w-6 h-6 rounded-lg text-[10px] font-bold flex items-center justify-center', tcOpenSection === idx ? (isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : isCNAHS ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-700') : 'bg-gray-100 text-gray-500']">{{ idx + 1 }}</span>
                 <span class="flex-1 text-sm font-semibold text-gray-800 leading-snug">{{ section.title }}</span>
                 <svg
-                  :class="['w-3.5 h-3.5 text-gray-400 transition-transform duration-200 flex-shrink-0', tcOpenSection === idx ? 'rotate-180' : '']"
+                  :class="['w-3.5 h-3.5 transition-transform duration-200 flex-shrink-0', tcOpenSection === idx ? (isCOE ? 'rotate-180 text-orange-500' : isSOM ? 'rotate-180 text-green-600' : isCNAHS ? 'rotate-180 text-green-700' : 'rotate-180 text-blue-600') : 'text-gray-400']"
                   fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
               </button>
               <Transition name="tc-accordion">
                 <div v-if="tcOpenSection === idx" class="px-4 pt-0 pb-4 bg-white">
-                  <div class="h-px bg-gray-100 mb-3 ml-9"></div>
+                  <div :class="['h-px mb-3 ml-9', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']"></div>
                   <ul class="space-y-2 ml-9">
                     <li
                       v-for="(point, pi) in section.points"
                       :key="pi"
                       class="flex gap-2 text-xs text-gray-500 leading-relaxed"
                     >
-                      <span class="flex-shrink-0 mt-1.5 w-1 h-1 rounded-full bg-gray-300"></span>
+                      <span :class="['flex-shrink-0 mt-1.5 w-1 h-1 rounded-full', isCOE ? 'bg-orange-300' : isSOM ? 'bg-green-400' : isCNAHS ? 'bg-green-500' : 'bg-blue-300']"></span>
                       <span v-html="point"></span>
                     </li>
                   </ul>
@@ -5247,19 +5262,22 @@
                 <button
                   @click="tcOpenSection = tcOpenSection > 0 ? tcOpenSection - 1 : 0"
                   :disabled="tcOpenSection === 0 || tcOpenSection === null"
-                  class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  :class="['w-7 h-7 rounded-lg border flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all',
+                    isCOE ? 'border-orange-200 text-orange-600 hover:bg-orange-50' : isSOM ? 'border-green-200 text-green-600 hover:bg-green-50' : isCNAHS ? 'border-green-200 text-green-700 hover:bg-green-50' : 'border-blue-200 text-blue-600 hover:bg-blue-50']"
                 ><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></button>
                 <button
                   @click="tcOpenSection = tcOpenSection < tcSections.length - 1 ? tcOpenSection + 1 : tcSections.length - 1"
                   :disabled="tcOpenSection === tcSections.length - 1"
-                  class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                  :class="['w-7 h-7 rounded-lg border flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed transition-all',
+                    isCOE ? 'border-orange-200 text-orange-600 hover:bg-orange-50' : isSOM ? 'border-green-200 text-green-600 hover:bg-green-50' : isCNAHS ? 'border-green-200 text-green-700 hover:bg-green-50' : 'border-blue-200 text-blue-600 hover:bg-blue-50']"
                 ><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg></button>
               </div>
               <p class="text-[10px] text-gray-400">Updated <span class="text-gray-500 font-medium">May 1, 2026</span></p>
             </div>
             <button
               @click="showTermsModal = false"
-              class="px-4 py-2 rounded-lg bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold transition-colors"
+              :class="['px-4 py-2 rounded-lg text-white text-xs font-semibold transition-colors',
+                isCOE ? 'bg-orange-500 hover:bg-orange-600' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-700 hover:bg-green-800' : 'bg-blue-600 hover:bg-blue-700']"
             >Close</button>
           </div>
         </div>
@@ -13594,7 +13612,8 @@ const refreshCurrentUser = async () => {
 const fetchStats = async () => {
   statsLoading.value = true
   try {
-    const statsUrl = `/apis/students/stats`
+    const yearParam = statsAcadYear.value ? `?school_year=${encodeURIComponent(statsAcadYear.value)}` : ''
+    const statsUrl = `/apis/students/stats${yearParam}`
     const response = await fetch(buildAPIUrl(statsUrl), {
       method: 'GET',
       headers: getFetchHeaders()
