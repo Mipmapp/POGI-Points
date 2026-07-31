@@ -4001,11 +4001,24 @@ app.post('/apis/students/self-arms-validate', studentAuthWithToken, async (req, 
         const rawSemester = String(record.Semester ?? '').trim();
         const armsSemester = rawSemester.startsWith('2') ? '2nd Sem' : rawSemester.startsWith('1') ? '1st Sem' : rawSemester;
 
-        // Stamp the student record with the validated semester/school_year from ARMS
+        // Normalize ARMS year level to the canonical format used throughout SSAAM.
+        // ARMS returns raw values like '1', '2', '1st Year', 'Second', etc.
+        const ARMS_YEAR_LEVEL_MAP = {
+            '1': '1st Year', '1ST': '1st Year', '1ST YEAR': '1st Year', 'FIRST': '1st Year', 'FIRST YEAR': '1st Year',
+            '2': '2nd Year', '2ND': '2nd Year', '2ND YEAR': '2nd Year', 'SECOND': '2nd Year', 'SECOND YEAR': '2nd Year',
+            '3': '3rd Year', '3RD': '3rd Year', '3RD YEAR': '3rd Year', 'THIRD': '3rd Year', 'THIRD YEAR': '3rd Year',
+            '4': '4th Year', '4TH': '4th Year', '4TH YEAR': '4th Year', 'FOURTH': '4th Year', 'FOURTH YEAR': '4th Year',
+        };
+        const rawYearLevel = String(record.Year_Level ?? '').trim().toUpperCase();
+        const armsYearLevel = ARMS_YEAR_LEVEL_MAP[rawYearLevel] || null;
+
+        // Stamp the student record with the validated fields from ARMS
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        const updateFields = { school_year: armsSchoolYear, semester: armsSemester };
+        if (armsYearLevel) updateFields.year_level = armsYearLevel;
         const updated = await StudentModel.findOneAndUpdate(
             { student_id },
-            { school_year: armsSchoolYear, semester: armsSemester },
+            updateFields,
             { new: true, runValidators: true, validateModifiedOnly: true }
         );
 
@@ -4025,12 +4038,13 @@ app.post('/apis/students/self-arms-validate', studentAuthWithToken, async (req, 
                 semester:         armsSemester,
                 schoolYear:       armsSchoolYear,
                 program:          record.Program ?? '',
-                yearLevel:        record.Year_Level ?? '',
+                yearLevel:        armsYearLevel || record.Year_Level || '',
                 enrollmentStatus: rawStatus ?? '',
             },
             updated: {
                 school_year: updated.school_year,
                 semester:    updated.semester,
+                year_level:  updated.year_level,
             }
         });
 

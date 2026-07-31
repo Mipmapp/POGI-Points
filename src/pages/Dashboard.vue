@@ -13532,11 +13532,15 @@ const dashVerifyWithARMS = async () => {
     dashArmsPassword.value  = ''
     dashArmsShowInput.value = false
 
-    // Stamp the currentUser ref and localStorage so the semester badge turns green immediately
+    // Stamp the currentUser ref and localStorage so the semester/year badges update immediately
     currentUser.value = {
       ...currentUser.value,
       school_year: data.updated.school_year,
       semester:    data.updated.semester,
+      ...(data.updated.year_level ? {
+        year_level: data.updated.year_level,
+        yearLevel:  data.updated.year_level,
+      } : {}),
     }
     localStorage.setItem('currentUser', JSON.stringify(currentUser.value))
 
