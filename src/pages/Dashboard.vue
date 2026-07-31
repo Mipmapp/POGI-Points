@@ -13724,8 +13724,7 @@ const toggleRfidList = async (type) => {
   try {
     const token = localStorage.getItem('authToken') || localStorage.getItem('adminToken')
     
-    const yearQ = statsAcadYear.value ? `&school_year=${encodeURIComponent(statsAcadYear.value)}` : ''
-    const response = await fetch(buildAPIUrl(`/apis/students?limit=1000${yearQ}`), {
+    const response = await fetch(buildAPIUrl(`/apis/students?limit=2000`), {
       method: 'GET',
       headers: getFetchHeaders({
         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -13737,7 +13736,7 @@ const toggleRfidList = async (type) => {
       const allStudents = result.data || result
       
       // Normalize data to ensure consistent field access
-      const normalizedStudents = allStudents.map(s => ({
+      let normalizedStudents = allStudents.map(s => ({
         ...s,
         student_id: s.student_id || '',
         last_name: s.last_name || '',
@@ -13747,7 +13746,12 @@ const toggleRfidList = async (type) => {
         rfid_code: s.rfid_code || 'N/A',
         rfid_status: s.rfid_status || 'unverified'
       }))
-      
+
+      // Filter by current school year to match the stats cards
+      if (statsAcadYear.value) {
+        normalizedStudents = normalizedStudents.filter(s => s.school_year === statsAcadYear.value)
+      }
+
       if (type === 'verified') {
         rfidListUsers.value = normalizedStudents.filter(s => s.rfid_status === 'verified')
       } else if (type === 'unverified') {
