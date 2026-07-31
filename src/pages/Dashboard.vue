@@ -4635,10 +4635,18 @@
             <div class="flex items-center gap-2 flex-wrap">
               <!-- AY Year Filter Pills -->
               <div class="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
+                <!-- All pill -->
+                <button
+                  @click="statsAcadYear = ''; statsYearFallbackNotice = ''; fetchStats()"
+                  :class="['px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
+                    statsAcadYear === ''
+                      ? (isCOE ? 'bg-orange-500 text-white shadow-sm' : isSOM ? 'bg-green-600 text-white shadow-sm' : isCNAHS ? 'bg-green-700 text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm')
+                      : 'text-gray-500 hover:text-gray-700']"
+                >All</button>
                 <button
                   v-for="yr in schoolYearOptions"
                   :key="yr"
-                  @click="statsAcadYear = yr; fetchStats()"
+                  @click="statsAcadYear = yr; statsYearFallbackNotice = ''; fetchStats()"
                   :class="['px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
                     statsAcadYear === yr
                       ? (isCOE ? 'bg-orange-500 text-white shadow-sm' : isSOM ? 'bg-green-600 text-white shadow-sm' : isCNAHS ? 'bg-green-700 text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm')
@@ -4655,6 +4663,15 @@
                 {{ statsLoading ? 'Refreshing...' : 'Refresh' }}
               </button>
             </div>
+          </div>
+
+          <!-- Fallback notice when selected year has no data -->
+          <div v-if="statsYearFallbackNotice" class="flex items-center gap-3 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-sm">
+            <svg class="w-4 h-4 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span class="text-amber-800">No records found for <strong>{{ statsYearFallbackNotice }}</strong> — students from that year may not have logged in yet. Showing all-time data instead.</span>
+            <button @click="statsYearFallbackNotice = ''" class="ml-auto text-amber-500 hover:text-amber-700 flex-shrink-0">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
           </div>
 
           <!-- Top Metrics Row: Hero + 3 RFID stat cards -->
@@ -11510,6 +11527,7 @@ const attendanceSchoolYearFilter = ref('')
 const attendanceSYDropdownOpen = ref(false)
 const statsAcadYear = ref('')
 const statsSemFilter = ref('')
+const statsYearFallbackNotice = ref('')
 // Auto-derives the current academic year: July onwards = new year begins
 const currentAcademicYear = computed(() => {
   const now = new Date()
@@ -13680,6 +13698,30 @@ const fetchStats = async () => {
     }
     const data = await response.json()
     if (data.stats) {
+      // Auto-fallback: if a specific year was requested but returned 0 students,
+      // re-fetch without the year filter and show a notice
+      if (statsAcadYear.value && (data.totalStudents === 0 || data.totalCount === 0)) {
+        const requestedYear = statsAcadYear.value
+        statsYearFallbackNotice.value = requestedYear
+        statsAcadYear.value = ''
+        const fallbackResponse = await fetch(buildAPIUrl('/apis/students/stats'), {
+          method: 'GET',
+          headers: getFetchHeaders()
+        })
+        if (fallbackResponse.ok) {
+          const fallbackData = await fallbackResponse.json()
+          if (fallbackData.stats) {
+            statsData.value = {
+              ...fallbackData.stats,
+              verifiedCount: fallbackData.verifiedCount || 0,
+              unverifiedCount: fallbackData.unverifiedCount || 0,
+              unreadableCount: fallbackData.unreadableCount || 0
+            }
+            if (fallbackData.pendingCount !== undefined) pendingCount.value = fallbackData.pendingCount
+          }
+        }
+        return
+      }
       statsData.value = {
         ...data.stats,
         verifiedCount: data.verifiedCount || 0,
