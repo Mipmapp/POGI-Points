@@ -1620,23 +1620,46 @@
                       :class="['w-full pl-9 pr-4 py-2.5 rounded-xl border-2 bg-gray-50 focus:bg-white transition-all outline-none text-sm', isCOE ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100' : isSOM ? 'border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100' : isCNAHS ? 'border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100' : 'border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100']"
                     />
                   </div>
-                  <!-- School Year Filter -->
+                  <!-- School Year Filter (custom dropdown) -->
                   <div class="relative">
-                    <select
-                      v-model="attendanceSchoolYearFilter"
-                      :class="['appearance-none py-2.5 pl-3 pr-8 rounded-xl border-2 bg-gray-50 text-sm outline-none transition-all cursor-pointer font-medium',
+                    <button
+                      @click="attendanceSYDropdownOpen = !attendanceSYDropdownOpen"
+                      :class="['flex items-center gap-1.5 py-2.5 pl-3 pr-8 rounded-xl border-2 bg-gray-50 text-sm outline-none transition-all cursor-pointer font-medium relative whitespace-nowrap',
                         attendanceSchoolYearFilter ? 'text-gray-900' : 'text-gray-400',
-                        isCOE ? 'border-gray-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100' :
-                        isSOM ? 'border-gray-200 focus:border-green-400 focus:ring-2 focus:ring-green-100' :
-                        isCNAHS ? 'border-gray-200 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100' :
-                        'border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100']"
+                        isCOE ? 'border-gray-200 hover:border-orange-400' :
+                        isSOM ? 'border-gray-200 hover:border-green-400' :
+                        isCNAHS ? 'border-gray-200 hover:border-emerald-400' :
+                        'border-gray-200 hover:border-blue-400']"
                     >
-                      <option value="">All School Years</option>
-                      <option v-for="yr in availableAttendanceSchoolYears" :key="yr" :value="yr">{{ yr }}</option>
-                    </select>
-                    <span class="pointer-events-none absolute inset-y-0 right-2.5 flex items-center">
-                      <svg :class="['w-3.5 h-3.5 transition-colors', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-emerald-400' : 'text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
-                    </span>
+                      <span v-if="attendanceSchoolYearFilter" class="flex items-center gap-1.5">
+                        <span v-if="attendanceSchoolYearFilter === currentAcademicYear" class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
+                        {{ attendanceSchoolYearFilter }}
+                      </span>
+                      <span v-else>All School Years</span>
+                      <span class="pointer-events-none absolute inset-y-0 right-2.5 flex items-center">
+                        <svg :class="['w-3.5 h-3.5', isCOE ? 'text-orange-400' : isSOM ? 'text-green-400' : isCNAHS ? 'text-emerald-400' : 'text-blue-400']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+                      </span>
+                    </button>
+                    <!-- Dropdown list -->
+                    <div v-if="attendanceSYDropdownOpen" class="absolute top-full mt-1 left-0 z-50 bg-white border border-gray-200 rounded-xl shadow-lg min-w-[160px] py-1 overflow-hidden">
+                      <button
+                        @click="attendanceSchoolYearFilter = ''; attendanceSYDropdownOpen = false"
+                        :class="['w-full text-left px-3 py-2 text-sm transition flex items-center gap-2', !attendanceSchoolYearFilter ? 'bg-gray-50 font-semibold text-gray-900' : 'text-gray-600 hover:bg-gray-50']"
+                      >
+                        <span class="w-2 h-2 flex-shrink-0"></span>
+                        All School Years
+                      </button>
+                      <button
+                        v-for="yr in availableAttendanceSchoolYears" :key="yr"
+                        @click="attendanceSchoolYearFilter = yr; attendanceSYDropdownOpen = false"
+                        :class="['w-full text-left px-3 py-2 text-sm transition flex items-center gap-2', attendanceSchoolYearFilter === yr ? 'bg-gray-50 font-semibold text-gray-900' : 'text-gray-600 hover:bg-gray-50']"
+                      >
+                        <span :class="['w-2 h-2 rounded-full flex-shrink-0', yr === currentAcademicYear ? 'bg-green-500' : 'bg-transparent']"></span>
+                        {{ yr }}
+                      </button>
+                    </div>
+                    <!-- click-outside backdrop -->
+                    <div v-if="attendanceSYDropdownOpen" class="fixed inset-0 z-40" @click="attendanceSYDropdownOpen = false"></div>
                   </div>
                   <!-- Export Period Report (only when school year filter active) -->
                   <button
@@ -2293,25 +2316,8 @@
                     userAttendAcadYear === yr
                       ? (isCOE ? 'bg-orange-600 text-white' : isSOM ? 'bg-green-600 text-white' : isCNAHS ? 'bg-emerald-600 text-white' : 'bg-[#0f2080] text-white')
                       : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-100']">
-                  {{ yr }}<span v-if="yr === currentAcademicYear" class="ml-1 opacity-70 text-[10px]">·current</span>
+                  <span v-if="yr === currentAcademicYear" class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1 flex-shrink-0 align-middle"></span>{{ yr }}
                 </button>
-              </div>
-            </div>
-
-            <!-- Semester Filter -->
-            <div class="flex items-center gap-2.5 px-4 sm:px-6 py-2 border-b border-gray-100 bg-gray-50/70">
-              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide flex-shrink-0">SEM</span>
-              <div class="flex items-center gap-1.5 flex-wrap">
-                <button @click="userAttendSemFilter = ''"
-                  :class="['px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors',
-                    !userAttendSemFilter
-                      ? (isCOE ? 'bg-orange-600 text-white' : isSOM ? 'bg-green-600 text-white' : isCNAHS ? 'bg-emerald-600 text-white' : 'bg-[#0f2080] text-white')
-                      : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-100']">All</button>
-                <button v-for="sem in ['1st Sem', '2nd Sem', 'Summer']" :key="sem" @click="userAttendSemFilter = sem"
-                  :class="['px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors',
-                    userAttendSemFilter === sem
-                      ? (isCOE ? 'bg-orange-600 text-white' : isSOM ? 'bg-green-600 text-white' : isCNAHS ? 'bg-emerald-600 text-white' : 'bg-[#0f2080] text-white')
-                      : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-100']">{{ sem }}</button>
               </div>
             </div>
 
@@ -11512,6 +11518,7 @@ const attendanceSearchQuery = ref('')
 const attendanceCurrentPage = ref(1)
 const attendanceItemsPerPage = 4
 const attendanceSchoolYearFilter = ref('')
+const attendanceSYDropdownOpen = ref(false)
 const statsAcadYear = ref('')
 const statsSemFilter = ref('')
 // Auto-derives the current academic year: July onwards = new year begins
