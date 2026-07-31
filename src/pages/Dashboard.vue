@@ -13201,6 +13201,7 @@ const filteredAttendanceEvents = computed(() => {
 // Available school years for the filter dropdown (derived from loaded events)
 const availableAttendanceSchoolYears = computed(() => {
   const years = new Set(attendanceEvents.value.map(e => e.school_year).filter(Boolean))
+  if (currentAcademicYear.value) years.add(currentAcademicYear.value)
   return Array.from(years).sort().reverse()
 })
 
