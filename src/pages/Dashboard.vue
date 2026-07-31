@@ -5074,69 +5074,63 @@
   <Transition name="fade">
     <div
       v-if="showPrivacyModal"
-      class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4"
-      style="background: rgba(5,30,30,0.65); backdrop-filter: blur(6px);"
+      class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-6"
+      style="background: rgba(0,0,0,0.32); backdrop-filter: blur(8px);"
       @click.self="showPrivacyModal = false"
     >
-      <div class="bg-white w-full sm:max-w-2xl sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl flex flex-col" style="max-height: 92vh;">
+      <div class="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col border border-gray-200/80" style="max-height: 90vh; box-shadow: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);">
 
         <!-- Header -->
-        <div class="relative bg-gradient-to-br from-teal-700 via-cyan-700 to-emerald-700 px-5 pt-5 pb-4 flex-shrink-0 overflow-hidden">
-          <div class="pointer-events-none absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/5"></div>
-          <div class="pointer-events-none absolute -bottom-6 left-10 w-20 h-20 rounded-full bg-white/5"></div>
-          <div class="pointer-events-none absolute top-1/2 left-1/3 w-10 h-10 rounded-full bg-white/5"></div>
-          <div class="relative flex items-center gap-3">
-            <div class="w-11 h-11 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center flex-shrink-0 ring-1 ring-white/20">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        <div class="flex-shrink-0 px-6 pt-6 pb-5 border-b border-gray-100">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
             </div>
             <div class="flex-1 min-w-0">
-              <h2 class="text-white text-base sm:text-lg font-black leading-tight tracking-tight">Privacy Policy</h2>
-              <p class="text-white/60 text-[10px] sm:text-xs mt-0.5 truncate">SSAAM · CCS - Jose Rizal Memorial State University</p>
+              <h2 class="text-gray-900 text-base font-bold leading-tight">Privacy Policy</h2>
+              <p class="text-gray-400 text-xs mt-0.5">SSAAM · CCS — Jose Rizal Memorial State University</p>
+              <p class="text-gray-500 text-xs mt-2.5 leading-relaxed">SSAAM is committed to protecting your personal data. This policy explains what we collect, how we use it, and your rights under the Philippine Data Privacy Act of 2012 (R.A. 10173).</p>
             </div>
             <button
               @click="showPrivacyModal = false"
-              class="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-all active:scale-90 ring-1 ring-white/20"
+              class="flex-shrink-0 w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors text-gray-400 hover:text-gray-600"
               aria-label="Close"
             >
-              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
-          <p class="relative text-white/65 text-[11px] mt-3 leading-relaxed">
-            SSAAM is committed to protecting your personal data. This policy explains what we collect, how we use it, and your rights under the Philippine Data Privacy Act of 2012 (R.A. 10173).
-          </p>
         </div>
 
         <!-- Accordion Body -->
-        <div class="modal-inner-scroll flex-1 bg-gray-50/80">
-          <div class="p-3 sm:p-4 space-y-2">
+        <div class="modal-inner-scroll flex-1 overflow-y-auto">
+          <div class="px-4 py-3 space-y-1">
             <div
               v-for="(section, idx) in privacySections"
               :key="idx"
-              class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition-shadow hover:shadow-md"
+              class="rounded-xl overflow-hidden border border-gray-100 transition-all"
+              :class="privacyOpenSection === idx ? 'border-gray-200 shadow-sm' : 'hover:border-gray-200'"
             >
               <button
                 @click="privacyOpenSection = privacyOpenSection === idx ? null : idx"
-                class="w-full flex items-center gap-3 px-4 py-3 sm:py-3.5 text-left focus:outline-none"
+                class="w-full flex items-center gap-3 px-4 py-3.5 text-left focus:outline-none bg-white"
               >
-                <div :class="['w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-black shadow-sm', section.color]">
-                  {{ idx + 1 }}
-                </div>
-                <span class="flex-1 font-bold text-gray-800 text-sm leading-tight">{{ section.title }}</span>
+                <span class="flex-shrink-0 w-6 h-6 rounded-lg bg-gray-100 text-gray-500 text-[10px] font-bold flex items-center justify-center">{{ idx + 1 }}</span>
+                <span class="flex-1 text-sm font-semibold text-gray-800 leading-snug">{{ section.title }}</span>
                 <svg
-                  :class="['w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0', privacyOpenSection === idx ? 'rotate-180 text-teal-500' : '']"
+                  :class="['w-3.5 h-3.5 text-gray-400 transition-transform duration-200 flex-shrink-0', privacyOpenSection === idx ? 'rotate-180' : '']"
                   fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
               </button>
               <Transition name="tc-accordion">
-                <div v-if="privacyOpenSection === idx" class="px-4 pb-4">
-                  <div class="h-px bg-gray-100 mb-3"></div>
-                  <ul class="space-y-2.5">
+                <div v-if="privacyOpenSection === idx" class="px-4 pt-0 pb-4 bg-white">
+                  <div class="h-px bg-gray-100 mb-3 ml-9"></div>
+                  <ul class="space-y-2 ml-9">
                     <li
                       v-for="(point, pi) in section.points"
                       :key="pi"
-                      class="flex gap-2.5 text-xs text-gray-600 leading-relaxed"
+                      class="flex gap-2 text-xs text-gray-500 leading-relaxed"
                     >
-                      <span :class="['flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full', section.dot]"></span>
+                      <span class="flex-shrink-0 mt-1.5 w-1 h-1 rounded-full bg-gray-300"></span>
                       <span v-html="point"></span>
                     </li>
                   </ul>
@@ -5147,51 +5141,26 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 space-y-2.5">
-          <!-- Prev / dots / Next row -->
-          <div class="flex items-center justify-between gap-2">
-            <button
-              @click="privacyOpenSection = privacyOpenSection > 0 ? privacyOpenSection - 1 : 0"
-              :disabled="privacyOpenSection === 0 || privacyOpenSection === null"
-              class="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-              Prev
-            </button>
-            <div class="flex items-center gap-1">
-              <button
-                v-for="(_, i) in privacySections"
-                :key="i"
-                @click="privacyOpenSection = i"
-                :class="['h-1.5 rounded-full transition-all duration-200', privacyOpenSection === i ? 'w-4 bg-teal-500' : 'w-1.5 bg-gray-300 hover:bg-gray-400']"
-              ></button>
-            </div>
-            <button
-              @click="privacyOpenSection = privacyOpenSection < privacySections.length - 1 ? privacyOpenSection + 1 : privacySections.length - 1"
-              :disabled="privacyOpenSection === privacySections.length - 1"
-              class="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
-            >
-              Next
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-            </button>
-          </div>
-          <!-- Last updated + keyboard hint + close -->
+        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-5 py-3.5">
           <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-2 min-w-0">
-              <p class="text-[10px] text-gray-400 whitespace-nowrap">Last updated: <span class="font-semibold text-gray-500">May 1, 2026</span></p>
-              <span class="hidden sm:inline-flex items-center gap-0.5 text-[9px] text-gray-300 bg-gray-50 border border-gray-100 rounded-lg px-1.5 py-0.5 whitespace-nowrap">
-                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                arrow keys
-              </span>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1">
+                <button
+                  @click="privacyOpenSection = privacyOpenSection > 0 ? privacyOpenSection - 1 : 0"
+                  :disabled="privacyOpenSection === 0 || privacyOpenSection === null"
+                  class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                ><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></button>
+                <button
+                  @click="privacyOpenSection = privacyOpenSection < privacySections.length - 1 ? privacyOpenSection + 1 : privacySections.length - 1"
+                  :disabled="privacyOpenSection === privacySections.length - 1"
+                  class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                ><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg></button>
+              </div>
+              <p class="text-[10px] text-gray-400">Updated <span class="text-gray-500 font-medium">May 1, 2026</span></p>
             </div>
             <button
               @click="showPrivacyModal = false"
-              :class="['flex-shrink-0 px-4 py-1.5 rounded-xl font-bold text-white text-xs tracking-wide transition-all hover:-translate-y-0.5 active:scale-95 shadow-sm bg-gradient-to-r',
-                isCOE ? 'from-orange-600 to-amber-500'
-                : isSOM ? 'from-green-600 to-emerald-500'
-                : isCNAHS ? 'from-emerald-600 to-teal-500'
-                : 'from-teal-600 to-emerald-600']"
+              class="px-4 py-2 rounded-lg bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold transition-colors"
             >Close</button>
           </div>
         </div>
@@ -5204,69 +5173,63 @@
   <Transition name="fade">
     <div
       v-if="showTermsModal"
-      class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-4"
-      style="background: rgba(15,10,40,0.65); backdrop-filter: blur(6px);"
+      class="fixed inset-0 z-[80] flex items-end sm:items-center justify-center p-0 sm:p-6"
+      style="background: rgba(0,0,0,0.32); backdrop-filter: blur(8px);"
       @click.self="showTermsModal = false"
     >
-      <div class="bg-white w-full sm:max-w-2xl sm:rounded-3xl rounded-t-3xl overflow-hidden shadow-2xl flex flex-col" style="max-height: 92vh;">
+      <div class="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col border border-gray-200/80" style="max-height: 90vh; box-shadow: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);">
 
         <!-- Header -->
-        <div class="relative bg-gradient-to-br from-violet-700 via-indigo-700 to-blue-700 px-5 pt-5 pb-4 flex-shrink-0 overflow-hidden">
-          <div class="pointer-events-none absolute -top-8 -right-8 w-36 h-36 rounded-full bg-white/5"></div>
-          <div class="pointer-events-none absolute -bottom-6 left-10 w-20 h-20 rounded-full bg-white/5"></div>
-          <div class="pointer-events-none absolute top-1/2 left-1/3 w-10 h-10 rounded-full bg-white/5"></div>
-          <div class="relative flex items-center gap-3">
-            <div class="w-11 h-11 bg-white/15 backdrop-blur-sm rounded-2xl flex items-center justify-center flex-shrink-0 ring-1 ring-white/20">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <div class="flex-shrink-0 px-6 pt-6 pb-5 border-b border-gray-100">
+          <div class="flex items-start gap-4">
+            <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0">
+              <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
             <div class="flex-1 min-w-0">
-              <h2 class="text-white text-base sm:text-lg font-black leading-tight tracking-tight">Terms &amp; Conditions</h2>
-              <p class="text-white/60 text-[10px] sm:text-xs mt-0.5 truncate">SSAAM · CCS - Jose Rizal Memorial State University</p>
+              <h2 class="text-gray-900 text-base font-bold leading-tight">Terms &amp; Conditions</h2>
+              <p class="text-gray-400 text-xs mt-0.5">SSAAM · CCS — Jose Rizal Memorial State University</p>
+              <p class="text-gray-500 text-xs mt-2.5 leading-relaxed">By using SSAAM you agree to the following terms governing attendance, financial contributions, and your personal data within JRMSU.</p>
             </div>
             <button
               @click="showTermsModal = false"
-              class="flex-shrink-0 w-9 h-9 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center transition-all active:scale-90 ring-1 ring-white/20"
+              class="flex-shrink-0 w-8 h-8 rounded-lg hover:bg-gray-100 flex items-center justify-center transition-colors text-gray-400 hover:text-gray-600"
               aria-label="Close"
             >
-              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
-          <p class="relative text-white/65 text-[11px] mt-3 leading-relaxed">
-            By using SSAAM you agree to the following terms governing attendance, financial contributions, and your personal data within JRMSU.
-          </p>
         </div>
 
         <!-- Accordion Body -->
-        <div class="modal-inner-scroll flex-1 bg-gray-50/80">
-          <div class="p-3 sm:p-4 space-y-2">
+        <div class="modal-inner-scroll flex-1 overflow-y-auto">
+          <div class="px-4 py-3 space-y-1">
             <div
               v-for="(section, idx) in tcSections"
               :key="idx"
-              class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 transition-shadow hover:shadow-md"
+              class="rounded-xl overflow-hidden border border-gray-100 transition-all"
+              :class="tcOpenSection === idx ? 'border-gray-200 shadow-sm' : 'hover:border-gray-200'"
             >
               <button
                 @click="tcOpenSection = tcOpenSection === idx ? null : idx"
-                class="w-full flex items-center gap-3 px-4 py-3 sm:py-3.5 text-left focus:outline-none"
+                class="w-full flex items-center gap-3 px-4 py-3.5 text-left focus:outline-none bg-white"
               >
-                <div :class="['w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0 text-white text-xs font-black shadow-sm', section.color]">
-                  {{ idx + 1 }}
-                </div>
-                <span class="flex-1 font-bold text-gray-800 text-sm leading-tight">{{ section.title }}</span>
+                <span class="flex-shrink-0 w-6 h-6 rounded-lg bg-gray-100 text-gray-500 text-[10px] font-bold flex items-center justify-center">{{ idx + 1 }}</span>
+                <span class="flex-1 text-sm font-semibold text-gray-800 leading-snug">{{ section.title }}</span>
                 <svg
-                  :class="['w-4 h-4 text-gray-400 transition-transform duration-300 flex-shrink-0', tcOpenSection === idx ? 'rotate-180 text-indigo-500' : '']"
+                  :class="['w-3.5 h-3.5 text-gray-400 transition-transform duration-200 flex-shrink-0', tcOpenSection === idx ? 'rotate-180' : '']"
                   fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
               </button>
               <Transition name="tc-accordion">
-                <div v-if="tcOpenSection === idx" class="px-4 pb-4">
-                  <div class="h-px bg-gray-100 mb-3"></div>
-                  <ul class="space-y-2.5">
+                <div v-if="tcOpenSection === idx" class="px-4 pt-0 pb-4 bg-white">
+                  <div class="h-px bg-gray-100 mb-3 ml-9"></div>
+                  <ul class="space-y-2 ml-9">
                     <li
                       v-for="(point, pi) in section.points"
                       :key="pi"
-                      class="flex gap-2.5 text-xs text-gray-600 leading-relaxed"
+                      class="flex gap-2 text-xs text-gray-500 leading-relaxed"
                     >
-                      <span :class="['flex-shrink-0 mt-1.5 w-1.5 h-1.5 rounded-full', section.dot]"></span>
+                      <span class="flex-shrink-0 mt-1.5 w-1 h-1 rounded-full bg-gray-300"></span>
                       <span v-html="point"></span>
                     </li>
                   </ul>
@@ -5277,49 +5240,26 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 space-y-2.5">
-          <div class="flex items-center justify-between gap-2">
-            <button
-              @click="tcOpenSection = tcOpenSection > 0 ? tcOpenSection - 1 : 0"
-              :disabled="tcOpenSection === 0 || tcOpenSection === null"
-              class="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
-              Prev
-            </button>
-            <div class="flex items-center gap-1">
-              <button
-                v-for="(_, i) in tcSections"
-                :key="i"
-                @click="tcOpenSection = i"
-                :class="['h-1.5 rounded-full transition-all duration-200', tcOpenSection === i ? 'w-4 bg-indigo-500' : 'w-1.5 bg-gray-300 hover:bg-gray-400']"
-              ></button>
-            </div>
-            <button
-              @click="tcOpenSection = tcOpenSection < tcSections.length - 1 ? tcOpenSection + 1 : tcSections.length - 1"
-              :disabled="tcOpenSection === tcSections.length - 1"
-              class="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
-            >
-              Next
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
-            </button>
-          </div>
+        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-5 py-3.5">
           <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-2 min-w-0">
-              <p class="text-[10px] text-gray-400 whitespace-nowrap">Last updated: <span class="font-semibold text-gray-500">May 1, 2026</span></p>
-              <span class="hidden sm:inline-flex items-center gap-0.5 text-[9px] text-gray-300 bg-gray-50 border border-gray-100 rounded-lg px-1.5 py-0.5 whitespace-nowrap">
-                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
-                <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                arrow keys
-              </span>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1">
+                <button
+                  @click="tcOpenSection = tcOpenSection > 0 ? tcOpenSection - 1 : 0"
+                  :disabled="tcOpenSection === 0 || tcOpenSection === null"
+                  class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                ><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg></button>
+                <button
+                  @click="tcOpenSection = tcOpenSection < tcSections.length - 1 ? tcOpenSection + 1 : tcSections.length - 1"
+                  :disabled="tcOpenSection === tcSections.length - 1"
+                  class="w-7 h-7 rounded-lg border border-gray-200 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                ><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg></button>
+              </div>
+              <p class="text-[10px] text-gray-400">Updated <span class="text-gray-500 font-medium">May 1, 2026</span></p>
             </div>
             <button
               @click="showTermsModal = false"
-              :class="['flex-shrink-0 px-4 py-1.5 rounded-xl font-bold text-white text-xs tracking-wide transition-all hover:-translate-y-0.5 active:scale-95 shadow-sm bg-gradient-to-r',
-                isCOE ? 'from-orange-600 to-amber-500'
-                : isSOM ? 'from-green-600 to-emerald-500'
-                : isCNAHS ? 'from-emerald-600 to-teal-500'
-                : 'from-violet-600 to-indigo-600']"
+              class="px-4 py-2 rounded-lg bg-gray-900 hover:bg-gray-700 text-white text-xs font-semibold transition-colors"
             >Close</button>
           </div>
         </div>
@@ -13654,9 +13594,7 @@ const refreshCurrentUser = async () => {
 const fetchStats = async () => {
   statsLoading.value = true
   try {
-    const statsParams = new URLSearchParams()
-    if (statsSemFilter.value) statsParams.set('semester', statsSemFilter.value)
-    const statsUrl = `/apis/students/stats${statsParams.toString() ? '?' + statsParams.toString() : ''}`
+    const statsUrl = `/apis/students/stats`
     const response = await fetch(buildAPIUrl(statsUrl), {
       method: 'GET',
       headers: getFetchHeaders()
@@ -13786,20 +13724,14 @@ const toggleRfidList = async (type) => {
         rfid_status: s.rfid_status || 'unverified'
       }))
       
-      // Filter by the currently selected academic year if one is set
-      const ayFilter = statsAcadYear.value
-      const ayStudents = ayFilter
-        ? normalizedStudents.filter(s => s.school_year === ayFilter)
-        : normalizedStudents
-
       if (type === 'verified') {
-        rfidListUsers.value = ayStudents.filter(s => s.rfid_status === 'verified')
+        rfidListUsers.value = normalizedStudents.filter(s => s.rfid_status === 'verified')
       } else if (type === 'unverified') {
-        rfidListUsers.value = ayStudents.filter(s => s.rfid_status === 'unverified' || !s.rfid_status || s.rfid_status === '')
+        rfidListUsers.value = normalizedStudents.filter(s => s.rfid_status === 'unverified' || !s.rfid_status || s.rfid_status === '')
       } else {
         // Unreadable: check rfid_status for 'Unreadable' OR rfid_code starts with 'UNREADABLE'
-        rfidListUsers.value = ayStudents.filter(s => 
-          s.rfid_status === 'Unreadable' || 
+        rfidListUsers.value = normalizedStudents.filter(s =>
+          s.rfid_status === 'Unreadable' ||
           (s.rfid_code && s.rfid_code.startsWith('UNREADABLE'))
         )
       }
