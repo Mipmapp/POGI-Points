@@ -1,45 +1,28 @@
-# SSAAM — Student/School Attendance & Activity Management
+# SSAAM — Student School Activities Attendance Monitoring
 
-A Vue 3 + Vite frontend with an Express/Node.js backend for managing student attendance, events, and accounts across multiple colleges.
+A full-stack web application for Jose Rizal Memorial State University (JRMSU), College of Computing Studies. Tracks student attendance at school activities.
 
 ## Stack
-- **Frontend**: Vue 3, Vite, Tailwind CSS, Vue Router
-- **Backend**: Express (Node 20), MongoDB Atlas (Mongoose)
-- **Auth**: JWT, Google OAuth 2.0 (Passport)
-- **Storage**: Cloudinary (profile photos)
-- **Email**: Nodemailer with multiple Gmail accounts
+- **Frontend**: Vue 3 + Vite + Tailwind CSS (port 5000)
+- **Backend**: Express.js + MongoDB (Mongoose) (port 3001)
+- **Auth**: JWT + Google OAuth 2.0 (passport-google-oauth20)
+- **Storage**: Cloudinary (images), MongoDB Atlas (data)
+- **Email**: Nodemailer (multiple Gmail accounts)
 
 ## How to run
 
-Two workflows must both be running:
+Two workflows run in parallel (both started via the **Project** run button):
 
 | Workflow | Command | Port |
 |---|---|---|
-| `Start application` | `npm run dev` | 5000 (frontend + proxy) |
-| `Backend Server` | `node server.js` | 3001 (API) |
+| Start application | `npm run dev` | 5000 |
+| Backend Server | `node server.js` | 3001 |
 
-The Vite dev server proxies `/apis/*` and `/api/auth/*` to `localhost:3001`, so the frontend uses relative URLs throughout.
+The Vite dev server proxies `/apis` and `/api/auth` requests to the backend at `localhost:3001`.
 
 ## Environment
-All required secrets are in `.env`. External services used:
-- **MongoDB Atlas** — `MONGODB_URI`
-- **Cloudinary** — `CLOUDINARY_URL`
-- **Google OAuth** — `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_CALLBACK_URL`
-- **Gmail** — `GMAIL_ACCOUNTS` (array of app-password accounts for email sending)
-- **JWT** — `JWT_SECRET`
+Credentials are stored in `.env` (Cloudinary, MongoDB Atlas, JWT secret, Gmail accounts, ARMS API).
 
-## Project structure
-```
-src/
-  pages/        # Vue page components (routed views)
-  components/   # Shared UI components
-  services/     # API fetch wrappers (apiService.js)
-  composables/  # Vue composables
-  router/       # Vue Router config
-  config/       # API base URL, Cloudinary config
-SSAAM_VERCEL_BACKEND.js   # Main Express app (all routes/models)
-server.js                 # Entry point — calls app.listen()
-api/index.js              # Vercel serverless adapter (not used on Replit)
-```
+**Google OAuth note**: The `GOOGLE_CALLBACK_URL` is set in `.replit` `[userenv.shared]` to the Replit dev domain. If the dev domain changes, update that value and re-register it in the Google Cloud Console.
 
 ## User preferences
