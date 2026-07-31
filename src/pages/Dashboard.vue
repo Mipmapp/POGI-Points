@@ -13598,8 +13598,13 @@ const fetchStats = async () => {
   statsLoading.value = true
   try {
     const statsParams = new URLSearchParams()
-    if (statsAcadYear.value) statsParams.set('school_year', statsAcadYear.value)
-    if (statsSemFilter.value) statsParams.set('semester', statsSemFilter.value)
+    if (statsAcadYear.value) {
+      statsParams.set('school_year', statsAcadYear.value)
+      // Don't add semester when a specific year is selected — students from past years
+      // may have different semesters stored, combining both filters would exclude them
+    } else if (statsSemFilter.value) {
+      statsParams.set('semester', statsSemFilter.value)
+    }
     const statsUrl = `/apis/students/stats${statsParams.toString() ? '?' + statsParams.toString() : ''}`
     const response = await fetch(buildAPIUrl(statsUrl), {
       method: 'GET',
