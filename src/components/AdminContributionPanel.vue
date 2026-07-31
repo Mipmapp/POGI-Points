@@ -14,7 +14,7 @@
             <p class="text-xs text-gray-500 mt-0.5">Track and manage student payment contributions</p>
           </div>
         </div>
-        <div class="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 text-xs font-bold text-blue-700 flex-shrink-0">
+        <div v-if="(serverFilteredCount !== null ? serverFilteredCount : filteredCount) > 0" class="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1.5 text-xs font-bold text-blue-700 flex-shrink-0">
           {{ serverFilteredCount !== null ? serverFilteredCount : filteredCount }} matched
         </div>
       </div>
@@ -27,7 +27,7 @@
             <div class="w-1 h-5 rounded-full bg-blue-600"></div>
             <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Filters &amp; Search</h3>
           </div>
-          <div class="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1 text-xs font-bold text-blue-700">
+          <div v-if="(serverFilteredCount !== null ? serverFilteredCount : filteredCount) > 0" class="bg-blue-50 border border-blue-200 rounded-xl px-3 py-1 text-xs font-bold text-blue-700">
             {{ serverFilteredCount !== null ? serverFilteredCount : filteredCount }} matched
           </div>
         </div>

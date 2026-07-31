@@ -4625,22 +4625,36 @@
         <div v-if="currentPage === 'dashboard' && isAdminLike && inRoleView" class="space-y-5 mb-8">
 
           <!-- Greeting Row -->
-          <div class="flex items-start sm:items-center justify-between gap-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div>
               <h2 class="text-2xl sm:text-3xl font-extrabold text-gray-900 leading-tight">
                 Hi, <span :class="[isCOE ? 'text-orange-500' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']">{{ greetingName }}</span>!
               </h2>
               <p class="text-gray-400 text-sm mt-0.5">Here's what's happening in SSAAM today.</p>
             </div>
-            <button @click="handleStatsRefresh" :disabled="statsLoading"
-              :class="['hidden sm:flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0',
-                isCOE ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-200' :
-                isSOM ? 'bg-green-600 hover:bg-green-700 shadow-green-200' :
-                isCNAHS ? 'bg-green-700 hover:bg-green-800 shadow-green-200' :
-                'bg-blue-600 hover:bg-blue-700 shadow-blue-200']">
-              <svg :class="['w-4 h-4', statsLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              {{ statsLoading ? 'Refreshing...' : 'Refresh' }}
-            </button>
+            <div class="flex items-center gap-2 flex-wrap">
+              <!-- AY Year Filter Pills -->
+              <div class="flex items-center gap-1 p-1 bg-gray-100 rounded-xl">
+                <button
+                  v-for="yr in schoolYearOptions"
+                  :key="yr"
+                  @click="statsAcadYear = yr; fetchStats()"
+                  :class="['px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
+                    statsAcadYear === yr
+                      ? (isCOE ? 'bg-orange-500 text-white shadow-sm' : isSOM ? 'bg-green-600 text-white shadow-sm' : isCNAHS ? 'bg-green-700 text-white shadow-sm' : 'bg-blue-600 text-white shadow-sm')
+                      : 'text-gray-500 hover:text-gray-700']"
+                >{{ yr }}</button>
+              </div>
+              <button @click="handleStatsRefresh" :disabled="statsLoading"
+                :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0',
+                  isCOE ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-200' :
+                  isSOM ? 'bg-green-600 hover:bg-green-700 shadow-green-200' :
+                  isCNAHS ? 'bg-green-700 hover:bg-green-800 shadow-green-200' :
+                  'bg-blue-600 hover:bg-blue-700 shadow-blue-200']">
+                <svg :class="['w-4 h-4', statsLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                {{ statsLoading ? 'Refreshing...' : 'Refresh' }}
+              </button>
+            </div>
           </div>
 
           <!-- Top Metrics Row: Hero + 3 RFID stat cards -->
@@ -4754,7 +4768,7 @@
             <div v-else-if="rfidListFilteredUsers.length === 0" class="text-center text-gray-400 py-10 text-sm">No students found in this category.</div>
             <div v-else class="max-h-96 overflow-x-auto overflow-y-auto rounded-xl border border-gray-100">
               <table class="w-full text-sm min-w-[560px]">
-                <thead :class="['sticky top-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                <thead :class="['sticky top-0 z-10', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
                   <tr>
                     <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">Student ID</th>
                     <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider cursor-pointer', isCOE ? 'text-orange-700 hover:text-orange-900' : isSOM ? 'text-green-700 hover:text-green-900' : isCNAHS ? 'text-green-700 hover:text-green-900' : 'text-blue-700 hover:text-blue-900']" @click="toggleRfidListSort">
@@ -13762,13 +13776,19 @@ const toggleRfidList = async (type) => {
         rfid_status: s.rfid_status || 'unverified'
       }))
       
+      // Filter by the currently selected academic year if one is set
+      const ayFilter = statsAcadYear.value
+      const ayStudents = ayFilter
+        ? normalizedStudents.filter(s => s.school_year === ayFilter)
+        : normalizedStudents
+
       if (type === 'verified') {
-        rfidListUsers.value = normalizedStudents.filter(s => s.rfid_status === 'verified')
+        rfidListUsers.value = ayStudents.filter(s => s.rfid_status === 'verified')
       } else if (type === 'unverified') {
-        rfidListUsers.value = normalizedStudents.filter(s => s.rfid_status === 'unverified' || !s.rfid_status || s.rfid_status === '')
+        rfidListUsers.value = ayStudents.filter(s => s.rfid_status === 'unverified' || !s.rfid_status || s.rfid_status === '')
       } else {
         // Unreadable: check rfid_status for 'Unreadable' OR rfid_code starts with 'UNREADABLE'
-        rfidListUsers.value = normalizedStudents.filter(s => 
+        rfidListUsers.value = ayStudents.filter(s => 
           s.rfid_status === 'Unreadable' || 
           (s.rfid_code && s.rfid_code.startsWith('UNREADABLE'))
         )

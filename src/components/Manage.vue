@@ -263,6 +263,30 @@
               </div>
             </div>
 
+            <!-- AY Year -->
+            <div class="space-y-1.5 w-40 relative" @click.stop>
+              <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">AY Year</label>
+              <button
+                @click="openDropdown = openDropdown === 'acadYear' ? null : 'acadYear'"
+                :class="['w-full flex items-center justify-between px-3 py-2 bg-white border rounded-lg text-sm shadow-sm transition-all duration-150 cursor-pointer outline-none',
+                  openDropdown === 'acadYear' ? 'border-blue-400 ring-2 ring-blue-100' : 'border-gray-200 hover:border-gray-300',
+                  userAcadYearFilter ? 'text-gray-900 font-medium' : 'text-gray-500']"
+              >
+                <span class="truncate">{{ userAcadYearFilter || 'All Years' }}</span>
+                <svg :class="['w-3.5 h-3.5 ml-1.5 flex-shrink-0 transition-transform duration-150 text-gray-400', openDropdown === 'acadYear' ? 'rotate-180' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div v-if="openDropdown === 'acadYear'" class="absolute top-full mt-1 left-0 w-full z-50 bg-white border border-gray-200 rounded-xl shadow-lg overflow-hidden py-1">
+                <button v-for="opt in [{value:'',label:'All Years'},{value:'2025-2026',label:'2025-2026'},{value:'2026-2027',label:'2026-2027'}]" :key="opt.value"
+                  @click="userAcadYearFilter = opt.value || null; currentPage = 1; openDropdown = null"
+                  :class="['w-full flex items-center justify-between px-3 py-2 text-sm text-left transition-colors hover:bg-gray-50',
+                    (userAcadYearFilter === opt.value || (!userAcadYearFilter && !opt.value)) ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700']"
+                >
+                  <span>{{ opt.label }}</span>
+                  <svg v-if="userAcadYearFilter === opt.value || (!userAcadYearFilter && !opt.value)" class="w-3.5 h-3.5 text-blue-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
 
@@ -1262,6 +1286,7 @@ export default {
       userStatusFilter: null,
       userCollegeFilter: null,
       userValidationFilter: null,
+      userAcadYearFilter: null,
       showEditUserModal: false,
       editingUser: null,
       isSavingUser: false,
@@ -1433,6 +1458,11 @@ export default {
       // Apply college filter (super admin only)
       if (this.userCollegeFilter !== null) {
         filtered = filtered.filter(user => (user.college || 'CCS') === this.userCollegeFilter)
+      }
+
+      // Apply AY year filter
+      if (this.userAcadYearFilter !== null) {
+        filtered = filtered.filter(user => (user.school_year || '') === this.userAcadYearFilter)
       }
 
       // Apply semester validation filter
