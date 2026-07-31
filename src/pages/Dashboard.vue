@@ -2298,6 +2298,23 @@
               </div>
             </div>
 
+            <!-- Semester Filter -->
+            <div class="flex items-center gap-2.5 px-4 sm:px-6 py-2 border-b border-gray-100 bg-gray-50/70">
+              <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide flex-shrink-0">SEM</span>
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <button @click="userAttendSemFilter = ''"
+                  :class="['px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors',
+                    !userAttendSemFilter
+                      ? (isCOE ? 'bg-orange-600 text-white' : isSOM ? 'bg-green-600 text-white' : isCNAHS ? 'bg-emerald-600 text-white' : 'bg-[#0f2080] text-white')
+                      : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-100']">All</button>
+                <button v-for="sem in ['1st Sem', '2nd Sem', 'Summer']" :key="sem" @click="userAttendSemFilter = sem"
+                  :class="['px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors',
+                    userAttendSemFilter === sem
+                      ? (isCOE ? 'bg-orange-600 text-white' : isSOM ? 'bg-green-600 text-white' : isCNAHS ? 'bg-emerald-600 text-white' : 'bg-[#0f2080] text-white')
+                      : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-100']">{{ sem }}</button>
+              </div>
+            </div>
+
             <!-- Content -->
             <div class="p-3 sm:p-4 md:p-5 space-y-0">
 
@@ -2555,8 +2572,33 @@
                 </div>
               </div>
 
+              <!-- Events This Period Section — all events in the selected year/sem, regardless of attendance -->
+              <div>
+                <h3 class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider mb-2">Events This Period</h3>
+                <div v-if="filteredMyAttendanceRecords.length === 0" class="text-center py-6 text-gray-400 text-sm bg-white border border-[#e0e0e0] rounded-lg">
+                  No events for {{ userAttendAcadYear }}{{ userAttendSemFilter ? ` · ${userAttendSemFilter}` : '' }}.
+                </div>
+                <div v-else class="bg-white border border-[#e0e0e0] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden divide-y divide-[#edebe9]">
+                  <div v-for="record in filteredMyAttendanceRecords" :key="(record._id || record.event_id) + '-period'"
+                    class="flex items-center gap-3 px-4 py-3 min-h-[48px]">
+                    <div class="w-7 h-7 rounded flex items-center justify-center flex-shrink-0 bg-[#f3f2f1] text-[#605e5c]">
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-semibold text-[#201f1e] leading-snug truncate">{{ record.event?.title || record.event_title || 'Event' }}</p>
+                      <p class="text-xs text-[#605e5c]">
+                        {{ record.event?.event_date ? formatEventDate(record.event.event_date) : '-' }}<span v-if="record.event?.semester" class="ml-1 opacity-60">· {{ record.event.semester }}</span>
+                      </p>
+                    </div>
+                    <span :class="['px-2 py-0.5 rounded text-[11px] font-semibold flex-shrink-0', getOverallStatusClass(getSmartRecordStatus(record))]">
+                      {{ getOverallStatusLabel(getSmartRecordStatus(record)) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
               <!-- My Attendance Records Section - Enhanced with Expandable Event Folders -->
-              <div v-if="myAttendanceRecords.length > 0">
+              <div v-if="filteredMyAttendanceRecords.length > 0">
                 <h3 class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider mb-2">My Attendance History</h3>
                 <div v-if="filteredMyAttendanceRecords.length === 0" class="text-center py-8 text-gray-400 text-sm bg-white border border-[#e0e0e0] rounded-lg">
                   No attendance records for {{ userAttendAcadYear }}.
@@ -11578,8 +11620,14 @@ const expandedAttendanceRecords = ref({})
 
 // Filtered student-facing attendance records and payments by selected academic year
 const filteredMyAttendanceRecords = computed(() => {
-  if (!userAttendAcadYear.value) return myAttendanceRecords.value
-  return myAttendanceRecords.value.filter(r => (r.event?.school_year || '') === userAttendAcadYear.value)
+  let records = myAttendanceRecords.value
+  if (userAttendAcadYear.value) {
+    records = records.filter(r => (r.event?.school_year || '') === userAttendAcadYear.value)
+  }
+  if (userAttendSemFilter.value) {
+    records = records.filter(r => (r.event?.semester || '') === userAttendSemFilter.value)
+  }
+  return records
 })
 const filteredMyPayments = computed(() => {
   if (!userContribAcadYear.value) return myPayments.value

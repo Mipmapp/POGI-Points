@@ -8764,7 +8764,9 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
                     event_date: event.event_date,
                     year_level: event.year_level,
                     status: event.status,
-                    is_custom: event.is_custom
+                    is_custom: event.is_custom,
+                    school_year: event.school_year || '',
+                    semester: event.semester || ''
                 },
                 sessions: sessionRecords,
                 overall_status: overallStatus,
