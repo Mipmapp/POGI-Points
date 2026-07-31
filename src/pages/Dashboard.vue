@@ -4704,32 +4704,118 @@
             </div>
 
             <!-- RFID Verified -->
-            <div class="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div class="relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-5 cursor-pointer group"
+              @click="toggleRfidList('verified')">
               <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center mb-3">
                 <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
               <p class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">{{ verifiedCount }}</p>
               <p class="text-sm text-gray-500 mt-2 font-medium">RFID Verified</p>
+              <p class="text-xs text-green-500 mt-2 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">View list →</p>
             </div>
 
             <!-- RFID Unverified -->
-            <div class="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div class="relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-5 cursor-pointer group"
+              @click="toggleRfidList('unverified')">
               <div class="w-10 h-10 rounded-xl bg-yellow-50 flex items-center justify-center mb-3">
                 <svg class="w-5 h-5 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
               <p class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">{{ unverifiedCount }}</p>
               <p class="text-sm text-gray-500 mt-2 font-medium">Unverified</p>
+              <p class="text-xs text-yellow-500 mt-2 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">View list →</p>
             </div>
 
             <!-- RFID Unreadable -->
-            <div class="relative bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
+            <div class="relative bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all p-5 cursor-pointer group"
+              @click="toggleRfidList('unreadable')">
               <div class="w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center mb-3">
                 <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
               </div>
               <p class="text-3xl sm:text-4xl font-extrabold text-gray-900 leading-none">{{ unreadableCount }}</p>
               <p class="text-sm text-gray-500 mt-2 font-medium">Unreadable</p>
+              <p class="text-xs text-gray-400 mt-2 font-semibold opacity-0 group-hover:opacity-100 transition-opacity">View list →</p>
             </div>
           </div>
+
+          <!-- RFID Detail List (expandable) -->
+          <transition name="ssaam-rfid-list">
+          <div v-if="showRfidList" :class="['bg-white rounded-2xl border shadow-sm p-5', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-blue-100']">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h4 :class="['text-base font-bold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
+                  {{ rfidListType === 'verified' ? 'Verified Students' : rfidListType === 'unverified' ? 'Unverified Students' : 'Unreadable Status Students' }}
+                </h4>
+                <p class="text-xs text-gray-400 mt-0.5">{{ rfidListDisplayUsers.length }} of {{ rfidListFilteredUsers.length }} shown</p>
+              </div>
+              <button @click="showRfidList = false" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-500 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+              </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <input v-model="rfidListSearch" type="text" placeholder="Search by name…" :class="['px-3 py-2 border rounded-xl text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-500' : isCNAHS ? 'border-green-200 focus:ring-green-500' : 'border-gray-200 focus:ring-blue-500']" />
+              <select v-model="rfidListFilterProgram" :class="['px-3 py-2 border rounded-xl text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-500' : isCNAHS ? 'border-green-200 focus:ring-green-500' : 'border-gray-200 focus:ring-blue-500']">
+                <option value="">All Programs</option>
+                <option value="BSCS">BSCS</option>
+                <option value="BSIS">BSIS</option>
+                <option value="BSIT">BSIT</option>
+              </select>
+              <select v-model="rfidListFilterYear" :class="['px-3 py-2 border rounded-xl text-sm focus:ring-2 outline-none', isCOE ? 'border-orange-200 focus:ring-orange-400' : isSOM ? 'border-green-200 focus:ring-green-500' : isCNAHS ? 'border-green-200 focus:ring-green-500' : 'border-gray-200 focus:ring-blue-500']">
+                <option value="">All Year Levels</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+            </div>
+            <div v-if="rfidListLoading" class="flex items-center justify-center py-10">
+              <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+            </div>
+            <div v-else-if="rfidListFilteredUsers.length === 0" class="text-center text-gray-400 py-10 text-sm">No students found in this category.</div>
+            <div v-else class="max-h-96 overflow-x-auto overflow-y-auto rounded-xl border border-gray-100">
+              <table class="w-full text-sm min-w-[560px]">
+                <thead :class="['sticky top-0 z-10', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                  <tr>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">Student ID</th>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider cursor-pointer', isCOE ? 'text-orange-700 hover:text-orange-900' : isSOM ? 'text-green-700 hover:text-green-900' : isCNAHS ? 'text-green-700 hover:text-green-900' : 'text-blue-700 hover:text-blue-900']" @click="toggleRfidListSort">
+                      Name <span>{{ rfidListSortAsc ? '↑' : '↓' }}</span>
+                    </th>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">Program</th>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">Year</th>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">RFID Code</th>
+                    <th :class="['text-left px-4 py-3 font-semibold text-xs uppercase tracking-wider', isCOE ? 'text-orange-700' : isSOM ? 'text-green-700' : isCNAHS ? 'text-green-700' : 'text-blue-700']">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 bg-white">
+                  <tr v-for="(user, idx) in rfidListDisplayUsers" :key="user.student_id"
+                    class="hover:bg-gray-50/80 ssaam-row-anim transition-colors"
+                    :style="{ animationDelay: Math.min(idx * 30, 600) + 'ms' }">
+                    <td class="px-4 py-3 text-gray-600 text-xs font-mono">{{ user.student_id }}</td>
+                    <td class="px-4 py-3 text-gray-900 font-medium">{{ (user.full_name || user.first_name || '') }}{{ user.last_name ? ' ' + user.last_name : '' }}</td>
+                    <td class="px-4 py-3 text-gray-500">{{ user.program }}</td>
+                    <td class="px-4 py-3 text-gray-500">{{ user.year_level }}</td>
+                    <td class="px-4 py-3 text-gray-500 font-mono text-xs">{{ user.rfid_code || 'N/A' }}</td>
+                    <td class="px-4 py-3">
+                      <span :class="['px-2.5 py-1 rounded-full text-xs font-semibold',
+                        user.rfid_status === 'verified' ? 'bg-green-100 text-green-700' :
+                        user.rfid_status === 'unverified' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-gray-100 text-gray-600']">
+                        {{ user.rfid_status === 'verified' ? 'Verified' : user.rfid_status === 'unverified' ? 'Unverified' : 'Unreadable' }}
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div v-if="rfidListDisplayUsers.length < rfidListFilteredUsers.length" class="p-4 text-center border-t border-gray-100">
+                <button @click="loadMoreRfidUsers" :class="['px-6 py-2 rounded-xl transition font-semibold text-sm', isCOE ? 'bg-orange-50 text-orange-700 hover:bg-orange-100' : isSOM ? 'bg-green-50 text-green-700 hover:bg-green-100' : isCNAHS ? 'bg-green-50 text-green-700 hover:bg-green-100' : 'bg-blue-50 text-blue-700 hover:bg-blue-100']">
+                  Load {{ rfidListFilteredUsers.length - rfidListDisplayUsers.length }} more
+                </button>
+              </div>
+            </div>
+          </div>
+          </transition>
 
           <!-- Enrolled Students by Program -->
           <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
@@ -13599,7 +13685,15 @@ const fetchStats = async () => {
   try {
     const statsParams = new URLSearchParams()
     if (statsAcadYear.value) {
-      statsParams.set('school_year', statsAcadYear.value)
+      // Only filter by school_year for past years. For the current active year, skip the filter
+      // so students who haven't logged in yet (still stamped with a past year) are still counted.
+      // Use both the settings value and the date-derived currentAcademicYear as fallback,
+      // since appSettings.value.schoolYear may still be '' if settings haven't loaded yet.
+      const activeYear = appSettings.value.schoolYear || currentAcademicYear.value
+      const isCurrentYear = statsAcadYear.value === activeYear
+      if (!isCurrentYear) {
+        statsParams.set('school_year', statsAcadYear.value)
+      }
       // Don't add semester when a specific year is selected — students from past years
       // may have different semesters stored, combining both filters would exclude them
     } else if (statsSemFilter.value) {
