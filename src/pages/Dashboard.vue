@@ -12100,12 +12100,44 @@ const undoExcuse = async (log) => {
   }
 }
 
+// Guard flag: prevents the label→time and time→label watchers from triggering each other
+let _sessionLabelGuard = false
+
+// Auto-detect the best session label from start/end times
+function autoDetectSessionLabel(start, end) {
+  if (!start) return 'Morning'
+  const [startH] = start.split(':').map(Number)
+  let endMins = null
+  if (end) {
+    const [endH, endM] = end.split(':').map(Number)
+    endMins = endH * 60 + endM
+  }
+  const startMins = startH * 60 + (Number(start.split(':')[1]) || 0)
+  const duration = endMins !== null ? endMins - startMins : null
+  // Whole Day: early start (<10 AM), late end (≥3 PM), 6+ hours
+  if (endMins !== null && startH < 10 && endMins >= 15 * 60 && duration >= 360) return 'Whole Day'
+  // Dawn: 4 AM – 6:59 AM
+  if (startH >= 4 && startH < 7) return 'Dawn'
+  // Morning: 7 AM – 10:59 AM
+  if (startH >= 7 && startH < 11) return 'Morning'
+  // Noon: 11 AM – 12:59 PM
+  if (startH >= 11 && startH < 13) return 'Noon'
+  // Afternoon: 1 PM – 5:59 PM
+  if (startH >= 13 && startH < 18) return 'Afternoon'
+  // Night: 6 PM+
+  if (startH >= 18) return 'Night'
+  return 'Morning'
+}
+
+// Label → times: set default times when user manually picks a label
 watch(() => newSession.value.label, (label) => {
   if (editingSession.value) return
-  
+  if (_sessionLabelGuard) return  // skip if label was set by time auto-detect
+  _sessionLabelGuard = true
+
   const eventStart = selectedEvent.value?.start_time || selectedEvent.value?.startTime || '07:00'
   const eventEnd = selectedEvent.value?.end_time || selectedEvent.value?.endTime || '17:00'
-  
+
   if (label === 'Whole Day') {
     newSession.value.start_time = eventStart
     newSession.value.end_time = eventEnd
@@ -12125,6 +12157,17 @@ watch(() => newSession.value.label, (label) => {
     newSession.value.start_time = '05:00'
     newSession.value.end_time = '07:00'
   }
+
+  _sessionLabelGuard = false
+})
+
+// Times → label: auto-detect label when user picks start/end time
+watch([() => newSession.value.start_time, () => newSession.value.end_time], ([start, end]) => {
+  if (_sessionLabelGuard) return
+  if (!start) return
+  _sessionLabelGuard = true
+  newSession.value.label = autoDetectSessionLabel(start, end)
+  _sessionLabelGuard = false
 })
 const newEvent = ref({
   title: '',
