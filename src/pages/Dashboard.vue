@@ -2582,7 +2582,7 @@
               <div>
                 <h3 class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider mb-2">Events This Period</h3>
                 <div v-if="filteredMyAttendanceRecords.length === 0" class="text-center py-6 text-gray-400 text-sm bg-white border border-[#e0e0e0] rounded-lg">
-                  No events for {{ userAttendAcadYear }}{{ userAttendSemFilter ? ` · ${userAttendSemFilter}` : '' }}.
+                  No events for {{ userAttendAcadYear }}.
                 </div>
                 <div v-else class="bg-white border border-[#e0e0e0] rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.06)] overflow-hidden divide-y divide-[#edebe9]">
                   <div v-for="record in filteredMyAttendanceRecords" :key="(record._id || record.event_id) + '-period'"
@@ -2593,7 +2593,7 @@
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-semibold text-[#201f1e] leading-snug truncate">{{ record.event?.title || record.event_title || 'Event' }}</p>
                       <p class="text-xs text-[#605e5c]">
-                        {{ record.event?.event_date ? formatEventDate(record.event.event_date) : '-' }}<span v-if="record.event?.semester" class="ml-1 opacity-60">· {{ record.event.semester }}</span>
+                        {{ record.event?.event_date ? formatEventDate(record.event.event_date) : '-' }}
                       </p>
                     </div>
                     <span :class="['px-2 py-0.5 rounded text-[11px] font-semibold flex-shrink-0', getOverallStatusClass(getSmartRecordStatus(record))]">
@@ -4518,7 +4518,7 @@
                       userContribAcadYear === yr
                         ? (isCOE ? 'bg-orange-600 text-white' : isSOM ? 'bg-green-600 text-white' : isCNAHS ? 'bg-emerald-600 text-white' : 'bg-[#0f2080] text-white')
                         : 'bg-white border border-[#e0e0e0] text-[#605e5c] hover:bg-[#f3f2f1]']">
-                    {{ yr }}<span v-if="yr === currentAcademicYear" class="ml-0.5 opacity-60">·</span>
+                    <span v-if="yr === currentAcademicYear" class="inline-block w-2 h-2 rounded-full bg-green-500 mr-1 flex-shrink-0 align-middle"></span>{{ yr }}
                   </button>
                 </div>
               </div>
@@ -11552,8 +11552,6 @@ watch(() => appSettings.value.semester, (sem) => {
   if (!sem) return
   if (!statsSemFilter.value) statsSemFilter.value = sem
   if (!pendingSemFilter.value) pendingSemFilter.value = sem
-  if (!userAttendSemFilter.value) userAttendSemFilter.value = sem
-  if (!userContribSemFilter.value) userContribSemFilter.value = sem
 }, { immediate: true })
 
 // Helper to derive a stable student key from log or student object
@@ -11630,9 +11628,6 @@ const filteredMyAttendanceRecords = computed(() => {
   let records = myAttendanceRecords.value
   if (userAttendAcadYear.value) {
     records = records.filter(r => (r.event?.school_year || '') === userAttendAcadYear.value)
-  }
-  if (userAttendSemFilter.value) {
-    records = records.filter(r => (r.event?.semester || '') === userAttendSemFilter.value)
   }
   return records
 })
