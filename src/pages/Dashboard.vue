@@ -5088,18 +5088,18 @@
       style="background: rgba(0,0,0,0.32); backdrop-filter: blur(8px);"
       @click.self="showPrivacyModal = false"
     >
-      <div class="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl flex flex-col border border-gray-200/80" style="max-height: 85vh; box-shadow: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);">
+      <div class="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col border border-gray-200/80" style="max-height: 85vh; box-shadow: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);">
 
         <!-- Header -->
-        <div class="flex-shrink-0 px-6 pt-6 pb-5 border-b border-gray-100">
-          <div class="flex items-start gap-4">
-            <div :class="['w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']">
-              <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        <div class="flex-shrink-0 px-4 pt-4 pb-3.5 sm:px-6 sm:pt-6 sm:pb-5 border-b border-gray-100">
+          <!-- Top row: icon + title + close -->
+          <div class="flex items-center gap-3 mb-2">
+            <div :class="['w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']">
+              <svg :class="['w-4 h-4 sm:w-5 sm:h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
             </div>
             <div class="flex-1 min-w-0">
-              <h2 class="text-gray-900 text-base font-bold leading-tight">Privacy Policy</h2>
-              <p class="text-gray-400 text-xs mt-0.5">SSAAM · CCS — Jose Rizal Memorial State University</p>
-              <p class="text-gray-500 text-xs mt-2.5 leading-relaxed">SSAAM is committed to protecting your personal data. This policy explains what we collect, how we use it, and your rights under the Philippine Data Privacy Act of 2012 (R.A. 10173).</p>
+              <h2 class="text-gray-900 text-sm sm:text-base font-bold leading-tight">Privacy Policy</h2>
+              <p class="text-gray-400 text-[11px] sm:text-xs mt-0.5 truncate">SSAAM · JRMSU — College of Computing Studies</p>
             </div>
             <button
               @click="showPrivacyModal = false"
@@ -5110,11 +5110,13 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
+          <!-- Description -->
+          <p class="text-gray-500 text-[11px] sm:text-xs leading-relaxed pl-11 sm:pl-[52px] line-clamp-2 sm:line-clamp-none">SSAAM is committed to protecting your personal data. This policy explains what we collect, how we use it, and your rights under the Philippine Data Privacy Act of 2012 (R.A. 10173).</p>
         </div>
 
         <!-- Accordion Body -->
         <div class="modal-inner-scroll flex-1 min-h-0 overflow-y-auto overscroll-contain" style="-webkit-overflow-scrolling: touch;">
-          <div class="px-4 py-3 space-y-1">
+          <div class="px-3 sm:px-4 py-2.5 sm:py-3 space-y-1">
             <div
               v-for="(section, idx) in privacySections"
               :key="idx"
@@ -5123,23 +5125,23 @@
             >
               <button
                 @click="privacyOpenSection = privacyOpenSection === idx ? null : idx"
-                class="w-full flex items-center gap-3 px-4 py-3.5 text-left focus:outline-none bg-white"
+                class="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-3.5 text-left focus:outline-none bg-white"
               >
                 <span :class="['flex-shrink-0 w-6 h-6 rounded-lg text-[10px] font-bold flex items-center justify-center', privacyOpenSection === idx ? (isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : isCNAHS ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-700') : 'bg-gray-100 text-gray-500']">{{ idx + 1 }}</span>
-                <span class="flex-1 text-sm font-semibold text-gray-800 leading-snug">{{ section.title }}</span>
+                <span class="flex-1 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">{{ section.title }}</span>
                 <svg
                   :class="['w-3.5 h-3.5 transition-transform duration-200 flex-shrink-0', privacyOpenSection === idx ? (isCOE ? 'rotate-180 text-orange-500' : isSOM ? 'rotate-180 text-green-600' : isCNAHS ? 'rotate-180 text-green-700' : 'rotate-180 text-blue-600') : 'text-gray-400']"
                   fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
               </button>
               <Transition name="tc-accordion">
-                <div v-if="privacyOpenSection === idx" class="px-4 pt-0 pb-4 bg-white">
-                  <div :class="['h-px mb-3 ml-9', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']"></div>
-                  <ul class="space-y-2 ml-9">
+                <div v-if="privacyOpenSection === idx" class="px-3 sm:px-4 pt-0 pb-3 sm:pb-4 bg-white">
+                  <div :class="['h-px mb-2.5 ml-8 sm:ml-9', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']"></div>
+                  <ul class="space-y-2 ml-8 sm:ml-9">
                     <li
                       v-for="(point, pi) in section.points"
                       :key="pi"
-                      class="flex gap-2 text-xs text-gray-500 leading-relaxed"
+                      class="flex gap-2 text-[11px] sm:text-xs text-gray-500 leading-relaxed"
                     >
                       <span :class="['flex-shrink-0 mt-1.5 w-1 h-1 rounded-full', isCOE ? 'bg-orange-300' : isSOM ? 'bg-green-400' : isCNAHS ? 'bg-green-500' : 'bg-blue-300']"></span>
                       <span v-html="point"></span>
@@ -5152,9 +5154,9 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-5 py-3.5">
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
+        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 sm:px-5 sm:py-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
               <div class="flex items-center gap-1">
                 <button
                   @click="privacyOpenSection = privacyOpenSection > 0 ? privacyOpenSection - 1 : 0"
@@ -5169,7 +5171,7 @@
                     isCOE ? 'border-orange-200 text-orange-600 hover:bg-orange-50' : isSOM ? 'border-green-200 text-green-600 hover:bg-green-50' : isCNAHS ? 'border-green-200 text-green-700 hover:bg-green-50' : 'border-blue-200 text-blue-600 hover:bg-blue-50']"
                 ><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg></button>
               </div>
-              <p class="text-[10px] text-gray-400">Updated <span class="text-gray-500 font-medium">May 1, 2026</span></p>
+              <p class="text-[10px] text-gray-400 hidden xs:block">Updated <span class="text-gray-500 font-medium">May 1, 2026</span></p>
             </div>
             <button
               @click="showPrivacyModal = false"
@@ -5191,18 +5193,18 @@
       style="background: rgba(0,0,0,0.32); backdrop-filter: blur(8px);"
       @click.self="showTermsModal = false"
     >
-      <div class="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl flex flex-col border border-gray-200/80" style="max-height: 85vh; box-shadow: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);">
+      <div class="bg-white w-full sm:max-w-xl sm:rounded-2xl rounded-t-2xl overflow-hidden flex flex-col border border-gray-200/80" style="max-height: 85vh; box-shadow: 0 24px 64px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);">
 
         <!-- Header -->
-        <div class="flex-shrink-0 px-6 pt-6 pb-5 border-b border-gray-100">
-          <div class="flex items-start gap-4">
-            <div :class="['w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']">
-              <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <div class="flex-shrink-0 px-4 pt-4 pb-3.5 sm:px-6 sm:pt-6 sm:pb-5 border-b border-gray-100">
+          <!-- Top row: icon + title + close -->
+          <div class="flex items-center gap-3 mb-2">
+            <div :class="['w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']">
+              <svg :class="['w-4 h-4 sm:w-5 sm:h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-700' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
             </div>
             <div class="flex-1 min-w-0">
-              <h2 class="text-gray-900 text-base font-bold leading-tight">Terms &amp; Conditions</h2>
-              <p class="text-gray-400 text-xs mt-0.5">SSAAM · CCS — Jose Rizal Memorial State University</p>
-              <p class="text-gray-500 text-xs mt-2.5 leading-relaxed">By using SSAAM you agree to the following terms governing attendance, financial contributions, and your personal data within JRMSU.</p>
+              <h2 class="text-gray-900 text-sm sm:text-base font-bold leading-tight">Terms &amp; Conditions</h2>
+              <p class="text-gray-400 text-[11px] sm:text-xs mt-0.5 truncate">SSAAM · JRMSU — College of Computing Studies</p>
             </div>
             <button
               @click="showTermsModal = false"
@@ -5213,11 +5215,13 @@
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
           </div>
+          <!-- Description -->
+          <p class="text-gray-500 text-[11px] sm:text-xs leading-relaxed pl-11 sm:pl-[52px] line-clamp-2 sm:line-clamp-none">By using SSAAM you agree to the following terms governing attendance, financial contributions, and your personal data within JRMSU.</p>
         </div>
 
         <!-- Accordion Body -->
         <div class="modal-inner-scroll flex-1 min-h-0 overflow-y-auto overscroll-contain" style="-webkit-overflow-scrolling: touch;">
-          <div class="px-4 py-3 space-y-1">
+          <div class="px-3 sm:px-4 py-2.5 sm:py-3 space-y-1">
             <div
               v-for="(section, idx) in tcSections"
               :key="idx"
@@ -5226,23 +5230,23 @@
             >
               <button
                 @click="tcOpenSection = tcOpenSection === idx ? null : idx"
-                class="w-full flex items-center gap-3 px-4 py-3.5 text-left focus:outline-none bg-white"
+                class="w-full flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3 sm:py-3.5 text-left focus:outline-none bg-white"
               >
                 <span :class="['flex-shrink-0 w-6 h-6 rounded-lg text-[10px] font-bold flex items-center justify-center', tcOpenSection === idx ? (isCOE ? 'bg-orange-100 text-orange-700' : isSOM ? 'bg-green-100 text-green-700' : isCNAHS ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-700') : 'bg-gray-100 text-gray-500']">{{ idx + 1 }}</span>
-                <span class="flex-1 text-sm font-semibold text-gray-800 leading-snug">{{ section.title }}</span>
+                <span class="flex-1 text-xs sm:text-sm font-semibold text-gray-800 leading-snug">{{ section.title }}</span>
                 <svg
                   :class="['w-3.5 h-3.5 transition-transform duration-200 flex-shrink-0', tcOpenSection === idx ? (isCOE ? 'rotate-180 text-orange-500' : isSOM ? 'rotate-180 text-green-600' : isCNAHS ? 'rotate-180 text-green-700' : 'rotate-180 text-blue-600') : 'text-gray-400']"
                   fill="none" stroke="currentColor" viewBox="0 0 24 24"
                 ><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
               </button>
               <Transition name="tc-accordion">
-                <div v-if="tcOpenSection === idx" class="px-4 pt-0 pb-4 bg-white">
-                  <div :class="['h-px mb-3 ml-9', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']"></div>
-                  <ul class="space-y-2 ml-9">
+                <div v-if="tcOpenSection === idx" class="px-3 sm:px-4 pt-0 pb-3 sm:pb-4 bg-white">
+                  <div :class="['h-px mb-2.5 ml-8 sm:ml-9', isCOE ? 'bg-orange-100' : isSOM ? 'bg-green-100' : isCNAHS ? 'bg-green-100' : 'bg-blue-50']"></div>
+                  <ul class="space-y-2 ml-8 sm:ml-9">
                     <li
                       v-for="(point, pi) in section.points"
                       :key="pi"
-                      class="flex gap-2 text-xs text-gray-500 leading-relaxed"
+                      class="flex gap-2 text-[11px] sm:text-xs text-gray-500 leading-relaxed"
                     >
                       <span :class="['flex-shrink-0 mt-1.5 w-1 h-1 rounded-full', isCOE ? 'bg-orange-300' : isSOM ? 'bg-green-400' : isCNAHS ? 'bg-green-500' : 'bg-blue-300']"></span>
                       <span v-html="point"></span>
@@ -5255,9 +5259,9 @@
         </div>
 
         <!-- Footer -->
-        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-5 py-3.5">
-          <div class="flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
+        <div class="flex-shrink-0 bg-white border-t border-gray-100 px-4 py-3 sm:px-5 sm:py-3.5">
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
               <div class="flex items-center gap-1">
                 <button
                   @click="tcOpenSection = tcOpenSection > 0 ? tcOpenSection - 1 : 0"
@@ -5272,7 +5276,7 @@
                     isCOE ? 'border-orange-200 text-orange-600 hover:bg-orange-50' : isSOM ? 'border-green-200 text-green-600 hover:bg-green-50' : isCNAHS ? 'border-green-200 text-green-700 hover:bg-green-50' : 'border-blue-200 text-blue-600 hover:bg-blue-50']"
                 ><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg></button>
               </div>
-              <p class="text-[10px] text-gray-400">Updated <span class="text-gray-500 font-medium">May 1, 2026</span></p>
+              <p class="text-[10px] text-gray-400 hidden xs:block">Updated <span class="text-gray-500 font-medium">May 1, 2026</span></p>
             </div>
             <button
               @click="showTermsModal = false"
