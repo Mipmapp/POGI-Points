@@ -2521,6 +2521,7 @@ const studentSchema = new mongoose.Schema({
     },
     rejection_reason: { type: String, default: "" },
     created_date: { type: Date, default: Date.now },
+    revalidated_at: { type: Date, default: null },
     // Custom password field (optional) - if set, user uses this instead of last_name for login
     custom_password: { type: String, default: null },
     contributions: [{
@@ -3759,9 +3760,48 @@ app.get('/apis/students/search', studentSearchAuth, async (req, res) => {
             }
         }
 
+        // Special status filters
+        const statusFilter = req.query.status_filter || '';
+        if (statusFilter === 'joined_today') {
+            const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+            filter.created_date = { $gte: todayStart };
+            filter.status = 'approved';
+        } else if (statusFilter === 'revalidated_today') {
+            const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0);
+            filter.revalidated_at = { $gte: todayStart };
+        } else if (statusFilter === 'expired_grace') {
+            const sixMonthsAgo = new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000);
+            filter.status = 'approved';
+            filter.$and = filter.$and || [];
+            filter.$and.push({
+                $or: [
+                    { rfid_status: 'unverified' },
+                    { rfid_status: { $exists: false } },
+                    { rfid_status: null },
+                    { rfid_status: '' }
+                ]
+            });
+            filter.created_date = { $lt: sixMonthsAgo };
+        } else if (statusFilter === 'needs_revalidation') {
+            // Fetch settings to compare school_year + semester
+            const settings = await getSettings(req.college);
+            const currentSchoolYear = settings.schoolYear || '';
+            const currentSemester = settings.semester || '';
+            filter.status = 'approved';
+            filter.$and = filter.$and || [];
+            filter.$and.push({
+                $or: [
+                    { school_year: { $ne: currentSchoolYear } },
+                    { school_year: null },
+                    { semester: { $ne: currentSemester } },
+                    { semester: null }
+                ]
+            });
+        }
+
         // Select only necessary fields to reduce payload size
         const students = await StudentModel.find(filter)
-            .select('student_id full_name last_name suffix program year_level semester school_year photo email role rfid_status rfid_code created_date')
+            .select('student_id full_name last_name suffix program year_level semester school_year photo email role rfid_status rfid_code created_date revalidated_at')
             .skip(skip)
             .limit(limit)
             .sort({ created_date: -1 });
@@ -4014,7 +4054,7 @@ app.post('/apis/students/self-arms-validate', studentAuthWithToken, async (req, 
 
         // Stamp the student record with the validated fields from ARMS
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
-        const updateFields = { school_year: armsSchoolYear, semester: armsSemester };
+        const updateFields = { school_year: armsSchoolYear, semester: armsSemester, revalidated_at: new Date() };
         if (armsYearLevel) updateFields.year_level = armsYearLevel;
         const updated = await StudentModel.findOneAndUpdate(
             { student_id },
@@ -8235,6 +8275,32 @@ const sessionAttendanceCheck = async (req, res) => {
 
         // Calculate student full name
         const studentFullName = `${student.full_name || student.first_name || ''} ${student.last_name || ''}`.replace(/\s+/g, ' ').trim();
+
+        // === RFID ELIGIBILITY CHECK ===
+        // Block attendance for students with unreadable RFID cards (any age).
+        const isUnreadableCard = student.rfid_status === 'Unreadable' ||
+            (student.rfid_code && student.rfid_code.toUpperCase().startsWith('UNREADABLE'));
+        if (isUnreadableCard) {
+            return res.status(403).json({
+                message: "RFID card is unreadable. Please request a replacement at the admin office.",
+                action: 'rfid_unreadable',
+                student_name: studentFullName
+            });
+        }
+
+        // Block attendance for students whose RFID is still unregistered after 6 months.
+        // Newly registered students (< 6 months) are in the grace period and may still check in via Student ID.
+        const sixMonthsAgo = new Date(now.getTime() - 6 * 30 * 24 * 60 * 60 * 1000);
+        const isExpiredGrace = student.rfid_status !== 'verified' &&
+            student.created_date && student.created_date < sixMonthsAgo;
+        if (isExpiredGrace) {
+            return res.status(403).json({
+                message: "Account is over 6 months old with no registered RFID card. Please visit the admin office to register your RFID.",
+                action: 'rfid_expired_grace',
+                student_name: studentFullName
+            });
+        }
+        // ==============================
 
         // Validate if event is custom - only assigned users can check in
         if (event.is_custom && event.assigned_users && Array.isArray(event.assigned_users)) {

@@ -438,6 +438,42 @@
           </div>
         </transition>
         
+        <!-- RFID Unreadable Card -->
+        <transition name="slide-down">
+          <div v-if="rfidResult && rfidResult.rfid_unreadable" class="mb-4">
+            <div class="bg-red-800/60 backdrop-blur-lg rounded-2xl p-5 border-2 border-red-300/60 shadow-xl">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center bg-red-500/30 border border-red-300/50">
+                  <svg class="w-7 h-7 text-red-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-red-200 font-bold text-sm mb-0.5">RFID Unreadable</p>
+                  <p v-if="rfidResult.student_name" class="text-white font-bold text-sm lg:text-base truncate">{{ rfidResult.student_name }}</p>
+                  <p class="text-white/80 text-xs lg:text-sm mt-0.5 leading-snug">Card cannot be read. Please request a replacement at the admin office.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+
+        <!-- RFID Expired Grace Period Card -->
+        <transition name="slide-down">
+          <div v-if="rfidResult && rfidResult.rfid_expired_grace" class="mb-4">
+            <div class="bg-orange-900/60 backdrop-blur-lg rounded-2xl p-5 border-2 border-orange-400/60 shadow-xl">
+              <div class="flex items-center gap-4">
+                <div class="w-14 h-14 rounded-full flex-shrink-0 flex items-center justify-center bg-orange-500/30 border border-orange-400/50">
+                  <svg class="w-7 h-7 text-orange-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 9h3.75M15 12h3.75M15 15h3.75M4.5 19.5h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5zm6-10.125a1.875 1.875 0 11-3.75 0 1.875 1.875 0 013.75 0zm1.294 6.336a6.721 6.721 0 01-3.17.789 6.721 6.721 0 01-3.168-.789 3.376 3.376 0 016.338 0z"/></svg>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-orange-200 font-bold text-sm mb-0.5">RFID Not Registered</p>
+                  <p v-if="rfidResult.student_name" class="text-white font-bold text-sm lg:text-base truncate">{{ rfidResult.student_name }}</p>
+                  <p class="text-white/80 text-xs lg:text-sm mt-0.5 leading-snug">Account is over 6 months old with no RFID card. Please visit the admin office to register.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </transition>
+
         <!-- Error / Scan Failed Card -->
         <transition name="slide-down">
           <div v-if="rfidResult && rfidResult.error" class="mb-4">
@@ -3224,6 +3260,16 @@
                   <option value="verified">Verified</option>
                   <option value="unverified">Unverified</option>
                   <option value="Unreadable">Unreadable</option>
+                </select>
+                <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </div>
+              <div class="relative min-w-[180px]">
+                <select v-model="filterStatus" @change="handleSearchChange" class="w-full appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm">
+                  <option value="">All Statuses</option>
+                  <option value="needs_revalidation">Needs Revalidation</option>
+                  <option value="expired_grace">Expired Grace Period</option>
+                  <option value="joined_today">Joined Today</option>
+                  <option value="revalidated_today">Revalidated Today</option>
                 </select>
                 <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </div>
@@ -9335,6 +9381,7 @@ const searchQuery = ref('')
 const filterProgram = ref('')
 const filterSchoolLevel = ref('')
 const filterRfidStatus = ref('')
+const filterStatus = ref('')
 const isLoggingOut = ref(false)
 const showLogoutAnimation = ref(false)
 const editImageUploading = ref(false)
@@ -14117,7 +14164,7 @@ const refreshStudents = async () => {
   
   isRefreshing.value = true
   try {
-    const hasFilters = searchQuery.value.trim() || filterProgram.value || filterSchoolLevel.value || filterRfidStatus.value
+    const hasFilters = searchQuery.value.trim() || filterProgram.value || filterSchoolLevel.value || filterRfidStatus.value || filterStatus.value
     const limit = hasFilters ? 100 : itemsPerPage.value
     const page = hasFilters ? 1 : currentPageNum.value
     
@@ -14136,6 +14183,9 @@ const refreshStudents = async () => {
       }
       if (filterRfidStatus.value) {
         url += `&rfid_status=${filterRfidStatus.value}`
+      }
+      if (filterStatus.value) {
+        url += `&status_filter=${filterStatus.value}`
       }
     }
     
@@ -17646,10 +17696,19 @@ const processRfidScan = async (inputCode) => {
       const notAssigned = /not\s+assigned|only\s+assigned\s+students|not\s+assigned\s+to\s+this/i.test(msg)
       // VPN / proxy blocked by geofence security check
       const vpnBlocked = result.code === 'GEOFENCE_VPN_DETECTED'
+      // RFID eligibility blocks
+      const rfidUnreadable = result.action === 'rfid_unreadable'
+      const rfidExpiredGrace = result.action === 'rfid_expired_grace'
 
       if (alreadyCompleted) {
         rfidResult.value = { success: false, warning: true, action: result.action || 'already_checked_in', ...result }
         showNotification(result.message || 'Student already completed session', 'warning')
+      } else if (rfidUnreadable) {
+        rfidResult.value = { success: false, rfid_unreadable: true, message: result.message, student_name: result.student_name }
+        showNotification(result.student_name ? `${result.student_name} — RFID Unreadable` : 'RFID card unreadable', 'error')
+      } else if (rfidExpiredGrace) {
+        rfidResult.value = { success: false, rfid_expired_grace: true, message: result.message, student_name: result.student_name }
+        showNotification(result.student_name ? `${result.student_name} — RFID not registered` : 'RFID not registered', 'error')
       } else if (vpnBlocked) {
         rfidResult.value = { success: false, error: true, message: result.message }
         showNotification('VPN detected — disable your VPN to check in', 'error')
