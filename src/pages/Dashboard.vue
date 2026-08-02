@@ -13706,6 +13706,13 @@ const fetchStats = async () => {
       }
       if (data.pendingCount !== undefined) {
         pendingCount.value = data.pendingCount
+        // If stats reports pending students but the cached list is empty, the
+        // early fire-and-forget fetchPendingStudents() likely raced against auth
+        // and cached a stale empty result. Clear the cache so the next visit to
+        // the Pending page re-fetches and shows the real list.
+        if (data.pendingCount > 0 && pendingStudents.value.length === 0) {
+          clearSectionCache('pending')
+        }
       }
 
       // after stats are refreshed, ensure payment campaigns are synced

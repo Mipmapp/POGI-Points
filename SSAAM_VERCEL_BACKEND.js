@@ -4042,15 +4042,43 @@ app.post('/apis/students/self-arms-validate', studentAuthWithToken, async (req, 
         const armsSemester = rawSemester.startsWith('2') ? '2nd Sem' : rawSemester.startsWith('1') ? '1st Sem' : rawSemester;
 
         // Normalize ARMS year level to the canonical format used throughout SSAAM.
-        // ARMS returns raw values like '1', '2', '1st Year', 'Second', etc.
+        // ARMS returns raw values like '1', '2', '1st Year', 'Second', '2ND YR', etc.
         const ARMS_YEAR_LEVEL_MAP = {
-            '1': '1st Year', '1ST': '1st Year', '1ST YEAR': '1st Year', 'FIRST': '1st Year', 'FIRST YEAR': '1st Year',
-            '2': '2nd Year', '2ND': '2nd Year', '2ND YEAR': '2nd Year', 'SECOND': '2nd Year', 'SECOND YEAR': '2nd Year',
-            '3': '3rd Year', '3RD': '3rd Year', '3RD YEAR': '3rd Year', 'THIRD': '3rd Year', 'THIRD YEAR': '3rd Year',
-            '4': '4th Year', '4TH': '4th Year', '4TH YEAR': '4th Year', 'FOURTH': '4th Year', 'FOURTH YEAR': '4th Year',
+            // 1st Year variants
+            '1': '1st Year', '1ST': '1st Year', '1ST YR': '1st Year', '1ST YEAR': '1st Year',
+            'FIRST': '1st Year', 'FIRST YEAR': '1st Year', 'FIRST YR': '1st Year',
+            // 2nd Year variants
+            '2': '2nd Year', '2ND': '2nd Year', '2ND YR': '2nd Year', '2ND YEAR': '2nd Year',
+            'SECOND': '2nd Year', 'SECOND YEAR': '2nd Year', 'SECOND YR': '2nd Year',
+            // 3rd Year variants
+            '3': '3rd Year', '3RD': '3rd Year', '3RD YR': '3rd Year', '3RD YEAR': '3rd Year',
+            'THIRD': '3rd Year', 'THIRD YEAR': '3rd Year', 'THIRD YR': '3rd Year',
+            // 4th Year variants
+            '4': '4th Year', '4TH': '4th Year', '4TH YR': '4th Year', '4TH YEAR': '4th Year',
+            'FOURTH': '4th Year', 'FOURTH YEAR': '4th Year', 'FOURTH YR': '4th Year',
+            // 5th Year variants (graduate/irregular)
+            '5': '5th Year', '5TH': '5th Year', '5TH YR': '5th Year', '5TH YEAR': '5th Year',
+            'FIFTH': '5th Year', 'FIFTH YEAR': '5th Year', 'FIFTH YR': '5th Year',
         };
         const rawYearLevel = String(record.Year_Level ?? '').trim().toUpperCase();
-        const armsYearLevel = ARMS_YEAR_LEVEL_MAP[rawYearLevel] || null;
+
+        // Primary lookup: exact match in the map
+        let armsYearLevel = ARMS_YEAR_LEVEL_MAP[rawYearLevel] || null;
+
+        // Fallback: if no exact match, extract the leading digit from the raw value.
+        // Handles formats like 'YEAR 2', '2.0', '2ND YEAR BSIT', etc.
+        if (!armsYearLevel && rawYearLevel) {
+            const YEAR_CANONICAL = ['1st Year', '2nd Year', '3rd Year', '4th Year', '5th Year'];
+            const digitMatch = rawYearLevel.match(/\b([1-5])\b/);
+            if (digitMatch) {
+                armsYearLevel = YEAR_CANONICAL[parseInt(digitMatch[1], 10) - 1] || null;
+            }
+        }
+
+        // Log unresolved year levels so ARMS format variants can be added to the map later
+        if (rawYearLevel && !armsYearLevel) {
+            console.warn(`[ARMS] Unrecognized Year_Level format: "${rawYearLevel}" for student ${student_id} — year level not updated`);
+        }
 
         // Stamp the student record with the validated fields from ARMS
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
