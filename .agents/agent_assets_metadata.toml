@@ -1,14 +1,3 @@
 uploads = []
 generated = []
-
-[[outputs]]
-id = "qY8sM5rmyJxs-CZ_7KmC9"
-uri = "file://DOCUMENTATION.md"
-type = "text"
-title = "SSAAM Project Documentation"
-
-[[outputs]]
-id = "9OPgB6LS0rX_jXEXthBEO"
-uri = "file://SSAAM_DEMO_GUIDE.md"
-type = "text"
-title = "SSAAM Demo Guide"
+outputs = []

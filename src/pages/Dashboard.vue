@@ -4192,77 +4192,60 @@
                     {{ chip }}
                   </span>
                 </div>
-                <div v-if="!dashArmsShowInput" class="flex justify-end mt-auto pt-3">
-                  <button
-                    @click="dashArmsShowInput = true; dashArmsError = ''"
-                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-white text-[10px] text-gray-500 font-medium hover:bg-gray-50 transition-colors">
-                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    Re-validate
-                  </button>
-                </div>
-
-                <!-- Re-validate expanded form (shown when already validated) -->
+                <!-- ARMS search result panel (shown after re-validate) -->
                 <transition name="arms-expand">
-                  <div v-if="dashArmsShowInput" class="space-y-3 mt-4 pt-4 border-t border-gray-50">
-                    <!-- Student ID — pre-filled & locked -->
-                    <div>
-                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Student ID</label>
-                      <div class="relative">
-                        <input
-                          :value="currentUser.studentId || currentUser.student_id"
-                          type="text" readonly
-                          :class="['w-full px-3 py-2.5 pr-9 border rounded-xl text-sm bg-gray-50 text-gray-700 font-mono cursor-not-allowed',
-                            isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-green-100' : 'border-blue-100']" />
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2">
-                          <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                        </span>
-                      </div>
+                  <div v-if="dashArmsSearchData" class="mt-4 pt-4 border-t border-gray-50 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ARMS Search Result</span>
+                      <span v-if="dashArmsSearchData.isEnrolled"
+                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700">
+                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                        Enrolled
+                      </span>
+                      <span v-else-if="!dashArmsSearchData.found"
+                        class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700">Not Found</span>
+                      <span v-else
+                        class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-700">
+                        {{ dashArmsSearchData.armsRecord?.enrollmentStatus || 'Not Enrolled' }}
+                      </span>
                     </div>
-                    <!-- ARMS password -->
-                    <div>
-                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">ARMS Portal Password</label>
-                      <div class="relative">
-                        <input
-                          v-model="dashArmsPassword"
-                          :type="dashArmsShowPw ? 'text' : 'password'"
-                          placeholder="Your JRMSU ARMS password"
-                          @keydown.enter.prevent="dashVerifyWithARMS"
-                          :class="['w-full px-3 py-2.5 pr-10 border rounded-xl text-sm bg-white outline-none transition',
-                            isCOE   ? 'border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20'
-                            : isSOM ? 'border-green-200 focus:border-green-400 focus:ring-2 focus:ring-green-400/20'
-                            : isCNAHS ? 'border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'
-                            : 'border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20',
-                            'text-gray-800']" />
-                        <button type="button" @click="dashArmsShowPw = !dashArmsShowPw"
-                          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                          <svg v-if="dashArmsShowPw" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
-                          <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        </button>
+                    <template v-if="dashArmsSearchData.found && dashArmsSearchData.armsRecord">
+                      <div class="bg-gray-50 rounded-xl p-3 space-y-1.5 text-[11px]">
+                        <p class="text-sm font-bold text-gray-800 leading-snug">{{ dashArmsSearchData.armsRecord.studentName }}</p>
+                        <p class="text-gray-500">{{ dashArmsSearchData.armsRecord.college }}</p>
+                        <p class="text-gray-700 font-medium">{{ dashArmsSearchData.armsRecord.program }}</p>
+                        <div class="flex flex-wrap gap-x-3 gap-y-1 pt-1 text-[10px] text-gray-500">
+                          <span>{{ dashArmsSearchData.armsRecord.schoolYear }}</span>
+                          <span>{{ dashArmsSearchData.armsRecord.semester }}</span>
+                          <span>{{ dashArmsSearchData.armsRecord.yearLevel }}</span>
+                          <span>Lec {{ dashArmsSearchData.armsRecord.lectureUnits }} u</span>
+                          <span v-if="dashArmsSearchData.armsRecord.labUnits">Lab {{ dashArmsSearchData.armsRecord.labUnits }} u</span>
+                          <span v-if="dashArmsSearchData.armsRecord.admissionStatus" class="capitalize text-gray-400">{{ dashArmsSearchData.armsRecord.admissionStatus }}</span>
+                        </div>
                       </div>
-                    </div>
-                    <!-- Error -->
+                    </template>
+                    <p v-else class="text-xs text-amber-700 leading-snug">{{ dashArmsSearchData.message }}</p>
                     <transition name="arms-error">
                       <p v-if="dashArmsError" class="text-xs text-red-600 leading-snug">{{ dashArmsError }}</p>
                     </transition>
-                    <!-- Actions -->
-                    <div class="flex gap-2 pt-1">
-                      <button type="button"
-                        @click="dashArmsShowInput = false; dashArmsPassword = ''; dashArmsError = ''"
-                        class="flex-1 py-2.5 px-3 rounded-xl border border-gray-200 bg-white text-gray-600 text-sm font-semibold hover:bg-gray-50 transition">
-                        Cancel
-                      </button>
-                      <button type="button" @click="dashVerifyWithARMS" :disabled="dashArmsLoading"
-                        :class="['flex-1 py-2.5 px-3 rounded-xl text-white text-sm font-semibold transition flex items-center justify-center gap-1.5 disabled:opacity-60',
-                          isCOE   ? 'bg-orange-500 hover:bg-orange-600'
-                          : isSOM ? 'bg-green-500 hover:bg-green-600'
-                          : isCNAHS ? 'bg-green-600 hover:bg-green-700'
-                          : 'bg-blue-600 hover:bg-blue-700']">
-                        <svg v-if="dashArmsLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                        {{ dashArmsLoading ? 'Verifying…' : 'Validate' }}
-                      </button>
-                    </div>
                   </div>
                 </transition>
+
+                <!-- Error (before any search) -->
+                <transition name="arms-error">
+                  <p v-if="dashArmsError && !dashArmsSearchData" class="text-xs text-red-600 leading-snug mt-2">{{ dashArmsError }}</p>
+                </transition>
+
+                <div class="flex justify-end mt-auto pt-3">
+                  <button
+                    @click="dashVerifyWithARMS"
+                    :disabled="dashArmsLoading"
+                    class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-gray-200 bg-white text-[10px] text-gray-500 font-medium hover:bg-gray-50 transition-colors disabled:opacity-60">
+                    <svg v-if="dashArmsLoading" class="w-2.5 h-2.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                    <svg v-else class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    {{ dashArmsLoading ? 'Searching…' : 'Re-validate' }}
+                  </button>
+                </div>
               </template>
 
               <!-- Not yet validated state -->
@@ -4280,94 +4263,59 @@
                   </div>
                 </div>
 
-                <!-- Trigger button -->
-                <transition name="arms-btn">
-                  <button v-if="!dashArmsShowInput"
-                    @click="dashArmsShowInput = true; dashArmsError = ''"
-                    :class="['w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all border',
-                      isCOE   ? 'bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-100'
-                      : isSOM ? 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
-                      : isCNAHS ? 'bg-green-50 text-green-700 border-green-100 hover:bg-green-100'
-                      : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100']">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    Validate Enrollment
-                  </button>
+                <!-- Validate Enrollment button — auto-searches on click, no password needed -->
+                <button
+                  @click="dashVerifyWithARMS"
+                  :disabled="dashArmsLoading"
+                  :class="['w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all border disabled:opacity-60',
+                    isCOE   ? 'bg-orange-50 text-orange-600 border-orange-100 hover:bg-orange-100'
+                    : isSOM ? 'bg-green-50 text-green-600 border-green-100 hover:bg-green-100'
+                    : isCNAHS ? 'bg-green-50 text-green-700 border-green-100 hover:bg-green-100'
+                    : 'bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-100']">
+                  <svg v-if="dashArmsLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                  <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  {{ dashArmsLoading ? 'Searching ARMS…' : 'Validate Enrollment' }}
+                </button>
+
+                <!-- ARMS search result panel -->
+                <transition name="arms-expand">
+                  <div v-if="dashArmsSearchData" class="mt-3 space-y-2.5">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ARMS Search Result</span>
+                      <span v-if="dashArmsSearchData.isEnrolled"
+                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700">
+                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                        Enrolled
+                      </span>
+                      <span v-else-if="!dashArmsSearchData.found"
+                        class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700">Not Found</span>
+                      <span v-else
+                        class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-700">
+                        {{ dashArmsSearchData.armsRecord?.enrollmentStatus || 'Not Enrolled' }}
+                      </span>
+                    </div>
+                    <template v-if="dashArmsSearchData.found && dashArmsSearchData.armsRecord">
+                      <div class="bg-gray-50 rounded-xl p-3 space-y-1.5 text-[11px]">
+                        <p class="text-sm font-bold text-gray-800 leading-snug">{{ dashArmsSearchData.armsRecord.studentName }}</p>
+                        <p class="text-gray-500">{{ dashArmsSearchData.armsRecord.college }}</p>
+                        <p class="text-gray-700 font-medium">{{ dashArmsSearchData.armsRecord.program }}</p>
+                        <div class="flex flex-wrap gap-x-3 gap-y-1 pt-1 text-[10px] text-gray-500">
+                          <span>{{ dashArmsSearchData.armsRecord.schoolYear }}</span>
+                          <span>{{ dashArmsSearchData.armsRecord.semester }}</span>
+                          <span>{{ dashArmsSearchData.armsRecord.yearLevel }}</span>
+                          <span>Lec {{ dashArmsSearchData.armsRecord.lectureUnits }} u</span>
+                          <span v-if="dashArmsSearchData.armsRecord.labUnits">Lab {{ dashArmsSearchData.armsRecord.labUnits }} u</span>
+                          <span v-if="dashArmsSearchData.armsRecord.admissionStatus" class="capitalize text-gray-400">{{ dashArmsSearchData.armsRecord.admissionStatus }}</span>
+                        </div>
+                      </div>
+                    </template>
+                    <p v-else class="text-xs text-amber-700 leading-snug">{{ dashArmsSearchData.message }}</p>
+                  </div>
                 </transition>
 
-                <!-- Expanded form -->
-                <transition name="arms-expand">
-                  <div v-if="dashArmsShowInput" class="space-y-3">
-                    <!-- Student ID — pre-filled & locked -->
-                    <div>
-                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Student ID</label>
-                      <div class="relative">
-                        <input
-                          :value="currentUser.studentId || currentUser.student_id"
-                          type="text" readonly
-                          :class="['w-full px-3 py-2.5 pr-9 border rounded-xl text-sm bg-gray-50 text-gray-700 font-mono cursor-not-allowed',
-                            isCOE ? 'border-orange-100' : isSOM ? 'border-green-100' : isCNAHS ? 'border-green-100' : 'border-blue-100']" />
-                        <span class="absolute right-3 top-1/2 -translate-y-1/2">
-                          <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-                        </span>
-                      </div>
-                      <p class="text-[10px] text-gray-400 mt-1">Your Student ID is pre-filled and locked to your account.</p>
-                    </div>
-
-                    <!-- ARMS password -->
-                    <div>
-                      <label class="block text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">ARMS Portal Password</label>
-                      <div class="relative">
-                        <input
-                          v-model="dashArmsPassword"
-                          :type="dashArmsShowPw ? 'text' : 'password'"
-                          placeholder="Your JRMSU ARMS password"
-                          @keydown.enter.prevent="dashVerifyWithARMS"
-                          :class="['w-full px-3 py-2.5 pr-10 border rounded-xl text-sm bg-white outline-none transition',
-                            isCOE   ? 'border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-400/20'
-                            : isSOM ? 'border-green-200 focus:border-green-400 focus:ring-2 focus:ring-green-400/20'
-                            : isCNAHS ? 'border-green-200 focus:border-green-500 focus:ring-2 focus:ring-green-500/20'
-                            : 'border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20',
-                            'text-gray-800']" />
-                        <button type="button" @click="dashArmsShowPw = !dashArmsShowPw"
-                          class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                          <svg v-if="dashArmsShowPw" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
-                          <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                        </button>
-                      </div>
-                    </div>
-
-                    <!-- Error message -->
-                    <transition name="arms-error">
-                      <p v-if="dashArmsError" class="text-xs text-red-600 leading-snug">{{ dashArmsError }}</p>
-                    </transition>
-
-                    <!-- Action buttons -->
-                    <div class="flex gap-2 pt-1">
-                      <button type="button"
-                        @click="dashArmsShowInput = false; dashArmsPassword = ''; dashArmsError = ''"
-                        class="flex-1 py-2.5 px-3 rounded-xl border border-gray-200 bg-white text-gray-600 text-sm font-semibold hover:bg-gray-50 transition">
-                        Cancel
-                      </button>
-                      <button type="button" @click="dashVerifyWithARMS" :disabled="dashArmsLoading"
-                        :class="['flex-1 py-2.5 px-3 rounded-xl text-white text-sm font-semibold transition flex items-center justify-center gap-1.5 disabled:opacity-60',
-                          isCOE   ? 'bg-orange-500 hover:bg-orange-600'
-                          : isSOM ? 'bg-green-500 hover:bg-green-600'
-                          : isCNAHS ? 'bg-green-600 hover:bg-green-700'
-                          : 'bg-blue-600 hover:bg-blue-700']">
-                        <svg v-if="dashArmsLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
-                        {{ dashArmsLoading ? 'Verifying…' : 'Validate' }}
-                      </button>
-                    </div>
-
-                    <p class="text-[10px] text-gray-400 text-center leading-snug">
-                      Forgot your password? Visit
-                      <a href="https://jrmsu-arms.online/student/login.php" target="_blank" rel="noopener noreferrer"
-                        :class="['underline underline-offset-2 font-medium transition',
-                          isCOE ? 'text-orange-500 hover:text-orange-700' : isSOM ? 'text-green-500 hover:text-green-700' : 'text-blue-500 hover:text-blue-700']">
-                        JRMSU-ARMS Portal
-                      </a>
-                    </p>
-                  </div>
+                <!-- Error message -->
+                <transition name="arms-error">
+                  <p v-if="dashArmsError" class="text-xs text-red-600 leading-snug mt-2">{{ dashArmsError }}</p>
                 </transition>
               </template>
             </div>
@@ -9980,12 +9928,10 @@ const studentPhotoUploading = ref(false)
 const refreshingUserData = ref(false)
 
 // ── ARMS Dashboard Validation ─────────────────────────────────────────────────
-const dashArmsPassword  = ref('')
-const dashArmsLoading   = ref(false)
-const dashArmsError     = ref('')
-const dashArmsShowPw    = ref(false)
-const dashArmsShowInput = ref(false)
-const dashArmsResult    = ref(null)  // set on success: { studentName, semester, schoolYear }
+const dashArmsLoading    = ref(false)
+const dashArmsError      = ref('')
+const dashArmsResult     = ref(null)    // set on success: { studentName, semester, schoolYear }
+const dashArmsSearchData = ref(null)    // full record returned by ARMS search endpoint
 
 // ── Photo Upload / Crop Modal state ────────────────────────────────────────
 const showPhotoCropModal = ref(false)
@@ -13516,19 +13462,16 @@ const handleStatsRefresh = async () => {
 }
 
 // ── ARMS Dashboard Validation ─────────────────────────────────────────────────
+// Auto-searches ARMS by student ID + current school year/semester — no password required.
 const dashVerifyWithARMS = async () => {
-  if (!dashArmsPassword.value.trim()) {
-    dashArmsError.value = 'Please enter your JRMSU ARMS portal password.'
-    return
-  }
-  dashArmsError.value  = ''
-  dashArmsLoading.value = true
+  dashArmsError.value      = ''
+  dashArmsSearchData.value = null
+  dashArmsLoading.value    = true
 
-  const doVerify = async () => {
-    const response = await fetch(buildAPIUrl('/apis/students/self-arms-validate'), {
+  const doSearch = async () => {
+    const response = await fetch(buildAPIUrl('/apis/students/self-arms-search-validate'), {
       method:  'POST',
       headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` }),
-      body:    JSON.stringify({ password: dashArmsPassword.value })
     })
     const data = await response.json()
     return { response, data }
@@ -13538,9 +13481,9 @@ const dashVerifyWithARMS = async () => {
     let response, data, firstFailMessage
 
     try {
-      ;({ response, data } = await doVerify())
+      ;({ response, data } = await doSearch())
       if (!response.ok) {
-        firstFailMessage = data.message || 'ARMS verification failed. Please try again.'
+        firstFailMessage = data.message || 'ARMS search failed. Please try again.'
         response = null
       }
     } catch (_) {
@@ -13552,9 +13495,9 @@ const dashVerifyWithARMS = async () => {
     if (!response) {
       await new Promise(r => setTimeout(r, 2000))
       try {
-        ;({ response, data } = await doVerify())
+        ;({ response, data } = await doSearch())
         if (!response.ok) {
-          dashArmsError.value = data.message || firstFailMessage || 'ARMS verification failed.'
+          dashArmsError.value = data.message || firstFailMessage || 'ARMS search failed.'
           return
         }
       } catch (__) {
@@ -13563,24 +13506,31 @@ const dashVerifyWithARMS = async () => {
       }
     }
 
-    // Success — update local state and currentUser
-    dashArmsResult.value    = data.armsStudent
-    dashArmsPassword.value  = ''
-    dashArmsShowInput.value = false
+    // Store full search result for display
+    dashArmsSearchData.value = data
 
-    // Stamp the currentUser ref and localStorage so the semester/year badges update immediately
-    currentUser.value = {
-      ...currentUser.value,
-      school_year: data.updated.school_year,
-      semester:    data.updated.semester,
-      ...(data.updated.year_level ? {
-        year_level: data.updated.year_level,
-        yearLevel:  data.updated.year_level,
-      } : {}),
+    if (data.isEnrolled && data.updated) {
+      // Stamp currentUser ref and localStorage so semester/year badges update immediately
+      dashArmsResult.value = {
+        studentName: data.armsRecord?.studentName || '',
+        semester:    data.updated.semester,
+        schoolYear:  data.updated.school_year,
+      }
+      currentUser.value = {
+        ...currentUser.value,
+        school_year: data.updated.school_year,
+        semester:    data.updated.semester,
+        ...(data.updated.year_level ? {
+          year_level: data.updated.year_level,
+          yearLevel:  data.updated.year_level,
+        } : {}),
+      }
+      localStorage.setItem('currentUser', JSON.stringify(currentUser.value))
+      fetchStats(true)   // refresh statistics counter
+      showNotification('Enrollment confirmed via JRMSU ARMS!', 'success')
+    } else if (!data.isEnrolled && !data.found) {
+      dashArmsError.value = data.message || 'No enrollment record found for the current school year.'
     }
-    localStorage.setItem('currentUser', JSON.stringify(currentUser.value))
-
-    showNotification('Enrollment validated via JRMSU ARMS!', 'success')
   } catch (_) {
     dashArmsError.value = 'Could not reach JRMSU ARMS portal. Please try again later.'
   } finally {

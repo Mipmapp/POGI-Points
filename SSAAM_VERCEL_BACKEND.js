@@ -4122,6 +4122,162 @@ app.post('/apis/students/self-arms-validate', studentAuthWithToken, async (req, 
     }
 });
 
+// POST /apis/students/self-arms-search-validate
+// No password required — searches JRMSU ARMS enrollment by student ID + current app school year/semester.
+// student_id comes from the JWT; school_year + semester come from app settings.
+// If enrolled: stamps the student DB record and returns full record data.
+// If not enrolled / not found: returns data without stamping.
+const ARMS_SEARCH_URL = 'https://jrmsu-arms.online/api/version-2/services/student/enrollment/search';
+app.post('/apis/students/self-arms-search-validate', studentAuthWithToken, async (req, res) => {
+    try {
+        const student_id = req.student.student_id;
+        const settings   = await getSettings(req.college);
+        const schoolYear = settings.schoolYear || '';
+        // Convert SSAAM semester format ("1st Sem" / "2nd Sem") to raw ARMS format ("1st" / "2nd")
+        const rawSemSSAAM = String(settings.semester || '').trim();
+        const semesterRaw = rawSemSSAAM.startsWith('2') ? '2nd' : '1st';
+
+        const armsApiKey    = process.env.ARMS_API_KEY;
+        const armsApiSecret = process.env.ARMS_API_SECRET;
+        if (!armsApiKey || !armsApiSecret) {
+            return res.status(503).json({ message: 'ARMS search is not configured on this server. Please contact your administrator.' });
+        }
+
+        // Step 1: Request ARMS bearer token
+        let tokenRes, tokenData;
+        try {
+            tokenRes  = await fetch(ARMS_TOKEN_URL, {
+                method:  'POST',
+                headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
+            });
+            tokenData = await tokenRes.json();
+        } catch (e) {
+            return res.status(503).json({ message: 'Could not reach JRMSU ARMS portal. Please try again later.' });
+        }
+        if (!tokenRes.ok) return res.status(503).json({ message: 'ARMS service error. Please try again later.' });
+
+        const secretKey = tokenData.Secret_Key ?? tokenData.SecretKey ?? tokenData.secretKey ?? null;
+        const jwToken   = tokenData.JWToken    ?? tokenData.Token     ?? tokenData.jwToken   ?? null;
+        if (!secretKey || !jwToken) return res.status(503).json({ message: 'ARMS token response was invalid. Please try again.' });
+
+        // Step 2: Search enrollment by Student_ID + Semester + School_Year
+        let searchRes, searchData;
+        try {
+            searchRes  = await fetch(ARMS_SEARCH_URL, {
+                method:  'POST',
+                headers: {
+                    ...ARMS_BASE_HEADERS,
+                    'Secret-Key':    secretKey,
+                    'Authorization': `Bearer ${jwToken}`,
+                    'Content-Type':  'application/json',
+                },
+                body: JSON.stringify({ Student_ID: student_id, Semester: semesterRaw, School_Year: schoolYear }),
+            });
+            searchData = await searchRes.json();
+        } catch (e) {
+            return res.status(503).json({ message: 'Could not reach JRMSU ARMS portal. Please try again later.' });
+        }
+        if (!searchRes.ok) return res.status(503).json({ message: 'ARMS search service error. Please try again later.' });
+
+        // Record is an array in the search response
+        const records = Array.isArray(searchData.Record)
+            ? searchData.Record
+            : (searchData.Record ? [searchData.Record] : []);
+
+        if (!records.length) {
+            return res.json({
+                found:      false,
+                isEnrolled: false,
+                schoolYear,
+                semester:   settings.semester,
+                message:    `No enrollment record found for ${student_id} in ${schoolYear} — ${settings.semester}.`,
+                armsRecord: null,
+            });
+        }
+
+        const record    = records[0];
+        const rawStatus = record.Enrollment_Status ?? record.enrollment_status ?? null;
+        const statusStr = rawStatus ? String(rawStatus).toLowerCase().trim() : '';
+        const isEnrolled = statusStr.includes('enroll') || statusStr === 'active';
+
+        const armsRecord = {
+            studentId:       record.Student_ID       ?? student_id,
+            studentName:     record.Student_Name     ?? '',
+            college:         record.College          ?? '',
+            program:         record.Program_Enrolled ?? record.Program ?? '',
+            major:           record.Major            ?? '',
+            yearLevel:       String(record.Year_Level ?? ''),
+            semester:        record.Semester         ?? semesterRaw,
+            schoolYear:      record.School_Year      ?? schoolYear,
+            lectureUnits:    record.Lecture_Units    ?? 0,
+            labUnits:        record.Laboratory_Units ?? 0,
+            admissionStatus: record.Admission_Status ?? '',
+            enrollmentStatus: rawStatus ?? '',
+            sex:             record.Sex              ?? '',
+        };
+
+        if (isEnrolled) {
+            // Normalize semester and year level exactly like self-arms-validate
+            const normSemRaw  = String(armsRecord.semester).trim();
+            const armsSemester = normSemRaw.startsWith('2') ? '2nd Sem' : '1st Sem';
+
+            const ARMS_YEAR_LEVEL_MAP = {
+                '1':'1st Year','1ST':'1st Year','1ST YR':'1st Year','1ST YEAR':'1st Year','FIRST':'1st Year','FIRST YEAR':'1st Year','FIRST YR':'1st Year',
+                '2':'2nd Year','2ND':'2nd Year','2ND YR':'2nd Year','2ND YEAR':'2nd Year','SECOND':'2nd Year','SECOND YEAR':'2nd Year','SECOND YR':'2nd Year',
+                '3':'3rd Year','3RD':'3rd Year','3RD YR':'3rd Year','3RD YEAR':'3rd Year','THIRD':'3rd Year','THIRD YEAR':'3rd Year','THIRD YR':'3rd Year',
+                '4':'4th Year','4TH':'4th Year','4TH YR':'4th Year','4TH YEAR':'4th Year','FOURTH':'4th Year','FOURTH YEAR':'4th Year','FOURTH YR':'4th Year',
+                '5':'5th Year','5TH':'5th Year','5TH YR':'5th Year','5TH YEAR':'5th Year','FIFTH':'5th Year','FIFTH YEAR':'5th Year','FIFTH YR':'5th Year',
+            };
+            const rawYL = armsRecord.yearLevel.trim().toUpperCase();
+            let armsYearLevel = ARMS_YEAR_LEVEL_MAP[rawYL] || null;
+            if (!armsYearLevel && rawYL) {
+                const YEAR_CANONICAL = ['1st Year','2nd Year','3rd Year','4th Year','5th Year'];
+                const m = rawYL.match(/\b([1-5])\b/);
+                if (m) armsYearLevel = YEAR_CANONICAL[parseInt(m[1], 10) - 1] || null;
+            }
+
+            const StudentModel  = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+            const updateFields  = { school_year: armsRecord.schoolYear, semester: armsSemester, revalidated_at: new Date() };
+            if (armsYearLevel) updateFields.year_level = armsYearLevel;
+            const updated = await StudentModel.findOneAndUpdate(
+                { student_id },
+                updateFields,
+                { new: true, runValidators: true, validateModifiedOnly: true }
+            );
+
+            if (updated) {
+                logAudit(req.college, null, 'STUDENT_ARMS_VALIDATED', 'Student', student_id,
+                    updated.full_name || updated.last_name,
+                    { semester: armsSemester, school_year: armsRecord.schoolYear }).catch(() => {});
+            }
+
+            return res.json({
+                found:      true,
+                isEnrolled: true,
+                armsRecord,
+                updated: updated ? {
+                    school_year: updated.school_year,
+                    semester:    updated.semester,
+                    year_level:  updated.year_level,
+                } : null,
+                message: 'Enrollment confirmed via JRMSU ARMS.',
+            });
+        }
+
+        // Not enrolled — return data without stamping
+        return res.json({
+            found:      true,
+            isEnrolled: false,
+            armsRecord,
+            message:    `Enrollment status: "${rawStatus}". Your record was not updated.`,
+        });
+
+    } catch (err) {
+        console.error('ARMS search-validate error:', err);
+        return res.status(500).json({ message: 'An error occurred during ARMS search. Please try again.' });
+    }
+});
+
 app.post('/apis/students/send-verification', studentAuth, antiBotProtection, async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
