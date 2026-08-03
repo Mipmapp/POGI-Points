@@ -4222,7 +4222,10 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
             role: "student",
             status: "pending",
             rfid_code: null,
-            rfid_status: "unverified"
+            rfid_status: "unverified",
+            // Persist ARMS-verified enrollment data so it is visible in the pending list
+            school_year: data.school_year || null,
+            semester:    data.semester    || null,
         };
 
         await VerificationCode.create({
