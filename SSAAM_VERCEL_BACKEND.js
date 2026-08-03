@@ -2604,20 +2604,22 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
             const email = profile.emails?.[0]?.value?.toLowerCase().trim();
             if (!email) return done(null, false, { message: 'Google did not provide an email address.' });
 
-            // Search all college collections for a student with this email
-            const collegeModels = [
-                { model: CCS_Student,  college: 'CCS'   },
-                { model: COE_Student,  college: 'COE'   },
-                { model: SOM_Student,  college: 'SOM'   },
-                { model: CNAHS_Student, college: 'CNAHS' },
-            ];
-
-            let foundStudent = null, foundCollege = null;
-            for (const { model, college } of collegeModels) {
-                const s = await model.findOne({ email: { $regex: new RegExp(`^${email}$`, 'i') } })
-                    .select('-contributions -semester -school_year');
-                if (s) { foundStudent = s; foundCollege = college; break; }
-            }
+            // Search all college collections in parallel for a student with this email
+            const emailRegex = new RegExp(`^${email}$`, 'i');
+            const [ccsSt, coeSt, somSt, cnahsSt] = await Promise.all([
+                CCS_Student.findOne({ email: emailRegex }).select('-contributions -semester -school_year'),
+                COE_Student.findOne({ email: emailRegex }).select('-contributions -semester -school_year'),
+                SOM_Student.findOne({ email: emailRegex }).select('-contributions -semester -school_year'),
+                CNAHS_Student.findOne({ email: emailRegex }).select('-contributions -semester -school_year'),
+            ]);
+            const hit = [
+                { student: ccsSt,   college: 'CCS'   },
+                { student: coeSt,   college: 'COE'   },
+                { student: somSt,   college: 'SOM'   },
+                { student: cnahsSt, college: 'CNAHS' },
+            ].find(r => r.student);
+            const foundStudent = hit?.student ?? null;
+            const foundCollege = hit?.college ?? null;
 
             if (!foundStudent) {
                 return done(null, false, { message: 'No SSAAM account is linked to this Google email. Please register first.' });
