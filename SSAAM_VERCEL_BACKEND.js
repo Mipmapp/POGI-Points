@@ -9620,15 +9620,21 @@ app.get('/api/auth/callback/google', (req, res, next) => {
 // Step 3: frontend exchanges the short-lived code for the full auth payload
 app.post('/api/auth/google/exchange', async (req, res) => {
     const { code } = req.body;
+    console.log('[Google Exchange] body:', JSON.stringify(req.body), '| code received:', code ? code.substring(0, 8) + '…' : 'MISSING');
     if (!code) return res.status(400).json({ message: 'Missing code.' });
     try {
         // Ensure DB is connected (important for Vercel cold starts)
         if (mongoose.connection.readyState !== 1) {
+            console.warn('[Google Exchange] DB not connected, reconnecting…');
             await mongoose.connect(MONGO_URI, MONGO_OPTS);
         }
         const data = await GoogleExchangeCode.findOneAndDelete({ code });
-        if (!data || data.expires_at < new Date()) {
-            return res.status(400).json({ message: 'Invalid or expired login code. Please try again.' });
+        console.log('[Google Exchange] findOneAndDelete result:', data ? `found (college: ${data.college})` : 'NOT FOUND');
+        if (!data) {
+            return res.status(400).json({ message: 'Login code not found — it may have already been used or expired. Please try signing in again.' });
+        }
+        if (data.expires_at < new Date()) {
+            return res.status(400).json({ message: 'Login code expired. Please try signing in again.' });
         }
         return res.json({ token: data.token, student: data.student, college: data.college });
     } catch (err) {

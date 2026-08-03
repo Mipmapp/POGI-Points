@@ -844,7 +844,7 @@
 
 <script setup>
 import { ref, onMounted, computed, watch, nextTick } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import ProgrammerLoadingEffect from '../components/ProgrammerLoadingEffect.vue'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import jrmsuLogo from '../assets/ccs-logo.png'
@@ -859,6 +859,7 @@ import { useCollege } from '../composables/useCollege.js'
 const { isCCS, isCOE, isSOM, isCNAHS } = useCollege()
 
 const router = useRouter()
+const route = useRoute()
 const studentId = ref('')
 const password = ref('')
 const isLoading = ref(false)
@@ -1215,19 +1216,19 @@ onMounted(async () => {
   syncServerTime()
 
   // ── Google OAuth callback handling ──────────────────────────────────────────
-  const params = new URLSearchParams(window.location.search)
-
-  // If Google redirected back with an error, show it and clean the URL
-  const googleError = params.get('google_error')
+  // Read query params from Vue Router (reliable even after router init) and
+  // fall back to window.location.search for any edge-case timing difference.
+  const _rawSearch = new URLSearchParams(window.location.search)
+  const googleError = route.query.google_error || _rawSearch.get('google_error')
   if (googleError) {
-    errorMessage.value = googleError
+    errorMessage.value = String(googleError)
     showErrorNotification.value = true
     window.history.replaceState({}, '', window.location.pathname)
   }
 
   // If Google redirected back with a short-lived exchange code, trade it for
   // the full auth payload and log the student in automatically.
-  const gc = params.get('gc')
+  const gc = route.query.gc || _rawSearch.get('gc')
   if (gc) {
     window.history.replaceState({}, '', window.location.pathname)
     try {
@@ -1272,6 +1273,7 @@ onMounted(async () => {
       router.push('/dashboard')
       return
     } catch (err) {
+      console.error('[Google OAuth] exchange failed:', err)
       isLoading.value = false
       errorMessage.value = err.message || 'Google login failed. Please try again.'
       showErrorNotification.value = true
