@@ -3237,7 +3237,7 @@
             <div v-if="pendingDetailOpen" class="fixed inset-0 z-[70] flex items-end sm:items-stretch sm:justify-end" @click.self="closePendingDetail">
               <div class="absolute inset-0 bg-black/40" @click="closePendingDetail"></div>
               <transition name="pending-drawer-panel">
-                <div v-if="pendingDetailStudent" class="relative bg-white w-full sm:w-[420px] sm:h-full max-h-[92svh] sm:max-h-full rounded-t-2xl sm:rounded-none overflow-hidden flex flex-col shadow-2xl" @click.stop>
+                <div v-if="pendingDetailStudent" class="relative bg-white w-full sm:w-[420px] h-[92svh] sm:h-full rounded-t-2xl sm:rounded-none overflow-hidden flex flex-col shadow-2xl" @click.stop>
                   <!-- Drawer header -->
                   <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
                     <h3 class="text-base font-bold text-gray-900">Student Details</h3>
