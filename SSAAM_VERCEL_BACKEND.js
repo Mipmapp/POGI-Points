@@ -4278,6 +4278,120 @@ app.post('/apis/students/self-arms-search-validate', studentAuthWithToken, async
     }
 });
 
+// POST /apis/admin/bulk-arms-revalidate
+// Admin-only: re-checks every approved student in the college against JRMSU ARMS for the
+// current school year / semester. Enrolled students get their record stamped; unenrolled
+// ones are left unchanged. Returns a summary of results.
+app.post('/apis/admin/bulk-arms-revalidate', auth, requireCoAdminOrAbove, async (req, res) => {
+    try {
+        const settings    = await getSettings(req.college);
+        const schoolYear  = settings.schoolYear || '';
+        const rawSemSSAAM = String(settings.semester || '').trim();
+        const semesterRaw = rawSemSSAAM.startsWith('2') ? '2nd' : '1st';
+
+        const armsApiKey    = process.env.ARMS_API_KEY;
+        const armsApiSecret = process.env.ARMS_API_SECRET;
+        if (!armsApiKey || !armsApiSecret) {
+            return res.status(503).json({ message: 'ARMS search is not configured on this server.' });
+        }
+        if (!schoolYear) {
+            return res.status(400).json({ message: 'No school year configured in settings. Please set a school year before running bulk re-validation.' });
+        }
+
+        // Step 1: Get ARMS bearer token once for all requests
+        let tokenRes, tokenData;
+        try {
+            tokenRes  = await fetch(ARMS_TOKEN_URL, {
+                method:  'POST',
+                headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
+            });
+            tokenData = await tokenRes.json();
+        } catch (e) {
+            return res.status(503).json({ message: 'Could not reach JRMSU ARMS portal. Please try again later.' });
+        }
+        if (!tokenRes.ok) return res.status(503).json({ message: 'ARMS service error. Please try again later.' });
+
+        const secretKey = tokenData.Secret_Key ?? tokenData.SecretKey ?? tokenData.secretKey ?? null;
+        const jwToken   = tokenData.JWToken    ?? tokenData.Token     ?? tokenData.jwToken   ?? null;
+        if (!secretKey || !jwToken) return res.status(503).json({ message: 'ARMS token response was invalid.' });
+
+        // Step 2: Fetch all approved students for this college
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        const students = await StudentModel.find({ status: 'approved' })
+            .select('student_id full_name last_name year_level school_year semester')
+            .lean();
+
+        const YEAR_LEVEL_MAP = {
+            '1':'1st Year','1ST':'1st Year','1ST YR':'1st Year','1ST YEAR':'1st Year','FIRST':'1st Year','FIRST YEAR':'1st Year','FIRST YR':'1st Year',
+            '2':'2nd Year','2ND':'2nd Year','2ND YR':'2nd Year','2ND YEAR':'2nd Year','SECOND':'2nd Year','SECOND YEAR':'2nd Year','SECOND YR':'2nd Year',
+            '3':'3rd Year','3RD':'3rd Year','3RD YR':'3rd Year','3RD YEAR':'3rd Year','THIRD':'3rd Year','THIRD YEAR':'3rd Year','THIRD YR':'3rd Year',
+            '4':'4th Year','4TH':'4th Year','4TH YR':'4th Year','4TH YEAR':'4th Year','FOURTH':'4th Year','FOURTH YEAR':'4th Year','FOURTH YR':'4th Year',
+            '5':'5th Year','5TH':'5th Year','5TH YR':'5th Year','5TH YEAR':'5th Year','FIFTH':'5th Year','FIFTH YEAR':'5th Year','FIFTH YR':'5th Year',
+        };
+        const YEAR_CANONICAL = ['1st Year','2nd Year','3rd Year','4th Year','5th Year'];
+
+        const summary = { total: students.length, enrolled: 0, not_enrolled: 0, not_found: 0, errors: 0 };
+
+        // Step 3: Check each student in small concurrent batches
+        const BATCH = 5;
+        for (let i = 0; i < students.length; i += BATCH) {
+            const batch = students.slice(i, i + BATCH);
+            await Promise.allSettled(batch.map(async (s) => {
+                try {
+                    const searchRes  = await fetch(ARMS_SEARCH_URL, {
+                        method:  'POST',
+                        headers: { ...ARMS_BASE_HEADERS, 'Secret-Key': secretKey, 'Authorization': `Bearer ${jwToken}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ Student_ID: s.student_id, Semester: semesterRaw, School_Year: schoolYear }),
+                    });
+                    if (!searchRes.ok) { summary.errors++; return; }
+                    const searchData = await searchRes.json();
+                    const records = Array.isArray(searchData.Record) ? searchData.Record : (searchData.Record ? [searchData.Record] : []);
+
+                    if (!records.length) { summary.not_found++; return; }
+
+                    const record    = records[0];
+                    const rawStatus = record.Enrollment_Status ?? record.enrollment_status ?? null;
+                    const statusStr = rawStatus ? String(rawStatus).toLowerCase().trim() : '';
+                    const isEnrolled = statusStr.includes('enroll') || statusStr === 'active';
+
+                    if (!isEnrolled) { summary.not_enrolled++; return; }
+
+                    // Normalize semester
+                    const normSem  = String(record.Semester ?? semesterRaw).trim();
+                    const armsSem  = normSem.startsWith('2') ? '2nd Sem' : '1st Sem';
+
+                    // Normalize year level
+                    const rawYL = String(record.Year_Level ?? '').trim().toUpperCase();
+                    let armsYL  = YEAR_LEVEL_MAP[rawYL] || null;
+                    if (!armsYL && rawYL) {
+                        const m = rawYL.match(/\b([1-5])\b/);
+                        if (m) armsYL = YEAR_CANONICAL[parseInt(m[1], 10) - 1] || null;
+                    }
+
+                    const armsSchoolYear = record.School_Year ?? schoolYear;
+                    const updateFields = { school_year: armsSchoolYear, semester: armsSem, revalidated_at: new Date() };
+                    if (armsYL) updateFields.year_level = armsYL;
+
+                    await StudentModel.updateOne({ student_id: s.student_id }, updateFields);
+                    summary.enrolled++;
+                } catch (e) {
+                    summary.errors++;
+                }
+            }));
+        }
+
+        logAudit(req.college, req.master, 'ADMIN_BULK_ARMS_REVALIDATE', 'Student', 'bulk',
+            `Bulk ARMS re-validation by ${req.master?.username || 'admin'}`,
+            { school_year: schoolYear, semester: settings.semester, ...summary }).catch(() => {});
+
+        return res.json({ message: 'Bulk ARMS re-validation complete.', schoolYear, semester: settings.semester, summary });
+
+    } catch (err) {
+        console.error('[Bulk ARMS] error:', err);
+        return res.status(500).json({ message: 'An error occurred during bulk re-validation.' });
+    }
+});
+
 app.post('/apis/students/send-verification', studentAuth, antiBotProtection, async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);

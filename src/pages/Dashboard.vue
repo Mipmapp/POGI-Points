@@ -4686,6 +4686,19 @@
               </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap">
+              <!-- Bulk ARMS Re-validate -->
+              <button @click="handleBulkArmsRevalidate" :disabled="bulkArmsLoading || statsLoading"
+                :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0 border',
+                  isCOE ? 'bg-white text-orange-600 border-orange-200 hover:bg-orange-50 shadow-orange-100' :
+                  isSOM ? 'bg-white text-green-700 border-green-200 hover:bg-green-50 shadow-green-100' :
+                  isCNAHS ? 'bg-white text-green-800 border-green-200 hover:bg-green-50 shadow-green-100' :
+                  'bg-white text-blue-600 border-blue-200 hover:bg-blue-50 shadow-blue-100']"
+                title="Re-check all students against JRMSU ARMS for the current school year/semester">
+                <svg v-if="bulkArmsLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"/></svg>
+                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ bulkArmsLoading ? 'Checking ARMS…' : 'Bulk ARMS Re-validate' }}
+              </button>
+              <!-- Refresh stats -->
               <button @click="handleStatsRefresh" :disabled="statsLoading"
                 :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0',
                   isCOE ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-200' :
@@ -13507,6 +13520,41 @@ const handleStatsRefresh = async () => {
     showNotification('Statistics refreshed successfully!', 'success')
   } catch (error) {
     console.error('Stats refresh error:', error)
+  }
+}
+
+// ── Bulk ARMS Re-validation (admin) ──────────────────────────────────────────
+const bulkArmsLoading  = ref(false)
+const bulkArmsResult   = ref(null)   // { enrolled, not_enrolled, not_found, errors, total, schoolYear, semester }
+
+const handleBulkArmsRevalidate = async () => {
+  if (bulkArmsLoading.value) return
+  bulkArmsResult.value  = null
+  bulkArmsLoading.value = true
+  try {
+    const res = await fetch(buildAPIUrl('/apis/admin/bulk-arms-revalidate'), {
+      method:  'POST',
+      headers: getFetchHeaders(),
+    })
+    const data = await res.json()
+    if (!res.ok) {
+      showNotification(data.message || 'Bulk re-validation failed.', 'error')
+      return
+    }
+    bulkArmsResult.value = data.summary
+      ? { ...data.summary, schoolYear: data.schoolYear, semester: data.semester }
+      : null
+    const s = data.summary || {}
+    showNotification(
+      `Bulk ARMS done — ${s.enrolled ?? 0} enrolled, ${s.not_enrolled ?? 0} not enrolled, ${s.not_found ?? 0} not found${s.errors ? `, ${s.errors} errors` : ''}.`,
+      'success'
+    )
+    await fetchStats(true)
+  } catch (err) {
+    console.error('[BulkARMS]', err)
+    showNotification('Could not reach the server. Please try again.', 'error')
+  } finally {
+    bulkArmsLoading.value = false
   }
 }
 
