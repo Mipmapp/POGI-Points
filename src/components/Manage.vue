@@ -49,15 +49,11 @@
             Roles
           </button>
         </div>
-      </div>
 
-      <!-- USERS TAB -->
-      <div v-if="activeTab === 'users'" class="space-y-6">
-
-        <!-- Unvalidated students banner -->
+        <!-- Unvalidated students banner (moved here from Users tab body) -->
         <div
-          v-if="appSettings?.schoolYear && appSettings?.semester && unvalidatedCount > 0 && userValidationFilter !== 'not_validated'"
-          :class="['flex items-center justify-between gap-3 px-4 py-3 rounded-xl border text-sm', isCOE ? 'bg-orange-50 border-orange-200' : isSOM ? 'bg-yellow-50 border-yellow-200' : isCNAHS ? 'bg-yellow-50 border-yellow-200' : 'bg-orange-50 border-orange-200']"
+          v-if="appSettings?.schoolYear && appSettings?.semester && unvalidatedCount > 0 && userValidationFilter !== 'not_validated' && !dismissedUnvalidatedBanner"
+          :class="['flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border text-sm', isCOE ? 'bg-orange-50 border-orange-200' : isSOM ? 'bg-yellow-50 border-yellow-200' : isCNAHS ? 'bg-yellow-50 border-yellow-200' : 'bg-orange-50 border-orange-200']"
         >
           <div class="flex items-center gap-2">
             <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
@@ -66,11 +62,25 @@
               <strong>{{ appSettings.semester }} {{ appSettings.schoolYear }}</strong>
             </span>
           </div>
-          <button
-            @click="userValidationFilter = 'not_validated'; currentPage = 1"
-            class="flex-shrink-0 px-3 py-1 bg-orange-600 text-white rounded-lg text-xs font-semibold hover:bg-orange-700 transition active:scale-95"
-          >Show them</button>
+          <div class="flex items-center gap-2 flex-shrink-0">
+            <button
+              @click="userValidationFilter = 'not_validated'; currentPage = 1"
+              class="px-3 py-1 bg-orange-600 text-white rounded-lg text-xs font-semibold hover:bg-orange-700 transition active:scale-95"
+            >Show them</button>
+            <button
+              @click="dismissedUnvalidatedBanner = true"
+              class="w-6 h-6 flex items-center justify-center rounded-full text-orange-400 hover:text-orange-700 hover:bg-orange-100 transition active:scale-95"
+              title="Dismiss"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
         </div>
+      </div>
+
+      <!-- USERS TAB -->
+      <div v-if="activeTab === 'users'" class="space-y-6">
+
         <div
           v-if="userValidationFilter === 'not_validated'"
           class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-sm"
@@ -1287,6 +1297,7 @@ export default {
       userCollegeFilter: null,
       userValidationFilter: null,
       userAcadYearFilter: null,
+      dismissedUnvalidatedBanner: false,
       showEditUserModal: false,
       editingUser: null,
       isSavingUser: false,
@@ -1710,6 +1721,7 @@ export default {
     },
     async refreshData() {
       this.isRefreshing = true
+      this.dismissedUnvalidatedBanner = false
       try {
         await this.fetchAllUsers()
       } finally {
