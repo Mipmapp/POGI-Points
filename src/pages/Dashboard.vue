@@ -3073,133 +3073,316 @@
 
         <!-- Pending Approvals Page -->
         <div v-if="currentPage === 'pending' && (isAdminLike)" class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          <!-- Flat section header -->
-          <div class="px-5 sm:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-              <div :class="['w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
-                <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <!-- Header row: title + filters + refresh -->
+          <div class="px-4 sm:px-6 py-4 border-b border-gray-100">
+            <div class="flex items-center justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div :class="['w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0', isCOE ? 'bg-orange-50' : isSOM ? 'bg-green-50' : isCNAHS ? 'bg-green-50' : 'bg-blue-50']">
+                  <svg :class="['w-5 h-5', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : isCNAHS ? 'text-green-600' : 'text-blue-600']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div class="min-w-0">
+                  <h2 class="text-base font-bold text-gray-900">Pending Approvals</h2>
+                  <p class="text-xs text-gray-500 mt-0.5 hidden sm:block">Review and approve or reject student registrations</p>
+                </div>
               </div>
-              <div>
-                <h2 class="text-base font-bold text-gray-900">Pending Approvals</h2>
-                <p class="text-xs text-gray-500 mt-0.5">Review and approve or reject student registrations</p>
-              </div>
+              <button @click="refreshPendingSection" :disabled="pendingLoading" :class="['flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition disabled:opacity-60 flex-shrink-0', isCOE ? 'bg-orange-600 hover:bg-orange-700' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700']">
+                <svg :class="['w-3.5 h-3.5', pendingLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                <span class="hidden sm:inline">Refresh</span>
+              </button>
             </div>
-            <button @click="refreshPendingSection" :disabled="pendingLoading" :class="['flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold text-white transition disabled:opacity-60', isCOE ? 'bg-orange-600 hover:bg-orange-700' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700']">
-              <svg :class="['w-4 h-4', pendingLoading ? 'animate-spin' : '']" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-              Refresh
-            </button>
+            <!-- Year / Semester filter chips -->
+            <div class="flex items-center gap-2 mt-3 flex-wrap">
+              <div class="relative">
+                <select v-model="pendingAcadYear" @change="pendingCurrentPage = 1" :class="['appearance-none text-xs bg-gray-100 border-0 rounded-lg pl-2.5 pr-6 py-1.5 font-medium focus:outline-none focus:ring-2 cursor-pointer', isCOE ? 'text-orange-800 focus:ring-orange-400' : isSOM ? 'text-green-800 focus:ring-green-400' : isCNAHS ? 'text-green-800 focus:ring-green-400' : 'text-blue-800 focus:ring-blue-400']">
+                  <option value="">All Years</option>
+                  <option v-for="yr in schoolYearOptions" :key="yr" :value="yr">{{ yr }}</option>
+                </select>
+                <svg class="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
+              <div class="relative">
+                <select v-model="pendingSemFilter" @change="pendingCurrentPage = 1" :class="['appearance-none text-xs bg-gray-100 border-0 rounded-lg pl-2.5 pr-6 py-1.5 font-medium focus:outline-none focus:ring-2 cursor-pointer', isCOE ? 'text-orange-800 focus:ring-orange-400' : isSOM ? 'text-green-800 focus:ring-green-400' : isCNAHS ? 'text-green-800 focus:ring-green-400' : 'text-blue-800 focus:ring-blue-400']">
+                  <option value="">All Semesters</option>
+                  <option value="1st Sem">1st Sem</option>
+                  <option value="2nd Sem">2nd Sem</option>
+                </select>
+                <svg class="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-500 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </div>
+              <span v-if="pendingAcadYear || pendingSemFilter" class="text-xs text-gray-400">{{ filteredPendingStudents.length }} result{{ filteredPendingStudents.length === 1 ? '' : 's' }}</span>
+            </div>
           </div>
-          <div class="p-3 sm:p-4 md:p-6">
 
-          <!-- Search Input for Pending Students -->
-          <div class="mb-4">
+          <div class="p-3 sm:p-4 md:p-5">
+          <!-- Search -->
+          <div class="mb-3">
             <div class="relative">
-              <svg class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-              <input v-model="pendingSearchQuery" @input="filterPendingStudents" type="text" placeholder="Search by name, email, student ID, or RFID..." :class="['w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 outline-none', isCOE ? 'focus:ring-orange-600 focus:border-transparent' : isSOM ? 'focus:ring-green-600 focus:border-transparent' : 'focus:ring-blue-600 focus:border-transparent']" />
+              <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input v-model="pendingSearchQuery" @input="filterPendingStudents" type="text" placeholder="Search by name, email, ID, or RFID..." :class="['w-full pl-9 pr-4 py-2.5 text-sm border border-gray-200 rounded-xl focus:ring-2 outline-none transition', isCOE ? 'focus:ring-orange-400 focus:border-orange-300' : isSOM ? 'focus:ring-green-400 focus:border-green-300' : isCNAHS ? 'focus:ring-green-400 focus:border-green-300' : 'focus:ring-blue-400 focus:border-blue-300']" />
             </div>
-            <p class="text-xs text-gray-500 mt-1">Search across name, email, student ID, and RFID code</p>
           </div>
 
+          <!-- Loading -->
           <div v-if="pendingLoading" class="flex items-center justify-center py-12">
-            <svg :class="['animate-spin h-10 w-10', isCOE ? 'text-orange-600' : isSOM ? 'text-green-600' : 'text-blue-600']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            <svg :class="['animate-spin h-8 w-8', isCOE ? 'text-orange-500' : isSOM ? 'text-green-500' : 'text-blue-500']" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
             </svg>
           </div>
 
-          <div v-else-if="filteredPendingStudents.length === 0 && pendingSearchQuery" class="text-center py-12">
-            <div class="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-              <svg class="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          <!-- No search results -->
+          <div v-else-if="filteredPendingStudents.length === 0 && pendingSearchQuery" class="text-center py-10">
+            <div class="w-14 h-14 mx-auto mb-3 bg-gray-100 rounded-full flex items-center justify-center">
+              <svg class="w-7 h-7 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
             </div>
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">No results found</h3>
-            <p class="text-gray-500">No pending students match "{{ pendingSearchQuery }}"</p>
+            <p class="text-sm font-medium text-gray-600">No results for "{{ pendingSearchQuery }}"</p>
           </div>
 
-          <div v-else-if="pendingStudents.length === 0" class="text-center py-12">
-            <div class="w-20 h-20 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
-              <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          <!-- Empty state -->
+          <div v-else-if="pendingStudents.length === 0" class="text-center py-10">
+            <div class="w-14 h-14 mx-auto mb-3 bg-green-50 rounded-full flex items-center justify-center">
+              <svg class="w-7 h-7 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
             </div>
-            <h3 class="text-lg font-semibold text-gray-700 mb-2">All caught up!</h3>
-            <p class="text-gray-500">No pending student registrations to review.</p>
+            <p class="text-sm font-semibold text-gray-700">All caught up!</p>
+            <p class="text-xs text-gray-400 mt-1">No pending registrations to review.</p>
           </div>
 
-          <div v-else class="space-y-4">
-            <div class="flex items-center justify-between text-sm text-gray-500 mb-2">
-              <span>Showing {{ paginatedPendingStudents.length }} of {{ filteredPendingStudents.length }} pending student{{ filteredPendingStudents.length === 1 ? '' : 's' }}</span>
+          <!-- Compact list -->
+          <div v-else>
+            <p class="text-xs text-gray-400 mb-2 px-1">Showing {{ paginatedPendingStudents.length }} of {{ filteredPendingStudents.length }} pending student{{ filteredPendingStudents.length === 1 ? '' : 's' }}</p>
+
+            <!-- Desktop column headers -->
+            <div class="hidden md:grid md:grid-cols-[2.5rem_1fr_6rem_6rem_7rem_auto] gap-3 items-center px-3 pb-2 text-[11px] font-semibold text-gray-400 uppercase tracking-wider border-b border-gray-100">
+              <div></div>
+              <div>Student</div>
+              <div>Program</div>
+              <div>Year</div>
+              <div>Registered</div>
+              <div class="text-right pr-1">Actions</div>
             </div>
-            <div v-for="student in paginatedPendingStudents" :key="student.student_id" :class="['border rounded-xl p-4 md:p-6 hover:shadow-md transition-shadow', isCOE ? 'border-orange-200' : isSOM ? 'border-green-200' : isCNAHS ? 'border-green-200' : 'border-gray-200']">
-              <div class="flex flex-col md:flex-row gap-4">
-                <div class="flex-shrink-0">
-                  <div :class="['w-20 h-20 rounded-full flex items-center justify-center overflow-hidden', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-600' : isSOM ? 'bg-gradient-to-br from-green-400 to-yellow-600' : isCNAHS ? 'bg-gradient-to-br from-green-600 to-green-800' : 'bg-gradient-to-br from-ssaam-dark to-ssaam-light']" :style="{ background: profileGradient }">
-                    <img v-if="student.photo" :src="student.photo" alt="Student Photo" class="w-full h-full object-cover rounded-full" />
-                    <img v-else :src="'/user.svg'" alt="No Photo" class="w-10 h-10 brightness-0 invert" />
-                  </div>
+
+            <!-- Rows -->
+            <div class="divide-y divide-gray-50">
+              <div v-for="student in paginatedPendingStudents" :key="student.student_id"
+                class="group flex md:grid md:grid-cols-[2.5rem_1fr_6rem_6rem_7rem_auto] gap-3 items-center px-2 md:px-3 py-3 hover:bg-gray-50/80 rounded-xl transition-colors cursor-pointer"
+                @click="openPendingDetail(student)">
+
+                <!-- Avatar -->
+                <div :class="['w-10 h-10 rounded-full flex items-center justify-center overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-400 to-emerald-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-blue-500 to-indigo-600']">
+                  <img v-if="student.photo" :src="student.photo" alt="" class="w-full h-full object-cover rounded-full" />
+                  <svg v-else class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
                 </div>
-                <div class="flex-1">
-                  <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-3">
-                    <div>
-                      <h3 :class="['text-lg font-semibold', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">{{ student.full_name }}{{ student.last_name ? ' ' + student.last_name : '' }}{{ student.suffix ? ' ' + student.suffix : '' }}</h3>
-                      <p class="text-sm text-gray-500">{{ student.student_id }}</p>
-                    </div>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 w-fit">
-                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" /></svg>
-                      Pending Review
-                    </span>
+
+                <!-- Name + ID (+ mobile sub-details) -->
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="text-sm font-semibold text-gray-900 truncate">{{ student.full_name }}{{ student.last_name ? ' ' + student.last_name : '' }}{{ student.suffix ? ' ' + student.suffix : '' }}</p>
+                    <span v-if="student.school_year && student.school_year !== appSettings.schoolYear"
+                      class="hidden sm:inline-flex flex-shrink-0 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 whitespace-nowrap">{{ student.school_year }}</span>
                   </div>
-                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm mb-4">
-                    <div>
-                      <p class="text-gray-500">Program</p>
-                      <p class="font-medium text-gray-800">{{ student.program }}</p>
-                    </div>
-                    <div>
-                      <p class="text-gray-500">Year Level</p>
-                      <p class="font-medium text-gray-800">{{ student.year_level }}</p>
-                    </div>
-                    <div>
-                      <p class="text-gray-500">Email</p>
-                      <p class="font-medium text-gray-800 truncate">{{ student.email || 'N/A' }}</p>
-                    </div>
-                    <div>
-                      <p class="text-gray-500">Registered</p>
-                      <p class="font-medium text-gray-800">{{ formatDate(student.created_date) }}</p>
-                    </div>
-                  </div>
-                  <div class="flex flex-wrap gap-2">
-                    <button @click="approveStudent(student)" :disabled="approvingStudent === student.student_id" :class="['bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-200 font-medium text-sm flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed']">
-                      <svg v-if="approvingStudent === student.student_id" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                      <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                      {{ approvingStudent === student.student_id ? 'Approving...' : 'Approve' }}
-                    </button>
-                    <button @click="openRejectModal(student)" :class="['bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-200 font-medium text-sm flex items-center gap-2']">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                      Reject
-                    </button>
-                  </div>
+                  <p class="text-xs text-gray-400 truncate mt-0.5">
+                    {{ student.student_id }}<span class="md:hidden"> · {{ student.program }} · {{ student.year_level }}</span>
+                  </p>
+                </div>
+
+                <!-- Program (desktop only) -->
+                <div class="hidden md:block text-sm text-gray-700 font-medium truncate">{{ student.program || '—' }}</div>
+
+                <!-- Year Level (desktop only) -->
+                <div class="hidden md:block text-sm text-gray-500 truncate">{{ student.year_level || '—' }}</div>
+
+                <!-- Registered (desktop only) -->
+                <div class="hidden md:block text-xs text-gray-400">{{ formatDate(student.created_date) }}</div>
+
+                <!-- Action buttons -->
+                <div class="flex items-center gap-1.5 flex-shrink-0" @click.stop>
+                  <!-- View -->
+                  <button @click="openPendingDetail(student)" :class="['flex items-center gap-1 px-2 py-1.5 rounded-lg border text-xs font-semibold transition', isCOE ? 'border-orange-200 text-orange-700 hover:bg-orange-50' : isSOM ? 'border-green-200 text-green-700 hover:bg-green-50' : isCNAHS ? 'border-green-200 text-green-700 hover:bg-green-50' : 'border-blue-200 text-blue-700 hover:bg-blue-50']" title="View full details">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                    <span class="hidden sm:inline">View</span>
+                  </button>
+                  <!-- Quick Approve (desktop only) -->
+                  <button @click="approveStudent(student)" :disabled="approvingStudent === student.student_id"
+                    class="hidden md:flex items-center gap-1 px-2 py-1.5 rounded-lg border border-green-200 text-green-700 hover:bg-green-50 transition text-xs font-semibold disabled:opacity-50" title="Approve">
+                    <svg v-if="approvingStudent === student.student_id" class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                    <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    <span>OK</span>
+                  </button>
+                  <!-- Quick Reject (desktop only) -->
+                  <button @click="openRejectModal(student)"
+                    class="hidden md:flex items-center gap-1 px-2 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50 transition text-xs font-semibold" title="Reject">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                  </button>
                 </div>
               </div>
             </div>
-            
-            <!-- Pagination Controls for Pending Students -->
-            <div v-if="pendingTotalPages > 1" class="flex items-center justify-center gap-2 mt-6 pt-4 border-t border-gray-200">
-              <button @click="pendingCurrentPage = 1" :disabled="pendingCurrentPage === 1" class="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
-                First
+
+            <!-- Pagination -->
+            <div v-if="pendingTotalPages > 1" class="flex items-center justify-center gap-1.5 mt-4 pt-4 border-t border-gray-100">
+              <button @click="pendingCurrentPage = 1" :disabled="pendingCurrentPage === 1" class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">First</button>
+              <button @click="pendingCurrentPage--" :disabled="pendingCurrentPage === 1" class="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
               </button>
-              <button @click="pendingCurrentPage--" :disabled="pendingCurrentPage === 1" class="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+              <span class="px-3 py-1.5 text-xs font-medium text-gray-600">{{ pendingCurrentPage }} / {{ pendingTotalPages }}</span>
+              <button @click="pendingCurrentPage++" :disabled="pendingCurrentPage === pendingTotalPages" class="p-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
               </button>
-              <span class="px-4 py-2 text-sm font-medium text-gray-700">
-                Page {{ pendingCurrentPage }} of {{ pendingTotalPages }}
-              </span>
-              <button @click="pendingCurrentPage++" :disabled="pendingCurrentPage === pendingTotalPages" class="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-              </button>
-              <button @click="pendingCurrentPage = pendingTotalPages" :disabled="pendingCurrentPage === pendingTotalPages" class="px-3 py-2 rounded-lg border border-gray-300 text-sm font-medium hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition">
-                Last
-              </button>
+              <button @click="pendingCurrentPage = pendingTotalPages" :disabled="pendingCurrentPage === pendingTotalPages" class="px-2.5 py-1.5 rounded-lg border border-gray-200 text-xs font-medium hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition">Last</button>
             </div>
           </div>
           </div>
         </div>
+
+        <!-- Student Detail Drawer -->
+        <Teleport to="body">
+          <transition name="pending-drawer-backdrop">
+            <div v-if="pendingDetailOpen" class="fixed inset-0 z-[70] flex items-end sm:items-stretch sm:justify-end" @click.self="closePendingDetail">
+              <div class="absolute inset-0 bg-black/40" @click="closePendingDetail"></div>
+              <transition name="pending-drawer-panel">
+                <div v-if="pendingDetailStudent" class="relative bg-white w-full sm:w-[420px] sm:h-full max-h-[92svh] sm:max-h-full rounded-t-2xl sm:rounded-none overflow-hidden flex flex-col shadow-2xl" @click.stop>
+                  <!-- Drawer header -->
+                  <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
+                    <h3 class="text-base font-bold text-gray-900">Student Details</h3>
+                    <button @click="closePendingDetail" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition text-gray-500">
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                  </div>
+
+                  <!-- Scrollable content -->
+                  <div class="flex-1 overflow-y-auto p-5">
+                    <!-- Profile -->
+                    <div class="flex items-center gap-4 mb-5">
+                      <div :class="['w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-400 to-emerald-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-blue-500 to-indigo-600']">
+                        <img v-if="pendingDetailStudent.photo" :src="pendingDetailStudent.photo" alt="" class="w-full h-full object-cover" />
+                        <svg v-else class="w-8 h-8 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+                      </div>
+                      <div class="min-w-0">
+                        <h4 :class="['text-base font-bold leading-tight', isCOE ? 'text-orange-900' : isSOM ? 'text-green-900' : isCNAHS ? 'text-green-900' : 'text-blue-900']">
+                          {{ pendingDetailStudent.full_name }}{{ pendingDetailStudent.last_name ? ' ' + pendingDetailStudent.last_name : '' }}{{ pendingDetailStudent.suffix ? ' ' + pendingDetailStudent.suffix : '' }}
+                        </h4>
+                        <p class="text-sm text-gray-500 mt-0.5">{{ pendingDetailStudent.student_id }}</p>
+                        <span class="inline-flex items-center gap-1 mt-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                          <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                          Pending Review
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Detail tiles -->
+                    <div class="grid grid-cols-2 gap-2.5 mb-5">
+                      <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Program</p>
+                        <p class="text-sm font-semibold text-gray-800">{{ pendingDetailStudent.program || '—' }}</p>
+                      </div>
+                      <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Year Level</p>
+                        <p class="text-sm font-semibold text-gray-800">{{ pendingDetailStudent.year_level || '—' }}</p>
+                      </div>
+                      <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">School Year</p>
+                        <div class="flex items-center gap-1.5 flex-wrap">
+                          <p class="text-sm font-semibold text-gray-800">{{ pendingDetailStudent.school_year || '—' }}</p>
+                          <span v-if="pendingDetailStudent.school_year && pendingDetailStudent.school_year !== appSettings.schoolYear"
+                            class="text-[10px] font-semibold px-1.5 py-0.5 rounded bg-amber-100 text-amber-700">Outdated</span>
+                        </div>
+                      </div>
+                      <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Semester</p>
+                        <p class="text-sm font-semibold text-gray-800">{{ pendingDetailStudent.semester || '—' }}</p>
+                      </div>
+                      <div class="bg-gray-50 rounded-xl p-3 col-span-2">
+                        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Email</p>
+                        <p class="text-sm font-medium text-gray-800 break-all">{{ pendingDetailStudent.email || '—' }}</p>
+                      </div>
+                      <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Registered</p>
+                        <p class="text-sm font-medium text-gray-800">{{ formatDate(pendingDetailStudent.created_date) }}</p>
+                      </div>
+                      <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">RFID</p>
+                        <p class="text-sm font-medium" :class="pendingDetailStudent.rfid_status === 'verified' ? 'text-green-600' : 'text-gray-400'">
+                          {{ pendingDetailStudent.rfid_status === 'verified' ? 'Verified' : 'Not yet' }}
+                        </p>
+                      </div>
+                    </div>
+
+                    <!-- ARMS Check panel -->
+                    <div :class="['rounded-xl border p-4', isCOE ? 'border-orange-100 bg-orange-50/50' : isSOM ? 'border-green-100 bg-green-50/50' : isCNAHS ? 'border-green-100 bg-green-50/50' : 'border-blue-100 bg-blue-50/50']">
+                      <div class="flex items-start justify-between gap-3 mb-3">
+                        <div>
+                          <p class="text-sm font-semibold text-gray-800">JRMSU ARMS Check</p>
+                          <p class="text-xs text-gray-500 mt-0.5">Verify enrollment for <strong>{{ appSettings.schoolYear || 'current year' }}</strong> · {{ appSettings.semester || '—' }}</p>
+                        </div>
+                        <button @click="adminCheckARMS" :disabled="adminArmsLoading"
+                          :class="['flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-white transition disabled:opacity-60 flex-shrink-0', isCOE ? 'bg-orange-600 hover:bg-orange-700' : isSOM ? 'bg-green-600 hover:bg-green-700' : isCNAHS ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700']">
+                          <svg v-if="adminArmsLoading" class="w-3.5 h-3.5 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                          <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                          {{ adminArmsLoading ? 'Checking…' : 'Check' }}
+                        </button>
+                      </div>
+
+                      <!-- Idle hint -->
+                      <p v-if="!adminArmsResult && !adminArmsError && !adminArmsLoading" class="text-xs text-gray-400 text-center py-1">
+                        Queries JRMSU ARMS — no student password needed
+                      </p>
+
+                      <!-- Error -->
+                      <div v-if="adminArmsError" class="flex items-start gap-2 text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2.5">
+                        <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <p>{{ adminArmsError }}</p>
+                      </div>
+
+                      <!-- Result: not found -->
+                      <div v-if="adminArmsResult && !adminArmsResult.found" class="flex items-start gap-2 text-sm text-amber-700 bg-amber-50 rounded-lg px-3 py-2.5">
+                        <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+                        <div>
+                          <p class="font-semibold">Not found in ARMS</p>
+                          <p class="text-xs mt-0.5 text-amber-600">No record for {{ adminArmsResult.schoolYear }} · {{ adminArmsResult.semester }}</p>
+                        </div>
+                      </div>
+
+                      <!-- Result: enrolled -->
+                      <div v-if="adminArmsResult && adminArmsResult.found && adminArmsResult.isEnrolled" class="text-sm text-green-700 bg-green-50 rounded-lg px-3 py-2.5">
+                        <div class="flex items-center gap-2 font-semibold mb-2">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                          Enrolled · {{ adminArmsResult.schoolYear }}
+                        </div>
+                        <div class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-green-600">
+                          <div><span class="font-medium">Program:</span> {{ adminArmsResult.armsRecord?.program || '—' }}</div>
+                          <div><span class="font-medium">Year:</span> {{ adminArmsResult.armsRecord?.yearLevel || '—' }}</div>
+                          <div><span class="font-medium">Status:</span> {{ adminArmsResult.armsRecord?.enrollmentStatus || '—' }}</div>
+                          <div><span class="font-medium">Semester:</span> {{ adminArmsResult.armsRecord?.semester || '—' }}</div>
+                        </div>
+                      </div>
+
+                      <!-- Result: not enrolled -->
+                      <div v-if="adminArmsResult && adminArmsResult.found && !adminArmsResult.isEnrolled" class="flex items-start gap-2 text-sm text-red-700 bg-red-50 rounded-lg px-3 py-2.5">
+                        <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <div>
+                          <p class="font-semibold">Not enrolled</p>
+                          <p class="text-xs mt-0.5 text-red-500">Status: {{ adminArmsResult.armsRecord?.enrollmentStatus || 'unknown' }}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Sticky footer: Approve / Reject -->
+                  <div class="flex-shrink-0 bg-white border-t border-gray-100 px-5 py-4 flex gap-3">
+                    <button @click="approveStudent(pendingDetailStudent)" :disabled="approvingStudent === pendingDetailStudent.student_id"
+                      class="flex-1 bg-green-500 text-white py-2.5 px-4 rounded-xl font-semibold text-sm hover:bg-green-600 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
+                      <svg v-if="approvingStudent === pendingDetailStudent.student_id" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>
+                      <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                      {{ approvingStudent === pendingDetailStudent.student_id ? 'Approving…' : 'Approve' }}
+                    </button>
+                    <button @click="openRejectModal(pendingDetailStudent); closePendingDetail()"
+                      class="flex-1 bg-red-500 text-white py-2.5 px-4 rounded-xl font-semibold text-sm hover:bg-red-600 transition flex items-center justify-center gap-2">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              </transition>
+            </div>
+          </transition>
+        </Teleport>
 
         <!-- Reject Modal -->
         <div v-if="showRejectModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showRejectModal = false">
@@ -11467,6 +11650,12 @@ const pendingCurrentPage = ref(1)
 const pendingPerPage = 10
 const pendingAcadYear = ref('')
 const pendingSemFilter = ref('')
+// Detail drawer state
+const pendingDetailOpen = ref(false)
+const pendingDetailStudent = ref(null)
+const adminArmsLoading = ref(false)
+const adminArmsResult = ref(null)
+const adminArmsError = ref('')
 
 const filteredPendingStudents = computed(() => {
   let result = pendingStudents.value
@@ -13581,6 +13770,54 @@ const handleBulkArmsRevalidate = async () => {
     bulkArmsLoading.value = false
   }
 }
+
+// ── Admin ARMS Check (per pending student) ─────────────────────────────────────
+const openPendingDetail = (student) => {
+  pendingDetailStudent.value = student
+  pendingDetailOpen.value = true
+  adminArmsResult.value = null
+  adminArmsError.value = ''
+}
+
+const closePendingDetail = () => {
+  pendingDetailOpen.value = false
+  pendingDetailStudent.value = null
+  adminArmsResult.value = null
+  adminArmsError.value = ''
+}
+
+const adminCheckARMS = async () => {
+  if (!pendingDetailStudent.value || adminArmsLoading.value) return
+  adminArmsLoading.value = true
+  adminArmsResult.value = null
+  adminArmsError.value = ''
+  try {
+    const token = localStorage.getItem('authToken')
+    const response = await fetch(buildAPIUrl('/apis/admin/arms-check-student'), {
+      method: 'POST',
+      headers: getFetchHeaders({ 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}`, 'X-SSAAM-TS': encodeTimestamp() }),
+      body: JSON.stringify({ student_id: pendingDetailStudent.value.student_id }),
+    })
+    const data = await response.json()
+    if (!response.ok) {
+      adminArmsError.value = data.message || 'ARMS check failed. Please try again.'
+    } else {
+      adminArmsResult.value = data
+    }
+  } catch {
+    adminArmsError.value = 'Could not reach JRMSU ARMS portal. Please try again.'
+  } finally {
+    adminArmsLoading.value = false
+  }
+}
+
+// Auto-close drawer when approved/rejected student leaves the pending list
+watch(pendingStudents, (newList) => {
+  if (pendingDetailOpen.value && pendingDetailStudent.value) {
+    const stillPending = newList.find(s => s.student_id === pendingDetailStudent.value.student_id)
+    if (!stillPending) closePendingDetail()
+  }
+})
 
 // ── ARMS Dashboard Validation ─────────────────────────────────────────────────
 // Auto-searches ARMS by student ID + current school year/semester — no password required.
@@ -19034,6 +19271,23 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ── Pending student detail drawer ── */
+.pending-drawer-backdrop-enter-active,
+.pending-drawer-backdrop-leave-active { transition: opacity 0.25s ease; }
+.pending-drawer-backdrop-enter-from,
+.pending-drawer-backdrop-leave-to { opacity: 0; }
+
+.pending-drawer-panel-enter-active { transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
+.pending-drawer-panel-leave-active { transition: transform 0.2s ease-in; }
+/* slide from right on sm+ (≥640px) */
+.pending-drawer-panel-enter-from,
+.pending-drawer-panel-leave-to { transform: translateX(100%); }
+/* slide from bottom on mobile (<640px) */
+@media (max-width: 639px) {
+  .pending-drawer-panel-enter-from,
+  .pending-drawer-panel-leave-to { transform: translateY(100%); }
+}
+
 /* ── ARMS expand / collapse ── */
 .arms-expand-enter-active {
   transition: opacity 0.28s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), max-height 0.32s cubic-bezier(0.22, 1, 0.36, 1);

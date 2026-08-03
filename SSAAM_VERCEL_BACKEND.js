@@ -4278,6 +4278,87 @@ app.post('/apis/students/self-arms-search-validate', studentAuthWithToken, async
     }
 });
 
+// POST /apis/admin/arms-check-student
+// Admin-only: check whether a specific student is enrolled in JRMSU ARMS for the
+// current school year/semester. Read-only — does NOT stamp the student record.
+app.post('/apis/admin/arms-check-student', auth, requireCoAdminOrAbove, async (req, res) => {
+    try {
+        const { student_id } = req.body;
+        if (!student_id) return res.status(400).json({ message: 'student_id is required.' });
+
+        const settings    = await getSettings(req.college);
+        const schoolYear  = settings.schoolYear || '';
+        const rawSemSSAAM = String(settings.semester || '').trim();
+        const semesterRaw = rawSemSSAAM.startsWith('2') ? '2nd' : '1st';
+
+        const armsApiKey    = process.env.ARMS_API_KEY;
+        const armsApiSecret = process.env.ARMS_API_SECRET;
+        if (!armsApiKey || !armsApiSecret)
+            return res.status(503).json({ message: 'ARMS search is not configured on this server.' });
+        if (!schoolYear)
+            return res.status(400).json({ message: 'No school year configured in Settings. Please set one before running an ARMS check.' });
+
+        // Step 1: ARMS bearer token
+        let tokenRes, tokenData;
+        try {
+            tokenRes  = await fetch(ARMS_TOKEN_URL, {
+                method:  'POST',
+                headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
+            });
+            tokenData = await tokenRes.json();
+        } catch { return res.status(503).json({ message: 'Could not reach JRMSU ARMS portal. Please try again later.' }); }
+        if (!tokenRes.ok) return res.status(503).json({ message: 'ARMS service error. Please try again later.' });
+
+        const secretKey = tokenData.Secret_Key ?? tokenData.SecretKey ?? tokenData.secretKey ?? null;
+        const jwToken   = tokenData.JWToken    ?? tokenData.Token     ?? tokenData.jwToken   ?? null;
+        if (!secretKey || !jwToken) return res.status(503).json({ message: 'ARMS token response was invalid.' });
+
+        // Step 2: Enrollment search
+        let searchRes, searchData;
+        try {
+            searchRes  = await fetch(ARMS_SEARCH_URL, {
+                method:  'POST',
+                headers: { ...ARMS_BASE_HEADERS, 'Secret-Key': secretKey, 'Authorization': `Bearer ${jwToken}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ Student_ID: student_id, Semester: semesterRaw, School_Year: schoolYear }),
+            });
+            searchData = await searchRes.json();
+        } catch { return res.status(503).json({ message: 'Could not reach JRMSU ARMS portal. Please try again later.' }); }
+        if (!searchRes.ok) return res.status(503).json({ message: 'ARMS search service error. Please try again later.' });
+
+        const records = Array.isArray(searchData.Record)
+            ? searchData.Record
+            : (searchData.Record ? [searchData.Record] : []);
+
+        if (!records.length) {
+            return res.json({ found: false, isEnrolled: false, schoolYear, semester: settings.semester,
+                message: `No enrollment record found for ${student_id} in ${schoolYear} — ${settings.semester}.` });
+        }
+
+        const record    = records[0];
+        const rawStatus = record.Enrollment_Status ?? record.enrollment_status ?? null;
+        const statusStr = rawStatus ? String(rawStatus).toLowerCase().trim() : '';
+        const isEnrolled = statusStr.includes('enroll') || statusStr === 'active';
+
+        return res.json({
+            found: true, isEnrolled, schoolYear, semester: settings.semester,
+            armsRecord: {
+                studentId:        record.Student_ID       ?? student_id,
+                studentName:      record.Student_Name     ?? '',
+                college:          record.College          ?? '',
+                program:          record.Program_Enrolled ?? record.Program ?? '',
+                yearLevel:        String(record.Year_Level ?? ''),
+                semester:         record.Semester         ?? semesterRaw,
+                schoolYear:       record.School_Year      ?? schoolYear,
+                enrollmentStatus: rawStatus ?? '',
+                admissionStatus:  record.Admission_Status ?? '',
+            },
+        });
+    } catch (err) {
+        console.error('[AdminARMSCheck]', err);
+        return res.status(500).json({ message: 'An error occurred during ARMS check. Please try again.' });
+    }
+});
+
 // POST /apis/admin/bulk-arms-revalidate
 // Admin-only: re-checks every approved student in the college against JRMSU ARMS for the
 // current school year / semester. Enrolled students get their record stamped; unenrolled
