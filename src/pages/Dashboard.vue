@@ -4194,39 +4194,51 @@
                 </div>
                 <!-- ARMS search result panel (shown after re-validate) -->
                 <transition name="arms-expand">
-                  <div v-if="dashArmsSearchData" class="mt-4 pt-4 border-t border-gray-50 space-y-2.5">
-                    <div class="flex items-center justify-between">
-                      <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ARMS Search Result</span>
-                      <span v-if="dashArmsSearchData.isEnrolled"
-                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700">
-                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                        Enrolled
-                      </span>
-                      <span v-else-if="!dashArmsSearchData.found"
-                        class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700">Not Found</span>
-                      <span v-else
-                        class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-700">
-                        {{ dashArmsSearchData.armsRecord?.enrollmentStatus || 'Not Enrolled' }}
-                      </span>
-                    </div>
+                  <div v-if="dashArmsSearchData" class="mt-4 pt-4 border-t border-gray-100">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2.5">ARMS Search Result</p>
                     <template v-if="dashArmsSearchData.found && dashArmsSearchData.armsRecord">
-                      <div class="bg-gray-50 rounded-xl p-3 space-y-1.5 text-[11px]">
-                        <p class="text-sm font-bold text-gray-800 leading-snug">{{ dashArmsSearchData.armsRecord.studentName }}</p>
-                        <p class="text-gray-500">{{ dashArmsSearchData.armsRecord.college }}</p>
-                        <p class="text-gray-700 font-medium">{{ dashArmsSearchData.armsRecord.program }}</p>
-                        <div class="flex flex-wrap gap-x-3 gap-y-1 pt-1 text-[10px] text-gray-500">
-                          <span>{{ dashArmsSearchData.armsRecord.schoolYear }}</span>
-                          <span>{{ dashArmsSearchData.armsRecord.semester }}</span>
-                          <span>{{ dashArmsSearchData.armsRecord.yearLevel }}</span>
-                          <span>Lec {{ dashArmsSearchData.armsRecord.lectureUnits }} u</span>
-                          <span v-if="dashArmsSearchData.armsRecord.labUnits">Lab {{ dashArmsSearchData.armsRecord.labUnits }} u</span>
-                          <span v-if="dashArmsSearchData.armsRecord.admissionStatus" class="capitalize text-gray-400">{{ dashArmsSearchData.armsRecord.admissionStatus }}</span>
+                      <div :class="['rounded-2xl border overflow-hidden shadow-sm',
+                        dashArmsSearchData.isEnrolled ? 'border-emerald-100' : 'border-red-100']">
+                        <div :class="['h-[3px] w-full',
+                          dashArmsSearchData.isEnrolled
+                            ? 'bg-gradient-to-r from-emerald-400 to-teal-300'
+                            : 'bg-gradient-to-r from-red-400 to-orange-300']"></div>
+                        <div :class="['p-4', dashArmsSearchData.isEnrolled ? 'bg-emerald-50/30' : 'bg-red-50/20']">
+                          <div class="flex items-start justify-between gap-2 mb-2">
+                            <div class="min-w-0">
+                              <p class="text-[13px] font-bold text-gray-900 leading-tight tracking-wide">{{ dashArmsSearchData.armsRecord.studentName }}</p>
+                              <p class="text-[10px] text-gray-400 mt-0.5 leading-snug uppercase tracking-wide">{{ dashArmsSearchData.armsRecord.college }}</p>
+                            </div>
+                            <span v-if="dashArmsSearchData.isEnrolled"
+                              class="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                              Enrolled
+                            </span>
+                            <span v-else class="flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-700 border border-red-200">
+                              {{ dashArmsSearchData.armsRecord?.enrollmentStatus || 'Not Enrolled' }}
+                            </span>
+                          </div>
+                          <p class="text-[11px] font-semibold text-gray-700 mb-3 leading-snug">{{ dashArmsSearchData.armsRecord.program }}</p>
+                          <div class="flex flex-wrap gap-1.5">
+                            <span class="px-2 py-0.5 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 font-medium shadow-sm">{{ dashArmsSearchData.armsRecord.schoolYear }}</span>
+                            <span class="px-2 py-0.5 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 font-medium shadow-sm">{{ dashArmsSearchData.armsRecord.semester }}</span>
+                            <span class="px-2 py-0.5 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 font-medium shadow-sm">{{ dashArmsSearchData.armsRecord.yearLevel }}</span>
+                            <span class="px-2 py-0.5 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 font-medium shadow-sm">Lec {{ dashArmsSearchData.armsRecord.lectureUnits }}u</span>
+                            <span v-if="dashArmsSearchData.armsRecord.labUnits" class="px-2 py-0.5 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 font-medium shadow-sm">Lab {{ dashArmsSearchData.armsRecord.labUnits }}u</span>
+                            <span v-if="dashArmsSearchData.armsRecord.admissionStatus" class="px-2 py-0.5 rounded-full bg-white border border-gray-100 text-[10px] text-gray-400 font-medium shadow-sm capitalize">{{ dashArmsSearchData.armsRecord.admissionStatus }}</span>
+                          </div>
                         </div>
                       </div>
                     </template>
-                    <p v-else class="text-xs text-amber-700 leading-snug">{{ dashArmsSearchData.message }}</p>
+                    <div v-else class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-100">
+                      <svg class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <p class="text-xs text-amber-700 leading-snug">{{ dashArmsSearchData.message }}</p>
+                    </div>
                     <transition name="arms-error">
-                      <p v-if="dashArmsError" class="text-xs text-red-600 leading-snug">{{ dashArmsError }}</p>
+                      <div v-if="dashArmsError" class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-red-50 border border-red-100 mt-2">
+                        <svg class="w-3.5 h-3.5 text-red-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <p class="text-xs text-red-600 leading-snug">{{ dashArmsError }}</p>
+                      </div>
                     </transition>
                   </div>
                 </transition>
@@ -4279,37 +4291,46 @@
 
                 <!-- ARMS search result panel -->
                 <transition name="arms-expand">
-                  <div v-if="dashArmsSearchData" class="mt-3 space-y-2.5">
-                    <div class="flex items-center justify-between">
-                      <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">ARMS Search Result</span>
-                      <span v-if="dashArmsSearchData.isEnrolled"
-                        class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700">
-                        <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
-                        Enrolled
-                      </span>
-                      <span v-else-if="!dashArmsSearchData.found"
-                        class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-amber-100 text-amber-700">Not Found</span>
-                      <span v-else
-                        class="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-700">
-                        {{ dashArmsSearchData.armsRecord?.enrollmentStatus || 'Not Enrolled' }}
-                      </span>
-                    </div>
+                  <div v-if="dashArmsSearchData" class="mt-3">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2.5">ARMS Search Result</p>
                     <template v-if="dashArmsSearchData.found && dashArmsSearchData.armsRecord">
-                      <div class="bg-gray-50 rounded-xl p-3 space-y-1.5 text-[11px]">
-                        <p class="text-sm font-bold text-gray-800 leading-snug">{{ dashArmsSearchData.armsRecord.studentName }}</p>
-                        <p class="text-gray-500">{{ dashArmsSearchData.armsRecord.college }}</p>
-                        <p class="text-gray-700 font-medium">{{ dashArmsSearchData.armsRecord.program }}</p>
-                        <div class="flex flex-wrap gap-x-3 gap-y-1 pt-1 text-[10px] text-gray-500">
-                          <span>{{ dashArmsSearchData.armsRecord.schoolYear }}</span>
-                          <span>{{ dashArmsSearchData.armsRecord.semester }}</span>
-                          <span>{{ dashArmsSearchData.armsRecord.yearLevel }}</span>
-                          <span>Lec {{ dashArmsSearchData.armsRecord.lectureUnits }} u</span>
-                          <span v-if="dashArmsSearchData.armsRecord.labUnits">Lab {{ dashArmsSearchData.armsRecord.labUnits }} u</span>
-                          <span v-if="dashArmsSearchData.armsRecord.admissionStatus" class="capitalize text-gray-400">{{ dashArmsSearchData.armsRecord.admissionStatus }}</span>
+                      <div :class="['rounded-2xl border overflow-hidden shadow-sm',
+                        dashArmsSearchData.isEnrolled ? 'border-emerald-100' : 'border-red-100']">
+                        <div :class="['h-[3px] w-full',
+                          dashArmsSearchData.isEnrolled
+                            ? 'bg-gradient-to-r from-emerald-400 to-teal-300'
+                            : 'bg-gradient-to-r from-red-400 to-orange-300']"></div>
+                        <div :class="['p-4', dashArmsSearchData.isEnrolled ? 'bg-emerald-50/30' : 'bg-red-50/20']">
+                          <div class="flex items-start justify-between gap-2 mb-2">
+                            <div class="min-w-0">
+                              <p class="text-[13px] font-bold text-gray-900 leading-tight tracking-wide">{{ dashArmsSearchData.armsRecord.studentName }}</p>
+                              <p class="text-[10px] text-gray-400 mt-0.5 leading-snug uppercase tracking-wide">{{ dashArmsSearchData.armsRecord.college }}</p>
+                            </div>
+                            <span v-if="dashArmsSearchData.isEnrolled"
+                              class="flex-shrink-0 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                              <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                              Enrolled
+                            </span>
+                            <span v-else class="flex-shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-700 border border-red-200">
+                              {{ dashArmsSearchData.armsRecord?.enrollmentStatus || 'Not Enrolled' }}
+                            </span>
+                          </div>
+                          <p class="text-[11px] font-semibold text-gray-700 mb-3 leading-snug">{{ dashArmsSearchData.armsRecord.program }}</p>
+                          <div class="flex flex-wrap gap-1.5">
+                            <span class="px-2 py-0.5 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 font-medium shadow-sm">{{ dashArmsSearchData.armsRecord.schoolYear }}</span>
+                            <span class="px-2 py-0.5 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 font-medium shadow-sm">{{ dashArmsSearchData.armsRecord.semester }}</span>
+                            <span class="px-2 py-0.5 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 font-medium shadow-sm">{{ dashArmsSearchData.armsRecord.yearLevel }}</span>
+                            <span class="px-2 py-0.5 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 font-medium shadow-sm">Lec {{ dashArmsSearchData.armsRecord.lectureUnits }}u</span>
+                            <span v-if="dashArmsSearchData.armsRecord.labUnits" class="px-2 py-0.5 rounded-full bg-white border border-gray-200 text-[10px] text-gray-500 font-medium shadow-sm">Lab {{ dashArmsSearchData.armsRecord.labUnits }}u</span>
+                            <span v-if="dashArmsSearchData.armsRecord.admissionStatus" class="px-2 py-0.5 rounded-full bg-white border border-gray-100 text-[10px] text-gray-400 font-medium shadow-sm capitalize">{{ dashArmsSearchData.armsRecord.admissionStatus }}</span>
+                          </div>
                         </div>
                       </div>
                     </template>
-                    <p v-else class="text-xs text-amber-700 leading-snug">{{ dashArmsSearchData.message }}</p>
+                    <div v-else class="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-100">
+                      <svg class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                      <p class="text-xs text-amber-700 leading-snug">{{ dashArmsSearchData.message }}</p>
+                    </div>
                   </div>
                 </transition>
 
