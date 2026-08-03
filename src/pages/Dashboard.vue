@@ -2357,7 +2357,7 @@
             <div class="flex items-center gap-2.5 px-4 sm:px-6 py-2 border-b border-gray-100 bg-gray-50/70">
               <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wide flex-shrink-0">A.Y.</span>
               <div class="flex items-center gap-1.5 flex-wrap">
-                <button v-for="yr in STUDENT_ACAD_YEARS" :key="yr" @click="userAttendAcadYear = yr"
+                <button v-for="yr in availableAttendAcadYears" :key="yr" @click="userAttendAcadYear = yr"
                   :class="['px-2.5 py-0.5 rounded-full text-xs font-semibold transition-colors',
                     userAttendAcadYear === yr
                       ? (isCOE ? 'bg-orange-600 text-white' : isSOM ? 'bg-green-600 text-white' : isCNAHS ? 'bg-emerald-600 text-white' : 'bg-[#0f2080] text-white')
@@ -4541,7 +4541,7 @@
               <div class="flex items-center gap-2 flex-wrap">
                 <span class="text-[11px] font-semibold text-[#605e5c] uppercase tracking-wider">Payment Records</span>
                 <div class="flex items-center gap-1">
-                  <button v-for="yr in STUDENT_ACAD_YEARS" :key="yr" @click="userContribAcadYear = yr"
+                  <button v-for="yr in availableContribAcadYears" :key="yr" @click="userContribAcadYear = yr"
                     :class="['px-2 py-0.5 rounded-full text-[11px] font-semibold transition-colors',
                       userContribAcadYear === yr
                         ? (isCOE ? 'bg-orange-600 text-white' : isSOM ? 'bg-green-600 text-white' : isCNAHS ? 'bg-emerald-600 text-white' : 'bg-[#0f2080] text-white')
@@ -11643,6 +11643,19 @@ const filteredMyAttendanceRecords = computed(() => {
 const filteredMyPayments = computed(() => {
   if (!userContribAcadYear.value) return myPayments.value
   return myPayments.value.filter(p => (p.school_year || '') === userContribAcadYear.value)
+})
+
+// Only show AY tabs for years the student actually has records in.
+// Always include the current AY so the tab is visible even before any records exist.
+const availableAttendAcadYears = computed(() => {
+  const years = new Set(myAttendanceRecords.value.map(r => r.event?.school_year).filter(Boolean))
+  years.add(currentAcademicYear.value)
+  return STUDENT_ACAD_YEARS.filter(yr => years.has(yr))
+})
+const availableContribAcadYears = computed(() => {
+  const years = new Set(myPayments.value.map(p => p.school_year).filter(Boolean))
+  years.add(currentAcademicYear.value)
+  return STUDENT_ACAD_YEARS.filter(yr => years.has(yr))
 })
 const attendanceLoading = ref(false)
 const attendanceRefreshInterval = ref(null)
