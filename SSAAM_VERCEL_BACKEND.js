@@ -4366,6 +4366,14 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
         const fullName = fullNameValidation.value;
         const lastName = lastNameValidation.value;
 
+        // Normalize semester to SSAAM canonical enum ('1st Sem' / '2nd Sem').
+        // ARMS returns raw values like '1st', '2nd', '1st Semester', etc.
+        const rawSemInput = String(data.semester || '').trim();
+        const normalizedSemester = rawSemInput.startsWith('2') ? '2nd Sem'
+            : rawSemInput.startsWith('1') ? '1st Sem'
+            : VALID_SEMESTERS.includes(rawSemInput) ? rawSemInput
+            : null;
+
         const studentData = {
             student_id: data.student_id,
             last_name: lastName,
@@ -4381,7 +4389,7 @@ app.post('/apis/students/send-verification', studentAuth, antiBotProtection, asy
             rfid_status: "unverified",
             // Persist ARMS-verified enrollment data so it is visible in the pending list
             school_year: data.school_year || null,
-            semester:    data.semester    || null,
+            semester:    normalizedSemester,
         };
 
         await VerificationCode.create({
@@ -4438,6 +4446,16 @@ app.post('/apis/students/verify-and-register', studentAuth, timestampAuth, async
         studentData.role = "student";
         studentData.rfid_code = null;
         studentData.rfid_status = "unverified";
+
+        // Safety net: normalize semester in case an older verification code stored a raw ARMS value
+        if (studentData.semester) {
+            const rawSem = String(studentData.semester).trim();
+            if (!VALID_SEMESTERS.includes(rawSem)) {
+                studentData.semester = rawSem.startsWith('2') ? '2nd Sem'
+                    : rawSem.startsWith('1') ? '1st Sem'
+                    : null;
+            }
+        }
 
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const existingStudent = await StudentModel.findOne({ student_id: studentData.student_id });

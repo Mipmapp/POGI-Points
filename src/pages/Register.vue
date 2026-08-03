@@ -1482,8 +1482,11 @@ const verifyWithARMS = async () => {
     const validShortNames = flattenedPrograms.value.map(p => p.shortName)
     if (shortCode && validShortNames.includes(shortCode)) formData.program = shortCode
 
-    // Auto-fill semester and school year
-    if (s.semester)   formData.semester    = s.semester
+    // Auto-fill semester — normalize ARMS raw format ('1st', '2nd', etc.) to SSAAM enum ('1st Sem' / '2nd Sem')
+    if (s.semester) {
+      const rawSem = String(s.semester).trim()
+      formData.semester = rawSem.startsWith('2') ? '2nd Sem' : '1st Sem'
+    }
     if (s.schoolYear) formData.school_year = s.schoolYear
 
     // Auto-fill name fields from ARMS only if the student left them blank in Step 1
