@@ -796,7 +796,7 @@
           <span v-if="!sidebarCollapsed" class="truncate">Manage</span>
         </button>
 
-        <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'pending'; fetchPendingStudents()"
+        <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'pending'; fetchPendingStudents(true)"
           :title="sidebarCollapsed ? 'Pending' : ''"
           :class="[dNavBtn, 'mt-1 relative', currentPage === 'pending' ? dNavBtnActive : dNavBtnHover]">
           <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -952,7 +952,7 @@
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
             <span>Manage</span>
           </button>
-          <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'pending'; showMobileMenu = false; fetchPendingStudents()" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
+          <button v-if="(isAdminLike) && inRoleView" @click="currentPage = 'pending'; showMobileMenu = false; fetchPendingStudents(true)" :class="[sidebarItemBase, 'mt-2', currentPage === 'pending' ? sidebarItemActive : sidebarItemHover]">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="filter: brightness(0) invert(1);"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             <span class="flex items-center gap-2">Pending <span v-if="pendingCount > 0" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{{ pendingCount }}</span></span>
           </button>
@@ -7738,6 +7738,8 @@ const allEventUsers = ref([]) // Store all students loaded for event modals
 const loggingOut = ref(false)
 const isPageLoading = ref(false)
 const statsLoading = ref(false)
+const statsLastFetchedYear = ref(null) // tracks which year was last successfully fetched
+const statsLastFetchedAt = ref(0)      // epoch ms of last successful fetch
 
 const adminProfile = ref(null)
 const adminProfileLoading = ref(false)
@@ -11450,10 +11452,13 @@ const pendingSemFilter = ref('')
 const filteredPendingStudents = computed(() => {
   let result = pendingStudents.value
   if (pendingAcadYear.value) {
-    result = result.filter(s => s.school_year === pendingAcadYear.value)
+    // Students with no school_year (haven't done ARMS validation yet) are always
+    // included — they are genuinely pending and shouldn't be filtered out.
+    result = result.filter(s => !s.school_year || s.school_year === pendingAcadYear.value)
   }
   if (pendingSemFilter.value) {
-    result = result.filter(s => s.semester === pendingSemFilter.value)
+    // Same logic for semester — null means not yet validated, still show them.
+    result = result.filter(s => !s.semester || s.semester === pendingSemFilter.value)
   }
   if (!pendingSearchQuery.value.trim()) return result
   const query = pendingSearchQuery.value.toLowerCase().trim()
@@ -13502,7 +13507,7 @@ watch([
 // Handle stats refresh button click
 const handleStatsRefresh = async () => {
   try {
-    await fetchStats()
+    await fetchStats(true) // force — bypass dedup for explicit user action
     if (currentUser.value?.isMaster) await fetchAllCollegesStats()
     showNotification('Statistics refreshed successfully!', 'success')
   } catch (error) {
@@ -13659,8 +13664,16 @@ const refreshCurrentUser = async () => {
   }
 }
 
-// Fetch statistics from separate endpoint
-const fetchStats = async () => {
+// Fetch statistics from separate endpoint.
+// Pass force=true to bypass the dedup guard (explicit refresh, post-approve, post-delete).
+// Auto-load triggers (watchers, interval) use the default force=false so duplicate
+// calls for the same year within a 20-second window are silently skipped.
+const fetchStats = async (force = false) => {
+  // Dedup: skip if the same year was already fetched within the last 20 s
+  const fetchYear = statsAcadYear.value || ''
+  const age = Date.now() - statsLastFetchedAt.value
+  if (!force && statsLastFetchedYear.value === fetchYear && age < 20000) return
+
   statsLoading.value = true
   try {
     const yearParam = statsAcadYear.value ? `?school_year=${encodeURIComponent(statsAcadYear.value)}` : ''
@@ -13727,6 +13740,10 @@ const fetchStats = async () => {
       showNetworkError()
     }
   } finally {
+    // Record year + timestamp of this fetch so the dedup guard can skip
+    // redundant repeat calls for the same year within the 20-second window.
+    statsLastFetchedYear.value = fetchYear
+    statsLastFetchedAt.value = Date.now()
     statsLoading.value = false
   }
 }
@@ -13845,29 +13862,31 @@ const handleManageClick = async () => {
 }
 
 // Fetch pending students for approval (fetch all by using high limit)
-const fetchPendingStudents = async () => {
-  // Check cache first - only fetch if not already fetched
-  if (isSectionCached('pending')) {
+// Pass force=true to bypass the section cache (e.g. when user explicitly navigates to Pending)
+const fetchPendingStudents = async (force = false) => {
+  // Check cache first — skip if already fetched, unless forced
+  if (!force && isSectionCached('pending')) {
     return
   }
   
   pendingLoading.value = true
   try {
-    const token = localStorage.getItem('authToken')
     const response = await fetch(buildAPIUrl(`/apis/students/pending?limit=1000`), {
       method: 'GET',
-      headers: getFetchHeaders({ 'Authorization': `Bearer ${token}` })
+      headers: getFetchHeaders({ 'Authorization': `Bearer ${getSessionToken()}` })
     })
     const result = await response.json()
     if (response.ok) {
-      pendingStudents.value = result.data || result
+      pendingStudents.value = Array.isArray(result.data) ? result.data : (Array.isArray(result) ? result : [])
       pendingCount.value = pendingStudents.value.length
-      
-      // Mark section as cached
       markSectionAsCached('pending')
+    } else {
+      // Surface the error so it's visible in the browser console for debugging
+      console.error('[Pending] API error', response.status, result?.message || result)
+      // Don't cache a failed response — leave the cache clear so the next navigation retries
     }
   } catch (error) {
-    console.error('Failed to fetch pending students:', error)
+    console.error('[Pending] Fetch failed:', error)
   } finally {
     pendingLoading.value = false
   }
@@ -13889,7 +13908,7 @@ const approveStudentImpl = async (student) => {
     
     if (response.ok) {
       showNotification('Student approved successfully! They will receive an email notification.', 'success')
-      fetchStats()
+      fetchStats(true) // force — student count changed
       clearSectionCache('pending')
       await fetchPendingStudents()
     } else {
@@ -15909,7 +15928,7 @@ const confirmDeleteImpl = async () => {
         // Emit event to sync deletion with other components
         window.dispatchEvent(new CustomEvent('user-deleted', { detail: { userId: userToDelete.value.studentId || userToDelete.value.student_id } }))
         showNotification('User deleted successfully', 'success')
-        fetchStats()
+        fetchStats(true) // force — student count changed
       } else {
         if (response.status === 403) {
           const errorData = await response.json()
