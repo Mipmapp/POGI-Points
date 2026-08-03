@@ -3297,6 +3297,19 @@
                 <div><span class="text-gray-400">Level:</span> <span class="font-medium">{{ user.yearLevel || user.year_level || '—' }}</span></div>
                 <div class="col-span-2 truncate"><span class="text-gray-400">Email:</span> <span class="font-medium">{{ user.email || '—' }}</span></div>
                 <div class="col-span-2 truncate"><span class="text-gray-400">RFID:</span> <span class="font-mono font-medium">{{ user.rfidCode || user.rfid_code || '—' }}</span></div>
+                <div class="col-span-2 flex items-center gap-1.5 flex-wrap">
+                  <span class="text-gray-400">ARMS:</span>
+                  <span v-if="user.schoolYear && user.semester && user.schoolYear === appSettings.schoolYear && user.semester === appSettings.semester"
+                    class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-emerald-100 text-emerald-800">
+                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                    Enrolled
+                  </span>
+                  <span v-else-if="user.schoolYear"
+                    class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 text-amber-800">
+                    {{ user.schoolYear }} · {{ user.semester }}
+                  </span>
+                  <span v-else class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-gray-100 text-gray-500">Not validated</span>
+                </div>
               </div>
               <div class="flex gap-2">
                 <button @click="editUser(user)" :class="['flex-1 py-2 rounded-lg transition flex items-center justify-center gap-2 text-sm font-medium text-white', isCOE ? 'bg-orange-500 hover:bg-orange-600' : 'bg-blue-500 hover:bg-blue-600']">
@@ -3321,6 +3334,7 @@
                   <th class="border border-blue-300 px-4 py-3 text-left font-semibold text-blue-900">Email</th>
                   <th class="border border-blue-300 px-4 py-3 text-center font-semibold text-blue-900">RFID Code</th>
                   <th class="border border-blue-300 px-4 py-3 text-center font-semibold text-blue-900">RFID Status</th>
+                  <th class="border border-blue-300 px-4 py-3 text-center font-semibold text-blue-900">ARMS Enrollment</th>
                   <th class="border border-blue-300 px-4 py-3 text-center font-semibold text-blue-900">Program</th>
                   <th class="border border-blue-300 px-4 py-3 text-center font-semibold text-blue-900">School Level</th>
                   <th class="border border-blue-300 px-4 py-3 text-center font-semibold text-blue-900">Actions</th>
@@ -3328,7 +3342,7 @@
               </thead>
               <tbody>
                 <tr v-if="filteredUsers.length === 0" class="hover:bg-gray-50">
-                  <td colspan="8" class="border border-blue-300 px-4 py-8 text-center text-gray-600">No users found matching your search.</td>
+                  <td colspan="9" class="border border-blue-300 px-4 py-8 text-center text-gray-600">No users found matching your search.</td>
                 </tr>
                 <tr v-for="user in filteredUsers" :key="user.studentId || user.student_id" class="hover:bg-gray-50">
                   <td class="border border-blue-300 px-4 py-3 text-gray-700">{{ (user.fullName || user.full_name) }} {{ (user.lastName || user.last_name) }}</td>
@@ -3339,6 +3353,20 @@
                     <span :class="['px-2 py-1 rounded-full text-xs font-medium', (user.rfid_status === 'verified') ? 'bg-green-100 text-green-800' : (user.rfid_status === 'Unreadable') ? 'bg-gray-100 text-gray-800' : 'bg-yellow-100 text-yellow-800']">
                       {{ (user.rfid_status === 'verified') ? 'Verified' : (user.rfid_status === 'Unreadable') ? 'Unreadable' : 'Unverified' }}
                     </span>
+                  </td>
+                  <td class="border border-blue-300 px-4 py-3 text-center">
+                    <template v-if="user.schoolYear && user.semester">
+                      <span v-if="user.schoolYear === appSettings.schoolYear && user.semester === appSettings.semester"
+                        class="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+                        Enrolled
+                      </span>
+                      <span v-else class="px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800"
+                        :title="`Validated for ${user.schoolYear} · ${user.semester}`">
+                        {{ user.schoolYear }}
+                      </span>
+                    </template>
+                    <span v-else class="px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-500">Not validated</span>
                   </td>
                   <td class="border border-blue-300 px-4 py-3 text-center text-gray-700">{{ user.program }}</td>
                   <td class="border border-blue-300 px-4 py-3 text-center text-gray-700">{{ user.yearLevel || user.year_level }}</td>
