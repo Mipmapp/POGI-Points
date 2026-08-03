@@ -514,7 +514,7 @@
     </div>
 
     <!-- Right: login form -->
-    <div class="flex-1 flex items-center justify-center bg-white">
+    <div class="flex-1 flex items-center justify-center bg-white relative">
       <div class="w-full max-w-sm px-6">
         <div class="mb-8">
           <h2 class="text-4xl font-bold text-gray-900 leading-tight mb-3">Welcome back!</h2>
@@ -600,6 +600,8 @@
           <span class="ml-2 text-gray-300 text-[10px] font-mono select-none">{{ appVersion }}</span>
         </div>
       </div>
+      <!-- Lower-right decorative image -->
+      <img src="/img/login-preview.png" alt="" class="absolute bottom-4 right-4 w-52 opacity-80 pointer-events-none select-none hidden xl:block" style="filter: drop-shadow(0 4px 16px rgba(0,0,0,0.18));" />
     </div>
   </div>
 
