@@ -601,7 +601,6 @@
         </div>
       </div>
       <!-- Lower-right decorative image -->
-      <img src="/img/login-preview.png" alt="" class="absolute bottom-4 right-4 w-52 opacity-80 pointer-events-none select-none hidden xl:block" style="filter: drop-shadow(0 4px 16px rgba(0,0,0,0.18));" />
     </div>
   </div>
 
