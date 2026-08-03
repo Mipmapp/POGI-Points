@@ -3247,7 +3247,7 @@
                   </div>
 
                   <!-- Scrollable content -->
-                  <div class="flex-1 overflow-y-auto p-5">
+                  <div class="flex-1 overflow-y-auto min-h-0 p-5">
                     <!-- Profile -->
                     <div class="flex items-center gap-4 mb-5">
                       <div :class="['w-16 h-16 rounded-xl flex items-center justify-center overflow-hidden flex-shrink-0', isCOE ? 'bg-gradient-to-br from-orange-400 to-red-500' : isSOM ? 'bg-gradient-to-br from-green-400 to-emerald-600' : isCNAHS ? 'bg-gradient-to-br from-green-500 to-green-700' : 'bg-gradient-to-br from-blue-500 to-indigo-600']">
