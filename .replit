@@ -82,6 +82,7 @@ SSAAM_CRYPTO_KEY = "SSAAM2025CCS"
 ADMIN_VERIFICATION_SECRET = "SSAAMAdminVerify"
 MONGODB_URI = "mongodb+srv://SSAAM:ssaam.admin.jrmsu@cluster0.bnwy9iy.mongodb.net/dbconnect?retryWrites=true&w=majority"
 GOOGLE_CALLBACK_URL = "https://14706315-b6ba-4ded-aa30-e338cac9d8d4-00-1jy0wyheggdbk.pike.replit.dev/api/auth/callback/google"
+VITE_COMMIT_COUNT = "1866"
 
 [userenv.development]
 VITE_API_URL = ""

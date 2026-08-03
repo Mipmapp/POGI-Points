@@ -4,6 +4,10 @@ import path from 'path'
 import { execSync } from 'child_process'
 
 const commitCount = (() => {
+  // Allow an explicit override (useful when the local clone is shallow)
+  if (process.env.VITE_COMMIT_COUNT) {
+    return parseInt(process.env.VITE_COMMIT_COUNT, 10)
+  }
   try {
     return parseInt(execSync('git rev-list --count HEAD').toString().trim(), 10)
   } catch {
