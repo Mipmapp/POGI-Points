@@ -874,8 +874,13 @@
 
       <!-- Footer / Credits -->
       <div v-if="!sidebarCollapsed" class="border-t border-white/10 flex-shrink-0 px-5 py-3">
-        <p class="text-white/30 text-[10px]">Powered by</p>
-        <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-white/30 text-[10px]">Powered by</p>
+            <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
+          </div>
+          <span class="text-white/25 text-[9px] font-mono select-none">{{ appVersion }}</span>
+        </div>
       </div>
     </div>
     </div><!-- /sidebar wrapper -->
@@ -1014,8 +1019,13 @@
         </nav>
 
         <div class="px-5 py-3 border-t border-white/10 flex-shrink-0">
-          <p class="text-white/30 text-[10px]">Powered by</p>
-          <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-white/30 text-[10px]">Powered by</p>
+              <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
+            </div>
+            <span class="text-white/25 text-[9px] font-mono select-none">{{ appVersion }}</span>
+          </div>
         </div>
       </div>
     </transition>
@@ -7737,6 +7747,7 @@ import StudentFaceCheckIn from '../components/StudentFaceCheckIn.vue'
 import LocationGate from '../components/LocationGate.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl, getCollege } from '../config/api.js'
+import { APP_VERSION } from '../utils/version.js'
 import { handleTokenError, setTokenExpiredCallback } from '../utils/tokenHandler.js'
 import departments from '../config/departments.js'
 import { useCollege } from '../composables/useCollege.js'

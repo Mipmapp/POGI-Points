@@ -1,7 +1,20 @@
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import { execSync } from 'child_process'
+
+const commitCount = (() => {
+  try {
+    return parseInt(execSync('git rev-list --count HEAD').toString().trim(), 10)
+  } catch {
+    return 0
+  }
+})()
+
 export default defineConfig({
+  define: {
+    __COMMIT_COUNT__: commitCount,
+  },
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),

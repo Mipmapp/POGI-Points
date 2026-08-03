@@ -714,6 +714,7 @@
           </p>
           <div class="mt-2 text-center text-xs text-gray-400">
             Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer transition">CCS - Creatives Committee</button>
+            <span class="ml-2 text-gray-300 text-[10px] font-mono select-none">{{ appVersion }}</span>
           </div>
       </div>
     </div>
@@ -1189,6 +1190,7 @@ import jrmsuLogo from '../assets/ccs-logo.png'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
+import { APP_VERSION } from '../utils/version.js'
 import departments from '../config/departments.js'
 
 // Custom v-click-outside directive

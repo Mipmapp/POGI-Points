@@ -597,6 +597,7 @@
 
         <div class="mt-2 text-center text-xs text-gray-400">
           Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer transition">CCS - Creatives Committee</button>
+          <span class="ml-2 text-gray-300 text-[10px] font-mono select-none">{{ appVersion }}</span>
         </div>
       </div>
     </div>
@@ -694,6 +695,7 @@
 
         <div class="mt-2 text-center text-xs text-gray-400">
           Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer transition">CCS - Creatives Committee</button>
+          <span class="ml-2 text-gray-300 text-[10px] font-mono select-none">{{ appVersion }}</span>
         </div>
         <div class="mt-2 text-center text-xs text-gray-400">
           Copyright © 2026 Powered by CCS-Creatives Committee.
@@ -847,6 +849,7 @@ import ParticleBackground from '../components/ParticleBackground.vue'
 import jrmsuLogo from '../assets/ccs-logo.png'
 import { encodeTimestamp, syncServerTime, updateServerOffsetFromHeaders } from '../utils/ssaamCrypto.js'
 import API_getBaseURL, { buildAPIUrl } from '../config/api.js'
+import { APP_VERSION } from '../utils/version.js'
 import departments from '../config/departments.js'
 import { useCollege } from '../composables/useCollege.js'
 
