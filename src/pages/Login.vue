@@ -851,6 +851,8 @@ import { encodeTimestamp, syncServerTime, updateServerOffsetFromHeaders } from '
 import API_getBaseURL, { buildAPIUrl } from '../config/api.js'
 import { APP_VERSION } from '../utils/version.js'
 import departments from '../config/departments.js'
+
+const appVersion = APP_VERSION
 import { useCollege } from '../composables/useCollege.js'
 
 const { isCCS, isCOE, isSOM, isCNAHS } = useCollege()

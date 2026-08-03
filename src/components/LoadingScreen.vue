@@ -9,6 +9,7 @@
         <h1 class="text-6xl font-extrabold italic text-white mb-1 tracking-wide drop-shadow-lg">SSAAM</h1>
         <p class="text-xs sm:text-sm md:text-base text-white opacity-90 px-8">Student School Activities Attendance Monitoring</p>
         <p class="text-xs text-white/70 mt-3">Jose Rizal Memorial State University</p>
+        <p class="text-[10px] text-white/40 mt-1 font-mono select-none tracking-widest">{{ appVersion }}</p>
       </div>
       <div class="flex gap-2 mt-4">
         <div class="w-3 h-3 rounded-full bg-white animate-pulse"></div>
@@ -25,6 +26,9 @@ import { useRouter } from 'vue-router'
 import jrmsuLogo from '../assets/ccs-logo.png'
 import ParticleBackground from './ParticleBackground.vue'
 import { getCollege } from '../config/api.js'
+import { APP_VERSION } from '../utils/version.js'
+
+const appVersion = APP_VERSION
 
 const router = useRouter()
 
