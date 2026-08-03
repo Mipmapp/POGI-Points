@@ -2244,7 +2244,7 @@ function getModelForCollege(baseModel, college, baseCollectionName) {
 }
 
 const STUDENT_ID_REGEX = /^[0-9]{2}-[A-Z]-[0-9]{5}$/;
-const UPPERCASE_ONLY_REGEX = /^[A-ZÑ\s'-]+$/;
+const UPPERCASE_ONLY_REGEX = /^[A-ZÑ\s'.\-]+$/;
 
 // Helper function to get the correct model based on college
 // Usage: const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, college);

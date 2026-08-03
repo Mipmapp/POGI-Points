@@ -1978,8 +1978,8 @@ const handleNext = async () => {
       showErrorNotification.value = true
       return
     }
-    if (!/^[\p{L}\s'-]+$/u.test(formData.full_name)) {
-      errorMessage.value = "Full name can only contain letters and spaces."
+    if (!/^[\p{L}\s'.\-]+$/u.test(formData.full_name)) {
+      errorMessage.value = "Full name can only contain letters, spaces, hyphens, apostrophes, or periods."
       showErrorNotification.value = true
       return
     }
@@ -1988,8 +1988,8 @@ const handleNext = async () => {
       showErrorNotification.value = true
       return
     }
-    if (!/^[\p{L}\s'-]+$/u.test(formData.last_name)) {
-      errorMessage.value = "Last name can only contain letters and spaces."
+    if (!/^[\p{L}\s'.\-]+$/u.test(formData.last_name)) {
+      errorMessage.value = "Last name can only contain letters, spaces, hyphens, apostrophes, or periods."
       showErrorNotification.value = true
       return
     }
