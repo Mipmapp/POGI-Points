@@ -840,6 +840,11 @@
       </transition>
     </div>
   </transition>
+
+  <!-- Version — fixed bottom-center, visible on all screen sizes -->
+  <div class="fixed bottom-3 left-0 right-0 z-40 flex justify-center pointer-events-none select-none">
+    <span class="text-[10px] font-mono text-white/50 drop-shadow">{{ appVersion }}</span>
+  </div>
 </template>
 
 <script setup>

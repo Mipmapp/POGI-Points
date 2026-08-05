@@ -1,0 +1,153 @@
+You are a senior full-stack frontend engineer. Please fix the following UI and mobile responsiveness issues without changing the existing design, color scheme, or functionality. Only improve responsiveness, layout, spacing, and usability.
+
+## 1. Admin > Manage Page
+
+### Statistics Alert Card
+The statistics card is broken on mobile.
+
+Current Issues:
+- The warning icon overlaps the text.
+- The message "415 students haven't logged in yet for 1st Sem 2026-2027" wraps poorly.
+- The "Show them" button is too close to the text.
+- The close (X) button is misaligned.
+- Elements become cramped on smaller screens.
+
+Requirements:
+- Make the card fully responsive.
+- Keep all content inside the card.
+- Use Flexbox or CSS Grid.
+- Add proper spacing (gap) between elements.
+- Allow long text to wrap naturally.
+- On mobile (<768px), stack the layout vertically if needed.
+- Prevent text clipping or overflow.
+- Keep the "Show them" and close button properly aligned.
+- Ensure no horizontal scrolling occurs.
+
+---
+
+### Search & Filters
+
+Requirements:
+- Search input should occupy the full available width.
+- Role, Year Level, Program, and other filters should also be full-width on mobile.
+- Add consistent spacing between all controls.
+- Prevent controls from overflowing the screen.
+
+---
+
+### User List
+
+Requirements:
+- User avatar should remain a fixed size.
+- User names should truncate with ellipsis (...) if too long.
+- Student ID should remain visible.
+- Edit and Delete buttons should stay aligned.
+- The chevron (>) should always stay on the far right.
+- No overlapping between text and action buttons.
+- Cards should fit within the mobile screen.
+
+---
+
+## 2. Admin > Pending
+
+### Student Details Modal
+
+Current Issue:
+The modal cannot be fully scrolled on mobile devices, making the lower information and Approve/Reject buttons difficult or impossible to access.
+
+Requirements:
+- Make the modal body scrollable.
+- Keep the modal within the viewport.
+- Set a maximum height (around 90vh).
+- Enable smooth vertical scrolling.
+- Ensure all student information can be viewed.
+- Make the footer (Approve and Reject buttons) sticky or always visible.
+- Add sufficient bottom padding so content is never hidden behind the footer.
+- Test scrolling on Android Chrome and iPhone Safari.
+
+Suggested CSS:
+
+.modal-content {
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-body {
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer {
+    position: sticky;
+    bottom: 0;
+    background: white;
+}
+
+---
+
+## 3. Homepage (Login & Register)
+
+Current Issue:
+The application version number is hidden on mobile devices.
+
+Requirements:
+- Make the version label visible on all screen sizes.
+- Place it at the bottom-center of the page.
+- Keep it readable.
+- Ensure it does not overlap forms or buttons.
+- Display it consistently on both Login and Register pages.
+
+Example:
+Version 1.0.0
+
+---
+
+## 4. Global Mobile Responsiveness Audit
+
+Review all Admin pages and fix any responsive issues.
+
+Check for:
+- Overflowing text
+- Horizontal scrolling
+- Fixed-width containers
+- Buttons extending outside cards
+- Misaligned icons
+- Broken flex layouts
+- Uneven spacing
+- Elements touching screen edges
+- Cards wider than the viewport
+- Modal overflow issues
+
+Use responsive best practices:
+- width: 100%
+- max-width
+- min-width: 0
+- flex-wrap
+- gap
+- clamp()
+- media queries
+- CSS Grid/Flexbox where appropriate
+
+Avoid using fixed pixel widths unless absolutely necessary.
+
+---
+
+## 5. Final Validation
+
+Before completing the task, verify the following:
+
+✓ No horizontal scrolling on mobile.
+✓ All cards fit within the viewport.
+✓ Statistics card displays correctly on phones.
+✓ Search and filters are fully responsive.
+✓ User list remains properly aligned.
+✓ Long names truncate correctly.
+✓ Pending modal scrolls smoothly.
+✓ Every field in the modal is accessible.
+✓ Approve and Reject buttons are always reachable.
+✓ Version number is visible on Login and Register pages.
+✓ Desktop layout remains unchanged.
+✓ No existing functionality is broken.
+
+Finally, review the entire application for any remaining mobile responsiveness issues and fix them to provide a polished, production-ready responsive experience.

@@ -3237,7 +3237,7 @@
             <div v-if="pendingDetailOpen" class="fixed inset-0 z-[70] flex items-end sm:items-stretch sm:justify-end" @click.self="closePendingDetail">
               <div class="absolute inset-0 bg-black/40" @click="closePendingDetail"></div>
               <transition name="pending-drawer-panel">
-                <div v-if="pendingDetailStudent" class="relative bg-white w-full sm:w-[420px] h-[92svh] sm:h-full rounded-t-2xl sm:rounded-none overflow-hidden flex flex-col shadow-2xl" @click.stop>
+                <div v-if="pendingDetailStudent" class="relative bg-white w-full sm:w-[420px] h-[92vh] sm:h-full rounded-t-2xl sm:rounded-none overflow-hidden flex flex-col shadow-2xl" @click.stop>
                   <!-- Drawer header -->
                   <div class="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
                     <h3 class="text-base font-bold text-gray-900">Student Details</h3>
@@ -3365,7 +3365,7 @@
                   </div>
 
                   <!-- Sticky footer: Approve / Reject -->
-                  <div class="flex-shrink-0 bg-white border-t border-gray-100 px-5 py-4 flex gap-3">
+                  <div class="flex-shrink-0 sticky bottom-0 bg-white border-t border-gray-100 px-5 py-4 flex gap-3">
                     <button @click="approveStudent(pendingDetailStudent)" :disabled="approvingStudent === pendingDetailStudent.student_id"
                       class="flex-1 bg-green-500 text-white py-2.5 px-4 rounded-xl font-semibold text-sm hover:bg-green-600 transition flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed">
                       <svg v-if="approvingStudent === pendingDetailStudent.student_id" class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/></svg>

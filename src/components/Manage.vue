@@ -53,11 +53,11 @@
         <!-- Unvalidated students banner (moved here from Users tab body) -->
         <div
           v-if="appSettings?.schoolYear && appSettings?.semester && unvalidatedCount > 0 && userValidationFilter !== 'not_validated' && !dismissedUnvalidatedBanner"
-          :class="['flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl border text-sm', isCOE ? 'bg-orange-50 border-orange-200' : isSOM ? 'bg-yellow-50 border-yellow-200' : isCNAHS ? 'bg-yellow-50 border-yellow-200' : 'bg-orange-50 border-orange-200']"
+          :class="['flex flex-wrap items-start gap-2 px-4 py-3 rounded-xl border text-sm', isCOE ? 'bg-orange-50 border-orange-200' : isSOM ? 'bg-yellow-50 border-yellow-200' : isCNAHS ? 'bg-yellow-50 border-yellow-200' : 'bg-orange-50 border-orange-200']"
         >
-          <div class="flex items-center gap-2">
-            <svg class="w-4 h-4 text-orange-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
-            <span class="font-medium text-orange-800">
+          <div class="flex items-start gap-2 flex-1 min-w-0">
+            <svg class="w-4 h-4 text-orange-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.07 16.5c-.77.833.192 2.5 1.732 2.5z"/></svg>
+            <span class="font-medium text-orange-800 min-w-0">
               <strong>{{ unvalidatedCount }}</strong> student{{ unvalidatedCount === 1 ? '' : 's' }} haven't logged in yet for
               <strong>{{ appSettings.semester }} {{ appSettings.schoolYear }}</strong>
             </span>
@@ -107,10 +107,10 @@
           </div>
           
           <!-- Filters: custom dropdown row -->
-          <div class="flex flex-wrap justify-center gap-3 animate-fade-in">
+          <div class="grid grid-cols-2 sm:flex sm:flex-wrap sm:justify-center gap-3 animate-fade-in">
 
             <!-- Role -->
-            <div class="space-y-1.5 w-40 relative" @click.stop>
+            <div class="space-y-1.5 w-full sm:w-40 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Role</label>
               <button
                 @click="openDropdown = openDropdown === 'role' ? null : 'role'"
@@ -134,7 +134,7 @@
             </div>
 
             <!-- Year Level -->
-            <div class="space-y-1.5 w-40 relative" @click.stop>
+            <div class="space-y-1.5 w-full sm:w-40 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Year Level</label>
               <button
                 @click="openDropdown = openDropdown === 'year' ? null : 'year'"
@@ -158,7 +158,7 @@
             </div>
 
             <!-- Program -->
-            <div class="space-y-1.5 w-40 relative" @click.stop>
+            <div class="space-y-1.5 w-full sm:w-40 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Program</label>
               <button
                 @click="openDropdown = openDropdown === 'program' ? null : 'program'"
@@ -182,7 +182,7 @@
             </div>
 
             <!-- College (super admin only) -->
-            <div v-if="isMaster && !isCoAdmin && !isTreasurer" class="space-y-1.5 w-40 relative" @click.stop>
+            <div v-if="isMaster && !isCoAdmin && !isTreasurer" class="space-y-1.5 w-full sm:w-40 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">College</label>
               <button
                 @click="openDropdown = openDropdown === 'college' ? null : 'college'"
@@ -206,7 +206,7 @@
             </div>
 
             <!-- Semester Validation -->
-            <div v-if="appSettings?.schoolYear && appSettings?.semester" class="space-y-1.5 w-44 relative" @click.stop>
+            <div v-if="appSettings?.schoolYear && appSettings?.semester" class="space-y-1.5 w-full sm:w-44 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Sem. Validation</label>
               <button
                 @click="openDropdown = openDropdown === 'validation' ? null : 'validation'"
@@ -239,7 +239,7 @@
             </div>
 
             <!-- Verification Status -->
-            <div class="space-y-1.5 w-44 relative" @click.stop>
+            <div class="space-y-1.5 w-full sm:w-44 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">Verification</label>
               <button
                 @click="openDropdown = openDropdown === 'status' ? null : 'status'"
@@ -274,7 +274,7 @@
             </div>
 
             <!-- AY Year -->
-            <div class="space-y-1.5 w-40 relative" @click.stop>
+            <div class="space-y-1.5 w-full sm:w-40 relative" @click.stop>
               <label class="text-[10px] font-bold text-gray-500 uppercase tracking-wider block text-center">AY Year</label>
               <button
                 @click="openDropdown = openDropdown === 'acadYear' ? null : 'acadYear'"

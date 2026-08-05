@@ -1182,9 +1182,9 @@
     </div>
   </div>
 
-  <!-- Version badge — fixed bottom-right on all layouts -->
-  <div class="fixed bottom-3 right-4 z-50 pointer-events-none select-none">
-    <span class="text-[10px] font-mono text-white/30">{{ appVersion }}</span>
+  <!-- Version badge — fixed bottom-center on all layouts -->
+  <div class="fixed bottom-3 left-0 right-0 z-50 flex justify-center pointer-events-none select-none">
+    <span class="text-[10px] font-mono text-white/50 drop-shadow">{{ appVersion }}</span>
   </div>
 </template>
 
