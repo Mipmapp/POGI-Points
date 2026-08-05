@@ -4881,7 +4881,7 @@
             <div class="flex items-center gap-2 flex-nowrap">
               <!-- Bulk ARMS Re-validate -->
               <button @click="handleBulkArmsRevalidate" :disabled="bulkArmsLoading || statsLoading"
-                :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0 border whitespace-nowrap',
+                :class="['flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold shadow-md transition disabled:opacity-60 flex-1 border whitespace-nowrap',
                   isCOE ? 'bg-white text-orange-600 border-orange-200 hover:bg-orange-50 shadow-orange-100' :
                   isSOM ? 'bg-white text-green-700 border-green-200 hover:bg-green-50 shadow-green-100' :
                   isCNAHS ? 'bg-white text-green-800 border-green-200 hover:bg-green-50 shadow-green-100' :
@@ -4893,7 +4893,7 @@
               </button>
               <!-- Refresh stats -->
               <button @click="handleStatsRefresh" :disabled="statsLoading"
-                :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-white text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0',
+                :class="['flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-white text-sm font-semibold shadow-md transition disabled:opacity-60 flex-1',
                   isCOE ? 'bg-orange-500 hover:bg-orange-600 shadow-orange-200' :
                   isSOM ? 'bg-green-600 hover:bg-green-700 shadow-green-200' :
                   isCNAHS ? 'bg-green-700 hover:bg-green-800 shadow-green-200' :
