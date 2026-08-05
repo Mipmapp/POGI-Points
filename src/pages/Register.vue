@@ -1181,6 +1181,11 @@
       </div>
     </div>
   </div>
+
+  <!-- Version badge — fixed bottom-right on all layouts -->
+  <div class="fixed bottom-3 right-4 z-50 pointer-events-none select-none">
+    <span class="text-[10px] font-mono text-white/30">{{ appVersion }}</span>
+  </div>
 </template>
 
 <script setup>
@@ -1191,6 +1196,7 @@ import ParticleBackground from '../components/ParticleBackground.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
 import { APP_VERSION } from '../utils/version.js'
+const appVersion = APP_VERSION
 import departments from '../config/departments.js'
 
 // Custom v-click-outside directive

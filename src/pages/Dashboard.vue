@@ -34,7 +34,7 @@
                   class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-3 sm:p-4 pt-8 sm:pt-10">
                   <p class="text-white font-bold text-sm leading-tight">{{ dev.name }}</p>
                   <p class="text-white/80 text-xs mt-0.5">{{ dev.role }}</p>
-                  <p class="text-white/55 text-xs">{{ dev.year_level }} · {{ dev.program }}</p>
+                  <p class="text-white/55 text-xs">{{ dev.program }}</p>
                 </div>
                 <!-- Side card name overlay -->
                 <div v-else class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
@@ -4881,7 +4881,7 @@
             <div class="flex items-center gap-2 flex-wrap">
               <!-- Bulk ARMS Re-validate -->
               <button @click="handleBulkArmsRevalidate" :disabled="bulkArmsLoading || statsLoading"
-                :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0 border',
+                :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0 border whitespace-nowrap',
                   isCOE ? 'bg-white text-orange-600 border-orange-200 hover:bg-orange-50 shadow-orange-100' :
                   isSOM ? 'bg-white text-green-700 border-green-200 hover:bg-green-50 shadow-green-100' :
                   isCNAHS ? 'bg-white text-green-800 border-green-200 hover:bg-green-50 shadow-green-100' :
