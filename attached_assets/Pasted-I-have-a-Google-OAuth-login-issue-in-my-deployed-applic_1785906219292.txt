@@ -1,0 +1,65 @@
+I have a Google OAuth login issue in my deployed application.
+
+Problem:
+- After clicking "Sign in with Google", Google successfully redirects back to my application.
+- The callback URL becomes something like:
+  https://ssaam.vercel.app/?gc=281d77c24e4ab6d1b29534ec63ee4864d93ec0f58619631f
+- Instead of logging the user in, the app redirects back to the homepage as if authentication failed.
+
+Please perform a complete investigation instead of making assumptions.
+
+Things to check:
+
+1. Find where the `gc` query parameter is generated and where it is supposed to be processed.
+
+2. Verify whether the frontend is reading `window.location.search` and extracting the `gc` parameter correctly.
+
+3. Check whether the frontend exchanges the `gc` code for a user session or JWT.
+
+4. Verify that the backend endpoint responsible for Google authentication is being called.
+
+5. Inspect the browser console for JavaScript errors.
+
+6. Inspect the Network tab to determine:
+   - Which request succeeds.
+   - Which request fails.
+   - Response status codes.
+   - Response body.
+
+7. Check whether cookies are being set correctly.
+   - Secure
+   - SameSite
+   - HttpOnly
+   - Domain
+   - Path
+
+8. Verify that authentication middleware recognizes the user after login.
+
+9. Ensure the frontend waits for authentication to complete before redirecting.
+
+10. Check for race conditions where the homepage loads before authentication finishes.
+
+11. Verify environment variables:
+   - Google Client ID
+   - Google Client Secret
+   - Redirect URI
+   - Session Secret
+   - JWT Secret
+   - API Base URL
+
+12. Verify the Google OAuth redirect URI exactly matches:
+https://ssaam.vercel.app
+
+13. Check if Vercel deployment environment variables differ from local development.
+
+14. Compare the login flow between local and deployed versions and identify exactly where they diverge.
+
+15. If the application uses Firebase, Supabase, Passport.js, NextAuth, Auth.js, or a custom OAuth implementation, verify that the callback handler completes successfully.
+
+After finding the issue:
+- Explain the root cause.
+- Show the affected files.
+- Apply the fix.
+- Explain why the fix works.
+- Do not remove existing functionality unless necessary.
+- Preserve code style and architecture.
