@@ -3915,6 +3915,10 @@ async function callARMSVerify(student_id, password) {
             method:  'POST',
             headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
         });
+        const ct = tokenRes.headers.get('content-type') || '';
+        if (ct.includes('text/html')) {
+            return { ok: false, status: 503, message: "The JRMSU ARMS portal is blocking server requests (Cloudflare protection active). Please contact JRMSU IT to whitelist the server IP, or try again later." };
+        }
         tokenData = await tokenRes.json();
     } catch (e) {
         return { ok: false, status: 503, message: "Could not reach JRMSU ARMS portal. Please try again later." };
@@ -4152,6 +4156,10 @@ app.post('/apis/students/self-arms-search-validate', studentAuthWithToken, async
                 method:  'POST',
                 headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
             });
+            const ct = tokenRes.headers.get('content-type') || '';
+            if (ct.includes('text/html')) {
+                return res.status(503).json({ message: 'The JRMSU ARMS portal is blocking server requests (Cloudflare protection active). Please contact JRMSU IT to whitelist the server IP, or try again later.' });
+            }
             tokenData = await tokenRes.json();
         } catch (e) {
             return res.status(503).json({ message: 'Could not reach JRMSU ARMS portal. Please try again later.' });
@@ -4307,6 +4315,10 @@ app.post('/apis/admin/arms-check-student', auth, requireCoAdminOrAbove, async (r
                 method:  'POST',
                 headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
             });
+            const ct = tokenRes.headers.get('content-type') || '';
+            if (ct.includes('text/html')) {
+                return res.status(503).json({ message: 'The JRMSU ARMS portal is blocking server requests (Cloudflare protection active). Please contact JRMSU IT to whitelist the server IP, or try again later.' });
+            }
             tokenData = await tokenRes.json();
         } catch { return res.status(503).json({ message: 'Could not reach JRMSU ARMS portal. Please try again later.' }); }
         if (!tokenRes.ok) return res.status(503).json({ message: 'ARMS service error. Please try again later.' });
@@ -4388,6 +4400,10 @@ app.post('/apis/admin/bulk-arms-revalidate', auth, requireCoAdminOrAbove, async 
                 method:  'POST',
                 headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
             });
+            const ct = tokenRes.headers.get('content-type') || '';
+            if (ct.includes('text/html')) {
+                return res.status(503).json({ message: 'The JRMSU ARMS portal is blocking server requests (Cloudflare protection active). Please contact JRMSU IT to whitelist the server IP, or try again later.' });
+            }
             tokenData = await tokenRes.json();
         } catch (e) {
             return res.status(503).json({ message: 'Could not reach JRMSU ARMS portal. Please try again later.' });
