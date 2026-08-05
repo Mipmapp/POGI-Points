@@ -4878,7 +4878,7 @@
                 </span>
               </div>
             </div>
-            <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex items-center gap-2 flex-nowrap">
               <!-- Bulk ARMS Re-validate -->
               <button @click="handleBulkArmsRevalidate" :disabled="bulkArmsLoading || statsLoading"
                 :class="['flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md transition disabled:opacity-60 flex-shrink-0 border whitespace-nowrap',
