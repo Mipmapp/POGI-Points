@@ -429,7 +429,7 @@
                   class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/75 via-black/30 to-transparent p-3 sm:p-4 pt-8 sm:pt-10">
                   <p class="text-white font-bold text-sm leading-tight">{{ dev.name }}</p>
                   <p class="text-white/80 text-xs mt-0.5">{{ dev.role }}</p>
-                  <p class="text-white/55 text-xs">{{ dev.year_level }} · {{ dev.program }}</p>
+                  <p class="text-white/55 text-xs">{{ dev.program }}</p>
                 </div>
                 <!-- Side card name overlay -->
                 <div v-else class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
@@ -1208,11 +1208,11 @@ const togglePasswordVisibility = () => {
 }
 
 const developers = [
-  { name: 'Kenzen Miñao', initials: 'KM', role: 'Fullstack Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
-  { name: 'Jullan Maglinte', initials: 'JM', role: 'Lead Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
-  { name: 'Keith Laranjo', initials: 'KL', role: 'Backend Dev', year_level: '2nd year', program: 'CS', facebook: 'https://facebook.com/kei.takun.5070', image: '/team/keith.jpg' },
-  { name: 'Christoph Bagabuyo', initials: 'CB', role: 'Frontend Dev', year_level: '1st year', program: 'CS', facebook: 'https://facebook.com/christoph.bagabuyo', image: '/team/christoph.jpg' },
-  { name: 'Mischi Jeda Elumba', initials: 'MJ', role: 'UI/UX Designer', year_level: '2nd year', program: 'IS', facebook: 'https://facebook.com/mischijeda.elumba.1', image: '/team/mischi.jpg' }
+  { name: 'Kenzen Miñao', initials: 'KM', role: 'Fullstack Dev', program: 'BSCS', facebook: 'https://facebook.com/kenzen3131', image: '/team/kenzen.jpg' },
+  { name: 'Jullan Maglinte', initials: 'JM', role: 'Lead Dev', program: 'BSCS', facebook: 'https://facebook.com/jullan.maglinte', image: '/team/jullan.jpg' },
+  { name: 'Keith Laranjo', initials: 'KL', role: 'Backend Dev', program: 'BSCS', facebook: 'https://facebook.com/kei.takun.5070', image: '/team/keith.jpg' },
+  { name: 'Christoph Bagabuyo', initials: 'CB', role: 'Frontend Dev', program: 'BSCS', facebook: 'https://facebook.com/christoph.bagabuyo', image: '/team/christoph.jpg' },
+  { name: 'Mischi Jeda Elumba', initials: 'MJ', role: 'UI/UX Designer', program: 'BSIS', facebook: 'https://facebook.com/mischijeda.elumba.1', image: '/team/mischi.jpg' }
 ]
 
 onMounted(async () => {

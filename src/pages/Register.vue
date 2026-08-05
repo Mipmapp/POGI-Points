@@ -1173,6 +1173,7 @@
 
         <div class="mt-3 text-center text-xs text-gray-400">
           Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer">CCS - Creatives Committee</button>
+          <span class="ml-2 text-gray-300 text-[10px] font-mono select-none">{{ appVersion }}</span>
         </div>
 
         <div class="mt-2 text-center text-xs text-gray-400">
