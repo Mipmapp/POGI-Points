@@ -22,15 +22,12 @@
 
 <script setup>
 import { onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
 import jrmsuLogo from '../assets/ccs-logo.png'
 import ParticleBackground from './ParticleBackground.vue'
 import { getCollege } from '../config/api.js'
 import { APP_VERSION } from '../utils/version.js'
 
 const appVersion = APP_VERSION
-
-const router = useRouter()
 
 const college   = computed(() => getCollege())
 const isCOE     = computed(() => college.value === 'COE')
@@ -112,9 +109,12 @@ const preloadImages = () => {
 
 onMounted(async () => {
   const minWait = new Promise(resolve => setTimeout(resolve, 3000))
-  // Run preloading and minimum wait in parallel
+  // Run preloading and minimum wait in parallel.
+  // Do NOT push to '/' here — that would strip any query params (e.g. ?gc=
+  // from a Google OAuth callback) from the URL before Login.vue can read them.
+  // App.vue's own setTimeout sets isLoading = false and unmounts this component,
+  // letting the router render whatever route the browser is actually on.
   await Promise.all([preloadImages(), minWait])
-  router.push('/')
 })
 </script>
 
