@@ -2,6 +2,9 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 import { execSync } from 'child_process'
+import dotenv from 'dotenv'
+
+dotenv.config() // load .env so GITHUB_TOKEN is available during config evaluation
 
 const commitCount = (() => {
   // 1. GitHub API — always reflects the real remote count, even on shallow clones
