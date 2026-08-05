@@ -11,6 +11,12 @@ A Vue 3 + Vite frontend with an Express/Node.js backend for JRMSU (Jose Rizal Me
 
 ## How to run
 
+Install dependencies first (one-time):
+
+```
+npm install
+```
+
 Two workflows run concurrently:
 
 | Workflow | Command | Port |
@@ -19,6 +25,8 @@ Two workflows run concurrently:
 | Backend Server | `node server.js` | 3001 (console) |
 
 Vite proxies `/apis` and `/api/auth` requests to `localhost:3001` automatically.
+
+> **Note:** The project declares `"engines": { "node": "24.x" }` in `package.json` but runs correctly on Node 20 (Replit default) with an engine warning.
 
 ## Environment / Secrets
 
