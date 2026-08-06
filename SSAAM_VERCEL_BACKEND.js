@@ -7217,13 +7217,21 @@ app.get('/apis/attendance/events', auth, async (req, res) => {
 
         // Use college-specific AttendanceEvent model
         const EventModel = getCollegeModel(AttendanceEvent, CCS_AttendanceEvent, COE_AttendanceEvent, req.college);
+        const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
         // Get all events matching the filter (no is_custom filtering)
         const events = await EventModel.find(filter)
-            .populate('assigned_users', 'full_name name student_id program year_level')
+            .populate({ path: 'assigned_users', model: StudentModel, select: 'full_name name student_id program year_level' })
             .sort({ event_date: -1, created_at: -1 })
             .skip(skip)
             .limit(parseInt(limit));
+
+        // Filter out any nulls left by populate (e.g. deleted students)
+        events.forEach(ev => {
+            if (Array.isArray(ev.assigned_users)) {
+                ev.assigned_users = ev.assigned_users.filter(Boolean);
+            }
+        });
 
         const total = await EventModel.countDocuments(filter);
 
@@ -7329,6 +7337,7 @@ app.get('/apis/attendance/events/active', studentAuthWithToken, async (req, res)
         // 1. Not custom (for all students)
         // 2. Custom and this student is assigned
         const EventModel = getCollegeModel(AttendanceEvent, CCS_AttendanceEvent, COE_AttendanceEvent, req.college);
+        const StudentModelActive = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
         const events = await EventModel.find({
             status: 'active',
@@ -7339,8 +7348,13 @@ app.get('/apis/attendance/events/active', studentAuthWithToken, async (req, res)
                 { is_custom: true, assigned_users: { $in: [studentId] } }
             ]
         })
-            .populate('assigned_users', 'full_name name student_id')
+            .populate({ path: 'assigned_users', model: StudentModelActive, select: 'full_name name student_id' })
             .sort({ event_date: -1 });
+
+        // Filter nulls from populate (e.g. deleted students)
+        events.forEach(ev => {
+            if (Array.isArray(ev.assigned_users)) ev.assigned_users = ev.assigned_users.filter(Boolean);
+        });
 
         res.json({ data: events });
     } catch (err) {
@@ -7362,6 +7376,7 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
         // 1. Not custom (for all students)
         // 2. Custom and this student is assigned
         const EventModel = getCollegeModel(AttendanceEvent, CCS_AttendanceEvent, COE_AttendanceEvent, req.college);
+        const StudentModelUpcoming = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
 
         const events = await EventModel.find({
             status: 'draft',
@@ -7372,8 +7387,13 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
                 { is_custom: true, assigned_users: { $in: [studentId] } }
             ]
         })
-            .populate('assigned_users', 'full_name name student_id')
+            .populate({ path: 'assigned_users', model: StudentModelUpcoming, select: 'full_name name student_id' })
             .sort({ event_date: 1 });
+
+        // Filter nulls from populate (e.g. deleted students)
+        events.forEach(ev => {
+            if (Array.isArray(ev.assigned_users)) ev.assigned_users = ev.assigned_users.filter(Boolean);
+        });
 
         // Enrich assigned_users objects for consistent full_name
         try {
@@ -7442,8 +7462,13 @@ app.get('/apis/attendance/events/upcoming', studentAuthWithToken, async (req, re
 app.get('/apis/attendance/events/:id', auth, async (req, res) => {
     try {
         const EventModel = getCollegeModel(AttendanceEvent, CCS_AttendanceEvent, COE_AttendanceEvent, req.college);
+        const StudentModelSingle = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const event = await EventModel.findById(req.params.id)
-            .populate('assigned_users', 'full_name name student_id program year_level');
+            .populate({ path: 'assigned_users', model: StudentModelSingle, select: 'full_name name student_id program year_level' });
+        // Filter nulls from populate (e.g. deleted students)
+        if (event && Array.isArray(event.assigned_users)) {
+            event.assigned_users = event.assigned_users.filter(Boolean);
+        }
         if (!event) {
             return res.status(404).json({ message: "Event not found" });
         }
@@ -7644,8 +7669,13 @@ app.put('/apis/attendance/events/:id', auth, requireCoAdminOrAbove, async (req, 
 
         console.log(`[Event Update] After save - assigned_users:`, updated.assigned_users);
 
-        // Populate assigned_users before returning
-        await updated.populate('assigned_users', 'full_name name student_id program year_level');
+        // Populate assigned_users before returning (use college-specific model so IDs resolve correctly)
+        const StudentModelPut = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        await updated.populate({ path: 'assigned_users', model: StudentModelPut, select: 'full_name name student_id program year_level' });
+        // Filter nulls left by populate (deleted students)
+        if (Array.isArray(updated.assigned_users)) {
+            updated.assigned_users = updated.assigned_users.filter(Boolean);
+        }
 
         console.log(`[Event Update] After populate - assigned_users:`, updated.assigned_users);
 

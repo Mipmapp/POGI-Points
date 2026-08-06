@@ -12550,15 +12550,18 @@ const getSelectedEventUserName = (userItem) => {
 const enrichAssignedUsersWithNames = (assignedUsersArray) => {
   if (!Array.isArray(assignedUsersArray)) return []
   
-  return assignedUsersArray.map(userItem => {
-    // If already an object, return as is
+  return assignedUsersArray.filter(Boolean).map(userItem => {
+    // If already an object with an _id, try to find the matching entry in users.value
+    // so the _id type/format is consistent with the checkbox comparison
     if (typeof userItem === 'object' && userItem._id) {
-      return userItem
+      const idStr = userItem._id.toString()
+      const found = users.value?.find(u => u._id === idStr || u._id?.toString() === idStr)
+      return found || userItem
     }
     
     // If it's an ID string, look it up and return full object
     if (typeof userItem === 'string') {
-      const found = users.value?.find(u => u._id === userItem)
+      const found = users.value?.find(u => u._id === userItem || u._id?.toString() === userItem)
       return found || { _id: userItem } // Return found user or object with ID
     }
     
