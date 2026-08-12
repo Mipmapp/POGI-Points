@@ -221,12 +221,6 @@
               {{ faceError }}
             </div>
 
-            <!-- No-faces info (super-admin bypass) -->
-            <div v-if="noFacesEnrolled"
-              class="px-3 py-2 bg-amber-50 border border-amber-100 rounded-xl text-amber-700 text-[11px] text-center leading-snug">
-              No Face ID enrolled. You can continue and set one up from <strong class="text-amber-800">Settings → Face ID</strong>.
-            </div>
-
             <!-- Camera frame -->
             <div :class="['relative mx-auto w-full rounded-xl overflow-hidden bg-gray-950',
               faceEnrollMode ? 'ring-1 ring-violet-200' : 'ring-1 ring-gray-200']"
@@ -234,23 +228,11 @@
               <video ref="faceVideoEl" autoplay muted playsinline class="absolute inset-0 w-full h-full object-cover -scale-x-100"></video>
 
               <!-- Loading -->
-              <div v-if="!faceCameraOn && !noFacesEnrolled"
+              <div v-if="!faceCameraOn"
                 class="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-gray-950">
                 <div :class="['w-8 h-8 rounded-full border-2 border-t-transparent animate-spin',
                   faceEnrollMode ? 'border-violet-400' : 'border-blue-400']"></div>
                 <p class="text-[10px] text-white/50 font-medium">{{ faceLoadingModels ? 'Loading face models…' : 'Starting camera…' }}</p>
-              </div>
-
-              <!-- No-faces placeholder -->
-              <div v-if="noFacesEnrolled"
-                class="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-gray-950 px-5 text-center">
-                <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10">
-                  <svg class="w-5 h-5 text-white/30" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="1.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 10a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 8V6a2 2 0 012-2h2M3 16v2a2 2 0 002 2h2m10-16h2a2 2 0 012 2v2m-4 12h2a2 2 0 002-2v-2"/>
-                  </svg>
-                </div>
-                <p class="text-[10px] text-white/35 leading-relaxed">No Face ID<br>enrolled</p>
               </div>
 
               <!-- Enrollment overlay -->
@@ -308,7 +290,7 @@
             </transition>
 
             <!-- Match-streak dots (verification only) -->
-            <div v-if="faceCameraOn && !faceEnrollMode && !noFacesEnrolled"
+            <div v-if="faceCameraOn && !faceEnrollMode"
               class="flex items-center justify-center gap-1.5">
               <span class="text-[10px] text-gray-400 mr-0.5">Match</span>
               <span v-for="n in 3" :key="n"
@@ -349,13 +331,6 @@
                   <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                 </svg>
                 {{ faceEnrollSaving ? 'Saving…' : faceCapturing ? 'Detecting…' : 'Capture & Enroll' }}
-              </button>
-
-              <!-- Super-admin bypass -->
-              <button v-else-if="noFacesEnrolled"
-                @click="completeLoginFromFace"
-                class="flex-1 py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-xl text-sm font-semibold transition-all active:scale-95">
-                Continue Anyway
               </button>
 
               <!-- Verification retry -->
@@ -1632,17 +1607,14 @@ const verifyAdminCode = () => {
 };
 
 // ---------- Step 3 of 3: Face ID ----------
-// Always shown after the 2nd verification passes. If no faces are enrolled
-// (or the enrollment lookup fails), the modal still opens with a "Continue"
-// button so admins are never silently logged in past the 3rd step.
-// For co-admin / treasurer: if no face enrolled, they MUST enroll inline
-// before they can proceed — the "Continue" bypass is not available to them.
+// The third verification step requires a real face match for every admin.
+// If no face is enrolled yet, the user must enroll one in this flow before
+// login can continue.
 const showFaceModal = ref(false)
 const faceLoadingModels = ref(false)
 const faceCameraOn = ref(false)
 const faceMatching = ref(false)
 const faceVerified = ref(false)
-const noFacesEnrolled = ref(false)
 const faceError = ref('')
 const faceStatusText = ref('')
 const faceStatusVariant = ref('idle') // idle | scanning | match | nomatch | nodetect | success | error
@@ -1694,7 +1666,6 @@ async function proceedToFaceVerification() {
   // Always reveal the 3rd verification modal, even when something fails below.
   faceError.value = '';
   faceVerified.value = false;
-  noFacesEnrolled.value = false;
   faceEnrollMode.value = false;
   faceEnrollStatus.value = '';
   faceEnrollKind.value = 'info';
@@ -1705,8 +1676,8 @@ async function proceedToFaceVerification() {
   showFaceModal.value = true;
 
   if (!pendingUser || !pendingUser.token) {
-    if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; await startFaceCamera(); }
-    else { noFacesEnrolled.value = true; }
+    faceError.value = 'Session is missing. Please log in again.';
+    setFaceStatus('Session error', 'error');
     return;
   }
 
@@ -1715,34 +1686,22 @@ async function proceedToFaceVerification() {
       headers: { 'Authorization': `Bearer ${pendingUser.token}` },
     });
     if (!res.ok) {
-      if (pendingUserIsRestrictedRole()) { faceEnrollMode.value = true; await startFaceCamera(); }
-      else { noFacesEnrolled.value = true; }
+      faceEnrollMode.value = true;
+      await startFaceCamera();
       return;
     }
     const data = await res.json();
     faceEnrolled = (data.faces || []).filter(f => Array.isArray(f.descriptor) && f.descriptor.length === 128);
     if (faceEnrolled.length === 0) {
-      // Co-admin / treasurer must enroll their face inline — no bypass allowed.
-      // Super-admin gets the "Continue Anyway" option.
-      if (pendingUserIsRestrictedRole()) {
-        faceEnrollMode.value = true;
-        await startFaceCamera();
-      } else {
-        noFacesEnrolled.value = true;
-      }
+      faceEnrollMode.value = true;
+      await startFaceCamera();
       return;
     }
     setFaceStatus('Position your face', 'scanning');
     await startFaceCamera();
   } catch (e) {
-    // Even on network/parse errors, restricted roles must go through enrollment
-    // rather than being silently given the bypass button.
-    if (pendingUserIsRestrictedRole()) {
-      faceEnrollMode.value = true;
-      await startFaceCamera();
-    } else {
-      noFacesEnrolled.value = true;
-    }
+    faceEnrollMode.value = true;
+    await startFaceCamera();
   }
 }
 

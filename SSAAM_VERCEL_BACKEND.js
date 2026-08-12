@@ -8725,25 +8725,18 @@ const sessionAttendanceCheck = async (req, res) => {
         const studentFullName = `${student.full_name || student.first_name || ''} ${student.last_name || ''}`.replace(/\s+/g, ' ').trim();
 
         // === RFID ELIGIBILITY CHECK ===
-        // Block attendance for students with unreadable RFID cards (any age).
+        // Manual Student ID attendance is allowed for unreadable RFID cards.
+        // Unverified RFID cards are allowed only while the account is still within the 5-month grace period.
         const isUnreadableCard = student.rfid_status === 'Unreadable' ||
             (student.rfid_code && student.rfid_code.toUpperCase().startsWith('UNREADABLE'));
-        if (isUnreadableCard) {
-            return res.status(403).json({
-                message: "RFID card is unreadable. Please request a replacement at the admin office.",
-                action: 'rfid_unreadable',
-                student_name: studentFullName
-            });
-        }
 
-        // Block attendance for students whose RFID is still unregistered after 6 months.
-        // Newly registered students (< 6 months) are in the grace period and may still check in via Student ID.
-        const sixMonthsAgo = new Date(now.getTime() - 6 * 30 * 24 * 60 * 60 * 1000);
-        const isExpiredGrace = student.rfid_status !== 'verified' &&
-            student.created_date && student.created_date < sixMonthsAgo;
+        const fiveMonthsAgo = new Date(now.getTime() - 5 * 30 * 24 * 60 * 60 * 1000);
+        const isUnverifiedCard = student.rfid_status !== 'verified' && !isUnreadableCard;
+        const isExpiredGrace = isUnverifiedCard && student.created_date && student.created_date < fiveMonthsAgo;
+
         if (isExpiredGrace) {
             return res.status(403).json({
-                message: "Account is over 6 months old with no registered RFID card. Please visit the admin office to register your RFID.",
+                message: "Account is over 5 months old with no registered RFID card. Please visit the admin office to register your RFID.",
                 action: 'rfid_expired_grace',
                 student_name: studentFullName
             });

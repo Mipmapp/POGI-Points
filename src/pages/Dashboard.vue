@@ -9470,8 +9470,8 @@ const privacySections = [
     dot: 'bg-blue-500',
     points: [
       'Verifying your identity for attendance recording at JRMSU-sanctioned events via RFID, Face ID, or manual check-in.',
-      'Managing your contribution records, payment statuses, and raffle ticket allocations for your college.',
-      'Displaying your personal attendance history, contribution summary, and raffle results to you and authorized staff.',
+      'Managing your contribution records and payment statuses for your college.',
+      'Displaying your personal attendance history and contribution summary to you and authorized staff.',
       'Enabling <strong>GPS geofence validation</strong> so on-campus check-ins are accepted only within the defined radius.',
       'Sending in-app notifications about active events, payment reminders, and system updates.',
     ],
