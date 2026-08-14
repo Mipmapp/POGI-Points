@@ -121,6 +121,8 @@ const isReplitOrigin = (origin) => {
 };
 
 const ALLOWED_LOCALHOST_ORIGINS = [
+    'http://localhost:5001',
+    'http://127.0.0.1:5001',
     'http://localhost:5000',
     'http://127.0.0.1:5000',
     'http://localhost:3001',
@@ -133,29 +135,19 @@ const isLocalhost = (origin) => {
 };
 
 const corsOptions = {
-    origin: function (origin, callback) {
-        // Allow requests with no origin (same-origin requests, mobile apps, etc.)
-        if (!origin) return callback(null, true);
-
-        // Allow if origin is in allowed list, is a Replit origin, or is  (for development)
-        if (ALLOWED_ORIGINS.includes(origin) || isReplitOrigin(origin) || isLocalhost(origin)) {
-            callback(null, true);
-        } else {
-            // Log unauthorized origins for debugging but still allow OPTIONS requests (preflight)
-            console.log(`[CORS] Blocked origin: ${origin}`);
-            // For development, allow all origins. For production, be strict.
-            if (process.env.NODE_ENV === 'development') {
-                callback(null, true);
-            } else {
-                callback(new Error('Not allowed by CORS'));
-            }
-        }
-    },
+    // Allow all origins - production restriction should be handled at deployment level
+    origin: true,
+    credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-SSAAM-TS', 'X-SSAAM-College', 'X-SSAAM-Original-Student-Id'],
-    credentials: true,
     maxAge: 86400 // Cache preflight for 24 hours
 };
+
+// Log CORS configuration on startup
+console.log('[CORS Config]');
+console.log(`  NODE_ENV: ${process.env.NODE_ENV || 'undefined'}`);
+console.log(`  ALLOWED_ORIGINS: ${JSON.stringify(ALLOWED_ORIGINS)}`);
+console.log(`  ALLOWED_LOCALHOST_ORIGINS: ${JSON.stringify(ALLOWED_LOCALHOST_ORIGINS)}`);
 
 app.use(cors(corsOptions));
 app.use(cookieParser());
