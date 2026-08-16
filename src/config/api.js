@@ -47,11 +47,16 @@ export const getCollege = () => {
 }
 
 // Helper function to get the appropriate API URL based on user's college.
-// Always returns '' (empty string) so all /apis/* calls use relative URLs —
-// in dev the Vite proxy forwards them to localhost:3001, and in production
-// Vercel routes them to the co-located serverless function. No external URL
-// is ever baked into the build.
-export const getAPIBaseURL = () => ''
+// In dev, the Vite proxy forwards /apis/* to localhost:3001.
+// In production, an external backend can be supplied via VITE_API_BASE_URL.
+// Setting it to a full URL (for example, https://api.example.com) allows the
+// frontend to live on Vercel while the backend runs elsewhere.
+export const getAPIBaseURL = () => {
+  const configuredBase = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE_URL)
+    ? String(import.meta.env.VITE_API_BASE_URL).replace(/\/$/, '')
+    : ''
+  return configuredBase
+}
 
 // Helper function to build full API URLs (evaluates base at call time)
 export const buildAPIUrl = (endpoint) => {
