@@ -2662,6 +2662,17 @@ verificationCodeSchema.index({ expires_at: 1 }, { expireAfterSeconds: 0 });
 
 const VerificationCode = mongoose.model("VerificationCode", verificationCodeSchema);
 
+// Compatibility layer for older /api endpoints. The canonical app routes live
+// under /apis, but legacy clients and older serverless entrypoints may still hit /api.
+app.get('/api', (req, res) => {
+    const target = '/apis' + (req.originalUrl === '/api' ? '' : req.originalUrl.slice('/api'.length));
+    return res.redirect(308, target || '/apis');
+});
+
+app.get('/api/health', (req, res) => {
+    return res.redirect(308, '/apis/health');
+});
+
 const masterSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     email: { type: String, required: true, unique: true },
@@ -9676,6 +9687,22 @@ app.post('/api/auth/google/exchange', async (req, res) => {
         console.error('[Google OAuth] exchange error:', err);
         return res.status(500).json({ message: 'Login failed due to a server error. Please try again.' });
     }
+});
+
+// Legacy /api compatibility fallback: resolve all requests through the same
+// canonical /apis implementation so no separate serverless backend is needed.
+app.use('/api', (req, res, next) => {
+    const targetPath = req.originalUrl.startsWith('/api')
+        ? req.originalUrl.replace(/^\/api/, '/apis')
+        : `/apis${req.originalUrl}`;
+
+    if (req.method === 'GET' && (req.originalUrl === '/api' || req.originalUrl === '/api/')) {
+        return res.redirect(308, '/apis');
+    }
+
+    // Preserve the request method but route to the same canonical endpoint set.
+    req.url = targetPath;
+    next();
 });
 
 export default app;
