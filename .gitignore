@@ -25,3 +25,4 @@ dist-ssr
 
 # Generated report files
 reports/
+.env
