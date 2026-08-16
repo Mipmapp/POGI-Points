@@ -204,7 +204,7 @@ app.use((req, res, next) => {
     next();
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3001;
 // Single MongoDB database - all colleges use same DB, separate collections by prefix
 const MONGO_URI = process.env.MONGODB_URI || process.env.MONGODB_URL;
 
@@ -2116,6 +2116,21 @@ async function getConnectionByType(type) {
 }
 
 const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 5000) => {
+    const shouldListenLocally = !process.env.VERCEL && process.env.LOCAL_SERVER === 'true';
+
+    if (!MONGO_URI) {
+        console.warn('[DB] MONGODB_URI not set. Starting local API without MongoDB connection. Some routes will be unavailable until a database is configured.');
+        if (shouldListenLocally) {
+            app.listen(PORT, () => {
+                console.log(`Server running on ${PORT}`);
+                if (typeof autoUpdateEventStatuses === 'function') {
+                    autoUpdateEventStatuses();
+                }
+            });
+        }
+        return;
+    }
+
     try {
         await mongoose.connect(MONGO_URI, MONGO_OPTS);
         console.log('Connected to MongoDB Atlas');
@@ -2128,7 +2143,7 @@ const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 50
             if (typeof autoUpdateEventStatuses === 'function') {
                 autoUpdateEventStatuses();
             }
-        } else {
+        } else if (shouldListenLocally) {
             app.listen(PORT, () => {
                 console.log(`Server running on ${PORT}`);
                 if (typeof autoUpdateEventStatuses === 'function') {
@@ -2143,9 +2158,14 @@ const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 50
             setTimeout(() => connectWithRetry(retryCount + 1, maxRetries, retryDelay), retryDelay);
         } else {
             console.error('Max retries reached. Could not connect to MongoDB.');
-            // Don't process.exit() on Vercel — it terminates the Lambda before the
-            // ensureDatabaseConnection middleware can attempt a per-request reconnect.
-            if (!process.env.VERCEL) process.exit(1);
+            if (shouldListenLocally) {
+                app.listen(PORT, () => {
+                    console.log(`Server running on ${PORT} without MongoDB connectivity`);
+                    if (typeof autoUpdateEventStatuses === 'function') {
+                        autoUpdateEventStatuses();
+                    }
+                });
+            }
         }
     }
 };
@@ -8705,35 +8725,19 @@ const sessionAttendanceCheck = async (req, res) => {
         } else {
             student = await StudentModel.findOne({
                 rfid_code: identifier.trim(),
-                rfid_status: 'verified',
                 status: 'approved'
             });
             if (!student) {
-                return res.status(404).json({ message: "No verified student found with this RFID code" });
+                return res.status(404).json({ message: "No approved student found with this RFID code" });
             }
         }
 
         // Calculate student full name
         const studentFullName = `${student.full_name || student.first_name || ''} ${student.last_name || ''}`.replace(/\s+/g, ' ').trim();
 
-        // === RFID ELIGIBILITY CHECK ===
-        // Manual Student ID attendance is allowed for unreadable RFID cards.
-        // Unverified RFID cards are allowed only while the account is still within the 5-month grace period.
-        const isUnreadableCard = student.rfid_status === 'Unreadable' ||
-            (student.rfid_code && student.rfid_code.toUpperCase().startsWith('UNREADABLE'));
-
-        const fiveMonthsAgo = new Date(now.getTime() - 5 * 30 * 24 * 60 * 60 * 1000);
-        const isUnverifiedCard = student.rfid_status !== 'verified' && !isUnreadableCard;
-        const isExpiredGrace = isUnverifiedCard && student.created_date && student.created_date < fiveMonthsAgo;
-
-        if (isExpiredGrace) {
-            return res.status(403).json({
-                message: "Account is over 5 months old with no registered RFID card. Please visit the admin office to register your RFID.",
-                action: 'rfid_expired_grace',
-                student_name: studentFullName
-            });
-        }
-        // ==============================
+        // Scanner eligibility is intentionally not restricted by RFID status.
+        // Approved students may check in/out regardless of whether their RFID is
+        // marked verified, unverified, or unreadable.
 
         // Validate if event is custom - only assigned users can check in
         if (event.is_custom && event.assigned_users && Array.isArray(event.assigned_users)) {

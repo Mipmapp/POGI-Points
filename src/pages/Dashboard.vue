@@ -13247,11 +13247,13 @@ const runStatsAutoLoad = () => {
   if (currentPage.value !== 'dashboard') return
   const u = currentUser.value
   if (!u) return
+  const activeYear = statsAcadYear.value || appSettings.value.schoolYear || ''
   const isAdminLikeUser = u.role === 'admin'
     || u.isMaster
     || u.role === 'co-admin'
     || u.role === 'treasurer'
   if (!isAdminLikeUser) return
+  if (!activeYear) return // wait until the academic year is known before fetching stats
   if (statsLoading.value) return // dedupe in-flight fetches
   fetchStats().catch(err => console.error('Auto-fetchStats failed:', err))
   if (u.isMaster) {
@@ -13980,14 +13982,17 @@ const refreshCurrentUser = async () => {
 // Auto-load triggers (watchers, interval) use the default force=false so duplicate
 // calls for the same year within a 20-second window are silently skipped.
 const fetchStats = async (force = false) => {
+  const activeYear = statsAcadYear.value || appSettings.value.schoolYear || ''
+  if (!activeYear) return
+
   // Dedup: skip if the same year was already fetched within the last 20 s
-  const fetchYear = statsAcadYear.value || ''
+  const fetchYear = activeYear
   const age = Date.now() - statsLastFetchedAt.value
   if (!force && statsLastFetchedYear.value === fetchYear && age < 20000) return
 
   statsLoading.value = true
   try {
-    const yearParam = statsAcadYear.value ? `?school_year=${encodeURIComponent(statsAcadYear.value)}` : ''
+    const yearParam = `?school_year=${encodeURIComponent(activeYear)}`
     const statsUrl = `/apis/students/stats${yearParam}`
     const response = await fetch(buildAPIUrl(statsUrl), {
       method: 'GET',
@@ -13998,30 +14003,6 @@ const fetchStats = async (force = false) => {
     }
     const data = await response.json()
     if (data.stats) {
-      // Auto-fallback: if a specific year was requested but returned 0 students,
-      // re-fetch without the year filter and show a notice
-      if (statsAcadYear.value && (data.totalStudents === 0 || data.totalCount === 0)) {
-        const requestedYear = statsAcadYear.value
-        statsYearFallbackNotice.value = requestedYear
-        statsAcadYear.value = ''
-        const fallbackResponse = await fetch(buildAPIUrl('/apis/students/stats'), {
-          method: 'GET',
-          headers: getFetchHeaders()
-        })
-        if (fallbackResponse.ok) {
-          const fallbackData = await fallbackResponse.json()
-          if (fallbackData.stats) {
-            statsData.value = {
-              ...fallbackData.stats,
-              verifiedCount: fallbackData.verifiedCount || 0,
-              unverifiedCount: fallbackData.unverifiedCount || 0,
-              unreadableCount: fallbackData.unreadableCount || 0
-            }
-            if (fallbackData.pendingCount !== undefined) pendingCount.value = fallbackData.pendingCount
-          }
-        }
-        return
-      }
       statsData.value = {
         ...data.stats,
         verifiedCount: data.verifiedCount || 0,
@@ -14061,11 +14042,14 @@ const fetchStats = async (force = false) => {
 
 const fetchAllCollegesStats = async () => {
   if (!currentUser.value?.isMaster) return
+  const activeYear = statsAcadYear.value || appSettings.value.schoolYear || ''
+  if (!activeYear) return
+
   allCollegesLoading.value = true
   const colleges = ['CCS', 'COE', 'SOM', 'CNAHS']
   try {
     const results = await Promise.allSettled(colleges.map(college =>
-      fetch(buildAPIUrl('/apis/students/stats'), {
+      fetch(buildAPIUrl(`/apis/students/stats?school_year=${encodeURIComponent(activeYear)}`), {
         method: 'GET',
         headers: { ...getFetchHeaders(), 'X-SSAAM-College': college }
       }).then(r => r.ok ? r.json() : null)
