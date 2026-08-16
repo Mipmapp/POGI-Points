@@ -11,6 +11,7 @@ import cloudinary from './config/cloudinary.js';
 import cookieParser from 'cookie-parser';
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { execSync } from 'child_process';
 
 // ── Login rate limiter & account lockout ──────────────────────────────────────
 // Tracks failed login attempts per IP (and per credential) in memory.
@@ -3917,8 +3918,50 @@ const ARMS_BASE_HEADERS = {
 };
 
 /**
+ * Helper to make HTTPS requests using system curl instead of Node's https module.
+ * Curl has a different TLS fingerprint, allowing it to bypass Cloudflare protection
+ * that blocks Node.js's libcurl and Node's built-in https module.
+ *
+ * @param {string} url - Full URL to request
+ * @param {Object} headers - Headers object { 'Header-Name': 'value' }
+ * @param {string|null} body - Optional JSON body
+ * @returns {Object} { statusCode, body, error? }
+ */
+function curlRequest(url, headers, body = null) {
+    try {
+        let cmd = 'curl -s -X POST --max-time 15 -k';
+
+        // Add headers
+        for (const [key, value] of Object.entries(headers)) {
+            cmd += ` -H ${JSON.stringify(`${key}: ${value}`)}`;
+        }
+
+        // Add body if provided
+        if (body) {
+            cmd += ` -d ${JSON.stringify(body)}`;
+        }
+
+        // Append status code separator
+        cmd += ` -w '\\n__STATUS__%{http_code}' ${JSON.stringify(url)} 2>/dev/null`;
+
+        // Execute curl
+        const output = execSync(cmd, { encoding: 'utf-8', timeout: 20000 }).toString();
+
+        // Parse response and status code
+        const parts = output.split('\n__STATUS__');
+        const rawBody = (parts[0] || '').trim();
+        const statusCode = parseInt(parts[1] || '0', 10);
+
+        return { statusCode, body: rawBody };
+    } catch (err) {
+        return { statusCode: 0, body: '', error: err.message };
+    }
+}
+
+/**
  * Shared ARMS verification helper — identical to what /apis/students/arms-verify uses.
  * Requests a bearer token, logs the student into ARMS, checks enrollment status.
+ * Uses system curl to bypass Cloudflare TLS fingerprint blocking.
  *
  * Returns { ok: true, record, rawStatus } on success.
  * Returns { ok: false, status, message } on any failure so callers can forward it directly.
@@ -3931,24 +3974,34 @@ async function callARMSVerify(student_id, password) {
         return { ok: false, status: 503, message: "ARMS verification is not configured on this server. Please contact your administrator." };
     }
 
-    // Step 1: Request ARMS bearer token
-    let tokenRes, tokenData;
-    try {
-        tokenRes = await fetch(ARMS_TOKEN_URL, {
-            method:  'POST',
-            headers: { ...ARMS_BASE_HEADERS, 'Api-Key': armsApiKey, 'Api-Secret': armsApiSecret },
-        });
-        const ct = tokenRes.headers.get('content-type') || '';
-        if (ct.includes('text/html')) {
-            return { ok: false, status: 503, message: "The JRMSU ARMS portal is blocking server requests (Cloudflare protection active). Please contact JRMSU IT to whitelist the server IP, or try again later." };
-        }
-        tokenData = await tokenRes.json();
-    } catch (e) {
+    // Step 1: Request ARMS bearer token using curl
+    const tokenHeaders = {
+        'User-Agent': 'Coderstation-Protocol',
+        'Referer': 'https://jrmsu-election-system.vercel.app/',
+        'Origin': 'https://jrmsu-election-system.vercel.app',
+        'Api-Key': armsApiKey,
+        'Api-Secret': armsApiSecret,
+    };
+
+    const tokenRes = curlRequest(ARMS_TOKEN_URL, tokenHeaders);
+    if (tokenRes.error || tokenRes.statusCode === 0) {
         return { ok: false, status: 503, message: "Could not reach JRMSU ARMS portal. Please try again later." };
     }
 
-    if (!tokenRes.ok) {
-        return { ok: false, status: 503, message: "ARMS service error. Please try again later." };
+    // Check if response is HTML (Cloudflare blocking)
+    if (tokenRes.body.trim().startsWith('<')) {
+        return { ok: false, status: 503, message: "The JRMSU ARMS portal is blocking server requests (Cloudflare protection active). Please contact JRMSU IT to whitelist the server IP." };
+    }
+
+    let tokenData;
+    try {
+        tokenData = JSON.parse(tokenRes.body);
+    } catch {
+        return { ok: false, status: 503, message: "ARMS token response was invalid. Please try again." };
+    }
+
+    if (tokenRes.statusCode >= 400) {
+        return { ok: false, status: 503, message: tokenData.message || "ARMS service error. Please try again later." };
     }
 
     const secretKey = tokenData.Secret_Key ?? tokenData.SecretKey ?? tokenData.secretKey ?? null;
@@ -3958,27 +4011,38 @@ async function callARMSVerify(student_id, password) {
         return { ok: false, status: 503, message: "ARMS token response was invalid. Please try again." };
     }
 
-    // Step 2: Authenticate the student against ARMS
-    let loginRes, loginData;
-    try {
-        loginRes = await fetch(ARMS_LOGIN_URL, {
-            method:  'POST',
-            headers: {
-                ...ARMS_BASE_HEADERS,
-                'Secret-Key':    secretKey,
-                'Token':         jwToken,
-                'Authorization': `Bearer ${jwToken}`,
-                'Content-Type':  'application/json',
-            },
-            body: JSON.stringify({ Username: student_id, Password: password }),
-        });
-        loginData = await loginRes.json();
-    } catch (e) {
+    // Step 2: Authenticate the student against ARMS using curl
+    const loginHeaders = {
+        'User-Agent': 'Coderstation-Protocol',
+        'Referer': 'https://jrmsu-election-system.vercel.app/',
+        'Origin': 'https://jrmsu-election-system.vercel.app',
+        'Secret-Key': secretKey,
+        'Token': jwToken,
+        'Authorization': `Bearer ${jwToken}`,
+        'Content-Type': 'application/json',
+    };
+
+    const loginBody = JSON.stringify({ Username: student_id, Password: password });
+    const loginRes = curlRequest(ARMS_LOGIN_URL, loginHeaders, loginBody);
+
+    if (loginRes.error || loginRes.statusCode === 0) {
         return { ok: false, status: 503, message: "Could not reach JRMSU ARMS portal. Please try again later." };
     }
 
-    if (!loginRes.ok || !loginData?.Record) {
-        return { ok: false, status: 401, message: "Incorrect Student ID or ARMS portal password. Please check and try again." };
+    // Check if response is HTML (Cloudflare blocking)
+    if (loginRes.body.trim().startsWith('<')) {
+        return { ok: false, status: 503, message: "The JRMSU ARMS portal is blocking server requests (Cloudflare protection active). Please contact JRMSU IT to whitelist the server IP." };
+    }
+
+    let loginData;
+    try {
+        loginData = JSON.parse(loginRes.body);
+    } catch {
+        return { ok: false, status: 401, message: "Invalid response from ARMS. Please try again." };
+    }
+
+    if (loginRes.statusCode >= 400 || !loginData?.Record) {
+        return { ok: false, status: 401, message: loginData?.message ?? "Incorrect Student ID or ARMS portal password. Please check and try again." };
     }
 
     const record = loginData.Record;
