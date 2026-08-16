@@ -2,14 +2,12 @@
   "version": 2,
   "outputDirectory": "dist",
   "functions": {
-    "api/arms-verify.js": { "maxDuration": 30 },
     "api/index.js": { "maxDuration": 30 }
   },
   "routes": [
-    { "src": "/apis/students/arms-verify",  "dest": "/api/arms-verify.js" },
-    { "src": "/api/auth/(.*)",              "dest": "/api/index.js" },
-    { "src": "/apis/(.*)",                  "dest": "/api/index.js" },
+    { "src": "/api/auth/(.*)", "dest": "/api/index.js" },
+    { "src": "/apis/(.*)",     "dest": "/api/index.js" },
     { "handle": "filesystem" },
-    { "src": "/(.*)",                       "dest": "/index.html" }
+    { "src": "/(.*)",          "dest": "/index.html" }
   ]
 }
