@@ -200,6 +200,8 @@
 </template>
 
 <script>
+import { getPersonDisplayName } from '../utils/formatters.js'
+
 // Logo is served by Vite from `public/assets/` at the root URL.
 const CCS_LOGO_URL = '/img/ccs_logo.png';
 
@@ -327,8 +329,7 @@ export default {
     btCharacteristic() { return btState.characteristic; },
     customerName() {
       if (!this.student) return '';
-      const n = this.student.full_name || `${this.student.first_name || ''} ${this.student.middle_name || ''} ${this.student.last_name || ''} ${this.student.suffix || ''}`;
-      return n.replace(/\s+/g, ' ').trim().toUpperCase();
+       return getPersonDisplayName(this.student).replace(/\s+/g, ' ').trim().toUpperCase();
     },
     itemName() {
       return (this.activePayment && this.activePayment.title) ? this.activePayment.title.toUpperCase() : 'CONTRIBUTION';
@@ -420,9 +421,7 @@ export default {
       if (this.employeeName) return;
       try {
         const cu = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        const name = cu.full_name || cu.fullName ||
-          [cu.first_name, cu.middle_name, cu.last_name, cu.suffix].filter(Boolean).join(' ') ||
-          cu.username || '';
+        const name = getPersonDisplayName(cu, cu.username || '');
         if (name) this.employeeName = String(name).trim();
       } catch {}
     },

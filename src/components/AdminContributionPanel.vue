@@ -598,7 +598,7 @@
                   <span v-else>{{ (s.full_name || s.first_name || '?').charAt(0).toUpperCase() }}</span>
                 </div>
                 <div class="min-w-0 flex-1">
-                  <p class="font-bold text-gray-900 text-sm truncate">{{ (s.full_name || s.first_name || '') }}{{ s.last_name ? ' ' + s.last_name : '' }}</p>
+                   <p class="font-bold text-gray-900 text-sm truncate">{{ s.display_name || getStudentDisplayName(s) }}</p>
                   <p class="text-xs text-gray-500 truncate">{{ s.student_id }} · {{ s.program || '—' }} · {{ s.year_level || '—' }}<span v-if="s.college"> · {{ s.college }}</span></p>
                 </div>
                 <span class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 bg-blue-600 group-hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold uppercase tracking-wider transition shadow-sm">
@@ -843,7 +843,7 @@
             <span v-else>{{ (selectedStudent.full_name || selectedStudent.first_name || '?').charAt(0).toUpperCase() }}</span>
           </div>
           <div class="min-w-0">
-            <h3 class="font-extrabold text-gray-900 text-sm sm:text-base leading-tight truncate">{{ (selectedStudent.full_name || selectedStudent.first_name || '') }}{{ selectedStudent.last_name ? ' ' + selectedStudent.last_name : '' }}</h3>
+             <h3 class="font-extrabold text-gray-900 text-sm sm:text-base leading-tight truncate">{{ getStudentDisplayName(selectedStudent) }}</h3>
             <p class="text-gray-500 text-[11px] mt-0.5 truncate">{{ selectedStudent.student_id }} · {{ selectedStudent.program }} – {{ selectedStudent.year_level }}</p>
           </div>
         </div>
@@ -2496,6 +2496,7 @@
 <script>
 import * as XLSX from 'xlsx'
 import { buildAPIUrl, getCollege } from '../config/api.js'
+import { getPersonDisplayName } from '../utils/formatters.js'
 import LoyversePOSPanel from './LoyversePOSPanel.vue'
 
 export default {
@@ -3036,6 +3037,9 @@ export default {
       if (!key) return;
       this.photoFailed = { ...this.photoFailed, [key]: true };
     },
+    getStudentDisplayName(student) {
+      return getPersonDisplayName(student, student?.student_id || '');
+    },
     async loadAllPaymentEvents() {
       this.isLoadingEvents = true;
       try {
@@ -3575,7 +3579,7 @@ export default {
       });
     },
     onReceiptPrinted({ customer } = {}) {
-      const name = customer || (this.selectedStudent && (this.selectedStudent.full_name || this.selectedStudent.first_name)) || 'student';
+      const name = customer || this.getStudentDisplayName(this.selectedStudent) || 'student';
       if (this.selectedStudentAlreadyPaid) {
         window.dispatchEvent(new CustomEvent('app-notification', {
           detail: { message: `Receipt printed for ${name} — already recorded as paid`, type: 'info' }

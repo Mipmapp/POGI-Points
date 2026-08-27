@@ -2564,6 +2564,29 @@ const studentSchema = new mongoose.Schema({
 // Pre-save middleware: ensure full_name is always set.
 // Build it from first_name + middle_name when those fields are present;
 // fall back to last_name only as a last resort so the required validator passes.
+function buildStudentDisplayName(person, fallback = '') {
+    if (!person || typeof person !== 'object') return fallback;
+
+    const base = String(
+        person.full_name ??
+        person.fullName ??
+        [person.first_name ?? person.firstName, person.middle_name ?? person.middleName]
+            .filter(Boolean)
+            .join(' ')
+    ).replace(/\s+/g, ' ').trim();
+    const lastName = String(person.last_name ?? person.lastName ?? '').replace(/\s+/g, ' ').trim();
+    const suffix = String(person.suffix ?? '').replace(/\s+/g, ' ').trim();
+
+    let name = base;
+    if (lastName && !new RegExp(`(?:^|\\s)${escapeRegex(lastName)}$`, 'i').test(name)) {
+        name = [name, lastName].filter(Boolean).join(' ');
+    }
+    if (suffix && !new RegExp(`(?:^|\\s)${escapeRegex(suffix)}$`, 'i').test(name)) {
+        name = [name, suffix].filter(Boolean).join(' ');
+    }
+    return name || fallback;
+}
+
 studentSchema.pre('save', function () {
     const firstName  = (this.first_name  || '').trim().toUpperCase();
     const middleName = (this.middle_name || '').trim().toUpperCase();
@@ -3693,12 +3716,17 @@ app.post('/apis/students/search-multi', auth, async (req, res) => {
             status: 'approved',
             ...nameFilter
         })
-            .select('student_id full_name last_name suffix program year_level email rfid_status role photo college school_year semester')
+            .select('student_id full_name first_name middle_name last_name suffix program year_level email rfid_status role photo college school_year semester')
             .sort({ last_name: 1 })
             .limit(10)
             .lean();
 
-        res.json({ message: 'OK', students, count: students.length });
+        const formattedStudents = students.map(student => ({
+            ...student,
+            display_name: buildStudentDisplayName(student, student.student_id)
+        }));
+
+        res.json({ message: 'OK', students: formattedStudents, count: formattedStudents.length });
     } catch (err) {
         console.error('Error in students/search-multi:', err);
         internalError(res, err);
@@ -8807,8 +8835,8 @@ const sessionAttendanceCheck = async (req, res) => {
             }
         }
 
-        // Calculate student full name
-        const studentFullName = `${student.full_name || student.first_name || ''} ${student.last_name || ''}`.replace(/\s+/g, ' ').trim();
+        // Calculate student full name, including the separately stored surname.
+        const studentFullName = buildStudentDisplayName(student, student.student_id);
 
         // Scanner eligibility is intentionally not restricted by RFID status.
         // Approved students may check in/out regardless of whether their RFID is
@@ -9416,18 +9444,24 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
         // Fetch all approved students
         const studentFilter = { status: 'approved' };
         const allStudents = await StudentModel.find(studentFilter, {
-            student_id: 1, first_name: 1, last_name: 1, full_name: 1,
+            student_id: 1, first_name: 1, middle_name: 1, last_name: 1, suffix: 1, full_name: 1,
             program: 1, year_level: 1, photo: 1
         }).lean();
 
         // Build records for every student, using PaymentRecord status when available
         const merged_records = allStudents.map(s => {
             const pr = paymentStatusMap[s.student_id] || {};
+            const studentName = buildStudentDisplayName(s, s.student_id);
             return {
                 _id: `rec_${s.student_id}`,
                 student_id: s.student_id,
                 student_id_number: s.student_id,
-                student_name: s.full_name || `${s.first_name || ''} ${s.last_name || ''}`.trim(),
+                student_name: studentName,
+                display_name: studentName,
+                first_name: s.first_name || '',
+                middle_name: s.middle_name || '',
+                last_name: s.last_name || '',
+                suffix: s.suffix || '',
                 photo: s.photo || '',
                 program: s.program,
                 year_level: s.year_level,
@@ -9479,7 +9513,11 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
             const q = query.toLowerCase();
             merged = merged.filter(r =>
                 (r.student_id_number || '').toLowerCase().includes(q) ||
-                (r.student_name || '').toLowerCase().includes(q)
+                (r.student_name || '').toLowerCase().includes(q) ||
+                (r.first_name || '').toLowerCase().includes(q) ||
+                (r.middle_name || '').toLowerCase().includes(q) ||
+                (r.last_name || '').toLowerCase().includes(q) ||
+                (r.full_name || '').toLowerCase().includes(q)
             );
         }
 

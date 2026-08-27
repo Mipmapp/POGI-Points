@@ -83,6 +83,43 @@ export function getInitials(name) {
 }
 
 /**
+ * Build a display name from SSAAM's split name fields.
+ *
+ * Student records traditionally store full_name as first + middle name and
+ * last_name separately. Some admin records may already have the surname in
+ * full_name, so avoid appending it twice.
+ * @param {object|null} person
+ * @param {string} [fallback='']
+ * @returns {string}
+ */
+export function getPersonDisplayName(person, fallback = '') {
+  if (!person || typeof person !== 'object') return fallback
+
+  const base = String(
+    person.full_name ??
+    person.fullName ??
+    [person.first_name ?? person.firstName, person.middle_name ?? person.middleName]
+      .filter(Boolean)
+      .join(' ')
+  ).trim()
+  const lastName = String(person.last_name ?? person.lastName ?? '').trim()
+  const suffix = String(person.suffix ?? '').trim()
+
+  let name = base
+  if (lastName && !new RegExp(`(?:^|\\s)${escapeRegExpForName(lastName)}$`, 'i').test(name)) {
+    name = [name, lastName].filter(Boolean).join(' ')
+  }
+  if (suffix && !new RegExp(`(?:^|\\s)${escapeRegExpForName(suffix)}$`, 'i').test(name)) {
+    name = [name, suffix].filter(Boolean).join(' ')
+  }
+  return name || fallback
+}
+
+function escapeRegExpForName(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+/**
  * Truncate a string to a max length, appending an ellipsis if needed.
  * @param {string} str
  * @param {number} [maxLength=60]
