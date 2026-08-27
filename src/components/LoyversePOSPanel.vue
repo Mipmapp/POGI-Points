@@ -476,12 +476,18 @@ export default {
     },
 
     async buildEscPos() {
-      const enc = new TextEncoder();
+      // ESC/POS thermal printers generally use a single-byte code page
+      // (usually PC437/PC850), not UTF-8. Sending UTF-8 makes names such as
+      // "MIÑAO" print with a different or corrupted character.
+      const enc = { encode: (text) => this.encodePrinterText(text) };
       const W = 32; // 58mm printers ~ 32 chars wide
       const parts = [];
 
       // Init
       parts.push(new Uint8Array([0x1b, 0x40]));
+      // Use the common ESC/POS PC437 table so accented Latin characters
+      // (including Ñ/ñ) map to the same glyphs as our printer encoder.
+      parts.push(new Uint8Array([0x1b, 0x74, 0x00]));
 
       // Center align
       parts.push(new Uint8Array([0x1b, 0x61, 0x01]));
@@ -598,6 +604,27 @@ export default {
         offset += p.byteLength;
       }
       return out;
+    },
+    encodePrinterText(text) {
+      // These code points share the same byte values in the common PC437 and
+      // PC850 tables used by small ESC/POS printers. Keep ASCII untouched and
+      // use '?' for an unsupported character rather than sending invalid
+      // UTF-8 bytes that can alter the rest of the line.
+      const extended = {
+        'Ç': 0x80, 'ü': 0x81, 'é': 0x82, 'â': 0x83, 'ä': 0x84,
+        'à': 0x85, 'å': 0x86, 'ç': 0x87, 'ê': 0x88, 'ë': 0x89,
+        'è': 0x8a, 'ï': 0x8b, 'î': 0x8c, 'ì': 0x8d, 'Ä': 0x8e,
+        'Å': 0x8f, 'É': 0x90, 'æ': 0x91, 'Æ': 0x92, 'ô': 0x93,
+        'ö': 0x94, 'ò': 0x95, 'û': 0x96, 'ù': 0x97, 'ÿ': 0x98,
+        'Ö': 0x99, 'Ü': 0x9a, '¢': 0x9b, '£': 0x9c, '¥': 0x9d,
+        'á': 0xa0, 'í': 0xa1, 'ó': 0xa2, 'ú': 0xa3, 'ñ': 0xa4,
+        'Ñ': 0xa5,
+      };
+      return Uint8Array.from([...String(text ?? '')].map((char) => {
+        const code = char.charCodeAt(0);
+        if (code <= 0x7f) return code;
+        return extended[char] ?? 0x3f;
+      }));
     },
     row(left, right, w = 32) {
       const space = Math.max(1, w - left.length - right.length);
