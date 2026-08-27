@@ -219,6 +219,7 @@ function normalizeCollege(value) {
     return null;
 }
 
+
 function getCollegeFromRequest(req) {
     try {
         // 1. Header (most direct — set by frontend on every request)
