@@ -510,12 +510,28 @@ export default {
       parts.push(new Uint8Array([0x1b, 0x61, 0x00]));
       // Word-wrap long values so we never split a word in the middle
       // (e.g. "MAGLINTE" must not become "MAG" + "LINTE").
-      this.wrapText('Employee: ' + (this.employeeName || 'Owner'), W)
-        .forEach(line => parts.push(enc.encode(line + '\n')));
-      parts.push(enc.encode('POS: ' + this.posName + '\n'));
+      this.labelRow('Employee:', this.employeeName || 'Owner', W)
+        .forEach((line, index) => {
+          if (index === 0) parts.push(new Uint8Array([0x1b, 0x45, 0x01]));
+          parts.push(enc.encode(line.label));
+          if (index === 0) parts.push(new Uint8Array([0x1b, 0x45, 0x00]));
+          parts.push(enc.encode(line.value + '\n'));
+        });
+      this.labelRow('POS:', this.posName, W)
+        .forEach((line, index) => {
+          if (index === 0) parts.push(new Uint8Array([0x1b, 0x45, 0x01]));
+          parts.push(enc.encode(line.label));
+          if (index === 0) parts.push(new Uint8Array([0x1b, 0x45, 0x00]));
+          parts.push(enc.encode(line.value + '\n'));
+        });
       parts.push(enc.encode('\n'));
-      this.wrapText('Customer: ' + (this.customerName || '—'), W)
-        .forEach(line => parts.push(enc.encode(line + '\n')));
+      this.labelRow('Customer:', this.customerName || '—', W)
+        .forEach((line, index) => {
+          if (index === 0) parts.push(new Uint8Array([0x1b, 0x45, 0x01]));
+          parts.push(enc.encode(line.label));
+          if (index === 0) parts.push(new Uint8Array([0x1b, 0x45, 0x00]));
+          parts.push(enc.encode(line.value + '\n'));
+        });
       parts.push(enc.encode('\n'));
       parts.push(enc.encode(this.dashed(W) + '\n'));
 
@@ -558,6 +574,9 @@ export default {
       // Cash
       parts.push(enc.encode(this.row('Cash', totalText, W) + '\n'));
       parts.push(enc.encode('\n'));
+      // Match the on-screen receipt's divider between payment details and footer.
+      parts.push(enc.encode(this.dashed(W) + '\n'));
+      parts.push(enc.encode('\n'));
 
       // Footer (centered, with proper word-wrapping so we don't split words)
       parts.push(new Uint8Array([0x1b, 0x61, 0x01]));
@@ -583,6 +602,32 @@ export default {
     row(left, right, w = 32) {
       const space = Math.max(1, w - left.length - right.length);
       return left + ' '.repeat(space) + right;
+    },
+    // Keep the field label bold while wrapping only the value onto follow-up
+    // lines, matching the receipt preview without splitting a word.
+    labelRow(label, value, w = 32) {
+      const prefix = `${label} `;
+      const available = Math.max(1, w - prefix.length);
+      const words = String(value || '').split(/\s+/).filter(Boolean);
+      const lines = [];
+      let current = '';
+      for (const word of words) {
+        const max = lines.length === 0 ? available : w;
+        if (!current.length) {
+          current = word;
+        } else if (current.length + 1 + word.length <= max) {
+          current += ` ${word}`;
+        } else {
+          lines.push(current);
+          current = word;
+        }
+      }
+      if (current) lines.push(current);
+      if (!lines.length) lines.push('');
+      return lines.map((line, index) => ({
+        label: index === 0 ? prefix : '',
+        value: line,
+      }));
     },
     dashed(w = 32) {
       return '-'.repeat(w);
