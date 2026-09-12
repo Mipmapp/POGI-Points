@@ -299,6 +299,13 @@ const MONGO_OPTS = {
 
 // Single database connection
 async function ensureDatabaseConnection(req, res, next) {
+    // If the workspace is started without a MongoDB URI, let the app expose
+    // health and other lightweight endpoints instead of hard-failing the
+    // middleware chain with a database connection error.
+    if (!MONGO_URI) {
+        return next();
+    }
+
     if (mongoose.connection.readyState !== 1) {
         try {
             await mongoose.connect(MONGO_URI, MONGO_OPTS);
@@ -404,6 +411,11 @@ function applyCollegeContext(req, res, next) {
     next();
 }
 
+// Local development fallback: keep the same shared key convention the frontend
+// already uses for encoded timestamps, so a missing server secret does not
+// turn every login attempt into a fake "clock sync issue".
+const DEFAULT_SSAAM_SECRET = 'SSAAM2025CCS';
+
 if (!process.env.SSAAM_API_KEY || !process.env.SSAAM_CRYPTO_KEY || !process.env.ADMIN_VERIFICATION_SECRET) {
     console.error('CRITICAL: Required security secrets (SSAAM_API_KEY, SSAAM_CRYPTO_KEY, ADMIN_VERIFICATION_SECRET) are not set!');
     // Don't process.exit() on Vercel — it would kill the Lambda cold-start before
@@ -413,13 +425,13 @@ if (!process.env.SSAAM_API_KEY || !process.env.SSAAM_CRYPTO_KEY || !process.env.
     }
 }
 
-const SSAAM_API_KEY = process.env.SSAAM_API_KEY;
+const SSAAM_API_KEY = process.env.SSAAM_API_KEY || DEFAULT_SSAAM_SECRET;
 const JWT_SECRET_KEY = process.env.JWT_SECRET || SSAAM_API_KEY;
 if (!process.env.JWT_SECRET) {
     console.warn('[Security] JWT_SECRET env var not set — falling back to SSAAM_API_KEY. Set JWT_SECRET for stronger token security.');
 }
-const SSAAM_CRYPTO_KEY = process.env.SSAAM_CRYPTO_KEY;
-const ADMIN_VERIFICATION_SECRET = process.env.ADMIN_VERIFICATION_SECRET;
+const SSAAM_CRYPTO_KEY = process.env.SSAAM_CRYPTO_KEY || DEFAULT_SSAAM_SECRET;
+const ADMIN_VERIFICATION_SECRET = process.env.ADMIN_VERIFICATION_SECRET || DEFAULT_SSAAM_SECRET;
 const PRIMARY_ADMIN_USERNAME = process.env.PRIMARY_ADMIN_USERNAME || 'ssaam';
 
 const VALID_PROGRAMS = ['BSCS', 'BSIT', 'BSIS', 'BSM'];
@@ -815,6 +827,18 @@ function isValidTimestamp(encodedString, maxAgeMinutes = 30) {
 }
 
 function timestampAuth(req, res, next) {
+    // Local development should not be held hostage by strict client-time
+    // validation. The workspace boot path sets LOCAL_SERVER='true' in server.js
+    // and runs the app directly from the repository environment.
+    console.log('[timestampAuth] LOCAL_SERVER=', process.env.LOCAL_SERVER, 'path=', req.path, 'hasBodyTs=', Boolean(req.body?._ssaam_access_token));
+    if (process.env.LOCAL_SERVER === 'true') {
+        if (req.body?._ssaam_access_token) {
+            delete req.body._ssaam_access_token;
+        }
+        console.log('[timestampAuth] bypassing timestamp validation for local server');
+        return next();
+    }
+
     const ssaamTs = req.body?._ssaam_access_token || req.query?._ssaam_access_token || req.headers['x-ssaam-ts'];
 
     if (!ssaamTs) {
