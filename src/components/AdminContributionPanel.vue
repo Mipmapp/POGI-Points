@@ -561,6 +561,22 @@
               <svg class="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               Press <kbd class="mx-0.5 px-1 py-0.5 rounded bg-white/15 border border-white/20 text-white/70 font-mono text-[10px]">Enter</kbd> or tap Search · RFID cards are detected automatically
             </p>
+
+            <div v-if="isMobileViewport" class="mt-3">
+              <button
+                v-if="webNfcSupported"
+                type="button"
+                @click="startWebNfcScan"
+                :disabled="isSearchingStudent"
+                class="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-white/30 bg-white/10 px-3 py-2.5 text-xs font-bold text-white transition hover:bg-white/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7a5 5 0 0110 0v4a5 5 0 01-10 0V7zm2 4h6M12 15v4"/></svg>
+                Scan NFC Tag
+              </button>
+              <p v-else class="mt-2 text-center text-[11px] font-semibold text-white/80">
+                {{ webNfcStatusMessage || 'NFC scanning is not supported on this browser. Please use Google Chrome on Android.' }}
+              </p>
+            </div>
           </form>
         </div>
 
@@ -2608,6 +2624,11 @@ export default {
       showReportConfig: false,
       selectedReportEventIds: [],
       expandedReportEvents: [],
+      isMobileViewport: false,
+      webNfcSupported: false,
+      webNfcStatusMessage: '',
+      webNfcReader: null,
+      webNfcCooldownUntil: 0,
     };
   },
   computed: {
@@ -3027,9 +3048,12 @@ export default {
   },
   mounted() {
     this.loadAllPaymentEvents();
+    this.updateIsMobileViewport();
+    window.addEventListener('resize', this.updateIsMobileViewport);
     document.addEventListener('keydown', this.handleCarouselKeydown);
   },
   unmounted() {
+    window.removeEventListener('resize', this.updateIsMobileViewport);
     document.removeEventListener('keydown', this.handleCarouselKeydown);
   },
   methods: {
@@ -3039,6 +3063,77 @@ export default {
     },
     getStudentDisplayName(student) {
       return getPersonDisplayName(student, student?.student_id || '');
+    },
+    uidToRfidCode(serialNumber = '') {
+      const raw = (serialNumber || '').replace(/[^0-9A-F]/gi, '').toUpperCase();
+      if (!raw) return '';
+
+      const hexChunks = raw.match(/.{1,2}/g) || [];
+      const reversedHex = [...hexChunks].reverse().join('');
+      if (!reversedHex) return '';
+
+      try {
+        const decimalValue = BigInt(`0x${reversedHex}`).toString(10);
+        return decimalValue.padStart(10, '0');
+      } catch {
+        return '';
+      }
+    },
+    updateIsMobileViewport() {
+      if (typeof window === 'undefined') return;
+
+      const mobileQuery = window.matchMedia ? window.matchMedia('(max-width: 767px)') : null;
+      this.isMobileViewport = !!(mobileQuery && mobileQuery.matches);
+      this.webNfcSupported = 'NDEFReader' in window;
+
+      if (!this.isMobileViewport) {
+        this.webNfcStatusMessage = '';
+        return;
+      }
+
+      if (!this.webNfcSupported) {
+        this.webNfcStatusMessage = 'NFC scanning is not supported on this browser. Please use Google Chrome on Android.';
+      } else if (!this.webNfcStatusMessage) {
+        this.webNfcStatusMessage = 'Tap the button to scan an NFC card.';
+      }
+    },
+    async startWebNfcScan() {
+      if (typeof window === 'undefined') return;
+
+      if (!this.isMobileViewport || !this.webNfcSupported) {
+        this.webNfcStatusMessage = 'NFC scanning is not supported on this browser. Please use Google Chrome on Android.';
+        return;
+      }
+
+      try {
+        if (!this.webNfcReader) {
+          this.webNfcReader = new window.NDEFReader();
+          this.webNfcReader.addEventListener('reading', this.handleWebNfcReading);
+        }
+
+        await this.webNfcReader.scan();
+        this.webNfcStatusMessage = 'Ready to scan an NFC card.';
+      } catch (error) {
+        console.error('Error starting Web NFC:', error);
+        this.webNfcStatusMessage = error?.message || 'Unable to start NFC scanning.';
+      }
+    },
+    async handleWebNfcReading({ serialNumber }) {
+      const convertedCode = this.uidToRfidCode(serialNumber);
+      if (!convertedCode) {
+        this.webNfcStatusMessage = 'Unable to read the NFC UID from this card.';
+        return;
+      }
+
+      const now = Date.now();
+      if (now < this.webNfcCooldownUntil) return;
+
+      this.webNfcCooldownUntil = now + 3000;
+      this.searchQuery = convertedCode;
+      this.webNfcStatusMessage = `Scanned NFC UID ${convertedCode}.`;
+      this.$nextTick(() => {
+        this.searchStudent();
+      });
     },
     async loadAllPaymentEvents() {
       this.isLoadingEvents = true;

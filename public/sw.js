@@ -9,7 +9,7 @@
 // the waiting SW takes over right away. The client detects the controller
 // change and reloads once to serve the fresh shell.
 
-const CACHE_NAME = 'ssaam-v1';
+const CACHE_NAME = 'ssaam-v3';
 
 // App-shell files to pre-cache on install (static public assets)
 const PRECACHE_URLS = [

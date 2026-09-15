@@ -248,9 +248,9 @@
       </div>
     </div>
     <!-- Gentle S-wave divider -->
-    <div class="absolute top-0 bottom-0 z-40 pointer-events-none" style="left:40%;transform:translateX(-50%);width:120px;">
-      <svg class="h-full w-full" viewBox="0 0 120 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M60,0 C140,200 -20,600 60,800 L120,800 L120,0 Z" fill="white"/>
+    <div class="absolute top-0 bottom-0 z-40 pointer-events-none" style="left:40%;transform:translateX(-50%);width:150px;">
+      <svg class="h-full w-full" viewBox="0 0 150 800" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M75,0 C150,200 -10,600 75,800 L150,800 L150,0 Z" fill="white"/>
       </svg>
     </div>
 
@@ -714,7 +714,6 @@
           </p>
           <div class="mt-2 text-center text-xs text-gray-400">
             Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer transition">CCS - Creatives Committee</button>
-            <span class="ml-2 text-gray-300 text-[10px] font-mono select-none">{{ appVersion }}</span>
           </div>
       </div>
     </div>
@@ -1173,7 +1172,6 @@
 
         <div class="mt-3 text-center text-xs text-gray-400">
           Powered by <button @click="showDevelopersPopup = true" class="text-blue-400 font-medium hover:text-blue-600 cursor-pointer">CCS - Creatives Committee</button>
-          <span class="ml-2 text-gray-300 text-[10px] font-mono select-none">{{ appVersion }}</span>
         </div>
 
         <div class="mt-2 text-center text-xs text-gray-400">
@@ -1183,10 +1181,6 @@
     </div>
   </div>
 
-  <!-- Version badge — fixed bottom-center on all layouts -->
-  <div class="fixed bottom-3 left-0 right-0 z-50 flex justify-center pointer-events-none select-none">
-    <span class="text-[10px] font-mono text-white/50 drop-shadow">{{ appVersion }}</span>
-  </div>
 </template>
 
 <script setup>
@@ -1196,8 +1190,6 @@ import jrmsuLogo from '../assets/ccs-logo.png'
 import ParticleBackground from '../components/ParticleBackground.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl } from '../config/api.js'
-import { APP_VERSION } from '../utils/version.js'
-const appVersion = APP_VERSION
 import departments from '../config/departments.js'
 
 // Custom v-click-outside directive

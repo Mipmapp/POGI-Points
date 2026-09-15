@@ -879,7 +879,6 @@
             <p class="text-white/30 text-[10px]">Powered by</p>
             <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
           </div>
-          <span class="text-white/25 text-[9px] font-mono select-none">{{ appVersion }}</span>
         </div>
       </div>
     </div>
@@ -1024,7 +1023,6 @@
               <p class="text-white/30 text-[10px]">Powered by</p>
               <button @click="showDevelopersPopup = true" class="text-yellow-400/80 hover:text-yellow-300 text-[10px] font-medium transition-colors cursor-pointer">CCS - Creatives Committee</button>
             </div>
-            <span class="text-white/25 text-[9px] font-mono select-none">{{ appVersion }}</span>
           </div>
         </div>
       </div>
@@ -2213,6 +2211,22 @@
                       Tap “Verify Location” above to unlock the scanner for this geofenced event.
                     </p>
                     <p v-else class="text-xs text-gray-400 mt-2 text-center">Press Enter to submit automatically after scanning</p>
+
+                    <div v-if="isMobileViewport" class="mt-3">
+                      <button
+                        v-if="webNfcSupported"
+                        type="button"
+                        @click="startWebNfcScan"
+                        :disabled="rfidProcessing"
+                        class="w-full inline-flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50 px-3 py-2.5 text-xs font-bold text-blue-700 transition hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7a5 5 0 0110 0v4a5 5 0 01-10 0V7zm2 4h6M12 15v4"/></svg>
+                        Scan NFC Tag
+                      </button>
+                      <p v-else class="text-center text-[11px] font-semibold text-amber-700">
+                        {{ webNfcStatusMessage || 'NFC scanning is not supported on this browser. Please use Google Chrome on Android.' }}
+                      </p>
+                    </div>
                   </div>
                 </div>
 
@@ -7930,7 +7944,6 @@ import StudentFaceCheckIn from '../components/StudentFaceCheckIn.vue'
 import LocationGate from '../components/LocationGate.vue'
 import { encodeTimestamp } from '../utils/ssaamCrypto.js'
 import { buildAPIUrl, getCollege } from '../config/api.js'
-import { APP_VERSION } from '../utils/version.js'
 import { handleTokenError, setTokenExpiredCallback } from '../utils/tokenHandler.js'
 import departments from '../config/departments.js'
 import { useCollege } from '../composables/useCollege.js'
@@ -12604,6 +12617,90 @@ const scannerGeoBlocked = computed(() => {
 const rfidInputRef = ref(null)
 // Student ID detection pattern (example: 25-A-01207)
 const studentIdPattern = /^\d{2}-[A-Z]-\d{5}$/i
+const isMobileViewport = ref(false)
+const webNfcSupported = ref(false)
+const webNfcStatusMessage = ref('')
+const webNfcReader = ref(null)
+const webNfcCooldownUntil = ref(0)
+
+const uidToRfidCode = (serialNumber = '') => {
+  const raw = (serialNumber || '').replace(/[^0-9A-F]/gi, '').toUpperCase()
+  if (!raw) return ''
+
+  const hexChunks = raw.match(/.{1,2}/g) || []
+  const reversedHex = [...hexChunks].reverse().join('')
+  if (!reversedHex) return ''
+
+  try {
+    const decimalValue = BigInt(`0x${reversedHex}`).toString(10)
+    return decimalValue.padStart(10, '0')
+  } catch {
+    return ''
+  }
+}
+
+const updateIsMobileViewport = () => {
+  if (typeof window === 'undefined') return
+
+  const mobileQuery = window.matchMedia ? window.matchMedia('(max-width: 767px)') : null
+  isMobileViewport.value = !!(mobileQuery && mobileQuery.matches)
+  webNfcSupported.value = 'NDEFReader' in window
+
+  if (!isMobileViewport.value) {
+    webNfcStatusMessage.value = ''
+    return
+  }
+
+  if (!webNfcSupported.value) {
+    webNfcStatusMessage.value = 'NFC scanning is not supported on this browser. Please use Google Chrome on Android.'
+  } else if (!webNfcStatusMessage.value) {
+    webNfcStatusMessage.value = 'Tap the button to scan an NFC card.'
+  }
+}
+
+const startWebNfcScan = async () => {
+  if (typeof window === 'undefined') return
+
+  if (!isMobileViewport.value || !webNfcSupported.value) {
+    webNfcStatusMessage.value = 'NFC scanning is not supported on this browser. Please use Google Chrome on Android.'
+    return
+  }
+
+  try {
+    if (!webNfcReader.value) {
+      webNfcReader.value = new window.NDEFReader()
+      webNfcReader.value.addEventListener('reading', handleWebNfcReading)
+    }
+
+    await webNfcReader.value.scan()
+    webNfcStatusMessage.value = 'Ready to scan an NFC card.'
+  } catch (error) {
+    console.error('Error starting Web NFC:', error)
+    webNfcStatusMessage.value = error?.message || 'Unable to start NFC scanning.'
+  }
+}
+
+const handleWebNfcReading = async ({ serialNumber }) => {
+  const convertedCode = uidToRfidCode(serialNumber)
+  if (!convertedCode) {
+    webNfcStatusMessage.value = 'Unable to read the NFC UID from this card.'
+    return
+  }
+
+  const now = Date.now()
+  if (now < webNfcCooldownUntil.value) return
+
+  webNfcCooldownUntil.value = now + 3000
+  rfidInput.value = convertedCode
+  webNfcStatusMessage.value = `Scanned NFC UID ${convertedCode}.`
+
+  if (!selectedSession.value) {
+    showNotification('Please select a session before scanning.', 'error')
+    return
+  }
+
+  await processRfidScan(convertedCode)
+}
 
 const onRfidInput = (e) => {
   const val = (e && e.target && e.target.value) ? e.target.value.toUpperCase() : ''
@@ -13500,6 +13597,8 @@ onMounted(async () => {
   
   // Add ESC key listener for fullscreen mode
   document.addEventListener('keydown', handleEscKey)
+  updateIsMobileViewport()
+  window.addEventListener('resize', updateIsMobileViewport)
 
   // Focus main content on load so arrow-key scrolling works immediately
   nextTick(() => { mainContentEl.value?.focus() })
@@ -13714,6 +13813,7 @@ onUnmounted(() => {
   stopStatsAutoRefresh()
   stopLogoFlipAnimation()
   stopSidebarLogoFlipAnimation()
+  window.removeEventListener('resize', updateIsMobileViewport)
   window.removeEventListener('app-notification', handleAppNotification)
   // Clean up user-deleted event listener
   window.removeEventListener('user-deleted', handleUserDeleted)
