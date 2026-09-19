@@ -259,7 +259,7 @@
                   <div class="flex items-center gap-2 flex-wrap">
                     <div class="flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-1.5 flex-1 min-w-0">
                       <svg class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/></svg>
-                      <span class="text-xs font-bold text-emerald-700 truncate">₱{{ Number(collectedByEvent[event._id] || 0).toLocaleString('en-PH', { minimumFractionDigits: 2 }) }} collected</span>
+                      <span class="text-xs font-bold text-emerald-700 truncate">{{ collectedByEvent[event._id] == null ? 'Loading...' : `₱${Number(collectedByEvent[event._id]).toLocaleString('en-PH', { minimumFractionDigits: 2 })} collected` }}</span>
                     </div>
                     <div v-if="event.deadline" class="flex items-center gap-1 text-[10px] text-gray-400 font-medium flex-shrink-0">
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -1048,7 +1048,7 @@
         <div class="flex items-center gap-2">
           <div class="w-1 h-5 rounded-full bg-blue-600"></div>
           <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest">Payment Records</h3>
-          <span class="ml-auto text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">{{ filteredContributions.length }}</span>
+          <span class="ml-auto text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-1 rounded-full">{{ filteredCount }}</span>
         </div>
         <div class="relative">
           <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -1071,7 +1071,7 @@
       <!-- Top Pagination Controls -->
       <div v-if="!isLoading && filteredContributions.length > 0" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-6 md:px-8 py-3 border-b border-gray-100">
         <div class="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
-          Showing {{ (paymentsPage - 1) * paymentsPerPage + 1 }}–{{ Math.min(paymentsPage * paymentsPerPage, filteredContributions.length) }} of {{ filteredContributions.length }} records
+          Showing {{ (paymentsPage - 1) * paymentsPerPage + 1 }}–{{ Math.min(paymentsPage * paymentsPerPage, filteredCount) }} of {{ filteredCount }} records
         </div>
         <div class="flex items-center justify-center gap-1.5">
           <button
@@ -1345,7 +1345,7 @@
       <!-- Bottom Pagination Controls -->
       <div v-if="!isLoading && filteredContributions.length > 0" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-4 sm:px-6 md:px-8 py-3 border-t border-gray-100">
         <div class="text-xs sm:text-sm text-gray-500 text-center sm:text-left">
-          Showing {{ (paymentsPage - 1) * paymentsPerPage + 1 }}–{{ Math.min(paymentsPage * paymentsPerPage, filteredContributions.length) }} of {{ filteredContributions.length }} records
+          Showing {{ (paymentsPage - 1) * paymentsPerPage + 1 }}–{{ Math.min(paymentsPage * paymentsPerPage, filteredCount) }} of {{ filteredCount }} records
         </div>
         <div class="flex items-center justify-center gap-1.5">
           <button
@@ -2789,7 +2789,7 @@ export default {
       });
     },
     filteredCount() {
-      return this.filteredContributions.length;
+      return this.serverFilteredCount ?? this.filteredContributions.length;
     },
     // Stats-only base: applies audience + dropdown + date filters but NOT
     // the text search (paymentRecordsQuery). This keeps event totals stable
@@ -2834,11 +2834,10 @@ export default {
       }
     },
     paginatedContributions() {
-      const start = (this.paymentsPage - 1) * this.paymentsPerPage;
-      return this.filteredContributions.slice(start, start + this.paymentsPerPage);
+      return this.filteredContributions;
     },
     paymentsTotalPages() {
-      return Math.max(1, Math.ceil(this.filteredContributions.length / this.paymentsPerPage));
+      return Math.max(1, Math.ceil((this.serverFilteredCount ?? this.filteredContributions.length) / this.paymentsPerPage));
     },
     paymentsPaginationRange() {
       const total = this.paymentsTotalPages;
@@ -2921,24 +2920,7 @@ export default {
     collectedByEvent() {
       const map = {};
       for (const ev of (this.paymentEvents || [])) {
-        if (this.activePayment && ev._id === this.activePayment._id) {
-          // Active event: sum from baseFilteredContributions (no text search) so
-          // the collected amount on the event card doesn't change while the admin
-          // is typing in the table search box.
-          map[ev._id] = this.baseFilteredContributions
-            .filter(c => c.payment_status === 'paid')
-            .reduce((sum, c) => sum + Number(c.amount_paid || c.original_amount || 0), 0);
-        } else {
-          // Non-active events: use embedded payment_records from the events list endpoint
-          // (detailed contributions are only loaded for the active event).
-          let total = 0;
-          for (const r of (ev.payment_records || [])) {
-            if (r.payment_status === 'paid' || r.is_paid) {
-              total += Number(r.amount_paid || ev.amount_due || 0);
-            }
-          }
-          map[ev._id] = total;
-        }
+        map[ev._id] = ev.stats?.total_collected == null ? null : Number(ev.stats.total_collected);
       }
       return map;
     },
@@ -3021,11 +3003,14 @@ export default {
         this.carouselIndex = Math.max(0, newVal.length - 1);
       }
     },
-    filteredContributions() { this.paymentsPage = 1; },
-    filterStatus() { this.loadAllContributions(); },
-    filterProgram() { this.loadAllContributions(); },
-    filterYearLevel() { this.loadAllContributions(); },
-    filterCollege() { this.loadAllContributions(); },
+    paymentsPage(newPage, oldPage) {
+      if (newPage !== oldPage) this.loadAllContributions();
+    },
+    paymentRecordsQuery() { this.resetContributionPage(); },
+    filterStatus() { this.resetContributionPage(); },
+    filterProgram() { this.resetContributionPage(); },
+    filterYearLevel() { this.resetContributionPage(); },
+    filterCollege() { this.resetContributionPage(); },
     showDownloadConfirm(v) { if (v) this.refreshExportPreview(); },
     showExportHistory(v) { if (v) this.loadExportHistory(); },
     exportYears: { deep: true, handler() { this._scheduleExportPreview(); } },
@@ -3037,6 +3022,7 @@ export default {
       // drop the highlight so it's clear the admin chose a custom day.
       const presetVal = this._presetDateString(this.filterPaidDatePreset);
       if (val !== presetVal) this.filterPaidDatePreset = '';
+      this.resetContributionPage();
     },
     searchQuery(val) {
       const v = (val || '').toString().trim();
@@ -3139,7 +3125,7 @@ export default {
       this.isLoadingEvents = true;
       try {
         const token = localStorage.getItem('authToken');
-        const response = await fetch(buildAPIUrl('/apis/payments'), {
+        const response = await fetch(buildAPIUrl('/apis/payments?summary=meta'), {
           headers: { 'Authorization': `Bearer ${token}`, 'X-SSAAM-College': getCollege() }
         });
         if (response.ok) {
@@ -3324,6 +3310,13 @@ export default {
         }, 1200);
       }
     },
+    resetContributionPage() {
+      if (this.paymentsPage === 1) {
+        this.loadAllContributions();
+      } else {
+        this.paymentsPage = 1;
+      }
+    },
     formatRefreshedTime(ts) {
       if (!ts) return '';
       const diff = Math.max(0, Date.now() - ts);
@@ -3346,12 +3339,15 @@ export default {
       try {
         const token = localStorage.getItem('authToken');
         const params = new URLSearchParams();
-        params.set('limit', '1000');
+        params.set('page', String(this.paymentsPage));
+        params.set('limit', String(this.paymentsPerPage));
         if (this.activePayment?._id) params.set('payment_id', this.activePayment._id);
         if (this.filterStatus) params.set('status', this.filterStatus);
         if (this.filterYearLevel) params.set('year_level', this.filterYearLevel);
         if (this.filterProgram) params.set('program', this.filterProgram);
-        if (this.searchQuery) params.set('query', this.searchQuery);
+        const contributionQuery = (this.paymentRecordsQuery || this.searchQuery || '').trim();
+        if (contributionQuery) params.set('query', contributionQuery);
+        if (this.filterPaidDate) params.set('paid_date', this.filterPaidDate);
 
         const url = buildAPIUrl(`/apis/contributions/search?${params.toString()}`);
         const response = await fetch(url, {
@@ -3363,6 +3359,21 @@ export default {
           const college = getCollege();
           this.contributions = (data.data || []).map(c => ({ ...c, college: c.college || college }));
           this.serverFilteredCount = data.pagination ? data.pagination.total : this.contributions.length;
+          if (this.activePayment && data.summary) {
+            const summary = {
+              ...(this.activePayment.stats || {}),
+              total_collected: data.summary.totalCollected,
+              total_students: data.summary.total,
+              paid_count: data.summary.paidCount
+            };
+            this.activePayment = { ...this.activePayment, stats: summary };
+            this.paymentEvents = this.paymentEvents.map(event =>
+              event._id === this.activePayment._id ? { ...event, stats: summary } : event
+            );
+          }
+          if (data.pagination?.totalPages && this.paymentsPage > data.pagination.totalPages) {
+            this.paymentsPage = data.pagination.totalPages;
+          }
         } else {
           this.loadSampleData();
         }

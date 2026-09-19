@@ -297,8 +297,30 @@ const MONGO_OPTS = {
     w: 'majority'
 };
 
+let mongoConnectionPromise = null;
+
+function connectDatabase() {
+    if (!MONGO_URI) return Promise.resolve(null);
+    if (mongoose.connection.readyState === 1) return Promise.resolve(mongoose.connection);
+
+    if (!mongoConnectionPromise) {
+        mongoConnectionPromise = mongoose.connect(MONGO_URI, MONGO_OPTS)
+            .then(() => mongoose.connection)
+            .catch(err => {
+                mongoConnectionPromise = null;
+                throw err;
+            });
+    }
+
+    return mongoConnectionPromise;
+}
+
 // Single database connection
 async function ensureDatabaseConnection(req, res, next) {
+    if (req.path === '/health') {
+        return next();
+    }
+
     // If the workspace is started without a MongoDB URI, let the app expose
     // health and other lightweight endpoints instead of hard-failing the
     // middleware chain with a database connection error.
@@ -308,7 +330,7 @@ async function ensureDatabaseConnection(req, res, next) {
 
     if (mongoose.connection.readyState !== 1) {
         try {
-            await mongoose.connect(MONGO_URI, MONGO_OPTS);
+            await connectDatabase();
             console.log('[DB] Connected to main database');
         } catch (err) {
             console.error('[DB] Failed to connect:', err.message);
@@ -1170,10 +1192,8 @@ app.delete('/apis/payments/:paymentId/addons/:addonId', auth, async (req, res) =
 // Get all payments
 app.get('/apis/payments', auth, async (req, res) => {
     try {
-        // Auto-fix any corrupted student IDs on each fetch (college-aware)
-        await autoFixStudentIds(req.college);
-
         const { status } = req.query;
+        const summaryOnly = req.query.summary === 'true';
         const query = status ? { status } : {};
 
         // Filter out invalid payments: amount_due 0, empty title, "Unknown Payment"
@@ -1184,14 +1204,24 @@ app.get('/apis/payments', auth, async (req, res) => {
             title: { $ne: '', $regex: /^.+$/, $not: /^Unknown Payment$/i }
         }).sort({ created_at: -1 });
 
+        if (req.query.summary === 'meta') {
+            return res.json({
+                success: true,
+                data: payments.map(payment => payment.toObject())
+            });
+        }
+
         // Get all records once for efficiency (college-aware)
         const PaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
-        const allRecords = await PaymentRecordModel.find({});
+        const paymentIds = payments.map(payment => payment._id);
+        const allRecords = await PaymentRecordModel.find({ 'campaigns.payment_id': { $in: paymentIds } })
+            .select('student_id student_id_number student_name program year_level campaigns')
+            .lean();
 
         // Get all students for enrichment (college-aware)
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         // Get all students for enrichment
-        const allStudents = await StudentModel.find({}, 'student_id program year_level');
+        const allStudents = await StudentModel.find({}, 'student_id program year_level').lean();
         const studentMap = {};
         for (const student of allStudents) {
             if (student.student_id) {
@@ -1202,20 +1232,29 @@ app.get('/apis/payments', auth, async (req, res) => {
             }
         }
 
+        // Index campaigns once so each payment event does not scan every record.
+        const recordsByPayment = new Map();
+        for (const record of allRecords) {
+            for (const campaign of record.campaigns || []) {
+                const paymentKey = campaign.payment_id?.toString();
+                if (!paymentKey) continue;
+                if (!recordsByPayment.has(paymentKey)) recordsByPayment.set(paymentKey, []);
+                recordsByPayment.get(paymentKey).push({ record, campaign });
+            }
+        }
+
         // Get statistics and records for each payment
         const paymentsWithStats = payments.map((payment) => {
             const paymentRecords = [];
-            let paid = 0, unpaid = 0, pending = 0;
+            let paid = 0, unpaid = 0, pending = 0, totalCollected = 0;
 
-            for (const record of allRecords) {
-                const campaign = record.campaigns.find(c => c.payment_id.toString() === payment._id.toString());
-                if (campaign) {
+            for (const { record, campaign } of recordsByPayment.get(payment._id.toString()) || []) {
                     // Enrich with latest student data
                     const studentData = studentMap[record.student_id] || {};
                     const program = studentData.program || record.program || 'N/A';
                     const year_level = studentData.year_level || record.year_level || 'N/A';
 
-                    paymentRecords.push({
+                    if (!summaryOnly) paymentRecords.push({
                         _id: record._id,
                         student_id: record.student_id,
                         student_id_number: record.student_id_number || record.student_id,
@@ -1238,10 +1277,12 @@ app.get('/apis/payments', auth, async (req, res) => {
                         discount_applied_by: campaign.discount_applied_by || null
                     });
 
-                    if (campaign.payment_status === 'paid') paid++;
+                    if (campaign.payment_status === 'paid') {
+                        paid++;
+                        totalCollected += Number(campaign.amount_paid || 0);
+                    }
                     else if (campaign.payment_status === 'unpaid') unpaid++;
                     else if (campaign.payment_status === 'pending') pending++;
-                }
             }
 
             const totalUnpaid = unpaid + pending;
@@ -1249,12 +1290,13 @@ app.get('/apis/payments', auth, async (req, res) => {
 
             return {
                 ...payment.toObject(),
-                payment_records: paymentRecords,
+                ...(summaryOnly ? {} : { payment_records: paymentRecords }),
                 stats: {
                     total_students: total,
                     paid_count: paid,
                     unpaid_count: totalUnpaid,
                     pending_count: pending,
+                    total_collected: totalCollected,
                     completion_percentage: total > 0 ? Math.round((paid / total) * 100) : 0
                 }
             };
@@ -2132,7 +2174,7 @@ async function getConnectionByType(type) {
         return mongoose.connection;
     }
     try {
-        await mongoose.connect(MONGO_URI, MONGO_OPTS);
+        await connectDatabase();
         console.log('Connected to main MongoDB via getConnectionByType');
         return mongoose.connection;
     } catch (err) {
@@ -2141,7 +2183,7 @@ async function getConnectionByType(type) {
     }
 }
 
-const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 5000) => {
+const connectWithRetry = async (retryCount = 0, maxRetries = process.env.VERCEL ? 0 : 10, retryDelay = 5000) => {
     const shouldListenLocally = !process.env.VERCEL && process.env.LOCAL_SERVER === 'true';
 
     if (!MONGO_URI) {
@@ -2157,8 +2199,17 @@ const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 50
         return;
     }
 
+    if (shouldListenLocally && retryCount === 0) {
+        app.listen(PORT, () => {
+            console.log(`Server running on ${PORT}`);
+            if (typeof autoUpdateEventStatuses === 'function') {
+                autoUpdateEventStatuses();
+            }
+        });
+    }
+
     try {
-        await mongoose.connect(MONGO_URI, MONGO_OPTS);
+        await connectDatabase();
         console.log('Connected to MongoDB Atlas');
 
         // On Vercel serverless, Vercel owns the HTTP layer — calling app.listen()
@@ -2169,13 +2220,6 @@ const connectWithRetry = async (retryCount = 0, maxRetries = 10, retryDelay = 50
             if (typeof autoUpdateEventStatuses === 'function') {
                 autoUpdateEventStatuses();
             }
-        } else if (shouldListenLocally) {
-            app.listen(PORT, () => {
-                console.log(`Server running on ${PORT}`);
-                if (typeof autoUpdateEventStatuses === 'function') {
-                    autoUpdateEventStatuses();
-                }
-            });
         }
     } catch (err) {
         console.error(`MongoDB connection attempt ${retryCount + 1} failed:`, err.message);
@@ -2201,7 +2245,7 @@ mongoose.connection.on('disconnected', () => {
     setTimeout(() => {
         if (mongoose.connection.readyState === 0) {
             console.log('[DB] Attempting to reconnect...');
-            mongoose.connect(MONGO_URI, MONGO_OPTS).catch(err =>
+            connectDatabase().catch(err =>
                 console.error('[DB] Reconnect attempt failed:', err.message)
             );
         }
@@ -3602,6 +3646,11 @@ app.get('/apis/students/all-colleges', auth, async (req, res) => {
         if (!req.master?.isMaster || req.master?.role === 'co-admin') {
             return res.status(403).json({ message: 'Access denied. Super admin required.' });
         }
+        const requestedPage = Number.parseInt(req.query.page, 10);
+        const requestedLimit = Number.parseInt(req.query.limit, 10);
+        const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+        const limit = Number.isFinite(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, 100) : 20;
+        const search = String(req.query.search || '').trim().toLowerCase();
         const colleges = ['CCS', 'COE', 'SOM', 'CNAHS'];
         const allStudents = [];
         for (const college of colleges) {
@@ -3611,7 +3660,31 @@ app.get('/apis/students/all-colleges', auth, async (req, res) => {
                 .lean();
             students.forEach(s => { s.college = college; allStudents.push(s); });
         }
-        res.json(allStudents);
+
+        const filtered = allStudents.filter(student => {
+            const haystack = [student.student_id, student.full_name, student.last_name, student.email, student.rfid_code]
+                .filter(Boolean).join(' ').toLowerCase();
+            if (search && !haystack.includes(search)) return false;
+            if (req.query.role && (student.role || 'student') !== req.query.role) return false;
+            if (req.query.year_level && !(student.year_level || '').toLowerCase().includes(String(req.query.year_level).toLowerCase())) return false;
+            if (req.query.program && (student.program || '').toUpperCase() !== String(req.query.program).toUpperCase()) return false;
+            if (req.query.college && student.college !== String(req.query.college).toUpperCase()) return false;
+            if (req.query.school_year && (student.school_year || '') !== req.query.school_year) return false;
+            if (req.query.rfid_status === 'verified' && !student.rfid_code) return false;
+            if (req.query.rfid_status === 'unreadable' && !(student.rfid_code || '').includes('UNREADABLE')) return false;
+            if (req.query.rfid_status === 'unverified' && student.rfid_code) return false;
+            if (req.query.validation) {
+                const validated = req.query.current_school_year && req.query.current_semester &&
+                    student.school_year === req.query.current_school_year && student.semester === req.query.current_semester;
+                if (req.query.validation === 'validated' && !validated) return false;
+                if (req.query.validation === 'not_validated' && validated) return false;
+            }
+            return true;
+        }).sort((a, b) => String(a.last_name || a.full_name || '').localeCompare(String(b.last_name || b.full_name || '')));
+
+        const total = filtered.length;
+        const data = filtered.slice((page - 1) * limit, page * limit);
+        res.json({ data, pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)), hasNextPage: page * limit < total, hasPrevPage: page > 1 } });
     } catch (err) {
         internalError(res, err);
     }
@@ -3621,10 +3694,51 @@ app.get('/apis/students/all-colleges', auth, async (req, res) => {
 app.get('/apis/students/list/all', auth, async (req, res) => {
     try {
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
+        const requestedPage = Number.parseInt(req.query.page, 10);
+        const requestedLimit = Number.parseInt(req.query.limit, 10);
+        const page = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+        const limit = Number.isFinite(requestedLimit) && requestedLimit > 0 ? Math.min(requestedLimit, 100) : 20;
+        const filter = { status: 'approved' };
+        const andFilters = [];
+        const search = String(req.query.search || '').trim();
+        if (search) {
+            const escaped = escapeRegex(search);
+            andFilters.push({ $or: [
+                { student_id: { $regex: escaped, $options: 'i' } },
+                { full_name: { $regex: escaped, $options: 'i' } },
+                { last_name: { $regex: escaped, $options: 'i' } },
+                { email: { $regex: escaped, $options: 'i' } },
+                { rfid_code: { $regex: escaped, $options: 'i' } }
+            ] });
+        }
+        if (req.query.role) filter.role = req.query.role;
+        if (req.query.year_level) filter.year_level = { $regex: escapeRegex(req.query.year_level), $options: 'i' };
+        if (req.query.program) filter.program = String(req.query.program).toUpperCase();
+        if (req.query.school_year) filter.school_year = req.query.school_year;
+        if (req.query.rfid_status === 'verified') filter.rfid_code = { $exists: true, $nin: ['', null] };
+        if (req.query.rfid_status === 'unreadable') filter.rfid_code = { $regex: 'UNREADABLE', $options: 'i' };
+        if (req.query.rfid_status === 'unverified') andFilters.push({ $or: [{ rfid_code: { $exists: false } }, { rfid_code: null }, { rfid_code: '' }] });
+        if (req.query.validation === 'validated') {
+            filter.school_year = req.query.current_school_year;
+            filter.semester = req.query.current_semester;
+        } else if (req.query.validation === 'not_validated') {
+            andFilters.push({ $or: [
+                { school_year: { $ne: req.query.current_school_year } },
+                { school_year: null },
+                { semester: { $ne: req.query.current_semester } },
+                { semester: null }
+            ] });
+        }
+        if (andFilters.length) filter.$and = andFilters;
 
-        const students = await StudentModel.find({ status: 'approved' })
+        const [students, total] = await Promise.all([
+            StudentModel.find(filter)
             .select('student_id full_name last_name suffix program year_level photo email rfid_status rfid_code role college school_year semester')
-            .sort({ last_name: 1 });
+            .sort({ last_name: 1 })
+            .skip((page - 1) * limit)
+            .limit(limit),
+            StudentModel.countDocuments(filter)
+        ]);
 
         const formattedStudents = students.map(s => ({
             _id: s._id,
@@ -3645,7 +3759,8 @@ app.get('/apis/students/list/all', auth, async (req, res) => {
 
         res.json({
             data: formattedStudents,
-            total: formattedStudents.length
+            total,
+            pagination: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)), hasNextPage: page * limit < total, hasPrevPage: page > 1 }
         });
     } catch (err) {
         internalError(res, err);
@@ -9434,7 +9549,13 @@ app.get('/apis/attendance/my-records', studentAuthWithToken, async (req, res) =>
 // Enhanced search for contributions with RFID support
 app.get('/apis/contributions/search', auth, async (req, res) => {
     try {
-        const { query, year_level, program, status, limit = 1000, page = 1, payment_id, year_levels = '', statuses = '' } = req.query;
+        const { query, year_level, program, status, payment_id, year_levels = '', statuses = '', paid_date = '' } = req.query;
+        const requestedPage = Number.parseInt(req.query.page, 10);
+        const requestedLimit = Number.parseInt(req.query.limit, 10);
+        const currentPage = Number.isFinite(requestedPage) && requestedPage > 0 ? requestedPage : 1;
+        const pageSize = Number.isFinite(requestedLimit) && requestedLimit > 0
+            ? Math.min(requestedLimit, 100)
+            : 20;
 
         const StudentModel = getCollegeModel(Student, CCS_Student, COE_Student, req.college);
         const CollegePaymentRecordModel = getCollegeModel(PaymentRecord, CCS_PaymentRecord, COE_PaymentRecord, req.college);
@@ -9449,8 +9570,12 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
             latestPayment = await CollegePaymentModel.findOne({ amount_due: { $gt: 0 } }).sort({ created_at: -1 }).lean();
         }
 
-        // Build a map of student_id -> campaign status from PaymentRecord
-        const paymentRecords = await CollegePaymentRecordModel.find({}).lean();
+        // Build a map only from records that contain the requested campaign.
+        const paymentRecords = latestPayment
+            ? await CollegePaymentRecordModel.find({ 'campaigns.payment_id': latestPayment._id })
+                .select('student_id campaigns')
+                .lean()
+            : [];
         const paymentStatusMap = {};
         for (const rec of paymentRecords) {
             if (!latestPayment) break;
@@ -9466,8 +9591,28 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
             }
         }
 
-        // Fetch all approved students
+        // Narrow the student query before loading the page-sized result set.
         const studentFilter = { status: 'approved' };
+        const studentTargetYearLevels = Array.isArray(latestPayment?.target_year_levels)
+            ? latestPayment.target_year_levels.filter(Boolean)
+            : [];
+        const studentTargetPrograms = Array.isArray(latestPayment?.target_programs)
+            ? latestPayment.target_programs.filter(Boolean)
+            : [];
+        if (studentTargetYearLevels.length) studentFilter.year_level = { $in: studentTargetYearLevels };
+        if (studentTargetPrograms.length) studentFilter.program = { $in: studentTargetPrograms };
+        if (year_level) studentFilter.year_level = year_level;
+        if (program) studentFilter.program = program;
+        if (query) {
+            const escapedQuery = escapeRegex(query.trim());
+            studentFilter.$or = [
+                { student_id: { $regex: escapedQuery, $options: 'i' } },
+                { full_name: { $regex: escapedQuery, $options: 'i' } },
+                { last_name: { $regex: escapedQuery, $options: 'i' } },
+                { rfid_code: { $regex: escapedQuery, $options: 'i' } },
+                { email: { $regex: escapedQuery, $options: 'i' } }
+            ];
+        }
         const allStudents = await StudentModel.find(studentFilter, {
             student_id: 1, first_name: 1, middle_name: 1, last_name: 1, suffix: 1, full_name: 1,
             program: 1, year_level: 1, photo: 1
@@ -9546,20 +9691,60 @@ app.get('/apis/contributions/search', auth, async (req, res) => {
             );
         }
 
-        const total = merged.length;
-        const skip = (parseInt(page) - 1) * parseInt(limit);
-        const paginated = merged.slice(skip, skip + parseInt(limit));
+        const targetYearLevels = Array.isArray(latestPayment?.target_year_levels)
+            ? latestPayment.target_year_levels.filter(Boolean)
+            : [];
+        const targetPrograms = Array.isArray(latestPayment?.target_programs)
+            ? latestPayment.target_programs.filter(Boolean)
+            : [];
+        if (targetYearLevels.length) {
+            merged = merged.filter(r => targetYearLevels.includes(r.year_level));
+        }
+        if (targetPrograms.length) {
+            merged = merged.filter(r => targetPrograms.includes(r.program));
+        }
+        if (paid_date) {
+            const start = new Date(`${paid_date}T00:00:00.000`);
+            const end = new Date(start);
+            end.setDate(end.getDate() + 1);
+            if (!Number.isNaN(start.getTime())) {
+                merged = merged.filter(r => {
+                    if (!r.paid_at) return false;
+                    const paidAt = new Date(r.paid_at);
+                    return paidAt >= start && paidAt < end;
+                });
+            }
+        }
 
-        console.log(`[CONTRIB SEARCH] total: ${total}, paid: ${merged_records.filter(r => r.payment_status === 'paid').length}, unpaid: ${merged_records.filter(r => r.payment_status !== 'paid').length}`);
+        merged.sort((a, b) => {
+            const aPaid = a.payment_status === 'paid' ? 0 : 1;
+            const bPaid = b.payment_status === 'paid' ? 0 : 1;
+            if (aPaid !== bPaid) return aPaid - bPaid;
+            return new Date(b.paid_at || 0) - new Date(a.paid_at || 0);
+        });
+
+        const total = merged.length;
+        const skip = (currentPage - 1) * pageSize;
+        const paginated = merged.slice(skip, skip + pageSize);
+        const paidRecords = merged.filter(record => record.payment_status === 'paid');
+
+        console.log(`[CONTRIB SEARCH] total: ${total}, paid: ${paidRecords.length}, unpaid: ${merged.filter(r => r.payment_status !== 'paid').length}`);
 
         res.json({
             success: true,
             data: paginated,
             pagination: {
                 total,
-                page: parseInt(page),
-                limit: parseInt(limit),
-                totalPages: Math.ceil(total / parseInt(limit))
+                page: currentPage,
+                limit: pageSize,
+                totalPages: Math.max(1, Math.ceil(total / pageSize)),
+                hasNextPage: currentPage < Math.ceil(total / pageSize),
+                hasPrevPage: currentPage > 1
+            },
+            summary: {
+                total,
+                paidCount: paidRecords.length,
+                totalCollected: paidRecords.reduce((sum, record) => sum + Number(record.amount_paid || 0), 0)
             }
         });
     } catch (err) {
@@ -9799,7 +9984,7 @@ app.post('/api/auth/google/exchange', async (req, res) => {
         // Ensure DB is connected (important for Vercel cold starts)
         if (mongoose.connection.readyState !== 1) {
             console.warn('[Google Exchange] DB not connected, reconnecting…');
-            await mongoose.connect(MONGO_URI, MONGO_OPTS);
+            await connectDatabase();
         }
         const data = await GoogleExchangeCode.findOneAndDelete({ code });
         console.log('[Google Exchange] findOneAndDelete result:', data ? `found (college: ${data.college})` : 'NOT FOUND');

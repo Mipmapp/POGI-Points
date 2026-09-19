@@ -85,7 +85,7 @@
           v-if="userValidationFilter === 'not_validated'"
           class="flex items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-sm"
         >
-          <span class="font-medium text-indigo-800">Showing <strong>{{ filteredUsers.length }}</strong> unvalidated student{{ filteredUsers.length === 1 ? '' : 's' }}</span>
+          <span class="font-medium text-indigo-800">Showing <strong>{{ userTotal }}</strong> unvalidated student{{ userTotal === 1 ? '' : 's' }}</span>
           <button @click="userValidationFilter = null" class="text-xs text-indigo-600 hover:text-indigo-800 font-semibold underline transition">Clear filter</button>
         </div>
 
@@ -304,7 +304,7 @@
         <div v-if="filteredUsers.length > 0" class="mt-4 pt-4 border-t border-gray-200">
           <!-- Mobile: compact prev/page/next row -->
           <div class="flex items-center justify-between gap-2 sm:hidden">
-            <span class="text-xs text-gray-500">{{ filteredUsers.length }} users</span>
+            <span class="text-xs text-gray-500">{{ userTotal }} users</span>
             <div class="flex items-center gap-2">
               <button
                 @click="currentPage = Math.max(1, currentPage - 1)"
@@ -330,7 +330,7 @@
           <!-- Desktop: full pagination -->
           <div class="hidden sm:flex sm:items-center sm:justify-between gap-2">
             <div class="text-sm text-gray-600">
-              Showing {{ (currentPage - 1) * usersPerPage + 1 }} to {{ Math.min(currentPage * usersPerPage, filteredUsers.length) }} of {{ filteredUsers.length }} users
+              Showing {{ (currentPage - 1) * usersPerPage + 1 }} to {{ Math.min(currentPage * usersPerPage, userTotal) }} of {{ userTotal }} users
             </div>
             <div class="flex items-center gap-2">
               <button
@@ -453,7 +453,7 @@
           <div class="mt-6 pt-4 border-t border-gray-200">
             <!-- Mobile: compact prev/page/next row -->
             <div class="flex items-center justify-between gap-2 sm:hidden">
-              <span class="text-xs text-gray-500">{{ filteredUsers.length }} users</span>
+                  <span class="text-xs text-gray-500">{{ userTotal }} users</span>
               <div class="flex items-center gap-2">
                 <button
                   @click="currentPage = Math.max(1, currentPage - 1)"
@@ -479,7 +479,7 @@
             <!-- Desktop: full pagination -->
             <div class="hidden sm:flex sm:items-center sm:justify-between gap-2">
               <div class="text-sm text-gray-600">
-                Showing {{ (currentPage - 1) * usersPerPage + 1 }} to {{ Math.min(currentPage * usersPerPage, filteredUsers.length) }} of {{ filteredUsers.length }} users
+                Showing {{ (currentPage - 1) * usersPerPage + 1 }} to {{ Math.min(currentPage * usersPerPage, userTotal) }} of {{ userTotal }} users
               </div>
               <div class="flex items-center gap-2">
                 <button
@@ -1306,6 +1306,7 @@ export default {
       isDeletingUser: false,
       currentPage: 1,
       usersPerPage: 10,
+      totalUsers: 0,
       notification: {
         show: false,
         type: 'success',
@@ -1492,12 +1493,13 @@ export default {
       return filtered
     },
     paginatedUsers() {
-      const start = (this.currentPage - 1) * this.usersPerPage
-      const end = start + this.usersPerPage
-      return this.filteredUsers.slice(start, end)
+      return this.filteredUsers
     },
     totalPages() {
-      return Math.ceil(this.filteredUsers.length / this.usersPerPage)
+      return Math.max(1, Math.ceil((this.totalUsers || this.filteredUsers.length) / this.usersPerPage))
+    },
+    userTotal() {
+      return this.totalUsers || this.filteredUsers.length
     },
     paginationRange() {
       const pages = []
@@ -1544,23 +1546,32 @@ export default {
     },
   },
   watch: {
+    currentPage(newPage, oldPage) {
+      if (newPage !== oldPage) this.fetchAllUsers()
+    },
     userSearchQuery() {
-      this.currentPage = 1
+      this.resetUsersPage()
     },
     userRoleFilter() {
-      this.currentPage = 1
+      this.resetUsersPage()
     },
     userYearFilter() {
-      this.currentPage = 1
+      this.resetUsersPage()
     },
     userStatusFilter() {
-      this.currentPage = 1
+      this.resetUsersPage()
     },
     userProgramFilter() {
-      this.currentPage = 1
+      this.resetUsersPage()
+    },
+    userCollegeFilter() {
+      this.resetUsersPage()
+    },
+    userAcadYearFilter() {
+      this.resetUsersPage()
     },
     userValidationFilter() {
-      this.currentPage = 1
+      this.resetUsersPage()
     },
     activeTab(val) {
       // Auto-load inline members for single-college users when Roles tab is opened
@@ -1696,12 +1707,26 @@ export default {
         const isMaster = this.currentUser?.isMaster === true
         const college = this.currentUser?.college || localStorage.getItem('loginChosenDepartment') || 'CCS'
 
+        const params = new URLSearchParams({ page: String(this.currentPage), limit: String(this.usersPerPage) })
+        if (this.userSearchQuery.trim()) params.set('search', this.userSearchQuery.trim())
+        if (this.userRoleFilter) params.set('role', this.userRoleFilter)
+        if (this.userYearFilter) params.set('year_level', this.userYearFilter)
+        if (this.userProgramFilter) params.set('program', this.userProgramFilter)
+        if (this.userCollegeFilter) params.set('college', this.userCollegeFilter)
+        if (this.userAcadYearFilter) params.set('school_year', this.userAcadYearFilter)
+        if (this.userStatusFilter) params.set('rfid_status', this.userStatusFilter)
+        if (this.userValidationFilter) {
+          params.set('validation', this.userValidationFilter)
+          params.set('current_school_year', this.appSettings?.schoolYear || '')
+          params.set('current_semester', this.appSettings?.semester || '')
+        }
+
         let url, headers
         if (isMaster && !this.isCoAdmin) {
-          url = buildAPIUrl('/apis/students/all-colleges')
+          url = buildAPIUrl(`/apis/students/all-colleges?${params.toString()}`)
           headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-SSAAM-College': 'CCS' }
         } else {
-          url = buildAPIUrl('/apis/students/list/all')
+          url = buildAPIUrl(`/apis/students/list/all?${params.toString()}`)
           headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', 'X-SSAAM-College': college }
         }
 
@@ -1709,6 +1734,10 @@ export default {
         if (response.ok) {
           const data = await response.json()
           this.allUsers = Array.isArray(data) ? data : (data.data || [])
+          this.totalUsers = data.pagination?.total ?? data.total ?? this.allUsers.length
+          if (data.pagination?.totalPages && this.currentPage > data.pagination.totalPages) {
+            this.currentPage = data.pagination.totalPages
+          }
         } else {
           const errorData = await response.json()
           console.error('Failed to fetch users:', response.status, errorData)
@@ -1719,6 +1748,10 @@ export default {
         this.isFetchingUsers = false
       }
     },
+      resetUsersPage() {
+        if (this.currentPage === 1) this.fetchAllUsers()
+        else this.currentPage = 1
+      },
     async refreshData() {
       this.isRefreshing = true
       this.dismissedUnvalidatedBanner = false
